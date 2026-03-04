@@ -52,7 +52,7 @@ Use [`template.cpp`](template.cpp) as the copy-paste starting point for register
 
 Check Out [`example.cpp`](example.cpp) for an example application that has 3 *"Check Boxes"* in the middle where each swaps the color of the background to the color of their border.
 
-[The App](assets/pictures/Screenshot%20from%202026-03-04%2019-16-52.png)
+[The App](https://github.com/Manwe314/FlowUi/blob/wip/assets/pictures/Screenshot%20from%202026-03-04%2019-16-52.png)
 
 ## Not Done Yet
 
