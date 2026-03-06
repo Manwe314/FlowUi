@@ -16,6 +16,8 @@
 #include "Ui/FlowUiElementSystem.hpp"
 #include "window/Inputs.hpp"
 
+struct FontManager;
+
 namespace FlowUi {
 
 class UiContext {
@@ -24,6 +26,8 @@ public:
 	void initStringArenas(const AppConfig& cfg);
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
 	Clay_RenderCommandArray endFrame();
+	void setFontManager(const ::FontManager* fontManager);
+	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
 
 	Clay_String str(std::string_view s);
 	Clay_ElementId sid(std::string_view s);
@@ -59,6 +63,8 @@ private:
 	ElementRegistry& elementRegistry_;
 	InteractionSnapshot previousInteractionSnapshot_;
     InteractionSnapshot currentInteractionSnapshot_;
+	const ::FontManager* fontManager_ = nullptr;
+	float pointsToPixelsScale_ = 96.0f / 72.0f;
 
 };
 

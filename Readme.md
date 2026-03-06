@@ -22,6 +22,34 @@ cmake -S . -B build
 cmake --build build -j
 ```
 
+### Font Baking Tool
+
+`flowui_font_baker` is an offline CLI that generates MTSDF `.arfont` files from `.ttf/.otf` input.
+
+Build it:
+
+```bash
+cmake -S . -B build -DFLOWUI_BUILD_FONT_BAKER=ON
+cmake --build build --target flowui_font_baker -j
+```
+
+Use it:
+
+```bash
+./build/flowui_font_baker \
+  --input /path/to/font.ttf \
+  --output /path/to/font.arfont \
+  --pixel-size 48 \
+  --charset "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+```
+
+You can also use `--charset-file /path/to/charset.txt` (msdf-atlas charset syntax).
+
+### Build Options
+
+- `FLOWUI_BUILD_FONT_BAKER` (default `ON`): builds the offline baker CLI.
+- `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` (default `OFF`): links runtime baking dependencies into `flowui`.
+
 ## Minimal App Loop
 
 ```cpp

@@ -32,7 +32,7 @@ public:
 
 	// Resource loading
 	// Return small handles/IDs (int or strong typedef)
-	int loadFont(std::string_view ttfPath, float pxSize);
+	int loadFont(std::string_view fontPath, float pxSize);
 	int loadSvgIcon(std::string_view svgPath, int pxSize);
 
 	// Access to UI builder (your Clay C++ wrapper)

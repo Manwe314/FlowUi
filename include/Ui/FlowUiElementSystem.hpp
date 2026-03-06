@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 #include <functional>
+#include <type_traits>
 #include <typeinfo>
 #include <stdexcept>
 #include <utility>
@@ -76,6 +77,13 @@ public:
         if (const auto* typed = std::get_if<T>(&it->second)) return *typed;
         return defaultValue;
     }
+
+	template <typename T>
+	T getValueOrDefault(std::string_view key) const 
+		requires std::is_default_constructible_v<T>
+	{
+		return getValueOrDefault<T>(key, T{});
+	}
 
     std::string_view getStringOrDefault(std::string_view key, std::string_view defaultValue) const
 	{

@@ -10,7 +10,10 @@
 #include "window/Window.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
+#include <filesystem>
+#include <string>
 #include <vector>
 #include <stdexcept>
 
@@ -20,6 +23,13 @@ void vkCheck(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
 		throw std::runtime_error(message);
 	}
+}
+
+std::string toLowerAscii(std::string value) {
+	for (char& c : value) {
+		c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+	}
+	return value;
 }
 
 void transitionSwapchainImageLayout(
@@ -134,10 +144,19 @@ struct App::Impl {
 		// 4) renderer/resources (dynamic rendering needs format)
 		renderer.init(config, vk, swap.format);
 		fonts.init(vk, config.ui.fontAtlasSize);
+		ui.setFontManager(&fonts);
+		renderer.setFontManager(&fonts);
 		icons.init(vk, config.ui.iconAtlasSize);
 
 		if (!config.ui.defaultFontPath.empty()) {
-			fonts.loadFont(vk, config.ui.defaultFontPath, config.ui.defaultFontPx);
+			const std::filesystem::path defaultFontPath = config.ui.defaultFontPath;
+			const bool isArfont = toLowerAscii(defaultFontPath.extension().string()) == ".arfont";
+			if (isArfont && std::filesystem::is_regular_file(defaultFontPath)) {
+				const int defaultFontId = fonts.loadFont(vk, defaultFontPath.string(), config.ui.defaultFontPx);
+				if (defaultFontId < 0) {
+					throw std::runtime_error("Failed to register default .arfont font: " + defaultFontPath.string());
+				}
+			}
 		}
 	}
 
@@ -344,10 +363,11 @@ void App::drawFrame() {
 	}
 }
 
-int App::loadFont(std::string_view ttfPath, float pxSize) {
-	(void)ttfPath;
-	(void)pxSize;
-	return -1;
+int App::loadFont(std::string_view fontPath, float pxSize) {
+	if (!impl_) {
+		return -1;
+	}
+	return impl_->fonts.loadFont(impl_->vk, fontPath, pxSize);
 }
 
 int App::loadSvgIcon(std::string_view svgPath, int pxSize) {

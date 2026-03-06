@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.20)
 project(FlowUi VERSION 0.1.0 LANGUAGES CXX)
 
 option(FLOWUI_INSTALL "Enable install rules" ON)
+option(FLOWUI_BUILD_FONT_BAKER "Build FlowUi offline font baker tool" ON)
+option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generation" OFF)
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
 
@@ -55,6 +57,47 @@ endforeach()
 
 add_custom_target(flowui_shaders DEPENDS ${FLOWUI_SHADER_SPIRV_FILES})
 
+set(FLOWUI_MSDF_ATLAS_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/msdf-atlas-gen")
+
+set(FLOWUI_ARTERY_DIR "")
+if(EXISTS "${FLOWUI_MSDF_ATLAS_GEN_DIR}/artery-font-format")
+    set(FLOWUI_ARTERY_DIR "${FLOWUI_MSDF_ATLAS_GEN_DIR}/artery-font-format")
+elseif(EXISTS "${FLOWUI_MSDF_ATLAS_GEN_DIR}/external/artery-font-format")
+    set(FLOWUI_ARTERY_DIR "${FLOWUI_MSDF_ATLAS_GEN_DIR}/external/artery-font-format")
+elseif(EXISTS "${FLOWUI_MSDF_ATLAS_GEN_DIR}/subprojects/artery-font-format")
+    set(FLOWUI_ARTERY_DIR "${FLOWUI_MSDF_ATLAS_GEN_DIR}/subprojects/artery-font-format")
+endif()
+
+if(FLOWUI_ARTERY_DIR STREQUAL "")
+    message(FATAL_ERROR "Could not find artery-font-format inside external/msdf-atlas-gen (did you init submodules with --recursive?)")
+endif()
+
+add_library(flowui_artery INTERFACE)
+add_library(FlowUi::artery ALIAS flowui_artery)
+set_target_properties(flowui_artery PROPERTIES EXPORT_NAME artery)
+target_include_directories(flowui_artery INTERFACE
+    $<BUILD_INTERFACE:${FLOWUI_ARTERY_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/external/artery-font-format>
+)
+
+set(FLOWUI_NEED_MSDF_ATLAS_GEN OFF)
+if(FLOWUI_BUILD_FONT_BAKER OR FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
+    set(FLOWUI_NEED_MSDF_ATLAS_GEN ON)
+endif()
+
+if(FLOWUI_NEED_MSDF_ATLAS_GEN)
+    set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_USE_VCPKG OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
+    add_subdirectory(external/msdf-atlas-gen)
+endif()
+
+if(FLOWUI_BUILD_FONT_BAKER)
+    add_executable(flowui_font_baker tools/flowui_font_baker/main.cpp)
+    target_link_libraries(flowui_font_baker PRIVATE msdf-atlas-gen::msdf-atlas-gen)
+    target_compile_features(flowui_font_baker PRIVATE cxx_std_23)
+endif()
+
 if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
    (FLOWUI_GLFW_PROVIDER STREQUAL "auto" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/CMakeLists.txt"))
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -86,7 +129,9 @@ endif()
 
 add_library(flowui)
 add_library(FlowUi::FlowUi ALIAS flowui)
+set_target_properties(flowui PROPERTIES EXPORT_NAME FlowUi)
 add_dependencies(flowui flowui_shaders)
+
 
 target_sources(flowui
     PRIVATE
@@ -127,7 +172,13 @@ target_link_libraries(flowui
     PUBLIC
         Vulkan::Vulkan
         ${FLOWUI_GLFW_TARGET}
+        FlowUi::artery
 )
+
+if(FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
+    target_link_libraries(flowui PRIVATE $<BUILD_INTERFACE:msdf-atlas-gen::msdf-atlas-gen>)
+    target_compile_definitions(flowui PUBLIC FLOWUI_RUNTIME_FONT_BAKING=1)
+endif()
 
 target_compile_definitions(flowui
     PRIVATE
@@ -146,12 +197,26 @@ endfunction()
 if(FLOWUI_INSTALL)
     include(CMakePackageConfigHelpers)
 
-    install(TARGETS flowui
+    install(DIRECTORY "${FLOWUI_ARTERY_DIR}/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/external/artery-font-format"
+        REGEX "/\\.git$" EXCLUDE
+        REGEX "/\\.gitmodules$" EXCLUDE
+        PATTERN "example.arfont" EXCLUDE
+    )
+
+    install(TARGETS flowui flowui_artery
         EXPORT FlowUiTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+
+    if(FLOWUI_BUILD_FONT_BAKER)
+        install(TARGETS flowui_font_baker
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
+    endif()
 
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(FILES external/clay.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/external)

@@ -68,7 +68,7 @@ void main() {
     float invViewportH = (pushData.viewportH > 0.0) ? (1.0 / pushData.viewportH) : 0.0;
     vec2 clipPosition = vec2(
         pixelPosition.x * invViewportW * 2.0 - 1.0,
-        1.0 - pixelPosition.y * invViewportH * 2.0
+        pixelPosition.y * invViewportH * 2.0 - 1.0
     );
     gl_Position = vec4(clipPosition, 0.0, 1.0);
 
