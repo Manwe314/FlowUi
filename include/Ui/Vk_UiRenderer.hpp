@@ -17,6 +17,7 @@ enum class UiType : uint8_t {
 };
 
 struct VmaAllocation_T;
+struct FontManager;
 
 struct RectF {
 	float x = 0.0f;
@@ -105,8 +106,12 @@ struct VulkanUiRenderer {
 	VkSampler linearSampler = VK_NULL_HANDLE;
 	VkFormat targetFormat = VK_FORMAT_UNDEFINED;
 	uint32_t maxUiImageDescriptors = 256;
+	float pointsToPixelsScale = 96.0f / 72.0f;
+	const FontManager* fontManager = nullptr;
+	uint32_t boundFontAtlasRevision = UINT32_MAX;
 
 	void init(const FlowUi::AppConfig& config, VulkanContext& vk, VkFormat swapFormat);
+	void setFontManager(const FontManager* manager);
 	void destroy(VulkanContext& vk);
 	void onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat);
 	void render(

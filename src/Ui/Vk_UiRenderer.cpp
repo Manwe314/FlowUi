@@ -1,4 +1,5 @@
 #include "Ui/Vk_UiRenderer.hpp"
+#include "managers/FontManager.hpp"
 
 #include <algorithm>
 #include <array>
@@ -164,29 +165,187 @@ static uint32_t ResolveUiTextureIndex(const Clay_RenderCommand& command) {
 	return handle ? handle->texIndex : 0u;
 }
 
-static uint32_t ResolveAtlasLayer(uint16_t fontId, uint16_t fontSize) {
-	// Placeholder: map (fontId, fontSize) to MSDF atlas array layer when font system is integrated.
-	(void)fontId;
-	(void)fontSize;
-	return 0u;
+static bool DecodeNextUtf8Codepoint(const Clay_StringSlice& stringSlice, int& byteOffset, uint32_t& outCodepoint) {
+	if (!stringSlice.chars || byteOffset >= stringSlice.length) {
+		return false;
+	}
+
+	const auto* bytes = reinterpret_cast<const uint8_t*>(stringSlice.chars);
+	const uint8_t first = bytes[byteOffset];
+
+	if (first < 0x80u) {
+		outCodepoint = first;
+		byteOffset += 1;
+		return true;
+	}
+
+	auto continuation = [&](int index) -> uint8_t {
+		return (index < stringSlice.length) ? bytes[index] : 0u;
+	};
+
+	if ((first & 0xE0u) == 0xC0u && byteOffset + 1 < stringSlice.length) {
+		const uint8_t c1 = continuation(byteOffset + 1);
+		if ((c1 & 0xC0u) == 0x80u) {
+			outCodepoint = ((first & 0x1Fu) << 6u) | (c1 & 0x3Fu);
+			byteOffset += 2;
+			return true;
+		}
+	} else if ((first & 0xF0u) == 0xE0u && byteOffset + 2 < stringSlice.length) {
+		const uint8_t c1 = continuation(byteOffset + 1);
+		const uint8_t c2 = continuation(byteOffset + 2);
+		if ((c1 & 0xC0u) == 0x80u && (c2 & 0xC0u) == 0x80u) {
+			outCodepoint = ((first & 0x0Fu) << 12u) | ((c1 & 0x3Fu) << 6u) | (c2 & 0x3Fu);
+			byteOffset += 3;
+			return true;
+		}
+	} else if ((first & 0xF8u) == 0xF0u && byteOffset + 3 < stringSlice.length) {
+		const uint8_t c1 = continuation(byteOffset + 1);
+		const uint8_t c2 = continuation(byteOffset + 2);
+		const uint8_t c3 = continuation(byteOffset + 3);
+		if ((c1 & 0xC0u) == 0x80u && (c2 & 0xC0u) == 0x80u && (c3 & 0xC0u) == 0x80u) {
+			outCodepoint = ((first & 0x07u) << 18u) | ((c1 & 0x3Fu) << 12u) | ((c2 & 0x3Fu) << 6u) | (c3 & 0x3Fu);
+			byteOffset += 4;
+			return true;
+		}
+	}
+
+	// Replace malformed UTF-8 byte and continue.
+	outCodepoint = 0xFFFDu;
+	byteOffset += 1;
+	return true;
 }
 
-static void LayoutMsdfTextToGlyphs(
+static const FontManager::FontFaceData* ResolveFontFace(const FontManager* fontManager, uint16_t fontId) {
+	if (!fontManager) {
+		return nullptr;
+	}
+
+	const FontManager::FontFaceData* face = fontManager->getFontById(static_cast<int>(fontId));
+	if (!face) {
+		face = fontManager->getFontById(0);
+	}
+	return face;
+}
+
+static bool LayoutMsdfTextToGlyphs(
 	const Clay_TextRenderData& text,
 	const Clay_BoundingBox& bounds,
-	std::vector<GlyphQuad>& outGlyphs) {
-	// Placeholder: integrate HarfBuzz shaping + glyph metrics + atlas UV lookup.
-	(void)text;
-	outGlyphs.push_back(GlyphQuad{
-		bounds.x,
-		bounds.y,
-		bounds.width,
-		bounds.height,
-		0.0f,
-		0.0f,
-		1.0f,
-		1.0f,
-	});
+	const FontManager* fontManager,
+	float pointsToPixelsScale,
+	std::vector<GlyphQuad>& outGlyphs,
+	uint32_t& outAtlasLayer,
+	float& outDistanceRangePx)
+{
+	outGlyphs.clear();
+	outAtlasLayer = 0u;
+	outDistanceRangePx = 2.0f;
+
+	const FontManager::FontFaceData* fontFace = ResolveFontFace(fontManager, text.fontId);
+	if (!fontFace) {
+		return false;
+	}
+
+	const FontManager::FontVariantData* variant = fontFace->defaultVariant();
+	if (!variant || variant->glyphs.empty() || fontFace->atlasWidth == 0 || fontFace->atlasHeight == 0) {
+		return false;
+	}
+	if (variant->distanceRange > 0.0f) {
+		outDistanceRangePx = variant->distanceRange;
+	}
+
+	float emPixels = variant->fontSizePx;
+	if (text.fontSize > 0) {
+		emPixels = static_cast<float>(text.fontSize) * pointsToPixelsScale;
+	}
+	if (emPixels <= 0.0f) {
+		return false;
+	}
+
+	const float emToPixels = emPixels / std::max(variant->emSize, 1.0e-6f);
+	const float baselineY = bounds.y + variant->ascender * emToPixels;
+	const float invAtlasWidth = 1.0f / static_cast<float>(fontFace->atlasWidth);
+	const float invAtlasHeight = 1.0f / static_cast<float>(fontFace->atlasHeight);
+	float penX = bounds.x;
+	const float letterSpacingPx = static_cast<float>(text.letterSpacing);
+
+	uint32_t previousCodepoint = 0;
+	bool hasPreviousCodepoint = false;
+	int byteOffset = 0;
+
+	while (byteOffset < text.stringContents.length) {
+		uint32_t codepoint = 0;
+		if (!DecodeNextUtf8Codepoint(text.stringContents, byteOffset, codepoint)) {
+			break;
+		}
+
+		if (codepoint == '\n') {
+			hasPreviousCodepoint = false;
+			penX = bounds.x;
+			continue;
+		}
+
+		if (hasPreviousCodepoint) {
+			penX += variant->kerningAdvance(previousCodepoint, codepoint) * emToPixels;
+		}
+
+		// Treat spacing codepoints as advance-only to avoid rendering fallback glyphs
+		// when the font doesn't provide explicit whitespace glyph mappings.
+		if (codepoint == ' ' || codepoint == '\t' || codepoint == 0x00A0u) {
+			float whitespaceAdvance = std::max(variant->emSize * emToPixels * 0.33f, 1.0f);
+			const auto spaceGlyphIt = variant->unicodeToGlyphIndex.find(' ');
+			if (spaceGlyphIt != variant->unicodeToGlyphIndex.end() && spaceGlyphIt->second < variant->glyphs.size()) {
+				whitespaceAdvance = variant->glyphs[spaceGlyphIt->second].advanceX * emToPixels;
+			}
+			if (codepoint == '\t') {
+				whitespaceAdvance *= 4.0f;
+			}
+			penX += whitespaceAdvance + letterSpacingPx;
+			previousCodepoint = codepoint;
+			hasPreviousCodepoint = true;
+			continue;
+		}
+
+		uint32_t glyphIndex = variant->fallbackGlyphIndex;
+		const auto glyphIt = variant->unicodeToGlyphIndex.find(codepoint);
+		if (glyphIt != variant->unicodeToGlyphIndex.end()) {
+			glyphIndex = glyphIt->second;
+		}
+		if (glyphIndex >= variant->glyphs.size()) {
+			if (variant->glyphs.empty()) {
+				hasPreviousCodepoint = false;
+				continue;
+			}
+			glyphIndex = 0;
+		}
+
+		const FontManager::GlyphData& glyph = variant->glyphs[glyphIndex];
+		const float x0 = penX + glyph.planeLeft * emToPixels;
+		const float x1 = penX + glyph.planeRight * emToPixels;
+		const float y0 = baselineY - glyph.planeTop * emToPixels;
+		const float y1 = baselineY - glyph.planeBottom * emToPixels;
+		const float width = x1 - x0;
+		const float height = y1 - y0;
+
+		if (width > 0.0f && height > 0.0f) {
+			GlyphQuad quad{};
+			quad.x = x0;
+			quad.y = y0;
+			quad.w = width;
+			quad.h = height;
+			quad.u0 = std::clamp(glyph.imageLeft * invAtlasWidth, 0.0f, 1.0f);
+			quad.u1 = std::clamp(glyph.imageRight * invAtlasWidth, 0.0f, 1.0f);
+			quad.v0 = std::clamp(1.0f - glyph.imageTop * invAtlasHeight, 0.0f, 1.0f);
+			quad.v1 = std::clamp(1.0f - glyph.imageBottom * invAtlasHeight, 0.0f, 1.0f);
+			outGlyphs.push_back(quad);
+		}
+
+		penX += glyph.advanceX * emToPixels + letterSpacingPx;
+		previousCodepoint = codepoint;
+		hasPreviousCodepoint = true;
+	}
+
+	outAtlasLayer = fontFace->atlasLayer;
+	return true;
 }
 
 static UiType PickType(const Clay_RenderCommand& command) {
@@ -242,15 +401,40 @@ static void EmitSolidBorder(const Clay_RenderCommand& command, std::vector<UiIns
 	instances.push_back(inst);
 }
 
-static void EmitTextMsdf(const Clay_RenderCommand& command, std::vector<UiInstance>& instances) {
+static void EmitTextMsdf(
+	const Clay_RenderCommand& command,
+	const FontManager* fontManager,
+	float pointsToPixelsScale,
+	std::vector<UiInstance>& instances)
+{
 	const Clay_BoundingBox& bounds = command.boundingBox;
 	const Clay_TextRenderData& textData = command.renderData.text;
 
 	std::vector<GlyphQuad> glyphs;
 	glyphs.reserve(static_cast<size_t>(std::max(1, textData.stringContents.length)));
-	LayoutMsdfTextToGlyphs(textData, bounds, glyphs);
+	uint32_t atlasLayer = 0u;
+	float distanceRangePx = 2.0f;
+	const bool hasLayout = LayoutMsdfTextToGlyphs(
+		textData,
+		bounds,
+		fontManager,
+		pointsToPixelsScale,
+		glyphs,
+		atlasLayer,
+		distanceRangePx);
+	if (!hasLayout) {
+		glyphs.push_back(GlyphQuad{
+			bounds.x,
+			bounds.y,
+			bounds.width,
+			bounds.height,
+			0.0f,
+			0.0f,
+			1.0f,
+			1.0f,
+		});
+	}
 
-	const uint32_t atlasLayer = ResolveAtlasLayer(textData.fontId, textData.fontSize);
 	const uint32_t color = PackRGBA8(textData.textColor);
 
 	for (const GlyphQuad& glyph : glyphs) {
@@ -266,6 +450,7 @@ static void EmitTextMsdf(const Clay_RenderCommand& command, std::vector<UiInstan
 		inst.uv1y = glyph.v1;
 		inst.colorRGBA = color;
 		inst.atlasLayer = atlasLayer;
+		inst.r0 = distanceRangePx;
 		instances.push_back(inst);
 	}
 }
@@ -291,10 +476,13 @@ static void EmitTexturedImage(const Clay_RenderCommand& command, std::vector<UiI
 	instances.push_back(inst);
 }
 
-static void BuildInstancesAndRunsFromClay(const Clay_RenderCommandArray& commands, VkExtent2D extent,
+static void BuildInstancesAndRunsFromClay(
+	const Clay_RenderCommandArray& commands,
+	VkExtent2D extent,
+	const FontManager* fontManager,
+	float pointsToPixelsScale,
 	std::vector<UiInstance>& outInstances,
-	std::vector<UiRun>& outRuns)
-{
+	std::vector<UiRun>& outRuns) {
 	outInstances.clear();
 	outRuns.clear();
 
@@ -375,7 +563,7 @@ static void BuildInstancesAndRunsFromClay(const Clay_RenderCommandArray& command
 				EmitSolidBorder(command, outInstances);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_TEXT:
-				EmitTextMsdf(command, outInstances);
+				EmitTextMsdf(command, fontManager, pointsToPixelsScale, outInstances);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_IMAGE:
 				EmitTexturedImage(command, outInstances);
@@ -756,6 +944,13 @@ static void UpdateTextureDescriptors(const VulkanUiRenderer& renderer, VkDevice 
 	fontAtlasInfo.sampler = renderer.linearSampler;
 	fontAtlasInfo.imageView = renderer.placeholderFontAtlas.view;
 	fontAtlasInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	if (renderer.fontManager) {
+		const FontManager::AtlasArrayResource& atlas = renderer.fontManager->atlasResource();
+		if (atlas.view != VK_NULL_HANDLE && atlas.sampler != VK_NULL_HANDLE && atlas.layersUsed > 0u) {
+			fontAtlasInfo.sampler = atlas.sampler;
+			fontAtlasInfo.imageView = atlas.view;
+		}
+	}
 
 	VkDescriptorImageInfo uiImageTemplate{};
 	uiImageTemplate.sampler = renderer.linearSampler;
@@ -847,7 +1042,6 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 } // namespace
 
 void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, VkFormat swapFormat) {
-	(void)config;
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw std::runtime_error("Vulkan device + allocator must be initialized before UI renderer init.");
 	}
@@ -860,6 +1054,11 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 	try {
 		maxUiImageDescriptors = kDefaultMaxUiImageDescriptors;
 		targetFormat = swapFormat;
+		pointsToPixelsScale = std::max(0.0f, config.ui.fontScale) * (96.0f / 72.0f);
+		if (pointsToPixelsScale <= 0.0f) {
+			pointsToPixelsScale = 96.0f / 72.0f;
+		}
+		boundFontAtlasRevision = UINT32_MAX;
 
 		CreateLinearSampler(vk, linearSampler);
 
@@ -979,6 +1178,11 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 	}
 }
 
+void VulkanUiRenderer::setFontManager(const FontManager* manager) {
+	fontManager = manager;
+	boundFontAtlasRevision = UINT32_MAX;
+}
+
 void VulkanUiRenderer::destroy(VulkanContext& vk)
 {
 	instancesScratch.clear();
@@ -993,6 +1197,9 @@ void VulkanUiRenderer::destroy(VulkanContext& vk)
 		placeholderUiTexture = AllocatedImage{};
 		linearSampler = VK_NULL_HANDLE;
 		targetFormat = VK_FORMAT_UNDEFINED;
+		fontManager = nullptr;
+		boundFontAtlasRevision = UINT32_MAX;
+		pointsToPixelsScale = 96.0f / 72.0f;
 		return;
 	}
 
@@ -1030,6 +1237,9 @@ void VulkanUiRenderer::destroy(VulkanContext& vk)
 	}
 
 	targetFormat = VK_FORMAT_UNDEFINED;
+	fontManager = nullptr;
+	boundFontAtlasRevision = UINT32_MAX;
+	pointsToPixelsScale = 96.0f / 72.0f;
 }
 
 void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat)
@@ -1056,7 +1266,16 @@ void VulkanUiRenderer::render(VulkanContext& vk, VkCommandBuffer cmd, const Clay
 		return;
 	}
 
-	BuildInstancesAndRunsFromClay(renderCommands, extent, instancesScratch, runsScratch);
+	uint32_t latestFontAtlasRevision = 0u;
+	if (fontManager) {
+		latestFontAtlasRevision = fontManager->atlasResource().bindingRevision;
+	}
+	if (latestFontAtlasRevision != boundFontAtlasRevision) {
+		UpdateTextureDescriptors(*this, vk.device);
+		boundFontAtlasRevision = latestFontAtlasRevision;
+	}
+
+	BuildInstancesAndRunsFromClay(renderCommands, extent, fontManager, pointsToPixelsScale, instancesScratch, runsScratch);
 	if (instancesScratch.empty() || runsScratch.empty()) {
 		return;
 	}

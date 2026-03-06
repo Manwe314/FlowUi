@@ -15,6 +15,23 @@ layout(set = 1, binding = 1) uniform sampler2D uiTextureSamplers[256];
 
 layout(location = 0) out vec4 outColor;
 
+float median(float a, float b, float c) {
+    return max(min(a, b), min(max(a, b), c));
+}
+
 void main() {
-    outColor = vec4(0.95, 0.45, 0.10, 1.0);
+    vec3 msdf = texture(fontAtlasSampler, vec3(vUv, float(vAtlasLayer))).rgb;
+    float signedDistance = median(msdf.r, msdf.g, msdf.b);
+
+    float pxRange = max(vRadius.x, 1.0);
+    vec2 atlasSize = vec2(textureSize(fontAtlasSampler, 0).xy);
+    vec2 unitRange = vec2(pxRange) / atlasSize;
+    vec2 screenTexSize = vec2(1.0) / max(fwidth(vUv), vec2(1e-6));
+    float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
+    float alpha = clamp(screenPxRange * (signedDistance - 0.5) + 0.5, 0.0, 1.0);
+
+    outColor = vec4(vColor.rgb, vColor.a * alpha);
+    if (outColor.a <= 0.001) {
+        discard;
+    }
 }
