@@ -71,13 +71,18 @@ static VkPresentModeKHR choosePresentMode(
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-static VkExtent2D chooseExtent(const VkSurfaceCapabilitiesKHR& caps, const FlowUi::AppConfig& config) {
+static VkExtent2D chooseExtent(
+	const VkSurfaceCapabilitiesKHR& caps,
+	const FlowUi::AppConfig& config,
+	VkExtent2D preferredExtent) {
 	if (caps.currentExtent.width != UINT32_MAX) {
 		return caps.currentExtent;
 	}
 
-	uint32_t width = static_cast<uint32_t>(std::max(1, config.window.width));
-	uint32_t height = static_cast<uint32_t>(std::max(1, config.window.height));
+	const uint32_t fallbackWidth = static_cast<uint32_t>(std::max(1, config.window.width));
+	const uint32_t fallbackHeight = static_cast<uint32_t>(std::max(1, config.window.height));
+	uint32_t width = preferredExtent.width > 0 ? preferredExtent.width : fallbackWidth;
+	uint32_t height = preferredExtent.height > 0 ? preferredExtent.height : fallbackHeight;
 
 	VkExtent2D extent{};
 	extent.width = std::clamp(width, caps.minImageExtent.width, caps.maxImageExtent.width);
@@ -104,7 +109,7 @@ static VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(VkCompositeAlphaFlagsKHR
 
 } // namespace
 
-void Swapchain::create(const FlowUi::AppConfig& config, VulkanContext& vk) {
+void Swapchain::create(const FlowUi::AppConfig& config, VulkanContext& vk, VkExtent2D preferredExtent) {
 	if (vk.device == VK_NULL_HANDLE || vk.phys == VK_NULL_HANDLE || vk.surface == VK_NULL_HANDLE) {
 		throw std::runtime_error("Swapchain creation requires valid Vulkan device, physical device, and surface.");
 	}
@@ -137,7 +142,7 @@ void Swapchain::create(const FlowUi::AppConfig& config, VulkanContext& vk) {
 
 	VkSurfaceFormatKHR chosenFormat = chooseSurfaceFormat(formats, config.vk.srgbBackbuffer);
 	VkPresentModeKHR presentMode = choosePresentMode(presentModes, config.vk.presentMode);
-	VkExtent2D chosenExtent = chooseExtent(caps, config);
+	VkExtent2D chosenExtent = chooseExtent(caps, config, preferredExtent);
 
 	uint32_t imageCount = caps.minImageCount + 1;
 	uint32_t minDesired = std::max<uint32_t>(1u, config.vk.framesInFlight);

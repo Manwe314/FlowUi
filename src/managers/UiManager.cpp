@@ -1,4 +1,4 @@
-#include "Ui/UiContext.hpp"
+#include "managers/UiManager.hpp"
 #include <algorithm>
 #include <cstdint>
 
@@ -6,7 +6,6 @@
 
 namespace {
 
-constexpr float kDefaultDpi = 96.0f;
 constexpr float kPointsPerInch = 72.0f;
 
 bool DecodeNextUtf8Codepoint(const Clay_StringSlice& stringSlice, int& byteOffset, uint32_t& outCodepoint) {
@@ -70,20 +69,12 @@ const FontManager::FontFaceData* ResolveFontFace(const FontManager* fontManager,
 	return face;
 }
 
-Clay_Dimensions ClayMeasureTextCallback(Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) {
-	const auto* uiContext = static_cast<const FlowUi::UiContext*>(userData);
-	if (!uiContext) {
-		return Clay_Dimensions{ 0.0f, 0.0f };
-	}
-	return uiContext->measureText(text, config);
-}
-
 } // namespace
 
 namespace FlowUi
 {
 	
-	UiContext::UiContext(ElementRegistry& elementRegistry, const FlowUi::AppConfig& appConfig)
+	UiManager::UiManager(ElementRegistry& elementRegistry, const FlowUi::AppConfig& appConfig)
 		: elementRegistry_(elementRegistry)
 	{
 		initStringArenas(appConfig);
@@ -107,20 +98,29 @@ namespace FlowUi
 			throw std::runtime_error("FlowUi: Clay_Initialize failed. Increase ui.clayArenaCapacityBytes.");
 		}
 
-		pointsToPixelsScale_ = std::max(0.0f, appConfig.ui.fontScale) * (kDefaultDpi / kPointsPerInch);
+		const float configuredDpi = std::max(1.0f, appConfig.ui.dpi);
+		pointsToPixelsScale_ = std::max(0.0f, appConfig.ui.fontScale) * (configuredDpi / kPointsPerInch);
 		if (pointsToPixelsScale_ <= 0.0f) {
-			pointsToPixelsScale_ = kDefaultDpi / kPointsPerInch;
+			pointsToPixelsScale_ = configuredDpi / kPointsPerInch;
 		}
 
 		Clay_SetCurrentContext(clayContext_);
-		Clay_SetMeasureTextFunction(ClayMeasureTextCallback, this);
+		Clay_SetMeasureTextFunction(
+			+[](Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) -> Clay_Dimensions {
+				const auto* uiManager = static_cast<const UiManager*>(userData);
+				if (!uiManager) {
+					return Clay_Dimensions{ 0.0f, 0.0f };
+				}
+				return uiManager->measureText(text, config);
+			},
+			this);
 	}
 
-	void UiContext::setFontManager(const ::FontManager* fontManager) {
+	void UiManager::setFontManager(const ::FontManager* fontManager) {
 		fontManager_ = fontManager;
 	}
 
-	Clay_Dimensions UiContext::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
+	Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
 		if (!config || !text.chars || text.length <= 0) {
 			return Clay_Dimensions{ 0.0f, 0.0f };
 		}
@@ -203,7 +203,7 @@ namespace FlowUi
 		return Clay_Dimensions{ measuredWidth, naturalLineHeight };
 	}
 
-	void UiContext::initStringArenas(const FlowUi::AppConfig& cfg)
+	void UiManager::initStringArenas(const FlowUi::AppConfig& cfg)
 	{
 		arenasCount_ = (cfg.vk.framesInFlight == 0) ? 1 : cfg.vk.framesInFlight;
 		arenas_.resize(arenasCount_);
@@ -217,10 +217,10 @@ namespace FlowUi
 		curArena_ = 0;
 	}
 	
-	void UiContext::beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight)
+	void UiManager::beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight)
 	{
 		if (arenas_.empty()) {
-			throw std::runtime_error("FlowUi: UiContext string arenas are not initialized.");
+			throw std::runtime_error("FlowUi: UiManager string arenas are not initialized.");
 		}
 		if (!clayContext_) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
@@ -247,7 +247,7 @@ namespace FlowUi
 		Clay_BeginLayout();
 	}
 
-	Clay_RenderCommandArray UiContext::endFrame()
+	Clay_RenderCommandArray UiManager::endFrame()
 	{
 		if (!clayContext_) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
@@ -277,7 +277,7 @@ namespace FlowUi
 		return renderCommands;
 	}
 	
-	char* UiContext::allocBytes(size_t nBytes, size_t align)
+	char* UiManager::allocBytes(size_t nBytes, size_t align)
 	{
 		Arena& arena = arenas_[curArena_];
 		
@@ -292,7 +292,7 @@ namespace FlowUi
 		return ptr;
 	}
 	
-	Clay_String UiContext::str(std::string_view s)
+	Clay_String UiManager::toClayString(std::string_view s)
 	{
 		const size_t len = s.size();
 		char* dst = allocBytes(len + 1, alignof(char));
@@ -305,16 +305,23 @@ namespace FlowUi
 		out.chars = dst;
 		return out;
 	}
-	
-	Clay_ElementId UiContext::sid(std::string_view s) {
-		return CLAY_SID(str(s));
+
+	TextureRef* UiManager::storeTexture(const TextureRef& textureRef)
+	{
+		char* dst = allocBytes(sizeof(TextureRef), alignof(TextureRef));
+		std::memcpy(dst, &textureRef, sizeof(TextureRef));
+		return reinterpret_cast<TextureRef*>(dst);
 	}
 	
-	Clay_ElementId UiContext::eid(std::string_view s) {
-		return Clay_GetElementId(str(s));
+	Clay_ElementId UiManager::toClaySID(std::string_view s) {
+		return CLAY_SID(toClayString(s));
+	}
+	
+	Clay_ElementId UiManager::toClayEID(std::string_view s) {
+		return Clay_GetElementId(toClayString(s));
 	}
 
-	ElementBuilder UiContext::createElement(std::string_view elementTypeName, std::string_view instanceIdPath) {
+	ElementBuilder UiManager::createElement(std::string_view elementTypeName, std::string_view instanceIdPath) {
     	const ElementDefinition* definition = elementRegistry_.findElement(elementTypeName);
     	if (!definition) {
     	    throw std::runtime_error("FlowUi: createElement called with unregistered element type.");
@@ -323,11 +330,11 @@ namespace FlowUi
     	return ElementBuilder(*this, definition, std::string(instanceIdPath));
 	}
 
-	void UiContext::setCurrentInteractionSnapshot(InteractionSnapshot snapshot) {
+	void UiManager::setCurrentInteractionSnapshot(InteractionSnapshot snapshot) {
 	    currentInteractionSnapshot_ = std::move(snapshot);
 	}
 
-	void UiContext::advanceFrameInteractionSnapshots() {
+	void UiManager::advanceFrameInteractionSnapshots() {
 	    previousInteractionSnapshot_ = std::move(currentInteractionSnapshot_);
 	    currentInteractionSnapshot_ = InteractionSnapshot{};
 	}

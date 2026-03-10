@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-#include "flowui/PublicStructs.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "IWindow.hpp"
 #include "Inputs.hpp"
 
@@ -138,6 +138,16 @@ public:
 			throw std::runtime_error("Failed to create Vulkan surface via GLFW.");
 		}
 		return surface;
+	}
+
+	VkExtent2D windowExtent() const override {
+		int width = 0;
+		int height = 0;
+		glfwGetWindowSize(window, &width, &height);
+		VkExtent2D extent{};
+		extent.width = static_cast<uint32_t>(std::max(0, width));
+		extent.height = static_cast<uint32_t>(std::max(0, height));
+		return extent;
 	}
 
 	VkExtent2D framebufferExtent() const override {

@@ -1,24 +1,24 @@
-#include "Ui/FlowUiElementSystem.hpp"
-#include "Ui/UiContext.hpp"
+#include "managers/FlowUiElementSystem.hpp"
+#include "managers/UiManager.hpp"
 
 namespace FlowUi {
 
 Clay_ElementId ElementBuildContext::createChildElementId(std::string_view localChildId) const
 {
     std::string full = std::string(instanceIdPath) + "/" + std::string(localChildId);
-    return userInterface.eid(full);
+    return userInterface.toClayEID(full);
 }
 
 Clay_ElementId ElementEventContext::createChildElementId(std::string_view localChildId) const
 {
     std::string full = std::string(instanceIdPath) + "/" + std::string(localChildId);
-    return userInterface.eid(full);
+    return userInterface.toClayEID(full);
 }
 
 Clay_ElementId ElementLogicContext::createChildElementId(std::string_view localChildId) const
 {
     std::string full = std::string(instanceIdPath) + "/" + std::string(localChildId);
-    return userInterface.eid(full);
+    return userInterface.toClayEID(full);
 }
 
 void ElementRegistry::registerElement(ElementDefinition definition)
@@ -35,7 +35,7 @@ const ElementDefinition* ElementRegistry::findElement(std::string_view elementTy
 }
 
 
-ElementBuilder::ElementBuilder(UiContext& userInterface, const ElementDefinition* definition, std::string instanceIdPath) :
+ElementBuilder::ElementBuilder(UiManager& userInterface, const ElementDefinition* definition, std::string instanceIdPath) :
 	userInterface_(userInterface),
     elementDefinition_(definition),
     instanceIdPath_(std::move(instanceIdPath)) {}
@@ -95,6 +95,11 @@ ElementBuilder& ElementBuilder::set(std::string_view key, Clay_ElementDeclaratio
     return *this;
 }
 
+ElementBuilder& ElementBuilder::set(std::string_view key, TextureRef value) {
+	userOverrides_.setValue(key, value);
+	return *this;
+}
+
 void ElementBuilder::draw(ElementDrawOptions options)
 {
     if (!elementDefinition_ || !elementDefinition_->buildElement)
@@ -105,10 +110,10 @@ void ElementBuilder::draw(ElementDrawOptions options)
         elementDefinition_->initializeDefaultParameters(resolvedParameters);
     resolvedParameters.mergeFrom(userOverrides_);
 
-    Clay_ElementId rootElementId = userInterface_.eid(instanceIdPath_);
+    Clay_ElementId rootElementId = userInterface_.toClayEID(instanceIdPath_);
 
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipEventCallbacks)) {
-        const InteractionSnapshot& previousInteraction = userInterface_.previousFrameInteraction();
+        const InteractionSnapshot& previousInteraction = userInterface_.getPreviousFramesInteraction();
 
         ElementEventContext eventContext{
             userInterface_,
@@ -134,7 +139,7 @@ void ElementBuilder::draw(ElementDrawOptions options)
     }
 
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipLogicCallback) && elementDefinition_->runLogic) {
-        const InteractionSnapshot& previousInteraction = userInterface_.previousFrameInteraction();
+        const InteractionSnapshot& previousInteraction = userInterface_.getPreviousFramesInteraction();
         ElementLogicContext logicContext{
             userInterface_,
             rootElementId,

@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "flowui/PublicStructs.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "Vulkan/Vk_Context.hpp"
 
 

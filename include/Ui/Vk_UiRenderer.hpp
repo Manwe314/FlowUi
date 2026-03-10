@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.h>
 
 #include "Vulkan/Vk_Context.hpp"
-#include "flowui/PublicStructs.hpp"
+#include "FlowUi/PublicStructs.hpp"
 
 
 enum class UiType : uint8_t {
@@ -24,12 +24,6 @@ struct RectF {
 	float y = 0.0f;
 	float w = 0.0f;
 	float h = 0.0f;
-};
-
-struct UiTextureHandle {
-	// Placeholder: App-level texture system should provide stable descriptor indices here.
-	uint32_t texIndex = 0;
-	uint32_t version = 0;
 };
 
 struct UiInstance {
@@ -114,13 +108,22 @@ struct VulkanUiRenderer {
 	void setFontManager(const FontManager* manager);
 	void destroy(VulkanContext& vk);
 	void onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat);
+	uint32_t textureSlotCapacity() const;
+	void reserveTextureSlots(VulkanContext& vk, uint32_t minCapacity);
+	void setTextureSlotBinding(uint32_t slot, VkImageView view, VkSampler sampler);
+	void clearTextureSlotBinding(uint32_t slot);
+	void rebuildTextureDescriptors(VkDevice device);
 	void render(
 		VulkanContext& vk,
 		VkCommandBuffer cmd,
 		const Clay_RenderCommandArray& renderCommands,
 		VkExtent2D extent,
-		VkImageView targetView);
+		VkImageView targetView,
+		float uiToFramebufferScaleX,
+		float uiToFramebufferScaleY);
 
+	std::vector<VkDescriptorImageInfo> uiTextureSlotInfos;
+	bool textureDescriptorsDirty = false;
 	std::vector<UiInstance> instancesScratch;
 	std::vector<UiRun> runsScratch;
 };

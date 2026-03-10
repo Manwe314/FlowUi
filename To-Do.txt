@@ -1,0 +1,15 @@
+1. Optimise Structs
+2. Add support for Dynamic font baking
+3. Add HarfBuzz support for more scripts
+4. Add ComputeQFamily Optional grab
+5. Trun Element Properties into hash Maps
+6. Add more types of element Properties.
+7. streamline element registry
+8. Optimise GPU side
+9. add Callable objects to Element Properties
+10. add clay configurations to Element Properties.
+11. fix the text measuring function
+12. Update FlowUi Arena naming and handling
+13. Revisit how TextureRef's get stored for frames. 
+14. come back to enforcing PIMPL
+15. Texture Sampling has issues: Incorrect pixels & Washed Out colors from Images.

@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "flowui/PublicStructs.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "Vulkan/Vk_Context.hpp"
 
 
@@ -16,11 +16,11 @@ struct Swapchain {
 	std::vector<VkImage> images;
 	std::vector<VkImageView> views;
 
-	void create(const FlowUi::AppConfig& config, VulkanContext& vk);
+	void create(const FlowUi::AppConfig& config, VulkanContext& vk, VkExtent2D preferredExtent = {});
 	void destroy(VulkanContext& vk);
 
-	void recreate(const FlowUi::AppConfig& config, VulkanContext& vk) {
+	void recreate(const FlowUi::AppConfig& config, VulkanContext& vk, VkExtent2D preferredExtent = {}) {
 		destroy(vk);
-		create(config, vk);
+		create(config, vk, preferredExtent);
 	}
 };

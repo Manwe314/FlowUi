@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "clay.h"
+#include "FlowUi/PublicStructs.hpp"
 
 namespace FlowUi {
 
@@ -39,7 +40,6 @@ struct InteractionSnapshot {
 
 // ----------------------------
 // Element parameter values
-// (v1 minimal set; expand as needed)
 // ----------------------------
 using ElementParameterValue = std::variant<
     bool,
@@ -49,9 +49,10 @@ using ElementParameterValue = std::variant<
     Clay_Color,
     Clay_Sizing,
     Clay_Padding,
-    Clay_LayoutDirection,
-    Clay_LayoutConfig,
-    Clay_ElementDeclaration
+	Clay_LayoutDirection,
+	Clay_LayoutConfig,
+	Clay_ElementDeclaration,
+	TextureRef
 >;
 
 class ElementParameters {
@@ -70,7 +71,7 @@ public:
     }
 
     template <typename T>
-    T getValueOrDefault(std::string_view key, const T& defaultValue) const
+    T getValue(std::string_view key, const T& defaultValue) const
 	{
         auto it = parameterMap_.find(std::string(key));
         if (it == parameterMap_.end()) return defaultValue;
@@ -79,13 +80,13 @@ public:
     }
 
 	template <typename T>
-	T getValueOrDefault(std::string_view key) const 
+	T getValue(std::string_view key) const 
 		requires std::is_default_constructible_v<T>
 	{
-		return getValueOrDefault<T>(key, T{});
+		return getValue<T>(key, T{});
 	}
 
-    std::string_view getStringOrDefault(std::string_view key, std::string_view defaultValue) const
+    std::string_view getString(std::string_view key, std::string_view defaultValue = {}) const
 	{
         auto it = parameterMap_.find(std::string(key));
         if (it == parameterMap_.end()) return defaultValue;
@@ -137,12 +138,12 @@ private:
     std::unordered_map<std::string, ElementBindingEntry> bindingMap_;
 };
 
-class UiContext;
+class UiManager;
 
 
 struct ElementBuildContext
 {
-    UiContext& userInterface;
+    UiManager& userInterface;
     Clay_ElementId elementId;
     std::string_view instanceIdPath;
     ElementParameters& parameters;
@@ -153,7 +154,7 @@ struct ElementBuildContext
 
 struct ElementEventContext
 {
-    UiContext& userInterface;
+    UiManager& userInterface;
     Clay_ElementId elementId;
     std::string_view instanceIdPath;
     ElementParameters& parameters;
@@ -165,7 +166,7 @@ struct ElementEventContext
 
 struct ElementLogicContext
 {
-    UiContext& userInterface;
+    UiManager& userInterface;
     Clay_ElementId elementId;
     std::string_view instanceIdPath;
     ElementParameters& parameters;
@@ -225,7 +226,7 @@ inline bool elementDrawOptionsHas(ElementDrawOptions value, ElementDrawOptions f
 
 class ElementBuilder {
 public:
-    ElementBuilder(UiContext& userInterface, const ElementDefinition* definition, std::string instanceIdPath);
+    ElementBuilder(UiManager& userInterface, const ElementDefinition* definition, std::string instanceIdPath);
 
     ElementBuilder& set(std::string_view key, bool value);
     ElementBuilder& set(std::string_view key, int value);
@@ -235,9 +236,10 @@ public:
     ElementBuilder& set(std::string_view key, Clay_Color value);
     ElementBuilder& set(std::string_view key, Clay_Sizing value);
     ElementBuilder& set(std::string_view key, Clay_Padding value);
-    ElementBuilder& set(std::string_view key, Clay_LayoutDirection value);
-    ElementBuilder& set(std::string_view key, Clay_LayoutConfig value);
-    ElementBuilder& set(std::string_view key, Clay_ElementDeclaration value);
+	ElementBuilder& set(std::string_view key, Clay_LayoutDirection value);
+	ElementBuilder& set(std::string_view key, Clay_LayoutConfig value);
+	ElementBuilder& set(std::string_view key, Clay_ElementDeclaration value);
+	ElementBuilder& set(std::string_view key, TextureRef value);
 
     template <typename T>
     ElementBuilder& bind(std::string_view key, T& reference)
@@ -249,7 +251,7 @@ public:
     void draw(ElementDrawOptions options = ElementDrawOptions::Default);
 
 private:
-    UiContext& userInterface_;
+    UiManager& userInterface_;
     const ElementDefinition* elementDefinition_;
     std::string instanceIdPath_;
     ElementParameters userOverrides_;

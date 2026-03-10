@@ -14,6 +14,7 @@ struct IWindowBackend {
 	virtual std::vector<const char*> requiredInstanceExtensions() const = 0;
 	virtual VkSurfaceKHR createSurface(VkInstance instance) = 0;
 
+	virtual VkExtent2D windowExtent() const = 0;
 	virtual VkExtent2D framebufferExtent() const = 0;
 	virtual void setTitle(std::string_view title) = 0;
 

@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "flowui/PublicStructs.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "window/IWindow.hpp"
 
 struct VmaAllocator_T;
