@@ -1,5 +1,5 @@
-#include "Ui/FlowUiElementSystem.hpp"
-#include "Ui/UiContext.hpp"
+#include "managers/FlowUiElementSystem.hpp"
+#include "managers/UiManager.hpp"
 
 #include <string>
 
@@ -20,7 +20,7 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 {
 	FlowUi::ElementDefinition definition{};
 
-	// 1) Unique element type name (used by UiContext::createElement).
+	// 1) Unique element type name (used by UiManager::createElement).
 	definition.elementTypeName = "TemplateButton";
 
 	// 2) Default parameters (users can override with .set(...)).
@@ -56,17 +56,13 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 
 	// 5) Mandatory build callback (actual Clay UI construction).
 	definition.buildElement = [](FlowUi::ElementBuildContext& context) {
-		const std::string_view label = context.parameters.getStringOrDefault("label", "Template Button");
-		const float width = context.parameters.getValueOrDefault<float>("width", 220.0f);
-		const float height = context.parameters.getValueOrDefault<float>("height", 44.0f);
-		const float cornerRadius = context.parameters.getValueOrDefault<float>("cornerRadius", 10.0f);
-		const int fontSize = context.parameters.getValueOrDefault<int>("fontSize", 18);
-		const Clay_Color backgroundColor = context.parameters.getValueOrDefault<Clay_Color>(
-			"backgroundColor",
-			Clay_Color{52.0f, 94.0f, 239.0f, 255.0f});
-		const Clay_Color textColor = context.parameters.getValueOrDefault<Clay_Color>(
-			"textColor",
-			Clay_Color{255.0f, 255.0f, 255.0f, 255.0f});
+		const std::string_view label = context.parameters.getString("label");
+		const float width = context.parameters.getValue<float>("width");
+		const float height = context.parameters.getValue<float>("height");
+		const float cornerRadius = context.parameters.getValue<float>("cornerRadius");
+		const int fontSize = context.parameters.getValue<int>("fontSize");
+		const Clay_Color backgroundColor = context.parameters.getValue<Clay_Color>("backgroundColor");
+		const Clay_Color textColor = context.parameters.getValue<Clay_Color>("textColor");
 
 		Clay_ElementDeclaration root{};
 		root.id = context.elementId;
@@ -80,7 +76,7 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 
 		CLAY(root) {
 			CLAY_TEXT(
-				context.userInterface.str(label),
+				context.userInterface.toClayString(label),
 				CLAY_TEXT_CONFIG(
 					.fontId = 0,
 					.fontSize = static_cast<uint16_t>(fontSize),
@@ -94,7 +90,7 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 }
 
 // Example usage each frame (inside your UI build code).
-void drawTemplateButton(FlowUi::UiContext& uiContext, int& clickCount, bool& pressedThisFrame) {
+void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pressedThisFrame) {
 	uiContext.createElement("TemplateButton", "main_menu/play_button")
 		// Optional per-instance overrides:
 		.set("label", "Play")

@@ -1,8 +1,11 @@
-#include "FlowUi.hpp"
-#include "flowui/PublicStructs.hpp"
+#include "FlowUi/App.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "managers/FontManager.hpp"
+#include "managers/ImageManager.hpp"
 #include "managers/SvgManager.hpp"
-#include "Ui/UiContext.hpp"
+#include "managers/ViewPortManager.hpp"
+#include "managers/UiManager.hpp"
+#include "internal/UiTextureRegistry.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "Vulkan/Vk_Frames.hpp"
@@ -14,6 +17,7 @@
 #include <chrono>
 #include <filesystem>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <stdexcept>
 
@@ -95,6 +99,232 @@ void transitionSwapchainImageLayout(
 
 namespace FlowUi {
 
+class UiTextureRegistry final : public detail::IUiTextureRegistry {
+public:
+	void init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32_t framesInFlight) {
+		destroy(vk);
+		renderer_ = &renderer;
+		framesInFlight_ = std::max<uint32_t>(1u, framesInFlight);
+		currentFrameIndex_ = 0u;
+		retiredSlotsByFrame_.assign(framesInFlight_, {});
+		nextSlot_ = 1u;
+		freeSlots_.clear();
+		keyToSlot_.clear();
+		activeBindings_.clear();
+
+		if (renderer_->textureSlotCapacity() < 2u) {
+			renderer_->reserveTextureSlots(vk, 2u);
+		}
+		renderer_->clearTextureSlotBinding(0u);
+		renderer_->rebuildTextureDescriptors(vk.device);
+	}
+
+	void onFrameStart(VulkanContext& vk, uint32_t frameIndex) {
+		if (!renderer_ || retiredSlotsByFrame_.empty()) {
+			return;
+		}
+		currentFrameIndex_ = frameIndex % static_cast<uint32_t>(retiredSlotsByFrame_.size());
+		reclaimRetiredBucket(vk, currentFrameIndex_);
+	}
+
+	void destroy(VulkanContext& vk) {
+		if (renderer_ && vk.device != VK_NULL_HANDLE) {
+			reclaimAllRetiredSlots(vk);
+			for (const auto& [slot, _] : activeBindings_) {
+				if (slot != 0u) {
+					renderer_->clearTextureSlotBinding(slot);
+				}
+			}
+			renderer_->rebuildTextureDescriptors(vk.device);
+		}
+
+		renderer_ = nullptr;
+		framesInFlight_ = 1u;
+		currentFrameIndex_ = 0u;
+		nextSlot_ = 1u;
+		freeSlots_.clear();
+		keyToSlot_.clear();
+		activeBindings_.clear();
+		retiredSlotsByFrame_.clear();
+	}
+
+	uint32_t registerOrReplaceSlot(
+		VulkanContext& vk,
+		std::string_view namespacedKey,
+		VkImageView imageView,
+		VkSampler sampler,
+		bool& inserted) override {
+		if (!renderer_) {
+			throw std::runtime_error("UiTextureRegistry is not initialized.");
+		}
+		if (namespacedKey.empty()) {
+			throw std::runtime_error("UiTextureRegistry key must not be empty.");
+		}
+		if (imageView == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
+			throw std::runtime_error("UiTextureRegistry received an invalid image binding.");
+		}
+
+		const std::string key(namespacedKey);
+		auto keyIt = keyToSlot_.find(key);
+		inserted = (keyIt == keyToSlot_.end());
+
+		const uint32_t assignedSlot = acquireSlot(vk);
+		renderer_->setTextureSlotBinding(assignedSlot, imageView, sampler);
+		activeBindings_[assignedSlot] = VkDescriptorImageInfo{
+			sampler,
+			imageView,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		};
+
+		if (inserted) {
+			keyToSlot_.emplace(key, assignedSlot);
+			return assignedSlot;
+		}
+
+		const uint32_t oldSlot = keyIt->second;
+		keyIt->second = assignedSlot;
+		activeBindings_.erase(oldSlot);
+		retireSlot(oldSlot);
+		return assignedSlot;
+	}
+
+	bool updateSlotBinding(
+		std::string_view namespacedKey,
+		VkImageView imageView,
+		VkSampler sampler) override {
+		if (!renderer_) {
+			return false;
+		}
+		if (imageView == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
+			throw std::runtime_error("UiTextureRegistry received an invalid image binding update.");
+		}
+
+		const auto keyIt = keyToSlot_.find(std::string(namespacedKey));
+		if (keyIt == keyToSlot_.end()) {
+			return false;
+		}
+
+		const uint32_t slot = keyIt->second;
+		renderer_->setTextureSlotBinding(slot, imageView, sampler);
+		activeBindings_[slot] = VkDescriptorImageInfo{
+			sampler,
+			imageView,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		};
+		return true;
+	}
+
+	bool removeSlot(std::string_view namespacedKey) override {
+		if (!renderer_) {
+			return false;
+		}
+		const auto keyIt = keyToSlot_.find(std::string(namespacedKey));
+		if (keyIt == keyToSlot_.end()) {
+			return false;
+		}
+
+		const uint32_t removedSlot = keyIt->second;
+		keyToSlot_.erase(keyIt);
+		activeBindings_.erase(removedSlot);
+		retireSlot(removedSlot);
+		return true;
+	}
+
+	bool containsSlot(std::string_view namespacedKey) const override {
+		return keyToSlot_.find(std::string(namespacedKey)) != keyToSlot_.end();
+	}
+
+private:
+	uint32_t acquireSlot(VulkanContext& vk) {
+		if (!freeSlots_.empty()) {
+			const uint32_t slot = freeSlots_.back();
+			freeSlots_.pop_back();
+			return slot;
+		}
+
+		if (!renderer_) {
+			throw std::runtime_error("UiTextureRegistry renderer is null.");
+		}
+
+		if (nextSlot_ >= renderer_->textureSlotCapacity()) {
+			ensureSlotCapacity(vk, nextSlot_ + 1u);
+		}
+
+		return nextSlot_++;
+	}
+
+	void ensureSlotCapacity(VulkanContext& vk, uint32_t requiredCapacity) {
+		if (!renderer_) {
+			throw std::runtime_error("UiTextureRegistry renderer is null.");
+		}
+		if (requiredCapacity <= renderer_->textureSlotCapacity()) {
+			return;
+		}
+		if (vk.device == VK_NULL_HANDLE) {
+			throw std::runtime_error("UiTextureRegistry cannot grow capacity without a Vulkan device.");
+		}
+
+		vkCheck(vkDeviceWaitIdle(vk.device), "Failed to wait device idle while growing UI texture descriptor capacity.");
+		reclaimAllRetiredSlots(vk);
+
+		uint32_t newCapacity = std::max<uint32_t>(2u, renderer_->textureSlotCapacity());
+		while (newCapacity < requiredCapacity) {
+			newCapacity *= 2u;
+		}
+
+		renderer_->reserveTextureSlots(vk, newCapacity);
+		for (const auto& [slot, binding] : activeBindings_) {
+			renderer_->setTextureSlotBinding(slot, binding.imageView, binding.sampler);
+		}
+		renderer_->rebuildTextureDescriptors(vk.device);
+	}
+
+	void retireSlot(uint32_t slot) {
+		if (!renderer_ || slot == 0u) {
+			return;
+		}
+		if (retiredSlotsByFrame_.empty()) {
+			renderer_->clearTextureSlotBinding(slot);
+			freeSlots_.push_back(slot);
+			return;
+		}
+		const uint32_t bucket = currentFrameIndex_ % static_cast<uint32_t>(retiredSlotsByFrame_.size());
+		retiredSlotsByFrame_[bucket].push_back(slot);
+	}
+
+	void reclaimRetiredBucket(VulkanContext& vk, uint32_t bucketIndex) {
+		if (!renderer_ || bucketIndex >= retiredSlotsByFrame_.size()) {
+			return;
+		}
+		std::vector<uint32_t>& bucket = retiredSlotsByFrame_[bucketIndex];
+		for (uint32_t slot : bucket) {
+			if (slot != 0u) {
+				renderer_->clearTextureSlotBinding(slot);
+			}
+			freeSlots_.push_back(slot);
+		}
+		bucket.clear();
+		(void)vk;
+	}
+
+	void reclaimAllRetiredSlots(VulkanContext& vk) {
+		for (uint32_t i = 0; i < retiredSlotsByFrame_.size(); ++i) {
+			reclaimRetiredBucket(vk, i);
+		}
+	}
+
+private:
+	VulkanUiRenderer* renderer_ = nullptr;
+	uint32_t framesInFlight_ = 1u;
+	uint32_t currentFrameIndex_ = 0u;
+	uint32_t nextSlot_ = 1u;
+
+	std::vector<uint32_t> freeSlots_;
+	std::unordered_map<std::string, uint32_t> keyToSlot_;
+	std::unordered_map<uint32_t, VkDescriptorImageInfo> activeBindings_;
+	std::vector<std::vector<uint32_t>> retiredSlotsByFrame_;
+};
+
 struct App::Impl {
 	AppConfig config{};
 
@@ -106,9 +336,12 @@ struct App::Impl {
 	FrameVk frames;
 	ElementRegistry elementRegistry;
 
-	UiContext ui;
+	UiManager ui;
 	VulkanUiRenderer renderer;
+	UiTextureRegistry textureRegistry;
 	FontManager fonts;
+	ImageManager imageManager;
+	ViewPortManager viewPortManager;
 	IconManager icons;
 	FrameInput frameInputForCurrentFrame{};
 	Clay_RenderCommandArray renderCommandsForCurrentFrame{};
@@ -117,6 +350,8 @@ struct App::Impl {
 	std::vector<VkImageLayout> swapchainImageLayouts;
 	std::chrono::steady_clock::time_point previousBeginFrameTimestamp{};
 	bool hasPreviousBeginFrameTimestamp = false;
+	float uiToFramebufferScaleX = 1.0f;
+	float uiToFramebufferScaleY = 1.0f;
 
 	bool framebufferResized = false;
 
@@ -137,12 +372,17 @@ struct App::Impl {
 		vk.createDevice(config);
 
 		// 3) swapchain + per-frame resources
-		swap.create(config, vk);
+		swap.create(config, vk, window->framebufferExtent());
 		frames.create(config, vk, swap.images.size());
 		swapchainImageLayouts.assign(swap.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
 
 		// 4) renderer/resources (dynamic rendering needs format)
 		renderer.init(config, vk, swap.format);
+		textureRegistry.init(vk, renderer, uiFrameSlotCount);
+		imageManager.setRegistry(&textureRegistry);
+		imageManager.init(vk, renderer, uiFrameSlotCount);
+		viewPortManager.setRegistry(&textureRegistry);
+		viewPortManager.init(vk, renderer, uiFrameSlotCount);
 		fonts.init(vk, config.ui.fontAtlasSize);
 		ui.setFontManager(&fonts);
 		renderer.setFontManager(&fonts);
@@ -152,7 +392,7 @@ struct App::Impl {
 			const std::filesystem::path defaultFontPath = config.ui.defaultFontPath;
 			const bool isArfont = toLowerAscii(defaultFontPath.extension().string()) == ".arfont";
 			if (isArfont && std::filesystem::is_regular_file(defaultFontPath)) {
-				const int defaultFontId = fonts.loadFont(vk, defaultFontPath.string(), config.ui.defaultFontPx);
+				const int defaultFontId = fonts.loadFont(defaultFontPath.string(), config.ui.defaultFontPx);
 				if (defaultFontId < 0) {
 					throw std::runtime_error("Failed to register default .arfont font: " + defaultFontPath.string());
 				}
@@ -172,18 +412,42 @@ struct App::Impl {
 		previousBeginFrameTimestamp = now;
 		hasPreviousBeginFrameTimestamp = true;
 
+		textureRegistry.onFrameStart(vk, uiFrameIndex);
+		imageManager.onFrameStart(vk, uiFrameIndex);
+		viewPortManager.onFrameStart(vk, uiFrameIndex);
+
 		pollEvents();
 		frameInputForCurrentFrame = inputQueue.drain(deltaTimeSeconds);
 
+		const float clampedUiScale = std::max(1.0e-6f, config.ui.uiScale);
+		const VkExtent2D windowExtent = window->windowExtent();
 		const VkExtent2D framebufferExtent = window->framebufferExtent();
-		const float screenWidth = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.width));
-		const float screenHeight = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.height));
-		ui.beginFrame(uiFrameIndex, frameInputForCurrentFrame, screenWidth, screenHeight);
+		const float logicalWindowWidth = static_cast<float>(std::max<uint32_t>(1u, windowExtent.width));
+		const float logicalWindowHeight = static_cast<float>(std::max<uint32_t>(1u, windowExtent.height));
+		const float framebufferWidth = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.width));
+		const float framebufferHeight = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.height));
+		const float layoutWidth = logicalWindowWidth / clampedUiScale;
+		const float layoutHeight = logicalWindowHeight / clampedUiScale;
+		uiToFramebufferScaleX = framebufferWidth / std::max(layoutWidth, 1.0e-6f);
+		uiToFramebufferScaleY = framebufferHeight / std::max(layoutHeight, 1.0e-6f);
+
+		FrameInput frameInputForLayout = frameInputForCurrentFrame;
+		frameInputForLayout.mouseX /= clampedUiScale;
+		frameInputForLayout.mouseY /= clampedUiScale;
+		frameInputForLayout.scrollX /= clampedUiScale;
+		frameInputForLayout.scrollY /= clampedUiScale;
+		ui.beginFrame(uiFrameIndex, frameInputForLayout, layoutWidth, layoutHeight);
 
 		uiFrameIndex = (uiFrameIndex + 1) % uiFrameSlotCount;
 	}
 
-	void endFrame() { renderCommandsForCurrentFrame = ui.endFrame(); }
+	void endFrame() {
+		renderCommandsForCurrentFrame = ui.endFrame();
+		viewPortManager.prepareFrameTargets(
+			renderCommandsForCurrentFrame,
+			uiToFramebufferScaleX,
+			uiToFramebufferScaleY);
+	}
 
 	void drawFrame() {
 		if (frames.frames.empty() || swap.swapchain == VK_NULL_HANDLE || swap.views.empty()) {
@@ -240,7 +504,17 @@ struct App::Impl {
 			VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 		swapchainImageLayouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 
-		renderer.render(vk, frame.cmd, renderCommandsForCurrentFrame, swap.extent, swap.views[swapchainImageIndex]);
+		viewPortManager.remapRenderCommandsForFrame(renderCommandsForCurrentFrame, frames.currentFrame);
+		viewPortManager.recordFramePasses(vk, frame.cmd, frames.currentFrame);
+
+		renderer.render(
+			vk,
+			frame.cmd,
+			renderCommandsForCurrentFrame,
+			swap.extent,
+			swap.views[swapchainImageIndex],
+			uiToFramebufferScaleX,
+			uiToFramebufferScaleY);
 
 		transitionSwapchainImageLayout(
 			frame.cmd,
@@ -298,7 +572,7 @@ struct App::Impl {
 		}
 
 		vkDeviceWaitIdle(vk.device);
-		swap.recreate(config, vk);
+		swap.recreate(config, vk, framebufferExtent);
 		frames.onSwapchainRecreated(swap.images.size());
 		renderer.onSwapchainFormatChanged(vk, swap.format); // only if changed
 		swapchainImageLayouts.assign(swap.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
@@ -307,6 +581,9 @@ struct App::Impl {
 	void cleanup() {
 		vkDeviceWaitIdle(vk.device);
 
+		viewPortManager.destroy(vk);
+		imageManager.destroy(vk);
+		textureRegistry.destroy(vk);
 		icons.destroy(vk);
 		fonts.destroy(vk);
 		renderer.destroy(vk);
@@ -329,12 +606,6 @@ App& App::operator=(App&&) noexcept = default;
 App::~App() {
 	if (impl_) {
 		impl_->cleanup();
-	}
-}
-
-void App::pollEvents() {
-	if (impl_) {
-		impl_->pollEvents();
 	}
 }
 
@@ -363,20 +634,58 @@ void App::drawFrame() {
 	}
 }
 
-int App::loadFont(std::string_view fontPath, float pxSize) {
+FontManager& App::fonts() {
 	if (!impl_) {
-		return -1;
+		throw std::runtime_error("FlowUi::App not initialized.");
 	}
-	return impl_->fonts.loadFont(impl_->vk, fontPath, pxSize);
+	return impl_->fonts;
 }
 
-int App::loadSvgIcon(std::string_view svgPath, int pxSize) {
-	(void)svgPath;
-	(void)pxSize;
-	return -1;
+const FontManager& App::fonts() const {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->fonts;
 }
 
-UiContext& App::ui() {
+ImageManager& App::images() {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->imageManager;
+}
+
+const ImageManager& App::images() const {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->imageManager;
+}
+
+#if FLOWUI_PUBLIC_VULKAN_INTEROP
+ViewPortManager& App::viewPorts() {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->viewPortManager;
+}
+
+const ViewPortManager& App::viewPorts() const {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->viewPortManager;
+}
+#endif
+
+UiManager& App::ui() {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->ui;
+}
+
+const UiManager& App::ui() const {
 	if (!impl_) {
 		throw std::runtime_error("FlowUi::App not initialized.");
 	}
@@ -408,10 +717,11 @@ void App::setWindowTitle(std::string_view title) {
 }
 
 std::pair<int, int> App::windowSize() const {
-	if (!impl_) {
+	if (!impl_ || !impl_->window) {
 		return {0, 0};
 	}
-	return {impl_->config.window.width, impl_->config.window.height};
+	VkExtent2D extent = impl_->window->windowExtent();
+	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};
 }
 
 std::pair<int, int> App::framebufferSize() const {

@@ -131,6 +131,19 @@ static bool RectEqual(const RectF& a, const RectF& b) {
 	return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h;
 }
 
+static RectF ScaleBoundingBox(const Clay_BoundingBox& box, float scaleX, float scaleY) {
+	return RectF{
+		box.x * scaleX,
+		box.y * scaleY,
+		box.width * scaleX,
+		box.height * scaleY,
+	};
+}
+
+static float UniformScale(float scaleX, float scaleY) {
+	return std::min(scaleX, scaleY);
+}
+
 static VkRect2D ToVkRect2D(const RectF& r, int framebufferWidth, int framebufferHeight) {
 	int32_t x0 = static_cast<int32_t>(std::floor(r.x));
 	int32_t y0 = static_cast<int32_t>(std::floor(r.y));
@@ -159,10 +172,94 @@ static uint32_t PackRGBA8(const Clay_Color& color) {
 	return pack(color.r) | (pack(color.g) << 8u) | (pack(color.b) << 16u) | (pack(color.a) << 24u);
 }
 
-static uint32_t ResolveUiTextureIndex(const Clay_RenderCommand& command) {
-	// Placeholder: app texture lifetime/version tracking is not connected yet.
-	const auto* handle = reinterpret_cast<const UiTextureHandle*>(command.renderData.image.imageData);
-	return handle ? handle->texIndex : 0u;
+constexpr uint32_t kTexturedFlagTintEnabled = 1u << 0u;
+
+struct TexturedImagePlacement {
+	RectF drawBounds{};
+	float uv0x = 0.0f;
+	float uv0y = 0.0f;
+	float uv1x = 1.0f;
+	float uv1y = 1.0f;
+};
+
+static const FlowUi::TextureRef& ResolveTextureRef(const Clay_RenderCommand& command) {
+	static const FlowUi::TextureRef kDefaultTextureRef{};
+	const auto* textureRef = reinterpret_cast<const FlowUi::TextureRef*>(command.renderData.image.imageData);
+	return textureRef ? *textureRef : kDefaultTextureRef;
+}
+
+static bool HasValidSourceDimensions(const FlowUi::TextureRef& textureRef) {
+	return textureRef.sourceWidth > 0 && textureRef.sourceHeight > 0;
+}
+
+static TexturedImagePlacement ResolveTexturedImagePlacement(
+	const RectF& bounds,
+	const FlowUi::TextureRef& textureRef)
+{
+	TexturedImagePlacement placement{};
+	placement.drawBounds = bounds;
+	placement.uv0x = textureRef.uv0x;
+	placement.uv0y = textureRef.uv0y;
+	placement.uv1x = textureRef.uv1x;
+	placement.uv1y = textureRef.uv1y;
+
+	if (bounds.w <= 0.0f || bounds.h <= 0.0f) {
+		return placement;
+	}
+	if (!HasValidSourceDimensions(textureRef) || textureRef.fitMode == FlowUi::TextureFitMode::Stretch) {
+		return placement;
+	}
+
+	const float sourceWidth = static_cast<float>(textureRef.sourceWidth);
+	const float sourceHeight = static_cast<float>(textureRef.sourceHeight);
+	const float sourceAspect = sourceWidth / sourceHeight;
+	const float boundsAspect = bounds.w / bounds.h;
+
+	switch (textureRef.fitMode)
+	{
+		case FlowUi::TextureFitMode::Contain:
+		{
+			const float scale = std::min(bounds.w / sourceWidth, bounds.h / sourceHeight);
+			const float drawWidth = sourceWidth * scale;
+			const float drawHeight = sourceHeight * scale;
+			placement.drawBounds.x = bounds.x + (bounds.w - drawWidth) * 0.5f;
+			placement.drawBounds.y = bounds.y + (bounds.h - drawHeight) * 0.5f;
+			placement.drawBounds.w = drawWidth;
+			placement.drawBounds.h = drawHeight;
+			break;
+		}
+		case FlowUi::TextureFitMode::Cover:
+		{
+			const float uvRangeX = placement.uv1x - placement.uv0x;
+			const float uvRangeY = placement.uv1y - placement.uv0y;
+
+			if (sourceAspect > boundsAspect) {
+				const float visibleSourceWidth = sourceHeight * boundsAspect;
+				const float cropRatio = std::clamp((sourceWidth - visibleSourceWidth) / (2.0f * sourceWidth), 0.0f, 0.5f);
+				placement.uv0x += uvRangeX * cropRatio;
+				placement.uv1x -= uvRangeX * cropRatio;
+			} else if (sourceAspect < boundsAspect) {
+				const float visibleSourceHeight = sourceWidth / boundsAspect;
+				const float cropRatio = std::clamp((sourceHeight - visibleSourceHeight) / (2.0f * sourceHeight), 0.0f, 0.5f);
+				placement.uv0y += uvRangeY * cropRatio;
+				placement.uv1y -= uvRangeY * cropRatio;
+			}
+			break;
+		}
+		case FlowUi::TextureFitMode::None:
+		{
+			placement.drawBounds.w = sourceWidth;
+			placement.drawBounds.h = sourceHeight;
+			placement.drawBounds.x = bounds.x + (bounds.w - sourceWidth) * 0.5f;
+			placement.drawBounds.y = bounds.y + (bounds.h - sourceHeight) * 0.5f;
+			break;
+		}
+		case FlowUi::TextureFitMode::Stretch:
+		default:
+			break;
+	}
+
+	return placement;
 }
 
 static bool DecodeNextUtf8Codepoint(const Clay_StringSlice& stringSlice, int& byteOffset, uint32_t& outCodepoint) {
@@ -363,40 +460,50 @@ static UiType PickType(const Clay_RenderCommand& command) {
 	}
 }
 
-static void EmitSolidRect(const Clay_RenderCommand& command, std::vector<UiInstance>& instances) {
-	const Clay_BoundingBox& bounds = command.boundingBox;
+static void EmitSolidRect(
+	const Clay_RenderCommand& command,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
+	std::vector<UiInstance>& instances) {
+	const RectF bounds = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
+	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
 	UiInstance inst{};
 	inst.type = static_cast<uint32_t>(UiType::Solid);
 	inst.x = bounds.x;
 	inst.y = bounds.y;
-	inst.w = bounds.width;
-	inst.h = bounds.height;
+	inst.w = bounds.w;
+	inst.h = bounds.h;
 	inst.colorRGBA = PackRGBA8(command.renderData.rectangle.backgroundColor);
-	inst.r0 = command.renderData.rectangle.cornerRadius.topLeft;
-	inst.r1 = command.renderData.rectangle.cornerRadius.topRight;
-	inst.r2 = command.renderData.rectangle.cornerRadius.bottomRight;
-	inst.r3 = command.renderData.rectangle.cornerRadius.bottomLeft;
+	inst.r0 = command.renderData.rectangle.cornerRadius.topLeft * radiusScale;
+	inst.r1 = command.renderData.rectangle.cornerRadius.topRight * radiusScale;
+	inst.r2 = command.renderData.rectangle.cornerRadius.bottomRight * radiusScale;
+	inst.r3 = command.renderData.rectangle.cornerRadius.bottomLeft * radiusScale;
 	inst.solidMode = 0u;
 	instances.push_back(inst);
 }
 
-static void EmitSolidBorder(const Clay_RenderCommand& command, std::vector<UiInstance>& instances) {
-	const Clay_BoundingBox& bounds = command.boundingBox;
+static void EmitSolidBorder(
+	const Clay_RenderCommand& command,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
+	std::vector<UiInstance>& instances) {
+	const RectF bounds = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
+	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
 	UiInstance inst{};
 	inst.type = static_cast<uint32_t>(UiType::Solid);
 	inst.x = bounds.x;
 	inst.y = bounds.y;
-	inst.w = bounds.width;
-	inst.h = bounds.height;
+	inst.w = bounds.w;
+	inst.h = bounds.h;
 	inst.colorRGBA = PackRGBA8(command.renderData.border.color);
-	inst.r0 = command.renderData.border.cornerRadius.topLeft;
-	inst.r1 = command.renderData.border.cornerRadius.topRight;
-	inst.r2 = command.renderData.border.cornerRadius.bottomRight;
-	inst.r3 = command.renderData.border.cornerRadius.bottomLeft;
-	inst.borderL = static_cast<float>(command.renderData.border.width.left);
-	inst.borderT = static_cast<float>(command.renderData.border.width.top);
-	inst.borderR = static_cast<float>(command.renderData.border.width.right);
-	inst.borderB = static_cast<float>(command.renderData.border.width.bottom);
+	inst.r0 = command.renderData.border.cornerRadius.topLeft * radiusScale;
+	inst.r1 = command.renderData.border.cornerRadius.topRight * radiusScale;
+	inst.r2 = command.renderData.border.cornerRadius.bottomRight * radiusScale;
+	inst.r3 = command.renderData.border.cornerRadius.bottomLeft * radiusScale;
+	inst.borderL = static_cast<float>(command.renderData.border.width.left) * uiToFramebufferScaleX;
+	inst.borderT = static_cast<float>(command.renderData.border.width.top) * uiToFramebufferScaleY;
+	inst.borderR = static_cast<float>(command.renderData.border.width.right) * uiToFramebufferScaleX;
+	inst.borderB = static_cast<float>(command.renderData.border.width.bottom) * uiToFramebufferScaleY;
 	inst.solidMode = 1u;
 	instances.push_back(inst);
 }
@@ -405,6 +512,8 @@ static void EmitTextMsdf(
 	const Clay_RenderCommand& command,
 	const FontManager* fontManager,
 	float pointsToPixelsScale,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
 	std::vector<UiInstance>& instances)
 {
 	const Clay_BoundingBox& bounds = command.boundingBox;
@@ -440,10 +549,10 @@ static void EmitTextMsdf(
 	for (const GlyphQuad& glyph : glyphs) {
 		UiInstance inst{};
 		inst.type = static_cast<uint32_t>(UiType::Msdf);
-		inst.x = glyph.x;
-		inst.y = glyph.y;
-		inst.w = glyph.w;
-		inst.h = glyph.h;
+		inst.x = glyph.x * uiToFramebufferScaleX;
+		inst.y = glyph.y * uiToFramebufferScaleY;
+		inst.w = glyph.w * uiToFramebufferScaleX;
+		inst.h = glyph.h * uiToFramebufferScaleY;
 		inst.uv0x = glyph.u0;
 		inst.uv0y = glyph.v0;
 		inst.uv1x = glyph.u1;
@@ -455,24 +564,38 @@ static void EmitTextMsdf(
 	}
 }
 
-static void EmitTexturedImage(const Clay_RenderCommand& command, std::vector<UiInstance>& instances) {
-	const Clay_BoundingBox& bounds = command.boundingBox;
+static void EmitTexturedImage(
+	const Clay_RenderCommand& command,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
+	std::vector<UiInstance>& instances)
+{
+	const RectF bounds = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
+	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
+	const FlowUi::TextureRef& textureRef = ResolveTextureRef(command);
+	const TexturedImagePlacement placement = ResolveTexturedImagePlacement(bounds, textureRef);
+	(void)textureRef.samplingMode; // Sampling mode is intentionally a no-op in textured pipeline V1.
+	if (placement.drawBounds.w <= 0.0f || placement.drawBounds.h <= 0.0f) {
+		return;
+	}
+
 	UiInstance inst{};
 	inst.type = static_cast<uint32_t>(UiType::Textured);
-	inst.x = bounds.x;
-	inst.y = bounds.y;
-	inst.w = bounds.width;
-	inst.h = bounds.height;
-	inst.uv0x = 0.0f;
-	inst.uv0y = 0.0f;
-	inst.uv1x = 1.0f;
-	inst.uv1y = 1.0f;
+	inst.x = placement.drawBounds.x;
+	inst.y = placement.drawBounds.y;
+	inst.w = placement.drawBounds.w;
+	inst.h = placement.drawBounds.h;
+	inst.uv0x = placement.uv0x;
+	inst.uv0y = placement.uv0y;
+	inst.uv1x = placement.uv1x;
+	inst.uv1y = placement.uv1y;
 	inst.colorRGBA = PackRGBA8(command.renderData.image.backgroundColor);
-	inst.texIndex = ResolveUiTextureIndex(command);
-	inst.r0 = command.renderData.image.cornerRadius.topLeft;
-	inst.r1 = command.renderData.image.cornerRadius.topRight;
-	inst.r2 = command.renderData.image.cornerRadius.bottomRight;
-	inst.r3 = command.renderData.image.cornerRadius.bottomLeft;
+	inst.texIndex = textureRef.id;
+	inst.solidMode = textureRef.tintEnabled ? kTexturedFlagTintEnabled : 0u;
+	inst.r0 = command.renderData.image.cornerRadius.topLeft * radiusScale;
+	inst.r1 = command.renderData.image.cornerRadius.topRight * radiusScale;
+	inst.r2 = command.renderData.image.cornerRadius.bottomRight * radiusScale;
+	inst.r3 = command.renderData.image.cornerRadius.bottomLeft * radiusScale;
 	instances.push_back(inst);
 }
 
@@ -481,8 +604,11 @@ static void BuildInstancesAndRunsFromClay(
 	VkExtent2D extent,
 	const FontManager* fontManager,
 	float pointsToPixelsScale,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
 	std::vector<UiInstance>& outInstances,
-	std::vector<UiRun>& outRuns) {
+	std::vector<UiRun>& outRuns)
+{
 	outInstances.clear();
 	outRuns.clear();
 
@@ -526,12 +652,7 @@ static void BuildInstancesAndRunsFromClay(
 			continue;
 		}
 		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
-			const RectF clip{
-				command.boundingBox.x,
-				command.boundingBox.y,
-				command.boundingBox.width,
-				command.boundingBox.height,
-			};
+			const RectF clip = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
 			scissorStack.push_back(Intersect(scissorStack.back(), clip));
 			currentScissor = scissorStack.back();
 			runBarrier = true;
@@ -557,16 +678,22 @@ static void BuildInstancesAndRunsFromClay(
 
 		switch (command.commandType) {
 			case CLAY_RENDER_COMMAND_TYPE_RECTANGLE:
-				EmitSolidRect(command, outInstances);
+				EmitSolidRect(command, uiToFramebufferScaleX, uiToFramebufferScaleY, outInstances);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_BORDER:
-				EmitSolidBorder(command, outInstances);
+				EmitSolidBorder(command, uiToFramebufferScaleX, uiToFramebufferScaleY, outInstances);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_TEXT:
-				EmitTextMsdf(command, fontManager, pointsToPixelsScale, outInstances);
+				EmitTextMsdf(
+					command,
+					fontManager,
+					pointsToPixelsScale,
+					uiToFramebufferScaleX,
+					uiToFramebufferScaleY,
+					outInstances);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_IMAGE:
-				EmitTexturedImage(command, outInstances);
+				EmitTexturedImage(command, uiToFramebufferScaleX, uiToFramebufferScaleY, outInstances);
 				break;
 			default:
 				break;
@@ -922,7 +1049,134 @@ static void CreatePipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipeli
 	pipelines.textured = createGraphicsPipeline(device, pipelines.layout, format, kUiTexturedFragmentShaderFile);
 }
 
+static void DestroyPipelineObjects(VkDevice device, VulkanUiRenderer::Pipelines& pipelines) {
+	DestroyPipelines(device, pipelines);
+	if (pipelines.layout != VK_NULL_HANDLE) {
+		vkDestroyPipelineLayout(device, pipelines.layout, nullptr);
+		pipelines.layout = VK_NULL_HANDLE;
+	}
+}
+
+static void DestroyDescriptorObjects(VkDevice device, VulkanUiRenderer::Descriptors& descriptors) {
+	if (descriptors.pool != VK_NULL_HANDLE) {
+		vkDestroyDescriptorPool(device, descriptors.pool, nullptr);
+		descriptors.pool = VK_NULL_HANDLE;
+	}
+	descriptors.globalsSet = VK_NULL_HANDLE;
+	descriptors.texturesSet = VK_NULL_HANDLE;
+
+	if (descriptors.set0 != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(device, descriptors.set0, nullptr);
+		descriptors.set0 = VK_NULL_HANDLE;
+	}
+	if (descriptors.set1 != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(device, descriptors.set1, nullptr);
+		descriptors.set1 = VK_NULL_HANDLE;
+	}
+}
+
+static VkDescriptorImageInfo PlaceholderUiImageInfo(const VulkanUiRenderer& renderer) {
+	VkDescriptorImageInfo info{};
+	info.sampler = renderer.linearSampler;
+	info.imageView = renderer.placeholderUiTexture.view;
+	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	return info;
+}
+
+static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
+	if (renderer.maxUiImageDescriptors == 0u) {
+		throw std::runtime_error("UI texture descriptor capacity must be greater than zero.");
+	}
+
+	VkDescriptorSetLayoutBinding globalsBinding{};
+	globalsBinding.binding = 0;
+	globalsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	globalsBinding.descriptorCount = 1;
+	globalsBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutCreateInfo set0Info{};
+	set0Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	set0Info.bindingCount = 1;
+	set0Info.pBindings = &globalsBinding;
+	vkCheck(vkCreateDescriptorSetLayout(device, &set0Info, nullptr, &renderer.descriptors.set0), "Failed to create UI set0 layout.");
+
+	std::array<VkDescriptorSetLayoutBinding, 2> textureBindings{};
+	textureBindings[0].binding = 0;
+	textureBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	textureBindings[0].descriptorCount = 1;
+	textureBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	textureBindings[1].binding = 1;
+	textureBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	textureBindings[1].descriptorCount = renderer.maxUiImageDescriptors;
+	textureBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	const std::array<VkDescriptorBindingFlags, 2> bindingFlags = {
+		0u,
+		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+	};
+	VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+	bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+	bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+	bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+	VkDescriptorSetLayoutCreateInfo set1Info{};
+	set1Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	set1Info.pNext = &bindingFlagsInfo;
+	set1Info.bindingCount = static_cast<uint32_t>(textureBindings.size());
+	set1Info.pBindings = textureBindings.data();
+	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors.set1), "Failed to create UI set1 layout.");
+
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	poolSizes[0].descriptorCount = 1;
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = 1 + renderer.maxUiImageDescriptors;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.maxSets = 2;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	vkCheck(vkCreateDescriptorPool(device, &poolInfo, nullptr, &renderer.descriptors.pool), "Failed to create UI descriptor pool.");
+
+	VkDescriptorSetAllocateInfo set0AllocInfo{};
+	set0AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	set0AllocInfo.descriptorPool = renderer.descriptors.pool;
+	set0AllocInfo.descriptorSetCount = 1;
+	set0AllocInfo.pSetLayouts = &renderer.descriptors.set0;
+	vkCheck(vkAllocateDescriptorSets(device, &set0AllocInfo, &renderer.descriptors.globalsSet), "Failed to allocate UI globals set.");
+
+	VkDescriptorSetAllocateInfo set1AllocInfo{};
+	set1AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	set1AllocInfo.descriptorPool = renderer.descriptors.pool;
+	set1AllocInfo.descriptorSetCount = 1;
+	set1AllocInfo.pSetLayouts = &renderer.descriptors.set1;
+	vkCheck(vkAllocateDescriptorSets(device, &set1AllocInfo, &renderer.descriptors.texturesSet), "Failed to allocate UI textures set.");
+}
+
+static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
+	const std::array<VkDescriptorSetLayout, 2> setLayouts = { renderer.descriptors.set0, renderer.descriptors.set1 };
+	VkPushConstantRange pushRange{};
+	pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	pushRange.offset = 0;
+	pushRange.size = sizeof(UiPushConstants);
+
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+	pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+	pipelineLayoutInfo.pushConstantRangeCount = 1;
+	pipelineLayoutInfo.pPushConstantRanges = &pushRange;
+	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines.layout), "Failed to create UI pipeline layout.");
+
+	CreatePipelines(device, renderer.pipelines, renderer.targetFormat);
+}
+
 static void UpdateInstanceBufferDescriptor(const VulkanUiRenderer& renderer, VkDevice device) {
+	if (renderer.descriptors.globalsSet == VK_NULL_HANDLE || renderer.instanceBuffer.buffer == VK_NULL_HANDLE) {
+		return;
+	}
 	VkDescriptorBufferInfo ssboInfo{};
 	ssboInfo.buffer = renderer.instanceBuffer.buffer;
 	ssboInfo.offset = 0;
@@ -939,25 +1193,26 @@ static void UpdateInstanceBufferDescriptor(const VulkanUiRenderer& renderer, VkD
 	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 }
 
-static void UpdateTextureDescriptors(const VulkanUiRenderer& renderer, VkDevice device) {
+static void UpdateTextureDescriptors(VulkanUiRenderer& renderer, VkDevice device) {
+	if (renderer.descriptors.texturesSet == VK_NULL_HANDLE) {
+		return;
+	}
 	VkDescriptorImageInfo fontAtlasInfo{};
 	fontAtlasInfo.sampler = renderer.linearSampler;
 	fontAtlasInfo.imageView = renderer.placeholderFontAtlas.view;
 	fontAtlasInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	if (renderer.fontManager) {
-		const FontManager::AtlasArrayResource& atlas = renderer.fontManager->atlasResource();
+		const FontManager::AtlasArrayResource& atlas = renderer.fontManager->getAtlasResource();
 		if (atlas.view != VK_NULL_HANDLE && atlas.sampler != VK_NULL_HANDLE && atlas.layersUsed > 0u) {
 			fontAtlasInfo.sampler = atlas.sampler;
 			fontAtlasInfo.imageView = atlas.view;
 		}
 	}
 
-	VkDescriptorImageInfo uiImageTemplate{};
-	uiImageTemplate.sampler = renderer.linearSampler;
-	uiImageTemplate.imageView = renderer.placeholderUiTexture.view;
-	uiImageTemplate.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-	std::vector<VkDescriptorImageInfo> uiImageInfos(renderer.maxUiImageDescriptors, uiImageTemplate);
+	const VkDescriptorImageInfo uiImageTemplate = PlaceholderUiImageInfo(renderer);
+	if (renderer.uiTextureSlotInfos.size() != renderer.maxUiImageDescriptors) {
+		renderer.uiTextureSlotInfos.assign(renderer.maxUiImageDescriptors, uiImageTemplate);
+	}
 
 	std::array<VkWriteDescriptorSet, 2> writes{};
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -972,9 +1227,19 @@ static void UpdateTextureDescriptors(const VulkanUiRenderer& renderer, VkDevice 
 	writes[1].dstBinding = 1;
 	writes[1].descriptorCount = renderer.maxUiImageDescriptors;
 	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	writes[1].pImageInfo = uiImageInfos.data();
+	writes[1].pImageInfo = renderer.uiTextureSlotInfos.data();
 
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+	renderer.textureDescriptorsDirty = false;
+}
+
+static void RecreateDescriptorAndPipelineObjects(VulkanContext& vk, VulkanUiRenderer& renderer) {
+	DestroyPipelineObjects(vk.device, renderer.pipelines);
+	DestroyDescriptorObjects(vk.device, renderer.descriptors);
+	CreateDescriptorObjects(vk.device, renderer);
+	CreatePipelineObjects(vk.device, renderer);
+	UpdateInstanceBufferDescriptor(renderer, vk.device);
+	UpdateTextureDescriptors(renderer, vk.device);
 }
 
 static void EnsureInstanceBufferCapacity(VulkanContext& vk, VulkanUiRenderer& renderer, size_t requiredInstances) {
@@ -1051,101 +1316,23 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 
 	destroy(vk);
 
-	try {
-		maxUiImageDescriptors = kDefaultMaxUiImageDescriptors;
-		targetFormat = swapFormat;
-		pointsToPixelsScale = std::max(0.0f, config.ui.fontScale) * (96.0f / 72.0f);
+		try {
+			maxUiImageDescriptors = kDefaultMaxUiImageDescriptors;
+			targetFormat = swapFormat;
+		const float configuredDpi = std::max(1.0f, config.ui.dpi);
+		pointsToPixelsScale = std::max(0.0f, config.ui.fontScale) * (configuredDpi / 72.0f);
 		if (pointsToPixelsScale <= 0.0f) {
-			pointsToPixelsScale = 96.0f / 72.0f;
+			pointsToPixelsScale = configuredDpi / 72.0f;
 		}
 		boundFontAtlasRevision = UINT32_MAX;
 
-		CreateLinearSampler(vk, linearSampler);
+			CreateLinearSampler(vk, linearSampler);
 
-		CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D_ARRAY, placeholderFontAtlas);
-		CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D, placeholderUiTexture);
-
-		VkDescriptorSetLayoutBinding globalsBinding{};
-		globalsBinding.binding = 0;
-		globalsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		globalsBinding.descriptorCount = 1;
-		globalsBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		VkDescriptorSetLayoutCreateInfo set0Info{};
-		set0Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		set0Info.bindingCount = 1;
-		set0Info.pBindings = &globalsBinding;
-		vkCheck(vkCreateDescriptorSetLayout(vk.device, &set0Info, nullptr, &descriptors.set0), "Failed to create UI set0 layout.");
-
-		std::array<VkDescriptorSetLayoutBinding, 2> textureBindings{};
-		textureBindings[0].binding = 0;
-		textureBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		textureBindings[0].descriptorCount = 1;
-		textureBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		textureBindings[1].binding = 1;
-		textureBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		textureBindings[1].descriptorCount = maxUiImageDescriptors;
-		textureBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		const std::array<VkDescriptorBindingFlags, 2> bindingFlags = {
-			0u,
-			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
-		};
-		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
-		bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
-		bindingFlagsInfo.pBindingFlags = bindingFlags.data();
-
-		VkDescriptorSetLayoutCreateInfo set1Info{};
-		set1Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		set1Info.pNext = &bindingFlagsInfo;
-		set1Info.bindingCount = static_cast<uint32_t>(textureBindings.size());
-		set1Info.pBindings = textureBindings.data();
-		vkCheck(vkCreateDescriptorSetLayout(vk.device, &set1Info, nullptr, &descriptors.set1), "Failed to create UI set1 layout.");
-
-		std::array<VkDescriptorPoolSize, 2> poolSizes{};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		poolSizes[0].descriptorCount = 1;
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = 1 + maxUiImageDescriptors;
-
-		VkDescriptorPoolCreateInfo poolInfo{};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.maxSets = 2;
-		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-		poolInfo.pPoolSizes = poolSizes.data();
-		vkCheck(vkCreateDescriptorPool(vk.device, &poolInfo, nullptr, &descriptors.pool), "Failed to create UI descriptor pool.");
-
-		VkDescriptorSetAllocateInfo set0AllocInfo{};
-		set0AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		set0AllocInfo.descriptorPool = descriptors.pool;
-		set0AllocInfo.descriptorSetCount = 1;
-		set0AllocInfo.pSetLayouts = &descriptors.set0;
-		vkCheck(vkAllocateDescriptorSets(vk.device, &set0AllocInfo, &descriptors.globalsSet), "Failed to allocate UI globals set.");
-
-		VkDescriptorSetAllocateInfo set1AllocInfo{};
-		set1AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		set1AllocInfo.descriptorPool = descriptors.pool;
-		set1AllocInfo.descriptorSetCount = 1;
-		set1AllocInfo.pSetLayouts = &descriptors.set1;
-		vkCheck(vkAllocateDescriptorSets(vk.device, &set1AllocInfo, &descriptors.texturesSet), "Failed to allocate UI textures set.");
-
-		const std::array<VkDescriptorSetLayout, 2> setLayouts = { descriptors.set0, descriptors.set1 };
-		VkPushConstantRange pushRange{};
-		pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		pushRange.offset = 0;
-		pushRange.size = sizeof(UiPushConstants);
-
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = setLayouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		pipelineLayoutInfo.pPushConstantRanges = &pushRange;
-		vkCheck(vkCreatePipelineLayout(vk.device, &pipelineLayoutInfo, nullptr, &pipelines.layout), "Failed to create UI pipeline layout.");
-
-		CreatePipelines(vk.device, pipelines, targetFormat);
+			CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D_ARRAY, placeholderFontAtlas);
+			CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D, placeholderUiTexture);
+			uiTextureSlotInfos.assign(maxUiImageDescriptors, PlaceholderUiImageInfo(*this));
+			textureDescriptorsDirty = true;
+			RecreateDescriptorAndPipelineObjects(vk, *this);
 
 		const std::array<UiQuadVertex, 4> quadVertices = {
 			UiQuadVertex{ 0.0f, 0.0f, 0.0f, 0.0f },
@@ -1164,11 +1351,10 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 			quadVertices.data(),
 			static_cast<VkDeviceSize>(quadVertices.size() * sizeof(UiQuadVertex)));
 
-		CreateMappedBuffer(vk, kInitialInstanceBufferBytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, instanceBuffer);
-		UpdateInstanceBufferDescriptor(*this, vk.device);
-		UpdateTextureDescriptors(*this, vk.device);
+			CreateMappedBuffer(vk, kInitialInstanceBufferBytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, instanceBuffer);
+			UpdateInstanceBufferDescriptor(*this, vk.device);
 
-		instancesScratch.clear();
+			instancesScratch.clear();
 		runsScratch.clear();
 		instancesScratch.reserve(4096);
 		runsScratch.reserve(256);
@@ -1187,6 +1373,8 @@ void VulkanUiRenderer::destroy(VulkanContext& vk)
 {
 	instancesScratch.clear();
 	runsScratch.clear();
+	uiTextureSlotInfos.clear();
+	textureDescriptorsDirty = false;
 
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		pipelines = Pipelines{};
@@ -1203,28 +1391,8 @@ void VulkanUiRenderer::destroy(VulkanContext& vk)
 		return;
 	}
 
-	DestroyPipelines(vk.device, pipelines);
-
-	if (pipelines.layout != VK_NULL_HANDLE) {
-		vkDestroyPipelineLayout(vk.device, pipelines.layout, nullptr);
-		pipelines.layout = VK_NULL_HANDLE;
-	}
-
-	if (descriptors.pool != VK_NULL_HANDLE) {
-		vkDestroyDescriptorPool(vk.device, descriptors.pool, nullptr);
-		descriptors.pool = VK_NULL_HANDLE;
-	}
-	descriptors.globalsSet = VK_NULL_HANDLE;
-	descriptors.texturesSet = VK_NULL_HANDLE;
-
-	if (descriptors.set0 != VK_NULL_HANDLE) {
-		vkDestroyDescriptorSetLayout(vk.device, descriptors.set0, nullptr);
-		descriptors.set0 = VK_NULL_HANDLE;
-	}
-	if (descriptors.set1 != VK_NULL_HANDLE) {
-		vkDestroyDescriptorSetLayout(vk.device, descriptors.set1, nullptr);
-		descriptors.set1 = VK_NULL_HANDLE;
-	}
+	DestroyPipelineObjects(vk.device, pipelines);
+	DestroyDescriptorObjects(vk.device, descriptors);
 
 	DestroyBuffer(vk, instanceBuffer);
 	DestroyBuffer(vk, quadVertexBuffer);
@@ -1257,7 +1425,74 @@ void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newF
 	CreatePipelines(vk.device, pipelines, targetFormat);
 }
 
-void VulkanUiRenderer::render(VulkanContext& vk, VkCommandBuffer cmd, const Clay_RenderCommandArray& renderCommands, VkExtent2D extent, VkImageView targetView)
+uint32_t VulkanUiRenderer::textureSlotCapacity() const {
+	return maxUiImageDescriptors;
+}
+
+void VulkanUiRenderer::reserveTextureSlots(VulkanContext& vk, uint32_t minCapacity) {
+	if (minCapacity <= maxUiImageDescriptors) {
+		return;
+	}
+	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr || linearSampler == VK_NULL_HANDLE ||
+		placeholderUiTexture.view == VK_NULL_HANDLE || targetFormat == VK_FORMAT_UNDEFINED) {
+		throw std::runtime_error("UI renderer is not initialized for texture slot growth.");
+	}
+
+	uint32_t newCapacity = std::max<uint32_t>(2u, maxUiImageDescriptors);
+	while (newCapacity < minCapacity) {
+		newCapacity *= 2u;
+	}
+
+	const VkDescriptorImageInfo placeholderInfo = PlaceholderUiImageInfo(*this);
+	std::vector<VkDescriptorImageInfo> oldSlotInfos = uiTextureSlotInfos;
+	maxUiImageDescriptors = newCapacity;
+	uiTextureSlotInfos.assign(maxUiImageDescriptors, placeholderInfo);
+	if (!oldSlotInfos.empty()) {
+		const size_t preserved = std::min(oldSlotInfos.size(), uiTextureSlotInfos.size());
+		for (size_t i = 0; i < preserved; ++i) {
+			uiTextureSlotInfos[i] = oldSlotInfos[i];
+		}
+	}
+
+	RecreateDescriptorAndPipelineObjects(vk, *this);
+}
+
+void VulkanUiRenderer::setTextureSlotBinding(uint32_t slot, VkImageView view, VkSampler sampler) {
+	if (slot >= uiTextureSlotInfos.size()) {
+		throw std::runtime_error("UI texture slot index out of bounds.");
+	}
+	if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
+		throw std::runtime_error("UI texture slot binding requires valid image view + sampler.");
+	}
+
+	VkDescriptorImageInfo info{};
+	info.sampler = sampler;
+	info.imageView = view;
+	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	uiTextureSlotInfos[slot] = info;
+	textureDescriptorsDirty = true;
+}
+
+void VulkanUiRenderer::clearTextureSlotBinding(uint32_t slot) {
+	if (slot >= uiTextureSlotInfos.size()) {
+		throw std::runtime_error("UI texture slot index out of bounds.");
+	}
+	uiTextureSlotInfos[slot] = PlaceholderUiImageInfo(*this);
+	textureDescriptorsDirty = true;
+}
+
+void VulkanUiRenderer::rebuildTextureDescriptors(VkDevice device) {
+	UpdateTextureDescriptors(*this, device);
+}
+
+void VulkanUiRenderer::render(
+	VulkanContext& vk,
+	VkCommandBuffer cmd,
+	const Clay_RenderCommandArray& renderCommands,
+	VkExtent2D extent,
+	VkImageView targetView,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY)
 {
 	if (cmd == VK_NULL_HANDLE || targetView == VK_NULL_HANDLE) {
 		return;
@@ -1268,14 +1503,24 @@ void VulkanUiRenderer::render(VulkanContext& vk, VkCommandBuffer cmd, const Clay
 
 	uint32_t latestFontAtlasRevision = 0u;
 	if (fontManager) {
-		latestFontAtlasRevision = fontManager->atlasResource().bindingRevision;
+		latestFontAtlasRevision = fontManager->getAtlasResource().bindingRevision;
 	}
-	if (latestFontAtlasRevision != boundFontAtlasRevision) {
+	if (textureDescriptorsDirty || latestFontAtlasRevision != boundFontAtlasRevision) {
 		UpdateTextureDescriptors(*this, vk.device);
 		boundFontAtlasRevision = latestFontAtlasRevision;
 	}
 
-	BuildInstancesAndRunsFromClay(renderCommands, extent, fontManager, pointsToPixelsScale, instancesScratch, runsScratch);
+	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
+	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
+	BuildInstancesAndRunsFromClay(
+		renderCommands,
+		extent,
+		fontManager,
+		pointsToPixelsScale,
+		clampedScaleX,
+		clampedScaleY,
+		instancesScratch,
+		runsScratch);
 	if (instancesScratch.empty() || runsScratch.empty()) {
 		return;
 	}

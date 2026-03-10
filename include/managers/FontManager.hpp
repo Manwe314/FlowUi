@@ -8,9 +8,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Vulkan/Vk_Context.hpp"
+#include <vulkan/vulkan.h>
 
 struct VmaAllocation_T;
+struct VulkanContext;
+
+namespace FlowUi {
+class App;
+}
 
 struct FontManager {
 	static constexpr uint32_t kInitialAtlasLayerCapacity = 32;
@@ -92,16 +97,20 @@ struct FontManager {
 		uint32_t bindingRevision = 0;
 	};
 
-	void init(VulkanContext& vk, uint32_t atlasSize);
-	int loadFont(VulkanContext& vk, std::string_view path, float px);
-	int registerOfflineBakedFont(VulkanContext& vk, std::string_view arfontPath, std::string_view requestedName = {});
-	int findFontByName(std::string_view fontName) const;
+	int loadFont(std::string_view path, float px);
+	int registerBakedFont(std::string_view arfontPath, std::string_view requestedName = {});
+	int getFontId(std::string_view fontName) const;
 	const FontFaceData* getFontById(int fontId) const;
 	const FontFaceData* getFontByName(std::string_view fontName) const;
-	const AtlasArrayResource& atlasResource() const { return atlas_; }
-	void destroy(VulkanContext& vk);
+	const AtlasArrayResource& getAtlasResource() const { return atlas_; }
 
 private:
+	friend class FlowUi::App;
+
+	void init(VulkanContext& vk, uint32_t atlasSize);
+	void destroy(VulkanContext& vk);
+
+	VulkanContext* vk_ = nullptr;
 	AtlasArrayResource atlas_{};
 	VkCommandPool uploadCommandPool_ = VK_NULL_HANDLE;
 	uint32_t atlasSizeHint_ = 0;

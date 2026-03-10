@@ -5,6 +5,7 @@ project(FlowUi VERSION 0.1.0 LANGUAGES CXX)
 option(FLOWUI_INSTALL "Enable install rules" ON)
 option(FLOWUI_BUILD_FONT_BAKER "Build FlowUi offline font baker tool" ON)
 option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generation" OFF)
+option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
 
@@ -14,6 +15,19 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json" FORCE)
+
+if(FLOWUI_PUBLIC_VULKAN_INTEROP)
+    set(FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE 1)
+else()
+    set(FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE 0)
+endif()
+
+set(FLOWUI_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FlowUiBuildConfig.hpp.in
+    ${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/BuildConfig.hpp
+    @ONLY
+)
 
 # Dependencies
 find_package(Vulkan REQUIRED)
@@ -138,9 +152,11 @@ target_sources(flowui
         src/clay.cpp
         src/FlowUi.cpp
         src/managers/FontManager.cpp
+        src/managers/ImageManager.cpp
         src/managers/SvgManager.cpp
-        src/Ui/FlowUiElementSystem.cpp
-        src/Ui/UiContext.cpp
+        src/managers/ViewPortManager.cpp
+        src/managers/FlowUiElementSystem.cpp
+        src/managers/UiManager.cpp
         src/Ui/Vk_UiRenderer.cpp
         src/window/Inputs.cpp
         src/Vulkan/Vk_Context.cpp
@@ -148,7 +164,9 @@ target_sources(flowui
         src/Vulkan/Vk_Swapchain.cpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/flowui/PublicStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/IWindow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Inputs.hpp>
@@ -162,6 +180,7 @@ target_sources(flowui
 
 target_include_directories(flowui
     PUBLIC
+        $<BUILD_INTERFACE:${FLOWUI_GENERATED_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -181,6 +200,8 @@ if(FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
 endif()
 
 target_compile_definitions(flowui
+    PUBLIC
+        FLOWUI_PUBLIC_VULKAN_INTEROP=${FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE}
     PRIVATE
         FLOWUI_SHADER_OUTPUT_DIR="${FLOWUI_SHADER_OUTPUT_DIR}"
 )
@@ -220,6 +241,10 @@ if(FLOWUI_INSTALL)
 
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(FILES external/clay.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/external)
+    install(FILES
+        "${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/BuildConfig.hpp"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/FlowUi"
+    )
 
     install(EXPORT FlowUiTargets
         FILE FlowUiTargets.cmake

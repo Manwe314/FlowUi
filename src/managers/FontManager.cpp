@@ -13,6 +13,7 @@
 #include <artery-font/stdio-serialization.h>
 #include <artery-font/std-artery-font.h>
 
+#include "Vulkan/Vk_Context.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "vk_mem_alloc.h"
@@ -638,6 +639,7 @@ std::string makeUniqueFontName(
 
 void FontManager::init(VulkanContext& vk, uint32_t atlasSize) {
 	destroy(vk);
+	vk_ = &vk;
 	atlasSizeHint_ = atlasSize;
 	atlas_.layersCapacity = kInitialAtlasLayerCapacity;
 
@@ -652,15 +654,18 @@ void FontManager::init(VulkanContext& vk, uint32_t atlasSize) {
 	vkCheck(vkCreateCommandPool(vk.device, &poolInfo, nullptr, &uploadCommandPool_), "Failed to create font upload command pool.");
 }
 
-int FontManager::loadFont(VulkanContext& vk, std::string_view path, float px) {
+int FontManager::loadFont(std::string_view path, float px) {
 	(void)px;
+	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
+		throw std::runtime_error("FontManager is not initialized.");
+	}
 	const std::filesystem::path fontPath(path);
 	if (fontPath.empty()) {
 		return -1;
 	}
 
 	if (isArfontPath(fontPath)) {
-		return registerOfflineBakedFont(vk, path);
+		return registerBakedFont(path);
 	}
 
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
@@ -671,7 +676,12 @@ int FontManager::loadFont(VulkanContext& vk, std::string_view path, float px) {
 #endif
 }
 
-int FontManager::registerOfflineBakedFont(VulkanContext& vk, std::string_view arfontPath, std::string_view requestedName) {
+int FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
+	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
+		throw std::runtime_error("FontManager is not initialized.");
+	}
+	VulkanContext& vk = *vk_;
+
 	if (uploadCommandPool_ == VK_NULL_HANDLE) {
 		throw std::runtime_error("FontManager is not initialized.");
 	}
@@ -811,7 +821,7 @@ int FontManager::registerOfflineBakedFont(VulkanContext& vk, std::string_view ar
 	return fonts_.back().id;
 }
 
-int FontManager::findFontByName(std::string_view fontName) const {
+int FontManager::getFontId(std::string_view fontName) const {
 	const auto it = fontIdByName_.find(std::string(fontName));
 	return (it != fontIdByName_.end()) ? it->second : -1;
 }
@@ -826,7 +836,7 @@ const FontManager::FontFaceData* FontManager::getFontById(int fontId) const {
 }
 
 const FontManager::FontFaceData* FontManager::getFontByName(std::string_view fontName) const {
-	const int fontId = findFontByName(fontName);
+	const int fontId = getFontId(fontName);
 	return (fontId >= 0) ? getFontById(fontId) : nullptr;
 }
 
@@ -850,4 +860,5 @@ void FontManager::destroy(VulkanContext& vk) {
 	atlas_ = AtlasArrayResource{};
 	atlas_.layersCapacity = kInitialAtlasLayerCapacity;
 	uploadCommandPool_ = VK_NULL_HANDLE;
+	vk_ = nullptr;
 }
