@@ -5,6 +5,7 @@
 #include "managers/FlowUiElementSystem.hpp"
 #include "managers/ImageManager.hpp"
 #include "managers/UiManager.hpp"
+#include "clay.h"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 #include "managers/ViewPortManager.hpp"
 #endif
