@@ -46,6 +46,13 @@ struct UiConfig {
 	uint32_t iconAtlasSize = 1024;
 };
 
+struct SvgManagerConfig {
+	uint32_t atlasSize = 2048;
+	uint32_t maxAtlasPages = 10;
+	uint32_t sizeBucketStep = 8;
+	uint32_t atlasPadding = 1;
+};
+
 enum class TextureFitMode : uint8_t {
 	Stretch = 0,
 	Contain = 1,
@@ -79,6 +86,7 @@ struct AppConfig {
 	WindowConfig window{};
 	VulkanConfig vk{};
 	UiConfig ui{};
+	SvgManagerConfig svgManager{};
 };
 
 } // namespace FlowUi

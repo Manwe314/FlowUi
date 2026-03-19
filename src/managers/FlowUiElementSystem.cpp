@@ -100,6 +100,11 @@ ElementBuilder& ElementBuilder::set(std::string_view key, TextureRef value) {
 	return *this;
 }
 
+ElementBuilder& ElementBuilder::set(std::string_view key, ElementCustomCallback value) {
+    userOverrides_.setValue(key, std::move(value));
+    return *this;
+}
+
 void ElementBuilder::draw(ElementDrawOptions options)
 {
     if (!elementDefinition_ || !elementDefinition_->buildElement)

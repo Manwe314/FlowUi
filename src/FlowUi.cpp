@@ -1,8 +1,11 @@
 #include "FlowUi/App.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/BuildConfig.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
+#if FLOWUI_INCLUDE_SVG_MANAGER
 #include "managers/SvgManager.hpp"
+#endif
 #include "managers/ViewPortManager.hpp"
 #include "managers/UiManager.hpp"
 #include "internal/UiTextureRegistry.hpp"
@@ -342,10 +345,11 @@ struct App::Impl {
 	FontManager fonts;
 	ImageManager imageManager;
 	ViewPortManager viewPortManager;
+#if FLOWUI_INCLUDE_SVG_MANAGER
 	IconManager icons;
+#endif
 	FrameInput frameInputForCurrentFrame{};
 	Clay_RenderCommandArray renderCommandsForCurrentFrame{};
-	uint32_t uiFrameIndex = 0;
 	uint32_t uiFrameSlotCount = 1;
 	std::vector<VkImageLayout> swapchainImageLayouts;
 	std::chrono::steady_clock::time_point previousBeginFrameTimestamp{};
@@ -386,7 +390,10 @@ struct App::Impl {
 		fonts.init(vk, config.ui.fontAtlasSize);
 		ui.setFontManager(&fonts);
 		renderer.setFontManager(&fonts);
-		icons.init(vk, config.ui.iconAtlasSize);
+#if FLOWUI_INCLUDE_SVG_MANAGER
+		icons.setRegistry(&textureRegistry);
+		icons.init(vk, config.svgManager);
+#endif
 
 		if (!config.ui.defaultFontPath.empty()) {
 			const std::filesystem::path defaultFontPath = config.ui.defaultFontPath;
@@ -412,9 +419,12 @@ struct App::Impl {
 		previousBeginFrameTimestamp = now;
 		hasPreviousBeginFrameTimestamp = true;
 
-		textureRegistry.onFrameStart(vk, uiFrameIndex);
-		imageManager.onFrameStart(vk, uiFrameIndex);
-		viewPortManager.onFrameStart(vk, uiFrameIndex);
+		const uint32_t frameSlot =
+			frames.frames.empty() ? 0u : (frames.currentFrame % static_cast<uint32_t>(frames.frames.size()));
+
+		textureRegistry.onFrameStart(vk, frameSlot);
+		imageManager.onFrameStart(vk, frameSlot);
+		viewPortManager.onFrameStart(vk, frameSlot);
 
 		pollEvents();
 		frameInputForCurrentFrame = inputQueue.drain(deltaTimeSeconds);
@@ -436,9 +446,7 @@ struct App::Impl {
 		frameInputForLayout.mouseY /= clampedUiScale;
 		frameInputForLayout.scrollX /= clampedUiScale;
 		frameInputForLayout.scrollY /= clampedUiScale;
-		ui.beginFrame(uiFrameIndex, frameInputForLayout, layoutWidth, layoutHeight);
-
-		uiFrameIndex = (uiFrameIndex + 1) % uiFrameSlotCount;
+		ui.beginFrame(frameSlot, frameInputForLayout, layoutWidth, layoutHeight);
 	}
 
 	void endFrame() {
@@ -447,6 +455,12 @@ struct App::Impl {
 			renderCommandsForCurrentFrame,
 			uiToFramebufferScaleX,
 			uiToFramebufferScaleY);
+#if FLOWUI_INCLUDE_SVG_MANAGER
+		icons.prepareFrameTextures(
+			renderCommandsForCurrentFrame,
+			uiToFramebufferScaleX,
+			uiToFramebufferScaleY);
+#endif
 	}
 
 	void drawFrame() {
@@ -583,8 +597,10 @@ struct App::Impl {
 
 		viewPortManager.destroy(vk);
 		imageManager.destroy(vk);
-		textureRegistry.destroy(vk);
+#if FLOWUI_INCLUDE_SVG_MANAGER
 		icons.destroy(vk);
+#endif
+		textureRegistry.destroy(vk);
 		fonts.destroy(vk);
 		renderer.destroy(vk);
 
@@ -661,6 +677,22 @@ const ImageManager& App::images() const {
 	}
 	return impl_->imageManager;
 }
+
+#if FLOWUI_INCLUDE_SVG_MANAGER
+IconManager& App::icons() {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->icons;
+}
+
+const IconManager& App::icons() const {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->icons;
+}
+#endif
 
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 ViewPortManager& App::viewPorts() {

@@ -2,7 +2,7 @@
 2. Add support for Dynamic font baking
 3. Add HarfBuzz support for more scripts
 4. Add ComputeQFamily Optional grab
-5. Trun Element Properties into hash Maps
+5. Svg Manager Might have issues with Frames In Flight at LRU pollicy
 6. Add more types of element Properties.
 7. streamline element registry
 8. Optimise GPU side
@@ -12,4 +12,9 @@
 12. Update FlowUi Arena naming and handling
 13. Revisit how TextureRef's get stored for frames. 
 14. come back to enforcing PIMPL
-15. Texture Sampling has issues: Incorrect pixels & Washed Out colors from Images.
+15. update gap bucket choozing icons
+
+For SVG Manager:
+	Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.
+	If atlas is full and everything is “in use this frame,” allocation currently fails instead of forcing eviction.
+	No debug/stats API yet (cache hit rate, page usage, evictions).

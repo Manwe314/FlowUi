@@ -150,8 +150,10 @@ namespace FlowUi
 		const float emToPixels = emPixels / std::max(variant->emSize, 1.0e-6f);
 		const float letterSpacingPx = static_cast<float>(config->letterSpacing);
 		float penX = 0.0f;
-		float minX = 0.0f;
-		float maxX = 0.0f;
+		float lineMinX = 0.0f;
+		float lineMaxX = 0.0f;
+		bool lineHasGlyph = false;
+		float measuredWidth = 0.0f;
 
 		uint32_t previousCodepoint = 0;
 		bool hasPreviousCodepoint = false;
@@ -163,12 +165,36 @@ namespace FlowUi
 			}
 
 			if (codepoint == '\n') {
+				const float lineWidth = lineHasGlyph
+					? std::max(0.0f, lineMaxX - lineMinX)
+					: std::max(0.0f, penX);
+				measuredWidth = std::max(measuredWidth, lineWidth);
+				penX = 0.0f;
+				lineMinX = 0.0f;
+				lineMaxX = 0.0f;
+				lineHasGlyph = false;
 				hasPreviousCodepoint = false;
 				continue;
 			}
 
 			if (hasPreviousCodepoint) {
 				penX += variant->kerningAdvance(previousCodepoint, codepoint) * emToPixels;
+			}
+
+			// Match renderer text layout: treat spacing codepoints as advance-only.
+			if (codepoint == ' ' || codepoint == '\t' || codepoint == 0x00A0u) {
+				float whitespaceAdvance = std::max(variant->emSize * emToPixels * 0.33f, 1.0f);
+				const auto spaceGlyphIt = variant->unicodeToGlyphIndex.find(' ');
+				if (spaceGlyphIt != variant->unicodeToGlyphIndex.end() && spaceGlyphIt->second < variant->glyphs.size()) {
+					whitespaceAdvance = variant->glyphs[spaceGlyphIt->second].advanceX * emToPixels;
+				}
+				if (codepoint == '\t') {
+					whitespaceAdvance *= 4.0f;
+				}
+				penX += whitespaceAdvance + letterSpacingPx;
+				previousCodepoint = codepoint;
+				hasPreviousCodepoint = true;
+				continue;
 			}
 
 			uint32_t glyphIndex = variant->fallbackGlyphIndex;
@@ -184,17 +210,30 @@ namespace FlowUi
 			}
 
 			const FontManager::GlyphData& glyph = variant->glyphs[glyphIndex];
-			minX = std::min(minX, penX + glyph.planeLeft * emToPixels);
-			maxX = std::max(maxX, penX + glyph.planeRight * emToPixels);
+			const float x0 = penX + glyph.planeLeft * emToPixels;
+			const float x1 = penX + glyph.planeRight * emToPixels;
+			const float glyphWidth = x1 - x0;
+			if (glyphWidth > 0.0f) {
+				if (!lineHasGlyph) {
+					lineMinX = x0;
+					lineMaxX = x1;
+					lineHasGlyph = true;
+				} else {
+					lineMinX = std::min(lineMinX, x0);
+					lineMaxX = std::max(lineMaxX, x1);
+				}
+			}
 
 			penX += glyph.advanceX * emToPixels + letterSpacingPx;
-			maxX = std::max(maxX, penX);
 
 			previousCodepoint = codepoint;
 			hasPreviousCodepoint = true;
 		}
 
-		const float measuredWidth = std::max(0.0f, maxX - minX);
+		const float finalLineWidth = lineHasGlyph
+			? std::max(0.0f, lineMaxX - lineMinX)
+			: std::max(0.0f, penX);
+		measuredWidth = std::max(measuredWidth, finalLineWidth);
 		float naturalLineHeight = variant->lineHeight * emToPixels;
 		if (naturalLineHeight <= 0.0f) {
 			naturalLineHeight = emPixels;
