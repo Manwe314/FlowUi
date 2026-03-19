@@ -52,7 +52,7 @@ struct FontGuard {
 
 void printUsage(const char *argv0) {
     std::cout
-        << "FlowUi Offline Font Baker (MTSDF -> .arfont)\n"
+        << "FlowUi Offline Font Baker (MSDF -> .arfont)\n"
         << "Usage:\n"
         << "  " << argv0 << " --input <font.ttf> --output <font.arfont> --pixel-size <size>\n"
         << "          [--charset <inline charset>] [--charset-file <charset.txt>]\n"

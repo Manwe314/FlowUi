@@ -43,6 +43,13 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 		if (bool* pressedThisFrame = context.bindings.getPointer<bool>("pressedThisFrame")) {
 			*pressedThisFrame = true;
 		}
+
+		// Optional per-instance callback parameter.
+		if (FlowUi::ElementCustomCallback customPressedCallback =
+				context.parameters.getValue<FlowUi::ElementCustomCallback>("onPressedCallback");
+			customPressedCallback) {
+			customPressedCallback(context);
+		}
 	};
 
 	// 4) Optional per-frame logic callback.
@@ -96,6 +103,11 @@ void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pre
 		.set("label", "Play")
 		.set("width", 260.0f)
 		.set("height", 52.0f)
+		.set("onPressedCallback", [](FlowUi::ElementEventContext& callbackContext) {
+			if (int* count = callbackContext.bindings.getPointer<int>("clickCount")) {
+				*count += 10;
+			}
+		})
 		// Bind references for callbacks/logic:
 		.bind("clickCount", clickCount)
 		.bind("pressedThisFrame", pressedThisFrame)

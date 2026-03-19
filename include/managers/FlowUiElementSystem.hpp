@@ -41,6 +41,8 @@ struct InteractionSnapshot {
 // ----------------------------
 // Element parameter values
 // ----------------------------
+struct ElementEventContext;
+using ElementCustomCallback = std::function<void(ElementEventContext&)>;
 using ElementParameterValue = std::variant<
     bool,
     int,
@@ -52,6 +54,7 @@ using ElementParameterValue = std::variant<
 	Clay_LayoutDirection,
 	Clay_LayoutConfig,
 	Clay_ElementDeclaration,
+    ElementCustomCallback,
 	TextureRef
 >;
 
@@ -240,6 +243,14 @@ public:
 	ElementBuilder& set(std::string_view key, Clay_LayoutConfig value);
 	ElementBuilder& set(std::string_view key, Clay_ElementDeclaration value);
 	ElementBuilder& set(std::string_view key, TextureRef value);
+    ElementBuilder& set(std::string_view key, ElementCustomCallback value);
+
+    template <typename Callback>
+    ElementBuilder& set(std::string_view key, Callback&& callback)
+        requires std::is_invocable_r_v<void, std::remove_reference_t<Callback>&, ElementEventContext&>
+    {
+        return set(key, ElementCustomCallback(std::forward<Callback>(callback)));
+    }
 
     template <typename T>
     ElementBuilder& bind(std::string_view key, T& reference)

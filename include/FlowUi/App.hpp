@@ -15,6 +15,9 @@ namespace FlowUi {
 
 class UiManager;
 class ImageManager;
+#if FLOWUI_INCLUDE_SVG_MANAGER
+class IconManager;
+#endif
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 class ViewPortManager;
 #endif
@@ -41,6 +44,10 @@ public:
 	const FontManager& fonts() const;
 	ImageManager& images();
 	const ImageManager& images() const;
+#if FLOWUI_INCLUDE_SVG_MANAGER
+	IconManager& icons();
+	const IconManager& icons() const;
+#endif
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 	ViewPortManager& viewPorts();
 	const ViewPortManager& viewPorts() const;
