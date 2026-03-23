@@ -16,14 +16,14 @@ void registerTemplateCheckBox(FlowUi::ElementRegistry& elementRegistry)
 		defaults.setValue("borderWidth", 2.0f);
 	};
 
-	definition.onPressed = [](FlowUi::ElementEventContext& context)
+	definition.onPressed = [](FlowUi::ElementInteractionContext& context)
 	{
 		if (int* clickID = context.bindings.getPointer<int>("clickId"))
 			*(clickID) = context.parameters.getValueOrDefault<int>("ID", 0);
 		context.parameters.setValue("IsActive", true);
 	};
 
-	definition.runLogic = [](FlowUi::ElementLogicContext& context) {
+	definition.runLogic = [](FlowUi::ElementInteractionContext& context) {
 		if (int* clickID = context.bindings.getPointer<int>("clickId"))
 		{
 			if (*clickID != context.parameters.getValueOrDefault<int>("ID", 0))

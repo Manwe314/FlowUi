@@ -4,14 +4,43 @@
 #include <string>
 #include <string_view>
 #include <cstdint>
+#include <stdexcept>
 #include <utility>
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "clay.h"
 
 struct FontManager;
 
 namespace FlowUi {
+
+inline Clay_Color Flow_Color(std::string_view hexRgba)
+{
+	if (hexRgba.size() != 9 || hexRgba[0] != '#') {
+		throw std::invalid_argument("Flow_Color expects #RRGGBBAA.");
+	}
+
+	const auto decodeHexNibble = [](char c) -> uint8_t {
+		if (c >= '0' && c <= '9') return static_cast<uint8_t>(c - '0');
+		if (c >= 'a' && c <= 'f') return static_cast<uint8_t>(10 + (c - 'a'));
+		if (c >= 'A' && c <= 'F') return static_cast<uint8_t>(10 + (c - 'A'));
+		throw std::invalid_argument("Flow_Color received invalid hex digit.");
+	};
+
+	const auto decodeHexByte = [&](std::size_t index) -> float {
+		const uint8_t hi = decodeHexNibble(hexRgba[index]);
+		const uint8_t lo = decodeHexNibble(hexRgba[index + 1]);
+		return static_cast<float>((hi << 4) | lo);
+	};
+
+	return Clay_Color{
+		decodeHexByte(1),
+		decodeHexByte(3),
+		decodeHexByte(5),
+		decodeHexByte(7),
+	};
+}
 
 class UiManager;
 class ImageManager;

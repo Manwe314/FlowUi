@@ -369,6 +369,10 @@ namespace FlowUi
     	return ElementBuilder(*this, definition, std::string(instanceIdPath));
 	}
 
+	ElementBuilder UiManager::createElement(const ElementDefinition& elementDefinition, std::string_view instanceIdPath) {
+		return ElementBuilder(*this, &elementDefinition, std::string(instanceIdPath));
+	}
+
 	void UiManager::setCurrentInteractionSnapshot(InteractionSnapshot snapshot) {
 	    currentInteractionSnapshot_ = std::move(snapshot);
 	}

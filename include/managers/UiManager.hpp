@@ -31,6 +31,7 @@ public:
 	Clay_ElementId toClayEID(std::string_view s);
 	
 	ElementBuilder createElement(std::string_view elementTypeName, std::string_view instanceIdPath);
+	ElementBuilder createElement(const ElementDefinition& elementDefinition, std::string_view instanceIdPath);
 
     const InteractionSnapshot& getPreviousFramesInteraction() const { return previousInteractionSnapshot_; }
 

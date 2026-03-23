@@ -9,13 +9,7 @@ Clay_ElementId ElementBuildContext::createChildElementId(std::string_view localC
     return userInterface.toClayEID(full);
 }
 
-Clay_ElementId ElementEventContext::createChildElementId(std::string_view localChildId) const
-{
-    std::string full = std::string(instanceIdPath) + "/" + std::string(localChildId);
-    return userInterface.toClayEID(full);
-}
-
-Clay_ElementId ElementLogicContext::createChildElementId(std::string_view localChildId) const
+Clay_ElementId ElementInteractionContext::createChildElementId(std::string_view localChildId) const
 {
     std::string full = std::string(instanceIdPath) + "/" + std::string(localChildId);
     return userInterface.toClayEID(full);
@@ -120,7 +114,7 @@ void ElementBuilder::draw(ElementDrawOptions options)
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipEventCallbacks)) {
         const InteractionSnapshot& previousInteraction = userInterface_.getPreviousFramesInteraction();
 
-        ElementEventContext eventContext{
+        ElementInteractionContext eventContext{
             userInterface_,
             rootElementId,
             instanceIdPath_,
@@ -145,7 +139,7 @@ void ElementBuilder::draw(ElementDrawOptions options)
 
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipLogicCallback) && elementDefinition_->runLogic) {
         const InteractionSnapshot& previousInteraction = userInterface_.getPreviousFramesInteraction();
-        ElementLogicContext logicContext{
+        ElementInteractionContext logicContext{
             userInterface_,
             rootElementId,
             instanceIdPath_,
