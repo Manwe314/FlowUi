@@ -41,8 +41,8 @@ struct InteractionSnapshot {
 // ----------------------------
 // Element parameter values
 // ----------------------------
-struct ElementEventContext;
-using ElementCustomCallback = std::function<void(ElementEventContext&)>;
+struct ElementInteractionContext;
+using ElementCustomCallback = std::function<void(ElementInteractionContext&)>;
 using ElementParameterValue = std::variant<
     bool,
     int,
@@ -155,19 +155,7 @@ struct ElementBuildContext
     Clay_ElementId createChildElementId(std::string_view localChildId) const;
 };
 
-struct ElementEventContext
-{
-    UiManager& userInterface;
-    Clay_ElementId elementId;
-    std::string_view instanceIdPath;
-    ElementParameters& parameters;
-    ElementBindings& bindings;
-    const InteractionSnapshot& previousInteraction;
-
-    Clay_ElementId createChildElementId(std::string_view localChildId) const;
-};
-
-struct ElementLogicContext
+struct ElementInteractionContext
 {
     UiManager& userInterface;
     Clay_ElementId elementId;
@@ -186,12 +174,12 @@ struct ElementDefinition
 
     std::function<void(ElementParameters& defaultParameters)> initializeDefaultParameters;
 
-    std::function<void(ElementEventContext&)> onHovered;
-    std::function<void(ElementEventContext&)> onPressed;
-    std::function<void(ElementEventContext&)> onHeld;
-    std::function<void(ElementEventContext&)> onReleased;
+    std::function<void(ElementInteractionContext&)> onHovered;
+    std::function<void(ElementInteractionContext&)> onPressed;
+    std::function<void(ElementInteractionContext&)> onHeld;
+    std::function<void(ElementInteractionContext&)> onReleased;
 
-    std::function<void(ElementLogicContext&)> runLogic;
+    std::function<void(ElementInteractionContext&)> runLogic;
 
     std::function<void(ElementBuildContext&)> buildElement;
 };
@@ -247,7 +235,7 @@ public:
 
     template <typename Callback>
     ElementBuilder& set(std::string_view key, Callback&& callback)
-        requires std::is_invocable_r_v<void, std::remove_reference_t<Callback>&, ElementEventContext&>
+        requires std::is_invocable_r_v<void, std::remove_reference_t<Callback>&, ElementInteractionContext&>
     {
         return set(key, ElementCustomCallback(std::forward<Callback>(callback)));
     }

@@ -12,7 +12,6 @@
 // - binding keys ("clickCount", "pressedThisFrame", ...)
 // ---------------------------------------------------------------------------
 
-namespace UserElementsTemplate {
 
 // Register one custom element type into your ElementRegistry.
 // Call this once during your app setup/initialization.
@@ -36,7 +35,7 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 
 	// 3) Optional input event callbacks.
 	//    Bind external state with ElementBuilder::bind("key", reference).
-	definition.onPressed = [](FlowUi::ElementEventContext& context) {
+	definition.onPressed = [](FlowUi::ElementInteractionContext& context) {
 		if (int* clickCount = context.bindings.getPointer<int>("clickCount")) {
 			++(*clickCount);
 		}
@@ -53,7 +52,7 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 	};
 
 	// 4) Optional per-frame logic callback.
-	definition.runLogic = [](FlowUi::ElementLogicContext& context) {
+	definition.runLogic = [](FlowUi::ElementInteractionContext& context) {
 		// Example: if bound, clear "pressedThisFrame" before event handling.
 		// Keep/remove this based on your game/app state model.
 		if (bool* pressedThisFrame = context.bindings.getPointer<bool>("pressedThisFrame")) {
@@ -103,7 +102,7 @@ void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pre
 		.set("label", "Play")
 		.set("width", 260.0f)
 		.set("height", 52.0f)
-		.set("onPressedCallback", [](FlowUi::ElementEventContext& callbackContext) {
+		.set("onPressedCallback", [](FlowUi::ElementInteractionContext& callbackContext) {
 			if (int* count = callbackContext.bindings.getPointer<int>("clickCount")) {
 				*count += 10;
 			}
@@ -114,4 +113,3 @@ void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pre
 		.draw();
 }
 
-} // namespace UserElementsTemplate
