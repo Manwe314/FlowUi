@@ -5,11 +5,22 @@
 #include <string>
 #include <filesystem>
 
+#include <clay.h>
+
 
 namespace FlowUi {
 
 enum class PresentMode { Fifo, Mailbox, Immediate };
 enum class MSAA { x1 = 1, x2 = 2, x4 = 4, x8 = 8 };
+enum class CursorMode : uint8_t { Normal = 0, Hidden = 1, Disabled = 2 };
+
+struct WindowInputConfig {
+	CursorMode cursorMode = CursorMode::Normal;
+	bool stickyKeys = false;
+	bool stickyMouseButtons = false;
+	bool lockKeyMods = false;
+	bool rawMouseMotion = false;
+};
 
 struct WindowConfig {
 	int width = 1280;
@@ -19,6 +30,7 @@ struct WindowConfig {
 	bool maximized = false;
 	bool fullscreen = false;
 	bool highDPI = true;
+	WindowInputConfig input{};
 };
 
 struct VulkanConfig {
@@ -32,6 +44,15 @@ struct VulkanConfig {
 };
 
 struct UiConfig {
+	struct InputManagerConfig {
+		float caretWidthPx = 2.0f;
+		float caretHeightOverflowTopPx = 1.0f;
+		float caretHeightOverflowBottomPx = 1.0f;
+		Clay_Color caretColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};
+		Clay_Color highlightBoxColor = Clay_Color{66.0f, 133.0f, 244.0f, 150.0f};
+		Clay_Color highlightedTextColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};
+	};
+
 	float dpi = 96.0f;
 	float uiScale = 1.0f;
 	float fontScale = 1.0f;
@@ -44,6 +65,7 @@ struct UiConfig {
 
 	uint32_t fontAtlasSize = 2048;
 	uint32_t iconAtlasSize = 1024;
+	InputManagerConfig inputManager{};
 };
 
 struct SvgManagerConfig {

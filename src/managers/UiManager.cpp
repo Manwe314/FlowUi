@@ -3,71 +3,11 @@
 #include <cstdint>
 
 #include "managers/FontManager.hpp"
+#include "internal/TextLayoutEngine.hpp"
 
 namespace {
 
 constexpr float kPointsPerInch = 72.0f;
-
-bool DecodeNextUtf8Codepoint(const Clay_StringSlice& stringSlice, int& byteOffset, uint32_t& outCodepoint) {
-	if (!stringSlice.chars || byteOffset >= stringSlice.length) {
-		return false;
-	}
-
-	const auto* bytes = reinterpret_cast<const uint8_t*>(stringSlice.chars);
-	const uint8_t first = bytes[byteOffset];
-
-	if (first < 0x80u) {
-		outCodepoint = first;
-		byteOffset += 1;
-		return true;
-	}
-
-	auto continuation = [&](int index) -> uint8_t {
-		return (index < stringSlice.length) ? bytes[index] : 0u;
-	};
-
-	if ((first & 0xE0u) == 0xC0u && byteOffset + 1 < stringSlice.length) {
-		const uint8_t c1 = continuation(byteOffset + 1);
-		if ((c1 & 0xC0u) == 0x80u) {
-			outCodepoint = ((first & 0x1Fu) << 6u) | (c1 & 0x3Fu);
-			byteOffset += 2;
-			return true;
-		}
-	} else if ((first & 0xF0u) == 0xE0u && byteOffset + 2 < stringSlice.length) {
-		const uint8_t c1 = continuation(byteOffset + 1);
-		const uint8_t c2 = continuation(byteOffset + 2);
-		if ((c1 & 0xC0u) == 0x80u && (c2 & 0xC0u) == 0x80u) {
-			outCodepoint = ((first & 0x0Fu) << 12u) | ((c1 & 0x3Fu) << 6u) | (c2 & 0x3Fu);
-			byteOffset += 3;
-			return true;
-		}
-	} else if ((first & 0xF8u) == 0xF0u && byteOffset + 3 < stringSlice.length) {
-		const uint8_t c1 = continuation(byteOffset + 1);
-		const uint8_t c2 = continuation(byteOffset + 2);
-		const uint8_t c3 = continuation(byteOffset + 3);
-		if ((c1 & 0xC0u) == 0x80u && (c2 & 0xC0u) == 0x80u && (c3 & 0xC0u) == 0x80u) {
-			outCodepoint = ((first & 0x07u) << 18u) | ((c1 & 0x3Fu) << 12u) | ((c2 & 0x3Fu) << 6u) | (c3 & 0x3Fu);
-			byteOffset += 4;
-			return true;
-		}
-	}
-
-	outCodepoint = 0xFFFDu;
-	byteOffset += 1;
-	return true;
-}
-
-const FontManager::FontFaceData* ResolveFontFace(const FontManager* fontManager, uint16_t fontId) {
-	if (!fontManager) {
-		return nullptr;
-	}
-
-	const FontManager::FontFaceData* face = fontManager->getFontById(static_cast<int>(fontId));
-	if (!face) {
-		face = fontManager->getFontById(0);
-	}
-	return face;
-}
 
 } // namespace
 
@@ -103,6 +43,8 @@ namespace FlowUi
 		if (pointsToPixelsScale_ <= 0.0f) {
 			pointsToPixelsScale_ = configuredDpi / kPointsPerInch;
 		}
+		inputFieldManager_.setConfig(appConfig.ui.inputManager);
+		inputFieldManager_.setFontManager(nullptr, pointsToPixelsScale_);
 
 		Clay_SetCurrentContext(clayContext_);
 		Clay_SetMeasureTextFunction(
@@ -116,16 +58,42 @@ namespace FlowUi
 			this);
 	}
 
-	void UiManager::setFontManager(const ::FontManager* fontManager) {
-		fontManager_ = fontManager;
-	}
-
-	Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
-		if (!config || !text.chars || text.length <= 0) {
-			return Clay_Dimensions{ 0.0f, 0.0f };
+		void UiManager::setFontManager(const ::FontManager* fontManager) {
+			fontManager_ = fontManager;
+			inputFieldManager_.setFontManager(fontManager_, pointsToPixelsScale_);
 		}
 
-		const FontManager::FontFaceData* fontFace = ResolveFontFace(fontManager_, config->fontId);
+		void UiManager::setClipboardText(std::string_view text) const {
+			if (!setClipboardTextAccessor_) {
+				return;
+			}
+			setClipboardTextAccessor_(text);
+		}
+
+		std::string UiManager::clipboardText() const {
+			if (!getClipboardTextAccessor_) {
+				return {};
+			}
+			return getClipboardTextAccessor_();
+		}
+
+		bool UiManager::hasClipboardAccess() const {
+			return static_cast<bool>(setClipboardTextAccessor_) && static_cast<bool>(getClipboardTextAccessor_);
+		}
+
+		void UiManager::setClipboardAccessors(
+			std::function<void(std::string_view)> setClipboardTextAccessor,
+			std::function<std::string()> getClipboardTextAccessor) {
+			setClipboardTextAccessor_ = std::move(setClipboardTextAccessor);
+			getClipboardTextAccessor_ = std::move(getClipboardTextAccessor);
+		}
+
+		Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
+			if (!config || !text.chars || text.length <= 0) {
+				return Clay_Dimensions{ 0.0f, 0.0f };
+			}
+
+		const FontManager::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, config->fontId);
 		if (!fontFace) {
 			const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, config->fontSize)) * pointsToPixelsScale_;
 			return Clay_Dimensions{
@@ -134,112 +102,24 @@ namespace FlowUi
 			};
 		}
 
-		const FontManager::FontVariantData* variant = fontFace->defaultVariant();
-		if (!variant || variant->glyphs.empty()) {
+		const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
+			FlowUi::detail::TextLayoutRequest{
+				.text = text,
+				.fontFace = fontFace,
+				.pointsToPixelsScale = pointsToPixelsScale_,
+				.fontSize = config->fontSize,
+				.letterSpacing = config->letterSpacing,
+				.lineOriginX = 0.0f,
+				.lineOriginY = 0.0f,
+				.emitGlyphQuads = false,
+			},
+			[](const FlowUi::detail::TextLayoutGlyphQuad&) {});
+
+		if (!layoutResult.success) {
 			return Clay_Dimensions{ 0.0f, 0.0f };
 		}
 
-		float emPixels = variant->fontSizePx;
-		if (config->fontSize > 0) {
-			emPixels = static_cast<float>(config->fontSize) * pointsToPixelsScale_;
-		}
-		if (emPixels <= 0.0f) {
-			return Clay_Dimensions{ 0.0f, 0.0f };
-		}
-
-		const float emToPixels = emPixels / std::max(variant->emSize, 1.0e-6f);
-		const float letterSpacingPx = static_cast<float>(config->letterSpacing);
-		float penX = 0.0f;
-		float lineMinX = 0.0f;
-		float lineMaxX = 0.0f;
-		bool lineHasGlyph = false;
-		float measuredWidth = 0.0f;
-
-		uint32_t previousCodepoint = 0;
-		bool hasPreviousCodepoint = false;
-		int byteOffset = 0;
-		while (byteOffset < text.length) {
-			uint32_t codepoint = 0;
-			if (!DecodeNextUtf8Codepoint(text, byteOffset, codepoint)) {
-				break;
-			}
-
-			if (codepoint == '\n') {
-				const float lineWidth = lineHasGlyph
-					? std::max(0.0f, lineMaxX - lineMinX)
-					: std::max(0.0f, penX);
-				measuredWidth = std::max(measuredWidth, lineWidth);
-				penX = 0.0f;
-				lineMinX = 0.0f;
-				lineMaxX = 0.0f;
-				lineHasGlyph = false;
-				hasPreviousCodepoint = false;
-				continue;
-			}
-
-			if (hasPreviousCodepoint) {
-				penX += variant->kerningAdvance(previousCodepoint, codepoint) * emToPixels;
-			}
-
-			// Match renderer text layout: treat spacing codepoints as advance-only.
-			if (codepoint == ' ' || codepoint == '\t' || codepoint == 0x00A0u) {
-				float whitespaceAdvance = std::max(variant->emSize * emToPixels * 0.33f, 1.0f);
-				const auto spaceGlyphIt = variant->unicodeToGlyphIndex.find(' ');
-				if (spaceGlyphIt != variant->unicodeToGlyphIndex.end() && spaceGlyphIt->second < variant->glyphs.size()) {
-					whitespaceAdvance = variant->glyphs[spaceGlyphIt->second].advanceX * emToPixels;
-				}
-				if (codepoint == '\t') {
-					whitespaceAdvance *= 4.0f;
-				}
-				penX += whitespaceAdvance + letterSpacingPx;
-				previousCodepoint = codepoint;
-				hasPreviousCodepoint = true;
-				continue;
-			}
-
-			uint32_t glyphIndex = variant->fallbackGlyphIndex;
-			const auto glyphIt = variant->unicodeToGlyphIndex.find(codepoint);
-			if (glyphIt != variant->unicodeToGlyphIndex.end()) {
-				glyphIndex = glyphIt->second;
-			}
-			if (glyphIndex >= variant->glyphs.size()) {
-				if (variant->glyphs.empty()) {
-					continue;
-				}
-				glyphIndex = 0;
-			}
-
-			const FontManager::GlyphData& glyph = variant->glyphs[glyphIndex];
-			const float x0 = penX + glyph.planeLeft * emToPixels;
-			const float x1 = penX + glyph.planeRight * emToPixels;
-			const float glyphWidth = x1 - x0;
-			if (glyphWidth > 0.0f) {
-				if (!lineHasGlyph) {
-					lineMinX = x0;
-					lineMaxX = x1;
-					lineHasGlyph = true;
-				} else {
-					lineMinX = std::min(lineMinX, x0);
-					lineMaxX = std::max(lineMaxX, x1);
-				}
-			}
-
-			penX += glyph.advanceX * emToPixels + letterSpacingPx;
-
-			previousCodepoint = codepoint;
-			hasPreviousCodepoint = true;
-		}
-
-		const float finalLineWidth = lineHasGlyph
-			? std::max(0.0f, lineMaxX - lineMinX)
-			: std::max(0.0f, penX);
-		measuredWidth = std::max(measuredWidth, finalLineWidth);
-		float naturalLineHeight = variant->lineHeight * emToPixels;
-		if (naturalLineHeight <= 0.0f) {
-			naturalLineHeight = emPixels;
-		}
-
-		return Clay_Dimensions{ measuredWidth, naturalLineHeight };
+		return Clay_Dimensions{ layoutResult.measuredWidth, layoutResult.lineHeight };
 	}
 
 	void UiManager::initStringArenas(const FlowUi::AppConfig& cfg)
@@ -269,7 +149,10 @@ namespace FlowUi
 		arenas_[curArena_].offset = 0;
 
 		advanceFrameInteractionSnapshots();
+		previousFrameInputForCurrentLayout_ = frameInputForCurrentLayout_;
 		frameInputForCurrentLayout_ = frameInput;
+		inputFieldManager_.beginFrame(frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
+		shortcutManager_.beginFrame(*this, frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
 
 		Clay_SetCurrentContext(clayContext_);
 
@@ -312,6 +195,7 @@ namespace FlowUi
 		}
 		wasPrimaryPointerDownLastFrame_ = isPrimaryPointerDown;
 
+		renderCommands = inputFieldManager_.endFrame(renderCommands);
 		setCurrentInteractionSnapshot(std::move(interactionSnapshot));
 		return renderCommands;
 	}

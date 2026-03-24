@@ -12,7 +12,6 @@ struct FrameVk {
 		VkCommandPool pool = VK_NULL_HANDLE;
 		VkCommandBuffer cmd = VK_NULL_HANDLE;
 		VkSemaphore imageAvailable = VK_NULL_HANDLE;
-		VkSemaphore renderFinished = VK_NULL_HANDLE;
 		VkFence inFlight = VK_NULL_HANDLE;
 	};
 
@@ -21,6 +20,7 @@ struct FrameVk {
 
 	// track swapchain images (size = swap.images.size())
 	std::vector<VkFence> imageInFlight;
+	std::vector<VkSemaphore> renderFinishedBySwapImage;
 
 	void create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t swapImageCount);
 	void destroy(VulkanContext& vk);
@@ -28,7 +28,5 @@ struct FrameVk {
 	Frame& getCurrantFrame() { return frames[currentFrame]; }
 	void advance() { currentFrame = (currentFrame + 1) % (uint32_t)frames.size(); }
 
-	void onSwapchainRecreated(size_t newSwapImageCount) {
-		imageInFlight.assign(newSwapImageCount, VK_NULL_HANDLE);
-	}
+	void onSwapchainRecreated(VulkanContext& vk, size_t newSwapImageCount);
 };

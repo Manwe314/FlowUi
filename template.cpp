@@ -1,15 +1,19 @@
 #include "managers/FlowUiElementSystem.hpp"
 #include "managers/UiManager.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <string_view>
 
 // ---------------------------------------------------------------------------
 // FlowUi Element Template
 // ---------------------------------------------------------------------------
 // Copy this file (or sections of it) into your project and rename:
-// - "TemplateButton" element type
-// - parameter keys ("label", "width", ...)
-// - binding keys ("clickCount", "pressedThisFrame", ...)
+// - element type names ("TemplateButton", "TemplateTextField")
+// - parameter keys ("label", "placeholder", ...)
+// - binding keys ("text", "focusedFieldPath", ...)
 // ---------------------------------------------------------------------------
 
 
@@ -83,12 +87,12 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 		CLAY(root) {
 			CLAY_TEXT(
 				context.userInterface.toClayString(label),
-				CLAY_TEXT_CONFIG(
+				CLAY_TEXT_CONFIG({
+					.textColor = textColor,
 					.fontId = 0,
 					.fontSize = static_cast<uint16_t>(fontSize),
-					.textColor = textColor,
 					.wrapMode = CLAY_TEXT_WRAP_NONE,
-					.textAlignment = CLAY_TEXT_ALIGN_CENTER));
+					.textAlignment = CLAY_TEXT_ALIGN_CENTER}));
 		}
 	};
 
@@ -96,7 +100,8 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 }
 
 // Example usage each frame (inside your UI build code).
-void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pressedThisFrame) {
+void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pressedThisFrame)
+{
 	uiContext.createElement("TemplateButton", "main_menu/play_button")
 		// Optional per-instance overrides:
 		.set("label", "Play")

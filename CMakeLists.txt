@@ -43,7 +43,9 @@ find_package(Vulkan REQUIRED)
 set(FLOWUI_SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 set(FLOWUI_SHADER_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
 set(FLOWUI_SHADER_SOURCES
-    "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_quad.vert"
+    "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_solid.vert"
+    "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_msdf.vert"
+    "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_textured.vert"
     "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_solid.frag"
     "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_msdf.frag"
     "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_textured.frag"
@@ -171,6 +173,8 @@ target_sources(flowui
         src/FlowUi.cpp
         src/managers/FontManager.cpp
         src/managers/ImageManager.cpp
+        src/managers/InputFieldManager.cpp
+        src/managers/ShortcutManager.cpp
         src/managers/ViewPortManager.cpp
         src/managers/FlowUiElementSystem.cpp
         src/managers/UiManager.cpp
@@ -229,6 +233,7 @@ target_compile_definitions(flowui
         FLOWUI_PUBLIC_VULKAN_INTEROP=${FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE}
         FLOWUI_INCLUDE_SVG_MANAGER=${FLOWUI_INCLUDE_SVG_MANAGER_VALUE}
     PRIVATE
+        FLOWUI_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         FLOWUI_SHADER_OUTPUT_DIR="${FLOWUI_SHADER_OUTPUT_DIR}"
 )
 

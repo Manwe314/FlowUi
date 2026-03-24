@@ -34,6 +34,8 @@ struct InputQueue {
 	void pushMouseButton(int mouseButton, bool down);
 	void pushScroll(float dx, float dy);
 	void setMousePos(float x, float y);
+	void clearKeyboardState();
+	void clearMouseButtonsState();
 
 	FrameInput drain(double dt);
 

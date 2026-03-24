@@ -23,6 +23,18 @@ inline void glfwErrorCallback(int code, const char* description) {
 	std::fprintf(stderr, "[GLFW] (%d) %s\n", code, description ? description : "");
 }
 
+inline int toGlfwCursorMode(FlowUi::CursorMode cursorMode) {
+	switch (cursorMode) {
+		case FlowUi::CursorMode::Hidden:
+			return GLFW_CURSOR_HIDDEN;
+		case FlowUi::CursorMode::Disabled:
+			return GLFW_CURSOR_DISABLED;
+		case FlowUi::CursorMode::Normal:
+		default:
+			return GLFW_CURSOR_NORMAL;
+	}
+}
+
 struct GlfwLibrary {
 	GlfwLibrary() {
 		if (refCount++ == 0) {
@@ -81,6 +93,7 @@ public:
 
 		glfwSetWindowUserPointer(window, this);
 		installCallbacks();
+		setInputConfig(config.input);
 	}
 
 	~GlfwWindowBackend() override {
@@ -104,15 +117,6 @@ public:
 		for (int mouseButton = 0; mouseButton < static_cast<int>(FrameInput::kMouseButtonCount); ++mouseButton) {
 			const int buttonState = glfwGetMouseButton(window, mouseButton);
 			input->pushMouseButton(mouseButton, buttonState == GLFW_PRESS);
-		}
-
-		const int maxTrackedKeyCode = std::min(
-			GLFW_KEY_LAST,
-			static_cast<int>(FrameInput::kKeyboardKeyCount) - 1);
-		for (int keyCode = 0; keyCode <= maxTrackedKeyCode; ++keyCode) {
-			const int keyState = glfwGetKey(window, keyCode);
-			const bool isKeyDown = (keyState == GLFW_PRESS || keyState == GLFW_REPEAT);
-			input->pushKey(keyCode, isKeyDown);
 		}
 	}
 
@@ -167,6 +171,63 @@ public:
 		}
 	}
 
+	void setInputConfig(const FlowUi::WindowInputConfig& config) override {
+		inputConfig_ = config;
+		if (!window) {
+			return;
+		}
+
+		glfwSetInputMode(window, GLFW_CURSOR, toGlfwCursorMode(config.cursorMode));
+		glfwSetInputMode(window, GLFW_STICKY_KEYS, config.stickyKeys ? GLFW_TRUE : GLFW_FALSE);
+		glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, config.stickyMouseButtons ? GLFW_TRUE : GLFW_FALSE);
+#ifdef GLFW_LOCK_KEY_MODS
+		glfwSetInputMode(window, GLFW_LOCK_KEY_MODS, config.lockKeyMods ? GLFW_TRUE : GLFW_FALSE);
+#else
+		inputConfig_.lockKeyMods = false;
+#endif
+#ifdef GLFW_RAW_MOUSE_MOTION
+		if (glfwRawMouseMotionSupported() == GLFW_TRUE) {
+			glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, config.rawMouseMotion ? GLFW_TRUE : GLFW_FALSE);
+			inputConfig_.rawMouseMotion = config.rawMouseMotion;
+		} else {
+			inputConfig_.rawMouseMotion = false;
+		}
+#else
+		inputConfig_.rawMouseMotion = false;
+#endif
+	}
+
+	FlowUi::WindowInputConfig getInputConfig() const override {
+		return inputConfig_;
+	}
+
+	bool supportsRawMouseMotion() const override {
+#ifdef GLFW_RAW_MOUSE_MOTION
+		return glfwRawMouseMotionSupported() == GLFW_TRUE;
+#else
+		return false;
+#endif
+	}
+
+	void setClipboardText(std::string_view text) override {
+		if (!window) {
+			return;
+		}
+		std::string copy(text);
+		glfwSetClipboardString(window, copy.c_str());
+	}
+
+	std::string getClipboardText() const override {
+		if (!window) {
+			return {};
+		}
+		const char* clipboard = glfwGetClipboardString(window);
+		if (!clipboard) {
+			return {};
+		}
+		return std::string(clipboard);
+	}
+
 	void* nativeHandle() const override { return window; }
 
 private:
@@ -208,11 +269,21 @@ private:
 				self->input->pushChar(static_cast<char32_t>(codepoint));
 			}
 		});
+
+		glfwSetWindowFocusCallback(window, [](GLFWwindow* win, int focused) {
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (!self || !self->input || focused == GLFW_TRUE) {
+				return;
+			}
+			self->input->clearKeyboardState();
+			self->input->clearMouseButtonsState();
+		});
 	}
 
 	GlfwLibrary library;
 	GLFWwindow* window = nullptr;
 	InputQueue* input = nullptr;
+	FlowUi::WindowInputConfig inputConfig_{};
 };
 
 } // namespace FlowUi::detail

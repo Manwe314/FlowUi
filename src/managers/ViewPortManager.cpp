@@ -538,6 +538,7 @@ void ViewPortManager::recordFramePasses(VulkanContext& vk, VkCommandBuffer prima
 
 		VkRenderingInfo renderingInfo{};
 		renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+		renderingInfo.flags = VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT;
 		renderingInfo.renderArea.offset = { 0, 0 };
 		renderingInfo.renderArea.extent = { image.width, image.height };
 		renderingInfo.layerCount = 1;

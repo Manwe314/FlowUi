@@ -23,6 +23,7 @@ void FrameVk::create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t 
 	currentFrame = 0;
 
 	imageInFlight.assign(swapImageCount, VK_NULL_HANDLE);
+	renderFinishedBySwapImage.assign(swapImageCount, VK_NULL_HANDLE);
 
 	for (auto& frame : frames) {
 		VkCommandPoolCreateInfo poolInfo{};
@@ -44,8 +45,6 @@ void FrameVk::create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t 
 		semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &frame.imageAvailable),
 			"Failed to create image available semaphore.");
-		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &frame.renderFinished),
-			"Failed to create render finished semaphore.");
 
 		VkFenceCreateInfo fenceInfo{};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -53,12 +52,20 @@ void FrameVk::create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t 
 		vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &frame.inFlight),
 			"Failed to create in-flight fence.");
 	}
+
+	VkSemaphoreCreateInfo semInfo{};
+	semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
+		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &semaphore),
+			"Failed to create per-swapchain-image render finished semaphore.");
+	}
 }
 
 void FrameVk::destroy(VulkanContext& vk) {
 	if (vk.device == VK_NULL_HANDLE) {
 		frames.clear();
 		imageInFlight.clear();
+		renderFinishedBySwapImage.clear();
 		currentFrame = 0;
 		return;
 	}
@@ -72,18 +79,45 @@ void FrameVk::destroy(VulkanContext& vk) {
 			vkDestroySemaphore(vk.device, frame.imageAvailable, nullptr);
 			frame.imageAvailable = VK_NULL_HANDLE;
 		}
-		if (frame.renderFinished != VK_NULL_HANDLE) {
-			vkDestroySemaphore(vk.device, frame.renderFinished, nullptr);
-			frame.renderFinished = VK_NULL_HANDLE;
-		}
 		if (frame.pool != VK_NULL_HANDLE) {
 			vkDestroyCommandPool(vk.device, frame.pool, nullptr);
 			frame.pool = VK_NULL_HANDLE;
 			frame.cmd = VK_NULL_HANDLE;
 		}
 	}
+	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
+		if (semaphore != VK_NULL_HANDLE) {
+			vkDestroySemaphore(vk.device, semaphore, nullptr);
+			semaphore = VK_NULL_HANDLE;
+		}
+	}
 
 	frames.clear();
 	imageInFlight.clear();
+	renderFinishedBySwapImage.clear();
 	currentFrame = 0;
+}
+
+void FrameVk::onSwapchainRecreated(VulkanContext& vk, size_t newSwapImageCount) {
+	imageInFlight.assign(newSwapImageCount, VK_NULL_HANDLE);
+
+	if (vk.device == VK_NULL_HANDLE) {
+		renderFinishedBySwapImage.assign(newSwapImageCount, VK_NULL_HANDLE);
+		return;
+	}
+
+	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
+		if (semaphore != VK_NULL_HANDLE) {
+			vkDestroySemaphore(vk.device, semaphore, nullptr);
+			semaphore = VK_NULL_HANDLE;
+		}
+	}
+
+	renderFinishedBySwapImage.assign(newSwapImageCount, VK_NULL_HANDLE);
+	VkSemaphoreCreateInfo semInfo{};
+	semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
+		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &semaphore),
+			"Failed to recreate per-swapchain-image render finished semaphore.");
+	}
 }
