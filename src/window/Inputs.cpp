@@ -1,5 +1,6 @@
 #include "window/Inputs.hpp"
 
+#include <algorithm>
 #include <utility>
 
 #include <GLFW/glfw3.h>
@@ -42,6 +43,14 @@ void InputQueue::pushScroll(float dx, float dy) {
 void InputQueue::setMousePos(float x, float y) {
 	latestMouseX_ = x;
 	latestMouseY_ = y;
+}
+
+void InputQueue::clearKeyboardState() {
+	std::fill(queuedKeysDown_.begin(), queuedKeysDown_.end(), false);
+}
+
+void InputQueue::clearMouseButtonsState() {
+	std::fill(queuedMouseButtonsDown_.begin(), queuedMouseButtonsDown_.end(), false);
 }
 
 FrameInput InputQueue::drain(double dt) {

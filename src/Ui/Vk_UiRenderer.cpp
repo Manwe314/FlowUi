@@ -1,5 +1,7 @@
 #include "Ui/Vk_UiRenderer.hpp"
 #include "managers/FontManager.hpp"
+#include "managers/InputFieldManager.hpp"
+#include "internal/TextLayoutEngine.hpp"
 
 #include <algorithm>
 #include <array>
@@ -34,6 +36,8 @@ struct GlyphQuad {
 	float v0 = 0.0f;
 	float u1 = 1.0f;
 	float v1 = 1.0f;
+	int byteStartOffset = 0;
+	int byteEndOffset = 0;
 };
 
 struct UiPushConstants {
@@ -46,7 +50,9 @@ struct UiPushConstants {
 constexpr VkDeviceSize kInitialInstanceBufferBytes = 1024u * 1024u;
 constexpr uint32_t kDefaultMaxUiImageDescriptors = 256;
 
-constexpr const char* kUiVertexShaderFile = "flowui_ui_quad.vert.spv";
+constexpr const char* kUiSolidVertexShaderFile = "flowui_ui_solid.vert.spv";
+constexpr const char* kUiMsdfVertexShaderFile = "flowui_ui_msdf.vert.spv";
+constexpr const char* kUiTexturedVertexShaderFile = "flowui_ui_textured.vert.spv";
 constexpr const char* kUiSolidFragmentShaderFile = "flowui_ui_solid.frag.spv";
 constexpr const char* kUiMsdfFragmentShaderFile = "flowui_ui_msdf.frag.spv";
 constexpr const char* kUiTexturedFragmentShaderFile = "flowui_ui_textured.frag.spv";
@@ -172,6 +178,10 @@ static uint32_t PackRGBA8(const Clay_Color& color) {
 	return pack(color.r) | (pack(color.g) << 8u) | (pack(color.b) << 16u) | (pack(color.a) << 24u);
 }
 
+static bool ByteRangesIntersect(size_t aStart, size_t aEnd, size_t bStart, size_t bEnd) {
+	return aStart < bEnd && aEnd > bStart;
+}
+
 constexpr uint32_t kTexturedFlagTintEnabled = 1u << 0u;
 
 struct TexturedImagePlacement {
@@ -262,68 +272,6 @@ static TexturedImagePlacement ResolveTexturedImagePlacement(
 	return placement;
 }
 
-static bool DecodeNextUtf8Codepoint(const Clay_StringSlice& stringSlice, int& byteOffset, uint32_t& outCodepoint) {
-	if (!stringSlice.chars || byteOffset >= stringSlice.length) {
-		return false;
-	}
-
-	const auto* bytes = reinterpret_cast<const uint8_t*>(stringSlice.chars);
-	const uint8_t first = bytes[byteOffset];
-
-	if (first < 0x80u) {
-		outCodepoint = first;
-		byteOffset += 1;
-		return true;
-	}
-
-	auto continuation = [&](int index) -> uint8_t {
-		return (index < stringSlice.length) ? bytes[index] : 0u;
-	};
-
-	if ((first & 0xE0u) == 0xC0u && byteOffset + 1 < stringSlice.length) {
-		const uint8_t c1 = continuation(byteOffset + 1);
-		if ((c1 & 0xC0u) == 0x80u) {
-			outCodepoint = ((first & 0x1Fu) << 6u) | (c1 & 0x3Fu);
-			byteOffset += 2;
-			return true;
-		}
-	} else if ((first & 0xF0u) == 0xE0u && byteOffset + 2 < stringSlice.length) {
-		const uint8_t c1 = continuation(byteOffset + 1);
-		const uint8_t c2 = continuation(byteOffset + 2);
-		if ((c1 & 0xC0u) == 0x80u && (c2 & 0xC0u) == 0x80u) {
-			outCodepoint = ((first & 0x0Fu) << 12u) | ((c1 & 0x3Fu) << 6u) | (c2 & 0x3Fu);
-			byteOffset += 3;
-			return true;
-		}
-	} else if ((first & 0xF8u) == 0xF0u && byteOffset + 3 < stringSlice.length) {
-		const uint8_t c1 = continuation(byteOffset + 1);
-		const uint8_t c2 = continuation(byteOffset + 2);
-		const uint8_t c3 = continuation(byteOffset + 3);
-		if ((c1 & 0xC0u) == 0x80u && (c2 & 0xC0u) == 0x80u && (c3 & 0xC0u) == 0x80u) {
-			outCodepoint = ((first & 0x07u) << 18u) | ((c1 & 0x3Fu) << 12u) | ((c2 & 0x3Fu) << 6u) | (c3 & 0x3Fu);
-			byteOffset += 4;
-			return true;
-		}
-	}
-
-	// Replace malformed UTF-8 byte and continue.
-	outCodepoint = 0xFFFDu;
-	byteOffset += 1;
-	return true;
-}
-
-static const FontManager::FontFaceData* ResolveFontFace(const FontManager* fontManager, uint16_t fontId) {
-	if (!fontManager) {
-		return nullptr;
-	}
-
-	const FontManager::FontFaceData* face = fontManager->getFontById(static_cast<int>(fontId));
-	if (!face) {
-		face = fontManager->getFontById(0);
-	}
-	return face;
-}
-
 static bool LayoutMsdfTextToGlyphs(
 	const Clay_TextRenderData& text,
 	const Clay_BoundingBox& bounds,
@@ -337,111 +285,43 @@ static bool LayoutMsdfTextToGlyphs(
 	outAtlasLayer = 0u;
 	outDistanceRangePx = 2.0f;
 
-	const FontManager::FontFaceData* fontFace = ResolveFontFace(fontManager, text.fontId);
+	const FontManager::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager, text.fontId);
 	if (!fontFace) {
 		return false;
 	}
 
-	const FontManager::FontVariantData* variant = fontFace->defaultVariant();
-	if (!variant || variant->glyphs.empty() || fontFace->atlasWidth == 0 || fontFace->atlasHeight == 0) {
+	const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
+		FlowUi::detail::TextLayoutRequest{
+			.text = text.stringContents,
+			.fontFace = fontFace,
+			.pointsToPixelsScale = pointsToPixelsScale,
+			.fontSize = text.fontSize,
+			.letterSpacing = text.letterSpacing,
+			.lineOriginX = bounds.x,
+			.lineOriginY = bounds.y,
+			.emitGlyphQuads = true,
+		},
+		[&outGlyphs](const FlowUi::detail::TextLayoutGlyphQuad& glyph) {
+			outGlyphs.push_back(GlyphQuad{
+				glyph.x,
+				glyph.y,
+				glyph.w,
+				glyph.h,
+				glyph.u0,
+				glyph.v0,
+				glyph.u1,
+				glyph.v1,
+				glyph.byteStartOffset,
+				glyph.byteEndOffset,
+			});
+		});
+
+	if (!layoutResult.success) {
 		return false;
 	}
-	if (variant->distanceRange > 0.0f) {
-		outDistanceRangePx = variant->distanceRange;
-	}
 
-	float emPixels = variant->fontSizePx;
-	if (text.fontSize > 0) {
-		emPixels = static_cast<float>(text.fontSize) * pointsToPixelsScale;
-	}
-	if (emPixels <= 0.0f) {
-		return false;
-	}
-
-	const float emToPixels = emPixels / std::max(variant->emSize, 1.0e-6f);
-	const float baselineY = bounds.y + variant->ascender * emToPixels;
-	const float invAtlasWidth = 1.0f / static_cast<float>(fontFace->atlasWidth);
-	const float invAtlasHeight = 1.0f / static_cast<float>(fontFace->atlasHeight);
-	float penX = bounds.x;
-	const float letterSpacingPx = static_cast<float>(text.letterSpacing);
-
-	uint32_t previousCodepoint = 0;
-	bool hasPreviousCodepoint = false;
-	int byteOffset = 0;
-
-	while (byteOffset < text.stringContents.length) {
-		uint32_t codepoint = 0;
-		if (!DecodeNextUtf8Codepoint(text.stringContents, byteOffset, codepoint)) {
-			break;
-		}
-
-		if (codepoint == '\n') {
-			hasPreviousCodepoint = false;
-			penX = bounds.x;
-			continue;
-		}
-
-		if (hasPreviousCodepoint) {
-			penX += variant->kerningAdvance(previousCodepoint, codepoint) * emToPixels;
-		}
-
-		// Treat spacing codepoints as advance-only to avoid rendering fallback glyphs
-		// when the font doesn't provide explicit whitespace glyph mappings.
-		if (codepoint == ' ' || codepoint == '\t' || codepoint == 0x00A0u) {
-			float whitespaceAdvance = std::max(variant->emSize * emToPixels * 0.33f, 1.0f);
-			const auto spaceGlyphIt = variant->unicodeToGlyphIndex.find(' ');
-			if (spaceGlyphIt != variant->unicodeToGlyphIndex.end() && spaceGlyphIt->second < variant->glyphs.size()) {
-				whitespaceAdvance = variant->glyphs[spaceGlyphIt->second].advanceX * emToPixels;
-			}
-			if (codepoint == '\t') {
-				whitespaceAdvance *= 4.0f;
-			}
-			penX += whitespaceAdvance + letterSpacingPx;
-			previousCodepoint = codepoint;
-			hasPreviousCodepoint = true;
-			continue;
-		}
-
-		uint32_t glyphIndex = variant->fallbackGlyphIndex;
-		const auto glyphIt = variant->unicodeToGlyphIndex.find(codepoint);
-		if (glyphIt != variant->unicodeToGlyphIndex.end()) {
-			glyphIndex = glyphIt->second;
-		}
-		if (glyphIndex >= variant->glyphs.size()) {
-			if (variant->glyphs.empty()) {
-				hasPreviousCodepoint = false;
-				continue;
-			}
-			glyphIndex = 0;
-		}
-
-		const FontManager::GlyphData& glyph = variant->glyphs[glyphIndex];
-		const float x0 = penX + glyph.planeLeft * emToPixels;
-		const float x1 = penX + glyph.planeRight * emToPixels;
-		const float y0 = baselineY - glyph.planeTop * emToPixels;
-		const float y1 = baselineY - glyph.planeBottom * emToPixels;
-		const float width = x1 - x0;
-		const float height = y1 - y0;
-
-		if (width > 0.0f && height > 0.0f) {
-			GlyphQuad quad{};
-			quad.x = x0;
-			quad.y = y0;
-			quad.w = width;
-			quad.h = height;
-			quad.u0 = std::clamp(glyph.imageLeft * invAtlasWidth, 0.0f, 1.0f);
-			quad.u1 = std::clamp(glyph.imageRight * invAtlasWidth, 0.0f, 1.0f);
-			quad.v0 = std::clamp(1.0f - glyph.imageTop * invAtlasHeight, 0.0f, 1.0f);
-			quad.v1 = std::clamp(1.0f - glyph.imageBottom * invAtlasHeight, 0.0f, 1.0f);
-			outGlyphs.push_back(quad);
-		}
-
-		penX += glyph.advanceX * emToPixels + letterSpacingPx;
-		previousCodepoint = codepoint;
-		hasPreviousCodepoint = true;
-	}
-
-	outAtlasLayer = fontFace->atlasLayer;
+	outAtlasLayer = layoutResult.atlasLayer;
+	outDistanceRangePx = layoutResult.distanceRangePx;
 	return true;
 }
 
@@ -482,6 +362,19 @@ static void EmitSolidRect(
 	instances.push_back(inst);
 }
 
+static void EmitSolidRectOverride(
+	const FlowUi::InputFieldRectOverride& rectOverride,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
+	std::vector<UiInstance>& instances) {
+	Clay_RenderCommand command{};
+	command.commandType = CLAY_RENDER_COMMAND_TYPE_RECTANGLE;
+	command.boundingBox = rectOverride.boundingBox;
+	command.renderData.rectangle.backgroundColor = rectOverride.color;
+	command.renderData.rectangle.cornerRadius = Clay_CornerRadius{};
+	EmitSolidRect(command, uiToFramebufferScaleX, uiToFramebufferScaleY, instances);
+}
+
 static void EmitSolidBorder(
 	const Clay_RenderCommand& command,
 	float uiToFramebufferScaleX,
@@ -514,6 +407,7 @@ static void EmitTextMsdf(
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
+	const FlowUi::InputFieldTextColorOverride* textColorOverride,
 	std::vector<UiInstance>& instances)
 {
 	const Clay_BoundingBox& bounds = command.boundingBox;
@@ -541,12 +435,30 @@ static void EmitTextMsdf(
 			0.0f,
 			1.0f,
 			1.0f,
+			0,
+			std::max(0, textData.stringContents.length),
 		});
 	}
 
-	const uint32_t color = PackRGBA8(textData.textColor);
+	const uint32_t defaultColor = PackRGBA8(textData.textColor);
+	const bool hasTextColorOverride = textColorOverride && !textColorOverride->ranges.empty();
+	const uint32_t overrideColor = hasTextColorOverride
+		? PackRGBA8(textColorOverride->color)
+		: 0u;
 
 	for (const GlyphQuad& glyph : glyphs) {
+		uint32_t glyphColor = defaultColor;
+		if (hasTextColorOverride) {
+			const size_t glyphStart = static_cast<size_t>(std::max(0, glyph.byteStartOffset));
+			const size_t glyphEnd = static_cast<size_t>(std::max(glyph.byteStartOffset, glyph.byteEndOffset));
+			for (const FlowUi::InputFieldTextColorRangeOverride& range : textColorOverride->ranges) {
+				if (ByteRangesIntersect(glyphStart, glyphEnd, range.startByteOffset, range.endByteOffset)) {
+					glyphColor = overrideColor;
+					break;
+				}
+			}
+		}
+
 		UiInstance inst{};
 		inst.type = static_cast<uint32_t>(UiType::Msdf);
 		inst.x = glyph.x * uiToFramebufferScaleX;
@@ -557,7 +469,7 @@ static void EmitTextMsdf(
 		inst.uv0y = glyph.v0;
 		inst.uv1x = glyph.u1;
 		inst.uv1y = glyph.v1;
-		inst.colorRGBA = color;
+		inst.colorRGBA = glyphColor;
 		inst.atlasLayer = atlasLayer;
 		inst.r0 = distanceRangePx;
 		instances.push_back(inst);
@@ -601,6 +513,7 @@ static void EmitTexturedImage(
 
 static void BuildInstancesAndRunsFromClay(
 	const Clay_RenderCommandArray& commands,
+	const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
 	const FontManager* fontManager,
 	float pointsToPixelsScale,
@@ -645,7 +558,41 @@ static void BuildInstancesAndRunsFromClay(
 		}
 	};
 
+	const std::vector<FlowUi::InputFieldRectOverride>& inputRectOverrides = inputFieldOverrides.rects;
+	size_t inputRectOverrideCursor = 0u;
+	const std::vector<FlowUi::InputFieldTextColorOverride>& inputTextColorOverrides = inputFieldOverrides.textColorOverrides;
+	size_t inputTextColorOverrideCursor = 0u;
+	auto emitInputOverridesBefore = [&](int32_t commandIndex) {
+		while (inputRectOverrideCursor < inputRectOverrides.size()) {
+			const FlowUi::InputFieldRectOverride& rectOverride = inputRectOverrides[inputRectOverrideCursor];
+			if (rectOverride.insertBeforeCommandIndex > commandIndex) {
+				break;
+			}
+			beginRunIfNeeded(UiType::Solid, currentScissor);
+			EmitSolidRectOverride(rectOverride, uiToFramebufferScaleX, uiToFramebufferScaleY, outInstances);
+			++inputRectOverrideCursor;
+		}
+	};
+
 	for (int32_t i = 0; i < commands.length; ++i) {
+		emitInputOverridesBefore(i);
+		while (
+			inputTextColorOverrideCursor < inputTextColorOverrides.size() &&
+			inputTextColorOverrides[inputTextColorOverrideCursor].commandIndex < i) {
+			++inputTextColorOverrideCursor;
+		}
+		const FlowUi::InputFieldTextColorOverride* inputTextColorOverride = nullptr;
+		if (
+			inputTextColorOverrideCursor < inputTextColorOverrides.size() &&
+			inputTextColorOverrides[inputTextColorOverrideCursor].commandIndex == i) {
+			inputTextColorOverride = &inputTextColorOverrides[inputTextColorOverrideCursor];
+			++inputTextColorOverrideCursor;
+			while (
+				inputTextColorOverrideCursor < inputTextColorOverrides.size() &&
+				inputTextColorOverrides[inputTextColorOverrideCursor].commandIndex == i) {
+				++inputTextColorOverrideCursor;
+			}
+		}
 		const Clay_RenderCommand& command = commands.internalArray[i];
 
 		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_NONE) {
@@ -690,6 +637,7 @@ static void BuildInstancesAndRunsFromClay(
 					pointsToPixelsScale,
 					uiToFramebufferScaleX,
 					uiToFramebufferScaleY,
+					inputTextColorOverride,
 					outInstances);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_IMAGE:
@@ -700,6 +648,7 @@ static void BuildInstancesAndRunsFromClay(
 		}
 	}
 
+	emitInputOverridesBefore(commands.length);
 	closeActiveRun();
 }
 
@@ -901,12 +850,18 @@ static void CreateLinearSampler(VulkanContext& vk, VkSampler& sampler) {
 	vkCheck(vkCreateSampler(vk.device, &samplerInfo, nullptr, &sampler), "Failed to create UI sampler.");
 }
 
-static VkPipeline createGraphicsPipeline(VkDevice device, VkPipelineLayout layout, VkFormat format, const char* fragmentFile) {
+static VkPipeline createGraphicsPipeline(
+	VkDevice device,
+	VkPipelineLayout layout,
+	VkFormat format,
+	const char* vertexFile,
+	const char* fragmentFile,
+	bool requiresUvVertexAttribute) {
 	if (format == VK_FORMAT_UNDEFINED) {
 		throw std::runtime_error("Cannot create UI pipeline with undefined target format.");
 	}
 
-	const std::vector<char> vertexCode = readShaderFile(kUiVertexShaderFile);
+	const std::vector<char> vertexCode = readShaderFile(vertexFile);
 	const std::vector<char> fragmentCode = readShaderFile(fragmentFile);
 	VkShaderModule vertexModule = createShaderModule(device, vertexCode);
 	VkShaderModule fragmentModule = createShaderModule(device, fragmentCode);
@@ -940,7 +895,7 @@ static VkPipeline createGraphicsPipeline(VkDevice device, VkPipelineLayout layou
 	vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInput.vertexBindingDescriptionCount = 1;
 	vertexInput.pVertexBindingDescriptions = &binding;
-	vertexInput.vertexAttributeDescriptionCount = 2;
+	vertexInput.vertexAttributeDescriptionCount = requiresUvVertexAttribute ? 2u : 1u;
 	vertexInput.pVertexAttributeDescriptions = attributes;
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -1044,9 +999,27 @@ static void DestroyPipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipel
 }
 
 static void CreatePipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines, VkFormat format) {
-	pipelines.solid = createGraphicsPipeline(device, pipelines.layout, format, kUiSolidFragmentShaderFile);
-	pipelines.msdf = createGraphicsPipeline(device, pipelines.layout, format, kUiMsdfFragmentShaderFile);
-	pipelines.textured = createGraphicsPipeline(device, pipelines.layout, format, kUiTexturedFragmentShaderFile);
+	pipelines.solid = createGraphicsPipeline(
+		device,
+		pipelines.layout,
+		format,
+		kUiSolidVertexShaderFile,
+		kUiSolidFragmentShaderFile,
+		false);
+	pipelines.msdf = createGraphicsPipeline(
+		device,
+		pipelines.layout,
+		format,
+		kUiMsdfVertexShaderFile,
+		kUiMsdfFragmentShaderFile,
+		true);
+	pipelines.textured = createGraphicsPipeline(
+		device,
+		pipelines.layout,
+		format,
+		kUiTexturedVertexShaderFile,
+		kUiTexturedFragmentShaderFile,
+		true);
 }
 
 static void DestroyPipelineObjects(VkDevice device, VulkanUiRenderer::Pipelines& pipelines) {
@@ -1210,8 +1183,8 @@ static void UpdateTextureDescriptors(VulkanUiRenderer& renderer, VkDevice device
 	}
 
 	const VkDescriptorImageInfo uiImageTemplate = PlaceholderUiImageInfo(renderer);
-	if (renderer.uiTextureSlotInfos.size() != renderer.maxUiImageDescriptors) {
-		renderer.uiTextureSlotInfos.assign(renderer.maxUiImageDescriptors, uiImageTemplate);
+	if (renderer.uiTextureSlotInfos_.size() != renderer.maxUiImageDescriptors) {
+		renderer.uiTextureSlotInfos_.assign(renderer.maxUiImageDescriptors, uiImageTemplate);
 	}
 
 	std::array<VkWriteDescriptorSet, 2> writes{};
@@ -1227,10 +1200,10 @@ static void UpdateTextureDescriptors(VulkanUiRenderer& renderer, VkDevice device
 	writes[1].dstBinding = 1;
 	writes[1].descriptorCount = renderer.maxUiImageDescriptors;
 	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	writes[1].pImageInfo = renderer.uiTextureSlotInfos.data();
+	writes[1].pImageInfo = renderer.uiTextureSlotInfos_.data();
 
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-	renderer.textureDescriptorsDirty = false;
+	renderer.textureDescriptorsDirty_ = false;
 }
 
 static void RecreateDescriptorAndPipelineObjects(VulkanContext& vk, VulkanUiRenderer& renderer) {
@@ -1330,8 +1303,8 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 
 			CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D_ARRAY, placeholderFontAtlas);
 			CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D, placeholderUiTexture);
-			uiTextureSlotInfos.assign(maxUiImageDescriptors, PlaceholderUiImageInfo(*this));
-			textureDescriptorsDirty = true;
+			uiTextureSlotInfos_.assign(maxUiImageDescriptors, PlaceholderUiImageInfo(*this));
+			textureDescriptorsDirty_ = true;
 			RecreateDescriptorAndPipelineObjects(vk, *this);
 
 		const std::array<UiQuadVertex, 4> quadVertices = {
@@ -1354,10 +1327,10 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 			CreateMappedBuffer(vk, kInitialInstanceBufferBytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, instanceBuffer);
 			UpdateInstanceBufferDescriptor(*this, vk.device);
 
-			instancesScratch.clear();
-		runsScratch.clear();
-		instancesScratch.reserve(4096);
-		runsScratch.reserve(256);
+			instancesScratch_.clear();
+		runsScratch_.clear();
+		instancesScratch_.reserve(4096);
+		runsScratch_.reserve(256);
 	} catch (...) {
 		destroy(vk);
 		throw;
@@ -1371,10 +1344,10 @@ void VulkanUiRenderer::setFontManager(const FontManager* manager) {
 
 void VulkanUiRenderer::destroy(VulkanContext& vk)
 {
-	instancesScratch.clear();
-	runsScratch.clear();
-	uiTextureSlotInfos.clear();
-	textureDescriptorsDirty = false;
+	instancesScratch_.clear();
+	runsScratch_.clear();
+	uiTextureSlotInfos_.clear();
+	textureDescriptorsDirty_ = false;
 
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		pipelines = Pipelines{};
@@ -1444,13 +1417,13 @@ void VulkanUiRenderer::reserveTextureSlots(VulkanContext& vk, uint32_t minCapaci
 	}
 
 	const VkDescriptorImageInfo placeholderInfo = PlaceholderUiImageInfo(*this);
-	std::vector<VkDescriptorImageInfo> oldSlotInfos = uiTextureSlotInfos;
+	std::vector<VkDescriptorImageInfo> oldSlotInfos = uiTextureSlotInfos_;
 	maxUiImageDescriptors = newCapacity;
-	uiTextureSlotInfos.assign(maxUiImageDescriptors, placeholderInfo);
+	uiTextureSlotInfos_.assign(maxUiImageDescriptors, placeholderInfo);
 	if (!oldSlotInfos.empty()) {
-		const size_t preserved = std::min(oldSlotInfos.size(), uiTextureSlotInfos.size());
+		const size_t preserved = std::min(oldSlotInfos.size(), uiTextureSlotInfos_.size());
 		for (size_t i = 0; i < preserved; ++i) {
-			uiTextureSlotInfos[i] = oldSlotInfos[i];
+			uiTextureSlotInfos_[i] = oldSlotInfos[i];
 		}
 	}
 
@@ -1458,7 +1431,7 @@ void VulkanUiRenderer::reserveTextureSlots(VulkanContext& vk, uint32_t minCapaci
 }
 
 void VulkanUiRenderer::setTextureSlotBinding(uint32_t slot, VkImageView view, VkSampler sampler) {
-	if (slot >= uiTextureSlotInfos.size()) {
+	if (slot >= uiTextureSlotInfos_.size()) {
 		throw std::runtime_error("UI texture slot index out of bounds.");
 	}
 	if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
@@ -1469,16 +1442,16 @@ void VulkanUiRenderer::setTextureSlotBinding(uint32_t slot, VkImageView view, Vk
 	info.sampler = sampler;
 	info.imageView = view;
 	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	uiTextureSlotInfos[slot] = info;
-	textureDescriptorsDirty = true;
+	uiTextureSlotInfos_[slot] = info;
+	textureDescriptorsDirty_ = true;
 }
 
 void VulkanUiRenderer::clearTextureSlotBinding(uint32_t slot) {
-	if (slot >= uiTextureSlotInfos.size()) {
+	if (slot >= uiTextureSlotInfos_.size()) {
 		throw std::runtime_error("UI texture slot index out of bounds.");
 	}
-	uiTextureSlotInfos[slot] = PlaceholderUiImageInfo(*this);
-	textureDescriptorsDirty = true;
+	uiTextureSlotInfos_[slot] = PlaceholderUiImageInfo(*this);
+	textureDescriptorsDirty_ = true;
 }
 
 void VulkanUiRenderer::rebuildTextureDescriptors(VkDevice device) {
@@ -1489,6 +1462,7 @@ void VulkanUiRenderer::render(
 	VulkanContext& vk,
 	VkCommandBuffer cmd,
 	const Clay_RenderCommandArray& renderCommands,
+	const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
 	VkImageView targetView,
 	float uiToFramebufferScaleX,
@@ -1505,7 +1479,7 @@ void VulkanUiRenderer::render(
 	if (fontManager) {
 		latestFontAtlasRevision = fontManager->getAtlasResource().bindingRevision;
 	}
-	if (textureDescriptorsDirty || latestFontAtlasRevision != boundFontAtlasRevision) {
+	if (textureDescriptorsDirty_ || latestFontAtlasRevision != boundFontAtlasRevision) {
 		UpdateTextureDescriptors(*this, vk.device);
 		boundFontAtlasRevision = latestFontAtlasRevision;
 	}
@@ -1514,23 +1488,24 @@ void VulkanUiRenderer::render(
 	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
 	BuildInstancesAndRunsFromClay(
 		renderCommands,
+		inputFieldOverrides,
 		extent,
 		fontManager,
 		pointsToPixelsScale,
 		clampedScaleX,
 		clampedScaleY,
-		instancesScratch,
-		runsScratch);
-	if (instancesScratch.empty() || runsScratch.empty()) {
+		instancesScratch_,
+		runsScratch_);
+	if (instancesScratch_.empty() || runsScratch_.empty()) {
 		return;
 	}
 
-	EnsureInstanceBufferCapacity(vk, *this, instancesScratch.size());
+	EnsureInstanceBufferCapacity(vk, *this, instancesScratch_.size());
 	UploadBytesToMappedBuffer(
 		vk,
 		instanceBuffer,
-		instancesScratch.data(),
-		static_cast<VkDeviceSize>(instancesScratch.size() * sizeof(UiInstance)));
+		instancesScratch_.data(),
+		static_cast<VkDeviceSize>(instancesScratch_.size() * sizeof(UiInstance)));
 
 	VkRenderingAttachmentInfo colorAttachment{};
 	colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -1569,7 +1544,7 @@ void VulkanUiRenderer::render(
 	const VkDescriptorSet sets[2] = { descriptors.globalsSet, descriptors.texturesSet };
 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.layout, 0, 2, sets, 0, nullptr);
 
-	for (const UiRun& run : runsScratch) {
+	for (const UiRun& run : runsScratch_) {
 		FlushRun(cmd, *this, extent, run);
 	}
 

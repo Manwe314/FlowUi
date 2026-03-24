@@ -797,6 +797,8 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 	std::string_view nameKey,
 	uint32_t bucketedWidth,
 	uint32_t bucketedHeight) {
+	const uint32_t maxBucketGap = std::max<uint32_t>(1u, sizeBucketStep_);
+
 	VariantEntry* bestAbove = nullptr;
 	uint64_t bestAboveGap = std::numeric_limits<uint64_t>::max();
 	uint64_t bestAboveArea = std::numeric_limits<uint64_t>::max();
@@ -818,9 +820,15 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 		}
 
 		if (variantWidth >= bucketedWidth && variantHeight >= bucketedHeight) {
+			const uint32_t widthGap = variantWidth - bucketedWidth;
+			const uint32_t heightGap = variantHeight - bucketedHeight;
+			if (widthGap > maxBucketGap || heightGap > maxBucketGap) {
+				continue;
+			}
+
 			const uint64_t gap =
-				static_cast<uint64_t>(variantWidth - bucketedWidth) +
-				static_cast<uint64_t>(variantHeight - bucketedHeight);
+				static_cast<uint64_t>(widthGap) +
+				static_cast<uint64_t>(heightGap);
 			const uint64_t area = static_cast<uint64_t>(variantWidth) * static_cast<uint64_t>(variantHeight);
 			if (gap < bestAboveGap || (gap == bestAboveGap && area < bestAboveArea)) {
 				bestAbove = &variant;
@@ -831,9 +839,15 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 		}
 
 		if (variantWidth <= bucketedWidth && variantHeight <= bucketedHeight) {
+			const uint32_t widthGap = bucketedWidth - variantWidth;
+			const uint32_t heightGap = bucketedHeight - variantHeight;
+			if (widthGap > maxBucketGap || heightGap > maxBucketGap) {
+				continue;
+			}
+
 			const uint64_t gap =
-				static_cast<uint64_t>(bucketedWidth - variantWidth) +
-				static_cast<uint64_t>(bucketedHeight - variantHeight);
+				static_cast<uint64_t>(widthGap) +
+				static_cast<uint64_t>(heightGap);
 			const uint64_t area = static_cast<uint64_t>(variantWidth) * static_cast<uint64_t>(variantHeight);
 			if (gap < bestLowerGap || (gap == bestLowerGap && area > bestLowerArea)) {
 				bestLower = &variant;
@@ -846,7 +860,10 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 	if (bestAbove) {
 		return bestAbove;
 	}
-	
+	if (bestLower) {
+		return bestLower;
+	}
+
 	return nullptr;
 }
 

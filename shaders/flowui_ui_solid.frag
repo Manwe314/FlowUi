@@ -6,9 +6,6 @@ layout(location = 2) in vec4 vColor;
 layout(location = 3) in vec4 vRadius;
 layout(location = 4) in vec4 vBorder;
 layout(location = 5) flat in uint vSolidMode;
-layout(location = 6) in vec2 vUv;
-layout(location = 7) flat in uint vTexIndex;
-layout(location = 8) flat in uint vAtlasLayer;
 
 layout(location = 0) out vec4 outColor;
 

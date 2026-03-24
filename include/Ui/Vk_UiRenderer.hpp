@@ -9,6 +9,9 @@
 #include "Vulkan/Vk_Context.hpp"
 #include "FlowUi/PublicStructs.hpp"
 
+namespace FlowUi {
+struct InputFieldFrameOverrides;
+}
 
 enum class UiType : uint8_t {
 	Solid = 0,
@@ -117,13 +120,14 @@ struct VulkanUiRenderer {
 		VulkanContext& vk,
 		VkCommandBuffer cmd,
 		const Clay_RenderCommandArray& renderCommands,
+		const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
 		VkExtent2D extent,
 		VkImageView targetView,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY);
 
-	std::vector<VkDescriptorImageInfo> uiTextureSlotInfos;
-	bool textureDescriptorsDirty = false;
-	std::vector<UiInstance> instancesScratch;
-	std::vector<UiRun> runsScratch;
+	std::vector<VkDescriptorImageInfo> uiTextureSlotInfos_;
+	bool textureDescriptorsDirty_ = false;
+	std::vector<UiInstance> instancesScratch_;
+	std::vector<UiRun> runsScratch_;
 };

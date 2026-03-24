@@ -15,9 +15,11 @@
 #include "Vulkan/Vk_Swapchain.hpp"
 #include "window/Window.hpp"
 
+#include <array>
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <string>
 #include <unordered_map>
@@ -37,6 +39,10 @@ std::string toLowerAscii(std::string value) {
 		c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 	}
 	return value;
+}
+
+bool isArfontPath(const std::filesystem::path& path) {
+	return !path.empty() && toLowerAscii(path.extension().string()) == ".arfont";
 }
 
 void transitionSwapchainImageLayout(
@@ -365,9 +371,22 @@ struct App::Impl {
 		uiFrameSlotCount = configuredFramesInFlight;
 	}
 
-	void init() {
-		// 1) window backend
-		window = makeDefaultWindowBackend(config.window, &inputQueue);
+		void init() {
+			// 1) window backend
+			window = makeDefaultWindowBackend(config.window, &inputQueue);
+			window->setInputConfig(config.window.input);
+			ui.setClipboardAccessors(
+				[this](std::string_view text) {
+					if (window) {
+						window->setClipboardText(text);
+					}
+				},
+				[this]() -> std::string {
+					if (!window) {
+						return {};
+					}
+					return window->getClipboardText();
+				});
 
 		// 2) instance/surface/device
 		vk.createInstance(config, window->requiredInstanceExtensions());
@@ -395,15 +414,66 @@ struct App::Impl {
 		icons.init(vk, config.svgManager);
 #endif
 
+		bool defaultFontLoaded = false;
 		if (!config.ui.defaultFontPath.empty()) {
 			const std::filesystem::path defaultFontPath = config.ui.defaultFontPath;
-			const bool isArfont = toLowerAscii(defaultFontPath.extension().string()) == ".arfont";
-			if (isArfont && std::filesystem::is_regular_file(defaultFontPath)) {
+			if (!isArfontPath(defaultFontPath)) {
+				std::fprintf(
+					stderr,
+					"[FlowUi] Warning: ui.defaultFontPath is not an .arfont file: %s\n",
+					defaultFontPath.string().c_str());
+			} else if (!std::filesystem::is_regular_file(defaultFontPath)) {
+				std::fprintf(
+					stderr,
+					"[FlowUi] Warning: ui.defaultFontPath does not exist: %s\n",
+					defaultFontPath.string().c_str());
+			} else {
 				const int defaultFontId = fonts.loadFont(defaultFontPath.string(), config.ui.defaultFontPx);
 				if (defaultFontId < 0) {
 					throw std::runtime_error("Failed to register default .arfont font: " + defaultFontPath.string());
 				}
+				defaultFontLoaded = true;
 			}
+		}
+
+		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
+			const std::array<std::filesystem::path, 5> fallbackCandidates = {
+				std::filesystem::path(FLOWUI_SOURCE_DIR) / "assets/fonts/FacultyGlyphic-Regular.arfont",
+				std::filesystem::path(FLOWUI_SOURCE_DIR) / "external/msdf-atlas-gen/artery-font-format/example.arfont",
+				std::filesystem::path("assets/fonts/FacultyGlyphic-Regular.arfont"),
+				std::filesystem::path("external/assets/fonts/FacultyGlyphic-Regular.arfont"),
+				std::filesystem::path("external/external/msdf-atlas-gen/artery-font-format/example.arfont"),
+			};
+
+			for (const auto& fallbackPath : fallbackCandidates) {
+				if (!std::filesystem::is_regular_file(fallbackPath)) {
+					continue;
+				}
+
+				try {
+					const int loadedId = fonts.loadFont(fallbackPath.string(), config.ui.defaultFontPx);
+					if (loadedId >= 0) {
+						std::fprintf(
+							stderr,
+							"[FlowUi] Warning: loaded fallback font because ui.defaultFontPath was not usable: %s\n",
+							fallbackPath.string().c_str());
+						defaultFontLoaded = true;
+						break;
+					}
+				} catch (const std::exception& e) {
+					std::fprintf(
+						stderr,
+						"[FlowUi] Warning: failed loading fallback font %s (%s)\n",
+						fallbackPath.string().c_str(),
+						e.what());
+				}
+			}
+		}
+
+		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
+			std::fprintf(
+				stderr,
+				"[FlowUi] Warning: no .arfont font loaded; text rendering is disabled.\n");
 		}
 	}
 
@@ -429,23 +499,23 @@ struct App::Impl {
 		pollEvents();
 		frameInputForCurrentFrame = inputQueue.drain(deltaTimeSeconds);
 
-		const float clampedUiScale = std::max(1.0e-6f, config.ui.uiScale);
+		const float inverseClampedUiScale = 1 / std::max(1.0e-6f, config.ui.uiScale);
 		const VkExtent2D windowExtent = window->windowExtent();
 		const VkExtent2D framebufferExtent = window->framebufferExtent();
 		const float logicalWindowWidth = static_cast<float>(std::max<uint32_t>(1u, windowExtent.width));
 		const float logicalWindowHeight = static_cast<float>(std::max<uint32_t>(1u, windowExtent.height));
 		const float framebufferWidth = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.width));
 		const float framebufferHeight = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.height));
-		const float layoutWidth = logicalWindowWidth / clampedUiScale;
-		const float layoutHeight = logicalWindowHeight / clampedUiScale;
+		const float layoutWidth = logicalWindowWidth * inverseClampedUiScale;
+		const float layoutHeight = logicalWindowHeight * inverseClampedUiScale;
 		uiToFramebufferScaleX = framebufferWidth / std::max(layoutWidth, 1.0e-6f);
 		uiToFramebufferScaleY = framebufferHeight / std::max(layoutHeight, 1.0e-6f);
 
 		FrameInput frameInputForLayout = frameInputForCurrentFrame;
-		frameInputForLayout.mouseX /= clampedUiScale;
-		frameInputForLayout.mouseY /= clampedUiScale;
-		frameInputForLayout.scrollX /= clampedUiScale;
-		frameInputForLayout.scrollY /= clampedUiScale;
+		frameInputForLayout.mouseX *= inverseClampedUiScale;
+		frameInputForLayout.mouseY *= inverseClampedUiScale;
+		frameInputForLayout.scrollX *= inverseClampedUiScale;
+		frameInputForLayout.scrollY *= inverseClampedUiScale;
 		ui.beginFrame(frameSlot, frameInputForLayout, layoutWidth, layoutHeight);
 	}
 
@@ -492,7 +562,8 @@ struct App::Impl {
 
 		const bool acquiredSuboptimalSwapchain = (acquireResult == VK_SUBOPTIMAL_KHR);
 		if (swapchainImageIndex >= swap.views.size() || swapchainImageIndex >= frames.imageInFlight.size() ||
-			swapchainImageIndex >= swapchainImageLayouts.size()) {
+			swapchainImageIndex >= swapchainImageLayouts.size() ||
+			swapchainImageIndex >= frames.renderFinishedBySwapImage.size()) {
 			throw std::runtime_error("Acquired swapchain image index is out of range.");
 		}
 
@@ -525,6 +596,7 @@ struct App::Impl {
 			vk,
 			frame.cmd,
 			renderCommandsForCurrentFrame,
+			ui.inputFields().frameOverrides(),
 			swap.extent,
 			swap.views[swapchainImageIndex],
 			uiToFramebufferScaleX,
@@ -540,6 +612,7 @@ struct App::Impl {
 		vkCheck(vkEndCommandBuffer(frame.cmd), "Failed to end command buffer.");
 
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		VkSemaphore presentWaitSemaphore = frames.renderFinishedBySwapImage[swapchainImageIndex];
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -549,7 +622,7 @@ struct App::Impl {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &frame.cmd;
 		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = &frame.renderFinished;
+		submitInfo.pSignalSemaphores = &presentWaitSemaphore;
 
 		vkCheck(
 			vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
@@ -558,7 +631,7 @@ struct App::Impl {
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &frame.renderFinished;
+		presentInfo.pWaitSemaphores = &presentWaitSemaphore;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swap.swapchain;
 		presentInfo.pImageIndices = &swapchainImageIndex;
@@ -587,7 +660,7 @@ struct App::Impl {
 
 		vkDeviceWaitIdle(vk.device);
 		swap.recreate(config, vk, framebufferExtent);
-		frames.onSwapchainRecreated(swap.images.size());
+		frames.onSwapchainRecreated(vk, swap.images.size());
 		renderer.onSwapchainFormatChanged(vk, swap.format); // only if changed
 		swapchainImageLayouts.assign(swap.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
 	}
@@ -746,6 +819,41 @@ void App::setWindowTitle(std::string_view title) {
 	if (impl_ && impl_->window) {
 		impl_->window->setTitle(title);
 	}
+}
+
+void App::setWindowInputConfig(const WindowInputConfig& config) {
+	if (!impl_ || !impl_->window) {
+		return;
+	}
+	impl_->config.window.input = config;
+	impl_->window->setInputConfig(config);
+}
+
+WindowInputConfig App::windowInputConfig() const {
+	if (!impl_ || !impl_->window) {
+		return {};
+	}
+	return impl_->window->getInputConfig();
+}
+
+bool App::supportsRawMouseMotion() const {
+	if (!impl_ || !impl_->window) {
+		return false;
+	}
+	return impl_->window->supportsRawMouseMotion();
+}
+
+void App::setClipboardText(std::string_view text) {
+	if (impl_ && impl_->window) {
+		impl_->window->setClipboardText(text);
+	}
+}
+
+std::string App::clipboardText() const {
+	if (!impl_ || !impl_->window) {
+		return {};
+	}
+	return impl_->window->getClipboardText();
 }
 
 std::pair<int, int> App::windowSize() const {

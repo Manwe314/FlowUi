@@ -91,6 +91,11 @@ public:
 	void setWindowTitle(std::string_view title);
 	std::pair<int,int> windowSize() const;
 	std::pair<int,int> framebufferSize() const;
+	void setWindowInputConfig(const WindowInputConfig& config);
+	WindowInputConfig windowInputConfig() const;
+	bool supportsRawMouseMotion() const;
+	void setClipboardText(std::string_view text);
+	std::string clipboardText() const;
 
 private:
 	struct Impl;
