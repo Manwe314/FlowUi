@@ -48,14 +48,23 @@ using ElementParameterValue = std::variant<
     int,
     float,
     std::string,
+    ElementCustomCallback,
+	TextureRef,
     Clay_Color,
     Clay_Sizing,
     Clay_Padding,
 	Clay_LayoutDirection,
 	Clay_LayoutConfig,
 	Clay_ElementDeclaration,
-    ElementCustomCallback,
-	TextureRef
+	Clay_CornerRadius,
+	Clay_AspectRatioElementConfig,
+	Clay_ImageElementConfig,
+	Clay_FloatingAttachPoints,
+	Clay_FloatingAttachToElement,
+	Clay_FloatingElementConfig,
+	Clay_ClipElementConfig,
+	Clay_BorderWidth,
+	Clay_BorderElementConfig
 >;
 
 class ElementParameters {
