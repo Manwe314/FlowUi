@@ -414,9 +414,12 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	enabled12.shaderSampledImageArrayNonUniformIndexing =
 		supported12.shaderSampledImageArrayNonUniformIndexing ? VK_TRUE : VK_FALSE;
 	enabled12.descriptorBindingPartiallyBound = supported12.descriptorBindingPartiallyBound ? VK_TRUE : VK_FALSE;
+	enabled12.descriptorBindingSampledImageUpdateAfterBind =
+		supported12.descriptorBindingSampledImageUpdateAfterBind ? VK_TRUE : VK_FALSE;
 
 	if (!enabled12.descriptorIndexing || !enabled12.runtimeDescriptorArray ||
-		!enabled12.shaderSampledImageArrayNonUniformIndexing || !enabled12.descriptorBindingPartiallyBound) {
+		!enabled12.shaderSampledImageArrayNonUniformIndexing || !enabled12.descriptorBindingPartiallyBound ||
+		!enabled12.descriptorBindingSampledImageUpdateAfterBind) {
 		throw std::runtime_error("Selected device does not support descriptor indexing features required by UI renderer.");
 	}
 

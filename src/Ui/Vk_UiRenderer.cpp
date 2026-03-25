@@ -983,83 +983,84 @@ static VkPipeline createGraphicsPipeline(
 	return pipeline;
 }
 
-static void DestroyPipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines) {
-	if (pipelines.solid != VK_NULL_HANDLE) {
-		vkDestroyPipeline(device, pipelines.solid, nullptr);
-		pipelines.solid = VK_NULL_HANDLE;
+static void DestroyPipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines_) {
+	if (pipelines_.solid != VK_NULL_HANDLE) {
+		vkDestroyPipeline(device, pipelines_.solid, nullptr);
+		pipelines_.solid = VK_NULL_HANDLE;
 	}
-	if (pipelines.msdf != VK_NULL_HANDLE) {
-		vkDestroyPipeline(device, pipelines.msdf, nullptr);
-		pipelines.msdf = VK_NULL_HANDLE;
+	if (pipelines_.msdf != VK_NULL_HANDLE) {
+		vkDestroyPipeline(device, pipelines_.msdf, nullptr);
+		pipelines_.msdf = VK_NULL_HANDLE;
 	}
-	if (pipelines.textured != VK_NULL_HANDLE) {
-		vkDestroyPipeline(device, pipelines.textured, nullptr);
-		pipelines.textured = VK_NULL_HANDLE;
+	if (pipelines_.textured != VK_NULL_HANDLE) {
+		vkDestroyPipeline(device, pipelines_.textured, nullptr);
+		pipelines_.textured = VK_NULL_HANDLE;
 	}
 }
 
-static void CreatePipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines, VkFormat format) {
-	pipelines.solid = createGraphicsPipeline(
+static void CreatePipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines_, VkFormat format) {
+	pipelines_.solid = createGraphicsPipeline(
 		device,
-		pipelines.layout,
+		pipelines_.layout,
 		format,
 		kUiSolidVertexShaderFile,
 		kUiSolidFragmentShaderFile,
 		false);
-	pipelines.msdf = createGraphicsPipeline(
+	pipelines_.msdf = createGraphicsPipeline(
 		device,
-		pipelines.layout,
+		pipelines_.layout,
 		format,
 		kUiMsdfVertexShaderFile,
 		kUiMsdfFragmentShaderFile,
 		true);
-	pipelines.textured = createGraphicsPipeline(
+	pipelines_.textured = createGraphicsPipeline(
 		device,
-		pipelines.layout,
+		pipelines_.layout,
 		format,
 		kUiTexturedVertexShaderFile,
 		kUiTexturedFragmentShaderFile,
 		true);
 }
 
-static void DestroyPipelineObjects(VkDevice device, VulkanUiRenderer::Pipelines& pipelines) {
-	DestroyPipelines(device, pipelines);
-	if (pipelines.layout != VK_NULL_HANDLE) {
-		vkDestroyPipelineLayout(device, pipelines.layout, nullptr);
-		pipelines.layout = VK_NULL_HANDLE;
+static void DestroyPipelineObjects(VkDevice device, VulkanUiRenderer::Pipelines& pipelines_) {
+	DestroyPipelines(device, pipelines_);
+	if (pipelines_.layout != VK_NULL_HANDLE) {
+		vkDestroyPipelineLayout(device, pipelines_.layout, nullptr);
+		pipelines_.layout = VK_NULL_HANDLE;
 	}
 }
 
-static void DestroyDescriptorObjects(VkDevice device, VulkanUiRenderer::Descriptors& descriptors) {
-	if (descriptors.pool != VK_NULL_HANDLE) {
-		vkDestroyDescriptorPool(device, descriptors.pool, nullptr);
-		descriptors.pool = VK_NULL_HANDLE;
+static void DestroyDescriptorObjects(VkDevice device, VulkanUiRenderer::Descriptors& descriptors_) {
+	if (descriptors_.pool != VK_NULL_HANDLE) {
+		vkDestroyDescriptorPool(device, descriptors_.pool, nullptr);
+		descriptors_.pool = VK_NULL_HANDLE;
 	}
-	descriptors.globalsSet = VK_NULL_HANDLE;
-	descriptors.texturesSet = VK_NULL_HANDLE;
+	descriptors_.globalsSets.clear();
+	descriptors_.texturesSets.clear();
 
-	if (descriptors.set0 != VK_NULL_HANDLE) {
-		vkDestroyDescriptorSetLayout(device, descriptors.set0, nullptr);
-		descriptors.set0 = VK_NULL_HANDLE;
+	if (descriptors_.set0 != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(device, descriptors_.set0, nullptr);
+		descriptors_.set0 = VK_NULL_HANDLE;
 	}
-	if (descriptors.set1 != VK_NULL_HANDLE) {
-		vkDestroyDescriptorSetLayout(device, descriptors.set1, nullptr);
-		descriptors.set1 = VK_NULL_HANDLE;
+	if (descriptors_.set1 != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(device, descriptors_.set1, nullptr);
+		descriptors_.set1 = VK_NULL_HANDLE;
 	}
 }
 
 static VkDescriptorImageInfo PlaceholderUiImageInfo(const VulkanUiRenderer& renderer) {
 	VkDescriptorImageInfo info{};
-	info.sampler = renderer.linearSampler;
-	info.imageView = renderer.placeholderUiTexture.view;
+	info.sampler = renderer.linearSampler_;
+	info.imageView = renderer.placeholderUiTexture_.view;
 	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	return info;
 }
 
 static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
-	if (renderer.maxUiImageDescriptors == 0u) {
+	if (renderer.maxUiImageDescriptors_ == 0u) {
 		throw std::runtime_error("UI texture descriptor capacity must be greater than zero.");
 	}
+	renderer.frameResourceCount_ = std::max<uint32_t>(1u, renderer.frameResourceCount_);
 
 	VkDescriptorSetLayoutBinding globalsBinding{};
 	globalsBinding.binding = 0;
@@ -1071,7 +1072,7 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	set0Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	set0Info.bindingCount = 1;
 	set0Info.pBindings = &globalsBinding;
-	vkCheck(vkCreateDescriptorSetLayout(device, &set0Info, nullptr, &renderer.descriptors.set0), "Failed to create UI set0 layout.");
+	vkCheck(vkCreateDescriptorSetLayout(device, &set0Info, nullptr, &renderer.descriptors_.set0), "Failed to create UI set0 layout.");
 
 	std::array<VkDescriptorSetLayoutBinding, 2> textureBindings{};
 	textureBindings[0].binding = 0;
@@ -1081,12 +1082,12 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 
 	textureBindings[1].binding = 1;
 	textureBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	textureBindings[1].descriptorCount = renderer.maxUiImageDescriptors;
+	textureBindings[1].descriptorCount = renderer.maxUiImageDescriptors_;
 	textureBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	const std::array<VkDescriptorBindingFlags, 2> bindingFlags = {
 		0u,
-		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT,
+		VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT,
 	};
 	VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
 	bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
@@ -1096,40 +1097,51 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	VkDescriptorSetLayoutCreateInfo set1Info{};
 	set1Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	set1Info.pNext = &bindingFlagsInfo;
+	set1Info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 	set1Info.bindingCount = static_cast<uint32_t>(textureBindings.size());
 	set1Info.pBindings = textureBindings.data();
-	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors.set1), "Failed to create UI set1 layout.");
+	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors_.set1), "Failed to create UI set1 layout.");
 
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	poolSizes[0].descriptorCount = 1;
+	poolSizes[0].descriptorCount = renderer.frameResourceCount_;
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = 1 + renderer.maxUiImageDescriptors;
+	poolSizes[1].descriptorCount = renderer.frameResourceCount_ * (1u + renderer.maxUiImageDescriptors_);
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.maxSets = 2;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+	poolInfo.maxSets = renderer.frameResourceCount_ * 2u;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	vkCheck(vkCreateDescriptorPool(device, &poolInfo, nullptr, &renderer.descriptors.pool), "Failed to create UI descriptor pool.");
+	vkCheck(vkCreateDescriptorPool(device, &poolInfo, nullptr, &renderer.descriptors_.pool), "Failed to create UI descriptor pool.");
 
+	renderer.descriptors_.globalsSets.assign(renderer.frameResourceCount_, VK_NULL_HANDLE);
+	renderer.descriptors_.texturesSets.assign(renderer.frameResourceCount_, VK_NULL_HANDLE);
+
+	std::vector<VkDescriptorSetLayout> set0Layouts(renderer.frameResourceCount_, renderer.descriptors_.set0);
 	VkDescriptorSetAllocateInfo set0AllocInfo{};
 	set0AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	set0AllocInfo.descriptorPool = renderer.descriptors.pool;
-	set0AllocInfo.descriptorSetCount = 1;
-	set0AllocInfo.pSetLayouts = &renderer.descriptors.set0;
-	vkCheck(vkAllocateDescriptorSets(device, &set0AllocInfo, &renderer.descriptors.globalsSet), "Failed to allocate UI globals set.");
+	set0AllocInfo.descriptorPool = renderer.descriptors_.pool;
+	set0AllocInfo.descriptorSetCount = renderer.frameResourceCount_;
+	set0AllocInfo.pSetLayouts = set0Layouts.data();
+	vkCheck(
+		vkAllocateDescriptorSets(device, &set0AllocInfo, renderer.descriptors_.globalsSets.data()),
+		"Failed to allocate UI globals sets.");
 
+	std::vector<VkDescriptorSetLayout> set1Layouts(renderer.frameResourceCount_, renderer.descriptors_.set1);
 	VkDescriptorSetAllocateInfo set1AllocInfo{};
 	set1AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	set1AllocInfo.descriptorPool = renderer.descriptors.pool;
-	set1AllocInfo.descriptorSetCount = 1;
-	set1AllocInfo.pSetLayouts = &renderer.descriptors.set1;
-	vkCheck(vkAllocateDescriptorSets(device, &set1AllocInfo, &renderer.descriptors.texturesSet), "Failed to allocate UI textures set.");
+	set1AllocInfo.descriptorPool = renderer.descriptors_.pool;
+	set1AllocInfo.descriptorSetCount = renderer.frameResourceCount_;
+	set1AllocInfo.pSetLayouts = set1Layouts.data();
+	vkCheck(
+		vkAllocateDescriptorSets(device, &set1AllocInfo, renderer.descriptors_.texturesSets.data()),
+		"Failed to allocate UI textures sets.");
 }
 
 static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
-	const std::array<VkDescriptorSetLayout, 2> setLayouts = { renderer.descriptors.set0, renderer.descriptors.set1 };
+	const std::array<VkDescriptorSetLayout, 2> setLayouts = { renderer.descriptors_.set0, renderer.descriptors_.set1 };
 	VkPushConstantRange pushRange{};
 	pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	pushRange.offset = 0;
@@ -1141,23 +1153,31 @@ static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	pipelineLayoutInfo.pSetLayouts = setLayouts.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushRange;
-	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines.layout), "Failed to create UI pipeline layout.");
+	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines_.layout), "Failed to create UI pipeline layout.");
 
-	CreatePipelines(device, renderer.pipelines, renderer.targetFormat);
+	CreatePipelines(device, renderer.pipelines_, renderer.targetFormat_);
 }
 
-static void UpdateInstanceBufferDescriptor(const VulkanUiRenderer& renderer, VkDevice device) {
-	if (renderer.descriptors.globalsSet == VK_NULL_HANDLE || renderer.instanceBuffer.buffer == VK_NULL_HANDLE) {
+static void UpdateInstanceBufferDescriptorForFrame(const VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
+	if (frameSlot >= renderer.descriptors_.globalsSets.size() || frameSlot >= renderer.instanceBuffersByFrame_.size()) {
 		return;
 	}
+	if (renderer.descriptors_.globalsSets[frameSlot] == VK_NULL_HANDLE) {
+		return;
+	}
+	const VulkanUiRenderer::AllocatedBuffer& instanceBuffer = renderer.instanceBuffersByFrame_[frameSlot];
+	if (instanceBuffer.buffer == VK_NULL_HANDLE) {
+		return;
+	}
+
 	VkDescriptorBufferInfo ssboInfo{};
-	ssboInfo.buffer = renderer.instanceBuffer.buffer;
+	ssboInfo.buffer = instanceBuffer.buffer;
 	ssboInfo.offset = 0;
-	ssboInfo.range = renderer.instanceBuffer.size;
+	ssboInfo.range = instanceBuffer.size;
 
 	VkWriteDescriptorSet write{};
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	write.dstSet = renderer.descriptors.globalsSet;
+	write.dstSet = renderer.descriptors_.globalsSets[frameSlot];
 	write.dstBinding = 0;
 	write.dstArrayElement = 0;
 	write.descriptorCount = 1;
@@ -1166,16 +1186,19 @@ static void UpdateInstanceBufferDescriptor(const VulkanUiRenderer& renderer, VkD
 	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 }
 
-static void UpdateTextureDescriptors(VulkanUiRenderer& renderer, VkDevice device) {
-	if (renderer.descriptors.texturesSet == VK_NULL_HANDLE) {
+static void UpdateTextureDescriptorsForFrame(VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
+	if (frameSlot >= renderer.descriptors_.texturesSets.size()) {
+		return;
+	}
+	if (renderer.descriptors_.texturesSets[frameSlot] == VK_NULL_HANDLE) {
 		return;
 	}
 	VkDescriptorImageInfo fontAtlasInfo{};
-	fontAtlasInfo.sampler = renderer.linearSampler;
-	fontAtlasInfo.imageView = renderer.placeholderFontAtlas.view;
+	fontAtlasInfo.sampler = renderer.linearSampler_;
+	fontAtlasInfo.imageView = renderer.placeholderFontAtlas_.view;
 	fontAtlasInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	if (renderer.fontManager) {
-		const FontManager::AtlasArrayResource& atlas = renderer.fontManager->getAtlasResource();
+	if (renderer.fontManager_) {
+		const FontManager::AtlasArrayResource& atlas = renderer.fontManager_->getAtlasResource();
 		if (atlas.view != VK_NULL_HANDLE && atlas.sampler != VK_NULL_HANDLE && atlas.layersUsed > 0u) {
 			fontAtlasInfo.sampler = atlas.sampler;
 			fontAtlasInfo.imageView = atlas.view;
@@ -1183,39 +1206,60 @@ static void UpdateTextureDescriptors(VulkanUiRenderer& renderer, VkDevice device
 	}
 
 	const VkDescriptorImageInfo uiImageTemplate = PlaceholderUiImageInfo(renderer);
-	if (renderer.uiTextureSlotInfos_.size() != renderer.maxUiImageDescriptors) {
-		renderer.uiTextureSlotInfos_.assign(renderer.maxUiImageDescriptors, uiImageTemplate);
+	if (renderer.uiTextureSlotInfos_.size() != renderer.maxUiImageDescriptors_) {
+		renderer.uiTextureSlotInfos_.assign(renderer.maxUiImageDescriptors_, uiImageTemplate);
 	}
 
 	std::array<VkWriteDescriptorSet, 2> writes{};
 	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writes[0].dstSet = renderer.descriptors.texturesSet;
+	writes[0].dstSet = renderer.descriptors_.texturesSets[frameSlot];
 	writes[0].dstBinding = 0;
 	writes[0].descriptorCount = 1;
 	writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	writes[0].pImageInfo = &fontAtlasInfo;
 
 	writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writes[1].dstSet = renderer.descriptors.texturesSet;
+	writes[1].dstSet = renderer.descriptors_.texturesSets[frameSlot];
 	writes[1].dstBinding = 1;
-	writes[1].descriptorCount = renderer.maxUiImageDescriptors;
+	writes[1].descriptorCount = renderer.maxUiImageDescriptors_;
 	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	writes[1].pImageInfo = renderer.uiTextureSlotInfos_.data();
 
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-	renderer.textureDescriptorsDirty_ = false;
+	if (frameSlot < renderer.textureDescriptorsDirtyByFrame_.size()) {
+		renderer.textureDescriptorsDirtyByFrame_[frameSlot] = false;
+	}
+}
+
+static void UpdateTextureDescriptorsAllFrames(VulkanUiRenderer& renderer, VkDevice device) {
+	for (uint32_t frameSlot = 0u; frameSlot < renderer.frameResourceCount_; ++frameSlot) {
+		UpdateTextureDescriptorsForFrame(renderer, device, frameSlot);
+	}
 }
 
 static void RecreateDescriptorAndPipelineObjects(VulkanContext& vk, VulkanUiRenderer& renderer) {
-	DestroyPipelineObjects(vk.device, renderer.pipelines);
-	DestroyDescriptorObjects(vk.device, renderer.descriptors);
+	DestroyPipelineObjects(vk.device, renderer.pipelines_);
+	DestroyDescriptorObjects(vk.device, renderer.descriptors_);
 	CreateDescriptorObjects(vk.device, renderer);
 	CreatePipelineObjects(vk.device, renderer);
-	UpdateInstanceBufferDescriptor(renderer, vk.device);
-	UpdateTextureDescriptors(renderer, vk.device);
+	if (renderer.textureDescriptorsDirtyByFrame_.size() != renderer.frameResourceCount_) {
+		renderer.textureDescriptorsDirtyByFrame_.assign(renderer.frameResourceCount_, true);
+	}
+	if (renderer.boundFontAtlasRevisionByFrame_.size() != renderer.frameResourceCount_) {
+		renderer.boundFontAtlasRevisionByFrame_.assign(renderer.frameResourceCount_, UINT32_MAX);
+	}
+	for (uint32_t frameSlot = 0u; frameSlot < renderer.frameResourceCount_; ++frameSlot) {
+		UpdateInstanceBufferDescriptorForFrame(renderer, vk.device, frameSlot);
+		UpdateTextureDescriptorsForFrame(renderer, vk.device, frameSlot);
+		renderer.boundFontAtlasRevisionByFrame_[frameSlot] = UINT32_MAX;
+	}
 }
 
-static void EnsureInstanceBufferCapacity(VulkanContext& vk, VulkanUiRenderer& renderer, size_t requiredInstances) {
+static void EnsureInstanceBufferCapacity(
+	VulkanContext& vk,
+	VulkanUiRenderer& renderer,
+	uint32_t frameSlot,
+	size_t requiredInstances) {
 	if (requiredInstances == 0) {
 		return;
 	}
@@ -1223,31 +1267,36 @@ static void EnsureInstanceBufferCapacity(VulkanContext& vk, VulkanUiRenderer& re
 		throw std::runtime_error("UI instance count exceeds addressable buffer size.");
 	}
 
+	if (frameSlot >= renderer.instanceBuffersByFrame_.size()) {
+		throw std::runtime_error("UI renderer frame slot index is out of bounds.");
+	}
+
+	VulkanUiRenderer::AllocatedBuffer& instanceBuffer = renderer.instanceBuffersByFrame_[frameSlot];
 	const VkDeviceSize requiredBytes = static_cast<VkDeviceSize>(requiredInstances) * sizeof(UiInstance);
-	if (renderer.instanceBuffer.buffer != VK_NULL_HANDLE && renderer.instanceBuffer.size >= requiredBytes) {
+	if (instanceBuffer.buffer != VK_NULL_HANDLE && instanceBuffer.size >= requiredBytes) {
 		return;
 	}
 
-	VkDeviceSize newSize = renderer.instanceBuffer.size > 0 ? renderer.instanceBuffer.size : kInitialInstanceBufferBytes;
+	VkDeviceSize newSize = instanceBuffer.size > 0 ? instanceBuffer.size : kInitialInstanceBufferBytes;
 	while (newSize < requiredBytes) {
 		newSize *= 2;
 	}
 
-	DestroyBuffer(vk, renderer.instanceBuffer);
-	CreateMappedBuffer(vk, newSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, renderer.instanceBuffer);
-	UpdateInstanceBufferDescriptor(renderer, vk.device);
+	DestroyBuffer(vk, instanceBuffer);
+	CreateMappedBuffer(vk, newSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, instanceBuffer);
+	UpdateInstanceBufferDescriptorForFrame(renderer, vk.device, frameSlot);
 }
 
-static VkPipeline PipelineForType(const VulkanUiRenderer::Pipelines& pipelines, UiType type) {
+static VkPipeline PipelineForType(const VulkanUiRenderer::Pipelines& pipelines_, UiType type) {
 	switch (type) {
 		case UiType::Solid:
-			return pipelines.solid;
+			return pipelines_.solid;
 		case UiType::Msdf:
-			return pipelines.msdf;
+			return pipelines_.msdf;
 		case UiType::Textured:
-			return pipelines.textured;
+			return pipelines_.textured;
 		default:
-			return pipelines.solid;
+			return pipelines_.solid;
 	}
 }
 
@@ -1259,7 +1308,7 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 	const VkRect2D scissor = ToVkRect2D(run.scissor, static_cast<int>(extent.width), static_cast<int>(extent.height));
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	const VkPipeline pipeline = PipelineForType(renderer.pipelines, run.type);
+	const VkPipeline pipeline = PipelineForType(renderer.pipelines_, run.type);
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	UiPushConstants push{};
@@ -1268,7 +1317,7 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 	push.instanceBaseIndex = run.firstInstance;
 	vkCmdPushConstants(
 		commandBuffer,
-		renderer.pipelines.layout,
+		renderer.pipelines_.layout,
 		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 		0,
 		static_cast<uint32_t>(sizeof(UiPushConstants)),
@@ -1289,23 +1338,26 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 
 	destroy(vk);
 
-		try {
-			maxUiImageDescriptors = kDefaultMaxUiImageDescriptors;
-			targetFormat = swapFormat;
+	try {
+		maxUiImageDescriptors_ = kDefaultMaxUiImageDescriptors;
+		targetFormat_ = swapFormat;
+		frameResourceCount_ = std::max<uint32_t>(1u, config.vk.framesInFlight);
+		instanceBuffersByFrame_.assign(frameResourceCount_, AllocatedBuffer{});
+		textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
+		boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
+
 		const float configuredDpi = std::max(1.0f, config.ui.dpi);
-		pointsToPixelsScale = std::max(0.0f, config.ui.fontScale) * (configuredDpi / 72.0f);
-		if (pointsToPixelsScale <= 0.0f) {
-			pointsToPixelsScale = configuredDpi / 72.0f;
+		pointsToPixelsScale_ = std::max(0.0f, config.ui.fontScale) * (configuredDpi / 72.0f);
+		if (pointsToPixelsScale_ <= 0.0f) {
+			pointsToPixelsScale_ = configuredDpi / 72.0f;
 		}
-		boundFontAtlasRevision = UINT32_MAX;
 
-			CreateLinearSampler(vk, linearSampler);
+		CreateLinearSampler(vk, linearSampler_);
 
-			CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D_ARRAY, placeholderFontAtlas);
-			CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D, placeholderUiTexture);
-			uiTextureSlotInfos_.assign(maxUiImageDescriptors, PlaceholderUiImageInfo(*this));
-			textureDescriptorsDirty_ = true;
-			RecreateDescriptorAndPipelineObjects(vk, *this);
+		CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D_ARRAY, placeholderFontAtlas_);
+		CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D, placeholderUiTexture_);
+		uiTextureSlotInfos_.assign(maxUiImageDescriptors_, PlaceholderUiImageInfo(*this));
+		RecreateDescriptorAndPipelineObjects(vk, *this);
 
 		const std::array<UiQuadVertex, 4> quadVertices = {
 			UiQuadVertex{ 0.0f, 0.0f, 0.0f, 0.0f },
@@ -1317,17 +1369,23 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 			vk,
 			static_cast<VkDeviceSize>(quadVertices.size() * sizeof(UiQuadVertex)),
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			quadVertexBuffer);
+			quadVertexBuffer_);
 		UploadBytesToMappedBuffer(
 			vk,
-			quadVertexBuffer,
+			quadVertexBuffer_,
 			quadVertices.data(),
 			static_cast<VkDeviceSize>(quadVertices.size() * sizeof(UiQuadVertex)));
 
-			CreateMappedBuffer(vk, kInitialInstanceBufferBytes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, instanceBuffer);
-			UpdateInstanceBufferDescriptor(*this, vk.device);
+		for (uint32_t frameSlot = 0u; frameSlot < frameResourceCount_; ++frameSlot) {
+			CreateMappedBuffer(
+				vk,
+				kInitialInstanceBufferBytes,
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+				instanceBuffersByFrame_[frameSlot]);
+			UpdateInstanceBufferDescriptorForFrame(*this, vk.device, frameSlot);
+		}
 
-			instancesScratch_.clear();
+		instancesScratch_.clear();
 		runsScratch_.clear();
 		instancesScratch_.reserve(4096);
 		runsScratch_.reserve(256);
@@ -1338,8 +1396,8 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 }
 
 void VulkanUiRenderer::setFontManager(const FontManager* manager) {
-	fontManager = manager;
-	boundFontAtlasRevision = UINT32_MAX;
+	fontManager_ = manager;
+	boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
 }
 
 void VulkanUiRenderer::destroy(VulkanContext& vk)
@@ -1347,40 +1405,43 @@ void VulkanUiRenderer::destroy(VulkanContext& vk)
 	instancesScratch_.clear();
 	runsScratch_.clear();
 	uiTextureSlotInfos_.clear();
-	textureDescriptorsDirty_ = false;
+	textureDescriptorsDirtyByFrame_.clear();
+	boundFontAtlasRevisionByFrame_.clear();
+	frameResourceCount_ = 1u;
 
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
-		pipelines = Pipelines{};
-		descriptors = Descriptors{};
-		instanceBuffer = AllocatedBuffer{};
-		quadVertexBuffer = AllocatedBuffer{};
-		placeholderFontAtlas = AllocatedImage{};
-		placeholderUiTexture = AllocatedImage{};
-		linearSampler = VK_NULL_HANDLE;
-		targetFormat = VK_FORMAT_UNDEFINED;
-		fontManager = nullptr;
-		boundFontAtlasRevision = UINT32_MAX;
-		pointsToPixelsScale = 96.0f / 72.0f;
+		pipelines_ = Pipelines{};
+		descriptors_ = Descriptors{};
+		instanceBuffersByFrame_.clear();
+		quadVertexBuffer_ = AllocatedBuffer{};
+		placeholderFontAtlas_ = AllocatedImage{};
+		placeholderUiTexture_ = AllocatedImage{};
+		linearSampler_ = VK_NULL_HANDLE;
+		targetFormat_ = VK_FORMAT_UNDEFINED;
+		fontManager_ = nullptr;
+		pointsToPixelsScale_ = 96.0f / 72.0f;
 		return;
 	}
 
-	DestroyPipelineObjects(vk.device, pipelines);
-	DestroyDescriptorObjects(vk.device, descriptors);
+	DestroyPipelineObjects(vk.device, pipelines_);
+	DestroyDescriptorObjects(vk.device, descriptors_);
 
-	DestroyBuffer(vk, instanceBuffer);
-	DestroyBuffer(vk, quadVertexBuffer);
-	DestroyImage(vk, placeholderFontAtlas);
-	DestroyImage(vk, placeholderUiTexture);
+	for (AllocatedBuffer& buffer : instanceBuffersByFrame_) {
+		DestroyBuffer(vk, buffer);
+	}
+	instanceBuffersByFrame_.clear();
+	DestroyBuffer(vk, quadVertexBuffer_);
+	DestroyImage(vk, placeholderFontAtlas_);
+	DestroyImage(vk, placeholderUiTexture_);
 
-	if (linearSampler != VK_NULL_HANDLE) {
-		vkDestroySampler(vk.device, linearSampler, nullptr);
-		linearSampler = VK_NULL_HANDLE;
+	if (linearSampler_ != VK_NULL_HANDLE) {
+		vkDestroySampler(vk.device, linearSampler_, nullptr);
+		linearSampler_ = VK_NULL_HANDLE;
 	}
 
-	targetFormat = VK_FORMAT_UNDEFINED;
-	fontManager = nullptr;
-	boundFontAtlasRevision = UINT32_MAX;
-	pointsToPixelsScale = 96.0f / 72.0f;
+	targetFormat_ = VK_FORMAT_UNDEFINED;
+	fontManager_ = nullptr;
+	pointsToPixelsScale_ = 96.0f / 72.0f;
 }
 
 void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat)
@@ -1388,38 +1449,38 @@ void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newF
 	if (vk.device == VK_NULL_HANDLE || newFormat == VK_FORMAT_UNDEFINED) {
 		return;
 	}
-	if (newFormat == targetFormat && pipelines.solid != VK_NULL_HANDLE && pipelines.msdf != VK_NULL_HANDLE &&
-		pipelines.textured != VK_NULL_HANDLE) {
+	if (newFormat == targetFormat_ && pipelines_.solid != VK_NULL_HANDLE && pipelines_.msdf != VK_NULL_HANDLE &&
+		pipelines_.textured != VK_NULL_HANDLE) {
 		return;
 	}
 
-	DestroyPipelines(vk.device, pipelines);
-	targetFormat = newFormat;
-	CreatePipelines(vk.device, pipelines, targetFormat);
+	DestroyPipelines(vk.device, pipelines_);
+	targetFormat_ = newFormat;
+	CreatePipelines(vk.device, pipelines_, targetFormat_);
 }
 
 uint32_t VulkanUiRenderer::textureSlotCapacity() const {
-	return maxUiImageDescriptors;
+	return maxUiImageDescriptors_;
 }
 
 void VulkanUiRenderer::reserveTextureSlots(VulkanContext& vk, uint32_t minCapacity) {
-	if (minCapacity <= maxUiImageDescriptors) {
+	if (minCapacity <= maxUiImageDescriptors_) {
 		return;
 	}
-	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr || linearSampler == VK_NULL_HANDLE ||
-		placeholderUiTexture.view == VK_NULL_HANDLE || targetFormat == VK_FORMAT_UNDEFINED) {
+	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr || linearSampler_ == VK_NULL_HANDLE ||
+		placeholderUiTexture_.view == VK_NULL_HANDLE || targetFormat_ == VK_FORMAT_UNDEFINED) {
 		throw std::runtime_error("UI renderer is not initialized for texture slot growth.");
 	}
 
-	uint32_t newCapacity = std::max<uint32_t>(2u, maxUiImageDescriptors);
+	uint32_t newCapacity = std::max<uint32_t>(2u, maxUiImageDescriptors_);
 	while (newCapacity < minCapacity) {
 		newCapacity *= 2u;
 	}
 
 	const VkDescriptorImageInfo placeholderInfo = PlaceholderUiImageInfo(*this);
 	std::vector<VkDescriptorImageInfo> oldSlotInfos = uiTextureSlotInfos_;
-	maxUiImageDescriptors = newCapacity;
-	uiTextureSlotInfos_.assign(maxUiImageDescriptors, placeholderInfo);
+	maxUiImageDescriptors_ = newCapacity;
+	uiTextureSlotInfos_.assign(maxUiImageDescriptors_, placeholderInfo);
 	if (!oldSlotInfos.empty()) {
 		const size_t preserved = std::min(oldSlotInfos.size(), uiTextureSlotInfos_.size());
 		for (size_t i = 0; i < preserved; ++i) {
@@ -1428,6 +1489,8 @@ void VulkanUiRenderer::reserveTextureSlots(VulkanContext& vk, uint32_t minCapaci
 	}
 
 	RecreateDescriptorAndPipelineObjects(vk, *this);
+	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
+	boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
 }
 
 void VulkanUiRenderer::setTextureSlotBinding(uint32_t slot, VkImageView view, VkSampler sampler) {
@@ -1443,7 +1506,7 @@ void VulkanUiRenderer::setTextureSlotBinding(uint32_t slot, VkImageView view, Vk
 	info.imageView = view;
 	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	uiTextureSlotInfos_[slot] = info;
-	textureDescriptorsDirty_ = true;
+	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
 }
 
 void VulkanUiRenderer::clearTextureSlotBinding(uint32_t slot) {
@@ -1451,11 +1514,12 @@ void VulkanUiRenderer::clearTextureSlotBinding(uint32_t slot) {
 		throw std::runtime_error("UI texture slot index out of bounds.");
 	}
 	uiTextureSlotInfos_[slot] = PlaceholderUiImageInfo(*this);
-	textureDescriptorsDirty_ = true;
+	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
 }
 
 void VulkanUiRenderer::rebuildTextureDescriptors(VkDevice device) {
-	UpdateTextureDescriptors(*this, device);
+	UpdateTextureDescriptorsAllFrames(*this, device);
+	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, false);
 }
 
 void VulkanUiRenderer::render(
@@ -1465,23 +1529,50 @@ void VulkanUiRenderer::render(
 	const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
 	VkImageView targetView,
+	uint32_t frameIndex,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY)
 {
 	if (cmd == VK_NULL_HANDLE || targetView == VK_NULL_HANDLE) {
 		return;
 	}
-	if (pipelines.layout == VK_NULL_HANDLE || pipelines.solid == VK_NULL_HANDLE || instanceBuffer.buffer == VK_NULL_HANDLE) {
+	if (pipelines_.layout == VK_NULL_HANDLE || pipelines_.solid == VK_NULL_HANDLE) {
+		return;
+	}
+	if (frameResourceCount_ == 0u || instanceBuffersByFrame_.empty() ||
+		descriptors_.globalsSets.empty() || descriptors_.texturesSets.empty()) {
+		return;
+	}
+
+	const uint32_t frameSlot = frameIndex % frameResourceCount_;
+	if (frameSlot >= instanceBuffersByFrame_.size() ||
+		frameSlot >= descriptors_.globalsSets.size() ||
+		frameSlot >= descriptors_.texturesSets.size()) {
+		return;
+	}
+
+	const AllocatedBuffer& instanceBuffer = instanceBuffersByFrame_[frameSlot];
+	if (instanceBuffer.buffer == VK_NULL_HANDLE) {
 		return;
 	}
 
 	uint32_t latestFontAtlasRevision = 0u;
-	if (fontManager) {
-		latestFontAtlasRevision = fontManager->getAtlasResource().bindingRevision;
+	if (fontManager_) {
+		latestFontAtlasRevision = fontManager_->getAtlasResource().bindingRevision;
 	}
-	if (textureDescriptorsDirty_ || latestFontAtlasRevision != boundFontAtlasRevision) {
-		UpdateTextureDescriptors(*this, vk.device);
-		boundFontAtlasRevision = latestFontAtlasRevision;
+	bool textureDescriptorsDirty = true;
+	if (frameSlot < textureDescriptorsDirtyByFrame_.size()) {
+		textureDescriptorsDirty = textureDescriptorsDirtyByFrame_[frameSlot];
+	}
+	uint32_t boundRevision = UINT32_MAX;
+	if (frameSlot < boundFontAtlasRevisionByFrame_.size()) {
+		boundRevision = boundFontAtlasRevisionByFrame_[frameSlot];
+	}
+	if (textureDescriptorsDirty || latestFontAtlasRevision != boundRevision) {
+		UpdateTextureDescriptorsForFrame(*this, vk.device, frameSlot);
+		if (frameSlot < boundFontAtlasRevisionByFrame_.size()) {
+			boundFontAtlasRevisionByFrame_[frameSlot] = latestFontAtlasRevision;
+		}
 	}
 
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
@@ -1490,8 +1581,8 @@ void VulkanUiRenderer::render(
 		renderCommands,
 		inputFieldOverrides,
 		extent,
-		fontManager,
-		pointsToPixelsScale,
+		fontManager_,
+		pointsToPixelsScale_,
 		clampedScaleX,
 		clampedScaleY,
 		instancesScratch_,
@@ -1500,10 +1591,11 @@ void VulkanUiRenderer::render(
 		return;
 	}
 
-	EnsureInstanceBufferCapacity(vk, *this, instancesScratch_.size());
+	EnsureInstanceBufferCapacity(vk, *this, frameSlot, instancesScratch_.size());
+	const AllocatedBuffer& activeInstanceBuffer = instanceBuffersByFrame_[frameSlot];
 	UploadBytesToMappedBuffer(
 		vk,
-		instanceBuffer,
+		activeInstanceBuffer,
 		instancesScratch_.data(),
 		static_cast<VkDeviceSize>(instancesScratch_.size() * sizeof(UiInstance)));
 
@@ -1537,12 +1629,15 @@ void VulkanUiRenderer::render(
 	fullScissor.extent = extent;
 	vkCmdSetScissor(cmd, 0, 1, &fullScissor);
 
-	const VkBuffer vertexBuffer = quadVertexBuffer.buffer;
+	const VkBuffer vertexBuffer = quadVertexBuffer_.buffer;
 	const VkDeviceSize vertexOffset = 0;
 	vkCmdBindVertexBuffers(cmd, 0, 1, &vertexBuffer, &vertexOffset);
 
-	const VkDescriptorSet sets[2] = { descriptors.globalsSet, descriptors.texturesSet };
-	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.layout, 0, 2, sets, 0, nullptr);
+	const VkDescriptorSet sets[2] = {
+		descriptors_.globalsSets[frameSlot],
+		descriptors_.texturesSets[frameSlot],
+	};
+	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines_.layout, 0, 2, sets, 0, nullptr);
 
 	for (const UiRun& run : runsScratch_) {
 		FlushRun(cmd, *this, extent, run);

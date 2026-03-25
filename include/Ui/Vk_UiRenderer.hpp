@@ -88,24 +88,25 @@ struct VulkanUiRenderer {
 		VkDescriptorSetLayout set0 = VK_NULL_HANDLE;
 		VkDescriptorSetLayout set1 = VK_NULL_HANDLE;
 		VkDescriptorPool pool = VK_NULL_HANDLE;
-		VkDescriptorSet globalsSet = VK_NULL_HANDLE;
-		VkDescriptorSet texturesSet = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> globalsSets{};
+		std::vector<VkDescriptorSet> texturesSets{};
 	};
 
-	Pipelines pipelines{};
-	Descriptors descriptors{};
+	Pipelines pipelines_{};
+	Descriptors descriptors_{};
 
-	AllocatedBuffer instanceBuffer{};
-	AllocatedBuffer quadVertexBuffer{};
-	AllocatedImage placeholderFontAtlas{};
-	AllocatedImage placeholderUiTexture{};
+	std::vector<AllocatedBuffer> instanceBuffersByFrame_{};
+	AllocatedBuffer quadVertexBuffer_{};
+	AllocatedImage placeholderFontAtlas_{};
+	AllocatedImage placeholderUiTexture_{};
 
-	VkSampler linearSampler = VK_NULL_HANDLE;
-	VkFormat targetFormat = VK_FORMAT_UNDEFINED;
-	uint32_t maxUiImageDescriptors = 256;
-	float pointsToPixelsScale = 96.0f / 72.0f;
-	const FontManager* fontManager = nullptr;
-	uint32_t boundFontAtlasRevision = UINT32_MAX;
+	VkSampler linearSampler_ = VK_NULL_HANDLE;
+	VkFormat targetFormat_ = VK_FORMAT_UNDEFINED;
+	uint32_t maxUiImageDescriptors_ = 256;
+	uint32_t frameResourceCount_ = 1u;
+	float pointsToPixelsScale_ = 96.0f / 72.0f;
+	const FontManager* fontManager_ = nullptr;
+	std::vector<uint32_t> boundFontAtlasRevisionByFrame_{};
 
 	void init(const FlowUi::AppConfig& config, VulkanContext& vk, VkFormat swapFormat);
 	void setFontManager(const FontManager* manager);
@@ -123,11 +124,12 @@ struct VulkanUiRenderer {
 		const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
 		VkExtent2D extent,
 		VkImageView targetView,
+		uint32_t frameIndex,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY);
 
 	std::vector<VkDescriptorImageInfo> uiTextureSlotInfos_;
-	bool textureDescriptorsDirty_ = false;
+	std::vector<bool> textureDescriptorsDirtyByFrame_{};
 	std::vector<UiInstance> instancesScratch_;
 	std::vector<UiRun> runsScratch_;
 };

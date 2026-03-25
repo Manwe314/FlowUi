@@ -364,6 +364,7 @@ struct App::Impl {
 	float uiToFramebufferScaleY = 1.0f;
 
 	bool framebufferResized = false;
+	VkExtent2D observedFramebufferExtent{};
 
 	explicit Impl(const AppConfig& initialConfig)
 		: config(initialConfig), ui(elementRegistry, config) {
@@ -398,6 +399,7 @@ struct App::Impl {
 		swap.create(config, vk, window->framebufferExtent());
 		frames.create(config, vk, swap.images.size());
 		swapchainImageLayouts.assign(swap.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
+		observedFramebufferExtent = window->framebufferExtent();
 
 		// 4) renderer/resources (dynamic rendering needs format)
 		renderer.init(config, vk, swap.format);
@@ -502,6 +504,11 @@ struct App::Impl {
 		const float inverseClampedUiScale = 1 / std::max(1.0e-6f, config.ui.uiScale);
 		const VkExtent2D windowExtent = window->windowExtent();
 		const VkExtent2D framebufferExtent = window->framebufferExtent();
+		if (framebufferExtent.width != observedFramebufferExtent.width ||
+			framebufferExtent.height != observedFramebufferExtent.height) {
+			framebufferResized = true;
+			observedFramebufferExtent = framebufferExtent;
+		}
 		const float logicalWindowWidth = static_cast<float>(std::max<uint32_t>(1u, windowExtent.width));
 		const float logicalWindowHeight = static_cast<float>(std::max<uint32_t>(1u, windowExtent.height));
 		const float framebufferWidth = static_cast<float>(std::max<uint32_t>(1u, framebufferExtent.width));
@@ -537,6 +544,17 @@ struct App::Impl {
 		if (frames.frames.empty() || swap.swapchain == VK_NULL_HANDLE || swap.views.empty()) {
 			return;
 		}
+		const VkExtent2D framebufferExtent = window ? window->framebufferExtent() : VkExtent2D{};
+		if (framebufferExtent.width != observedFramebufferExtent.width ||
+			framebufferExtent.height != observedFramebufferExtent.height) {
+			framebufferResized = true;
+			observedFramebufferExtent = framebufferExtent;
+		}
+		if (framebufferResized) {
+			if (!recreateSwapchainIfNeeded()) {
+				return;
+			}
+		}
 
 		FrameVk::Frame& frame = frames.getCurrantFrame();
 		vkCheck(
@@ -553,6 +571,7 @@ struct App::Impl {
 			&swapchainImageIndex);
 
 		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
+			framebufferResized = true;
 			recreateSwapchainIfNeeded();
 			return;
 		}
@@ -599,6 +618,7 @@ struct App::Impl {
 			ui.inputFields().frameOverrides(),
 			swap.extent,
 			swap.views[swapchainImageIndex],
+			frames.currentFrame,
 			uiToFramebufferScaleX,
 			uiToFramebufferScaleY);
 
@@ -640,7 +660,7 @@ struct App::Impl {
 
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR ||
 			acquiredSuboptimalSwapchain || framebufferResized) {
-			framebufferResized = false;
+			framebufferResized = true;
 			recreateSwapchainIfNeeded();
 		} else if (presentResult != VK_SUCCESS) {
 			throw std::runtime_error("Failed to present swapchain image.");
@@ -649,20 +669,24 @@ struct App::Impl {
 		frames.advance();
 	}
 
-	void recreateSwapchainIfNeeded() {
-		if (!window) {
-			return;
+	bool recreateSwapchainIfNeeded() {
+		if (!window || vk.device == VK_NULL_HANDLE) {
+			return false;
 		}
 		const VkExtent2D framebufferExtent = window->framebufferExtent();
+		observedFramebufferExtent = framebufferExtent;
 		if (framebufferExtent.width == 0 || framebufferExtent.height == 0) {
-			return;
+			framebufferResized = true;
+			return false;
 		}
 
-		vkDeviceWaitIdle(vk.device);
+		vkCheck(vkDeviceWaitIdle(vk.device), "Failed to wait for device idle during swapchain recreation.");
 		swap.recreate(config, vk, framebufferExtent);
 		frames.onSwapchainRecreated(vk, swap.images.size());
 		renderer.onSwapchainFormatChanged(vk, swap.format); // only if changed
 		swapchainImageLayouts.assign(swap.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
+		framebufferResized = false;
+		return true;
 	}
 
 	void cleanup() {
