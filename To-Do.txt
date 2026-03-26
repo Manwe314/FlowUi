@@ -18,3 +18,12 @@ For SVG Manager:
 	Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.
 	If atlas is full and everything is “in use this frame,” allocation currently fails instead of forcing eviction.
 	No debug/stats API yet (cache hit rate, page usage, evictions).
+
+
+the paradigm re design:
+	- a lot of static work is done every frame. work beyond Layout. it should be simpler to aquire resources once and reuse across frames
+	- elements might want to manage states. some long lived varable management system would be nice. beyond user maintained struct.
+	- closed elements that relay on .draw() if utilizing other elements as children are forced to forward setable defaults causing init function to call exploding amounts of setters and getters.
+	- a more pre configured easly tweakable reusable form of element should exist that doesnt also destory the immediate mode paradigm.
+	- reusability comes at a function calling cost to not give up immediate mode. this should not be a tradeoff. both performance and unclogged files should be given without a sacriface to immediate mode thinking.
+	
