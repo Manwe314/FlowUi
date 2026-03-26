@@ -50,21 +50,37 @@ using ElementParameterValue = std::variant<
     std::string,
     ElementCustomCallback,
 	TextureRef,
+    Clay_ElementId,
     Clay_Color,
+    Clay_Dimensions,
+    Clay_Vector2,
+    Clay_LayoutAlignmentX,
+    Clay_LayoutAlignmentY,
+	Clay_SizingMinMax,
     Clay_Sizing,
+    Clay_SizingAxis,
+	Clay__SizingType,
     Clay_Padding,
 	Clay_LayoutDirection,
 	Clay_LayoutConfig,
 	Clay_ElementDeclaration,
 	Clay_CornerRadius,
+	Clay_TextElementConfigWrapMode,
+	Clay_TextAlignment,
+	Clay_TextElementConfig,
 	Clay_AspectRatioElementConfig,
 	Clay_ImageElementConfig,
+	Clay_FloatingAttachPointType,
 	Clay_FloatingAttachPoints,
+	Clay_PointerCaptureMode,
 	Clay_FloatingAttachToElement,
+	Clay_FloatingClipToElement,
 	Clay_FloatingElementConfig,
+	Clay_CustomElementConfig,
 	Clay_ClipElementConfig,
 	Clay_BorderWidth,
-	Clay_BorderElementConfig
+	Clay_BorderElementConfig,
+	Clay_ChildAlignment
 >;
 
 class ElementParameters {
@@ -190,6 +206,7 @@ struct ElementDefinition
 
     std::function<void(ElementInteractionContext&)> runLogic;
 
+    std::function<Clay_ElementDeclaration(ElementBuildContext&)> constructElment;
     std::function<void(ElementBuildContext&)> buildElement;
 };
 
@@ -233,11 +250,36 @@ public:
     ElementBuilder& set(std::string_view key, float value);
     ElementBuilder& set(std::string_view key, std::string_view value);
     ElementBuilder& set(std::string_view key, const char* value);
+    ElementBuilder& set(std::string_view key, Clay_ElementId value);
     ElementBuilder& set(std::string_view key, Clay_Color value);
+    ElementBuilder& set(std::string_view key, Clay_Dimensions value);
+    ElementBuilder& set(std::string_view key, Clay_Vector2 value);
+    ElementBuilder& set(std::string_view key, Clay_LayoutAlignmentX value);
+    ElementBuilder& set(std::string_view key, Clay_LayoutAlignmentY value);
+	ElementBuilder& set(std::string_view key, Clay_SizingMinMax value);
     ElementBuilder& set(std::string_view key, Clay_Sizing value);
+    ElementBuilder& set(std::string_view key, Clay_SizingAxis value);
+	ElementBuilder& set(std::string_view key, Clay__SizingType value);
     ElementBuilder& set(std::string_view key, Clay_Padding value);
 	ElementBuilder& set(std::string_view key, Clay_LayoutDirection value);
 	ElementBuilder& set(std::string_view key, Clay_LayoutConfig value);
+	ElementBuilder& set(std::string_view key, Clay_CornerRadius value);
+	ElementBuilder& set(std::string_view key, Clay_ChildAlignment value);
+	ElementBuilder& set(std::string_view key, Clay_TextElementConfigWrapMode value);
+	ElementBuilder& set(std::string_view key, Clay_TextAlignment value);
+	ElementBuilder& set(std::string_view key, Clay_TextElementConfig value);
+	ElementBuilder& set(std::string_view key, Clay_AspectRatioElementConfig value);
+	ElementBuilder& set(std::string_view key, Clay_ImageElementConfig value);
+	ElementBuilder& set(std::string_view key, Clay_FloatingAttachPointType value);
+	ElementBuilder& set(std::string_view key, Clay_FloatingAttachPoints value);
+	ElementBuilder& set(std::string_view key, Clay_PointerCaptureMode value);
+	ElementBuilder& set(std::string_view key, Clay_FloatingAttachToElement value);
+	ElementBuilder& set(std::string_view key, Clay_FloatingClipToElement value);
+	ElementBuilder& set(std::string_view key, Clay_FloatingElementConfig value);
+	ElementBuilder& set(std::string_view key, Clay_CustomElementConfig value);
+	ElementBuilder& set(std::string_view key, Clay_ClipElementConfig value);
+	ElementBuilder& set(std::string_view key, Clay_BorderWidth value);
+	ElementBuilder& set(std::string_view key, Clay_BorderElementConfig value);
 	ElementBuilder& set(std::string_view key, Clay_ElementDeclaration value);
 	ElementBuilder& set(std::string_view key, TextureRef value);
     ElementBuilder& set(std::string_view key, ElementCustomCallback value);
@@ -256,6 +298,7 @@ public:
         return *this;
     }
 
+    void construct(ElementDrawOptions options = ElementDrawOptions::Default);
     void draw(ElementDrawOptions options = ElementDrawOptions::Default);
 
 private:

@@ -19,6 +19,39 @@
 
 // Register one custom element type into your ElementRegistry.
 // Call this once during your app setup/initialization.
+void registerTemplatePanel(FlowUi::ElementRegistry& elementRegistry)
+{
+	FlowUi::ElementDefinition definition{};
+	definition.elementTypeName = "TemplatePanel";
+
+	definition.initializeDefaultParameters = [](FlowUi::ElementParameters& defaults) {
+		defaults.setValue("padding", 12);
+		defaults.setValue("childGap", 10);
+		defaults.setValue("layoutDirection", CLAY_TOP_TO_BOTTOM);
+		defaults.setValue("backgroundColor", Clay_Color{24.0f, 29.0f, 39.0f, 255.0f});
+		defaults.setValue("cornerRadius", 12.0f);
+	};
+
+	// New composable path: construct root only, children are authored at call site
+	// between .construct() and ui.drawConstructed().
+	definition.constructElment = [](FlowUi::ElementBuildContext& context) -> Clay_ElementDeclaration {
+		Clay_ElementDeclaration root{};
+		root.id = context.elementId;
+		root.backgroundColor = context.parameters.getValue<Clay_Color>("backgroundColor");
+		root.cornerRadius = CLAY_CORNER_RADIUS(context.parameters.getValue<float>("cornerRadius"));
+		root.layout.sizing.width = CLAY_SIZING_FIT(220, 640);
+		root.layout.sizing.height = CLAY_SIZING_FIT(0, 0);
+		root.layout.padding = CLAY_PADDING_ALL(context.parameters.getValue<int>("padding"));
+		root.layout.childGap = context.parameters.getValue<int>("childGap");
+		root.layout.layoutDirection = context.parameters.getValue<Clay_LayoutDirection>("layoutDirection");
+		return root;
+	};
+
+	elementRegistry.registerElement(std::move(definition));
+}
+
+// Register one self-contained custom element type into your ElementRegistry.
+// Call this once during your app setup/initialization.
 void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 {
 	FlowUi::ElementDefinition definition{};
@@ -99,6 +132,13 @@ void registerTemplateButton(FlowUi::ElementRegistry& elementRegistry)
 	elementRegistry.registerElement(std::move(definition));
 }
 
+// Convenience helper: register both template elements.
+void registerTemplateElements(FlowUi::ElementRegistry& elementRegistry)
+{
+	registerTemplatePanel(elementRegistry);
+	registerTemplateButton(elementRegistry);
+}
+
 // Example usage each frame (inside your UI build code).
 void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pressedThisFrame)
 {
@@ -118,3 +158,26 @@ void drawTemplateButton(FlowUi::UiManager& uiContext, int& clickCount, bool& pre
 		.draw();
 }
 
+// Example composed usage:
+// Parent uses construct(), children are declared in the same frame scope.
+void drawTemplateButtonColumn(FlowUi::UiManager& uiContext, int& clickCount, bool& pressedThisFrame)
+{
+	uiContext.createElement("TemplatePanel", "main_menu/button_column")
+		.set("padding", 14)
+		.set("childGap", 12)
+		.construct();
+
+	uiContext.createElement("TemplateButton", "main_menu/button_column/play_button")
+		.set("label", "Play")
+		.bind("clickCount", clickCount)
+		.bind("pressedThisFrame", pressedThisFrame)
+		.draw();
+
+	uiContext.createElement("TemplateButton", "main_menu/button_column/settings_button")
+		.set("label", "Settings")
+		.bind("clickCount", clickCount)
+		.bind("pressedThisFrame", pressedThisFrame)
+		.draw();
+
+	uiContext.drawConstructed();
+}
