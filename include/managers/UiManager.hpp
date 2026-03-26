@@ -35,6 +35,7 @@ public:
 	
 	ElementBuilder createElement(std::string_view elementTypeName, std::string_view instanceIdPath);
 	ElementBuilder createElement(const ElementDefinition& elementDefinition, std::string_view instanceIdPath);
+	void drawConstructed();
 
     const InteractionSnapshot& getPreviousFramesInteraction() const { return previousInteractionSnapshot_; }
 	const FrameInput& getCurrentFrameInput() const { return frameInputForCurrentLayout_; }
@@ -55,12 +56,14 @@ public:
 
 private:
 	friend class App;
+	friend class ElementBuilder;
 
 	void initStringArenas(const AppConfig& cfg);
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
 	Clay_RenderCommandArray endFrame();
 	void setFontManager(const ::FontManager* fontManager);
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
+	void pushConstructedElement(Clay_ElementId elementId);
 
 	struct Arena {
 		std::unique_ptr<char[]> mem;
@@ -86,6 +89,7 @@ private:
 	ElementRegistry& elementRegistry_;
 	InteractionSnapshot previousInteractionSnapshot_;
     InteractionSnapshot currentInteractionSnapshot_;
+	std::vector<Clay_ElementId> constructedElementStack_;
 	InputFieldManager inputFieldManager_{};
 	ShortcutManager shortcutManager_{};
 	std::function<void(std::string_view)> setClipboardTextAccessor_{};

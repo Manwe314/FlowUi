@@ -1,6 +1,7 @@
 #include "managers/UiManager.hpp"
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
 
 #include "managers/FontManager.hpp"
 #include "internal/TextLayoutEngine.hpp"
@@ -166,6 +167,7 @@ namespace FlowUi
 			true,
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 			static_cast<float>(frameInput.dt));
+		constructedElementStack_.clear();
 		Clay_BeginLayout();
 	}
 
@@ -176,6 +178,18 @@ namespace FlowUi
 		}
 
 		Clay_SetCurrentContext(clayContext_);
+		int32_t autoClosedConstructedElements = 0;
+		while (!constructedElementStack_.empty()) {
+			Clay__CloseElement();
+			constructedElementStack_.pop_back();
+			++autoClosedConstructedElements;
+		}
+		if (autoClosedConstructedElements > 0) {
+			std::fprintf(
+				stderr,
+				"[FlowUi] Warning: auto-closed %d constructed element(s). Call ui.drawConstructed() for each ui.createElement(...).construct().\n",
+				autoClosedConstructedElements);
+		}
 		Clay_RenderCommandArray renderCommands = Clay_EndLayout();
 
 		InteractionSnapshot interactionSnapshot;
@@ -255,6 +269,23 @@ namespace FlowUi
 
 	ElementBuilder UiManager::createElement(const ElementDefinition& elementDefinition, std::string_view instanceIdPath) {
 		return ElementBuilder(*this, &elementDefinition, std::string(instanceIdPath));
+	}
+
+	void UiManager::drawConstructed() {
+		if (!clayContext_) {
+			throw std::runtime_error("FlowUi: Clay context is not initialized.");
+		}
+		if (constructedElementStack_.empty()) {
+			throw std::runtime_error("FlowUi: drawConstructed called without a matching construct call.");
+		}
+
+		Clay_SetCurrentContext(clayContext_);
+		Clay__CloseElement();
+		constructedElementStack_.pop_back();
+	}
+
+	void UiManager::pushConstructedElement(Clay_ElementId elementId) {
+		constructedElementStack_.push_back(elementId);
 	}
 
 	void UiManager::setCurrentInteractionSnapshot(InteractionSnapshot snapshot) {

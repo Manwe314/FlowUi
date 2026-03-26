@@ -6,7 +6,7 @@
 6. Add more types of element Properties - ??(std containers?)
 7. streamline element registry - ??
 8. Optimise GPU side
-9. 
+9. Bug with oy whiteSpace Charaters in input fields
 10. 
 11. 
 12. Update FlowUi Arena naming and handling
