@@ -90,18 +90,21 @@ public:
     template <typename T>
     void setValue(std::string_view key, T&& value)
 	{
-        parameterMap_[std::string(key)] = ElementParameterValue(std::forward<T>(value));
+        std::string ownedKey(key);
+        parameterMap_.insert_or_assign(std::move(ownedKey), ElementParameterValue(std::forward<T>(value)));
     }
 
     bool hasValue(std::string_view key) const
 	{
-        return parameterMap_.find(std::string(key)) != parameterMap_.end();
+        const std::string ownedKey(key);
+        return parameterMap_.find(ownedKey) != parameterMap_.end();
     }
 
     template <typename T>
     T getValue(std::string_view key, const T& defaultValue) const
 	{
-        auto it = parameterMap_.find(std::string(key));
+        const std::string ownedKey(key);
+        auto it = parameterMap_.find(ownedKey);
         if (it == parameterMap_.end()) return defaultValue;
         if (const auto* typed = std::get_if<T>(&it->second)) return *typed;
         return defaultValue;
@@ -116,7 +119,8 @@ public:
 
     std::string_view getString(std::string_view key, std::string_view defaultValue = {}) const
 	{
-        auto it = parameterMap_.find(std::string(key));
+        const std::string ownedKey(key);
+        auto it = parameterMap_.find(ownedKey);
         if (it == parameterMap_.end()) return defaultValue;
         if (const auto* typed = std::get_if<std::string>(&it->second)) return *typed;
         return defaultValue;
@@ -150,13 +154,15 @@ public:
         ElementBindingEntry entry;
         entry.pointer = static_cast<void*>(&reference);
         entry.typeInfo = &typeid(T);
-        bindingMap_[std::string(key)] = entry;
+        std::string ownedKey(key);
+        bindingMap_.insert_or_assign(std::move(ownedKey), entry);
     }
 
     template <typename T>
     T* getPointer(std::string_view key) const
 	{
-        auto it = bindingMap_.find(std::string(key));
+        const std::string ownedKey(key);
+        auto it = bindingMap_.find(ownedKey);
         if (it == bindingMap_.end()) return nullptr;
         if (*(it->second.typeInfo) != typeid(T)) return nullptr;
         return static_cast<T*>(it->second.pointer);
