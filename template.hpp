@@ -2,49 +2,65 @@
 
 #include <FlowUi/Flow.hpp>
 
+struct templateParams {
+	int importantInt = 42;
+};
 
-inline const FlowUi::ElementDefinition kElement = {
-	// elementTypeName: unique element type key (used for registration/lookups).
-	"Element",
+struct templateState {
+	bool enabled = true;
+};
 
-	// initializeDefaultParameters: optional defaults merged with per-instance overrides.
-	[](FlowUi::ElementParameters& defaults) {
-		defaults.setValue("Important Int", 42);
-	},
+struct templateResources {
+	templateResources() = default;
+	explicit templateResources(FlowUi::UiManager& uiManager) {
+		(void)uiManager;
+	}
+};
 
-	// onHovered: optional callback when this element was hovered in the previous frame.
-	[](FlowUi::ElementInteractionContext& context) {
+using TemplateDefiition = FlowUi::ElementDefinition<
+	templateParams,
+	templateState,
+	templateResources,
+	FLOW_DEF_ID("template")>;
+
+inline const TemplateDefiition kTemplate = {
+	// onHovered: optional callback when this element was hovered in the previous frame
+	+[](TemplateDefiition::InteractionContext& context) {
 		(void)context;
 	},
 
-	// onPressed: optional callback when this element was pressed in the previous frame.
-	[](FlowUi::ElementInteractionContext& context) {
+	// onPressed: optional callback when this element was pressed in the previous frame
+	+[](TemplateDefiition::InteractionContext& context) {
 		(void)context;
 	},
 
-	// onHeld: optional callback when this element was held in the previous frame.
-	[](FlowUi::ElementInteractionContext& context) {
+	// onHeld: optional callback when this element was held in the previous frame
+	+[](TemplateDefiition::InteractionContext& context) {
 		(void)context;
 	},
 
-	// onReleased: optional callback when this element was released in the previous frame.
-	[](FlowUi::ElementInteractionContext& context) {
+	// onReleased: optional callback when this element was released in the previous frame
+	+[](TemplateDefiition::InteractionContext& context) {
 		(void)context;
 	},
 
-	// runLogic: optional per-frame logic callback before buildElement executes.
-	[](FlowUi::ElementInteractionContext& context) {
+	// runLogic: optional per-frame logic callback before build/construct callback
+	+[](TemplateDefiition::InteractionContext& context) {
 		(void)context;
+		// Example state access:
+		// auto& state = TemplateDefiition::getOrCreateState(FlowUi::toFlowId(context.elementID));
 	},
 
-	// constructElment: optional callback returning a root declaration for construct() flows.
-	[](FlowUi::ElementBuildContext& context) -> Clay_ElementDeclaration {
+	// constructElment: optional callback used by .construct() flows
+	+[](TemplateDefiition::BuildContext& context) -> Clay_ElementDeclaration {
 		(void)context;
+		// Example resources access:
+		// auto& resources = TemplateDefiition::getResources(context.uiManager);
 		return Clay_ElementDeclaration{};
 	},
 
-	// buildElement: required callback where the element's Clay UI is built.
-	[](FlowUi::ElementBuildContext& context) {
+	// buildElement: callback used by .draw()
+	+[](TemplateDefiition::BuildContext& context) {
 		(void)context;
 	},
 };

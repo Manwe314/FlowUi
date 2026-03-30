@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <cstddef>
 #include <cstdint>
 #include <stdexcept>
 #include <utility>
@@ -14,6 +15,66 @@
 struct FontManager;
 
 namespace FlowUi {
+
+using FlowElementId = uint64_t;
+using FlowDefinitionId = uint64_t;
+
+namespace detail {
+
+constexpr uint64_t kFlowFnvOffsetBasis = 14695981039346656037ull;
+constexpr uint64_t kFlowFnvPrime = 1099511628211ull;
+
+constexpr uint64_t flowHashBytes(std::string_view text) noexcept {
+	uint64_t hash = kFlowFnvOffsetBasis;
+	for (const char c : text) {
+		hash ^= static_cast<uint64_t>(static_cast<unsigned char>(c));
+		hash *= kFlowFnvPrime;
+	}
+	return (hash == 0ull) ? 1ull : hash;
+}
+
+constexpr uint64_t flowMix64(uint64_t value) noexcept {
+	value ^= value >> 30;
+	value *= 0xbf58476d1ce4e5b9ull;
+	value ^= value >> 27;
+	value *= 0x94d049bb133111ebull;
+	value ^= value >> 31;
+	return (value == 0ull) ? 1ull : value;
+}
+
+} // namespace detail
+
+constexpr FlowElementId toFlowId(std::string_view elementName) noexcept {
+	return detail::flowHashBytes(elementName);
+}
+
+template <std::size_t N>
+constexpr FlowElementId toFlowId(const char (&elementName)[N]) noexcept {
+	return detail::flowHashBytes(std::string_view{elementName, N - 1});
+}
+
+constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept {
+	return detail::flowHashBytes(definitionName);
+}
+
+template <std::size_t N>
+constexpr FlowDefinitionId toFlowDefinitionId(const char (&definitionName)[N]) noexcept {
+	return detail::flowHashBytes(std::string_view{definitionName, N - 1});
+}
+
+constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept {
+	const uint64_t mixedIndex = detail::flowMix64(index + 0x9e3779b97f4a7c15ull);
+	return detail::flowMix64(rootId ^ mixedIndex);
+}
+
+constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept {
+	return createIndexedFlowId(toFlowId(rootName), index);
+}
+
+template <std::size_t N>
+constexpr FlowElementId createIndexedFlowId(const char (&rootName)[N], uint64_t index) noexcept {
+	return createIndexedFlowId(toFlowId(rootName), index);
+}
 
 inline Clay_Color Flow_Color(std::string_view hexRgba)
 {
@@ -50,8 +111,6 @@ class IconManager;
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 class ViewPortManager;
 #endif
-class ElementRegistry;
-struct ElementDefinition;
 
 class App {
 public:
@@ -84,9 +143,6 @@ public:
 
 	UiManager& ui();
 	const UiManager& ui() const;
-	ElementRegistry& elementRegistry();
-	const ElementRegistry& elementRegistry() const;
-	void registerElement(ElementDefinition definition);
 
 	void setWindowTitle(std::string_view title);
 	std::pair<int,int> windowSize() const;
@@ -107,3 +163,6 @@ private:
 App makeApplication(const AppConfig& cfg);
 
 } // namespace FlowUi
+
+#define FLOW_ID(label) (::FlowUi::toFlowId(label))
+#define FLOW_DEF_ID(label) (::FlowUi::toFlowDefinitionId(label))

@@ -343,7 +343,6 @@ struct App::Impl {
 	VulkanContext vk;
 	Swapchain swap;
 	FrameVk frames;
-	ElementRegistry elementRegistry;
 
 	UiManager ui;
 	VulkanUiRenderer renderer;
@@ -367,7 +366,7 @@ struct App::Impl {
 	VkExtent2D observedFramebufferExtent{};
 
 	explicit Impl(const AppConfig& initialConfig)
-		: config(initialConfig), ui(elementRegistry, config) {
+		: config(initialConfig), ui(config) {
 		const uint32_t configuredFramesInFlight = std::max<uint32_t>(1u, config.vk.framesInFlight);
 		uiFrameSlotCount = configuredFramesInFlight;
 	}
@@ -819,24 +818,6 @@ const UiManager& App::ui() const {
 		throw std::runtime_error("FlowUi::App not initialized.");
 	}
 	return impl_->ui;
-}
-
-ElementRegistry& App::elementRegistry() {
-	if (!impl_) {
-		throw std::runtime_error("FlowUi::App not initialized.");
-	}
-	return impl_->elementRegistry;
-}
-
-const ElementRegistry& App::elementRegistry() const {
-	if (!impl_) {
-		throw std::runtime_error("FlowUi::App not initialized.");
-	}
-	return impl_->elementRegistry;
-}
-
-void App::registerElement(ElementDefinition definition) {
-	elementRegistry().registerElement(std::move(definition));
 }
 
 void App::setWindowTitle(std::string_view title) {
