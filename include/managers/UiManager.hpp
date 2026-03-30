@@ -26,15 +26,20 @@ class App;
 
 class UiManager {
 public:
-	UiManager(ElementRegistry& elementRegistry, const AppConfig& appConfig);
+	UiManager(const AppConfig& appConfig);
 
 	Clay_String toClayString(std::string_view s);
 	TextureRef* storeTexture(const TextureRef& textureRef);
 	Clay_ElementId toClaySID(std::string_view s);
 	Clay_ElementId toClayEID(std::string_view s);
-	
-	ElementBuilder createElement(std::string_view elementTypeName, std::string_view instanceIdPath);
-	ElementBuilder createElement(const ElementDefinition& elementDefinition, std::string_view instanceIdPath);
+
+	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
+	ElementBuilder<Parameters, State, Resources, DefinitionId> createElement(
+		const ElementDefinition<Parameters, State, Resources, DefinitionId>& elementDefinition,
+		std::string_view elementID)
+	{
+		return ElementBuilder<Parameters, State, Resources, DefinitionId>(*this, &elementDefinition, std::string(elementID));
+	}
 	void drawConstructed();
 
     const InteractionSnapshot& getPreviousFramesInteraction() const { return previousInteractionSnapshot_; }
@@ -56,7 +61,9 @@ public:
 
 private:
 	friend class App;
+	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
 	friend class ElementBuilder;
+	friend void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
 
 	void initStringArenas(const AppConfig& cfg);
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
@@ -86,7 +93,6 @@ private:
 	FrameInput previousFrameInputForCurrentLayout_{};
 	bool wasPrimaryPointerDownLastFrame_ = false;
 
-	ElementRegistry& elementRegistry_;
 	InteractionSnapshot previousInteractionSnapshot_;
     InteractionSnapshot currentInteractionSnapshot_;
 	std::vector<Clay_ElementId> constructedElementStack_;

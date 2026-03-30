@@ -15,8 +15,7 @@ constexpr float kPointsPerInch = 72.0f;
 namespace FlowUi
 {
 	
-	UiManager::UiManager(ElementRegistry& elementRegistry, const FlowUi::AppConfig& appConfig)
-		: elementRegistry_(elementRegistry)
+	UiManager::UiManager(const FlowUi::AppConfig& appConfig)
 	{
 		initStringArenas(appConfig);
 
@@ -258,17 +257,18 @@ namespace FlowUi
 		return Clay_GetElementId(toClayString(s));
 	}
 
-	ElementBuilder UiManager::createElement(std::string_view elementTypeName, std::string_view instanceIdPath) {
-    	const ElementDefinition* definition = elementRegistry_.findElement(elementTypeName);
-    	if (!definition) {
-    	    throw std::runtime_error("FlowUi: createElement called with unregistered element type.");
-    	}
-	
-    	return ElementBuilder(*this, definition, std::string(instanceIdPath));
+
+
+	Clay_ElementId flowUiToClayElementId(UiManager& uiManager, std::string_view elementID) {
+		return uiManager.toClayEID(elementID);
 	}
 
-	ElementBuilder UiManager::createElement(const ElementDefinition& elementDefinition, std::string_view instanceIdPath) {
-		return ElementBuilder(*this, &elementDefinition, std::string(instanceIdPath));
+	const InteractionSnapshot& flowUiPreviousInteraction(const UiManager& uiManager) {
+		return uiManager.getPreviousFramesInteraction();
+	}
+
+	void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId) {
+		uiManager.pushConstructedElement(elementId);
 	}
 
 	void UiManager::drawConstructed() {

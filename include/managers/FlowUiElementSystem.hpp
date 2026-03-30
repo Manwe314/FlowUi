@@ -1,16 +1,14 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
-#include <variant>
-#include <vector>
-#include <functional>
-#include <type_traits>
-#include <typeinfo>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "clay.h"
 #include "FlowUi/PublicStructs.hpp"
@@ -38,193 +36,140 @@ struct InteractionSnapshot {
     bool isReleased(Clay_ElementId id) const { return contains(releasedElementIds, id); }
 };
 
-// ----------------------------
-// Element parameter values
-// ----------------------------
-struct ElementInteractionContext;
-using ElementCustomCallback = std::function<void(ElementInteractionContext&)>;
-using ElementParameterValue = std::variant<
-    bool,
-    int,
-    float,
-    std::string,
-    ElementCustomCallback,
-	TextureRef,
-    Clay_ElementId,
-    Clay_Color,
-    Clay_Dimensions,
-    Clay_Vector2,
-    Clay_LayoutAlignmentX,
-    Clay_LayoutAlignmentY,
-	Clay_SizingMinMax,
-    Clay_Sizing,
-    Clay_SizingAxis,
-	Clay__SizingType,
-    Clay_Padding,
-	Clay_LayoutDirection,
-	Clay_LayoutConfig,
-	Clay_ElementDeclaration,
-	Clay_CornerRadius,
-	Clay_TextElementConfigWrapMode,
-	Clay_TextAlignment,
-	Clay_TextElementConfig,
-	Clay_AspectRatioElementConfig,
-	Clay_ImageElementConfig,
-	Clay_FloatingAttachPointType,
-	Clay_FloatingAttachPoints,
-	Clay_PointerCaptureMode,
-	Clay_FloatingAttachToElement,
-	Clay_FloatingClipToElement,
-	Clay_FloatingElementConfig,
-	Clay_CustomElementConfig,
-	Clay_ClipElementConfig,
-	Clay_BorderWidth,
-	Clay_BorderElementConfig,
-	Clay_ChildAlignment
->;
-
-class ElementParameters {
-public:
-    ElementParameters() = default;
-
-    template <typename T>
-    void setValue(std::string_view key, T&& value)
-	{
-        std::string ownedKey(key);
-        parameterMap_.insert_or_assign(std::move(ownedKey), ElementParameterValue(std::forward<T>(value)));
-    }
-
-    bool hasValue(std::string_view key) const
-	{
-        const std::string ownedKey(key);
-        return parameterMap_.find(ownedKey) != parameterMap_.end();
-    }
-
-    template <typename T>
-    T getValue(std::string_view key, const T& defaultValue) const
-	{
-        const std::string ownedKey(key);
-        auto it = parameterMap_.find(ownedKey);
-        if (it == parameterMap_.end()) return defaultValue;
-        if (const auto* typed = std::get_if<T>(&it->second)) return *typed;
-        return defaultValue;
-    }
-
-	template <typename T>
-	T getValue(std::string_view key) const 
-		requires std::is_default_constructible_v<T>
-	{
-		return getValue<T>(key, T{});
-	}
-
-    std::string_view getString(std::string_view key, std::string_view defaultValue = {}) const
-	{
-        const std::string ownedKey(key);
-        auto it = parameterMap_.find(ownedKey);
-        if (it == parameterMap_.end()) return defaultValue;
-        if (const auto* typed = std::get_if<std::string>(&it->second)) return *typed;
-        return defaultValue;
-    }
-
-    void mergeFrom(const ElementParameters& other)
-	{
-        for (const auto& kv : other.parameterMap_)
-		{
-            parameterMap_[kv.first] = kv.second;
-        }
-    }
-
-private:
-    std::unordered_map<std::string, ElementParameterValue> parameterMap_;
-};
-
-
-struct ElementBindingEntry {
-    void* pointer = nullptr;
-    const std::type_info* typeInfo = nullptr;
-};
-
-class ElementBindings {
-public:
-    ElementBindings() = default;
-
-    template <typename T>
-    void bind(std::string_view key, T& reference)
-	{
-        ElementBindingEntry entry;
-        entry.pointer = static_cast<void*>(&reference);
-        entry.typeInfo = &typeid(T);
-        std::string ownedKey(key);
-        bindingMap_.insert_or_assign(std::move(ownedKey), entry);
-    }
-
-    template <typename T>
-    T* getPointer(std::string_view key) const
-	{
-        const std::string ownedKey(key);
-        auto it = bindingMap_.find(ownedKey);
-        if (it == bindingMap_.end()) return nullptr;
-        if (*(it->second.typeInfo) != typeid(T)) return nullptr;
-        return static_cast<T*>(it->second.pointer);
-    }
-
-private:
-    std::unordered_map<std::string, ElementBindingEntry> bindingMap_;
-};
+struct NoElementParameters {};
+struct NoElementState {};
+struct NoElementResources {};
 
 class UiManager;
+Clay_ElementId flowUiToClayElementId(UiManager& uiManager, std::string_view elementID);
+const InteractionSnapshot& flowUiPreviousInteraction(const UiManager& uiManager);
+void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
 
+template <typename Parameters = NoElementParameters>
+struct ElementBuildContext;
 
+template <typename Parameters = NoElementParameters>
+struct ElementInteractionContext;
+
+template <typename Parameters>
 struct ElementBuildContext
 {
-    UiManager& userInterface;
-    Clay_ElementId elementId;
-    std::string_view instanceIdPath;
-    ElementParameters& parameters;
-    ElementBindings& bindings;
+    using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
 
-    Clay_ElementId createChildElementId(std::string_view localChildId) const;
+    UiManager& uiManager;
+    std::string_view elementID;
+    ParametersType& params;
+
+    std::string createChildElementId(std::string_view localChildId) const
+    {
+        std::string full = std::string(elementID) + "/" + std::string(localChildId);
+        return full;
+    }
 };
 
+template <typename Parameters>
 struct ElementInteractionContext
 {
-    UiManager& userInterface;
-    Clay_ElementId elementId;
-    std::string_view instanceIdPath;
-    ElementParameters& parameters;
-    ElementBindings& bindings;
+    using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
+
+    UiManager& uiManager;
+    std::string_view elementID;
+    ParametersType& params;
     const InteractionSnapshot& previousInteraction;
 
-    Clay_ElementId createChildElementId(std::string_view localChildId) const;
+    std::string createChildElementId(std::string_view localChildId) const
+    {
+        std::string full = std::string(elementID) + "/" + std::string(localChildId);
+        return full;
+    }
 };
 
 
+template <typename Parameters = NoElementParameters, typename State = void, typename Resources = void, uint64_t DefinitionId = 0>
 struct ElementDefinition
 {
-    std::string elementTypeName;
+    using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
+    using StateType = std::conditional_t<std::is_void_v<State>, NoElementState, State>;
+    using ResourcesType = std::conditional_t<std::is_void_v<Resources>, NoElementResources, Resources>;
+    using BuildContext = ElementBuildContext<Parameters>;
+    using InteractionContext = ElementInteractionContext<Parameters>;
+    using StatePoolEntry = std::pair<uint64_t, StateType>;
 
-    std::function<void(ElementParameters& defaultParameters)> initializeDefaultParameters;
+    static constexpr uint64_t definitionId = DefinitionId;
+    static constexpr bool hasState = !std::is_void_v<State>;
+    static constexpr bool hasResources = !std::is_void_v<Resources>;
+    static inline std::optional<ResourcesType> resources{};
+    static inline std::vector<StatePoolEntry> statePool{};
 
-    std::function<void(ElementInteractionContext&)> onHovered;
-    std::function<void(ElementInteractionContext&)> onPressed;
-    std::function<void(ElementInteractionContext&)> onHeld;
-    std::function<void(ElementInteractionContext&)> onReleased;
+    static ResourcesType& getResources(UiManager& uiManager)
+    {
+        static_assert(hasResources, "FlowUi: getResources is only available when ElementDefinition Resources template argument is not void.");
+        if (!resources.has_value()) {
+            if constexpr (std::is_constructible_v<ResourcesType, UiManager&>) {
+                resources.emplace(uiManager);
+            } else {
+                resources.emplace();
+            }
+        }
+        return *resources;
+    }
 
-    std::function<void(ElementInteractionContext&)> runLogic;
+    static StateType& getOrCreateState(uint64_t elementFlowId)
+    {
+        static_assert(hasState, "FlowUi: getOrCreateState is only available when ElementDefinition State template argument is not void.");
+        for (StatePoolEntry& entry : statePool) {
+            if (entry.first == elementFlowId) {
+                return entry.second;
+            }
+        }
+        statePool.emplace_back(elementFlowId, StateType{});
+        return statePool.back().second;
+    }
 
-    std::function<Clay_ElementDeclaration(ElementBuildContext&)> constructElment;
-    std::function<void(ElementBuildContext&)> buildElement;
-};
+    static StateType* tryGetState(uint64_t elementFlowId)
+    {
+        static_assert(hasState, "FlowUi: tryGetState is only available when ElementDefinition State template argument is not void.");
+        for (StatePoolEntry& entry : statePool) {
+            if (entry.first == elementFlowId) {
+                return &entry.second;
+            }
+        }
+        return nullptr;
+    }
 
+    static const StateType* tryGetStateConst(uint64_t elementFlowId)
+    {
+        static_assert(hasState, "FlowUi: tryGetStateConst is only available when ElementDefinition State template argument is not void.");
+        for (const StatePoolEntry& entry : statePool) {
+            if (entry.first == elementFlowId) {
+                return &entry.second;
+            }
+        }
+        return nullptr;
+    }
 
-class ElementRegistry
-{
-public:
-    void registerElement(ElementDefinition definition);
-    const ElementDefinition* findElement(std::string_view elementTypeName) const;
+    static bool eraseState(uint64_t elementFlowId)
+    {
+        static_assert(hasState, "FlowUi: eraseState is only available when ElementDefinition State template argument is not void.");
+        for (std::size_t i = 0; i < statePool.size(); ++i) {
+            if (statePool[i].first == elementFlowId) {
+                statePool[i] = std::move(statePool.back());
+                statePool.pop_back();
+                return true;
+            }
+        }
+        return false;
+    }
 
-private:
-    std::unordered_map<std::string, ElementDefinition> elementDefinitions_;
+    void (*onHovered)(InteractionContext&) = nullptr;
+    void (*onPressed)(InteractionContext&) = nullptr;
+    void (*onHeld)(InteractionContext&) = nullptr;
+    void (*onReleased)(InteractionContext&) = nullptr;
+
+    void (*runLogic)(InteractionContext&) = nullptr;
+
+    Clay_ElementDeclaration (*constructElment)(BuildContext&) = nullptr;
+    void (*buildElement)(BuildContext&) = nullptr;
 };
 
 
@@ -247,60 +192,28 @@ inline bool elementDrawOptionsHas(ElementDrawOptions value, ElementDrawOptions f
 }
 
 
+template <typename Parameters = NoElementParameters, typename State = void, typename Resources = void, uint64_t DefinitionId = 0>
 class ElementBuilder {
 public:
-    ElementBuilder(UiManager& userInterface, const ElementDefinition* definition, std::string instanceIdPath);
+    using DefinitionType = ElementDefinition<Parameters, State, Resources, DefinitionId>;
+    using ParametersType = typename DefinitionType::ParametersType;
+    using BuildContext = typename DefinitionType::BuildContext;
+    using InteractionContext = typename DefinitionType::InteractionContext;
 
-    ElementBuilder& set(std::string_view key, bool value);
-    ElementBuilder& set(std::string_view key, int value);
-    ElementBuilder& set(std::string_view key, float value);
-    ElementBuilder& set(std::string_view key, std::string_view value);
-    ElementBuilder& set(std::string_view key, const char* value);
-    ElementBuilder& set(std::string_view key, Clay_ElementId value);
-    ElementBuilder& set(std::string_view key, Clay_Color value);
-    ElementBuilder& set(std::string_view key, Clay_Dimensions value);
-    ElementBuilder& set(std::string_view key, Clay_Vector2 value);
-    ElementBuilder& set(std::string_view key, Clay_LayoutAlignmentX value);
-    ElementBuilder& set(std::string_view key, Clay_LayoutAlignmentY value);
-	ElementBuilder& set(std::string_view key, Clay_SizingMinMax value);
-    ElementBuilder& set(std::string_view key, Clay_Sizing value);
-    ElementBuilder& set(std::string_view key, Clay_SizingAxis value);
-	ElementBuilder& set(std::string_view key, Clay__SizingType value);
-    ElementBuilder& set(std::string_view key, Clay_Padding value);
-	ElementBuilder& set(std::string_view key, Clay_LayoutDirection value);
-	ElementBuilder& set(std::string_view key, Clay_LayoutConfig value);
-	ElementBuilder& set(std::string_view key, Clay_CornerRadius value);
-	ElementBuilder& set(std::string_view key, Clay_ChildAlignment value);
-	ElementBuilder& set(std::string_view key, Clay_TextElementConfigWrapMode value);
-	ElementBuilder& set(std::string_view key, Clay_TextAlignment value);
-	ElementBuilder& set(std::string_view key, Clay_TextElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_AspectRatioElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_ImageElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_FloatingAttachPointType value);
-	ElementBuilder& set(std::string_view key, Clay_FloatingAttachPoints value);
-	ElementBuilder& set(std::string_view key, Clay_PointerCaptureMode value);
-	ElementBuilder& set(std::string_view key, Clay_FloatingAttachToElement value);
-	ElementBuilder& set(std::string_view key, Clay_FloatingClipToElement value);
-	ElementBuilder& set(std::string_view key, Clay_FloatingElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_CustomElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_ClipElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_BorderWidth value);
-	ElementBuilder& set(std::string_view key, Clay_BorderElementConfig value);
-	ElementBuilder& set(std::string_view key, Clay_ElementDeclaration value);
-	ElementBuilder& set(std::string_view key, TextureRef value);
-    ElementBuilder& set(std::string_view key, ElementCustomCallback value);
+    ElementBuilder(UiManager& uiManager, const DefinitionType* definition, std::string elementID) :
+        uiManager_(uiManager),
+        elementDefinition_(definition),
+        elementID_(std::move(elementID)) {}
 
-    template <typename Callback>
-    ElementBuilder& set(std::string_view key, Callback&& callback)
-        requires std::is_invocable_r_v<void, std::remove_reference_t<Callback>&, ElementInteractionContext&>
+    ElementBuilder& setParameters(const ParametersType& parameters)
     {
-        return set(key, ElementCustomCallback(std::forward<Callback>(callback)));
+        params_ = parameters;
+        return *this;
     }
 
-    template <typename T>
-    ElementBuilder& bind(std::string_view key, T& reference)
-	{
-        bindings_.bind<T>(key, reference);
+    ElementBuilder& setParameters(ParametersType&& parameters)
+    {
+        params_ = std::move(parameters);
         return *this;
     }
 
@@ -308,11 +221,121 @@ public:
     void draw(ElementDrawOptions options = ElementDrawOptions::Default);
 
 private:
-    UiManager& userInterface_;
-    const ElementDefinition* elementDefinition_;
-    std::string instanceIdPath_;
-    ElementParameters userOverrides_;
-    ElementBindings bindings_;
+    UiManager& uiManager_;
+    const DefinitionType* elementDefinition_;
+    std::string elementID_;
+    ParametersType params_{};
 };
+
+template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
+void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(ElementDrawOptions options)
+{
+    if (!elementDefinition_ || !elementDefinition_->constructElment) {
+        throw std::runtime_error("FlowUi: elementDefinition is null or missing constructElment callback.");
+    }
+
+    const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
+
+    if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipEventCallbacks)) {
+        const InteractionSnapshot& previousInteraction = flowUiPreviousInteraction(uiManager_);
+
+        InteractionContext eventContext{
+            uiManager_,
+            elementID_,
+            params_,
+            previousInteraction
+        };
+
+        if (elementDefinition_->onHovered && previousInteraction.isHovered(rootElementId)) {
+            elementDefinition_->onHovered(eventContext);
+        }
+        if (elementDefinition_->onPressed && previousInteraction.isPressed(rootElementId)) {
+            elementDefinition_->onPressed(eventContext);
+        }
+        if (elementDefinition_->onHeld && previousInteraction.isHeld(rootElementId)) {
+            elementDefinition_->onHeld(eventContext);
+        }
+        if (elementDefinition_->onReleased && previousInteraction.isReleased(rootElementId)) {
+            elementDefinition_->onReleased(eventContext);
+        }
+    }
+
+    if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipLogicCallback) && elementDefinition_->runLogic) {
+        const InteractionSnapshot& previousInteraction = flowUiPreviousInteraction(uiManager_);
+        InteractionContext logicContext{
+            uiManager_,
+            elementID_,
+            params_,
+            previousInteraction
+        };
+        elementDefinition_->runLogic(logicContext);
+    }
+
+    BuildContext buildContext{
+        uiManager_,
+        elementID_,
+        params_
+    };
+
+    Clay_ElementDeclaration declaration = elementDefinition_->constructElment(buildContext);
+    declaration.id = rootElementId;
+    Clay__OpenElement();
+    Clay__ConfigureOpenElement(declaration);
+    flowUiPushConstructedElement(uiManager_, rootElementId);
+}
+
+template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
+void ElementBuilder<Parameters, State, Resources, DefinitionId>::draw(ElementDrawOptions options)
+{
+    if (!elementDefinition_ || !elementDefinition_->buildElement) {
+        throw std::runtime_error("FlowUi: elementDefinition is null or missing buildElement callback.");
+    }
+
+    const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
+
+    if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipEventCallbacks)) {
+        const InteractionSnapshot& previousInteraction = flowUiPreviousInteraction(uiManager_);
+
+        InteractionContext eventContext{
+            uiManager_,
+            elementID_,
+            params_,
+            previousInteraction
+        };
+
+        if (elementDefinition_->onHovered && previousInteraction.isHovered(rootElementId)) {
+            elementDefinition_->onHovered(eventContext);
+        }
+        if (elementDefinition_->onPressed && previousInteraction.isPressed(rootElementId)) {
+            elementDefinition_->onPressed(eventContext);
+        }
+        if (elementDefinition_->onHeld && previousInteraction.isHeld(rootElementId)) {
+            elementDefinition_->onHeld(eventContext);
+        }
+        if (elementDefinition_->onReleased && previousInteraction.isReleased(rootElementId)) {
+            elementDefinition_->onReleased(eventContext);
+        }
+    }
+
+    if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipLogicCallback) && elementDefinition_->runLogic) {
+        const InteractionSnapshot& previousInteraction = flowUiPreviousInteraction(uiManager_);
+        InteractionContext logicContext{
+            uiManager_,
+            elementID_,
+            params_,
+            previousInteraction
+        };
+        elementDefinition_->runLogic(logicContext);
+    }
+
+    if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipBuildCallback)) {
+        BuildContext buildContext{
+            uiManager_,
+            elementID_,
+            params_
+        };
+        elementDefinition_->buildElement(buildContext);
+    }
+}
 
 } // namespace FlowUi

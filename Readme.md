@@ -1,67 +1,37 @@
 # FlowUi
 
-# This ReadMe Is Out Of Date!
+FlowUi is a C++23 Vulkan-first UI runtime built around:
+- [Clay](https://github.com/nicbarker/clay) for layout and command generation
+- A custom Vulkan renderer (solid shapes, text, textures)
+- A typed element system for reusable UI components
 
-## Intro
-FlowUi is a Vulkan-first UI runtime that combines:
-- [Clay](https://github.com/nicbarker/clay) for layout + command generation
-- A custom Vulkan renderer for solid, textured, and MSDF text passes
-- A lightweight element system for reusable UI building blocks
+## Quick Start
 
-The project is pre-1.0 and API details can still change. Current code is focused on a practical baseline that is already usable for real app loops.
-
-## Table Of Contents
-- [What Is FlowUi?](#what-is-flowui)
-- [Quick Start Guide](#quick-start-guide)
-- [Build System And How To Use It](#build-system-and-how-to-use-it)
-- [Core Tech Stack](#core-tech-stack)
-- [Flow Element System Intro](#flow-element-system-intro)
-- [Artery Font Tool](#artery-font-tool)
-- [Small API Documentation](#small-api-documentation)
-
-## What Is FlowUi?
-FlowUi is a C++23 UI runtime that owns:
-- Window/input backend via GLFW
-- Vulkan bootstrap (instance, device, swapchain, per-frame resources)
-- Per-frame lifecycle: `beginFrame()` -> `endFrame()` -> `drawFrame()`
-- Clay layout + render command generation
-- GPU rendering paths:
-`Solid`: rounded rectangles + borders
-`MSDF`: text rendering from baked `.arfont` font atlases
-`Textured`: image/textured elements with fit modes (`Stretch`, `Contain`, `Cover`, `None`)
-- Runtime registries for images, fonts, and (optionally) viewport Vulkan interop
-
-Current focus areas:
-- Stable core frame/render path
-- Extensible element definitions and callbacks
-- Offline font pipeline around `.arfont`
-
-## Quick Start Guide
-### 1) Requirements
+### Requirements
 - CMake `>= 3.20`
 - C++23 compiler
-- Vulkan SDK (with `glslc` preferred, `glslangValidator` fallback)
+- Vulkan SDK (`glslc` preferred)
 - GLFW3
-- Git submodule init (required for `external/msdf-atlas-gen` when font baker is enabled)
+- Git submodules initialized
 
 ```bash
 git submodule update --init --recursive
 ```
 
-### 2) Build
+### Build
+
 ```bash
 cmake -S . -B build
 cmake --build build --parallel
 ```
 
-### 3) Minimal app loop
+### Minimal App Loop
+
 ```cpp
-#include <Flow.hpp>
+#include <FlowUi/Flow.hpp>
 
 int main() {
     FlowUi::AppConfig config{};
-    config.window.title = "FlowUi Quick Start";
-
     FlowUi::App app = FlowUi::makeApplication(config);
 
     while (!app.shouldClose()) {
@@ -77,173 +47,147 @@ int main() {
         }) {
             CLAY_TEXT(
                 app.ui().toClayString("Hello FlowUi"),
-                CLAY_TEXT_CONFIG(
+                CLAY_TEXT_CONFIG({
                     .fontId = 0,
                     .fontSize = 24,
-                    .textColor = Clay_Color{ 255, 255, 255, 255 }));
+                    .textColor = Clay_Color{255, 255, 255, 255},
+                    .wrapMode = CLAY_TEXT_WRAP_NONE,
+                }));
         }
 
         app.endFrame();
         app.drawFrame();
     }
-    return 0;
 }
 ```
 
-### 4) Default config values worth knowing
-- Window: `1280x720`, title `"FlowUi App"`, high-DPI enabled
-- Vulkan: validation/debug on, `PresentMode::Fifo`, `framesInFlight = 2`
-- UI: `uiScale = 1.0`, `fontScale = 1.0`, `dpi = 96`
-- Default font path: `assets/fonts/FacultyGlyphic-Regular.arfont`
+## Build Options
 
-## Build System And How To Use It
-### Key CMake options
-| Option | Default | What it does |
+| Option | Default | Description |
 |---|---|---|
-| `FLOWUI_INSTALL` | `ON` | Enables `cmake --install` rules and package export |
-| `FLOWUI_BUILD_FONT_BAKER` | `ON` | Builds `flowui_font_baker` CLI |
-| `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Links runtime font baking dependencies into `flowui` |
-| `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Exposes viewport Vulkan interop API in public headers |
-| `FLOWUI_GLFW_PROVIDER` | `auto` | GLFW source: `auto`, `system`, or `vendored` |
+| `FLOWUI_INSTALL` | `ON` | Enable install/package export rules |
+| `FLOWUI_BUILD_FONT_BAKER` | `ON` | Build `flowui_font_baker` tool |
+| `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Link runtime TTF->atlas dependencies |
+| `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Expose viewport Vulkan interop in public headers |
+| `FLOWUI_INCLUDE_SVG_MANAGER` | `ON` | Enable SVG manager support |
+| `FLOWUI_GLFW_PROVIDER` | `auto` | `auto`, `system`, `vendored` |
 
-### Common build presets (manual)
-Build only core library (skip offline baker):
-```bash
-cmake -S . -B build -DFLOWUI_BUILD_FONT_BAKER=OFF
-cmake --build build --parallel
-```
+## Modern Element System
 
-Build core + baker (default behavior):
-```bash
-cmake -S . -B build -DFLOWUI_BUILD_FONT_BAKER=ON
-cmake --build build --parallel
-```
+FlowUi no longer uses a public element registry.
+Users define element types directly as typed constants and pass them to `createElement(...)`.
 
-Install package locally:
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel
-cmake --install build --prefix ./install
-```
+### 1) Define params/state/resources
 
-### Linking FlowUi in your own CMake project
-As a subdirectory:
-```cmake
-add_subdirectory(path/to/FlowUi FlowUi-build)
-add_executable(my_app main.cpp)
-target_link_libraries(my_app PRIVATE FlowUi::FlowUi)
-```
-
-From an installed package:
-```cmake
-find_package(FlowUi CONFIG REQUIRED)
-add_executable(my_app main.cpp)
-target_link_libraries(my_app PRIVATE FlowUi::FlowUi)
-```
-
-## Core Tech Stack
-### Clay
-Clay is the layout and command-generation layer. You author UI with Clay macros and FlowUi renders the generated commands through Vulkan.
-
-### Vulkan Memory Allocator (VMA)
-FlowUi uses VMA (`external/vk_mem_alloc.h`) for GPU memory management (images, buffers, staging uploads), keeping Vulkan allocation code practical.
-
-### msdf-atlas-gen
-`external/msdf-atlas-gen` powers the offline font baker. It converts `ttf` glyphs into MTSDF atlases and exports `.arfont` artifacts.
-
-### artery-font-format
-FlowUi loads baked `.arfont` data at runtime through artery-font-format structures/serialization.
-
-### stb_image
-FlowUi uses `stb_image` for image decoding in `ImageManager`.
-
-## Flow Element System Intro
-FlowUi’s element layer is a small registry + builder abstraction on top of Clay.
-
-### Concepts
-- `ElementRegistry`:
-stores `ElementDefinition` by type name
-- `ElementDefinition`:
-declares callbacks:
-`initializeDefaultParameters`
-`onHovered`, `onPressed`, `onHeld`, `onReleased`
-`runLogic`
-`buildElement` (required)
-- `ElementBuilder`:
-created via `app.ui().createElement(type, instancePath)` then configured with:
-`.set(...)` for per-instance parameter overrides
-`.bind(...)` for external state references
-`.draw(...)` to execute callbacks/build
-
-### Callback order per draw
-1. Event callbacks (unless skipped)
-2. Logic callback (unless skipped)
-3. Build callback (unless skipped)
-
-### Quick example
-Use [template.cpp](template.cpp) as the starting point for registering custom elements and drawing them.
-
-## Artery Font Tool
-FlowUi ships with an offline tool: `flowui_font_baker`.
-
-### Build only the tool
-```bash
-cmake -S . -B build -DFLOWUI_BUILD_FONT_BAKER=ON
-cmake --build build --target flowui_font_baker --parallel
-```
-
-### CLI usage
-```bash
-./build/flowui_font_baker \
-  --input ./assets/fonts/FacultyGlyphic-Regular.ttf \
-  --output ./assets/fonts/FacultyGlyphic-Regular.arfont \
-  --pixel-size 48 \
-  --charset "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-```
-
-Useful options:
-- `--charset-file <path>`: load charset from file (msdf-atlas syntax)
-- `--px-range <value>`: control distance-field range (default: `2`)
-- `--threads <n>`: worker count (`0` = auto)
-
-### Runtime loading
 ```cpp
-const int myFontId = app.fonts().registerBakedFont("assets/fonts/MyFont.arfont", "MyFont");
+struct ButtonParams {
+    std::string_view label = "Button";
+    float width = 220.0f;
+    float height = 44.0f;
+};
+
+struct ButtonState {
+    bool enabled = true;
+};
+
+struct ButtonResources {
+    explicit ButtonResources(FlowUi::UiManager& ui) {
+        (void)ui;
+    }
+};
 ```
 
-Notes:
-- `.arfont` is the currently supported runtime input for `loadFont/registerBakedFont`
-- Runtime `ttf/otf -> atlas` baking is not implemented yet in the runtime path
+### 2) Define the typed element definition
 
-## Small API Documentation
-### App lifecycle
-- `FlowUi::App makeApplication(const AppConfig&)`
-- `bool shouldClose() const`
-- `void beginFrame()`
-- `void endFrame()`
-- `void drawFrame()`
+```cpp
+using ButtonDefinition = FlowUi::ElementDefinition<
+    ButtonParams,
+    ButtonState,
+    ButtonResources,
+    FLOW_DEF_ID("button")
+>;
 
-### Core managers
-- `FontManager& App::fonts()`
-`loadFont`, `registerBakedFont`, `getFontId`
-- `ImageManager& App::images()`
-`registerImage`, `removeImage`, `contains`, `getTexture`
-- `UiManager& App::ui()`
-`toClayString`, `toClayEID`, `createElement`
-- `ElementRegistry& App::elementRegistry()`
-`registerElement`, `findElement`
+inline const ButtonDefinition kButton = {
+    nullptr, // onHovered
+    +[](ButtonDefinition::InteractionContext& context) { // onPressed
+        const uint64_t flowId = FlowUi::toFlowId(context.elementID);
+        ButtonDefinition::getOrCreateState(flowId).enabled =
+            !ButtonDefinition::getOrCreateState(flowId).enabled;
+    },
+    nullptr, // onHeld
+    nullptr, // onReleased
 
-### Optional Vulkan interop (when `FLOWUI_PUBLIC_VULKAN_INTEROP=1`)
-- `ViewPortManager& App::viewPorts()`
-`create`, `remove`, `getViewPort`, `getTexture`, `getVulkanInterop`
+    nullptr, // runLogic
 
-### Primary config structs
-- `WindowConfig`
-- `VulkanConfig`
-- `UiConfig`
-- `AppConfig`
+    nullptr, // constructElment (optional for .construct() flows)
+    +[](ButtonDefinition::BuildContext& context) { // buildElement (.draw())
+        const uint64_t flowId = FlowUi::toFlowId(context.elementID);
+        const ButtonState& state = ButtonDefinition::getOrCreateState(flowId);
+        ButtonResources& resources = ButtonDefinition::getResources(context.uiManager);
+        (void)resources;
 
-See public headers for details:
-- `include/FlowUi/App.hpp`
-- `include/FlowUi/PublicStructs.hpp`
-- `include/managers/FlowUiElementSystem.hpp`
+        Clay_ElementDeclaration root{};
+        root.id = context.uiManager.toClayEID(context.elementID);
+        root.layout.sizing.width = CLAY_SIZING_FIXED(context.params.width);
+        root.layout.sizing.height = CLAY_SIZING_FIXED(context.params.height);
+        root.backgroundColor = state.enabled
+            ? Clay_Color{52, 94, 239, 255}
+            : Clay_Color{90, 90, 90, 255};
+        root.layout.childAlignment = Clay_ChildAlignment{CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+        CLAY(root) {
+            CLAY_TEXT(
+                context.uiManager.toClayString(context.params.label),
+                CLAY_TEXT_CONFIG({ .fontId = 0, .fontSize = 18, .textColor = Clay_Color{255,255,255,255} }));
+        }
+    },
+};
+```
+
+### 3) Use in frame code
+
+```cpp
+app.ui().createElement(kButton, "main_menu/play")
+    .setParameters(ButtonParams{
+        .label = "Play",
+        .width = 260.0f,
+        .height = 52.0f,
+    })
+    .draw();
+```
+
+## Flow IDs
+
+FlowUi provides 64-bit ID helpers:
+
+```cpp
+FlowUi::FlowElementId id0 = FLOW_ID("main_menu/play");
+FlowUi::FlowElementId id1 = FlowUi::toFlowId(dynamicStringView);
+FlowUi::FlowElementId id2 = FlowUi::createIndexedFlowId("items/row", i);
+FlowUi::FlowDefinitionId defId = FLOW_DEF_ID("button");
+```
+
+## State And Resources Model
+
+For each `ElementDefinition<Params, State, Resources, DefId>` specialization:
+- `resources` is static-lazy:
+  - `Definition::getResources(ui)`
+- `statePool` is static and keyed by Flow element ID:
+  - `Definition::getOrCreateState(flowId)`
+  - `Definition::tryGetState(flowId)`
+  - `Definition::tryGetStateConst(flowId)`
+  - `Definition::eraseState(flowId)`
+
+This means state/resources are shared by all instances of that exact definition specialization.
+
+## Core Runtime Lifecycle
+
+- `app.beginFrame()`
+- build UI (`CLAY(...)` + `ui.createElement(...).draw()` / `.construct()`)
+- `app.endFrame()`
+- `app.drawFrame()`
+
+## Notes
+
+- `template.hpp`, `template.cpp`, and `example.cpp` are updated to this typed system.
+- `createElement(...)` still takes string element IDs for Clay interop; Flow IDs are opt-in where needed.
+- API is pre-1.0 and still evolving.
