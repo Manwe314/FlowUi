@@ -123,7 +123,7 @@ inline const ButtonDefinition kButton = {
     +[](ButtonDefinition::BuildContext& context) { // buildElement (.draw())
         const uint64_t flowId = FlowUi::toFlowId(context.elementID);
         const ButtonState& state = ButtonDefinition::getOrCreateState(flowId);
-        ButtonResources& resources = ButtonDefinition::getResources(context.uiManager);
+        ButtonResources& resources = ButtonDefinition::resources.value();
         (void)resources;
 
         Clay_ElementDeclaration root{};
@@ -141,6 +141,12 @@ inline const ButtonDefinition kButton = {
         }
     },
 };
+```
+
+Initialize resources once (typically during startup, before the main loop):
+
+```cpp
+(void)ButtonDefinition::getResources(app);
 ```
 
 ### 3) Use in frame code
@@ -170,7 +176,7 @@ FlowUi::FlowDefinitionId defId = FLOW_DEF_ID("button");
 
 For each `ElementDefinition<Params, State, Resources, DefId>` specialization:
 - `resources` is static-lazy:
-  - `Definition::getResources(ui)`
+  - `Definition::getResources(app)`
 - `statePool` is static and keyed by Flow element ID:
   - `Definition::getOrCreateState(flowId)`
   - `Definition::tryGetState(flowId)`

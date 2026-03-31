@@ -12,6 +12,7 @@
 
 #include "clay.h"
 #include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/App.hpp"
 
 namespace FlowUi {
 
@@ -101,12 +102,14 @@ struct ElementDefinition
     static inline std::optional<ResourcesType> resources{};
     static inline std::vector<StatePoolEntry> statePool{};
 
-    static ResourcesType& getResources(UiManager& uiManager)
+    static ResourcesType& getResources(App& app)
     {
         static_assert(hasResources, "FlowUi: getResources is only available when ElementDefinition Resources template argument is not void.");
         if (!resources.has_value()) {
-            if constexpr (std::is_constructible_v<ResourcesType, UiManager&>) {
-                resources.emplace(uiManager);
+            if constexpr (std::is_constructible_v<ResourcesType, App&>) {
+                resources.emplace(app);
+            } else if constexpr (std::is_constructible_v<ResourcesType, UiManager&>) {
+                resources.emplace(app.ui());
             } else {
                 resources.emplace();
             }
@@ -214,6 +217,12 @@ public:
     ElementBuilder& setParameters(ParametersType&& parameters)
     {
         params_ = std::move(parameters);
+        return *this;
+    }
+
+	ElementBuilder& withElementID(std::string_view elementID)
+    {
+        elementID_.assign(elementID.data(), elementID.size());
         return *this;
     }
 

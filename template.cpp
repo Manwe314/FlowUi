@@ -38,7 +38,7 @@ bool eraseTemplateElementState(std::string_view elementID)
 	return TemplateDefiition::eraseState(FlowUi::toFlowId(elementID));
 }
 
-void initTemplateResources(FlowUi::UiManager& ui)
+void initTemplateResources(FlowUi::App& app)
 {
-	(void)TemplateDefiition::getResources(ui);
+	(void)TemplateDefiition::getResources(app);
 }
