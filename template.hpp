@@ -12,8 +12,8 @@ struct templateState {
 
 struct templateResources {
 	templateResources() = default;
-	explicit templateResources(FlowUi::UiManager& uiManager) {
-		(void)uiManager;
+	explicit templateResources(FlowUi::App& app) {
+		(void)app;
 	}
 };
 
@@ -55,7 +55,7 @@ inline const TemplateDefiition kTemplate = {
 	+[](TemplateDefiition::BuildContext& context) -> Clay_ElementDeclaration {
 		(void)context;
 		// Example resources access:
-		// auto& resources = TemplateDefiition::getResources(context.uiManager);
+		// auto& resources = TemplateDefiition::resources.value();
 		return Clay_ElementDeclaration{};
 	},
 
