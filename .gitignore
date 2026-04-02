@@ -1,2 +1,83 @@
-build/
-build*
+# -----------------------------
+# Build output directories
+# -----------------------------
+/build/
+/build-*/
+/FlowPlotGUI/build/
+/FlowPlotGUI/build-*/
+**/build/
+**/build-*/
+
+# -----------------------------
+# CMake / Ninja generated files
+# -----------------------------
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/CTestTestfile.cmake
+**/Makefile.cmake
+**/build.ninja
+**/rules.ninja
+**/.ninja_deps
+**/.ninja_log
+**/compile_commands.json
+
+# -----------------------------
+# Compiler / linker outputs
+# -----------------------------
+*.o
+*.obj
+*.lo
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.pdb
+*.idb
+*.ilk
+
+# -----------------------------
+# Debug / coverage / profiling
+# -----------------------------
+*.dSYM/
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+*.stackdump
+
+# -----------------------------
+# Local binaries / logs
+# -----------------------------
+/FlowPlotGUI/FlowPlotGUI
+*.log
+
+# -----------------------------
+# Editor / IDE files
+# -----------------------------
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# -----------------------------
+# OS-generated files
+# -----------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# -----------------------------
+# Local environment files
+# -----------------------------
+.env
+.env.*
+*.local
