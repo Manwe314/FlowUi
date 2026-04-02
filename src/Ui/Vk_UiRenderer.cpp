@@ -850,6 +850,16 @@ static void CreateLinearSampler(VulkanContext& vk, VkSampler& sampler) {
 	vkCheck(vkCreateSampler(vk.device, &samplerInfo, nullptr, &sampler), "Failed to create UI sampler.");
 }
 
+static bool IsSrgbColorFormat(VkFormat format) {
+	switch (format) {
+		case VK_FORMAT_R8G8B8A8_SRGB:
+		case VK_FORMAT_B8G8R8A8_SRGB:
+			return true;
+		default:
+			return false;
+	}
+}
+
 static VkPipeline createGraphicsPipeline(
 	VkDevice device,
 	VkPipelineLayout layout,
@@ -875,6 +885,19 @@ static VkPipeline createGraphicsPipeline(
 	shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	shaderStages[1].module = fragmentModule;
 	shaderStages[1].pName = "main";
+
+	const uint32_t decodeVertexColorFromSrgb = IsSrgbColorFormat(format) ? 1u : 0u;
+	VkSpecializationMapEntry vertexSpecializationEntry{};
+	vertexSpecializationEntry.constantID = 0u;
+	vertexSpecializationEntry.offset = 0u;
+	vertexSpecializationEntry.size = sizeof(uint32_t);
+
+	VkSpecializationInfo vertexSpecializationInfo{};
+	vertexSpecializationInfo.mapEntryCount = 1u;
+	vertexSpecializationInfo.pMapEntries = &vertexSpecializationEntry;
+	vertexSpecializationInfo.dataSize = sizeof(decodeVertexColorFromSrgb);
+	vertexSpecializationInfo.pData = &decodeVertexColorFromSrgb;
+	shaderStages[0].pSpecializationInfo = &vertexSpecializationInfo;
 
 	VkVertexInputBindingDescription binding{};
 	binding.binding = 0;

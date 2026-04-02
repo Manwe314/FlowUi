@@ -46,12 +46,25 @@ layout(location = 3) out vec4 vRadius;
 layout(location = 4) out vec4 vBorder;
 layout(location = 5) flat out uint vSolidMode;
 
+layout(constant_id = 0) const uint kDecodeVertexColorFromSrgb = 0u;
+
+vec3 srgbToLinear(vec3 srgb) {
+	vec3 linearLow = srgb / 12.92;
+	vec3 linearHigh = pow((srgb + 0.055) / 1.055, vec3(2.4));
+	bvec3 useLow = lessThanEqual(srgb, vec3(0.04045));
+	return mix(linearHigh, linearLow, useLow);
+}
+
 vec4 unpackColor(uint packedRgba8) {
 	float r = float((packedRgba8 >> 0u) & 0xFFu) / 255.0;
 	float g = float((packedRgba8 >> 8u) & 0xFFu) / 255.0;
 	float b = float((packedRgba8 >> 16u) & 0xFFu) / 255.0;
 	float a = float((packedRgba8 >> 24u) & 0xFFu) / 255.0;
-	return vec4(r, g, b, a);
+	vec4 color = vec4(r, g, b, a);
+	if (kDecodeVertexColorFromSrgb != 0u) {
+		color.rgb = srgbToLinear(color.rgb);
+	}
+	return color;
 }
 
 void main() {
