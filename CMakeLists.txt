@@ -7,6 +7,7 @@ option(FLOWUI_BUILD_FONT_BAKER "Build FlowUi offline font baker tool" ON)
 option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generation" OFF)
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_SVG_MANAGER "Enable SVG manager support (PlutoSVG)." ON)
+option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
 set(FLOWUI_INCLUDE_SVG_MANAGER "${FLOWUI_INCLUDE_SVG_MANAGER}")
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
@@ -28,6 +29,12 @@ if(FLOWUI_INCLUDE_SVG_MANAGER)
     set(FLOWUI_INCLUDE_SVG_MANAGER_VALUE 1)
 else()
     set(FLOWUI_INCLUDE_SVG_MANAGER_VALUE 0)
+endif()
+
+if(FLOW_UI_DEV_MODE)
+    set(FLOW_UI_DEV_MODE_VALUE 1)
+else()
+    set(FLOW_UI_DEV_MODE_VALUE 0)
 endif()
 
 set(FLOWUI_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
@@ -178,6 +185,8 @@ target_sources(flowui
         src/managers/ViewPortManager.cpp
         src/managers/FlowUiElementSystem.cpp
         src/managers/UiManager.cpp
+        src/devMode/debugView.cpp
+        src/devMode/devRuntime.cpp
         src/Ui/Vk_UiRenderer.cpp
         src/window/Inputs.cpp
         src/Vulkan/Vk_Context.cpp
@@ -188,6 +197,10 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/debugView.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/IWindow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Inputs.hpp>

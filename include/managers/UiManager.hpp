@@ -12,11 +12,15 @@
 #include <clay.h>
 #include <vector>
 
+#include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "managers/FlowUiElementSystem.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "window/Inputs.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/devRuntime.hpp"
+#endif
 
 struct FontManager;
 
@@ -49,6 +53,10 @@ public:
 	const InputFieldManager& inputFields() const { return inputFieldManager_; }
 	ShortcutManager& shortcuts() { return shortcutManager_; }
 	const ShortcutManager& shortcuts() const { return shortcutManager_; }
+#if FLOW_UI_DEV_MODE
+	devMode::DevRuntime& devRuntime() { return devRuntime_; }
+	const devMode::DevRuntime& devRuntime() const { return devRuntime_; }
+#endif
 	void setClipboardText(std::string_view text) const;
 	std::string clipboardText() const;
 	bool hasClipboardAccess() const;
@@ -94,10 +102,17 @@ private:
 	bool wasPrimaryPointerDownLastFrame_ = false;
 
 	InteractionSnapshot previousInteractionSnapshot_;
-    InteractionSnapshot currentInteractionSnapshot_;
+	InteractionSnapshot currentInteractionSnapshot_;
 	std::vector<Clay_ElementId> constructedElementStack_;
 	InputFieldManager inputFieldManager_{};
 	ShortcutManager shortcutManager_{};
+#if FLOW_UI_DEV_MODE
+	devMode::DevRuntime devRuntime_{};
+	DevToolsConfig devToolsConfig_{};
+	bool devPanelVisible_ = false;
+	bool devRootElementOpenThisFrame_ = false;
+	ShortcutId devPanelToggleShortcutId_ = 0u;
+#endif
 	std::function<void(std::string_view)> setClipboardTextAccessor_{};
 	std::function<std::string()> getClipboardTextAccessor_{};
 	const ::FontManager* fontManager_ = nullptr;
