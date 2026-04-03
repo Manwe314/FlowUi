@@ -7,7 +7,7 @@
 7. streamline element registry - ??
 8. Optimise GPU side
 9. Bug with oy whiteSpace Charaters in input fields
-10. 
+10. upgrade texture ref managemetn with automatic frame persistance saving?
 11. 
 12. Update FlowUi Arena naming and handling
 13. Revisit how TextureRef's get stored for frames. 
@@ -26,4 +26,10 @@ the paradigm re design:
 	- closed elements that relay on .draw() if utilizing other elements as children are forced to forward setable defaults causing init function to call exploding amounts of setters and getters.
 	- a more pre configured easly tweakable reusable form of element should exist that doesnt also destory the immediate mode paradigm.
 	- reusability comes at a function calling cost to not give up immediate mode. this should not be a tradeoff. both performance and unclogged files should be given without a sacriface to immediate mode thinking.
-	
+
+
+Possible Big Upgrades:
+- add a scripting language dynamic interpreter.
+- allow changing values of UI elements like color, sizing ints and such simply and without need of recompilation OR re runing of the app
+- a simple way to link specific variables with elment variables.
+- potentially a debug "app" built WITH flowUI bundeled with it for visual authoring at debug mode.

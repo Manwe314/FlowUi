@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cmath>
+#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -13,6 +15,10 @@
 #include "clay.h"
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/App.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/devRuntime.hpp"
+#include "devMode/registry.hpp"
+#endif
 
 namespace FlowUi {
 
@@ -45,6 +51,172 @@ class UiManager;
 Clay_ElementId flowUiToClayElementId(UiManager& uiManager, std::string_view elementID);
 const InteractionSnapshot& flowUiPreviousInteraction(const UiManager& uiManager);
 void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
+#if FLOW_UI_DEV_MODE
+std::size_t flowUiDevBeginCapturedFlowElement(
+	UiManager& uiManager,
+	uint64_t definitionId,
+	uint64_t definitionTypeHash,
+	std::string_view definitionTypeToken,
+	std::string_view elementID,
+	uint64_t flowId);
+bool flowUiDevEndCapturedFlowElement(UiManager& uiManager);
+devMode::DevRuntime& flowUiDevRuntime(UiManager& uiManager);
+#endif
+
+#if FLOW_UI_DEV_MODE
+namespace devCaptureDetail {
+
+template <typename T>
+bool tryAssignIntegralFromInt64(int64_t value, T& out) {
+	if constexpr (!std::is_integral_v<T> || std::is_same_v<T, bool>) {
+		return false;
+	} else if constexpr (std::is_signed_v<T>) {
+		if (value < static_cast<int64_t>(std::numeric_limits<T>::min()) ||
+			value > static_cast<int64_t>(std::numeric_limits<T>::max())) {
+			return false;
+		}
+		out = static_cast<T>(value);
+		return true;
+	} else {
+		if (value < 0) {
+			return false;
+		}
+		const uint64_t unsignedValue = static_cast<uint64_t>(value);
+		if (unsignedValue > static_cast<uint64_t>(std::numeric_limits<T>::max())) {
+			return false;
+		}
+		out = static_cast<T>(unsignedValue);
+		return true;
+	}
+}
+
+template <typename T>
+bool tryAssignFromDevValue(const devMode::DevValue& value, T& out) {
+	if constexpr (std::is_enum_v<T>) {
+		using Underlying = std::underlying_type_t<T>;
+		Underlying underlying{};
+		if (!tryAssignFromDevValue(value, underlying)) {
+			return false;
+		}
+		out = static_cast<T>(underlying);
+		return true;
+	} else if constexpr (std::is_same_v<T, bool>) {
+		if (const auto* boolValue = std::get_if<bool>(&value)) {
+			out = *boolValue;
+			return true;
+		}
+		if (const auto* intValue = std::get_if<int64_t>(&value)) {
+			out = (*intValue != 0);
+			return true;
+		}
+		if (const auto* doubleValue = std::get_if<double>(&value)) {
+			if (!std::isfinite(*doubleValue)) {
+				return false;
+			}
+			out = (*doubleValue != 0.0);
+			return true;
+		}
+		return false;
+	} else if constexpr (std::is_integral_v<T>) {
+		if (const auto* intValue = std::get_if<int64_t>(&value)) {
+			return tryAssignIntegralFromInt64(*intValue, out);
+		}
+		if (const auto* doubleValue = std::get_if<double>(&value)) {
+			if (!std::isfinite(*doubleValue) || std::trunc(*doubleValue) != *doubleValue) {
+				return false;
+			}
+			if (*doubleValue < static_cast<double>(std::numeric_limits<int64_t>::min()) ||
+				*doubleValue > static_cast<double>(std::numeric_limits<int64_t>::max())) {
+				return false;
+			}
+			return tryAssignIntegralFromInt64(static_cast<int64_t>(*doubleValue), out);
+		}
+		if (const auto* boolValue = std::get_if<bool>(&value)) {
+			return tryAssignIntegralFromInt64(*boolValue ? int64_t{1} : int64_t{0}, out);
+		}
+		return false;
+	} else if constexpr (std::is_floating_point_v<T>) {
+		if (const auto* doubleValue = std::get_if<double>(&value)) {
+			if (!std::isfinite(*doubleValue)) {
+				return false;
+			}
+			out = static_cast<T>(*doubleValue);
+			return true;
+		}
+		if (const auto* intValue = std::get_if<int64_t>(&value)) {
+			out = static_cast<T>(*intValue);
+			return true;
+		}
+		if (const auto* boolValue = std::get_if<bool>(&value)) {
+			out = *boolValue ? static_cast<T>(1) : static_cast<T>(0);
+			return true;
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, std::string>) {
+		if (const auto* textValue = std::get_if<std::string>(&value)) {
+			out = *textValue;
+			return true;
+		}
+		return false;
+	} else {
+		return false;
+	}
+}
+
+template <typename ParamsT, typename FieldT>
+bool tryApplyOverrideField(ParamsT& params, const devMode::FieldDescriptor& field, const devMode::DevValue& value) {
+	FieldT ParamsT::* memberPointer = nullptr;
+	if (!devMode::DevRegistry::tryGetMemberPointer<ParamsT, FieldT>(field, memberPointer) || memberPointer == nullptr) {
+		return false;
+	}
+
+	FieldT& destination = params.*memberPointer;
+	return tryAssignFromDevValue<FieldT>(value, destination);
+}
+
+template <typename ParamsT>
+void applyParameterOverrides(
+	UiManager& uiManager,
+	uint64_t definitionId,
+	uint64_t flowId,
+	std::string_view elementID,
+	ParamsT& params) {
+	const devMode::StructDescriptor* paramsStruct = devMode::DevRegistry::instance().template findStruct<ParamsT>();
+	if (!paramsStruct || paramsStruct->fields.empty()) {
+		return;
+	}
+
+	devMode::DevRuntime& runtime = flowUiDevRuntime(uiManager);
+	for (const devMode::FieldDescriptor& field : paramsStruct->fields) {
+		const uint64_t fieldHash = (field.fieldHash == 0u) ? devMode::hashString64(field.name) : field.fieldHash;
+		const devMode::DevValue* overrideValue =
+			runtime.findInstanceParamOverride(definitionId, flowId, elementID, fieldHash);
+		if (!overrideValue) {
+			overrideValue = runtime.findDefinitionParamOverride(definitionId, fieldHash);
+		}
+		if (!overrideValue) {
+			continue;
+		}
+
+		bool applied = false;
+		applied = applied || tryApplyOverrideField<ParamsT, bool>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, int8_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, int16_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, int32_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, int64_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, uint8_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, uint16_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, uint32_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, uint64_t>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, float>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, double>(params, field, *overrideValue);
+		applied = applied || tryApplyOverrideField<ParamsT, std::string>(params, field, *overrideValue);
+		(void)applied;
+	}
+}
+
+} // namespace devCaptureDetail
+#endif
 
 template <typename Parameters = NoElementParameters>
 struct ElementBuildContext;
@@ -244,6 +416,26 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(Eleme
     }
 
     const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
+    const uint64_t elementFlowId = toFlowId(elementID_);
+#if FLOW_UI_DEV_MODE
+    flowUiDevBeginCapturedFlowElement(
+        uiManager_,
+        DefinitionType::definitionId,
+        devMode::typeHash<DefinitionType>(),
+        devMode::typeToken<DefinitionType>(),
+        elementID_,
+        elementFlowId);
+
+    struct DevCaptureRollback {
+        UiManager& uiManager;
+        bool enabled = true;
+        ~DevCaptureRollback() {
+            if (enabled) {
+                (void)flowUiDevEndCapturedFlowElement(uiManager);
+            }
+        }
+    } devCaptureRollback{uiManager_, true};
+#endif
 
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipEventCallbacks)) {
         const InteractionSnapshot& previousInteraction = flowUiPreviousInteraction(uiManager_);
@@ -280,6 +472,15 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(Eleme
         elementDefinition_->runLogic(logicContext);
     }
 
+#if FLOW_UI_DEV_MODE
+    devCaptureDetail::applyParameterOverrides<ParametersType>(
+        uiManager_,
+        DefinitionType::definitionId,
+        elementFlowId,
+        elementID_,
+        params_);
+#endif
+
     BuildContext buildContext{
         uiManager_,
         elementID_,
@@ -291,6 +492,9 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(Eleme
     Clay__OpenElement();
     Clay__ConfigureOpenElement(declaration);
     flowUiPushConstructedElement(uiManager_, rootElementId);
+#if FLOW_UI_DEV_MODE
+    devCaptureRollback.enabled = false;
+#endif
 }
 
 template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
@@ -301,6 +505,23 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::draw(ElementDra
     }
 
     const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
+    const uint64_t elementFlowId = toFlowId(elementID_);
+#if FLOW_UI_DEV_MODE
+    flowUiDevBeginCapturedFlowElement(
+        uiManager_,
+        DefinitionType::definitionId,
+        devMode::typeHash<DefinitionType>(),
+        devMode::typeToken<DefinitionType>(),
+        elementID_,
+        elementFlowId);
+
+    struct DevCaptureCloseOnExit {
+        UiManager& uiManager;
+        ~DevCaptureCloseOnExit() {
+            (void)flowUiDevEndCapturedFlowElement(uiManager);
+        }
+    } devCaptureCloseOnExit{uiManager_};
+#endif
 
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipEventCallbacks)) {
         const InteractionSnapshot& previousInteraction = flowUiPreviousInteraction(uiManager_);
@@ -338,6 +559,14 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::draw(ElementDra
     }
 
     if (!elementDrawOptionsHas(options, ElementDrawOptions::SkipBuildCallback)) {
+#if FLOW_UI_DEV_MODE
+        devCaptureDetail::applyParameterOverrides<ParametersType>(
+            uiManager_,
+            DefinitionType::definitionId,
+            elementFlowId,
+            elementID_,
+            params_);
+#endif
         BuildContext buildContext{
             uiManager_,
             elementID_,

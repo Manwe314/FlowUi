@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FlowUi/Flow.hpp>
+#include <devMode/devApi.hpp>
 
 struct templateParams {
 	int importantInt = 42;
@@ -64,3 +65,17 @@ inline const TemplateDefiition kTemplate = {
 		(void)context;
 	},
 };
+
+// Dev-mode registration examples:
+FLOWUI_DEV_REGISTER_STRUCT(
+	templateParams,
+	FLOWUI_DEV_REFLECT_FIELD(templateParams, importantInt));
+
+FLOWUI_DEV_REGISTER_STRUCT(
+	templateState,
+	FLOWUI_DEV_REFLECT_FIELD(templateState, enabled));
+
+// Empty registration is valid when a struct has no editable fields yet.
+FLOWUI_DEV_REGISTER_STRUCT(templateResources);
+
+FLOWUI_DEV_REGISTER_ELEMENT(TemplateDefiition, "Template");

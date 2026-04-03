@@ -70,7 +70,23 @@ int main() {
 | `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Link runtime TTF->atlas dependencies |
 | `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Expose viewport Vulkan interop in public headers |
 | `FLOWUI_INCLUDE_SVG_MANAGER` | `ON` | Enable SVG manager support |
+| `FLOW_UI_DEV_MODE` | `OFF` | Compile FlowUi developer-mode tooling (`debugView`, dev runtime capture/overrides) |
 | `FLOWUI_GLFW_PROVIDER` | `auto` | `auto`, `system`, `vendored` |
+
+## Dev Mode (Vertical Slice)
+
+Dev mode is opt-in at compile time and runtime:
+
+- Compile time: set `-DFLOW_UI_DEV_MODE=ON` (or define `FLOW_UI_DEV_MODE=1` before including FlowUi headers).
+- Runtime: set `AppConfig::dev.enabled = true`.
+
+Current vertical-slice behavior:
+
+- `UiManager::beginFrame()` auto-wraps user UI with an internal root (`"_Flow_Dev_root_"`) when the dev panel is visible.
+- `UiManager::endFrame()` appends the built-in `debugView` element before `Clay_EndLayout()`.
+- Layout is left-to-right inside the injected root, so user UI and debug tooling are siblings in one Clay tree.
+- Toggle shortcut defaults to `Ctrl + Shift + D` and is configured via `AppConfig::dev.panelToggleChord`.
+- Definition-level param overrides from the debug panel propagate to all instances of the selected definition.
 
 ## Modern Element System
 

@@ -3,12 +3,31 @@
 #include <cstdint>
 #include <cstdio>
 
+#if FLOW_UI_DEV_MODE
+#include "devMode/debugView.hpp"
+#include "devMode/registry.hpp"
+#endif
 #include "managers/FontManager.hpp"
 #include "internal/TextLayoutEngine.hpp"
 
 namespace {
 
 constexpr float kPointsPerInch = 72.0f;
+
+#if FLOW_UI_DEV_MODE
+FlowUi::ShortcutTrigger toShortcutTrigger(FlowUi::DevShortcutTrigger trigger) {
+	switch (trigger) {
+	case FlowUi::DevShortcutTrigger::Press:
+		return FlowUi::ShortcutTrigger::Press;
+	case FlowUi::DevShortcutTrigger::Release:
+		return FlowUi::ShortcutTrigger::Release;
+	case FlowUi::DevShortcutTrigger::Down:
+		return FlowUi::ShortcutTrigger::Down;
+	default:
+		return FlowUi::ShortcutTrigger::Press;
+	}
+}
+#endif
 
 } // namespace
 
@@ -45,6 +64,31 @@ namespace FlowUi
 		}
 		inputFieldManager_.setConfig(appConfig.ui.inputManager);
 		inputFieldManager_.setFontManager(nullptr, pointsToPixelsScale_);
+#if FLOW_UI_DEV_MODE
+		devToolsConfig_ = appConfig.dev;
+		devPanelVisible_ = devToolsConfig_.enabled && devToolsConfig_.panelOpenByDefault;
+		if (devToolsConfig_.enabled && devToolsConfig_.useShortcutManagerForPanelToggle) {
+			const ShortcutChord toggleChord{
+				.key = devToolsConfig_.panelToggleChord.key,
+				.ctrl = devToolsConfig_.panelToggleChord.ctrl,
+				.shift = devToolsConfig_.panelToggleChord.shift,
+				.alt = devToolsConfig_.panelToggleChord.alt,
+				.super = devToolsConfig_.panelToggleChord.super,
+				.trigger = toShortcutTrigger(devToolsConfig_.panelToggleChord.trigger),
+			};
+			devPanelToggleShortcutId_ = shortcutManager_.registerShortcut(
+				toggleChord,
+				ShortcutScope::Global,
+				1000,
+				[this](ShortcutContext&) {
+					if (!devToolsConfig_.enabled) {
+						return false;
+					}
+					devPanelVisible_ = !devPanelVisible_;
+					return true;
+				});
+		}
+#endif
 
 		Clay_SetCurrentContext(clayContext_);
 		Clay_SetMeasureTextFunction(
@@ -167,7 +211,23 @@ namespace FlowUi
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 			static_cast<float>(frameInput.dt));
 		constructedElementStack_.clear();
+#if FLOW_UI_DEV_MODE
+		devRuntime_.beginFrame();
+		devRootElementOpenThisFrame_ = false;
+#endif
 		Clay_BeginLayout();
+#if FLOW_UI_DEV_MODE
+		if (devToolsConfig_.enabled && devPanelVisible_) {
+			Clay_ElementDeclaration devRoot{};
+			devRoot.id = toClaySID("_Flow_Dev_root_");
+			devRoot.layout.sizing.width = CLAY_SIZING_GROW(0);
+			devRoot.layout.sizing.height = CLAY_SIZING_GROW(0);
+			devRoot.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+			Clay__OpenElement();
+			Clay__ConfigureOpenElement(devRoot);
+			devRootElementOpenThisFrame_ = true;
+		}
+#endif
 	}
 
 	Clay_RenderCommandArray UiManager::endFrame()
@@ -181,6 +241,9 @@ namespace FlowUi
 		while (!constructedElementStack_.empty()) {
 			Clay__CloseElement();
 			constructedElementStack_.pop_back();
+#if FLOW_UI_DEV_MODE
+			(void)devRuntime_.endCapturedElement();
+#endif
 			++autoClosedConstructedElements;
 		}
 		if (autoClosedConstructedElements > 0) {
@@ -189,6 +252,15 @@ namespace FlowUi
 				"[FlowUi] Warning: auto-closed %d constructed element(s). Call ui.drawConstructed() for each ui.createElement(...).construct().\n",
 				autoClosedConstructedElements);
 		}
+#if FLOW_UI_DEV_MODE
+		if (devRootElementOpenThisFrame_) {
+			if (devToolsConfig_.enabled && devPanelVisible_) {
+				devMode::drawDebugView(*this);
+			}
+			Clay__CloseElement();
+			devRootElementOpenThisFrame_ = false;
+		}
+#endif
 		Clay_RenderCommandArray renderCommands = Clay_EndLayout();
 
 		InteractionSnapshot interactionSnapshot;
@@ -210,6 +282,9 @@ namespace FlowUi
 
 		renderCommands = inputFieldManager_.endFrame(renderCommands);
 		setCurrentInteractionSnapshot(std::move(interactionSnapshot));
+#if FLOW_UI_DEV_MODE
+		devRuntime_.endFrame();
+#endif
 		return renderCommands;
 	}
 	
@@ -271,6 +346,58 @@ namespace FlowUi
 		uiManager.pushConstructedElement(elementId);
 	}
 
+#if FLOW_UI_DEV_MODE
+	devMode::DevRuntime& flowUiDevRuntime(UiManager& uiManager) {
+		return uiManager.devRuntime();
+	}
+
+	std::size_t flowUiDevBeginCapturedFlowElement(
+		UiManager& uiManager,
+		uint64_t definitionId,
+		uint64_t definitionTypeHash,
+		std::string_view definitionTypeToken,
+		std::string_view elementID,
+		uint64_t flowId) {
+		devMode::DevRuntime& runtime = uiManager.devRuntime();
+		const std::size_t captureIndex = runtime.beginCapturedFlowElement(
+			definitionId,
+			definitionTypeHash,
+			flowId,
+			elementID,
+			{},
+			definitionTypeToken);
+
+		const devMode::DevRegistry& registry = devMode::DevRegistry::instance();
+		const devMode::ElementDescriptor* descriptor = registry.findElementByDefinitionId(definitionId);
+		const bool hasRegisteredDefinition = descriptor != nullptr;
+		const bool hasRegisteredParamsStruct =
+			(descriptor != nullptr) && (registry.findStructByTypeHash(descriptor->paramsStructTypeHash) != nullptr);
+		const bool hasRegisteredStateStruct =
+			(descriptor != nullptr) && (registry.findStructByTypeHash(descriptor->stateStructTypeHash) != nullptr);
+		const bool hasRegisteredResourcesStruct =
+			(descriptor != nullptr) && (registry.findStructByTypeHash(descriptor->resourcesStructTypeHash) != nullptr);
+
+		runtime.setCapturedElementRegistrationMetadata(
+			captureIndex,
+			hasRegisteredDefinition,
+			hasRegisteredParamsStruct,
+			hasRegisteredStateStruct,
+			hasRegisteredResourcesStruct,
+			descriptor ? descriptor->definitionName : std::string_view{},
+			descriptor ? descriptor->definitionTypeToken : definitionTypeToken);
+
+		runtime.setCapturedElementAuthoringKeys(
+			captureIndex,
+			elementID,
+			descriptor ? descriptor->definitionName : std::string_view{});
+		return captureIndex;
+	}
+
+	bool flowUiDevEndCapturedFlowElement(UiManager& uiManager) {
+		return uiManager.devRuntime().endCapturedElement();
+	}
+#endif
+
 	void UiManager::drawConstructed() {
 		if (!clayContext_) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
@@ -282,6 +409,9 @@ namespace FlowUi
 		Clay_SetCurrentContext(clayContext_);
 		Clay__CloseElement();
 		constructedElementStack_.pop_back();
+#if FLOW_UI_DEV_MODE
+		(void)devRuntime_.endCapturedElement();
+#endif
 	}
 
 	void UiManager::pushConstructedElement(Clay_ElementId elementId) {
