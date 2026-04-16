@@ -37,12 +37,23 @@ public:
 	Clay_ElementId toClaySID(std::string_view s);
 	Clay_ElementId toClayEID(std::string_view s);
 
-	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
-	ElementBuilder<Parameters, State, Resources, DefinitionId> createElement(
-		const ElementDefinition<Parameters, State, Resources, DefinitionId>& elementDefinition,
-		std::string_view elementID)
+	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
+	ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(
+		const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition,
+		std::string_view elementID
+#if FLOW_UI_DEV_MODE
+		, devCaptureDetail::DevSourceLocation sourceLocation = devCaptureDetail::DevSourceLocation::current()
+#endif
+		)
 	{
-		return ElementBuilder<Parameters, State, Resources, DefinitionId>(*this, &elementDefinition, std::string(elementID));
+		return ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>(
+			*this,
+			&elementDefinition,
+			std::string(elementID)
+#if FLOW_UI_DEV_MODE
+			, sourceLocation
+#endif
+		);
 	}
 	void drawConstructed();
 
@@ -56,6 +67,8 @@ public:
 #if FLOW_UI_DEV_MODE
 	devMode::DevRuntime& devRuntime() { return devRuntime_; }
 	const devMode::DevRuntime& devRuntime() const { return devRuntime_; }
+	DevToolsConfig& devToolsConfig() { return devToolsConfig_; }
+	const DevToolsConfig& devToolsConfig() const { return devToolsConfig_; }
 #endif
 	void setClipboardText(std::string_view text) const;
 	std::string clipboardText() const;
@@ -69,7 +82,7 @@ public:
 
 private:
 	friend class App;
-	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
+	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 	friend class ElementBuilder;
 	friend void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
 

@@ -11,12 +11,15 @@ class UiManager;
 namespace FlowUi::devMode {
 
 struct DebugViewParams {
-	float leftPanelWidthPx = 300.0f;
-	float footerHeightPx = 34.0f;
+	int defaultMainViewWidthPx = 420;
+	int minMainViewWidthPx = 220;
+	int maxMainViewWidthPx = 1200;
+	int separatorThicknessPx = 6;
 };
 
 struct DebugViewState {
-	uint64_t selectedDefinitionId = 0u;
+	int mainViewWidthPx = 0;
+	bool widthInitialized = false;
 };
 
 struct DebugViewResources {};

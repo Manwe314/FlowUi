@@ -19,6 +19,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json" FORCE)
 
+# Default single-config generators (Ninja/Unix Makefiles) to optimized builds.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+endif()
+
+# Ensure release configurations use -O3 on GCC/Clang-like toolchains.
+if(NOT MSVC)
+    string(FIND " ${CMAKE_CXX_FLAGS_RELEASE} " " -O3 " FLOWUI_HAS_O3_RELEASE)
+    if(FLOWUI_HAS_O3_RELEASE EQUAL -1)
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+    endif()
+
+    string(FIND " ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} " " -O3 " FLOWUI_HAS_O3_RELWITHDEBINFO)
+    if(FLOWUI_HAS_O3_RELWITHDEBINFO EQUAL -1)
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3")
+    endif()
+endif()
+
 if(FLOWUI_PUBLIC_VULKAN_INTEROP)
     set(FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE 1)
 else()
@@ -186,6 +205,7 @@ target_sources(flowui
         src/managers/FlowUiElementSystem.cpp
         src/managers/UiManager.cpp
         src/devMode/debugView.cpp
+        src/devMode/devJson.cpp
         src/devMode/devRuntime.cpp
         src/Ui/Vk_UiRenderer.cpp
         src/window/Inputs.cpp
@@ -199,6 +219,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/debugView.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devJson.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>

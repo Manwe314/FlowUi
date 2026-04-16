@@ -30,6 +30,16 @@ the paradigm re design:
 
 Possible Big Upgrades:
 - add a scripting language dynamic interpreter.
-- allow changing values of UI elements like color, sizing ints and such simply and without need of recompilation OR re runing of the app
 - a simple way to link specific variables with elment variables.
-- potentially a debug "app" built WITH flowUI bundeled with it for visual authoring at debug mode.
+
+dev tool upgrades:
+	-Enum registration, dropdown menu
+	-Clay types registration, input methods for clay types.
+	-basic inputs upgraded like color picker, upgraded numerical input, UI context inputs (padding/margin)
+	-Flow Element definition source metadata registration
+	-Relative path Source location resolver
+	-UX upgrade with visual upgrade (color coding, effects)
+	-UX upgrade with quality of life buttons / shortcuts (copy delete | reset clear)
+	-Transactional Safety (rollback feature on falure)
+	-ability to view Dev tool as aditional floating window.
+
