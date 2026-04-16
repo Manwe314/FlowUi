@@ -11,6 +11,16 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#if FLOW_UI_DEV_MODE
+#if defined(__has_include)
+#if __has_include(<source_location>)
+#include <source_location>
+#if defined(__cpp_lib_source_location) && (__cpp_lib_source_location >= 201907L)
+#define FLOWUI_HAS_STD_SOURCE_LOCATION 1
+#endif
+#endif
+#endif
+#endif
 
 #include "clay.h"
 #include "FlowUi/PublicStructs.hpp"
@@ -58,13 +68,43 @@ std::size_t flowUiDevBeginCapturedFlowElement(
 	uint64_t definitionTypeHash,
 	std::string_view definitionTypeToken,
 	std::string_view elementID,
-	uint64_t flowId);
+	uint64_t flowId,
+	bool isInternalToDevMode);
 bool flowUiDevEndCapturedFlowElement(UiManager& uiManager);
 devMode::DevRuntime& flowUiDevRuntime(UiManager& uiManager);
 #endif
 
 #if FLOW_UI_DEV_MODE
 namespace devCaptureDetail {
+
+#if defined(FLOWUI_HAS_STD_SOURCE_LOCATION)
+using DevSourceLocation = std::source_location;
+#else
+struct DevSourceLocation {
+	const char* file = "";
+	const char* function = "";
+	uint_least32_t lineValue = 0u;
+	uint_least32_t columnValue = 0u;
+
+	static constexpr DevSourceLocation current(
+		const char* fileName = __builtin_FILE(),
+		const char* functionName = __builtin_FUNCTION(),
+		uint_least32_t line = __builtin_LINE(),
+		uint_least32_t column = 0u) noexcept {
+		return DevSourceLocation{
+			.file = fileName ? fileName : "",
+			.function = functionName ? functionName : "",
+			.lineValue = line,
+			.columnValue = column,
+		};
+	}
+
+	constexpr const char* file_name() const noexcept { return file ? file : ""; }
+	constexpr const char* function_name() const noexcept { return function ? function : ""; }
+	constexpr uint_least32_t line() const noexcept { return lineValue; }
+	constexpr uint_least32_t column() const noexcept { return columnValue; }
+};
+#endif
 
 template <typename T>
 bool tryAssignIntegralFromInt64(int64_t value, T& out) {
@@ -174,6 +214,78 @@ bool tryApplyOverrideField(ParamsT& params, const devMode::FieldDescriptor& fiel
 	return tryAssignFromDevValue<FieldT>(value, destination);
 }
 
+template <typename ParamsT, typename FieldT>
+bool tryCaptureParameterFieldValue(
+	const ParamsT& params,
+	const devMode::FieldDescriptor& field,
+	devMode::DevValue& outValue) {
+	FieldT ParamsT::* memberPointer = nullptr;
+	if (!devMode::DevRegistry::tryGetMemberPointer<ParamsT, FieldT>(field, memberPointer) || memberPointer == nullptr) {
+		return false;
+	}
+
+	const FieldT& source = params.*memberPointer;
+	if constexpr (std::is_same_v<FieldT, bool>) {
+		outValue = source;
+		return true;
+	} else if constexpr (std::is_integral_v<FieldT>) {
+		if constexpr (std::is_signed_v<FieldT>) {
+			outValue = static_cast<int64_t>(source);
+			return true;
+		} else {
+			using UnsignedFieldT = std::make_unsigned_t<FieldT>;
+			const UnsignedFieldT unsignedValue = static_cast<UnsignedFieldT>(source);
+			if (unsignedValue <= static_cast<UnsignedFieldT>(std::numeric_limits<int64_t>::max())) {
+				outValue = static_cast<int64_t>(unsignedValue);
+			} else {
+				outValue = static_cast<double>(unsignedValue);
+			}
+			return true;
+		}
+	} else if constexpr (std::is_floating_point_v<FieldT>) {
+		if (!std::isfinite(static_cast<double>(source))) {
+			return false;
+		}
+		outValue = static_cast<double>(source);
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, std::string>) {
+		outValue = source;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+template <typename ParamsT>
+void captureParameterSnapshotField(
+	devMode::DevRuntime& runtime,
+	uint64_t definitionId,
+	uint64_t flowId,
+	std::string_view elementID,
+	const devMode::FieldDescriptor& field,
+	uint64_t fieldHash,
+	const ParamsT& params) {
+	devMode::DevValue capturedValue{};
+	bool captured = false;
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, bool>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, int8_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, int16_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, int32_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, int64_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint8_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint16_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint32_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint64_t>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, float>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, double>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, std::string>(params, field, capturedValue);
+	if (!captured) {
+		return;
+	}
+
+	runtime.captureLastSeenParamField(definitionId, flowId, elementID, fieldHash, capturedValue);
+}
+
 template <typename ParamsT>
 void applyParameterOverrides(
 	UiManager& uiManager,
@@ -189,29 +301,34 @@ void applyParameterOverrides(
 	devMode::DevRuntime& runtime = flowUiDevRuntime(uiManager);
 	for (const devMode::FieldDescriptor& field : paramsStruct->fields) {
 		const uint64_t fieldHash = (field.fieldHash == 0u) ? devMode::hashString64(field.name) : field.fieldHash;
-		const devMode::DevValue* overrideValue =
-			runtime.findInstanceParamOverride(definitionId, flowId, elementID, fieldHash);
-		if (!overrideValue) {
-			overrideValue = runtime.findDefinitionParamOverride(definitionId, fieldHash);
+		const auto applySingleOverrideValue = [&](const devMode::DevValue& value) {
+			bool applied = false;
+			applied = applied || tryApplyOverrideField<ParamsT, bool>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, int8_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, int16_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, int32_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, int64_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, uint8_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, uint16_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, uint32_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, uint64_t>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, float>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, double>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, std::string>(params, field, value);
+			(void)applied;
+		};
+
+		// Definition-level defaults are applied first...
+		if (const devMode::DevValue* definitionOverride = runtime.findDefinitionParamOverride(definitionId, fieldHash)) {
+			applySingleOverrideValue(*definitionOverride);
 		}
-		if (!overrideValue) {
-			continue;
+		// ...then instance-level overrides are applied last and win.
+		if (const devMode::DevValue* instanceOverride =
+			runtime.findInstanceParamOverride(definitionId, flowId, elementID, fieldHash)) {
+			applySingleOverrideValue(*instanceOverride);
 		}
 
-		bool applied = false;
-		applied = applied || tryApplyOverrideField<ParamsT, bool>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, int8_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, int16_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, int32_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, int64_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, uint8_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, uint16_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, uint32_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, uint64_t>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, float>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, double>(params, field, *overrideValue);
-		applied = applied || tryApplyOverrideField<ParamsT, std::string>(params, field, *overrideValue);
-		(void)applied;
+		captureParameterSnapshotField(runtime, definitionId, flowId, elementID, field, fieldHash, params);
 	}
 }
 
@@ -258,7 +375,12 @@ struct ElementInteractionContext
 };
 
 
-template <typename Parameters = NoElementParameters, typename State = void, typename Resources = void, uint64_t DefinitionId = 0>
+template <
+	typename Parameters = NoElementParameters,
+	typename State = void,
+	typename Resources = void,
+	uint64_t DefinitionId = 0,
+	bool IsDevInternal = false>
 struct ElementDefinition
 {
     using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
@@ -269,6 +391,7 @@ struct ElementDefinition
     using StatePoolEntry = std::pair<uint64_t, StateType>;
 
     static constexpr uint64_t definitionId = DefinitionId;
+    static constexpr bool isDevInternal = IsDevInternal;
     static constexpr bool hasState = !std::is_void_v<State>;
     static constexpr bool hasResources = !std::is_void_v<Resources>;
     static inline std::optional<ResourcesType> resources{};
@@ -367,18 +490,32 @@ inline bool elementDrawOptionsHas(ElementDrawOptions value, ElementDrawOptions f
 }
 
 
-template <typename Parameters = NoElementParameters, typename State = void, typename Resources = void, uint64_t DefinitionId = 0>
+template <
+	typename Parameters = NoElementParameters,
+	typename State = void,
+	typename Resources = void,
+	uint64_t DefinitionId = 0,
+	bool IsDevInternal = false>
 class ElementBuilder {
 public:
-    using DefinitionType = ElementDefinition<Parameters, State, Resources, DefinitionId>;
+    using DefinitionType = ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>;
     using ParametersType = typename DefinitionType::ParametersType;
     using BuildContext = typename DefinitionType::BuildContext;
     using InteractionContext = typename DefinitionType::InteractionContext;
 
-    ElementBuilder(UiManager& uiManager, const DefinitionType* definition, std::string elementID) :
+    ElementBuilder(UiManager& uiManager, const DefinitionType* definition, std::string elementID
+#if FLOW_UI_DEV_MODE
+		, devCaptureDetail::DevSourceLocation sourceLocation = devCaptureDetail::DevSourceLocation::current()
+#endif
+		) :
         uiManager_(uiManager),
         elementDefinition_(definition),
-        elementID_(std::move(elementID)) {}
+        elementID_(std::move(elementID)),
+		captureAsDevInternal_(DefinitionType::isDevInternal)
+#if FLOW_UI_DEV_MODE
+		, sourceLocation_(sourceLocation)
+#endif
+		{}
 
     ElementBuilder& setParameters(const ParametersType& parameters)
     {
@@ -392,11 +529,27 @@ public:
         return *this;
     }
 
+	template <typename MergeFn>
+	ElementBuilder& mergeParams(MergeFn&& mergeFn)
+	{
+		static_assert(
+			std::is_invocable_v<MergeFn, ParametersType&>,
+			"FlowUi: mergeParams expects a callable that can be invoked with ParametersType&.");
+		std::forward<MergeFn>(mergeFn)(params_);
+		return *this;
+	}
+
 	ElementBuilder& withElementID(std::string_view elementID)
     {
         elementID_.assign(elementID.data(), elementID.size());
         return *this;
     }
+
+	ElementBuilder& setDevInternalCapture(bool isDevInternal = true)
+	{
+		captureAsDevInternal_ = isDevInternal;
+		return *this;
+	}
 
     void construct(ElementDrawOptions options = ElementDrawOptions::Default);
     void draw(ElementDrawOptions options = ElementDrawOptions::Default);
@@ -406,10 +559,14 @@ private:
     const DefinitionType* elementDefinition_;
     std::string elementID_;
     ParametersType params_{};
+	bool captureAsDevInternal_ = false;
+#if FLOW_UI_DEV_MODE
+	devCaptureDetail::DevSourceLocation sourceLocation_{};
+#endif
 };
 
-template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
-void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(ElementDrawOptions options)
+template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
+void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::construct(ElementDrawOptions options)
 {
     if (!elementDefinition_ || !elementDefinition_->constructElment) {
         throw std::runtime_error("FlowUi: elementDefinition is null or missing constructElment callback.");
@@ -418,13 +575,22 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(Eleme
     const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
     const uint64_t elementFlowId = toFlowId(elementID_);
 #if FLOW_UI_DEV_MODE
-    flowUiDevBeginCapturedFlowElement(
+    const std::size_t captureIndex = flowUiDevBeginCapturedFlowElement(
         uiManager_,
         DefinitionType::definitionId,
         devMode::typeHash<DefinitionType>(),
         devMode::typeToken<DefinitionType>(),
         elementID_,
-        elementFlowId);
+        elementFlowId,
+		captureAsDevInternal_);
+	if (captureIndex != devMode::DevRuntime::kInvalidCaptureIndex) {
+		(void)flowUiDevRuntime(uiManager_).setCapturedElementSource(
+			captureIndex,
+			sourceLocation_.file_name(),
+			static_cast<uint32_t>(sourceLocation_.line()),
+			static_cast<uint32_t>(sourceLocation_.column()),
+			sourceLocation_.function_name());
+	}
 
     struct DevCaptureRollback {
         UiManager& uiManager;
@@ -497,8 +663,8 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::construct(Eleme
 #endif
 }
 
-template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId>
-void ElementBuilder<Parameters, State, Resources, DefinitionId>::draw(ElementDrawOptions options)
+template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
+void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::draw(ElementDrawOptions options)
 {
     if (!elementDefinition_ || !elementDefinition_->buildElement) {
         throw std::runtime_error("FlowUi: elementDefinition is null or missing buildElement callback.");
@@ -507,13 +673,22 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId>::draw(ElementDra
     const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
     const uint64_t elementFlowId = toFlowId(elementID_);
 #if FLOW_UI_DEV_MODE
-    flowUiDevBeginCapturedFlowElement(
+    const std::size_t captureIndex = flowUiDevBeginCapturedFlowElement(
         uiManager_,
         DefinitionType::definitionId,
         devMode::typeHash<DefinitionType>(),
         devMode::typeToken<DefinitionType>(),
         elementID_,
-        elementFlowId);
+        elementFlowId,
+		captureAsDevInternal_);
+	if (captureIndex != devMode::DevRuntime::kInvalidCaptureIndex) {
+		(void)flowUiDevRuntime(uiManager_).setCapturedElementSource(
+			captureIndex,
+			sourceLocation_.file_name(),
+			static_cast<uint32_t>(sourceLocation_.line()),
+			static_cast<uint32_t>(sourceLocation_.column()),
+			sourceLocation_.function_name());
+	}
 
     struct DevCaptureCloseOnExit {
         UiManager& uiManager;

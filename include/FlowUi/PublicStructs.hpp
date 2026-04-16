@@ -62,7 +62,7 @@ struct UiConfig {
 	// 0 means "use Clay_MinMemorySize()".
 	size_t clayArenaCapacityBytes = 0;
 
-	std::filesystem::path defaultFontPath = "assets/fonts/FacultyGlyphic-Regular.arfont";
+	std::filesystem::path defaultFontPath = "assets/fonts/Inter.arfont";
 	float defaultFontPx = 18.0f;
 
 	uint32_t fontAtlasSize = 2048;

@@ -8,6 +8,9 @@
 #endif
 #include "managers/ViewPortManager.hpp"
 #include "managers/UiManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/devFlowElements.hpp"
+#endif
 #include "internal/UiTextureRegistry.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
@@ -881,6 +884,9 @@ App makeApplication(const AppConfig& cfg) {
 	App app;
 	app.impl_ = std::make_unique<App::Impl>(cfg);
 	app.impl_->init();
+#if FLOW_UI_DEV_MODE
+	devMode::initializeDevFlowElementResourcesFromApp(app);
+#endif
 	return app;
 }
 

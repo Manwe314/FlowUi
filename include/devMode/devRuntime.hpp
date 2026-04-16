@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -117,6 +118,8 @@ struct ElementTreePlaceholder {
 
 class DevRuntime {
 public:
+	static constexpr std::size_t kInvalidCaptureIndex = std::numeric_limits<std::size_t>::max();
+
 	using DefinitionOverrideMap = std::unordered_map<DefinitionFieldKey, DevValue, DefinitionFieldKeyHash>;
 	using InstanceOverrideMap = std::unordered_map<InstanceFieldKey, DevValue, InstanceFieldKeyHash>;
 	using SnapshotByInstanceMap = std::unordered_map<InstanceScopeKey, StructSnapshot, InstanceScopeKeyHash>;
@@ -133,7 +136,9 @@ public:
 	std::size_t appendCapturedElement(const ElementTreePlaceholder::FlatNode& nodeTemplate);
 	void pushElementTreeDepth();
 	bool popElementTreeDepth();
-	std::size_t beginCapturedElement(const ElementTreePlaceholder::FlatNode& nodeTemplate);
+	std::size_t beginCapturedElement(
+		const ElementTreePlaceholder::FlatNode& nodeTemplate,
+		bool suppressCapture = false);
 	bool endCapturedElement();
 	std::size_t beginCapturedFlowElement(
 		uint64_t definitionId,
@@ -282,6 +287,7 @@ private:
 		std::string_view elementId,
 		uint64_t fieldHash);
 	static std::size_t clearInstanceScopedEntries(InstanceOverrideMap& map, const InstanceScopeKey& scope);
+	bool isSuppressedCaptureActive() const;
 	void markDirty() { dirty_ = true; }
 
 private:
@@ -290,6 +296,7 @@ private:
 	bool elementTreeCaptureActive_ = false;
 	uint32_t elementTreeCaptureDepth_ = 0u;
 	uint64_t nextElementCaptureOrder_ = 0u;
+	std::vector<bool> elementCaptureSuppressedStack_{};
 	DefinitionOverrideMap definitionParamOverrides_{};
 	InstanceOverrideMap instanceParamOverrides_{};
 	InstanceOverrideMap stateOverrides_{};

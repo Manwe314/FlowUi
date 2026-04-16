@@ -357,7 +357,8 @@ namespace FlowUi
 		uint64_t definitionTypeHash,
 		std::string_view definitionTypeToken,
 		std::string_view elementID,
-		uint64_t flowId) {
+		uint64_t flowId,
+		bool isInternalToDevMode) {
 		devMode::DevRuntime& runtime = uiManager.devRuntime();
 		const std::size_t captureIndex = runtime.beginCapturedFlowElement(
 			definitionId,
@@ -365,7 +366,12 @@ namespace FlowUi
 			flowId,
 			elementID,
 			{},
-			definitionTypeToken);
+			definitionTypeToken,
+			isInternalToDevMode);
+
+		if (captureIndex == devMode::DevRuntime::kInvalidCaptureIndex) {
+			return captureIndex;
+		}
 
 		const devMode::DevRegistry& registry = devMode::DevRegistry::instance();
 		const devMode::ElementDescriptor* descriptor = registry.findElementByDefinitionId(definitionId);

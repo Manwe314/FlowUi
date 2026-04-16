@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../../
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: PlutoSVG
+Description: Tiny SVG rendering library in C
+Version: 0.0.7
+
+Requires: plutovg
+Cflags: -I${includedir}/plutosvg -DPLUTOSVG_BUILD_STATIC
+Libs: -L${libdir} -lplutosvg
+Libs.private: -lm
