@@ -13,7 +13,258 @@
 
 namespace FlowUi::devMode {
 
-using DevValue = std::variant<std::monostate, bool, int64_t, double, std::string>;
+struct DevEnum1Value {
+	uint8_t numeric = 0u;
+
+	bool operator==(const DevEnum1Value& other) const {
+		return numeric == other.numeric;
+	}
+};
+
+struct DevEnum2Value {
+	DevEnum1Value first{};
+	DevEnum1Value second{};
+
+	bool operator==(const DevEnum2Value& other) const {
+		return first == other.first && second == other.second;
+	}
+};
+
+struct DevFloat2Value {
+	double first = 0.0;
+	double second = 0.0;
+
+	bool operator==(const DevFloat2Value& other) const {
+		return first == other.first && second == other.second;
+	}
+};
+
+struct DevFloat4Value {
+	double first = 0.0;
+	double second = 0.0;
+	double third = 0.0;
+	double fourth = 0.0;
+
+	bool operator==(const DevFloat4Value& other) const {
+		return
+			first == other.first &&
+			second == other.second &&
+			third == other.third &&
+			fourth == other.fourth;
+	}
+};
+
+struct DevEdgeU16Value {
+	uint16_t first = 0u;
+	uint16_t second = 0u;
+	uint16_t third = 0u;
+	uint16_t fourth = 0u;
+	uint16_t fifth = 0u;
+
+	bool operator==(const DevEdgeU16Value& other) const {
+		return
+			first == other.first &&
+			second == other.second &&
+			third == other.third &&
+			fourth == other.fourth &&
+			fifth == other.fifth;
+	}
+};
+
+struct DevTaggedUnionValue {
+	DevEnum1Value tag{};
+	DevFloat2Value minMax{};
+	double percent = 0.0;
+
+	bool operator==(const DevTaggedUnionValue& other) const {
+		return tag == other.tag && minMax == other.minMax && percent == other.percent;
+	}
+};
+
+struct DevPointerValue {
+	uint64_t bits = 0u;
+
+	bool operator==(const DevPointerValue& other) const {
+		return bits == other.bits;
+	}
+};
+
+struct DevElementIdValue {
+	uint32_t id = 0u;
+	uint32_t offset = 0u;
+	uint32_t baseId = 0u;
+	bool isStaticallyAllocated = false;
+	std::string stringId{};
+
+	bool operator==(const DevElementIdValue& other) const {
+		return
+			id == other.id &&
+			offset == other.offset &&
+			baseId == other.baseId &&
+			isStaticallyAllocated == other.isStaticallyAllocated &&
+			stringId == other.stringId;
+	}
+};
+
+struct DevSizingValue {
+	DevTaggedUnionValue width{};
+	DevTaggedUnionValue height{};
+
+	bool operator==(const DevSizingValue& other) const {
+		return width == other.width && height == other.height;
+	}
+};
+
+struct DevLayoutConfigValue {
+	DevSizingValue sizing{};
+	DevEdgeU16Value padding{};
+	uint16_t childGap = 0u;
+	DevEnum2Value childAlignment{};
+	DevEnum1Value layoutDirection{};
+
+	bool operator==(const DevLayoutConfigValue& other) const {
+		return
+			sizing == other.sizing &&
+			padding == other.padding &&
+			childGap == other.childGap &&
+			childAlignment == other.childAlignment &&
+			layoutDirection == other.layoutDirection;
+	}
+};
+
+struct DevTextElementConfigValue {
+	DevPointerValue userData{};
+	DevFloat4Value textColor{};
+	uint16_t fontId = 0u;
+	uint16_t fontSize = 0u;
+	uint16_t letterSpacing = 0u;
+	uint16_t lineHeight = 0u;
+	DevEnum1Value wrapMode{};
+	DevEnum1Value textAlignment{};
+
+	bool operator==(const DevTextElementConfigValue& other) const {
+		return
+			userData == other.userData &&
+			textColor == other.textColor &&
+			fontId == other.fontId &&
+			fontSize == other.fontSize &&
+			letterSpacing == other.letterSpacing &&
+			lineHeight == other.lineHeight &&
+			wrapMode == other.wrapMode &&
+			textAlignment == other.textAlignment;
+	}
+};
+
+struct DevFloatingElementConfigValue {
+	DevFloat2Value offset{};
+	DevFloat2Value expand{};
+	uint32_t parentId = 0u;
+	int16_t zIndex = 0;
+	DevEnum2Value attachPoints{};
+	DevEnum1Value pointerCaptureMode{};
+	DevEnum1Value attachTo{};
+	DevEnum1Value clipTo{};
+
+	bool operator==(const DevFloatingElementConfigValue& other) const {
+		return
+			offset == other.offset &&
+			expand == other.expand &&
+			parentId == other.parentId &&
+			zIndex == other.zIndex &&
+			attachPoints == other.attachPoints &&
+			pointerCaptureMode == other.pointerCaptureMode &&
+			attachTo == other.attachTo &&
+			clipTo == other.clipTo;
+	}
+};
+
+struct DevClipElementConfigValue {
+	bool horizontal = false;
+	bool vertical = false;
+	DevFloat2Value childOffset{};
+
+	bool operator==(const DevClipElementConfigValue& other) const {
+		return
+			horizontal == other.horizontal &&
+			vertical == other.vertical &&
+			childOffset == other.childOffset;
+	}
+};
+
+struct DevBorderElementConfigValue {
+	DevFloat4Value color{};
+	DevEdgeU16Value width{};
+
+	bool operator==(const DevBorderElementConfigValue& other) const {
+		return color == other.color && width == other.width;
+	}
+};
+
+struct DevElementDeclarationValue {
+	DevElementIdValue id{};
+	DevLayoutConfigValue layout{};
+	DevFloat4Value backgroundColor{};
+	DevFloat4Value cornerRadius{};
+	double aspectRatio = 0.0;
+	DevPointerValue imageData{};
+	DevFloatingElementConfigValue floating{};
+	DevPointerValue customData{};
+	DevClipElementConfigValue clip{};
+	DevBorderElementConfigValue border{};
+	DevPointerValue userData{};
+
+	bool operator==(const DevElementDeclarationValue& other) const {
+		return
+			id == other.id &&
+			layout == other.layout &&
+			backgroundColor == other.backgroundColor &&
+			cornerRadius == other.cornerRadius &&
+			aspectRatio == other.aspectRatio &&
+			imageData == other.imageData &&
+			floating == other.floating &&
+			customData == other.customData &&
+			clip == other.clip &&
+			border == other.border &&
+			userData == other.userData;
+	}
+};
+
+struct DevCompositeStructValue {
+	uint64_t typeHash = 0u;
+	DevSizingValue sizing{};
+	DevLayoutConfigValue layoutConfig{};
+	DevTextElementConfigValue textElementConfig{};
+	DevFloatingElementConfigValue floatingElementConfig{};
+	DevClipElementConfigValue clipElementConfig{};
+	DevBorderElementConfigValue borderElementConfig{};
+	DevElementDeclarationValue elementDeclaration{};
+
+	bool operator==(const DevCompositeStructValue& other) const {
+		return
+			typeHash == other.typeHash &&
+			sizing == other.sizing &&
+			layoutConfig == other.layoutConfig &&
+			textElementConfig == other.textElementConfig &&
+			floatingElementConfig == other.floatingElementConfig &&
+			clipElementConfig == other.clipElementConfig &&
+			borderElementConfig == other.borderElementConfig &&
+			elementDeclaration == other.elementDeclaration;
+	}
+};
+
+using DevValue = std::variant<
+	std::monostate,
+	bool,
+	int64_t,
+	double,
+	std::string,
+	DevEnum1Value,
+	DevEnum2Value,
+	DevFloat2Value,
+	DevFloat4Value,
+	DevEdgeU16Value,
+	DevTaggedUnionValue,
+	DevCompositeStructValue>;
 
 struct DefinitionFieldKey {
 	uint64_t definitionId = 0u;

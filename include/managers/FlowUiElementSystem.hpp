@@ -27,6 +27,14 @@
 #include "FlowUi/App.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/devRuntime.hpp"
+#include "devMode/devEnum1.hpp"
+#include "devMode/devEnum2.hpp"
+#include "devMode/devFloat1.hpp"
+#include "devMode/devFloat2.hpp"
+#include "devMode/devFloat4.hpp"
+#include "devMode/devEdgeU16.hpp"
+#include "devMode/devTaggedUnion.hpp"
+#include "devMode/devCompositeStruct.hpp"
 #include "devMode/registry.hpp"
 #endif
 
@@ -132,7 +140,98 @@ bool tryAssignIntegralFromInt64(int64_t value, T& out) {
 
 template <typename T>
 bool tryAssignFromDevValue(const devMode::DevValue& value, T& out) {
-	if constexpr (std::is_enum_v<T>) {
+	if constexpr (std::is_same_v<T, Clay_ChildAlignment>) {
+		if (const auto* enumValue = std::get_if<devMode::DevEnum2Value>(&value)) {
+			return devMode::tryApplyDevEnum2Value(*enumValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_FloatingAttachPoints>) {
+		if (const auto* enumValue = std::get_if<devMode::DevEnum2Value>(&value)) {
+			return devMode::tryApplyDevEnum2Value(*enumValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_Vector2>) {
+		if (const auto* floatValue = std::get_if<devMode::DevFloat2Value>(&value)) {
+			return devMode::tryApplyDevFloat2Value(*floatValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_Dimensions>) {
+		if (const auto* floatValue = std::get_if<devMode::DevFloat2Value>(&value)) {
+			return devMode::tryApplyDevFloat2Value(*floatValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_SizingMinMax>) {
+		if (const auto* floatValue = std::get_if<devMode::DevFloat2Value>(&value)) {
+			return devMode::tryApplyDevFloat2Value(*floatValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_Color>) {
+		if (const auto* floatValue = std::get_if<devMode::DevFloat4Value>(&value)) {
+			return devMode::tryApplyDevFloat4Value(*floatValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_CornerRadius>) {
+		if (const auto* floatValue = std::get_if<devMode::DevFloat4Value>(&value)) {
+			return devMode::tryApplyDevFloat4Value(*floatValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_AspectRatioElementConfig>) {
+		double numeric = 0.0;
+		if (!tryAssignFromDevValue(value, numeric)) {
+			return false;
+		}
+		return devMode::tryApplyDevFloat1Value(numeric, out);
+	} else if constexpr (std::is_same_v<T, Clay_SizingAxis>) {
+		if (const auto* taggedUnionValue = std::get_if<devMode::DevTaggedUnionValue>(&value)) {
+			return devMode::tryApplyDevTaggedUnionValue(*taggedUnionValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_Sizing>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_LayoutConfig>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_TextElementConfig>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_FloatingElementConfig>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_ClipElementConfig>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_BorderElementConfig>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_ElementDeclaration>) {
+		if (const auto* compositeValue = std::get_if<devMode::DevCompositeStructValue>(&value)) {
+			return devMode::tryApplyDevCompositeStructValue(*compositeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_Padding>) {
+		if (const auto* edgeValue = std::get_if<devMode::DevEdgeU16Value>(&value)) {
+			return devMode::tryApplyDevEdgeU16Value(*edgeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_same_v<T, Clay_BorderWidth>) {
+		if (const auto* edgeValue = std::get_if<devMode::DevEdgeU16Value>(&value)) {
+			return devMode::tryApplyDevEdgeU16Value(*edgeValue, out);
+		}
+		return false;
+	} else if constexpr (std::is_enum_v<T>) {
 		using Underlying = std::underlying_type_t<T>;
 		Underlying underlying{};
 		if (!tryAssignFromDevValue(value, underlying)) {
@@ -158,6 +257,9 @@ bool tryAssignFromDevValue(const devMode::DevValue& value, T& out) {
 		}
 		return false;
 	} else if constexpr (std::is_integral_v<T>) {
+		if (const auto* enumValue = std::get_if<devMode::DevEnum1Value>(&value)) {
+			return tryAssignIntegralFromInt64(static_cast<int64_t>(enumValue->numeric), out);
+		}
 		if (const auto* intValue = std::get_if<int64_t>(&value)) {
 			return tryAssignIntegralFromInt64(*intValue, out);
 		}
@@ -251,6 +353,199 @@ bool tryCaptureParameterFieldValue(
 	} else if constexpr (std::is_same_v<FieldT, std::string>) {
 		outValue = source;
 		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_ChildAlignment>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_ChildAlignment>()) {
+			return false;
+		}
+		devMode::DevEnum2Value enumValue{};
+		if (!devMode::tryCaptureDevEnum2Value(source, enumValue)) {
+			return false;
+		}
+		outValue = enumValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_FloatingAttachPoints>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_FloatingAttachPoints>()) {
+			return false;
+		}
+		devMode::DevEnum2Value enumValue{};
+		if (!devMode::tryCaptureDevEnum2Value(source, enumValue)) {
+			return false;
+		}
+		outValue = enumValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_Vector2>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_Vector2>()) {
+			return false;
+		}
+		devMode::DevFloat2Value floatValue{};
+		if (!devMode::tryCaptureDevFloat2Value(source, floatValue)) {
+			return false;
+		}
+		outValue = floatValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_Dimensions>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_Dimensions>()) {
+			return false;
+		}
+		devMode::DevFloat2Value floatValue{};
+		if (!devMode::tryCaptureDevFloat2Value(source, floatValue)) {
+			return false;
+		}
+		outValue = floatValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_SizingMinMax>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_SizingMinMax>()) {
+			return false;
+		}
+		devMode::DevFloat2Value floatValue{};
+		if (!devMode::tryCaptureDevFloat2Value(source, floatValue)) {
+			return false;
+		}
+		outValue = floatValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_Color>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_Color>()) {
+			return false;
+		}
+		devMode::DevFloat4Value floatValue{};
+		if (!devMode::tryCaptureDevFloat4Value(source, floatValue)) {
+			return false;
+		}
+		outValue = floatValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_CornerRadius>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_CornerRadius>()) {
+			return false;
+		}
+		devMode::DevFloat4Value floatValue{};
+		if (!devMode::tryCaptureDevFloat4Value(source, floatValue)) {
+			return false;
+		}
+		outValue = floatValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_AspectRatioElementConfig>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_AspectRatioElementConfig>()) {
+			return false;
+		}
+		double floatValue = 0.0;
+		if (!devMode::tryCaptureDevFloat1Value(source, floatValue)) {
+			return false;
+		}
+		outValue = floatValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_SizingAxis>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_SizingAxis>()) {
+			return false;
+		}
+		devMode::DevTaggedUnionValue taggedUnionValue{};
+		if (!devMode::tryCaptureDevTaggedUnionValue(source, taggedUnionValue)) {
+			return false;
+		}
+		outValue = taggedUnionValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_Sizing>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_Sizing>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_LayoutConfig>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_LayoutConfig>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_TextElementConfig>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_TextElementConfig>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_FloatingElementConfig>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_FloatingElementConfig>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_ClipElementConfig>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_ClipElementConfig>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_BorderElementConfig>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_BorderElementConfig>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_ElementDeclaration>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_ElementDeclaration>()) {
+			return false;
+		}
+		devMode::DevCompositeStructValue compositeValue{};
+		if (!devMode::tryCaptureDevCompositeStructValue(source, compositeValue)) {
+			return false;
+		}
+		outValue = compositeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_Padding>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_Padding>()) {
+			return false;
+		}
+		devMode::DevEdgeU16Value edgeValue{};
+		if (!devMode::tryCaptureDevEdgeU16Value(source, edgeValue)) {
+			return false;
+		}
+		outValue = edgeValue;
+		return true;
+	} else if constexpr (std::is_same_v<FieldT, Clay_BorderWidth>) {
+		if (field.fieldTypeHash != devMode::typeHash<Clay_BorderWidth>()) {
+			return false;
+		}
+		devMode::DevEdgeU16Value edgeValue{};
+		if (!devMode::tryCaptureDevEdgeU16Value(source, edgeValue)) {
+			return false;
+		}
+		outValue = edgeValue;
+		return true;
+	} else if constexpr (std::is_enum_v<FieldT>) {
+		if (!devMode::isDevEnum1TypeHash(field.fieldTypeHash)) {
+			return false;
+		}
+		using Underlying = std::underlying_type_t<FieldT>;
+		const Underlying rawValue = static_cast<Underlying>(source);
+		const int64_t rawValueInt64 = static_cast<int64_t>(rawValue);
+		uint8_t normalizedNumeric = 0u;
+		if (!devMode::tryNormalizeDevEnum1Numeric(rawValueInt64, normalizedNumeric)) {
+			return false;
+		}
+		outValue = devMode::DevEnum1Value{.numeric = normalizedNumeric};
+		return true;
 	} else {
 		return false;
 	}
@@ -279,6 +574,33 @@ void captureParameterSnapshotField(
 	captured = captured || tryCaptureParameterFieldValue<ParamsT, float>(params, field, capturedValue);
 	captured = captured || tryCaptureParameterFieldValue<ParamsT, double>(params, field, capturedValue);
 	captured = captured || tryCaptureParameterFieldValue<ParamsT, std::string>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutDirection>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutAlignmentX>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutAlignmentY>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_TextElementConfigWrapMode>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_TextAlignment>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingAttachPointType>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_PointerCaptureMode>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingAttachToElement>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingClipToElement>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_ChildAlignment>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingAttachPoints>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Vector2>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Dimensions>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_SizingMinMax>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Color>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_CornerRadius>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_AspectRatioElementConfig>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_SizingAxis>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Sizing>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutConfig>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_TextElementConfig>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingElementConfig>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_ClipElementConfig>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_BorderElementConfig>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_ElementDeclaration>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Padding>(params, field, capturedValue);
+	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_BorderWidth>(params, field, capturedValue);
 	if (!captured) {
 		return;
 	}
@@ -315,6 +637,33 @@ void applyParameterOverrides(
 			applied = applied || tryApplyOverrideField<ParamsT, float>(params, field, value);
 			applied = applied || tryApplyOverrideField<ParamsT, double>(params, field, value);
 			applied = applied || tryApplyOverrideField<ParamsT, std::string>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutDirection>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutAlignmentX>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutAlignmentY>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_TextElementConfigWrapMode>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_TextAlignment>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingAttachPointType>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_PointerCaptureMode>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingAttachToElement>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingClipToElement>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_ChildAlignment>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingAttachPoints>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_Vector2>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_Dimensions>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_SizingMinMax>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_Color>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_CornerRadius>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_AspectRatioElementConfig>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_SizingAxis>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_Sizing>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutConfig>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_TextElementConfig>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingElementConfig>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_ClipElementConfig>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_BorderElementConfig>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_ElementDeclaration>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_Padding>(params, field, value);
+			applied = applied || tryApplyOverrideField<ParamsT, Clay_BorderWidth>(params, field, value);
 			(void)applied;
 		};
 

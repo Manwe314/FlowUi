@@ -3,12 +3,12 @@
 3. Add HarfBuzz support for more scripts
 4. Add ComputeQFamily Optional grab
 5. Svg Manager Might have issues with Frames In Flight at LRU pollicy
-6. Add more types of element Properties - ??(std containers?)
-7. streamline element registry - ??
+6. Animation Manager for v2 
+7. Networking assistance ?
 8. Optimise GPU side
-9. Bug with oy whiteSpace Charaters in input fields
+9. gradent support at Clay or Flow level
 10. upgrade texture ref managemetn with automatic frame persistance saving?
-11. 
+11. multi window management 
 12. Update FlowUi Arena naming and handling
 13. Revisit how TextureRef's get stored for frames. 
 14. come back to enforcing PIMPL
@@ -20,7 +20,7 @@ For SVG Manager:
 	No debug/stats API yet (cache hit rate, page usage, evictions).
 
 
-the paradigm re design:
+the paradigm re design: COMPLETED
 	- a lot of static work is done every frame. work beyond Layout. it should be simpler to aquire resources once and reuse across frames
 	- elements might want to manage states. some long lived varable management system would be nice. beyond user maintained struct.
 	- closed elements that relay on .draw() if utilizing other elements as children are forced to forward setable defaults causing init function to call exploding amounts of setters and getters.

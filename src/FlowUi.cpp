@@ -9,7 +9,7 @@
 #include "managers/ViewPortManager.hpp"
 #include "managers/UiManager.hpp"
 #if FLOW_UI_DEV_MODE
-#include "devMode/devFlowElements.hpp"
+#include "devMode/debugView.hpp"
 #endif
 #include "internal/UiTextureRegistry.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
