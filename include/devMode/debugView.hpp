@@ -3,6 +3,9 @@
 #include <cstdint>
 
 #include "FlowUi/BuildConfig.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/devFlowElements.hpp"
+#endif
 
 namespace FlowUi {
 class UiManager;

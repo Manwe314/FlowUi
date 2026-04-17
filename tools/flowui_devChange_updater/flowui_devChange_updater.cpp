@@ -552,6 +552,1628 @@ bool parseChange(const JsonValue& value, ParsedChange& outChange, std::string& o
 		outChange.valueLexeme = rawValue->text;
 		return true;
 	}
+	if (outChange.jsonKind == "enum1") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "enum1 change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* numericValue = findObjectField(*rawValue, "numeric");
+		const JsonValue* nameValue = findObjectField(*rawValue, "name");
+		if (!numericValue || !nameValue) {
+			outError = "enum1 change is missing numeric/name.";
+			return false;
+		}
+
+		uint64_t numeric = 0u;
+		if (!jsonUInt64(*numericValue, numeric) || numeric > static_cast<uint64_t>(std::numeric_limits<uint8_t>::max())) {
+			outError = "enum1 change has invalid numeric value.";
+			return false;
+		}
+
+		if (nameValue->kind != JsonValue::Kind::String) {
+			outError = "enum1 change requires symbolic enum name for patching.";
+			return false;
+		}
+
+		std::string enumName{};
+		if (!jsonString(*nameValue, enumName) || enumName.empty()) {
+			outError = "enum1 change has invalid enum name.";
+			return false;
+		}
+
+		outChange.cppValue = enumName;
+		outChange.valueLexeme = enumName + " (" + std::to_string(numeric) + ")";
+		return true;
+	}
+	if (outChange.jsonKind == "enum2") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "enum2 change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "enum2 change requires string type.";
+			return false;
+		}
+
+		auto parseEnum2Component = [&](
+			const JsonValue* objectValue,
+			const char* objectName,
+			std::string& outName,
+			uint8_t& outNumeric) -> bool {
+			if (!objectValue || objectValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("enum2 change has missing/invalid component: ") + objectName;
+				return false;
+			}
+
+			const JsonValue* numericValue = findObjectField(*objectValue, "numeric");
+			const JsonValue* nameValue = findObjectField(*objectValue, "name");
+			if (!numericValue || !nameValue) {
+				outError = std::string("enum2 component is missing numeric/name: ") + objectName;
+				return false;
+			}
+
+			uint64_t numeric = 0u;
+			if (!jsonUInt64(*numericValue, numeric) || numeric > static_cast<uint64_t>(std::numeric_limits<uint8_t>::max())) {
+				outError = std::string("enum2 component has invalid numeric value: ") + objectName;
+				return false;
+			}
+
+			if (nameValue->kind != JsonValue::Kind::String) {
+				outError = std::string("enum2 component requires symbolic name: ") + objectName;
+				return false;
+			}
+
+			std::string parsedName{};
+			if (!jsonString(*nameValue, parsedName) || parsedName.empty()) {
+				outError = std::string("enum2 component has invalid enum name: ") + objectName;
+				return false;
+			}
+
+			outName = std::move(parsedName);
+			outNumeric = static_cast<uint8_t>(numeric);
+			return true;
+		};
+
+		std::string enum2Type{};
+		(void)jsonString(*typeValue, enum2Type);
+		if (enum2Type == "Clay_ChildAlignment") {
+			std::string xName{};
+			std::string yName{};
+			uint8_t xNumeric = 0u;
+			uint8_t yNumeric = 0u;
+			if (
+				!parseEnum2Component(findObjectField(*rawValue, "x"), "x", xName, xNumeric) ||
+				!parseEnum2Component(findObjectField(*rawValue, "y"), "y", yName, yNumeric))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_ChildAlignment{.x = " + xName + ", .y = " + yName + "}";
+			outChange.valueLexeme =
+				"Clay_ChildAlignment{x=" + xName + " (" + std::to_string(xNumeric) +
+				"), y=" + yName + " (" + std::to_string(yNumeric) + ")}";
+			return true;
+		}
+		if (enum2Type == "Clay_FloatingAttachPoints") {
+			std::string elementName{};
+			std::string parentName{};
+			uint8_t elementNumeric = 0u;
+			uint8_t parentNumeric = 0u;
+			if (
+				!parseEnum2Component(
+					findObjectField(*rawValue, "element"),
+					"element",
+					elementName,
+					elementNumeric) ||
+				!parseEnum2Component(
+					findObjectField(*rawValue, "parent"),
+					"parent",
+					parentName,
+					parentNumeric))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_FloatingAttachPoints{.element = " + elementName + ", .parent = " + parentName + "}";
+			outChange.valueLexeme =
+				"Clay_FloatingAttachPoints{element=" + elementName + " (" + std::to_string(elementNumeric) +
+				"), parent=" + parentName + " (" + std::to_string(parentNumeric) + ")}";
+			return true;
+		}
+
+		outError = "enum2 change has unsupported type: " + enum2Type;
+		return false;
+	}
+	if (outChange.jsonKind == "float2") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "float2 change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "float2 change requires string type.";
+			return false;
+		}
+
+		auto parseFloat2Component = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			std::string& outLiteral,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("float2 change has missing/invalid component: ") + componentName;
+				return false;
+			}
+
+			double numeric = 0.0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stod(numericValue->text, &consumed);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("float2 component has invalid numeric lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("float2 component is not parseable as number: ") + componentName;
+				return false;
+			}
+
+			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
+				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
+				outError = std::string("float2 component is out of float range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = numericValue->text;
+			outLiteral = numericValue->text;
+			if (outLiteral.find_first_of(".eE") == std::string::npos) {
+				outLiteral += ".0";
+			}
+			outLiteral += "f";
+			return true;
+		};
+
+		std::string float2Type{};
+		(void)jsonString(*typeValue, float2Type);
+		if (float2Type == "Clay_Vector2") {
+			std::string xLiteral{};
+			std::string yLiteral{};
+			std::string xLexeme{};
+			std::string yLexeme{};
+			if (
+				!parseFloat2Component(findObjectField(*rawValue, "x"), "x", xLiteral, xLexeme) ||
+				!parseFloat2Component(findObjectField(*rawValue, "y"), "y", yLiteral, yLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue = "Clay_Vector2{.x = " + xLiteral + ", .y = " + yLiteral + "}";
+			outChange.valueLexeme = "Clay_Vector2{x=" + xLexeme + ", y=" + yLexeme + "}";
+			return true;
+		}
+		if (float2Type == "Clay_Dimensions") {
+			std::string widthLiteral{};
+			std::string heightLiteral{};
+			std::string widthLexeme{};
+			std::string heightLexeme{};
+			if (
+				!parseFloat2Component(findObjectField(*rawValue, "width"), "width", widthLiteral, widthLexeme) ||
+				!parseFloat2Component(findObjectField(*rawValue, "height"), "height", heightLiteral, heightLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_Dimensions{.width = " + widthLiteral + ", .height = " + heightLiteral + "}";
+			outChange.valueLexeme =
+				"Clay_Dimensions{width=" + widthLexeme + ", height=" + heightLexeme + "}";
+			return true;
+		}
+		if (float2Type == "Clay_SizingMinMax") {
+			std::string minLiteral{};
+			std::string maxLiteral{};
+			std::string minLexeme{};
+			std::string maxLexeme{};
+			if (
+				!parseFloat2Component(findObjectField(*rawValue, "min"), "min", minLiteral, minLexeme) ||
+				!parseFloat2Component(findObjectField(*rawValue, "max"), "max", maxLiteral, maxLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue = "Clay_SizingMinMax{.min = " + minLiteral + ", .max = " + maxLiteral + "}";
+			outChange.valueLexeme = "Clay_SizingMinMax{min=" + minLexeme + ", max=" + maxLexeme + "}";
+			return true;
+		}
+
+		outError = "float2 change has unsupported type: " + float2Type;
+		return false;
+	}
+	if (outChange.jsonKind == "float4") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "float4 change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "float4 change requires string type.";
+			return false;
+		}
+
+		auto parseFloat4Component = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			std::string& outLiteral,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("float4 change has missing/invalid component: ") + componentName;
+				return false;
+			}
+
+			double numeric = 0.0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stod(numericValue->text, &consumed);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("float4 component has invalid numeric lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("float4 component is not parseable as number: ") + componentName;
+				return false;
+			}
+
+			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
+				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
+				outError = std::string("float4 component is out of float range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = numericValue->text;
+			outLiteral = numericValue->text;
+			if (outLiteral.find_first_of(".eE") == std::string::npos) {
+				outLiteral += ".0";
+			}
+			outLiteral += "f";
+			return true;
+		};
+
+		std::string float4Type{};
+		(void)jsonString(*typeValue, float4Type);
+		if (float4Type == "Clay_Color") {
+			std::string rLiteral{};
+			std::string gLiteral{};
+			std::string bLiteral{};
+			std::string aLiteral{};
+			std::string rLexeme{};
+			std::string gLexeme{};
+			std::string bLexeme{};
+			std::string aLexeme{};
+			if (
+				!parseFloat4Component(findObjectField(*rawValue, "r"), "r", rLiteral, rLexeme) ||
+				!parseFloat4Component(findObjectField(*rawValue, "g"), "g", gLiteral, gLexeme) ||
+				!parseFloat4Component(findObjectField(*rawValue, "b"), "b", bLiteral, bLexeme) ||
+				!parseFloat4Component(findObjectField(*rawValue, "a"), "a", aLiteral, aLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_Color{.r = " + rLiteral + ", .g = " + gLiteral + ", .b = " + bLiteral + ", .a = " + aLiteral + "}";
+			outChange.valueLexeme =
+				"Clay_Color{r=" + rLexeme + ", g=" + gLexeme + ", b=" + bLexeme + ", a=" + aLexeme + "}";
+			return true;
+		}
+		if (float4Type == "Clay_CornerRadius") {
+			std::string topLeftLiteral{};
+			std::string topRightLiteral{};
+			std::string bottomLeftLiteral{};
+			std::string bottomRightLiteral{};
+			std::string topLeftLexeme{};
+			std::string topRightLexeme{};
+			std::string bottomLeftLexeme{};
+			std::string bottomRightLexeme{};
+			if (
+				!parseFloat4Component(findObjectField(*rawValue, "topLeft"), "topLeft", topLeftLiteral, topLeftLexeme) ||
+				!parseFloat4Component(findObjectField(*rawValue, "topRight"), "topRight", topRightLiteral, topRightLexeme) ||
+				!parseFloat4Component(findObjectField(*rawValue, "bottomLeft"), "bottomLeft", bottomLeftLiteral, bottomLeftLexeme) ||
+				!parseFloat4Component(findObjectField(*rawValue, "bottomRight"), "bottomRight", bottomRightLiteral, bottomRightLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_CornerRadius{.topLeft = " + topLeftLiteral + ", .topRight = " + topRightLiteral +
+				", .bottomLeft = " + bottomLeftLiteral + ", .bottomRight = " + bottomRightLiteral + "}";
+			outChange.valueLexeme =
+				"Clay_CornerRadius{topLeft=" + topLeftLexeme + ", topRight=" + topRightLexeme +
+				", bottomLeft=" + bottomLeftLexeme + ", bottomRight=" + bottomRightLexeme + "}";
+			return true;
+		}
+
+		outError = "float4 change has unsupported type: " + float4Type;
+		return false;
+	}
+	if (outChange.jsonKind == "tagged_union") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "tagged_union change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "tagged_union change requires string type.";
+			return false;
+		}
+
+		auto parseTaggedUnionFloat = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			std::string& outLiteral,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("tagged_union change has missing/invalid component: ") + componentName;
+				return false;
+			}
+
+			double numeric = 0.0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stod(numericValue->text, &consumed);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("tagged_union component has invalid numeric lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("tagged_union component is not parseable as number: ") + componentName;
+				return false;
+			}
+
+			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
+				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
+				outError = std::string("tagged_union component is out of float range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = numericValue->text;
+			outLiteral = numericValue->text;
+			if (outLiteral.find_first_of(".eE") == std::string::npos) {
+				outLiteral += ".0";
+			}
+			outLiteral += "f";
+			return true;
+		};
+
+		auto parseTag = [&](
+			const JsonValue* tagValue,
+			std::string& outTagName,
+			uint8_t& outTagNumeric) -> bool {
+			if (!tagValue || tagValue->kind != JsonValue::Kind::Object) {
+				outError = "tagged_union change has missing/invalid tag.";
+				return false;
+			}
+
+			const JsonValue* numericValue = findObjectField(*tagValue, "numeric");
+			const JsonValue* nameValue = findObjectField(*tagValue, "name");
+			if (!numericValue || !nameValue) {
+				outError = "tagged_union tag is missing numeric/name.";
+				return false;
+			}
+
+			uint64_t numeric = 0u;
+			if (!jsonUInt64(*numericValue, numeric) || numeric > static_cast<uint64_t>(std::numeric_limits<uint8_t>::max())) {
+				outError = "tagged_union tag has invalid numeric value.";
+				return false;
+			}
+
+			if (nameValue->kind != JsonValue::Kind::String) {
+				outError = "tagged_union tag requires symbolic name for patching.";
+				return false;
+			}
+
+			std::string parsedName{};
+			if (!jsonString(*nameValue, parsedName) || parsedName.empty()) {
+				outError = "tagged_union tag has invalid enum name.";
+				return false;
+			}
+
+			outTagName = std::move(parsedName);
+			outTagNumeric = static_cast<uint8_t>(numeric);
+			return true;
+		};
+
+		std::string taggedType{};
+		(void)jsonString(*typeValue, taggedType);
+		if (taggedType == "Clay_SizingAxis") {
+			std::string tagName{};
+			uint8_t tagNumeric = 0u;
+			if (!parseTag(findObjectField(*rawValue, "tag"), tagName, tagNumeric)) {
+				return false;
+			}
+
+			if (tagName == "CLAY__SIZING_TYPE_PERCENT") {
+				std::string percentLiteral{};
+				std::string percentLexeme{};
+				if (!parseTaggedUnionFloat(
+					findObjectField(*rawValue, "percent"),
+					"percent",
+					percentLiteral,
+					percentLexeme))
+				{
+					return false;
+				}
+
+				outChange.cppValue =
+					"Clay_SizingAxis{.size = {.percent = " + percentLiteral + "}, .type = " + tagName + "}";
+				outChange.valueLexeme =
+					"Clay_SizingAxis{type=" + tagName + " (" + std::to_string(tagNumeric) +
+					"), percent=" + percentLexeme + "}";
+				return true;
+			}
+
+			if (
+				tagName == "CLAY__SIZING_TYPE_FIT" ||
+				tagName == "CLAY__SIZING_TYPE_GROW" ||
+				tagName == "CLAY__SIZING_TYPE_FIXED")
+			{
+				const JsonValue* minMaxValue = findObjectField(*rawValue, "minMax");
+				if (!minMaxValue || minMaxValue->kind != JsonValue::Kind::Object) {
+					outError = "tagged_union sizing axis requires minMax object for non-percent tags.";
+					return false;
+				}
+
+				std::string minLiteral{};
+				std::string maxLiteral{};
+				std::string minLexeme{};
+				std::string maxLexeme{};
+				if (
+					!parseTaggedUnionFloat(
+						findObjectField(*minMaxValue, "min"),
+						"min",
+						minLiteral,
+						minLexeme) ||
+					!parseTaggedUnionFloat(
+						findObjectField(*minMaxValue, "max"),
+						"max",
+						maxLiteral,
+						maxLexeme))
+				{
+					return false;
+				}
+
+				outChange.cppValue =
+					"Clay_SizingAxis{.size = {.minMax = Clay_SizingMinMax{.min = " + minLiteral +
+					", .max = " + maxLiteral + "}}, .type = " + tagName + "}";
+				outChange.valueLexeme =
+					"Clay_SizingAxis{type=" + tagName + " (" + std::to_string(tagNumeric) +
+					"), minMax={min=" + minLexeme + ", max=" + maxLexeme + "}}";
+				return true;
+			}
+
+			outError = "tagged_union sizing axis has unsupported tag name: " + tagName;
+			return false;
+		}
+
+		outError = "tagged_union change has unsupported type: " + taggedType;
+		return false;
+	}
+	if (outChange.jsonKind == "composite_struct") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "composite_struct change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "composite_struct change requires string type.";
+			return false;
+		}
+
+		auto parseFloatComponent = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			std::string& outLiteral,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("composite_struct has missing/invalid float component: ") + componentName;
+				return false;
+			}
+
+			double numeric = 0.0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stod(numericValue->text, &consumed);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("composite_struct float has invalid numeric lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("composite_struct float is not parseable: ") + componentName;
+				return false;
+			}
+
+			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
+				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
+				outError = std::string("composite_struct float is out of range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = numericValue->text;
+			outLiteral = numericValue->text;
+			if (outLiteral.find_first_of(".eE") == std::string::npos) {
+				outLiteral += ".0";
+			}
+			outLiteral += "f";
+			return true;
+		};
+
+		auto parseUnsignedInteger = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			uint64_t maxValue,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("composite_struct has missing/invalid integer component: ") + componentName;
+				return false;
+			}
+
+			unsigned long long numeric = 0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stoull(numericValue->text, &consumed, 10);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("composite_struct integer has invalid lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("composite_struct integer is not parseable: ") + componentName;
+				return false;
+			}
+
+			if (numeric > maxValue) {
+				outError = std::string("composite_struct integer is out of range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = std::to_string(numeric);
+			return true;
+		};
+
+		auto parseSignedInteger = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			long long minValue,
+			long long maxValue,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("composite_struct has missing/invalid signed integer component: ") + componentName;
+				return false;
+			}
+
+			long long numeric = 0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stoll(numericValue->text, &consumed, 10);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("composite_struct signed integer has invalid lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("composite_struct signed integer is not parseable: ") + componentName;
+				return false;
+			}
+
+			if (numeric < minValue || numeric > maxValue) {
+				outError = std::string("composite_struct signed integer is out of range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = std::to_string(numeric);
+			return true;
+		};
+
+		auto parseEnumPayload = [&](
+			const JsonValue* enumValue,
+			const char* componentName,
+			std::string& outName,
+			uint8_t& outNumeric) -> bool {
+			if (!enumValue || enumValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct enum has missing/invalid component: ") + componentName;
+				return false;
+			}
+
+			const JsonValue* numericValue = findObjectField(*enumValue, "numeric");
+			const JsonValue* nameValue = findObjectField(*enumValue, "name");
+			if (!numericValue || !nameValue) {
+				outError = std::string("composite_struct enum payload missing numeric/name: ") + componentName;
+				return false;
+			}
+
+			uint64_t numeric = 0u;
+			if (!jsonUInt64(*numericValue, numeric) || numeric > static_cast<uint64_t>(std::numeric_limits<uint8_t>::max())) {
+				outError = std::string("composite_struct enum numeric out of range: ") + componentName;
+				return false;
+			}
+
+			if (nameValue->kind != JsonValue::Kind::String) {
+				outError = std::string("composite_struct enum requires symbolic name: ") + componentName;
+				return false;
+			}
+
+			std::string parsedName{};
+			if (!jsonString(*nameValue, parsedName) || parsedName.empty()) {
+				outError = std::string("composite_struct enum has invalid name: ") + componentName;
+				return false;
+			}
+
+			outName = std::move(parsedName);
+			outNumeric = static_cast<uint8_t>(numeric);
+			return true;
+		};
+
+		auto pointerExprFromLexeme = [](const std::string& lexeme) -> std::string {
+			if (lexeme == "0") {
+				return "nullptr";
+			}
+			return "reinterpret_cast<void*>(static_cast<uintptr_t>(" + lexeme + "ull))";
+		};
+
+		auto parseColorObject = [&](
+			const JsonValue* colorValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!colorValue || colorValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct color has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string rLiteral{}, gLiteral{}, bLiteral{}, aLiteral{};
+			std::string rLexeme{}, gLexeme{}, bLexeme{}, aLexeme{};
+			if (
+				!parseFloatComponent(findObjectField(*colorValue, "r"), "r", rLiteral, rLexeme) ||
+				!parseFloatComponent(findObjectField(*colorValue, "g"), "g", gLiteral, gLexeme) ||
+				!parseFloatComponent(findObjectField(*colorValue, "b"), "b", bLiteral, bLexeme) ||
+				!parseFloatComponent(findObjectField(*colorValue, "a"), "a", aLiteral, aLexeme))
+			{
+				return false;
+			}
+
+			outCpp = "Clay_Color{.r = " + rLiteral + ", .g = " + gLiteral + ", .b = " + bLiteral + ", .a = " + aLiteral + "}";
+			outLexeme = "Clay_Color{r=" + rLexeme + ", g=" + gLexeme + ", b=" + bLexeme + ", a=" + aLexeme + "}";
+			return true;
+		};
+
+		auto parseCornerRadiusObject = [&](
+			const JsonValue* radiusValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!radiusValue || radiusValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct corner radius has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string topLeftLiteral{}, topRightLiteral{}, bottomLeftLiteral{}, bottomRightLiteral{};
+			std::string topLeftLexeme{}, topRightLexeme{}, bottomLeftLexeme{}, bottomRightLexeme{};
+			if (
+				!parseFloatComponent(findObjectField(*radiusValue, "topLeft"), "topLeft", topLeftLiteral, topLeftLexeme) ||
+				!parseFloatComponent(findObjectField(*radiusValue, "topRight"), "topRight", topRightLiteral, topRightLexeme) ||
+				!parseFloatComponent(findObjectField(*radiusValue, "bottomLeft"), "bottomLeft", bottomLeftLiteral, bottomLeftLexeme) ||
+				!parseFloatComponent(findObjectField(*radiusValue, "bottomRight"), "bottomRight", bottomRightLiteral, bottomRightLexeme))
+			{
+				return false;
+			}
+
+			outCpp =
+				"Clay_CornerRadius{.topLeft = " + topLeftLiteral + ", .topRight = " + topRightLiteral +
+				", .bottomLeft = " + bottomLeftLiteral + ", .bottomRight = " + bottomRightLiteral + "}";
+			outLexeme =
+				"Clay_CornerRadius{topLeft=" + topLeftLexeme + ", topRight=" + topRightLexeme +
+				", bottomLeft=" + bottomLeftLexeme + ", bottomRight=" + bottomRightLexeme + "}";
+			return true;
+		};
+
+		auto parseVector2Object = [&](
+			const JsonValue* vecValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!vecValue || vecValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct vector2 has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string xLiteral{}, yLiteral{};
+			std::string xLexeme{}, yLexeme{};
+			if (
+				!parseFloatComponent(findObjectField(*vecValue, "x"), "x", xLiteral, xLexeme) ||
+				!parseFloatComponent(findObjectField(*vecValue, "y"), "y", yLiteral, yLexeme))
+			{
+				return false;
+			}
+
+			outCpp = "Clay_Vector2{.x = " + xLiteral + ", .y = " + yLiteral + "}";
+			outLexeme = "Clay_Vector2{x=" + xLexeme + ", y=" + yLexeme + "}";
+			return true;
+		};
+
+		auto parseDimensionsObject = [&](
+			const JsonValue* dimValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!dimValue || dimValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct dimensions has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string widthLiteral{}, heightLiteral{};
+			std::string widthLexeme{}, heightLexeme{};
+			if (
+				!parseFloatComponent(findObjectField(*dimValue, "width"), "width", widthLiteral, widthLexeme) ||
+				!parseFloatComponent(findObjectField(*dimValue, "height"), "height", heightLiteral, heightLexeme))
+			{
+				return false;
+			}
+
+			outCpp = "Clay_Dimensions{.width = " + widthLiteral + ", .height = " + heightLiteral + "}";
+			outLexeme = "Clay_Dimensions{width=" + widthLexeme + ", height=" + heightLexeme + "}";
+			return true;
+		};
+
+		auto parsePaddingObject = [&](
+			const JsonValue* paddingValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!paddingValue || paddingValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct padding has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string leftLexeme{}, rightLexeme{}, topLexeme{}, bottomLexeme{};
+			if (
+				!parseUnsignedInteger(findObjectField(*paddingValue, "left"), "left", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), leftLexeme) ||
+				!parseUnsignedInteger(findObjectField(*paddingValue, "right"), "right", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), rightLexeme) ||
+				!parseUnsignedInteger(findObjectField(*paddingValue, "top"), "top", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), topLexeme) ||
+				!parseUnsignedInteger(findObjectField(*paddingValue, "bottom"), "bottom", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), bottomLexeme))
+			{
+				return false;
+			}
+
+			outCpp =
+				"Clay_Padding{.left = " + leftLexeme + ", .right = " + rightLexeme +
+				", .top = " + topLexeme + ", .bottom = " + bottomLexeme + "}";
+			outLexeme =
+				"Clay_Padding{left=" + leftLexeme + ", right=" + rightLexeme +
+				", top=" + topLexeme + ", bottom=" + bottomLexeme + "}";
+			return true;
+		};
+
+		auto parseBorderWidthObject = [&](
+			const JsonValue* widthValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!widthValue || widthValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct border width has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string leftLexeme{}, rightLexeme{}, topLexeme{}, bottomLexeme{}, betweenLexeme{};
+			if (
+				!parseUnsignedInteger(findObjectField(*widthValue, "left"), "left", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), leftLexeme) ||
+				!parseUnsignedInteger(findObjectField(*widthValue, "right"), "right", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), rightLexeme) ||
+				!parseUnsignedInteger(findObjectField(*widthValue, "top"), "top", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), topLexeme) ||
+				!parseUnsignedInteger(findObjectField(*widthValue, "bottom"), "bottom", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), bottomLexeme) ||
+				!parseUnsignedInteger(findObjectField(*widthValue, "betweenChildren"), "betweenChildren", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), betweenLexeme))
+			{
+				return false;
+			}
+
+			outCpp =
+				"Clay_BorderWidth{.left = " + leftLexeme + ", .right = " + rightLexeme +
+				", .top = " + topLexeme + ", .bottom = " + bottomLexeme +
+				", .betweenChildren = " + betweenLexeme + "}";
+			outLexeme =
+				"Clay_BorderWidth{left=" + leftLexeme + ", right=" + rightLexeme +
+				", top=" + topLexeme + ", bottom=" + bottomLexeme +
+				", betweenChildren=" + betweenLexeme + "}";
+			return true;
+		};
+
+		auto parseSizingAxisObject = [&](
+			const JsonValue* axisValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!axisValue || axisValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct sizing axis has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string tagName{};
+			uint8_t tagNumeric = 0u;
+			if (!parseEnumPayload(findObjectField(*axisValue, "tag"), "tag", tagName, tagNumeric)) {
+				return false;
+			}
+
+			if (tagName == "CLAY__SIZING_TYPE_PERCENT") {
+				std::string percentLiteral{};
+				std::string percentLexeme{};
+				if (!parseFloatComponent(findObjectField(*axisValue, "percent"), "percent", percentLiteral, percentLexeme)) {
+					return false;
+				}
+
+				outCpp = "Clay_SizingAxis{.size = {.percent = " + percentLiteral + "}, .type = " + tagName + "}";
+				outLexeme =
+					"Clay_SizingAxis{type=" + tagName + " (" + std::to_string(tagNumeric) +
+					"), percent=" + percentLexeme + "}";
+				return true;
+			}
+
+			if (
+				tagName == "CLAY__SIZING_TYPE_FIT" ||
+				tagName == "CLAY__SIZING_TYPE_GROW" ||
+				tagName == "CLAY__SIZING_TYPE_FIXED")
+			{
+				const JsonValue* minMaxValue = findObjectField(*axisValue, "minMax");
+				if (!minMaxValue || minMaxValue->kind != JsonValue::Kind::Object) {
+					outError = "composite_struct sizing axis requires minMax object for non-percent tags.";
+					return false;
+				}
+
+				std::string minLiteral{}, maxLiteral{};
+				std::string minLexeme{}, maxLexeme{};
+				if (
+					!parseFloatComponent(findObjectField(*minMaxValue, "min"), "min", minLiteral, minLexeme) ||
+					!parseFloatComponent(findObjectField(*minMaxValue, "max"), "max", maxLiteral, maxLexeme))
+				{
+					return false;
+				}
+
+				outCpp =
+					"Clay_SizingAxis{.size = {.minMax = Clay_SizingMinMax{.min = " + minLiteral +
+					", .max = " + maxLiteral + "}}, .type = " + tagName + "}";
+				outLexeme =
+					"Clay_SizingAxis{type=" + tagName + " (" + std::to_string(tagNumeric) +
+					"), minMax={min=" + minLexeme + ", max=" + maxLexeme + "}}";
+				return true;
+			}
+
+			outError = "composite_struct sizing axis has unsupported tag name: " + tagName;
+			return false;
+		};
+
+		auto parseSizingObject = [&](
+			const JsonValue* sizingValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!sizingValue || sizingValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct sizing has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string widthCpp{}, heightCpp{};
+			std::string widthLexeme{}, heightLexeme{};
+			if (
+				!parseSizingAxisObject(findObjectField(*sizingValue, "width"), "width", widthCpp, widthLexeme) ||
+				!parseSizingAxisObject(findObjectField(*sizingValue, "height"), "height", heightCpp, heightLexeme))
+			{
+				return false;
+			}
+
+			outCpp = "Clay_Sizing{.width = " + widthCpp + ", .height = " + heightCpp + "}";
+			outLexeme = "Clay_Sizing{width=" + widthLexeme + ", height=" + heightLexeme + "}";
+			return true;
+		};
+
+		auto parseLayoutConfigObject = [&](
+			const JsonValue* layoutValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!layoutValue || layoutValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct layout config has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string sizingCpp{}, sizingLexeme{};
+			if (!parseSizingObject(findObjectField(*layoutValue, "sizing"), "sizing", sizingCpp, sizingLexeme)) {
+				return false;
+			}
+
+			std::string paddingCpp{}, paddingLexeme{};
+			if (!parsePaddingObject(findObjectField(*layoutValue, "padding"), "padding", paddingCpp, paddingLexeme)) {
+				return false;
+			}
+
+			std::string childGapLexeme{};
+			if (!parseUnsignedInteger(
+				findObjectField(*layoutValue, "childGap"),
+				"childGap",
+				static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()),
+				childGapLexeme))
+			{
+				return false;
+			}
+
+			const JsonValue* childAlignmentValue = findObjectField(*layoutValue, "childAlignment");
+			if (!childAlignmentValue || childAlignmentValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct layout config requires childAlignment object.";
+				return false;
+			}
+			std::string alignXName{}, alignYName{};
+			uint8_t alignXNumeric = 0u;
+			uint8_t alignYNumeric = 0u;
+			if (
+				!parseEnumPayload(findObjectField(*childAlignmentValue, "x"), "childAlignment.x", alignXName, alignXNumeric) ||
+				!parseEnumPayload(findObjectField(*childAlignmentValue, "y"), "childAlignment.y", alignYName, alignYNumeric))
+			{
+				return false;
+			}
+			const std::string childAlignmentCpp =
+				"Clay_ChildAlignment{.x = " + alignXName + ", .y = " + alignYName + "}";
+
+			std::string layoutDirectionName{};
+			uint8_t layoutDirectionNumeric = 0u;
+			if (!parseEnumPayload(
+				findObjectField(*layoutValue, "layoutDirection"),
+				"layoutDirection",
+				layoutDirectionName,
+				layoutDirectionNumeric))
+			{
+				return false;
+			}
+
+			outCpp =
+				"Clay_LayoutConfig{.sizing = " + sizingCpp +
+				", .padding = " + paddingCpp +
+				", .childGap = " + childGapLexeme +
+				", .childAlignment = " + childAlignmentCpp +
+				", .layoutDirection = " + layoutDirectionName + "}";
+			outLexeme =
+				"Clay_LayoutConfig{layoutDirection=" + layoutDirectionName +
+				" (" + std::to_string(layoutDirectionNumeric) + "), childGap=" + childGapLexeme + "}";
+			return true;
+		};
+
+		auto parseFloatingObject = [&](
+			const JsonValue* floatingValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!floatingValue || floatingValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct floating config has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string offsetCpp{}, offsetLexeme{};
+			if (!parseVector2Object(findObjectField(*floatingValue, "offset"), "offset", offsetCpp, offsetLexeme)) {
+				return false;
+			}
+			std::string expandCpp{}, expandLexeme{};
+			if (!parseDimensionsObject(findObjectField(*floatingValue, "expand"), "expand", expandCpp, expandLexeme)) {
+				return false;
+			}
+
+			std::string parentIdLexeme{};
+			if (!parseUnsignedInteger(
+				findObjectField(*floatingValue, "parentId"),
+				"parentId",
+				static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()),
+				parentIdLexeme))
+			{
+				return false;
+			}
+
+			std::string zIndexLexeme{};
+			if (!parseSignedInteger(
+				findObjectField(*floatingValue, "zIndex"),
+				"zIndex",
+				static_cast<long long>(std::numeric_limits<int16_t>::min()),
+				static_cast<long long>(std::numeric_limits<int16_t>::max()),
+				zIndexLexeme))
+			{
+				return false;
+			}
+
+			const JsonValue* attachPointsValue = findObjectField(*floatingValue, "attachPoints");
+			if (!attachPointsValue || attachPointsValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct floating config requires attachPoints object.";
+				return false;
+			}
+			std::string attachElementName{}, attachParentName{};
+			uint8_t attachElementNumeric = 0u;
+			uint8_t attachParentNumeric = 0u;
+			if (
+				!parseEnumPayload(findObjectField(*attachPointsValue, "element"), "attachPoints.element", attachElementName, attachElementNumeric) ||
+				!parseEnumPayload(findObjectField(*attachPointsValue, "parent"), "attachPoints.parent", attachParentName, attachParentNumeric))
+			{
+				return false;
+			}
+			const std::string attachPointsCpp =
+				"Clay_FloatingAttachPoints{.element = " + attachElementName + ", .parent = " + attachParentName + "}";
+
+			std::string pointerCaptureModeName{};
+			uint8_t pointerCaptureModeNumeric = 0u;
+			if (!parseEnumPayload(
+				findObjectField(*floatingValue, "pointerCaptureMode"),
+				"pointerCaptureMode",
+				pointerCaptureModeName,
+				pointerCaptureModeNumeric))
+			{
+				return false;
+			}
+
+			std::string attachToName{};
+			uint8_t attachToNumeric = 0u;
+			if (!parseEnumPayload(
+				findObjectField(*floatingValue, "attachTo"),
+				"attachTo",
+				attachToName,
+				attachToNumeric))
+			{
+				return false;
+			}
+
+			std::string clipToName{};
+			uint8_t clipToNumeric = 0u;
+			if (!parseEnumPayload(
+				findObjectField(*floatingValue, "clipTo"),
+				"clipTo",
+				clipToName,
+				clipToNumeric))
+			{
+				return false;
+			}
+
+			outCpp =
+				"Clay_FloatingElementConfig{.offset = " + offsetCpp +
+				", .expand = " + expandCpp +
+				", .parentId = " + parentIdLexeme +
+				", .zIndex = " + zIndexLexeme +
+				", .attachPoints = " + attachPointsCpp +
+				", .pointerCaptureMode = " + pointerCaptureModeName +
+				", .attachTo = " + attachToName +
+				", .clipTo = " + clipToName + "}";
+			outLexeme =
+				"Clay_FloatingElementConfig{attachTo=" + attachToName +
+				" (" + std::to_string(attachToNumeric) + "), clipTo=" + clipToName +
+				" (" + std::to_string(clipToNumeric) + "), zIndex=" + zIndexLexeme + "}";
+			return true;
+		};
+
+		auto parseClipObject = [&](
+			const JsonValue* clipValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!clipValue || clipValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct clip config has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			const JsonValue* horizontalValue = findObjectField(*clipValue, "horizontal");
+			const JsonValue* verticalValue = findObjectField(*clipValue, "vertical");
+			if (!horizontalValue || horizontalValue->kind != JsonValue::Kind::Bool ||
+				!verticalValue || verticalValue->kind != JsonValue::Kind::Bool)
+			{
+				outError = "composite_struct clip config requires boolean horizontal/vertical.";
+				return false;
+			}
+
+			std::string childOffsetCpp{}, childOffsetLexeme{};
+			if (!parseVector2Object(findObjectField(*clipValue, "childOffset"), "childOffset", childOffsetCpp, childOffsetLexeme)) {
+				return false;
+			}
+
+			const std::string horizontalLiteral = horizontalValue->boolValue ? "true" : "false";
+			const std::string verticalLiteral = verticalValue->boolValue ? "true" : "false";
+			outCpp =
+				"Clay_ClipElementConfig{.horizontal = " + horizontalLiteral +
+				", .vertical = " + verticalLiteral +
+				", .childOffset = " + childOffsetCpp + "}";
+			outLexeme =
+				"Clay_ClipElementConfig{horizontal=" + horizontalLiteral +
+				", vertical=" + verticalLiteral + ", childOffset=" + childOffsetLexeme + "}";
+			return true;
+		};
+
+		auto parseBorderObject = [&](
+			const JsonValue* borderValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!borderValue || borderValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct border config has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string colorCpp{}, colorLexeme{};
+			if (!parseColorObject(findObjectField(*borderValue, "color"), "color", colorCpp, colorLexeme)) {
+				return false;
+			}
+
+			std::string widthCpp{}, widthLexeme{};
+			if (!parseBorderWidthObject(findObjectField(*borderValue, "width"), "width", widthCpp, widthLexeme)) {
+				return false;
+			}
+
+			outCpp = "Clay_BorderElementConfig{.color = " + colorCpp + ", .width = " + widthCpp + "}";
+			outLexeme = "Clay_BorderElementConfig{color=" + colorLexeme + ", width=" + widthLexeme + "}";
+			return true;
+		};
+
+		auto parseElementIdObject = [&](
+			const JsonValue* idValue,
+			const char* componentName,
+			std::string& outCpp,
+			std::string& outLexeme) -> bool {
+			if (!idValue || idValue->kind != JsonValue::Kind::Object) {
+				outError = std::string("composite_struct element id has missing/invalid object: ") + componentName;
+				return false;
+			}
+
+			std::string idLexeme{}, offsetLexeme{}, baseIdLexeme{};
+			if (
+				!parseUnsignedInteger(findObjectField(*idValue, "id"), "id", static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()), idLexeme) ||
+				!parseUnsignedInteger(findObjectField(*idValue, "offset"), "offset", static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()), offsetLexeme) ||
+				!parseUnsignedInteger(findObjectField(*idValue, "baseId"), "baseId", static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()), baseIdLexeme))
+			{
+				return false;
+			}
+
+			const JsonValue* stringIdValue = findObjectField(*idValue, "stringId");
+			if (!stringIdValue || stringIdValue->kind != JsonValue::Kind::String) {
+				outError = "composite_struct element id requires stringId string.";
+				return false;
+			}
+			const std::string stringLiteral = cppStringLiteral(stringIdValue->text);
+			const std::string stringLength = std::to_string(stringIdValue->text.size());
+
+			const JsonValue* staticAllocatedValue = findObjectField(*idValue, "isStaticallyAllocated");
+			if (!staticAllocatedValue || staticAllocatedValue->kind != JsonValue::Kind::Bool) {
+				outError = "composite_struct element id requires isStaticallyAllocated bool.";
+				return false;
+			}
+			const std::string staticAllocatedLiteral = staticAllocatedValue->boolValue ? "true" : "false";
+			const std::string charsLiteral = stringIdValue->text.empty() ? "nullptr" : stringLiteral;
+
+			outCpp =
+				"Clay_ElementId{.id = " + idLexeme +
+				", .offset = " + offsetLexeme +
+				", .baseId = " + baseIdLexeme +
+				", .stringId = Clay_String{.isStaticallyAllocated = " + staticAllocatedLiteral +
+				", .length = " + stringLength +
+				", .chars = " + charsLiteral + "}}";
+			outLexeme =
+				"Clay_ElementId{id=" + idLexeme + ", offset=" + offsetLexeme + ", baseId=" + baseIdLexeme + "}";
+			return true;
+		};
+
+		std::string compositeType{};
+		(void)jsonString(*typeValue, compositeType);
+		if (compositeType == "Clay_Sizing") {
+			std::string sizingCpp{};
+			std::string sizingLexeme{};
+			if (!parseSizingObject(findObjectField(*rawValue, "sizing"), "sizing", sizingCpp, sizingLexeme)) {
+				return false;
+			}
+			outChange.cppValue = sizingCpp;
+			outChange.valueLexeme = sizingLexeme;
+			return true;
+		}
+		if (compositeType == "Clay_LayoutConfig") {
+			std::string layoutCpp{};
+			std::string layoutLexeme{};
+			if (!parseLayoutConfigObject(findObjectField(*rawValue, "layout"), "layout", layoutCpp, layoutLexeme)) {
+				return false;
+			}
+			outChange.cppValue = layoutCpp;
+			outChange.valueLexeme = layoutLexeme;
+			return true;
+		}
+		if (compositeType == "Clay_TextElementConfig") {
+			const JsonValue* textValue = findObjectField(*rawValue, "text");
+			if (!textValue || textValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct text config requires text object.";
+				return false;
+			}
+
+			std::string userDataLexeme{};
+			if (!parseUnsignedInteger(
+				findObjectField(*textValue, "userData"),
+				"userData",
+				std::numeric_limits<uint64_t>::max(),
+				userDataLexeme))
+			{
+				return false;
+			}
+
+			std::string textColorCpp{}, textColorLexeme{};
+			if (!parseColorObject(findObjectField(*textValue, "textColor"), "textColor", textColorCpp, textColorLexeme)) {
+				return false;
+			}
+
+			std::string fontIdLexeme{}, fontSizeLexeme{}, letterSpacingLexeme{}, lineHeightLexeme{};
+			if (
+				!parseUnsignedInteger(findObjectField(*textValue, "fontId"), "fontId", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), fontIdLexeme) ||
+				!parseUnsignedInteger(findObjectField(*textValue, "fontSize"), "fontSize", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), fontSizeLexeme) ||
+				!parseUnsignedInteger(findObjectField(*textValue, "letterSpacing"), "letterSpacing", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), letterSpacingLexeme) ||
+				!parseUnsignedInteger(findObjectField(*textValue, "lineHeight"), "lineHeight", static_cast<uint64_t>(std::numeric_limits<uint16_t>::max()), lineHeightLexeme))
+			{
+				return false;
+			}
+
+			std::string wrapModeName{};
+			uint8_t wrapModeNumeric = 0u;
+			if (!parseEnumPayload(findObjectField(*textValue, "wrapMode"), "wrapMode", wrapModeName, wrapModeNumeric)) {
+				return false;
+			}
+
+			std::string textAlignmentName{};
+			uint8_t textAlignmentNumeric = 0u;
+			if (!parseEnumPayload(findObjectField(*textValue, "textAlignment"), "textAlignment", textAlignmentName, textAlignmentNumeric)) {
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_TextElementConfig{.userData = " + pointerExprFromLexeme(userDataLexeme) +
+				", .textColor = " + textColorCpp +
+				", .fontId = " + fontIdLexeme +
+				", .fontSize = " + fontSizeLexeme +
+				", .letterSpacing = " + letterSpacingLexeme +
+				", .lineHeight = " + lineHeightLexeme +
+				", .wrapMode = " + wrapModeName +
+				", .textAlignment = " + textAlignmentName + "}";
+			outChange.valueLexeme =
+				"Clay_TextElementConfig{fontId=" + fontIdLexeme +
+				", fontSize=" + fontSizeLexeme +
+				", wrapMode=" + wrapModeName + " (" + std::to_string(wrapModeNumeric) +
+				"), textAlignment=" + textAlignmentName + " (" + std::to_string(textAlignmentNumeric) + ")}";
+			return true;
+		}
+		if (compositeType == "Clay_FloatingElementConfig") {
+			std::string floatingCpp{};
+			std::string floatingLexeme{};
+			if (!parseFloatingObject(findObjectField(*rawValue, "floating"), "floating", floatingCpp, floatingLexeme)) {
+				return false;
+			}
+			outChange.cppValue = floatingCpp;
+			outChange.valueLexeme = floatingLexeme;
+			return true;
+		}
+		if (compositeType == "Clay_ClipElementConfig") {
+			std::string clipCpp{};
+			std::string clipLexeme{};
+			if (!parseClipObject(findObjectField(*rawValue, "clip"), "clip", clipCpp, clipLexeme)) {
+				return false;
+			}
+			outChange.cppValue = clipCpp;
+			outChange.valueLexeme = clipLexeme;
+			return true;
+		}
+		if (compositeType == "Clay_BorderElementConfig") {
+			std::string borderCpp{};
+			std::string borderLexeme{};
+			if (!parseBorderObject(findObjectField(*rawValue, "border"), "border", borderCpp, borderLexeme)) {
+				return false;
+			}
+			outChange.cppValue = borderCpp;
+			outChange.valueLexeme = borderLexeme;
+			return true;
+		}
+		if (compositeType == "Clay_ElementDeclaration") {
+			const JsonValue* declarationValue = findObjectField(*rawValue, "declaration");
+			if (!declarationValue || declarationValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct element declaration requires declaration object.";
+				return false;
+			}
+
+			std::string idCpp{}, idLexeme{};
+			if (!parseElementIdObject(findObjectField(*declarationValue, "id"), "id", idCpp, idLexeme)) {
+				return false;
+			}
+
+			std::string layoutCpp{}, layoutLexeme{};
+			if (!parseLayoutConfigObject(findObjectField(*declarationValue, "layout"), "layout", layoutCpp, layoutLexeme)) {
+				return false;
+			}
+
+			std::string backgroundColorCpp{}, backgroundColorLexeme{};
+			if (!parseColorObject(findObjectField(*declarationValue, "backgroundColor"), "backgroundColor", backgroundColorCpp, backgroundColorLexeme)) {
+				return false;
+			}
+
+			std::string cornerRadiusCpp{}, cornerRadiusLexeme{};
+			if (!parseCornerRadiusObject(findObjectField(*declarationValue, "cornerRadius"), "cornerRadius", cornerRadiusCpp, cornerRadiusLexeme)) {
+				return false;
+			}
+
+			const JsonValue* aspectRatioValue = findObjectField(*declarationValue, "aspectRatio");
+			if (!aspectRatioValue || aspectRatioValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct element declaration requires aspectRatio object.";
+				return false;
+			}
+			std::string aspectRatioLiteral{}, aspectRatioLexeme{};
+			if (!parseFloatComponent(findObjectField(*aspectRatioValue, "aspectRatio"), "aspectRatio.aspectRatio", aspectRatioLiteral, aspectRatioLexeme)) {
+				return false;
+			}
+
+			const JsonValue* imageValue = findObjectField(*declarationValue, "image");
+			if (!imageValue || imageValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct element declaration requires image object.";
+				return false;
+			}
+			std::string imageDataLexeme{};
+			if (!parseUnsignedInteger(
+				findObjectField(*imageValue, "imageData"),
+				"image.imageData",
+				std::numeric_limits<uint64_t>::max(),
+				imageDataLexeme))
+			{
+				return false;
+			}
+
+			std::string floatingCpp{}, floatingLexeme{};
+			if (!parseFloatingObject(findObjectField(*declarationValue, "floating"), "floating", floatingCpp, floatingLexeme)) {
+				return false;
+			}
+
+			const JsonValue* customValue = findObjectField(*declarationValue, "custom");
+			if (!customValue || customValue->kind != JsonValue::Kind::Object) {
+				outError = "composite_struct element declaration requires custom object.";
+				return false;
+			}
+			std::string customDataLexeme{};
+			if (!parseUnsignedInteger(
+				findObjectField(*customValue, "customData"),
+				"custom.customData",
+				std::numeric_limits<uint64_t>::max(),
+				customDataLexeme))
+			{
+				return false;
+			}
+
+			std::string clipCpp{}, clipLexeme{};
+			if (!parseClipObject(findObjectField(*declarationValue, "clip"), "clip", clipCpp, clipLexeme)) {
+				return false;
+			}
+
+			std::string borderCpp{}, borderLexeme{};
+			if (!parseBorderObject(findObjectField(*declarationValue, "border"), "border", borderCpp, borderLexeme)) {
+				return false;
+			}
+
+			std::string userDataLexeme{};
+			if (!parseUnsignedInteger(
+				findObjectField(*declarationValue, "userData"),
+				"userData",
+				std::numeric_limits<uint64_t>::max(),
+				userDataLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_ElementDeclaration{.id = " + idCpp +
+				", .layout = " + layoutCpp +
+				", .backgroundColor = " + backgroundColorCpp +
+				", .cornerRadius = " + cornerRadiusCpp +
+				", .aspectRatio = Clay_AspectRatioElementConfig{.aspectRatio = " + aspectRatioLiteral + "}" +
+				", .image = Clay_ImageElementConfig{.imageData = " + pointerExprFromLexeme(imageDataLexeme) + "}" +
+				", .floating = " + floatingCpp +
+				", .custom = Clay_CustomElementConfig{.customData = " + pointerExprFromLexeme(customDataLexeme) + "}" +
+				", .clip = " + clipCpp +
+				", .border = " + borderCpp +
+				", .userData = " + pointerExprFromLexeme(userDataLexeme) + "}";
+			outChange.valueLexeme = "Clay_ElementDeclaration{id=" + idLexeme + ", layout=" + layoutLexeme + "}";
+			return true;
+		}
+
+		outError = "composite_struct change has unsupported type: " + compositeType;
+		return false;
+	}
+	if (outChange.jsonKind == "float1") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "float1 change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "float1 change requires string type.";
+			return false;
+		}
+
+		auto parseFloat1Component = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			std::string& outLiteral,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("float1 change has missing/invalid component: ") + componentName;
+				return false;
+			}
+
+			double numeric = 0.0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stod(numericValue->text, &consumed);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("float1 component has invalid numeric lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("float1 component is not parseable as number: ") + componentName;
+				return false;
+			}
+
+			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
+				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
+				outError = std::string("float1 component is out of float range: ") + componentName;
+				return false;
+			}
+
+			outLexeme = numericValue->text;
+			outLiteral = numericValue->text;
+			if (outLiteral.find_first_of(".eE") == std::string::npos) {
+				outLiteral += ".0";
+			}
+			outLiteral += "f";
+			return true;
+		};
+
+		std::string float1Type{};
+		(void)jsonString(*typeValue, float1Type);
+		if (float1Type == "Clay_AspectRatioElementConfig") {
+			std::string aspectRatioLiteral{};
+			std::string aspectRatioLexeme{};
+			if (!parseFloat1Component(
+				findObjectField(*rawValue, "aspectRatio"),
+				"aspectRatio",
+				aspectRatioLiteral,
+				aspectRatioLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_AspectRatioElementConfig{.aspectRatio = " + aspectRatioLiteral + "}";
+			outChange.valueLexeme =
+				"Clay_AspectRatioElementConfig{aspectRatio=" + aspectRatioLexeme + "}";
+			return true;
+		}
+
+		outError = "float1 change has unsupported type: " + float1Type;
+		return false;
+	}
+	if (outChange.jsonKind == "edgeu16") {
+		if (rawValue->kind != JsonValue::Kind::Object) {
+			outError = "edgeu16 change has non-object value.";
+			return false;
+		}
+
+		const JsonValue* typeValue = findObjectField(*rawValue, "type");
+		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+			outError = "edgeu16 change requires string type.";
+			return false;
+		}
+
+		auto parseEdgeU16Component = [&](
+			const JsonValue* numericValue,
+			const char* componentName,
+			std::string& outLiteral,
+			std::string& outLexeme) -> bool {
+			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+				outError = std::string("edgeu16 change has missing/invalid component: ") + componentName;
+				return false;
+			}
+
+			long long numeric = 0;
+			try {
+				std::size_t consumed = 0u;
+				numeric = std::stoll(numericValue->text, &consumed, 10);
+				if (consumed != numericValue->text.size()) {
+					outError = std::string("edgeu16 component has invalid integer lexeme: ") + componentName;
+					return false;
+				}
+			} catch (...) {
+				outError = std::string("edgeu16 component is not parseable as integer: ") + componentName;
+				return false;
+			}
+
+			if (numeric < 0 || numeric > static_cast<long long>(std::numeric_limits<uint16_t>::max())) {
+				outError = std::string("edgeu16 component is out of uint16_t range: ") + componentName;
+				return false;
+			}
+
+			outLiteral = std::to_string(numeric);
+			outLexeme = outLiteral;
+			return true;
+		};
+
+		std::string edgeType{};
+		(void)jsonString(*typeValue, edgeType);
+		if (edgeType == "Clay_Padding") {
+			std::string leftLiteral{};
+			std::string rightLiteral{};
+			std::string topLiteral{};
+			std::string bottomLiteral{};
+			std::string leftLexeme{};
+			std::string rightLexeme{};
+			std::string topLexeme{};
+			std::string bottomLexeme{};
+			if (
+				!parseEdgeU16Component(findObjectField(*rawValue, "left"), "left", leftLiteral, leftLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "right"), "right", rightLiteral, rightLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "top"), "top", topLiteral, topLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "bottom"), "bottom", bottomLiteral, bottomLexeme))
+			{
+				return false;
+			}
+
+			if (const JsonValue* unusedValue = findObjectField(*rawValue, "unused")) {
+				std::string ignoredLiteral{};
+				std::string ignoredLexeme{};
+				if (!parseEdgeU16Component(unusedValue, "unused", ignoredLiteral, ignoredLexeme)) {
+					return false;
+				}
+			}
+
+			outChange.cppValue =
+				"Clay_Padding{.left = " + leftLiteral + ", .right = " + rightLiteral +
+				", .top = " + topLiteral + ", .bottom = " + bottomLiteral + "}";
+			outChange.valueLexeme =
+				"Clay_Padding{left=" + leftLexeme + ", right=" + rightLexeme +
+				", top=" + topLexeme + ", bottom=" + bottomLexeme + "}";
+			return true;
+		}
+		if (edgeType == "Clay_BorderWidth") {
+			std::string leftLiteral{};
+			std::string rightLiteral{};
+			std::string topLiteral{};
+			std::string bottomLiteral{};
+			std::string betweenChildrenLiteral{};
+			std::string leftLexeme{};
+			std::string rightLexeme{};
+			std::string topLexeme{};
+			std::string bottomLexeme{};
+			std::string betweenChildrenLexeme{};
+			if (
+				!parseEdgeU16Component(findObjectField(*rawValue, "left"), "left", leftLiteral, leftLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "right"), "right", rightLiteral, rightLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "top"), "top", topLiteral, topLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "bottom"), "bottom", bottomLiteral, bottomLexeme) ||
+				!parseEdgeU16Component(findObjectField(*rawValue, "betweenChildren"), "betweenChildren", betweenChildrenLiteral, betweenChildrenLexeme))
+			{
+				return false;
+			}
+
+			outChange.cppValue =
+				"Clay_BorderWidth{.left = " + leftLiteral + ", .right = " + rightLiteral +
+				", .top = " + topLiteral + ", .bottom = " + bottomLiteral +
+				", .betweenChildren = " + betweenChildrenLiteral + "}";
+			outChange.valueLexeme =
+				"Clay_BorderWidth{left=" + leftLexeme + ", right=" + rightLexeme +
+				", top=" + topLexeme + ", bottom=" + bottomLexeme +
+				", betweenChildren=" + betweenChildrenLexeme + "}";
+			return true;
+		}
+
+		outError = "edgeu16 change has unsupported type: " + edgeType;
+		return false;
+	}
 	if (outChange.jsonKind == "null") {
 		outError = "null values are not patchable in V1.";
 		return false;
