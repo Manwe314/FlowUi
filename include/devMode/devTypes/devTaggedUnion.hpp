@@ -8,8 +8,8 @@
 #include <type_traits>
 
 #include "clay.h"
-#include "devMode/devEnum1.hpp"
-#include "devMode/devFloat2.hpp"
+#include "devMode/devTypes/devEnum1.hpp"
+#include "devMode/devTypes/devFloat2.hpp"
 #include "devMode/devRuntime.hpp"
 #include "devMode/registry.hpp"
 
