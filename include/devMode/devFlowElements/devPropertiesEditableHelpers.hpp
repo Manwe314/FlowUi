@@ -1,14 +1,14 @@
 #pragma once
 
 #include "devMode/devFlowElements/common.hpp"
-#include "devMode/devEnum1.hpp"
-#include "devMode/devEnum2.hpp"
-#include "devMode/devFloat1.hpp"
-#include "devMode/devFloat2.hpp"
-#include "devMode/devFloat4.hpp"
-#include "devMode/devEdgeU16.hpp"
-#include "devMode/devTaggedUnion.hpp"
-#include "devMode/devCompositeStruct.hpp"
+#include "devMode/devTypes/devEnum1.hpp"
+#include "devMode/devTypes/devEnum2.hpp"
+#include "devMode/devTypes/devFloat1.hpp"
+#include "devMode/devTypes/devFloat2.hpp"
+#include "devMode/devTypes/devFloat4.hpp"
+#include "devMode/devTypes/devEdgeU16.hpp"
+#include "devMode/devTypes/devTaggedUnion.hpp"
+#include "devMode/devTypes/devCompositeStruct.hpp"
 #include "devMode/devFlowElements/devPropertiesSelection.hpp"
 
 inline bool devFieldTypeIsBool(uint64_t fieldTypeHash) {
