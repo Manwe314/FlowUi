@@ -41,6 +41,13 @@ struct DefinitionExportGroup {
 	uint64_t definitionId = 0u;
 	std::string definitionName{};
 	std::string definitionTypeToken{};
+	uint64_t paramsStructTypeHash = 0u;
+	std::string paramsStructName{};
+	bool hasSourceMetadata = false;
+	std::string sourceFile{};
+	uint32_t sourceLine = 0u;
+	uint32_t sourceColumn = 0u;
+	std::string sourceFunction{};
 	std::vector<ExportFieldChange> changes{};
 };
 
@@ -735,7 +742,33 @@ std::string buildExportJson(
 		appendJsonString(out, group.definitionTypeToken);
 		out += ",\n";
 		appendJsonIndent(out, 3);
-		out += "\"hasSourceMetadata\":false,\n";
+		out += "\"paramsStructTypeHash\":";
+		out += std::to_string(group.paramsStructTypeHash);
+		out += ",\n";
+		appendJsonIndent(out, 3);
+		out += "\"paramsStructName\":";
+		appendJsonString(out, group.paramsStructName);
+		out += ",\n";
+		appendJsonIndent(out, 3);
+		out += "\"hasSourceMetadata\":";
+		out += (group.hasSourceMetadata ? "true" : "false");
+		out += ",\n";
+		appendJsonIndent(out, 3);
+		out += "\"sourceFile\":";
+		appendJsonString(out, group.sourceFile);
+		out += ",\n";
+		appendJsonIndent(out, 3);
+		out += "\"sourceLine\":";
+		out += std::to_string(group.sourceLine);
+		out += ",\n";
+		appendJsonIndent(out, 3);
+		out += "\"sourceColumn\":";
+		out += std::to_string(group.sourceColumn);
+		out += ",\n";
+		appendJsonIndent(out, 3);
+		out += "\"sourceFunction\":";
+		appendJsonString(out, group.sourceFunction);
+		out += ",\n";
 		appendJsonIndent(out, 3);
 		out += "\"changes\": [\n";
 
@@ -914,6 +947,22 @@ bool exportOverridesAsJson(UiManager& uiManager) {
 			if (const ElementDescriptor* descriptor = findDefinitionDescriptor(registry, key.definitionId)) {
 				group.definitionName = descriptor->definitionName;
 				group.definitionTypeToken = descriptor->definitionTypeToken;
+				group.paramsStructTypeHash = descriptor->paramsStructTypeHash;
+
+				const StructDescriptor* paramsStruct =
+					registry.findStructByTypeHash(descriptor->paramsStructTypeHash);
+				if (paramsStruct != nullptr) {
+					group.paramsStructName = paramsStruct->name;
+					if (group.paramsStructName.empty()) {
+						group.paramsStructName = paramsStruct->typeToken;
+					}
+
+					group.hasSourceMetadata = paramsStruct->hasSourceMetadata;
+					group.sourceFile = paramsStruct->sourceFile;
+					group.sourceLine = paramsStruct->sourceLine;
+					group.sourceColumn = paramsStruct->sourceColumn;
+					group.sourceFunction = paramsStruct->sourceFunction;
+				}
 			}
 			if (group.definitionName.empty()) {
 				group.definitionName = "UnknownDefinition";

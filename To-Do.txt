@@ -12,7 +12,7 @@
 12. Update FlowUi Arena naming and handling
 13. Revisit how TextureRef's get stored for frames. 
 14. come back to enforcing PIMPL
-15. 
+15. updater tool bug with not detecting mergeParameters
 
 For SVG Manager:
 	Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.

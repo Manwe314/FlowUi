@@ -162,7 +162,7 @@ inline constexpr DevEnum1TypeInfo kDevEnum1TypeInfos[] = {
 	},
 };
 
-inline const DevEnum1TypeInfo* findDevEnum1TypeInfo(uint64_t fieldTypeHash) {
+inline const DevEnum1TypeInfo* findDevEnum1BuiltinTypeInfo(uint64_t fieldTypeHash) {
 	for (const DevEnum1TypeInfo& info : kDevEnum1TypeInfos)
 	{
 		if (info.typeHash == fieldTypeHash)
@@ -173,8 +173,16 @@ inline const DevEnum1TypeInfo* findDevEnum1TypeInfo(uint64_t fieldTypeHash) {
 	return nullptr;
 }
 
+inline const DevEnum1TypeInfo* findDevEnum1TypeInfo(uint64_t fieldTypeHash) {
+	return findDevEnum1BuiltinTypeInfo(fieldTypeHash);
+}
+
 inline bool isDevEnum1TypeHash(uint64_t fieldTypeHash) {
-	return findDevEnum1TypeInfo(fieldTypeHash) != nullptr;
+	if (findDevEnum1BuiltinTypeInfo(fieldTypeHash) != nullptr)
+	{
+		return true;
+	}
+	return DevRegistry::instance().isEnumTypeHash(fieldTypeHash);
 }
 
 inline bool tryNormalizeDevEnum1Numeric(int64_t numeric, uint8_t& outValue) {
@@ -190,10 +198,10 @@ inline bool tryDevEnum1ValueToName(
 	uint64_t fieldTypeHash,
 	uint8_t numeric,
 	std::string_view& outName) {
-	const DevEnum1TypeInfo* info = findDevEnum1TypeInfo(fieldTypeHash);
+	const DevEnum1TypeInfo* info = findDevEnum1BuiltinTypeInfo(fieldTypeHash);
 	if (info == nullptr)
 	{
-		return false;
+		return DevRegistry::instance().tryEnumValueToName(fieldTypeHash, numeric, outName);
 	}
 
 	for (std::size_t i = 0; i < info->valueCount; ++i)
@@ -211,10 +219,10 @@ inline bool tryDevEnum1NameToValue(
 	uint64_t fieldTypeHash,
 	std::string_view name,
 	uint8_t& outNumeric) {
-	const DevEnum1TypeInfo* info = findDevEnum1TypeInfo(fieldTypeHash);
+	const DevEnum1TypeInfo* info = findDevEnum1BuiltinTypeInfo(fieldTypeHash);
 	if (info == nullptr)
 	{
-		return false;
+		return DevRegistry::instance().tryEnumNameToValue(fieldTypeHash, name, outNumeric);
 	}
 
 	for (std::size_t i = 0; i < info->valueCount; ++i)

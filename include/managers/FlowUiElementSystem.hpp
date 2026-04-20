@@ -560,48 +560,12 @@ void captureParameterSnapshotField(
 	const devMode::FieldDescriptor& field,
 	uint64_t fieldHash,
 	const ParamsT& params) {
+	if (field.captureFieldFunction == nullptr) {
+		return;
+	}
+
 	devMode::DevValue capturedValue{};
-	bool captured = false;
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, bool>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, int8_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, int16_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, int32_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, int64_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint8_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint16_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint32_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, uint64_t>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, float>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, double>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, std::string>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutDirection>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutAlignmentX>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutAlignmentY>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_TextElementConfigWrapMode>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_TextAlignment>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingAttachPointType>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_PointerCaptureMode>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingAttachToElement>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingClipToElement>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_ChildAlignment>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingAttachPoints>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Vector2>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Dimensions>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_SizingMinMax>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Color>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_CornerRadius>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_AspectRatioElementConfig>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_SizingAxis>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Sizing>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_LayoutConfig>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_TextElementConfig>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_FloatingElementConfig>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_ClipElementConfig>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_BorderElementConfig>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_ElementDeclaration>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_Padding>(params, field, capturedValue);
-	captured = captured || tryCaptureParameterFieldValue<ParamsT, Clay_BorderWidth>(params, field, capturedValue);
-	if (!captured) {
+	if (!field.captureFieldFunction(static_cast<const void*>(&params), field, capturedValue)) {
 		return;
 	}
 
@@ -624,47 +588,10 @@ void applyParameterOverrides(
 	for (const devMode::FieldDescriptor& field : paramsStruct->fields) {
 		const uint64_t fieldHash = (field.fieldHash == 0u) ? devMode::hashString64(field.name) : field.fieldHash;
 		const auto applySingleOverrideValue = [&](const devMode::DevValue& value) {
-			bool applied = false;
-			applied = applied || tryApplyOverrideField<ParamsT, bool>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, int8_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, int16_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, int32_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, int64_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, uint8_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, uint16_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, uint32_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, uint64_t>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, float>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, double>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, std::string>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutDirection>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutAlignmentX>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutAlignmentY>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_TextElementConfigWrapMode>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_TextAlignment>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingAttachPointType>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_PointerCaptureMode>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingAttachToElement>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingClipToElement>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_ChildAlignment>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingAttachPoints>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_Vector2>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_Dimensions>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_SizingMinMax>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_Color>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_CornerRadius>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_AspectRatioElementConfig>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_SizingAxis>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_Sizing>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_LayoutConfig>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_TextElementConfig>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_FloatingElementConfig>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_ClipElementConfig>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_BorderElementConfig>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_ElementDeclaration>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_Padding>(params, field, value);
-			applied = applied || tryApplyOverrideField<ParamsT, Clay_BorderWidth>(params, field, value);
-			(void)applied;
+			if (field.applyFieldFunction == nullptr) {
+				return;
+			}
+			(void)field.applyFieldFunction(static_cast<void*>(&params), field, value);
 		};
 
 		// Definition-level defaults are applied first...
