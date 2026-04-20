@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -381,6 +382,14 @@ bool jsonString(const JsonValue& value, std::string& out) {
 	return true;
 }
 
+bool jsonBool(const JsonValue& value, bool& out) {
+	if (value.kind != JsonValue::Kind::Bool) {
+		return false;
+	}
+	out = value.boolValue;
+	return true;
+}
+
 bool jsonUInt64(const JsonValue& value, uint64_t& out) {
 	if (value.kind != JsonValue::Kind::Number) {
 		return false;
@@ -447,6 +456,13 @@ struct ParsedChange {
 struct ParsedDefinitionTarget {
 	uint64_t definitionId = 0u;
 	std::string definitionName{};
+	uint64_t paramsStructTypeHash = 0u;
+	std::string paramsStructName{};
+	bool hasSourceMetadata = false;
+	std::string sourceFile{};
+	uint32_t sourceLine = 0u;
+	uint32_t sourceColumn = 0u;
+	std::string sourceFunction{};
 	std::vector<ParsedChange> changes{};
 };
 
@@ -2215,6 +2231,13 @@ bool parseInputModel(const JsonValue& root, OutputModel& outModel, std::string& 
 		ParsedDefinitionTarget target{};
 		const JsonValue* definitionIdValue = findObjectField(item, "definitionId");
 		const JsonValue* definitionNameValue = findObjectField(item, "definitionName");
+		const JsonValue* paramsStructTypeHashValue = findObjectField(item, "paramsStructTypeHash");
+		const JsonValue* paramsStructNameValue = findObjectField(item, "paramsStructName");
+		const JsonValue* hasSourceMetadataValue = findObjectField(item, "hasSourceMetadata");
+		const JsonValue* sourceFileValue = findObjectField(item, "sourceFile");
+		const JsonValue* sourceLineValue = findObjectField(item, "sourceLine");
+		const JsonValue* sourceColumnValue = findObjectField(item, "sourceColumn");
+		const JsonValue* sourceFunctionValue = findObjectField(item, "sourceFunction");
 		const JsonValue* changesValue = findObjectField(item, "changes");
 		if (!definitionIdValue || !definitionNameValue || !changesValue) {
 			outError = "Definition entry is missing required fields.";
@@ -2223,6 +2246,48 @@ bool parseInputModel(const JsonValue& root, OutputModel& outModel, std::string& 
 		if (!jsonUInt64(*definitionIdValue, target.definitionId) || !jsonString(*definitionNameValue, target.definitionName)) {
 			outError = "Invalid definition entry fields.";
 			return false;
+		}
+		if (paramsStructTypeHashValue != nullptr) {
+			if (!jsonUInt64(*paramsStructTypeHashValue, target.paramsStructTypeHash)) {
+				outError = "Invalid definition.paramsStructTypeHash.";
+				return false;
+			}
+		}
+		if (paramsStructNameValue != nullptr) {
+			if (!jsonString(*paramsStructNameValue, target.paramsStructName)) {
+				outError = "Invalid definition.paramsStructName.";
+				return false;
+			}
+		}
+		if (hasSourceMetadataValue != nullptr) {
+			if (!jsonBool(*hasSourceMetadataValue, target.hasSourceMetadata)) {
+				outError = "Invalid definition.hasSourceMetadata.";
+				return false;
+			}
+		}
+		if (sourceFileValue != nullptr) {
+			if (!jsonString(*sourceFileValue, target.sourceFile)) {
+				outError = "Invalid definition.sourceFile.";
+				return false;
+			}
+		}
+		if (sourceLineValue != nullptr) {
+			if (!jsonUInt32(*sourceLineValue, target.sourceLine)) {
+				outError = "Invalid definition.sourceLine.";
+				return false;
+			}
+		}
+		if (sourceColumnValue != nullptr) {
+			if (!jsonUInt32(*sourceColumnValue, target.sourceColumn)) {
+				outError = "Invalid definition.sourceColumn.";
+				return false;
+			}
+		}
+		if (sourceFunctionValue != nullptr) {
+			if (!jsonString(*sourceFunctionValue, target.sourceFunction)) {
+				outError = "Invalid definition.sourceFunction.";
+				return false;
+			}
 		}
 		if (changesValue->kind != JsonValue::Kind::Array) {
 			outError = "Definition changes is not an array.";
@@ -2675,10 +2740,390 @@ void replaceRange(std::string& text, std::size_t begin, std::size_t endExclusive
 	text.replace(begin, endExclusive - begin, replacement);
 }
 
+bool isIdentifierChar(char c) {
+	return (std::isalnum(static_cast<unsigned char>(c)) != 0) || c == '_';
+}
+
+bool isIdentifierStartChar(char c) {
+	return (std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_';
+}
+
+std::size_t findTopLevelCharInRange(
+	const std::string& text,
+	char needle,
+	std::size_t begin,
+	std::size_t endExclusive) {
+	if (begin >= text.size()) {
+		return std::string::npos;
+	}
+	endExclusive = std::min(endExclusive, text.size());
+	ScanState state{};
+	int parenDepth = 0;
+	int bracketDepth = 0;
+	int braceDepth = 0;
+	for (std::size_t i = begin; i < endExclusive; ++i) {
+		if (isCodePosition(state)) {
+			const char c = text[i];
+			if (c == '(') {
+				++parenDepth;
+			} else if (c == ')' && parenDepth > 0) {
+				--parenDepth;
+			} else if (c == '[') {
+				++bracketDepth;
+			} else if (c == ']' && bracketDepth > 0) {
+				--bracketDepth;
+			} else if (c == '{') {
+				++braceDepth;
+			} else if (c == '}' && braceDepth > 0) {
+				--braceDepth;
+			} else if (c == needle && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0) {
+				return i;
+			}
+		}
+		scanAdvance(state, text, i);
+	}
+	return std::string::npos;
+}
+
+std::size_t findFieldTerminatorSemicolon(const std::string& text, std::size_t begin, std::size_t endExclusive) {
+	if (begin >= text.size()) {
+		return std::string::npos;
+	}
+	endExclusive = std::min(endExclusive, text.size());
+	ScanState state{};
+	int parenDepth = 0;
+	int bracketDepth = 0;
+	int braceDepth = 0;
+	bool sawTopLevelParen = false;
+	for (std::size_t i = begin; i < endExclusive; ++i) {
+		if (isCodePosition(state)) {
+			const char c = text[i];
+			if (c == '(') {
+				if (parenDepth == 0 && bracketDepth == 0 && braceDepth == 0) {
+					sawTopLevelParen = true;
+				}
+				++parenDepth;
+			} else if (c == ')' && parenDepth > 0) {
+				--parenDepth;
+			} else if (c == '[') {
+				++bracketDepth;
+			} else if (c == ']' && bracketDepth > 0) {
+				--bracketDepth;
+			} else if (c == '{') {
+				if (parenDepth == 0 && bracketDepth == 0 && braceDepth == 0 && sawTopLevelParen) {
+					// Likely a method/function body, not a field declaration.
+					return std::string::npos;
+				}
+				++braceDepth;
+			} else if (c == '}') {
+				if (braceDepth > 0) {
+					--braceDepth;
+				} else {
+					return std::string::npos;
+				}
+			} else if (c == ';' && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0) {
+				return i;
+			}
+		}
+		scanAdvance(state, text, i);
+	}
+	return std::string::npos;
+}
+
+bool findFieldDeclarationInStructBody(
+	const std::string& text,
+	std::size_t bodyBegin,
+	std::size_t bodyEnd,
+	std::string_view fieldName,
+	std::size_t& outFieldNameBegin,
+	std::size_t& outFieldNameEnd,
+	std::size_t& outSemicolonPos) {
+	outFieldNameBegin = std::string::npos;
+	outFieldNameEnd = std::string::npos;
+	outSemicolonPos = std::string::npos;
+
+	if (fieldName.empty() || bodyBegin >= bodyEnd || bodyBegin >= text.size()) {
+		return false;
+	}
+	bodyEnd = std::min(bodyEnd, text.size());
+	ScanState state{};
+	int nestedBraceDepth = 0;
+	for (std::size_t i = bodyBegin; i < bodyEnd; ++i) {
+		if (isCodePosition(state)) {
+			const char c = text[i];
+			if (c == '{') {
+				++nestedBraceDepth;
+			} else if (c == '}') {
+				if (nestedBraceDepth > 0) {
+					--nestedBraceDepth;
+				}
+			} else if (nestedBraceDepth == 0 && isIdentifierStartChar(c)) {
+				std::size_t tokenEnd = i + 1u;
+				while (tokenEnd < bodyEnd && isIdentifierChar(text[tokenEnd])) {
+					++tokenEnd;
+				}
+				if (
+					tokenEnd - i == fieldName.size() &&
+					text.compare(i, fieldName.size(), fieldName) == 0)
+				{
+					const std::size_t semicolonPos = findFieldTerminatorSemicolon(text, tokenEnd, bodyEnd);
+					if (semicolonPos == std::string::npos) {
+						return false;
+					}
+					outFieldNameBegin = i;
+					outFieldNameEnd = tokenEnd;
+					outSemicolonPos = semicolonPos;
+					return true;
+				}
+				i = tokenEnd - 1u;
+			}
+		}
+		scanAdvance(state, text, i);
+	}
+	return false;
+}
+
+struct StructDefinitionCandidate {
+	std::size_t structKeywordPos = std::string::npos;
+	std::size_t namePos = std::string::npos;
+	std::size_t openBracePos = std::string::npos;
+};
+
+std::optional<StructDefinitionCandidate> findStructDefinitionCandidateAboveOffset(
+	const std::string& text,
+	std::size_t searchEnd,
+	std::string_view structName) {
+	if (structName.empty()) {
+		return std::nullopt;
+	}
+
+	searchEnd = std::min(searchEnd, text.size());
+	ScanState state{};
+	std::optional<StructDefinitionCandidate> lastCandidate{};
+	std::optional<StructDefinitionCandidate> lastDefinitionCandidate{};
+
+	for (std::size_t i = 0; i < searchEnd; ++i) {
+		if (isCodePosition(state)) {
+			constexpr std::string_view kStructKeyword = "struct";
+			const bool keywordMatches =
+				(i + kStructKeyword.size() <= searchEnd) &&
+				(text.compare(i, kStructKeyword.size(), kStructKeyword) == 0);
+			if (keywordMatches) {
+				const std::size_t keywordEnd = i + kStructKeyword.size();
+				const bool hasValidPrefix = (i == 0u) || !isIdentifierChar(text[i - 1u]);
+				const bool hasValidSuffix = (keywordEnd >= searchEnd) || !isIdentifierChar(text[keywordEnd]);
+				if (hasValidPrefix && hasValidSuffix) {
+					bool foundName = false;
+					std::size_t foundNamePos = std::string::npos;
+					std::size_t foundOpenBrace = std::string::npos;
+
+					ScanState declarationState{};
+					for (std::size_t j = keywordEnd; j < searchEnd; ++j) {
+						if (isCodePosition(declarationState)) {
+							const char c = text[j];
+							if (c == ';') {
+								break;
+							}
+							if (c == '{') {
+								foundOpenBrace = j;
+								break;
+							}
+							if (isIdentifierStartChar(c)) {
+								std::size_t tokenEnd = j + 1u;
+								while (tokenEnd < searchEnd && isIdentifierChar(text[tokenEnd])) {
+									++tokenEnd;
+								}
+								if (
+									tokenEnd - j == structName.size() &&
+									text.compare(j, structName.size(), structName) == 0)
+								{
+									foundName = true;
+									foundNamePos = j;
+								}
+								j = tokenEnd - 1u;
+							}
+						}
+						scanAdvance(declarationState, text, j);
+					}
+
+					if (foundName) {
+						const StructDefinitionCandidate candidate{
+							.structKeywordPos = i,
+							.namePos = foundNamePos,
+							.openBracePos = foundOpenBrace,
+						};
+						lastCandidate = candidate;
+						if (candidate.openBracePos != std::string::npos) {
+							lastDefinitionCandidate = candidate;
+						}
+					}
+				}
+			}
+		}
+		scanAdvance(state, text, i);
+	}
+
+	if (lastDefinitionCandidate.has_value()) {
+		return lastDefinitionCandidate;
+	}
+	return lastCandidate;
+}
+
+void appendDefinitionUnresolvedForAllChanges(
+	std::vector<UnresolvedEntry>& unresolved,
+	const ParsedDefinitionTarget& target,
+	std::string_view reason) {
+	for (const ParsedChange& change : target.changes) {
+		unresolved.push_back(UnresolvedEntry{
+			.scope = "definition",
+			.definitionId = target.definitionId,
+			.flowId = 0u,
+			.elementId = {},
+			.sourceFile = target.sourceFile,
+			.sourceLine = target.sourceLine,
+			.fieldHash = change.fieldHash,
+			.fieldName = change.fieldName,
+			.reason = std::string(reason),
+		});
+	}
+}
+
+void appendInstanceUnresolvedForAllChanges(
+	std::vector<UnresolvedEntry>& unresolved,
+	const ParsedInstanceTarget& target,
+	std::string_view reason) {
+	for (const ParsedChange& change : target.changes) {
+		unresolved.push_back(UnresolvedEntry{
+			.scope = "instance",
+			.definitionId = target.definitionId,
+			.flowId = target.flowId,
+			.elementId = target.elementId,
+			.sourceFile = target.sourceFile,
+			.sourceLine = target.sourceLine,
+			.fieldHash = change.fieldHash,
+			.fieldName = change.fieldName,
+			.reason = std::string(reason),
+		});
+	}
+}
+
 struct PatchResult {
 	bool patched = false;
 	std::vector<UnresolvedEntry> unresolved{};
 };
+
+PatchResult patchDefinitionTarget(std::string& content, const ParsedDefinitionTarget& target) {
+	PatchResult result{};
+
+	if (target.changes.empty()) {
+		return result;
+	}
+
+	const std::vector<std::size_t> lines = lineOffsets(content);
+	const std::size_t lineStart = lineToOffset(lines, target.sourceLine);
+	if (lineStart == std::string::npos) {
+		appendDefinitionUnresolvedForAllChanges(
+			result.unresolved,
+			target,
+			"Definition source line is outside file bounds.");
+		return result;
+	}
+	if (target.paramsStructName.empty()) {
+		appendDefinitionUnresolvedForAllChanges(
+			result.unresolved,
+			target,
+			"Definition is missing paramsStructName metadata.");
+		return result;
+	}
+
+	const std::optional<StructDefinitionCandidate> candidate =
+		findStructDefinitionCandidateAboveOffset(content, lineStart, target.paramsStructName);
+	if (!candidate.has_value()) {
+		appendDefinitionUnresolvedForAllChanges(
+			result.unresolved,
+			target,
+			"Could not find params struct definition above source metadata line.");
+		return result;
+	}
+	if (candidate->openBracePos == std::string::npos) {
+		appendDefinitionUnresolvedForAllChanges(
+			result.unresolved,
+			target,
+			"Found params struct name but could not find opening '{'.");
+		return result;
+	}
+	if (findMatchingBracket(content, candidate->openBracePos, '{', '}') == std::string::npos) {
+		appendDefinitionUnresolvedForAllChanges(
+			result.unresolved,
+			target,
+			"Found params struct opening '{' but could not find matching '}'.");
+		return result;
+	}
+
+	bool patchedAnyField = false;
+	for (const ParsedChange& change : target.changes) {
+		const std::size_t structClosePos = findMatchingBracket(content, candidate->openBracePos, '{', '}');
+		if (structClosePos == std::string::npos) {
+			result.unresolved.push_back(UnresolvedEntry{
+				.scope = "definition",
+				.definitionId = target.definitionId,
+				.flowId = 0u,
+				.elementId = {},
+				.sourceFile = target.sourceFile,
+				.sourceLine = target.sourceLine,
+				.fieldHash = change.fieldHash,
+				.fieldName = change.fieldName,
+				.reason = "Struct braces became unbalanced while patching.",
+			});
+			continue;
+		}
+
+		std::size_t fieldNameBegin = std::string::npos;
+		std::size_t fieldNameEnd = std::string::npos;
+		std::size_t fieldTerminator = std::string::npos;
+		const bool foundField = findFieldDeclarationInStructBody(
+			content,
+			candidate->openBracePos + 1u,
+			structClosePos,
+			change.fieldName,
+			fieldNameBegin,
+			fieldNameEnd,
+			fieldTerminator);
+		if (!foundField) {
+			result.unresolved.push_back(UnresolvedEntry{
+				.scope = "definition",
+				.definitionId = target.definitionId,
+				.flowId = 0u,
+				.elementId = {},
+				.sourceFile = target.sourceFile,
+				.sourceLine = target.sourceLine,
+				.fieldHash = change.fieldHash,
+				.fieldName = change.fieldName,
+				.reason = "Field was not found inside params struct scope.",
+			});
+			continue;
+		}
+
+		const std::size_t equalsPos = findTopLevelCharInRange(content, '=', fieldNameEnd, fieldTerminator);
+		if (equalsPos != std::string::npos) {
+			std::size_t valueBegin = equalsPos + 1u;
+			while (valueBegin < fieldTerminator && std::isspace(static_cast<unsigned char>(content[valueBegin])) != 0) {
+				++valueBegin;
+			}
+			std::size_t valueEnd = fieldTerminator;
+			while (valueEnd > valueBegin && std::isspace(static_cast<unsigned char>(content[valueEnd - 1u])) != 0) {
+				--valueEnd;
+			}
+			replaceRange(content, valueBegin, valueEnd, change.cppValue);
+		} else {
+			replaceRange(content, fieldTerminator, fieldTerminator, " = " + change.cppValue);
+		}
+		patchedAnyField = true;
+	}
+
+	result.patched = patchedAnyField;
+	return result;
+}
 
 PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget& target) {
 	PatchResult result{};
@@ -2936,7 +3381,11 @@ std::filesystem::path defaultOutputPath(const std::filesystem::path& inputPath) 
 	return parent / (stem + "_output" + ext);
 }
 
-std::string buildOutputJson(const OutputModel& model, std::size_t patchedInstanceCount, std::size_t patchedFileCount) {
+std::string buildOutputJson(
+	const OutputModel& model,
+	std::size_t patchedDefinitionCount,
+	std::size_t patchedInstanceCount,
+	std::size_t patchedFileCount) {
 	std::string out{};
 	out.reserve(8192u);
 
@@ -2953,6 +3402,7 @@ std::string buildOutputJson(const OutputModel& model, std::size_t patchedInstanc
 	appendIndent(1); out += "\"schema\":"; appendString(model.schema); out += ",\n";
 	appendIndent(1); out += "\"kind\":"; appendString(model.kind); out += ",\n";
 	appendIndent(1); out += "\"stats\": {\n";
+	appendIndent(2); out += "\"patchedDefinitionTargets\":" + std::to_string(patchedDefinitionCount) + ",\n";
 	appendIndent(2); out += "\"patchedInstanceTargets\":" + std::to_string(patchedInstanceCount) + ",\n";
 	appendIndent(2); out += "\"patchedFiles\":" + std::to_string(patchedFileCount) + ",\n";
 	appendIndent(2); out += "\"unresolvedCount\":" + std::to_string(model.unresolved.size()) + "\n";
@@ -2964,6 +3414,13 @@ std::string buildOutputJson(const OutputModel& model, std::size_t patchedInstanc
 		appendIndent(2); out += "{\n";
 		appendIndent(3); out += "\"definitionId\":" + std::to_string(def.definitionId) + ",\n";
 		appendIndent(3); out += "\"definitionName\":"; appendString(def.definitionName); out += ",\n";
+		appendIndent(3); out += "\"paramsStructTypeHash\":" + std::to_string(def.paramsStructTypeHash) + ",\n";
+		appendIndent(3); out += "\"paramsStructName\":"; appendString(def.paramsStructName); out += ",\n";
+		appendIndent(3); out += "\"hasSourceMetadata\":"; out += (def.hasSourceMetadata ? "true" : "false"); out += ",\n";
+		appendIndent(3); out += "\"sourceFile\":"; appendString(def.sourceFile); out += ",\n";
+		appendIndent(3); out += "\"sourceLine\":" + std::to_string(def.sourceLine) + ",\n";
+		appendIndent(3); out += "\"sourceColumn\":" + std::to_string(def.sourceColumn) + ",\n";
+		appendIndent(3); out += "\"sourceFunction\":"; appendString(def.sourceFunction); out += ",\n";
 		appendIndent(3); out += "\"changes\": [\n";
 		for (std::size_t j = 0; j < def.changes.size(); ++j) {
 			const ParsedChange& ch = def.changes[j];
@@ -3064,121 +3521,178 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	// V1: definitions are unresolved by design.
-	for (const ParsedDefinitionTarget& definition : model.definitions) {
-		for (const ParsedChange& change : definition.changes) {
-			model.unresolved.push_back(UnresolvedEntry{
-				.scope = "definition",
-				.definitionId = definition.definitionId,
-				.flowId = 0u,
-				.elementId = {},
-				.sourceFile = {},
-				.sourceLine = 0u,
-				.fieldHash = change.fieldHash,
-				.fieldName = change.fieldName,
-				.reason = "V1 does not support Definition changes.",
-			});
-		}
-	}
+	enum class FileTargetScope : uint8_t {
+		Definition,
+		Instance,
+	};
 
-	std::unordered_map<std::string, std::vector<std::size_t>> targetIndexesByFile{};
-	for (std::size_t i = 0; i < model.instances.size(); ++i) {
-		targetIndexesByFile[model.instances[i].sourceFile].push_back(i);
-	}
+	struct FileTargetRef {
+		FileTargetScope scope = FileTargetScope::Instance;
+		std::size_t index = 0u;
+		uint32_t sourceLine = 0u;
+	};
 
-	std::size_t patchedInstanceTargets = 0u;
-	std::size_t patchedFiles = 0u;
+	std::unordered_map<std::string, std::vector<FileTargetRef>> targetIndexesByFile{};
 
-	for (auto& [sourceFile, indexes] : targetIndexesByFile) {
-		if (!std::filesystem::path(sourceFile).is_absolute()) {
-			for (std::size_t idx : indexes) {
-				const ParsedInstanceTarget& target = model.instances[idx];
-				for (const ParsedChange& change : target.changes) {
-					model.unresolved.push_back(UnresolvedEntry{
-						.scope = "instance",
-						.definitionId = target.definitionId,
-						.flowId = target.flowId,
-						.elementId = target.elementId,
-						.sourceFile = target.sourceFile,
-						.sourceLine = target.sourceLine,
-						.fieldHash = change.fieldHash,
-						.fieldName = change.fieldName,
-						.reason = "V1 cant resolve relative filepaths.",
-					});
-				}
-			}
+	for (std::size_t i = 0; i < model.definitions.size(); ++i) {
+		const ParsedDefinitionTarget& target = model.definitions[i];
+		if (!target.hasSourceMetadata) {
+			appendDefinitionUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"Definition has no source metadata.");
 			continue;
 		}
+		if (target.sourceFile.empty()) {
+			appendDefinitionUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"Definition source file metadata is empty.");
+			continue;
+		}
+		if (target.sourceLine == 0u) {
+			appendDefinitionUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"Definition source line metadata is invalid.");
+			continue;
+		}
+		if (!std::filesystem::path(target.sourceFile).is_absolute()) {
+			appendDefinitionUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"Definition source file path is not absolute.");
+			continue;
+		}
+		targetIndexesByFile[target.sourceFile].push_back(FileTargetRef{
+			.scope = FileTargetScope::Definition,
+			.index = i,
+			.sourceLine = target.sourceLine,
+		});
+	}
 
+	for (std::size_t i = 0; i < model.instances.size(); ++i) {
+		const ParsedInstanceTarget& target = model.instances[i];
+		if (target.sourceFile.empty()) {
+			appendInstanceUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"Instance source file metadata is empty.");
+			continue;
+		}
+		if (target.sourceLine == 0u) {
+			appendInstanceUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"Instance source line metadata is invalid.");
+			continue;
+		}
+		if (!std::filesystem::path(target.sourceFile).is_absolute()) {
+			appendInstanceUnresolvedForAllChanges(
+				model.unresolved,
+				target,
+				"V1 cant resolve relative filepaths.");
+			continue;
+		}
+		targetIndexesByFile[target.sourceFile].push_back(FileTargetRef{
+			.scope = FileTargetScope::Instance,
+			.index = i,
+			.sourceLine = target.sourceLine,
+		});
+	}
+
+	std::size_t patchedDefinitionTargets = 0u;
+	std::size_t patchedInstanceTargets = 0u;
+	std::unordered_set<std::string> patchedFileSet{};
+
+	for (auto& [sourceFile, targets] : targetIndexesByFile) {
 		const std::filesystem::path sourcePath = sourceFile;
 		std::string content{};
 		std::string readError{};
 		if (!readFileText(sourcePath, content, readError)) {
-			for (std::size_t idx : indexes) {
-				const ParsedInstanceTarget& target = model.instances[idx];
-				for (const ParsedChange& change : target.changes) {
-					model.unresolved.push_back(UnresolvedEntry{
-						.scope = "instance",
-						.definitionId = target.definitionId,
-						.flowId = target.flowId,
-						.elementId = target.elementId,
-						.sourceFile = target.sourceFile,
-						.sourceLine = target.sourceLine,
-						.fieldHash = change.fieldHash,
-						.fieldName = change.fieldName,
-						.reason = "Failed to open source file.",
-					});
+			for (const FileTargetRef& targetRef : targets) {
+				if (targetRef.scope == FileTargetScope::Definition) {
+					const ParsedDefinitionTarget& target = model.definitions[targetRef.index];
+					appendDefinitionUnresolvedForAllChanges(
+						model.unresolved,
+						target,
+						"Failed to open definition source file.");
+				} else {
+					const ParsedInstanceTarget& target = model.instances[targetRef.index];
+					appendInstanceUnresolvedForAllChanges(
+						model.unresolved,
+						target,
+						"Failed to open source file.");
 				}
 			}
 			continue;
 		}
 
 		std::sort(
-			indexes.begin(),
-			indexes.end(),
-			[&model](std::size_t lhs, std::size_t rhs) {
-				return model.instances[lhs].sourceLine > model.instances[rhs].sourceLine;
+			targets.begin(),
+			targets.end(),
+			[](const FileTargetRef& lhs, const FileTargetRef& rhs) {
+				if (lhs.sourceLine != rhs.sourceLine) {
+					return lhs.sourceLine > rhs.sourceLine;
+				}
+				return static_cast<uint8_t>(lhs.scope) < static_cast<uint8_t>(rhs.scope);
 			});
 
 		bool fileChanged = false;
-		for (std::size_t idx : indexes) {
-			const ParsedInstanceTarget& target = model.instances[idx];
-			PatchResult patch = patchInstanceTarget(content, target);
-			if (patch.patched) {
-				++patchedInstanceTargets;
-				fileChanged = true;
-			}
-			for (const UnresolvedEntry& unresolved : patch.unresolved) {
-				model.unresolved.push_back(unresolved);
+		for (const FileTargetRef& targetRef : targets) {
+			if (targetRef.scope == FileTargetScope::Definition) {
+				const ParsedDefinitionTarget& target = model.definitions[targetRef.index];
+				PatchResult patch = patchDefinitionTarget(content, target);
+				if (patch.patched) {
+					++patchedDefinitionTargets;
+					fileChanged = true;
+				}
+				for (const UnresolvedEntry& unresolved : patch.unresolved) {
+					model.unresolved.push_back(unresolved);
+				}
+			} else {
+				const ParsedInstanceTarget& target = model.instances[targetRef.index];
+				PatchResult patch = patchInstanceTarget(content, target);
+				if (patch.patched) {
+					++patchedInstanceTargets;
+					fileChanged = true;
+				}
+				for (const UnresolvedEntry& unresolved : patch.unresolved) {
+					model.unresolved.push_back(unresolved);
+				}
 			}
 		}
 
 		if (fileChanged) {
 			std::string writeError{};
 			if (!writeFileText(sourcePath, content, writeError)) {
-				for (std::size_t idx : indexes) {
-					const ParsedInstanceTarget& target = model.instances[idx];
-					for (const ParsedChange& change : target.changes) {
-						model.unresolved.push_back(UnresolvedEntry{
-							.scope = "instance",
-							.definitionId = target.definitionId,
-							.flowId = target.flowId,
-							.elementId = target.elementId,
-							.sourceFile = target.sourceFile,
-							.sourceLine = target.sourceLine,
-							.fieldHash = change.fieldHash,
-							.fieldName = change.fieldName,
-							.reason = "Patched in memory but failed to write source file.",
-						});
+				for (const FileTargetRef& targetRef : targets) {
+					if (targetRef.scope == FileTargetScope::Definition) {
+						const ParsedDefinitionTarget& target = model.definitions[targetRef.index];
+						appendDefinitionUnresolvedForAllChanges(
+							model.unresolved,
+							target,
+							"Patched in memory but failed to write definition source file.");
+					} else {
+						const ParsedInstanceTarget& target = model.instances[targetRef.index];
+						appendInstanceUnresolvedForAllChanges(
+							model.unresolved,
+							target,
+							"Patched in memory but failed to write source file.");
 					}
 				}
 			} else {
-				++patchedFiles;
+				patchedFileSet.insert(sourceFile);
 			}
 		}
 	}
 
-	const std::string outputJson = buildOutputJson(model, patchedInstanceTargets, patchedFiles);
+	const std::size_t patchedFiles = patchedFileSet.size();
+	const std::string outputJson = buildOutputJson(
+		model,
+		patchedDefinitionTargets,
+		patchedInstanceTargets,
+		patchedFiles);
 	std::string outputError{};
 	if (!writeFileText(outputPath, outputJson, outputError)) {
 		std::cerr << outputError << "\n";
@@ -3186,7 +3700,8 @@ int main(int argc, char** argv) {
 	}
 
 	std::cout
-		<< "flowui_devChange_updater: patched instance targets=" << patchedInstanceTargets
+		<< "flowui_devChange_updater: patched definition targets=" << patchedDefinitionTargets
+		<< ", patched instance targets=" << patchedInstanceTargets
 		<< ", patched files=" << patchedFiles
 		<< ", unresolved=" << model.unresolved.size()
 		<< ", output='" << outputPath.string() << "'\n";
