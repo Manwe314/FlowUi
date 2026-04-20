@@ -16,6 +16,12 @@ inline const DevPanelContentDef kDevPanelContent = {
 	+[](DevPanelContentDef::BuildContext& context) {
 		devPanelContentState& state = DevPanelContentDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
 
+		int separatorWidth = context.params.separatorThicknessPx;
+		if (separatorWidth < 1)
+		{
+			separatorWidth = 1;
+		}
+
 		int minHierarchyWidth = context.params.minHierarchyWidthPx;
 		if (minHierarchyWidth < 0)
 		{
@@ -28,33 +34,107 @@ inline const DevPanelContentDef kDevPanelContent = {
 			maxHierarchyWidth = minHierarchyWidth;
 		}
 
-		if (!state.hierarchyWidthInitialized)
+		int minPropertiesWidth = context.params.minPropertiesWidthPx;
+		if (minPropertiesWidth < 0)
 		{
-			state.hierarchyWidthPx = context.params.defaultHierarchyWidthPx;
-			if (state.hierarchyWidthPx < minHierarchyWidth)
-			{
-				state.hierarchyWidthPx = minHierarchyWidth;
-			}
-			else if (state.hierarchyWidthPx > maxHierarchyWidth)
-			{
-				state.hierarchyWidthPx = maxHierarchyWidth;
-			}
-			state.hierarchyWidthInitialized = true;
-		}
-		else
-		{
-			if (state.hierarchyWidthPx < minHierarchyWidth)
-			{
-				state.hierarchyWidthPx = minHierarchyWidth;
-			}
-			else if (state.hierarchyWidthPx > maxHierarchyWidth)
-			{
-				state.hierarchyWidthPx = maxHierarchyWidth;
-			}
+			minPropertiesWidth = 0;
 		}
 
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementData rootData = Clay_GetElementData(rootId);
+
+		int panelWidthPx = state.lastPanelWidthPx;
+		if (rootData.found)
+		{
+			panelWidthPx = static_cast<int>(std::lround(rootData.boundingBox.width));
+		}
+		if (panelWidthPx < 1)
+		{
+			panelWidthPx =
+				std::max(1, context.params.defaultHierarchyWidthPx) +
+				separatorWidth +
+				std::max(1, minPropertiesWidth);
+		}
+		state.lastPanelWidthPx = panelWidthPx;
+
+		int usableContentWidthPx = panelWidthPx - separatorWidth;
+		if (usableContentWidthPx < 1)
+		{
+			usableContentWidthPx = 1;
+		}
+
+		int minAllowedHierarchyWidth = minHierarchyWidth;
+		if (minAllowedHierarchyWidth > usableContentWidthPx)
+		{
+			minAllowedHierarchyWidth = usableContentWidthPx;
+		}
+
+		int maxAllowedHierarchyWidth = maxHierarchyWidth;
+		if (maxAllowedHierarchyWidth > usableContentWidthPx)
+		{
+			maxAllowedHierarchyWidth = usableContentWidthPx;
+		}
+
+		const int maxAllowedByProperties = usableContentWidthPx - minPropertiesWidth;
+		if (maxAllowedHierarchyWidth > maxAllowedByProperties)
+		{
+			maxAllowedHierarchyWidth = maxAllowedByProperties;
+		}
+		if (maxAllowedHierarchyWidth < minAllowedHierarchyWidth)
+		{
+			maxAllowedHierarchyWidth = minAllowedHierarchyWidth;
+		}
+
+		const auto clampHierarchyWidth = [&](int widthPx) -> int {
+			if (widthPx < minAllowedHierarchyWidth)
+			{
+				return minAllowedHierarchyWidth;
+			}
+			if (widthPx > maxAllowedHierarchyWidth)
+			{
+				return maxAllowedHierarchyWidth;
+			}
+			return widthPx;
+		};
+
+		if (!state.hierarchySplitInitialized)
+		{
+			float initialRatio = context.params.defaultHierarchySplitRatio;
+			if (!std::isfinite(initialRatio) || initialRatio <= 0.0f || initialRatio >= 1.0f)
+			{
+				initialRatio =
+					(static_cast<float>(context.params.defaultHierarchyWidthPx) /
+					static_cast<float>(usableContentWidthPx));
+			}
+			state.hierarchySplitRatio = initialRatio;
+			state.hierarchySplitInitialized = true;
+		}
+
+		if (!std::isfinite(state.hierarchySplitRatio))
+		{
+			state.hierarchySplitRatio = context.params.defaultHierarchySplitRatio;
+		}
+
+		float minRatio = 0.0f;
+		float maxRatio = 1.0f;
+		if (usableContentWidthPx > 0)
+		{
+			minRatio = static_cast<float>(minAllowedHierarchyWidth) / static_cast<float>(usableContentWidthPx);
+			maxRatio = static_cast<float>(maxAllowedHierarchyWidth) / static_cast<float>(usableContentWidthPx);
+		}
+		if (maxRatio < minRatio)
+		{
+			maxRatio = minRatio;
+		}
+		state.hierarchySplitRatio = std::clamp(state.hierarchySplitRatio, minRatio, maxRatio);
+
+		int hierarchyWidthPx =
+			static_cast<int>(std::lround(state.hierarchySplitRatio * static_cast<float>(usableContentWidthPx)));
+		hierarchyWidthPx = clampHierarchyWidth(hierarchyWidthPx);
+		state.hierarchySplitRatio = static_cast<float>(hierarchyWidthPx) / static_cast<float>(usableContentWidthPx);
+
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		root.id = rootId;
 		root.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_GROW(0),
@@ -67,7 +147,7 @@ inline const DevPanelContentDef kDevPanelContent = {
 			context.uiManager
 				.createElement(kDevHierarchy, context.createChildElementId("hierarchy"))
 				.setParameters(devHierarchyParams{
-					.width = state.hierarchyWidthPx,
+					.width = hierarchyWidthPx,
 					.backgroundColor = context.params.hierarchyBackgroundColor,
 				})
 				.draw();
@@ -75,23 +155,34 @@ inline const DevPanelContentDef kDevPanelContent = {
 			devDynamicSeparatorParams separatorParams{};
 			separatorParams.orientation = devDynamicSeparatorParams::Orientation::Vertical;
 			separatorParams.reverseDrag = false;
-			separatorParams.width = (context.params.separatorThicknessPx < 1) ? 1 : context.params.separatorThicknessPx;
+			separatorParams.width = separatorWidth;
 			separatorParams.height = 1;
-			separatorParams.minValue = minHierarchyWidth;
-			separatorParams.maxValue = maxHierarchyWidth;
-			separatorParams.getValue = [&state]() {
-				return state.hierarchyWidthPx;
+			separatorParams.minValue = minAllowedHierarchyWidth;
+			separatorParams.maxValue = maxAllowedHierarchyWidth;
+			separatorParams.getValue = [hierarchyWidthPx]() {
+				return hierarchyWidthPx;
 			};
-			separatorParams.setValue = [&state, minHierarchyWidth, maxHierarchyWidth](int nextWidth) {
-				if (nextWidth < minHierarchyWidth)
+			separatorParams.setValue = [
+				&state,
+				usableContentWidthPx,
+				minAllowedHierarchyWidth,
+				maxAllowedHierarchyWidth
+			](int nextWidth) {
+				if (nextWidth < minAllowedHierarchyWidth)
 				{
-					nextWidth = minHierarchyWidth;
+					nextWidth = minAllowedHierarchyWidth;
 				}
-				else if (nextWidth > maxHierarchyWidth)
+				else if (nextWidth > maxAllowedHierarchyWidth)
 				{
-					nextWidth = maxHierarchyWidth;
+					nextWidth = maxAllowedHierarchyWidth;
 				}
-				state.hierarchyWidthPx = nextWidth;
+				if (usableContentWidthPx <= 0)
+				{
+					return;
+				}
+				state.hierarchySplitRatio =
+					static_cast<float>(nextWidth) /
+					static_cast<float>(usableContentWidthPx);
 			};
 
 			context.uiManager
@@ -99,16 +190,16 @@ inline const DevPanelContentDef kDevPanelContent = {
 				.setParameters(separatorParams)
 				.draw();
 
-				context.uiManager
-					.createElement(kDevProperties, context.createChildElementId("properties"))
-					.setParameters(devPropertiesParams{
-						.backgroundColor = context.params.propertiesBackgroundColor,
-						.selectedElementIdText =
-							state.selectedElementId.empty()
-							? std::string("placeholder")
-							: state.selectedElementId,
-					})
-					.draw();
+			context.uiManager
+				.createElement(kDevProperties, context.createChildElementId("properties"))
+				.setParameters(devPropertiesParams{
+					.backgroundColor = context.params.propertiesBackgroundColor,
+					.selectedElementIdText =
+						state.selectedElementId.empty()
+						? std::string("placeholder")
+						: state.selectedElementId,
+				})
+				.draw();
 		};
 	},
 };

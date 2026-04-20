@@ -10,7 +10,7 @@ struct devPropertiesContentParams {
 	uint16_t rowGap = 6;
 	uint16_t rowChildGap = 8;
 	Clay_Sizing valueEditorSizing = Clay_Sizing{
-		.width = CLAY_SIZING_FIXED(220),
+		.width = CLAY_SIZING_GROW(0),
 		.height = CLAY_SIZING_FIT(0),
 	};
 	std::string noSelectionText = "Select an Element or a Definition from the Hirearchy";
