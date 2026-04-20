@@ -66,6 +66,122 @@ inline bool devFieldTypeIsCompositeStruct(uint64_t fieldTypeHash) {
 	return FlowUi::devMode::isDevCompositeStructTypeHash(fieldTypeHash);
 }
 
+inline std::string devFieldTypeDisplayName(
+	uint64_t fieldTypeHash,
+	std::string_view fallbackTypeToken = {}) {
+	using FlowUi::devMode::typeHash;
+
+	if (fieldTypeHash == typeHash<bool>())
+	{
+		return "bool";
+	}
+	if (fieldTypeHash == typeHash<std::string>())
+	{
+		return "std::string";
+	}
+	if (fieldTypeHash == typeHash<int8_t>())
+	{
+		return "int8_t";
+	}
+	if (fieldTypeHash == typeHash<int16_t>())
+	{
+		return "int16_t";
+	}
+	if (fieldTypeHash == typeHash<int32_t>())
+	{
+		return "int32_t";
+	}
+	if (fieldTypeHash == typeHash<int64_t>())
+	{
+		return "int64_t";
+	}
+	if (fieldTypeHash == typeHash<uint8_t>())
+	{
+		return "uint8_t";
+	}
+	if (fieldTypeHash == typeHash<uint16_t>())
+	{
+		return "uint16_t";
+	}
+	if (fieldTypeHash == typeHash<uint32_t>())
+	{
+		return "uint32_t";
+	}
+	if (fieldTypeHash == typeHash<uint64_t>())
+	{
+		return "uint64_t";
+	}
+	if (fieldTypeHash == typeHash<float>())
+	{
+		return "float";
+	}
+	if (fieldTypeHash == typeHash<double>())
+	{
+		return "double";
+	}
+	if (const FlowUi::devMode::DevFloat1TypeInfo* info = FlowUi::devMode::findDevFloat1TypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevEnum1TypeInfo* info = FlowUi::devMode::findDevEnum1TypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevEnum2TypeInfo* info = FlowUi::devMode::findDevEnum2TypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevFloat2TypeInfo* info = FlowUi::devMode::findDevFloat2TypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevFloat4TypeInfo* info = FlowUi::devMode::findDevFloat4TypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevEdgeU16TypeInfo* info = FlowUi::devMode::findDevEdgeU16TypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevTaggedUnionTypeInfo* info = FlowUi::devMode::findDevTaggedUnionTypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+	if (const FlowUi::devMode::DevCompositeStructTypeInfo* info = FlowUi::devMode::findDevCompositeStructTypeInfo(fieldTypeHash))
+	{
+		return std::string(info->typeName);
+	}
+
+	const FlowUi::devMode::DevRegistry& registry = FlowUi::devMode::DevRegistry::instance();
+	if (const FlowUi::devMode::EnumDescriptor* descriptor = registry.findEnumByTypeHash(fieldTypeHash))
+	{
+		if (!descriptor->name.empty())
+		{
+			return descriptor->name;
+		}
+		if (!descriptor->typeToken.empty())
+		{
+			return descriptor->typeToken;
+		}
+	}
+	if (const FlowUi::devMode::StructDescriptor* descriptor = registry.findStructByTypeHash(fieldTypeHash))
+	{
+		if (!descriptor->name.empty())
+		{
+			return descriptor->name;
+		}
+		if (!descriptor->typeToken.empty())
+		{
+			return descriptor->typeToken;
+		}
+	}
+	if (!fallbackTypeToken.empty())
+	{
+		return std::string(fallbackTypeToken);
+	}
+	return "<unknown>";
+}
+
 inline uint64_t normalizedSelectionFlowId(const devPropertiesSelectionNode& selection) {
 	if (selection.flowId != 0u)
 	{

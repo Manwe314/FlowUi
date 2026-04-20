@@ -3,6 +3,7 @@
 #if FLOW_UI_DEV_MODE
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 
 #include "FlowUi/Flow.hpp"
@@ -17,6 +18,13 @@ using DebugViewDefinition = ElementDefinition<
 	FLOW_DEF_ID("flowui/dev/debug-view"),
 	true>;
 
+struct MainViewSizing {
+	int widthPx = 0;
+	int minWidthPx = 0;
+	int maxWidthPx = 0;
+	int availableWidthPx = 1;
+};
+
 int minMainViewWidth(const DebugViewParams& params) {
 	return std::max(0, params.minMainViewWidthPx);
 }
@@ -25,28 +33,110 @@ int maxMainViewWidth(const DebugViewParams& params) {
 	return std::max(minMainViewWidth(params), params.maxMainViewWidthPx);
 }
 
-int clampMainViewWidth(const DebugViewParams& params, int value) {
-	return std::clamp(value, minMainViewWidth(params), maxMainViewWidth(params));
+int resolveRootWidthPx(
+	FlowUi::UiManager& uiManager,
+	DebugViewState& state,
+	const DebugViewParams& params,
+	int separatorWidthPx) {
+	const Clay_ElementData rootData = Clay_GetElementData(uiManager.toClaySID("_Flow_Dev_root_"));
+	int rootWidthPx = state.lastRootWidthPx;
+	if (rootData.found)
+	{
+		rootWidthPx = static_cast<int>(std::lround(rootData.boundingBox.width));
+	}
+	if (rootWidthPx < 1)
+	{
+		rootWidthPx =
+			std::max(1, params.defaultMainViewWidthPx) +
+			std::max(1, separatorWidthPx) +
+			std::max(1, minMainViewWidth(params));
+	}
+	state.lastRootWidthPx = rootWidthPx;
+	return rootWidthPx;
 }
 
-void initializeMainViewWidthIfNeeded(DebugViewState& state, const DebugViewParams& params) {
-	if (state.widthInitialized) {
-		return;
+MainViewSizing computeMainViewSizing(
+	DebugViewState& state,
+	const DebugViewParams& params,
+	int availableWidthPx) {
+	MainViewSizing sizing{};
+	sizing.availableWidthPx = std::max(1, availableWidthPx);
+	sizing.minWidthPx = minMainViewWidth(params);
+	sizing.maxWidthPx = maxMainViewWidth(params);
+	if (sizing.minWidthPx > sizing.availableWidthPx)
+	{
+		sizing.minWidthPx = sizing.availableWidthPx;
 	}
-	state.mainViewWidthPx = clampMainViewWidth(params, params.defaultMainViewWidthPx);
-	state.widthInitialized = true;
+	if (sizing.maxWidthPx > sizing.availableWidthPx)
+	{
+		sizing.maxWidthPx = sizing.availableWidthPx;
+	}
+	if (sizing.maxWidthPx < sizing.minWidthPx)
+	{
+		sizing.maxWidthPx = sizing.minWidthPx;
+	}
+
+	if (!state.splitInitialized)
+	{
+		float initialRatio = params.defaultMainViewSplitRatio;
+		if (!std::isfinite(initialRatio) || initialRatio <= 0.0f || initialRatio >= 1.0f)
+		{
+			initialRatio =
+				static_cast<float>(params.defaultMainViewWidthPx) /
+				static_cast<float>(sizing.availableWidthPx);
+		}
+		state.mainViewSplitRatio = initialRatio;
+		state.splitInitialized = true;
+	}
+
+	if (!std::isfinite(state.mainViewSplitRatio))
+	{
+		state.mainViewSplitRatio = params.defaultMainViewSplitRatio;
+	}
+
+	const float minRatio =
+		static_cast<float>(sizing.minWidthPx) /
+		static_cast<float>(sizing.availableWidthPx);
+	const float maxRatio =
+		static_cast<float>(sizing.maxWidthPx) /
+		static_cast<float>(sizing.availableWidthPx);
+	state.mainViewSplitRatio = std::clamp(state.mainViewSplitRatio, minRatio, maxRatio);
+
+	sizing.widthPx = static_cast<int>(std::lround(
+		state.mainViewSplitRatio *
+		static_cast<float>(sizing.availableWidthPx)));
+	sizing.widthPx = std::clamp(sizing.widthPx, sizing.minWidthPx, sizing.maxWidthPx);
+	state.mainViewSplitRatio =
+		static_cast<float>(sizing.widthPx) /
+		static_cast<float>(sizing.availableWidthPx);
+	return sizing;
 }
 
 void runDebugViewLogic(DebugViewDefinition::InteractionContext& context) {
 	DebugViewState& state = DebugViewDefinition::getOrCreateState(toFlowId(context.elementID));
-	initializeMainViewWidthIfNeeded(state, context.params);
-	state.mainViewWidthPx = clampMainViewWidth(context.params, state.mainViewWidthPx);
+	if (!state.splitInitialized)
+	{
+		state.mainViewSplitRatio = context.params.defaultMainViewSplitRatio;
+		state.splitInitialized = true;
+	}
+	if (!std::isfinite(state.mainViewSplitRatio))
+	{
+		state.mainViewSplitRatio = context.params.defaultMainViewSplitRatio;
+	}
+	state.mainViewSplitRatio = std::clamp(state.mainViewSplitRatio, 0.0f, 1.0f);
 }
 
 void buildDebugView(DebugViewDefinition::BuildContext& context) {
 	DebugViewState& state = DebugViewDefinition::getOrCreateState(toFlowId(context.elementID));
-	initializeMainViewWidthIfNeeded(state, context.params);
-	state.mainViewWidthPx = clampMainViewWidth(context.params, state.mainViewWidthPx);
+
+	const int separatorWidthPx = std::max(1, context.params.separatorThicknessPx);
+	const int rootWidthPx = resolveRootWidthPx(context.uiManager, state, context.params, separatorWidthPx);
+	int availableWidthPx = rootWidthPx - separatorWidthPx;
+	if (availableWidthPx < 1)
+	{
+		availableWidthPx = 1;
+	}
+	const MainViewSizing sizing = computeMainViewSizing(state, context.params, availableWidthPx);
 
 	CLAY({
 		.id = context.uiManager.toClaySID(context.elementID),
@@ -56,21 +146,30 @@ void buildDebugView(DebugViewDefinition::BuildContext& context) {
 			.layoutDirection = CLAY_LEFT_TO_RIGHT,
 		},
 	}) {
-		const int minWidth = minMainViewWidth(context.params);
-		const int maxWidth = maxMainViewWidth(context.params);
-
 		::devDynamicSeparatorParams separatorParams{};
 		separatorParams.orientation = ::devDynamicSeparatorParams::Orientation::Vertical;
 		separatorParams.reverseDrag = true;
-		separatorParams.width = std::max(1, context.params.separatorThicknessPx);
+		separatorParams.width = separatorWidthPx;
 		separatorParams.height = 1;
-		separatorParams.minValue = minWidth;
-		separatorParams.maxValue = maxWidth;
-		separatorParams.getValue = [&state]() {
-			return state.mainViewWidthPx;
+		separatorParams.minValue = sizing.minWidthPx;
+		separatorParams.maxValue = sizing.maxWidthPx;
+		separatorParams.getValue = [widthPx = sizing.widthPx]() {
+			return widthPx;
 		};
-		separatorParams.setValue = [&state, minWidth, maxWidth](int nextWidth) {
-			state.mainViewWidthPx = std::clamp(nextWidth, minWidth, maxWidth);
+		separatorParams.setValue = [
+			&state,
+			availableWidthPx = sizing.availableWidthPx,
+			minWidthPx = sizing.minWidthPx,
+			maxWidthPx = sizing.maxWidthPx
+		](int nextWidth) {
+			nextWidth = std::clamp(nextWidth, minWidthPx, maxWidthPx);
+			if (availableWidthPx <= 0)
+			{
+				return;
+			}
+			state.mainViewSplitRatio =
+				static_cast<float>(nextWidth) /
+				static_cast<float>(availableWidthPx);
 		};
 
 		const std::string separatorId = context.createChildElementId("separator");
@@ -83,7 +182,7 @@ void buildDebugView(DebugViewDefinition::BuildContext& context) {
 		context.uiManager
 			.createElement(::kMainDevView, mainViewId)
 			.setParameters(::mainDevViewParams{
-				.width = state.mainViewWidthPx,
+				.width = sizing.widthPx,
 			})
 			.draw();
 	}

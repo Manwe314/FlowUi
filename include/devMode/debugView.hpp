@@ -14,6 +14,7 @@ class UiManager;
 namespace FlowUi::devMode {
 
 struct DebugViewParams {
+	float defaultMainViewSplitRatio = 0.30f;
 	int defaultMainViewWidthPx = 420;
 	int minMainViewWidthPx = 220;
 	int maxMainViewWidthPx = 1200;
@@ -21,8 +22,9 @@ struct DebugViewParams {
 };
 
 struct DebugViewState {
-	int mainViewWidthPx = 0;
-	bool widthInitialized = false;
+	float mainViewSplitRatio = 0.30f;
+	bool splitInitialized = false;
+	int lastRootWidthPx = 0;
 };
 
 struct DebugViewResources {};
