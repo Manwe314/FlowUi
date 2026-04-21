@@ -39,16 +39,46 @@ inline const DevPanelContentDef kDevPanelContent = {
 		{
 			minPropertiesWidth = 0;
 		}
+		int hardMinHierarchyWidth = context.params.hardMinHierarchyWidthPx;
+		if (hardMinHierarchyWidth < 1)
+		{
+			hardMinHierarchyWidth = 1;
+		}
+		if (hardMinHierarchyWidth > minHierarchyWidth)
+		{
+			hardMinHierarchyWidth = minHierarchyWidth;
+		}
+		int hardMinPropertiesWidth = context.params.hardMinPropertiesWidthPx;
+		if (hardMinPropertiesWidth < 1)
+		{
+			hardMinPropertiesWidth = 1;
+		}
+		if (hardMinPropertiesWidth > minPropertiesWidth)
+		{
+			hardMinPropertiesWidth = minPropertiesWidth;
+		}
 
 		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		const Clay_ElementData rootData = Clay_GetElementData(rootId);
 
-		int panelWidthPx = state.lastPanelWidthPx;
-		int panelHeightPx = state.lastPanelHeightPx;
+		int panelWidthPx =
+			(context.params.panelWidthHintPx > 0)
+			? context.params.panelWidthHintPx
+			: state.lastPanelWidthPx;
+		int panelHeightPx =
+			(context.params.panelHeightHintPx > 0)
+			? context.params.panelHeightHintPx
+			: state.lastPanelHeightPx;
 		if (rootData.found)
 		{
-			panelWidthPx = static_cast<int>(std::lround(rootData.boundingBox.width));
-			panelHeightPx = static_cast<int>(std::lround(rootData.boundingBox.height));
+			if (context.params.panelWidthHintPx <= 0)
+			{
+				panelWidthPx = static_cast<int>(std::lround(rootData.boundingBox.width));
+			}
+			if (context.params.panelHeightHintPx <= 0)
+			{
+				panelHeightPx = static_cast<int>(std::lround(rootData.boundingBox.height));
+			}
 		}
 		if (panelWidthPx < 1)
 		{
@@ -75,6 +105,47 @@ inline const DevPanelContentDef kDevPanelContent = {
 		{
 			minAllowedHierarchyWidth = usableContentWidthPx;
 		}
+		int minAllowedPropertiesWidth = minPropertiesWidth;
+		if (minAllowedPropertiesWidth > usableContentWidthPx)
+		{
+			minAllowedPropertiesWidth = usableContentWidthPx;
+		}
+
+		const int preferredTotalMinWidth = minAllowedHierarchyWidth + minAllowedPropertiesWidth;
+		if (preferredTotalMinWidth > usableContentWidthPx)
+		{
+			int shortage = preferredTotalMinWidth - usableContentWidthPx;
+			const int hierarchySlack = std::max(0, minAllowedHierarchyWidth - hardMinHierarchyWidth);
+			const int propertiesSlack = std::max(0, minAllowedPropertiesWidth - hardMinPropertiesWidth);
+
+			int reduceHierarchy = std::min(hierarchySlack, (shortage + 1) / 2);
+			int reduceProperties = std::min(propertiesSlack, shortage / 2);
+			minAllowedHierarchyWidth -= reduceHierarchy;
+			minAllowedPropertiesWidth -= reduceProperties;
+			shortage -= (reduceHierarchy + reduceProperties);
+
+			if (shortage > 0)
+			{
+				const int extraHierarchySlack = std::max(0, minAllowedHierarchyWidth - hardMinHierarchyWidth);
+				const int extraReduceHierarchy = std::min(extraHierarchySlack, shortage);
+				minAllowedHierarchyWidth -= extraReduceHierarchy;
+				shortage -= extraReduceHierarchy;
+			}
+			if (shortage > 0)
+			{
+				const int extraPropertiesSlack = std::max(0, minAllowedPropertiesWidth - hardMinPropertiesWidth);
+				const int extraReduceProperties = std::min(extraPropertiesSlack, shortage);
+				minAllowedPropertiesWidth -= extraReduceProperties;
+				shortage -= extraReduceProperties;
+			}
+
+			if (shortage > 0)
+			{
+				// Last-resort fallback when even hard minimums don't fit.
+				minAllowedHierarchyWidth = std::max(1, usableContentWidthPx / 2);
+				minAllowedPropertiesWidth = std::max(1, usableContentWidthPx - minAllowedHierarchyWidth);
+			}
+		}
 
 		int maxAllowedHierarchyWidth = maxHierarchyWidth;
 		if (maxAllowedHierarchyWidth > usableContentWidthPx)
@@ -82,7 +153,7 @@ inline const DevPanelContentDef kDevPanelContent = {
 			maxAllowedHierarchyWidth = usableContentWidthPx;
 		}
 
-		const int maxAllowedByProperties = usableContentWidthPx - minPropertiesWidth;
+		const int maxAllowedByProperties = usableContentWidthPx - minAllowedPropertiesWidth;
 		if (maxAllowedHierarchyWidth > maxAllowedByProperties)
 		{
 			maxAllowedHierarchyWidth = maxAllowedByProperties;
@@ -138,12 +209,12 @@ inline const DevPanelContentDef kDevPanelContent = {
 		int hierarchyWidthPx =
 			static_cast<int>(std::lround(state.hierarchySplitRatio * static_cast<float>(usableContentWidthPx)));
 		hierarchyWidthPx = clampHierarchyWidth(hierarchyWidthPx);
-		state.hierarchySplitRatio = static_cast<float>(hierarchyWidthPx) / static_cast<float>(usableContentWidthPx);
 		int propertiesWidthPx = usableContentWidthPx - hierarchyWidthPx;
 		if (propertiesWidthPx < 1)
 		{
 			propertiesWidthPx = 1;
 		}
+		state.hierarchySplitRatio = static_cast<float>(hierarchyWidthPx) / static_cast<float>(usableContentWidthPx);
 
 		Clay_ElementDeclaration root{};
 		root.id = rootId;
@@ -156,14 +227,14 @@ inline const DevPanelContentDef kDevPanelContent = {
 		root.backgroundColor = context.params.backgroundColor;
 
 		CLAY(root){
-				context.uiManager
-					.createElement(kDevHierarchy, context.createChildElementId("hierarchy"))
-					.setParameters(devHierarchyParams{
-						.width = hierarchyWidthPx,
-						.height = panelHeightPx,
-						.backgroundColor = context.params.hierarchyBackgroundColor,
-					})
-					.draw();
+			context.uiManager
+				.createElement(kDevHierarchy, context.createChildElementId("hierarchy"))
+				.setParameters(devHierarchyParams{
+					.width = hierarchyWidthPx,
+					.height = panelHeightPx,
+					.backgroundColor = context.params.hierarchyBackgroundColor,
+				})
+				.draw();
 
 			devDynamicSeparatorParams separatorParams{};
 			separatorParams.orientation = devDynamicSeparatorParams::Orientation::Vertical;
@@ -203,14 +274,14 @@ inline const DevPanelContentDef kDevPanelContent = {
 				.setParameters(separatorParams)
 				.draw();
 
-				context.uiManager
-					.createElement(kDevProperties, context.createChildElementId("properties"))
-					.setParameters(devPropertiesParams{
-						.width = propertiesWidthPx,
-						.height = panelHeightPx,
-						.backgroundColor = context.params.propertiesBackgroundColor,
-						.selectedElementIdText =
-							state.selectedElementId.empty()
+			context.uiManager
+				.createElement(kDevProperties, context.createChildElementId("properties"))
+				.setParameters(devPropertiesParams{
+					.width = propertiesWidthPx,
+					.height = panelHeightPx,
+					.backgroundColor = context.params.propertiesBackgroundColor,
+					.selectedElementIdText =
+						state.selectedElementId.empty()
 						? std::string("placeholder")
 						: state.selectedElementId,
 				})
