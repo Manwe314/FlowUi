@@ -3,6 +3,7 @@
 #include "devMode/devFlowElements/devDynamicSeparator.hpp"
 #include "devMode/devFlowElements/devBasicButton.hpp"
 #include "devMode/devFlowElements/devBasicInputField.hpp"
+#include "devMode/devFlowElements/devNumericInput.hpp"
 #include "devMode/devFlowElements/devBasicToggle.hpp"
 #include "devMode/devFlowElements/devEnum1Input.hpp"
 #include "devMode/devFlowElements/devEnum2Input.hpp"

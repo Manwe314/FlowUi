@@ -142,6 +142,10 @@ inline const DevPanelContentDef kDevPanelContent = {
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
+		root.clip = {
+			.horizontal = true,
+			.vertical = true,
+		};
 
 		CLAY(root){
 			context.uiManager

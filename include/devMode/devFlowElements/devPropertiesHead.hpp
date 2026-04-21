@@ -65,11 +65,23 @@ inline const DevPropertiesHeadDef kDevPropertiesHead = {
 					CLAY_TEXT_CONFIG(titleTextConfig));
 			};
 
-			CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("selected-id"))}){
+			CLAY({
+				.id = context.uiManager.toClayEID(context.createChildElementId("selected-id")),
+				.layout = {
+					.sizing = {
+						.width = CLAY_SIZING_GROW(0),
+						.height = CLAY_SIZING_FIT(0),
+					},
+				},
+				.clip = {
+					.horizontal = true,
+					.vertical = false,
+				},
+			}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.selectedElementIdText),
 					CLAY_TEXT_CONFIG(selectedTextConfig));
 			};
-		};
-	},
-};
+			};
+		},
+	};

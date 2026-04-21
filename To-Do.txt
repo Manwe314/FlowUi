@@ -13,6 +13,8 @@
 13. Revisit how TextureRef's get stored for frames. 
 14. come back to enforcing PIMPL
 15. updater tool bug with not detecting mergeParameters
+16. add config for Drag scrolling
+17. add mouse pointer selection interface.
 
 For SVG Manager:
 	Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.

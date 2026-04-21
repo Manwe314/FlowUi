@@ -35,6 +35,10 @@ inline const DevPropertiesDef kDevProperties = {
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
+		root.clip = {
+			.horizontal = true,
+			.vertical = true,
+		};
 
 		CLAY(root){
 			context.uiManager

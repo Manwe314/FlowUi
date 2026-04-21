@@ -210,6 +210,13 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 		devPanelContentState* panelState = findSingleDevPanelContentState();
 		const bool isViewingInstances = (panelState == nullptr) ? true : panelState->isViewingInstances;
 
+		Clay_TextElementConfig textConfigBase{};
+		textConfigBase.textColor = context.params.textColor;
+		textConfigBase.fontId = context.params.fontId;
+		textConfigBase.fontSize = context.params.fontSize;
+		textConfigBase.wrapMode = CLAY_TEXT_WRAP_NONE;
+		textConfigBase.textAlignment = CLAY_TEXT_ALIGN_LEFT;
+
 		Clay_ElementDeclaration root{};
 		root.id = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
@@ -221,17 +228,10 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
 		root.clip = {
-			.horizontal = false,
+			.horizontal = true,
 			.vertical = true,
 			.childOffset = Clay_GetScrollOffset(),
 		};
-
-		Clay_TextElementConfig textConfigBase{};
-		textConfigBase.textColor = context.params.textColor;
-		textConfigBase.fontId = context.params.fontId;
-		textConfigBase.fontSize = context.params.fontSize;
-		textConfigBase.wrapMode = CLAY_TEXT_WRAP_NONE;
-		textConfigBase.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
 		CLAY(root){
 			if (!isViewingInstances)

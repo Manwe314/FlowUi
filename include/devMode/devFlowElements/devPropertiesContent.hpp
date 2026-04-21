@@ -16,6 +16,13 @@ inline const DevPropertiesContentDef kDevPropertiesContent = {
 		devPropertiesContentState& state = DevPropertiesContentDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
 		const devPropertiesSelectionNode& selection = state.selectedNode;
 
+		Clay_TextElementConfig textConfig{};
+		textConfig.textColor = context.params.textColor;
+		textConfig.fontId = context.params.fontId;
+		textConfig.fontSize = context.params.fontSize;
+		textConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
+		textConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
+
 		Clay_ElementDeclaration root{};
 		root.id = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
@@ -27,17 +34,10 @@ inline const DevPropertiesContentDef kDevPropertiesContent = {
 		root.layout.padding = context.params.padding;
 		root.backgroundColor = context.params.backgroundColor;
 		root.clip = {
-			.horizontal = false,
+			.horizontal = true,
 			.vertical = true,
 			.childOffset = Clay_GetScrollOffset(),
 		};
-
-		Clay_TextElementConfig textConfig{};
-		textConfig.textColor = context.params.textColor;
-		textConfig.fontId = context.params.fontId;
-		textConfig.fontSize = context.params.fontSize;
-		textConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
-		textConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
 		CLAY(root){
 			if (isDevPropertiesSelectionNull(selection))

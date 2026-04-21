@@ -20,6 +20,8 @@ struct devBasicInputFieldParams {
 	Clay_BorderWidth borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 	Clay_Color backgroundColor = FlowUi::Flow_Color("#cfcfcfff");
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
+	bool clipHorizontal = true;
+	bool clipVertical = true;
 	Clay_ChildAlignment childTextAlignment = Clay_ChildAlignment{
 		.x = CLAY_ALIGN_X_LEFT,
 		.y = CLAY_ALIGN_Y_CENTER,
@@ -112,7 +114,10 @@ inline const DevBasicInputFieldDef kDevBasicInputField = {
 		root.layout = rootLayout;
 		root.backgroundColor = context.params.backgroundColor;
 		root.cornerRadius = context.params.cornerRadius;
-		root.clip = {.horizontal = true, .vertical = true};
+		root.clip = {
+			.horizontal = context.params.clipHorizontal,
+			.vertical = context.params.clipVertical,
+		};
 		root.border = {.color = context.params.borderColor, .width = context.params.borderWidth};
 
 		Clay_ElementDeclaration content{};
