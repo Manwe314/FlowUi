@@ -44,9 +44,11 @@ inline const DevPanelContentDef kDevPanelContent = {
 		const Clay_ElementData rootData = Clay_GetElementData(rootId);
 
 		int panelWidthPx = state.lastPanelWidthPx;
+		int panelHeightPx = state.lastPanelHeightPx;
 		if (rootData.found)
 		{
 			panelWidthPx = static_cast<int>(std::lround(rootData.boundingBox.width));
+			panelHeightPx = static_cast<int>(std::lround(rootData.boundingBox.height));
 		}
 		if (panelWidthPx < 1)
 		{
@@ -55,7 +57,12 @@ inline const DevPanelContentDef kDevPanelContent = {
 				separatorWidth +
 				std::max(1, minPropertiesWidth);
 		}
+		if (panelHeightPx < 0)
+		{
+			panelHeightPx = 0;
+		}
 		state.lastPanelWidthPx = panelWidthPx;
+		state.lastPanelHeightPx = panelHeightPx;
 
 		int usableContentWidthPx = panelWidthPx - separatorWidth;
 		if (usableContentWidthPx < 1)
@@ -132,6 +139,11 @@ inline const DevPanelContentDef kDevPanelContent = {
 			static_cast<int>(std::lround(state.hierarchySplitRatio * static_cast<float>(usableContentWidthPx)));
 		hierarchyWidthPx = clampHierarchyWidth(hierarchyWidthPx);
 		state.hierarchySplitRatio = static_cast<float>(hierarchyWidthPx) / static_cast<float>(usableContentWidthPx);
+		int propertiesWidthPx = usableContentWidthPx - hierarchyWidthPx;
+		if (propertiesWidthPx < 1)
+		{
+			propertiesWidthPx = 1;
+		}
 
 		Clay_ElementDeclaration root{};
 		root.id = rootId;
@@ -142,19 +154,16 @@ inline const DevPanelContentDef kDevPanelContent = {
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
-		root.clip = {
-			.horizontal = true,
-			.vertical = true,
-		};
 
 		CLAY(root){
-			context.uiManager
-				.createElement(kDevHierarchy, context.createChildElementId("hierarchy"))
-				.setParameters(devHierarchyParams{
-					.width = hierarchyWidthPx,
-					.backgroundColor = context.params.hierarchyBackgroundColor,
-				})
-				.draw();
+				context.uiManager
+					.createElement(kDevHierarchy, context.createChildElementId("hierarchy"))
+					.setParameters(devHierarchyParams{
+						.width = hierarchyWidthPx,
+						.height = panelHeightPx,
+						.backgroundColor = context.params.hierarchyBackgroundColor,
+					})
+					.draw();
 
 			devDynamicSeparatorParams separatorParams{};
 			separatorParams.orientation = devDynamicSeparatorParams::Orientation::Vertical;
@@ -194,12 +203,14 @@ inline const DevPanelContentDef kDevPanelContent = {
 				.setParameters(separatorParams)
 				.draw();
 
-			context.uiManager
-				.createElement(kDevProperties, context.createChildElementId("properties"))
-				.setParameters(devPropertiesParams{
-					.backgroundColor = context.params.propertiesBackgroundColor,
-					.selectedElementIdText =
-						state.selectedElementId.empty()
+				context.uiManager
+					.createElement(kDevProperties, context.createChildElementId("properties"))
+					.setParameters(devPropertiesParams{
+						.width = propertiesWidthPx,
+						.height = panelHeightPx,
+						.backgroundColor = context.params.propertiesBackgroundColor,
+						.selectedElementIdText =
+							state.selectedElementId.empty()
 						? std::string("placeholder")
 						: state.selectedElementId,
 				})

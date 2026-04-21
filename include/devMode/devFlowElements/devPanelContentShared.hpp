@@ -19,6 +19,7 @@ struct devPanelContentState {
 	float hierarchySplitRatio = 0.60f;
 	bool hierarchySplitInitialized = false;
 	int lastPanelWidthPx = 0;
+	int lastPanelHeightPx = 0;
 	std::string selectedElementId = "";
 };
 

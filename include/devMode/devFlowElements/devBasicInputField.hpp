@@ -20,8 +20,8 @@ struct devBasicInputFieldParams {
 	Clay_BorderWidth borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 	Clay_Color backgroundColor = FlowUi::Flow_Color("#cfcfcfff");
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
-	bool clipHorizontal = true;
-	bool clipVertical = true;
+	bool clipHorizontal = false;
+	bool clipVertical = false;
 	Clay_ChildAlignment childTextAlignment = Clay_ChildAlignment{
 		.x = CLAY_ALIGN_X_LEFT,
 		.y = CLAY_ALIGN_Y_CENTER,

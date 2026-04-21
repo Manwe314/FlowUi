@@ -25,6 +25,8 @@ inline const DevPropertiesContentDef kDevPropertiesContent = {
 
 		Clay_ElementDeclaration root{};
 		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_Vector2 scrollOffset =
+			devScrollOffsetForElementId(context.uiManager, context.elementID);
 		root.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_GROW(0),
@@ -34,9 +36,9 @@ inline const DevPropertiesContentDef kDevPropertiesContent = {
 		root.layout.padding = context.params.padding;
 		root.backgroundColor = context.params.backgroundColor;
 		root.clip = {
-			.horizontal = true,
+			.horizontal = false,
 			.vertical = true,
-			.childOffset = Clay_GetScrollOffset(),
+			.childOffset = scrollOffset,
 		};
 
 		CLAY(root){

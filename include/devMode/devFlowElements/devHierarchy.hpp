@@ -6,6 +6,7 @@
 
 struct devHierarchyParams {
 	int width = 280;
+	int height = 0;
 	int minRowContentWidthPx = 180;
 	Clay_Color backgroundColor = FlowUi::Flow_Color("#00000000");
 	Clay_Color headBackgroundColor = FlowUi::Flow_Color("#00000000");
@@ -34,12 +35,20 @@ inline const DevHierarchyDef kDevHierarchy = {
 		{
 			width = 0;
 		}
+		int height = context.params.height;
+		if (height < 0)
+		{
+			height = 0;
+		}
 
 		Clay_ElementDeclaration root{};
 		root.id = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(static_cast<float>(width)),
-			.height = CLAY_SIZING_GROW(0),
+			.height =
+				height > 0
+				? CLAY_SIZING_FIXED(static_cast<float>(height))
+				: CLAY_SIZING_GROW(0),
 		};
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		root.layout.childGap = 0;
