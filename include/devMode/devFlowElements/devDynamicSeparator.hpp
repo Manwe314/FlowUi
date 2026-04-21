@@ -38,6 +38,7 @@ using DevDynamicSeparatorDef = FlowUi::ElementDefinition<
 	true>;
 
 inline const DevDynamicSeparatorDef kDevDynamicSeparator = {
+	nullptr,
 	+[](DevDynamicSeparatorDef::InteractionContext& context) {
 		devDynamicSeparatorState& state = DevDynamicSeparatorDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
 		state.isPressed = true;
@@ -68,9 +69,8 @@ inline const DevDynamicSeparatorDef kDevDynamicSeparator = {
 		{
 			baseValue = maxValue;
 		}
-		state.pressValue = baseValue;
-	},
-	nullptr,
+			state.pressValue = baseValue;
+		},
 	nullptr,
 	+[](DevDynamicSeparatorDef::InteractionContext& context) {
 		devDynamicSeparatorState& state = DevDynamicSeparatorDef::getOrCreateState(FlowUi::toFlowId(context.elementID));

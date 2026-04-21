@@ -207,7 +207,7 @@ namespace FlowUi
 			Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
 			frameInput.mouseDown[0]);
 		Clay_UpdateScrollContainers(
-			true,
+			false,
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 			static_cast<float>(frameInput.dt));
 		constructedElementStack_.clear();
