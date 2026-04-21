@@ -73,10 +73,6 @@ inline const DevPropertiesHeadDef kDevPropertiesHead = {
 						.height = CLAY_SIZING_FIT(0),
 					},
 				},
-				.clip = {
-					.horizontal = true,
-					.vertical = false,
-				},
 			}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.selectedElementIdText),
