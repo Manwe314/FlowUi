@@ -36,7 +36,7 @@ inline const DevPropertiesContentDef kDevPropertiesContent = {
 		root.layout.padding = context.params.padding;
 		root.backgroundColor = context.params.backgroundColor;
 		root.clip = {
-			.horizontal = false,
+			.horizontal = true,
 			.vertical = true,
 			.childOffset = scrollOffset,
 		};

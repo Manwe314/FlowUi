@@ -50,7 +50,9 @@ inline const MainDevViewDef kMainDevView = {
 
 			context.uiManager
 				.createElement(kDevPanelContent, context.createChildElementId("content"))
-				.setParameters(devPanelContentParams{})
+				.setParameters(devPanelContentParams{
+					.panelWidthHintPx = width,
+				})
 				.draw();
 
 			context.uiManager

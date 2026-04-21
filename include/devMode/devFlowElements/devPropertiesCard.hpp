@@ -695,12 +695,12 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 				}
 			}
 
-		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
-		root.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0),
-			.height = CLAY_SIZING_FIT(0),
-		};
+			Clay_ElementDeclaration root{};
+			root.id = context.uiManager.toClayEID(context.elementID);
+			root.layout.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_FIT(0),
+			};
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		root.layout.padding = context.params.padding;
 		root.layout.childGap = context.params.rowGap;
@@ -710,6 +710,10 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 			.width = context.params.borderWidth,
 		};
 		root.cornerRadius = context.params.cornerRadius;
+		root.clip = {
+			.horizontal = true,
+			.vertical = true,
+		};
 
 		Clay_TextElementConfig nameTextConfig{};
 		nameTextConfig.textColor = context.params.nameTextColor;
