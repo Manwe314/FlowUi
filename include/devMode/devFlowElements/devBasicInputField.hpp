@@ -47,7 +47,7 @@ using DevBasicInputFieldDef = FlowUi::ElementDefinition<
 
 inline const DevBasicInputFieldDef kDevBasicInputField = {
 	+[](DevBasicInputFieldDef::InteractionContext& context) {
-		(void)context;
+		context.uiManager.requestCursor(FlowUi::CursorType::IBeam);
 	},
 	+[](DevBasicInputFieldDef::InteractionContext& context) {
 		const std::string_view fieldId =

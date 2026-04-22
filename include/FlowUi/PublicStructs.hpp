@@ -15,6 +15,24 @@ namespace FlowUi {
 enum class PresentMode { Fifo, Mailbox, Immediate };
 enum class MSAA { x1 = 1, x2 = 2, x4 = 4, x8 = 8 };
 enum class CursorMode : uint8_t { Normal = 0, Hidden = 1, Disabled = 2 };
+enum class CursorType : uint8_t {
+	Default,
+	Arrow,
+	IBeam,
+	Crosshair,
+	PointingHand,
+	ResizeHorizontal, 
+	ResizeVertical,
+	ResizeDiagonalTL, 
+	ResizeDiagonalTR, 
+	ResizeAll, 
+	NotAllowed,
+	Wait,
+	Progress,
+	Grab,
+	Grabbing,
+	Custom,
+};
 
 struct WindowInputConfig {
 	CursorMode cursorMode = CursorMode::Normal;

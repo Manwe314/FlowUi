@@ -1,6 +1,7 @@
 #pragma once
 
 #include "devMode/devFlowElements/common.hpp"
+#include "devMode/devFlowElements/devNineSplit.hpp"
 #include "devMode/devFlowElements/devNumericInput.hpp"
 
 struct devEdgeU16InputParams {
@@ -17,6 +18,9 @@ struct devEdgeU16InputParams {
 	int64_t fourthValue = 0;
 	int64_t fifthValue = 0;
 	std::function<void(int64_t, int64_t, int64_t, int64_t, int64_t)> onValueChangedCallback = nullptr;
+	bool useNineSplitEdges = false;
+	bool showFifthAfterNineSplit = false;
+	std::string nineSplitHintText = "";
 
 	Clay_Sizing sizing = Clay_Sizing{
 		.width = CLAY_SIZING_GROW(0),
@@ -29,6 +33,22 @@ struct devEdgeU16InputParams {
 	double minValue = 0.0;
 	double maxValue = static_cast<double>(std::numeric_limits<uint16_t>::max());
 	double dragRatePerPixel = 1.0;
+	Clay_Sizing nineSplitSizing = Clay_Sizing{
+		.width = CLAY_SIZING_FIT(0),
+		.height = CLAY_SIZING_FIT(0),
+	};
+	Clay_Sizing nineSplitSlotSizing = Clay_Sizing{
+		.width = CLAY_SIZING_FIXED(50),
+		.height = CLAY_SIZING_FIXED(50),
+	};
+	Clay_Sizing nineSplitNumericSizing = Clay_Sizing{
+		.width = CLAY_SIZING_FIXED(44),
+		.height = CLAY_SIZING_FIT(0),
+	};
+	Clay_Sizing fifthAfterSizing = Clay_Sizing{
+		.width = CLAY_SIZING_FIT(0),
+		.height = CLAY_SIZING_FIT(0),
+	};
 
 	uint16_t fontId = 0;
 	uint16_t fontSize = 12;
@@ -51,6 +71,135 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 	nullptr,
 	nullptr,
 	+[](DevEdgeU16InputDef::BuildContext& context) {
+		if (context.params.useNineSplitEdges)
+		{
+			std::array<double, 9> slotValues{};
+			slotValues.fill(0.0);
+			slotValues[1] = static_cast<double>(context.params.firstValue);
+			slotValues[3] = static_cast<double>(context.params.secondValue);
+			slotValues[5] = static_cast<double>(context.params.thirdValue);
+			slotValues[7] = static_cast<double>(context.params.fourthValue);
+
+			Clay_ElementDeclaration root{};
+			root.id = context.uiManager.toClayEID(context.elementID);
+			root.layout.sizing = context.params.sizing;
+			root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+			root.layout.padding = context.params.padding;
+			root.layout.childGap = 8;
+			root.layout.childAlignment = {
+				.x = CLAY_ALIGN_X_LEFT,
+				.y = CLAY_ALIGN_Y_CENTER,
+			};
+			root.backgroundColor = context.params.backgroundColor;
+
+			Clay_TextElementConfig hintTextConfig{};
+			hintTextConfig.textColor = context.params.hintTextColor;
+			hintTextConfig.fontId = context.params.fontId;
+			hintTextConfig.fontSize = context.params.fontSize;
+			hintTextConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
+			hintTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
+
+			CLAY(root){
+				CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("nine-split-hint"))}){
+					CLAY_TEXT(
+						context.uiManager.toClayString(context.params.nineSplitHintText),
+						CLAY_TEXT_CONFIG(hintTextConfig));
+				};
+
+				Clay_ElementDeclaration row{};
+				row.id = context.uiManager.toClayEID(context.createChildElementId("nine-split-row"));
+				row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+				row.layout.childGap = 8;
+				row.layout.childAlignment = {
+					.x = CLAY_ALIGN_X_LEFT,
+					.y = CLAY_ALIGN_Y_CENTER,
+				};
+				row.backgroundColor = FlowUi::Flow_Color("#00000000");
+
+				CLAY(row){
+					context.uiManager
+						.createElement(kDevNineSplit, context.createChildElementId("nine-split"))
+						.setParameters(devNineSplitParams{
+							.fieldIdPrefix = context.params.fieldIdPrefix.empty()
+								? context.createChildElementId("nine-split/fields")
+								: context.params.fieldIdPrefix + "/nine-split",
+							.numericSlots = std::vector<uint8_t>{1, 3, 5, 7},
+							.slotValues = slotValues,
+							.valueKind = devNumericInputValueKind::UnsignedInt,
+							.minValue = context.params.minValue,
+							.maxValue = context.params.maxValue,
+							.integerRatePerPixel = context.params.dragRatePerPixel,
+							.onValuesChangedCallback = [
+								onValueChanged = context.params.onValueChangedCallback,
+								fifthValue = context.params.fifthValue
+							](const std::array<double, 9>& values) {
+								if (onValueChanged != nullptr)
+								{
+									onValueChanged(
+										static_cast<int64_t>(std::llround(values[1])),
+										static_cast<int64_t>(std::llround(values[3])),
+										static_cast<int64_t>(std::llround(values[5])),
+										static_cast<int64_t>(std::llround(values[7])),
+										fifthValue);
+								}
+							},
+							.sizing = context.params.nineSplitSizing,
+							.rowGap = 2,
+							.columnGap = 2,
+							.slotSizing = context.params.nineSplitSlotSizing,
+							.numericSizing = context.params.nineSplitNumericSizing,
+							.fontId = context.params.fontId,
+							.fontSize = context.params.fontSize,
+							.valueTextColor = context.params.valueTextColor,
+						})
+						.draw();
+
+					if (context.params.showFifthAfterNineSplit)
+					{
+						context.uiManager
+							.createElement(kDevNumericInput, context.createChildElementId("fifth"))
+							.setParameters(devNumericInputParams{
+								.fieldId = context.params.fieldIdPrefix.empty()
+									? context.createChildElementId("fifth/field")
+									: context.params.fieldIdPrefix + "/fifth",
+								.initialText = devNumericValueToText(
+									devNumericInputValueKind::UnsignedInt,
+									static_cast<double>(context.params.fifthValue)),
+								.hintText = context.params.fifthHintText,
+								.valueKind = devNumericInputValueKind::UnsignedInt,
+								.minValue = context.params.minValue,
+								.maxValue = context.params.maxValue,
+								.integerRatePerPixel = context.params.dragRatePerPixel,
+								.onValueChangedCallback = [
+									onValueChanged = context.params.onValueChangedCallback,
+									firstValue = context.params.firstValue,
+									secondValue = context.params.secondValue,
+									thirdValue = context.params.thirdValue,
+									fourthValue = context.params.fourthValue
+								](double changedValue) {
+									if (onValueChanged != nullptr)
+									{
+										onValueChanged(
+											firstValue,
+											secondValue,
+											thirdValue,
+											fourthValue,
+											static_cast<int64_t>(std::llround(changedValue)));
+									}
+								},
+								.sizing = context.params.fifthAfterSizing,
+								.fontId = context.params.fontId,
+								.fontSize = context.params.fontSize,
+								.hintTextColor = context.params.hintTextColor,
+								.valueTextColor = context.params.valueTextColor,
+							})
+							.draw();
+					}
+				};
+			};
+			return;
+		}
+
 		Clay_ElementDeclaration root{};
 		root.id = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;

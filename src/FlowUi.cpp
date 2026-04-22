@@ -390,6 +390,12 @@ struct App::Impl {
 					}
 					return window->getClipboardText();
 				});
+			ui.setCursorAccessor(
+				[this](CursorType cursorType) {
+					if (window) {
+						window->setCursorType(cursorType);
+					}
+				});
 
 		// 2) instance/surface/device
 		vk.createInstance(config, window->requiredInstanceExtensions());

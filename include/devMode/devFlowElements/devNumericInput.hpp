@@ -57,6 +57,31 @@ inline bool devNumericTryParseDouble(std::string_view text, double& outValue) {
 	{
 		return false;
 	}
+	if (
+		trimmed == "+" ||
+		trimmed == "-" ||
+		trimmed == "." ||
+		trimmed == "+." ||
+		trimmed == "-.")
+	{
+		return false;
+	}
+	if (!trimmed.empty())
+	{
+		const char last = trimmed.back();
+		if (last == '.' || last == 'e' || last == 'E')
+		{
+			return false;
+		}
+		if ((last == '+' || last == '-') && trimmed.size() >= 2u)
+		{
+			const char prev = trimmed[trimmed.size() - 2u];
+			if (prev == 'e' || prev == 'E')
+			{
+				return false;
+			}
+		}
+	}
 
 	errno = 0;
 	char* end = nullptr;
@@ -106,6 +131,15 @@ inline bool devNumericTryParseText(
 	return true;
 }
 
+inline double devNumericRoundTo2Decimals(double value) {
+	double rounded = std::round(value * 100.0) / 100.0;
+	if (std::fabs(rounded) < 0.005)
+	{
+		rounded = 0.0;
+	}
+	return rounded;
+}
+
 inline bool devNumericNormalizeValue(
 	devNumericInputValueKind kind,
 	double rawValue,
@@ -138,7 +172,7 @@ inline bool devNumericNormalizeValue(
 
 	if (kind == devNumericInputValueKind::Floating)
 	{
-		outValue = std::clamp(rawValue, clampedMin, clampedMax);
+		outValue = devNumericRoundTo2Decimals(std::clamp(rawValue, clampedMin, clampedMax));
 		return true;
 	}
 
@@ -181,10 +215,25 @@ inline std::string devNumericValueToText(
 	double value) {
 	if (kind == devNumericInputValueKind::Floating)
 	{
+		const double rounded = devNumericRoundTo2Decimals(value);
 		std::ostringstream stream{};
-		stream.precision(16);
-		stream << value;
-		return stream.str();
+		stream.setf(std::ios::fixed, std::ios::floatfield);
+		stream.precision(2);
+		stream << rounded;
+		std::string text = stream.str();
+		while (!text.empty() && text.back() == '0')
+		{
+			text.pop_back();
+		}
+		if (!text.empty() && text.back() == '.')
+		{
+			text.pop_back();
+		}
+		if (text.empty() || text == "-0")
+		{
+			return "0";
+		}
+		return text;
 	}
 	if (kind == devNumericInputValueKind::UnsignedInt)
 	{
@@ -200,10 +249,11 @@ struct devNumericInputParams {
 	std::string fieldId = "";
 	std::string initialText = "";
 	std::string hintText = "float";
+	bool showHint = true;
 	devNumericInputValueKind valueKind = devNumericInputValueKind::Floating;
 	double minValue = -1000000.0;
 	double maxValue = 1000000.0;
-	double floatRatePerPixel = 0.01;
+	double floatRatePerPixel = 0.1;
 	double integerRatePerPixel = 1.0;
 	std::function<void(double)> onValueChangedCallback = nullptr;
 
@@ -379,11 +429,14 @@ inline const DevNumericInputDef kDevNumericInput = {
 			(context.params.hintText.empty() ? std::string("float") : context.params.hintText) + ":";
 
 		CLAY(root){
-			CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("hint"))}){
-				CLAY_TEXT(
-					context.uiManager.toClayString(hintWithColon),
-					CLAY_TEXT_CONFIG(hintTextConfig));
-			};
+			if (context.params.showHint)
+			{
+				CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("hint"))}){
+					CLAY_TEXT(
+						context.uiManager.toClayString(hintWithColon),
+						CLAY_TEXT_CONFIG(hintTextConfig));
+				};
+			}
 
 			context.uiManager
 				.createElement(kDevBasicInputField, context.createChildElementId("input"))
@@ -414,6 +467,8 @@ inline const DevNumericInputDef kDevNumericInput = {
 						{
 							return;
 						}
+						const bool normalizedDiffersFromParsed =
+							!devNumericValuesEqual(valueKind, parsed, normalized);
 
 						const bool changed =
 							!latestState->hasValue ||
@@ -421,7 +476,7 @@ inline const DevNumericInputDef kDevNumericInput = {
 						latestState->hasValue = true;
 						latestState->value = normalized;
 						latestState->normalizedText = devNumericValueToText(valueKind, normalized);
-						if (text != std::string_view(latestState->normalizedText))
+						if (normalizedDiffersFromParsed)
 						{
 							latestState->pendingFieldReset = true;
 						}
