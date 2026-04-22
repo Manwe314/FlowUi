@@ -38,7 +38,9 @@ using DevDynamicSeparatorDef = FlowUi::ElementDefinition<
 	true>;
 
 inline const DevDynamicSeparatorDef kDevDynamicSeparator = {
-	nullptr,
+	+[](DevDynamicSeparatorDef::InteractionContext& context) {
+		context.uiManager.requestCursor(FlowUi::CursorType::ResizeHorizontal);
+	},
 	+[](DevDynamicSeparatorDef::InteractionContext& context) {
 		devDynamicSeparatorState& state = DevDynamicSeparatorDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
 		state.isPressed = true;

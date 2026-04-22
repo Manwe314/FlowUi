@@ -14,7 +14,7 @@
 14. come back to enforcing PIMPL
 15. updater tool bug with not detecting mergeParameters
 16. add config for Drag scrolling
-17. add mouse pointer selection interface.
+17. upgrade devNumeric to better auth values
 
 For SVG Manager:
 	Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.
@@ -35,9 +35,7 @@ Possible Big Upgrades:
 - a simple way to link specific variables with elment variables.
 
 dev tool upgrades:
-	-Enum registration, dropdown menu
-	-Clay types registration, input methods for clay types.
-	-basic inputs upgraded like color picker, upgraded numerical input, UI context inputs (padding/margin)
+	-Ability to register Any struct and Dev mode construct composite editor inputs.
 	-Flow Element definition source metadata registration
 	-Relative path Source location resolver
 	-UX upgrade with visual upgrade (color coding, effects)

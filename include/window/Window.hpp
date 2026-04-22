@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <algorithm>
 #include <cstdio>
 #include <memory>
@@ -32,6 +33,67 @@ inline int toGlfwCursorMode(FlowUi::CursorMode cursorMode) {
 		case FlowUi::CursorMode::Normal:
 		default:
 			return GLFW_CURSOR_NORMAL;
+	}
+}
+
+inline int toGlfwCursorShape(FlowUi::CursorType cursorType) {
+	switch (cursorType) {
+		case FlowUi::CursorType::IBeam:
+			return GLFW_IBEAM_CURSOR;
+		case FlowUi::CursorType::Crosshair:
+			return GLFW_CROSSHAIR_CURSOR;
+		case FlowUi::CursorType::PointingHand:
+			return GLFW_HAND_CURSOR;
+		case FlowUi::CursorType::ResizeHorizontal:
+#ifdef GLFW_RESIZE_EW_CURSOR
+			return GLFW_RESIZE_EW_CURSOR;
+#else
+			return GLFW_HRESIZE_CURSOR;
+#endif
+		case FlowUi::CursorType::ResizeVertical:
+#ifdef GLFW_RESIZE_NS_CURSOR
+			return GLFW_RESIZE_NS_CURSOR;
+#else
+			return GLFW_VRESIZE_CURSOR;
+#endif
+		case FlowUi::CursorType::ResizeDiagonalTL:
+#ifdef GLFW_RESIZE_NWSE_CURSOR
+			return GLFW_RESIZE_NWSE_CURSOR;
+#else
+			return GLFW_HRESIZE_CURSOR;
+#endif
+		case FlowUi::CursorType::ResizeDiagonalTR:
+#ifdef GLFW_RESIZE_NESW_CURSOR
+			return GLFW_RESIZE_NESW_CURSOR;
+#else
+			return GLFW_HRESIZE_CURSOR;
+#endif
+		case FlowUi::CursorType::ResizeAll:
+#ifdef GLFW_RESIZE_ALL_CURSOR
+			return GLFW_RESIZE_ALL_CURSOR;
+#else
+			return GLFW_CROSSHAIR_CURSOR;
+#endif
+		case FlowUi::CursorType::NotAllowed:
+#ifdef GLFW_NOT_ALLOWED_CURSOR
+			return GLFW_NOT_ALLOWED_CURSOR;
+#else
+			return GLFW_ARROW_CURSOR;
+#endif
+		case FlowUi::CursorType::Wait:
+			return GLFW_ARROW_CURSOR; // Placeholder mapping
+		case FlowUi::CursorType::Progress:
+			return GLFW_ARROW_CURSOR; // Placeholder mapping
+		case FlowUi::CursorType::Grab:
+			return GLFW_HAND_CURSOR; // Placeholder mapping
+		case FlowUi::CursorType::Grabbing:
+			return GLFW_HAND_CURSOR; // Placeholder mapping
+		case FlowUi::CursorType::Custom:
+			return GLFW_ARROW_CURSOR; // Placeholder mapping
+		case FlowUi::CursorType::Default:
+		case FlowUi::CursorType::Arrow:
+		default:
+			return GLFW_ARROW_CURSOR;
 	}
 }
 
@@ -94,9 +156,11 @@ public:
 		glfwSetWindowUserPointer(window, this);
 		installCallbacks();
 		setInputConfig(config.input);
+		setCursorType(FlowUi::CursorType::Arrow);
 	}
 
 	~GlfwWindowBackend() override {
+		destroyStandardCursors();
 		if (window) {
 			glfwDestroyWindow(window);
 			window = nullptr;
@@ -201,6 +265,22 @@ public:
 		return inputConfig_;
 	}
 
+	void setCursorType(FlowUi::CursorType cursorType) override {
+		if (!window || cursorType == currentCursorType_) {
+			return;
+		}
+
+		if (cursorType == FlowUi::CursorType::Default) {
+			glfwSetCursor(window, nullptr);
+			currentCursorType_ = cursorType;
+			return;
+		}
+
+		GLFWcursor* cursorHandle = acquireStandardCursor(cursorType);
+		glfwSetCursor(window, cursorHandle);
+		currentCursorType_ = cursorType;
+	}
+
 	bool supportsRawMouseMotion() const override {
 #ifdef GLFW_RAW_MOUSE_MOTION
 		return glfwRawMouseMotionSupported() == GLFW_TRUE;
@@ -231,6 +311,31 @@ public:
 	void* nativeHandle() const override { return window; }
 
 private:
+	GLFWcursor* acquireStandardCursor(FlowUi::CursorType cursorType) {
+		const std::size_t cursorIndex = static_cast<std::size_t>(cursorType);
+		if (cursorIndex >= standardCursors_.size()) {
+			return nullptr;
+		}
+
+		GLFWcursor*& cachedCursor = standardCursors_[cursorIndex];
+		if (cachedCursor) {
+			return cachedCursor;
+		}
+
+		cachedCursor = glfwCreateStandardCursor(toGlfwCursorShape(cursorType));
+		return cachedCursor;
+	}
+
+	void destroyStandardCursors() {
+		for (GLFWcursor*& cursor : standardCursors_) {
+			if (!cursor) {
+				continue;
+			}
+			glfwDestroyCursor(cursor);
+			cursor = nullptr;
+		}
+	}
+
 	void installCallbacks() {
 		glfwSetCursorPosCallback(window, [](GLFWwindow* win, double x, double y) {
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
@@ -282,6 +387,8 @@ private:
 
 	GlfwLibrary library;
 	GLFWwindow* window = nullptr;
+	std::array<GLFWcursor*, static_cast<std::size_t>(FlowUi::CursorType::Custom) + 1u> standardCursors_{};
+	FlowUi::CursorType currentCursorType_ = FlowUi::CursorType::Default;
 	InputQueue* input = nullptr;
 	FlowUi::WindowInputConfig inputConfig_{};
 };

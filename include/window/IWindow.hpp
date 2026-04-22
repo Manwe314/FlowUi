@@ -22,6 +22,7 @@ struct IWindowBackend {
 	virtual void setTitle(std::string_view title) = 0;
 	virtual void setInputConfig(const FlowUi::WindowInputConfig& config) = 0;
 	virtual FlowUi::WindowInputConfig getInputConfig() const = 0;
+	virtual void setCursorType(FlowUi::CursorType cursorType) = 0;
 	virtual bool supportsRawMouseMotion() const = 0;
 	virtual void setClipboardText(std::string_view text) = 0;
 	virtual std::string getClipboardText() const = 0;

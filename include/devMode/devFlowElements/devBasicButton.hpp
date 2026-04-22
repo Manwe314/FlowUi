@@ -57,6 +57,7 @@ struct devBasicButtonParams {
 
 inline const DevBasicButtonDef kDevBasicButton = {
 	+[](DevBasicButtonDef::InteractionContext& context) {
+		context.uiManager.requestCursor(FlowUi::CursorType::PointingHand);
 		if (context.params.onHoveredCallback != nullptr)
 		{
 			context.params.onHoveredCallback(context);

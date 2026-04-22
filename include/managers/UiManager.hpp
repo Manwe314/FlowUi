@@ -73,6 +73,7 @@ public:
 	void setClipboardText(std::string_view text) const;
 	std::string clipboardText() const;
 	bool hasClipboardAccess() const;
+	void requestCursor(CursorType cursorType, uint8_t priority = 0);
 	void setClipboardAccessors(
 		std::function<void(std::string_view)> setClipboardTextAccessor,
 		std::function<std::string()> getClipboardTextAccessor);
@@ -90,6 +91,7 @@ private:
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
 	Clay_RenderCommandArray endFrame();
 	void setFontManager(const ::FontManager* fontManager);
+	void setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor);
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
 	void pushConstructedElement(Clay_ElementId elementId);
 
@@ -128,6 +130,10 @@ private:
 #endif
 	std::function<void(std::string_view)> setClipboardTextAccessor_{};
 	std::function<std::string()> getClipboardTextAccessor_{};
+	std::function<void(CursorType)> setCursorTypeAccessor_{};
+	CursorType cursor_ = CursorType::Arrow;
+	CursorType previousCursor_ = CursorType::Arrow;
+	uint8_t cursorPriority_ = 0;
 	const ::FontManager* fontManager_ = nullptr;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
 

@@ -132,6 +132,18 @@ namespace FlowUi
 			getClipboardTextAccessor_ = std::move(getClipboardTextAccessor);
 		}
 
+		void UiManager::setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor) {
+			setCursorTypeAccessor_ = std::move(setCursorTypeAccessor);
+		}
+
+		void UiManager::requestCursor(CursorType cursorType, uint8_t priority) {
+			if (priority < cursorPriority_) {
+				return;
+			}
+			cursor_ = cursorType;
+			cursorPriority_ = priority;
+		}
+
 		Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
 			if (!config || !text.chars || text.length <= 0) {
 				return Clay_Dimensions{ 0.0f, 0.0f };
@@ -197,6 +209,8 @@ namespace FlowUi
 		frameInputForCurrentLayout_ = frameInput;
 		inputFieldManager_.beginFrame(frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
 		shortcutManager_.beginFrame(*this, frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
+		cursor_ = CursorType::Arrow;
+		cursorPriority_ = 0;
 
 		Clay_SetCurrentContext(clayContext_);
 
@@ -282,6 +296,12 @@ namespace FlowUi
 
 		renderCommands = inputFieldManager_.endFrame(renderCommands);
 		setCurrentInteractionSnapshot(std::move(interactionSnapshot));
+		if (cursor_ != previousCursor_) {
+			if (setCursorTypeAccessor_) {
+				setCursorTypeAccessor_(cursor_);
+			}
+			previousCursor_ = cursor_;
+		}
 #if FLOW_UI_DEV_MODE
 		devRuntime_.endFrame();
 #endif
