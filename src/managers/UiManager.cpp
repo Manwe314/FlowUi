@@ -379,6 +379,10 @@ namespace FlowUi
 		std::string_view elementID,
 		uint64_t flowId,
 		bool isInternalToDevMode) {
+		if (isInternalToDevMode && uiManager.devToolsConfig().excludeInternalDevElementsFromCapture) {
+			return devMode::DevRuntime::kInvalidCaptureIndex;
+		}
+
 		devMode::DevRuntime& runtime = uiManager.devRuntime();
 		const std::size_t captureIndex = runtime.beginCapturedFlowElement(
 			definitionId,

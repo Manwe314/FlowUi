@@ -11,7 +11,7 @@
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "stb_image.h"
-#include "vk_mem_alloc.h"
+#include "internal/Vma.hpp"
 
 namespace {
 

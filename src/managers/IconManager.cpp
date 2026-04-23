@@ -1,6 +1,6 @@
-#include "managers/SvgManager.hpp"
+#include "managers/IconManager.hpp"
 
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 
 #include <algorithm>
 #include <cmath>
@@ -13,7 +13,7 @@
 #include <string>
 
 #include "internal/UiTextureRegistry.hpp"
-#include "vk_mem_alloc.h"
+#include "internal/Vma.hpp"
 #include <plutosvg.h>
 
 namespace FlowUi {
@@ -965,7 +965,7 @@ void IconManager::setRegistry(detail::IUiTextureRegistry* registry) {
 	registry_ = registry;
 }
 
-void IconManager::init(VulkanContext& vk, const SvgManagerConfig& config) {
+void IconManager::init(VulkanContext& vk, const IconManagerConfig& config) {
 	detail::IUiTextureRegistry* const preservedRegistry = registry_;
 	destroy(vk);
 	registry_ = preservedRegistry;

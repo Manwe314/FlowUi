@@ -3,8 +3,8 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
-#if FLOWUI_INCLUDE_SVG_MANAGER
-#include "managers/SvgManager.hpp"
+#if FLOWUI_INCLUDE_ICON_MANAGER
+#include "managers/IconManager.hpp"
 #endif
 #include "managers/ViewPortManager.hpp"
 #include "managers/UiManager.hpp"
@@ -353,7 +353,7 @@ struct App::Impl {
 	FontManager fonts;
 	ImageManager imageManager;
 	ViewPortManager viewPortManager;
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager icons;
 #endif
 	FrameInput frameInputForCurrentFrame{};
@@ -419,9 +419,9 @@ struct App::Impl {
 		fonts.init(vk, config.ui.fontAtlasSize);
 		ui.setFontManager(&fonts);
 		renderer.setFontManager(&fonts);
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 		icons.setRegistry(&textureRegistry);
-		icons.init(vk, config.svgManager);
+		icons.init(vk, config.iconManager);
 #endif
 
 		bool defaultFontLoaded = false;
@@ -540,7 +540,7 @@ struct App::Impl {
 			renderCommandsForCurrentFrame,
 			uiToFramebufferScaleX,
 			uiToFramebufferScaleY);
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 		icons.prepareFrameTextures(
 			renderCommandsForCurrentFrame,
 			uiToFramebufferScaleX,
@@ -564,7 +564,7 @@ struct App::Impl {
 			}
 		}
 
-		FrameVk::Frame& frame = frames.getCurrantFrame();
+		FrameVk::Frame& frame = frames.getCurrentFrame();
 		vkCheck(
 			vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
 			"Failed to wait for in-flight fence.");
@@ -702,7 +702,7 @@ struct App::Impl {
 
 		viewPortManager.destroy(vk);
 		imageManager.destroy(vk);
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 		icons.destroy(vk);
 #endif
 		textureRegistry.destroy(vk);
@@ -783,7 +783,7 @@ const ImageManager& App::images() const {
 	return impl_->imageManager;
 }
 
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 IconManager& App::icons() {
 	if (!impl_) {
 		throw std::runtime_error("FlowUi::App not initialized.");

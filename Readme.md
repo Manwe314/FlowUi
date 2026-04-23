@@ -69,7 +69,7 @@ int main() {
 | `FLOWUI_BUILD_FONT_BAKER` | `ON` | Build `flowui_font_baker` tool |
 | `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Link runtime TTF->atlas dependencies |
 | `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Expose viewport Vulkan interop in public headers |
-| `FLOWUI_INCLUDE_SVG_MANAGER` | `ON` | Enable SVG manager support |
+| `FLOWUI_INCLUDE_ICON_MANAGER` | `ON` | Enable IconManager support |
 | `FLOW_UI_DEV_MODE` | `OFF` | Compile FlowUi developer-mode tooling (`debugView`, dev runtime capture/overrides) |
 | `FLOWUI_GLFW_PROVIDER` | `auto` | `auto`, `system`, `vendored` |
 
@@ -135,7 +135,7 @@ inline const ButtonDefinition kButton = {
 
     nullptr, // runLogic
 
-    nullptr, // constructElment (optional for .construct() flows)
+    nullptr, // constructElement (optional for .construct() flows)
     +[](ButtonDefinition::BuildContext& context) { // buildElement (.draw())
         const uint64_t flowId = FlowUi::toFlowId(context.elementID);
         const ButtonState& state = ButtonDefinition::getOrCreateState(flowId);

@@ -6,9 +6,9 @@ option(FLOWUI_INSTALL "Enable install rules" ON)
 option(FLOWUI_BUILD_FONT_BAKER "Build FlowUi offline font baker tool" ON)
 option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generation" OFF)
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
-option(FLOWUI_INCLUDE_SVG_MANAGER "Enable SVG manager support (PlutoSVG)." ON)
+option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
-set(FLOWUI_INCLUDE_SVG_MANAGER "${FLOWUI_INCLUDE_SVG_MANAGER}")
+set(FLOWUI_INCLUDE_ICON_MANAGER "${FLOWUI_INCLUDE_ICON_MANAGER}")
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
 
@@ -44,10 +44,10 @@ else()
     set(FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE 0)
 endif()
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
-    set(FLOWUI_INCLUDE_SVG_MANAGER_VALUE 1)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    set(FLOWUI_INCLUDE_ICON_MANAGER_VALUE 1)
 else()
-    set(FLOWUI_INCLUDE_SVG_MANAGER_VALUE 0)
+    set(FLOWUI_INCLUDE_ICON_MANAGER_VALUE 0)
 endif()
 
 if(FLOW_UI_DEV_MODE)
@@ -125,7 +125,7 @@ endif()
 add_library(flowui_artery INTERFACE)
 add_library(FlowUi::artery ALIAS flowui_artery)
 set_target_properties(flowui_artery PROPERTIES EXPORT_NAME artery)
-target_include_directories(flowui_artery INTERFACE
+target_include_directories(flowui_artery SYSTEM INTERFACE
     $<BUILD_INTERFACE:${FLOWUI_ARTERY_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/external/artery-font-format>
 )
@@ -142,7 +142,7 @@ if(FLOWUI_NEED_MSDF_ATLAS_GEN)
     add_subdirectory(external/msdf-atlas-gen)
 endif()
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/plutosvg/CMakeLists.txt")
         message(FATAL_ERROR "Could not find external/plutosvg (did you init submodules with --recursive?)")
     endif()
@@ -230,19 +230,22 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Swapchain.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Ui/Vk_UiRenderer.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/clay.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/vk_mem_alloc.h>
 )
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
-    target_sources(flowui PRIVATE src/managers/SvgManager.cpp)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    target_sources(flowui PRIVATE src/managers/IconManager.cpp)
 endif()
 
 target_include_directories(flowui
     PUBLIC
         $<BUILD_INTERFACE:${FLOWUI_GENERATED_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_include_directories(flowui
+    SYSTEM PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/external>
 )
 
@@ -253,7 +256,7 @@ target_link_libraries(flowui
         FlowUi::artery
 )
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
     target_link_libraries(flowui PRIVATE plutosvg::plutosvg)
 endif()
 
@@ -265,7 +268,7 @@ endif()
 target_compile_definitions(flowui
     PUBLIC
         FLOWUI_PUBLIC_VULKAN_INTEROP=${FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE}
-        FLOWUI_INCLUDE_SVG_MANAGER=${FLOWUI_INCLUDE_SVG_MANAGER_VALUE}
+        FLOWUI_INCLUDE_ICON_MANAGER=${FLOWUI_INCLUDE_ICON_MANAGER_VALUE}
     PRIVATE
         FLOWUI_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         FLOWUI_SHADER_OUTPUT_DIR="${FLOWUI_SHADER_OUTPUT_DIR}"
