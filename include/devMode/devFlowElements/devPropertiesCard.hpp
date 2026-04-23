@@ -826,7 +826,7 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 			}
 
 			Clay_ElementDeclaration root{};
-			root.id = context.uiManager.toClayEID(context.elementID);
+			const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 			root.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_FIT(0),
@@ -862,9 +862,9 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 		valueTextConfig.wrapMode = CLAY_TEXT_WRAP_WORDS;
 		valueTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			Clay_ElementDeclaration infoRow{};
-			infoRow.id = context.uiManager.toClayEID(context.createChildElementId("row/info"));
+			const Clay_ElementId infoRowId = context.uiManager.toClayEID(context.createChildElementId("row/info"));
 			infoRow.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_FIT(0),
@@ -877,12 +877,11 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 			};
 			infoRow.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-			CLAY(infoRow){
-				CLAY({
-					.id = context.uiManager.toClayEID(context.createChildElementId("row/info/name")),
-					.layout = {
-						.sizing = {
-							.width = CLAY_SIZING_GROW(0),
+				CLAY(infoRowId, infoRow){
+					CLAY(context.uiManager.toClayEID(context.createChildElementId("row/info/name")), {
+						.layout = {
+							.sizing = {
+								.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_FIT(0),
 						},
 					},
@@ -892,21 +891,19 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 						CLAY_TEXT_CONFIG(nameTextConfig));
 				};
 
-				CLAY({
-					.id = context.uiManager.toClayEID(context.createChildElementId("row/info/spacer")),
-					.layout = {
-						.sizing = {
-							.width = CLAY_SIZING_GROW(0),
+					CLAY(context.uiManager.toClayEID(context.createChildElementId("row/info/spacer")), {
+						.layout = {
+							.sizing = {
+								.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_FIT(0),
 						},
 					},
 				}){};
 
-				CLAY({
-					.id = context.uiManager.toClayEID(context.createChildElementId("row/info/type")),
-					.layout = {
-						.sizing = {
-							.width = CLAY_SIZING_FIT(0),
+					CLAY(context.uiManager.toClayEID(context.createChildElementId("row/info/type")), {
+						.layout = {
+							.sizing = {
+								.width = CLAY_SIZING_FIT(0),
 							.height = CLAY_SIZING_FIT(0),
 						},
 					},
@@ -922,7 +919,7 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 			};
 
 			Clay_ElementDeclaration valueRow{};
-			valueRow.id = context.uiManager.toClayEID(context.createChildElementId("row/value"));
+			const Clay_ElementId valueRowId = context.uiManager.toClayEID(context.createChildElementId("row/value"));
 			valueRow.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_FIT(0),
@@ -934,7 +931,7 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 			};
 			valueRow.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-				CLAY(valueRow){
+				CLAY(valueRowId, valueRow){
 					switch (inputType)
 					{
 				case devPropertiesCardInputType::Toggle:
@@ -1797,9 +1794,9 @@ inline const DevPropertiesCardDef kDevPropertiesCard = {
 						.draw();
 					break;
 				case devPropertiesCardInputType::Unsupported:
-					CLAY({
-						.id = context.uiManager.toClayEID(
+					CLAY(context.uiManager.toClayEID(
 							context.createChildElementId("value/unsupported/" + context.params.fieldIdentity)),
+						{
 						.layout = {
 							.sizing = {
 								.width = context.params.valueEditorSizing.width,

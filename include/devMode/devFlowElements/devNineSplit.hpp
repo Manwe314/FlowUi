@@ -180,7 +180,7 @@ inline const DevNineSplitDef kDevNineSplit = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		root.layout.padding = context.params.padding;
@@ -191,22 +191,22 @@ inline const DevNineSplitDef kDevNineSplit = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			for (int row = 0; row < 3; ++row)
 			{
 				Clay_ElementDeclaration rowDeclaration{};
-				rowDeclaration.id = context.uiManager.toClayEID(
+				const Clay_ElementId rowDeclarationId = context.uiManager.toClayEID(
 					context.createChildElementId("row-" + std::to_string(row)));
 				rowDeclaration.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				rowDeclaration.layout.childGap = context.params.columnGap;
 				rowDeclaration.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-				CLAY(rowDeclaration){
+				CLAY(rowDeclarationId, rowDeclaration){
 					for (int col = 0; col < 3; ++col)
 					{
 						const uint8_t slotId = static_cast<uint8_t>(row * 3 + col);
 						Clay_ElementDeclaration slotDeclaration{};
-						slotDeclaration.id = context.uiManager.toClayEID(
+						const Clay_ElementId slotDeclarationId = context.uiManager.toClayEID(
 							context.createChildElementId("slot-" + std::to_string(slotId)));
 						slotDeclaration.layout.sizing = context.params.slotSizing;
 						slotDeclaration.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
@@ -254,7 +254,7 @@ inline const DevNineSplitDef kDevNineSplit = {
 						};
 						slotDeclaration.cornerRadius = context.params.slotCornerRadius;
 
-						CLAY(slotDeclaration){
+						CLAY(slotDeclarationId, slotDeclaration){
 							if (slotId == 4u)
 							{
 								context.uiManager

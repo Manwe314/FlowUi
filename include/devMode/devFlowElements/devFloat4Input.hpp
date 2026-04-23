@@ -308,7 +308,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 			}
 
 			Clay_ElementDeclaration root{};
-			root.id = context.uiManager.toClayEID(context.elementID);
+			const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 			root.layout.sizing = context.params.sizing;
 			root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 			root.layout.padding = context.params.padding;
@@ -345,11 +345,11 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 				}
 			};
 
-			CLAY(root){
+			CLAY(rootId, root){
 				for (uint8_t channelIndex = 0u; channelIndex < 4u; ++channelIndex)
 				{
 					Clay_ElementDeclaration channel{};
-					channel.id = context.uiManager.toClayEID(
+					const Clay_ElementId channelId = context.uiManager.toClayEID(
 						context.createChildElementId("color/channel/" + std::to_string(channelIndex)));
 					channel.layout.sizing = context.params.colorChannelSizing;
 					channel.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
@@ -360,13 +360,13 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 					};
 					channel.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-					CLAY(channel){
+					CLAY(channelId, channel){
 						const std::string labelWithColon =
 							(channelLabels[channelIndex].empty()
 								? std::string("value")
 								: channelLabels[channelIndex]) + ":";
 						Clay_ElementDeclaration labelSlot{};
-						labelSlot.id = context.uiManager.toClayEID(
+						const Clay_ElementId labelSlotId = context.uiManager.toClayEID(
 							context.createChildElementId("color/channel/" + std::to_string(channelIndex) + "/hint"));
 						labelSlot.layout.sizing = {
 							.width = CLAY_SIZING_FIXED(54),
@@ -378,7 +378,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 						};
 						labelSlot.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-						CLAY(labelSlot){
+						CLAY(labelSlotId, labelSlot){
 							CLAY_TEXT(
 								context.uiManager.toClayString(labelWithColon),
 								CLAY_TEXT_CONFIG(hintTextConfig));
@@ -510,7 +510,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 				}
 
 				Clay_ElementDeclaration hexSection{};
-				hexSection.id = context.uiManager.toClayEID(context.createChildElementId("color/hex-section"));
+				const Clay_ElementId hexSectionId = context.uiManager.toClayEID(context.createChildElementId("color/hex-section"));
 				hexSection.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				hexSection.layout.childGap = 8;
 				hexSection.layout.childAlignment = {
@@ -519,12 +519,12 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 				};
 				hexSection.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-				CLAY(hexSection){
+				CLAY(hexSectionId, hexSection){
 					const std::string hexHintWithColon =
 						(context.params.colorHexHintText.empty()
 							? std::string("Hex code")
 							: context.params.colorHexHintText) + ":";
-					CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("color/hex/hint"))}){
+					CLAY(context.uiManager.toClayEID(context.createChildElementId("color/hex/hint")), {}){
 						CLAY_TEXT(
 							context.uiManager.toClayString(hexHintWithColon),
 							CLAY_TEXT_CONFIG(hintTextConfig));
@@ -606,7 +606,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 			slotValues[8] = context.params.fourthValue;
 
 			Clay_ElementDeclaration root{};
-			root.id = context.uiManager.toClayEID(context.elementID);
+			const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 			root.layout.sizing = context.params.sizing;
 			root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			root.layout.padding = context.params.padding;
@@ -624,8 +624,8 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 			hintTextConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
 			hintTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
-			CLAY(root){
-				CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("nine-split-hint"))}){
+			CLAY(rootId, root){
+				CLAY(context.uiManager.toClayEID(context.createChildElementId("nine-split-hint")), {}){
 					CLAY_TEXT(
 						context.uiManager.toClayString(context.params.nineSplitHintText),
 						CLAY_TEXT_CONFIG(hintTextConfig));
@@ -665,7 +665,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -676,7 +676,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevNumericInput, context.createChildElementId("first"))
 				.setParameters(devNumericInputParams{

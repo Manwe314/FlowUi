@@ -233,11 +233,11 @@ namespace FlowUi
 #if FLOW_UI_DEV_MODE
 		if (devToolsConfig_.enabled && devPanelVisible_) {
 			Clay_ElementDeclaration devRoot{};
-			devRoot.id = toClaySID("_Flow_Dev_root_");
+			const Clay_ElementId devRootId = toClaySID("_Flow_Dev_root_");
 			devRoot.layout.sizing.width = CLAY_SIZING_GROW(0);
 			devRoot.layout.sizing.height = CLAY_SIZING_GROW(0);
 			devRoot.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-			Clay__OpenElement();
+			Clay__OpenElementWithId(devRootId);
 			Clay__ConfigureOpenElement(devRoot);
 			devRootElementOpenThisFrame_ = true;
 		}
@@ -275,7 +275,7 @@ namespace FlowUi
 			devRootElementOpenThisFrame_ = false;
 		}
 #endif
-		Clay_RenderCommandArray renderCommands = Clay_EndLayout();
+		Clay_RenderCommandArray renderCommands = Clay_EndLayout(static_cast<float>(frameInputForCurrentLayout_.dt));
 
 		InteractionSnapshot interactionSnapshot;
 		Clay_ElementIdArray hoveredIds = Clay_GetPointerOverIds();

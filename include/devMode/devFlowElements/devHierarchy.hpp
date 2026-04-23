@@ -42,7 +42,7 @@ inline const DevHierarchyDef kDevHierarchy = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(static_cast<float>(width)),
 			.height =
@@ -54,7 +54,7 @@ inline const DevHierarchyDef kDevHierarchy = {
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevHierarchyHead, context.createChildElementId("head"))
 				.setParameters(devHierarchyHeadParams{

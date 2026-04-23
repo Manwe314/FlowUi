@@ -81,7 +81,7 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 			slotValues[7] = static_cast<double>(context.params.fourthValue);
 
 			Clay_ElementDeclaration root{};
-			root.id = context.uiManager.toClayEID(context.elementID);
+			const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 			root.layout.sizing = context.params.sizing;
 			root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			root.layout.padding = context.params.padding;
@@ -99,15 +99,15 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 			hintTextConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
 			hintTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
-			CLAY(root){
-				CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("nine-split-hint"))}){
+			CLAY(rootId, root){
+				CLAY(context.uiManager.toClayEID(context.createChildElementId("nine-split-hint")), {}){
 					CLAY_TEXT(
 						context.uiManager.toClayString(context.params.nineSplitHintText),
 						CLAY_TEXT_CONFIG(hintTextConfig));
 				};
 
 				Clay_ElementDeclaration row{};
-				row.id = context.uiManager.toClayEID(context.createChildElementId("nine-split-row"));
+				const Clay_ElementId rowId = context.uiManager.toClayEID(context.createChildElementId("nine-split-row"));
 				row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				row.layout.childGap = 8;
 				row.layout.childAlignment = {
@@ -116,7 +116,7 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 				};
 				row.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-				CLAY(row){
+				CLAY(rowId, row){
 					context.uiManager
 						.createElement(kDevNineSplit, context.createChildElementId("nine-split"))
 						.setParameters(devNineSplitParams{
@@ -201,7 +201,7 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -212,7 +212,7 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			const auto drawField = [&](std::string_view localId, std::string_view hintText, int64_t value) {
 				context.uiManager
 					.createElement(kDevNumericInput, context.createChildElementId(localId))

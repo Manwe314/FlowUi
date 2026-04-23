@@ -34,7 +34,7 @@ inline const DevPropertiesHeadDef kDevPropertiesHead = {
 	nullptr,
 	+[](DevPropertiesHeadDef::BuildContext& context) {
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_FIT(0),
@@ -58,15 +58,14 @@ inline const DevPropertiesHeadDef kDevPropertiesHead = {
 		selectedTextConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
 		selectedTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
-		CLAY(root){
-			CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("title"))}){
+		CLAY(rootId, root){
+			CLAY(context.uiManager.toClayEID(context.createChildElementId("title")), {}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.titleText),
 					CLAY_TEXT_CONFIG(titleTextConfig));
 			};
 
-			CLAY({
-				.id = context.uiManager.toClayEID(context.createChildElementId("selected-id")),
+			CLAY(context.uiManager.toClayEID(context.createChildElementId("selected-id")), {
 				.layout = {
 					.sizing = {
 						.width = CLAY_SIZING_GROW(0),

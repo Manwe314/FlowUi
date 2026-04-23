@@ -54,7 +54,7 @@ inline const DevFloat2InputDef kDevFloat2Input = {
 	nullptr,
 	+[](DevFloat2InputDef::BuildContext& context) {
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -65,7 +65,7 @@ inline const DevFloat2InputDef kDevFloat2Input = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevNumericInput, context.createChildElementId("first"))
 				.setParameters(devNumericInputParams{

@@ -930,8 +930,7 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::
     };
 
     Clay_ElementDeclaration declaration = elementDefinition_->constructElement(buildContext);
-    declaration.id = rootElementId;
-    Clay__OpenElement();
+    Clay__OpenElementWithId(rootElementId);
     Clay__ConfigureOpenElement(declaration);
     flowUiPushConstructedElement(uiManager_, rootElementId);
 #if FLOW_UI_DEV_MODE
