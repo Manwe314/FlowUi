@@ -53,7 +53,7 @@ inline const DevEnum2InputDef kDevEnum2Input = {
 	nullptr,
 	+[](DevEnum2InputDef::BuildContext& context) {
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -64,7 +64,7 @@ inline const DevEnum2InputDef kDevEnum2Input = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevEnum1Input, context.createChildElementId("first"))
 				.setParameters(devEnum1InputParams{

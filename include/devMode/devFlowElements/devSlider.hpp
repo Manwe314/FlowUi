@@ -179,7 +179,6 @@ inline const DevSliderDef kDevSlider = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = rootId;
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -189,11 +188,10 @@ inline const DevSliderDef kDevSlider = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			if (fillWidthPx > 0.0f)
 			{
 				Clay_ElementDeclaration fill{};
-				fill.id = fillId;
 				fill.layout.sizing = {
 					.width = CLAY_SIZING_FIXED(fillWidthPx),
 					.height = CLAY_SIZING_FIXED(trackHeightPx),
@@ -205,23 +203,21 @@ inline const DevSliderDef kDevSlider = {
 					.bottomLeft = context.params.trackCornerRadius,
 					.bottomRight = 0.0f,
 				};
-				CLAY(fill){};
+				CLAY(fillId, fill){};
 			}
 
 			Clay_ElementDeclaration bar{};
-			bar.id = barId;
 			bar.layout.sizing = {
 				.width = CLAY_SIZING_FIXED(handleWidthPx),
 				.height = CLAY_SIZING_FIXED(handleHeightPx),
 			};
 			bar.backgroundColor = barColor;
 			bar.cornerRadius = CLAY_CORNER_RADIUS(context.params.handleCornerRadius);
-			CLAY(bar){};
+			CLAY(barId, bar){};
 
 			if (unfillWidthPx > 0.0f)
 			{
 				Clay_ElementDeclaration unfill{};
-				unfill.id = unfillId;
 				unfill.layout.sizing = {
 					.width = CLAY_SIZING_FIXED(unfillWidthPx),
 					.height = CLAY_SIZING_FIXED(trackHeightPx),
@@ -233,7 +229,7 @@ inline const DevSliderDef kDevSlider = {
 					.bottomLeft = 0.0f,
 					.bottomRight = context.params.trackCornerRadius,
 				};
-				CLAY(unfill){};
+				CLAY(unfillId, unfill){};
 			}
 		};
 	},

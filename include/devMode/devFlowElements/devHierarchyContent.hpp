@@ -233,7 +233,7 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 		};
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		const Clay_Vector2 scrollOffset =
 			devScrollOffsetForElementId(context.uiManager, context.elementID);
 		root.layout.sizing = {
@@ -250,7 +250,7 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 			.childOffset = scrollOffset,
 		};
 
-		CLAY(root){
+		CLAY(rootId, root){
 			if (!isViewingInstances)
 			{
 				const FlowUi::devMode::DevRegistry& registry = FlowUi::devMode::DevRegistry::instance();
@@ -299,7 +299,7 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 							panelState->selectedElementId == definitionSelectionId;
 
 							Clay_ElementDeclaration definitionRow{};
-							definitionRow.id = context.uiManager.toClayEID(
+							const Clay_ElementId definitionRowId = context.uiManager.toClayEID(
 								context.createChildElementId("definition-row-" + std::to_string(i)));
 							definitionRow.layout.sizing = {
 								.width = CLAY_SIZING_FIXED(static_cast<float>(hierarchyInnerWidthPx)),
@@ -310,7 +310,7 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 							definitionRow.layout.childGap = static_cast<uint16_t>(rowChildGapPx);
 							definitionRow.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-						CLAY(definitionRow){
+						CLAY(definitionRowId, definitionRow){
 							context.uiManager
 								.createElement(kDevBasicButton, context.createChildElementId("definition-row-" + std::to_string(i) + "/expand"))
 								.setParameters(devBasicButtonParams{
@@ -395,7 +395,7 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 									panelState->selectedElementId == childSelectionId;
 
 								Clay_ElementDeclaration pseudoRow{};
-								pseudoRow.id = context.uiManager.toClayEID(
+								const Clay_ElementId pseudoRowId = context.uiManager.toClayEID(
 									context.createChildElementId(
 										"definition-row-" + std::to_string(i) + "/" + std::string(localChildId)));
 								pseudoRow.layout.sizing = {
@@ -407,11 +407,10 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 								pseudoRow.layout.childGap = static_cast<uint16_t>(rowChildGapPx);
 								pseudoRow.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-							CLAY(pseudoRow){
-								CLAY({
-									.id = context.uiManager.toClayEID(
+							CLAY(pseudoRowId, pseudoRow){
+								CLAY(context.uiManager.toClayEID(
 										context.createChildElementId(
-											"definition-row-" + std::to_string(i) + "/" + std::string(localChildId) + "/expand-spacer")),
+											"definition-row-" + std::to_string(i) + "/" + std::string(localChildId) + "/expand-spacer")), {
 										.layout = {
 											.sizing = {
 												.width = CLAY_SIZING_FIXED(static_cast<float>(arrowSlotWidthPx)),
@@ -419,10 +418,9 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 											},
 										},
 								}){};
-								CLAY({
-									.id = context.uiManager.toClayEID(
+								CLAY(context.uiManager.toClayEID(
 										context.createChildElementId(
-											"definition-row-" + std::to_string(i) + "/" + std::string(localChildId) + "/inset-spacer")),
+											"definition-row-" + std::to_string(i) + "/" + std::string(localChildId) + "/inset-spacer")), {
 									.layout = {
 										.sizing = {
 											.width = CLAY_SIZING_FIXED(20.0f),
@@ -542,7 +540,7 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 						const bool isSelected = panelState != nullptr && panelState->selectedElementId == elementId;
 
 							Clay_ElementDeclaration row{};
-							row.id = context.uiManager.toClayEID(context.createChildElementId("row-" + std::to_string(i)));
+							const Clay_ElementId rowId = context.uiManager.toClayEID(context.createChildElementId("row-" + std::to_string(i)));
 							row.layout.sizing = {
 								.width = CLAY_SIZING_FIXED(static_cast<float>(hierarchyInnerWidthPx)),
 								.height = CLAY_SIZING_FIT(0),
@@ -552,9 +550,8 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 							row.layout.childGap = static_cast<uint16_t>(rowChildGapPx);
 						row.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-						CLAY(row){
-							CLAY({
-								.id = context.uiManager.toClayEID(context.createChildElementId("row-" + std::to_string(i) + "/indent")),
+						CLAY(rowId, row){
+							CLAY(context.uiManager.toClayEID(context.createChildElementId("row-" + std::to_string(i) + "/indent")), {
 								.layout = {
 									.sizing = {
 										.width = CLAY_SIZING_FIXED(static_cast<float>(indentPx)),
@@ -599,15 +596,14 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 							}
 							else
 							{
-								CLAY({
-									.id = context.uiManager.toClayEID(context.createChildElementId("row-" + std::to_string(i) + "/expand-spacer")),
+									CLAY(context.uiManager.toClayEID(context.createChildElementId("row-" + std::to_string(i) + "/expand-spacer")), {
 										.layout = {
 											.sizing = {
 												.width = CLAY_SIZING_FIXED(static_cast<float>(arrowSlotWidthPx)),
 												.height = CLAY_SIZING_FIT(0),
 											},
 										},
-								}){};
+									}){};
 							}
 
 								context.uiManager

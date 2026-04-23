@@ -256,7 +256,7 @@ inline const DevCompositeStructInputDef kDevCompositeStructInput = {
 		};
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		root.layout.padding = context.params.padding;
@@ -276,7 +276,7 @@ inline const DevCompositeStructInputDef kDevCompositeStructInput = {
 
 		auto drawLabeledField = [&](std::string_view localId, std::string_view label, auto&& drawInput) {
 			Clay_ElementDeclaration fieldRoot{};
-			fieldRoot.id = context.uiManager.toClayEID(context.createChildElementId(std::string(localId)));
+			const Clay_ElementId fieldRootId = context.uiManager.toClayEID(context.createChildElementId(std::string(localId)));
 			fieldRoot.layout.sizing = context.params.inputSizing;
 			fieldRoot.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 			fieldRoot.layout.childGap = context.params.fieldGap;
@@ -286,21 +286,21 @@ inline const DevCompositeStructInputDef kDevCompositeStructInput = {
 			};
 			fieldRoot.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-			CLAY(fieldRoot){
-				if (!label.empty())
-				{
-					CLAY({.id = context.uiManager.toClayEID(
-						context.createChildElementId(std::string(localId) + "/hint"))}){
-						CLAY_TEXT(
-							context.uiManager.toClayString(std::string(label)),
-							CLAY_TEXT_CONFIG(hintTextConfig));
+				CLAY(fieldRootId, fieldRoot){
+					if (!label.empty())
+					{
+						CLAY(context.uiManager.toClayEID(
+							context.createChildElementId(std::string(localId) + "/hint")), {}){
+							CLAY_TEXT(
+								context.uiManager.toClayString(std::string(label)),
+								CLAY_TEXT_CONFIG(hintTextConfig));
 					};
 				}
 				drawInput();
 			};
 		};
 
-		CLAY(root){
+		CLAY(rootId, root){
 			if (context.params.fieldTypeHash == typeHash<Clay_Sizing>())
 			{
 				auto drawSizingAxis = [&](std::string_view axisId, std::string_view axisLabel, const DevTaggedUnionValue& axisValue, bool isWidth) {
@@ -1470,8 +1470,7 @@ inline const DevCompositeStructInputDef kDevCompositeStructInput = {
 			}
 			else
 			{
-				CLAY({
-					.id = context.uiManager.toClayEID(context.createChildElementId("unsupported")),
+				CLAY(context.uiManager.toClayEID(context.createChildElementId("unsupported")), {
 					.layout = {
 						.sizing = context.params.inputSizing,
 					},

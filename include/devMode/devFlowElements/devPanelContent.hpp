@@ -217,7 +217,6 @@ inline const DevPanelContentDef kDevPanelContent = {
 		state.hierarchySplitRatio = static_cast<float>(hierarchyWidthPx) / static_cast<float>(usableContentWidthPx);
 
 		Clay_ElementDeclaration root{};
-		root.id = rootId;
 		root.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_GROW(0),
@@ -226,7 +225,7 @@ inline const DevPanelContentDef kDevPanelContent = {
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevHierarchy, context.createChildElementId("hierarchy"))
 				.setParameters(devHierarchyParams{

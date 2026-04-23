@@ -94,7 +94,6 @@ inline const DevBasicButtonDef kDevBasicButton = {
 		rootLayout.childGap = context.params.childGap;
 
 		Clay_ElementDeclaration root{};
-		root.id = rootId;
 		root.layout = rootLayout;
 		root.backgroundColor = context.params.backgroundColor;
 		root.cornerRadius = context.params.cornerRadius;
@@ -115,12 +114,14 @@ inline const DevBasicButtonDef kDevBasicButton = {
 
 		Clay_ElementDeclaration iconContainer{};
 		Clay_ElementDeclaration iconElement{};
+		Clay_ElementId iconContainerId{};
+		Clay_ElementId iconElementId{};
 		if (needsIcon)
 		{
 			const std::string iconContainerPath = context.createChildElementId("icon-container");
 			const std::string iconPath = context.createChildElementId("icon");
-			const Clay_ElementId iconContainerId = context.uiManager.toClayEID(iconContainerPath);
-			const Clay_ElementId iconId = context.uiManager.toClayEID(iconPath);
+			iconContainerId = context.uiManager.toClayEID(iconContainerPath);
+			iconElementId = context.uiManager.toClayEID(iconPath);
 
 			Clay_LayoutConfig iconContainerLayout{};
 			iconContainerLayout.layoutDirection = context.params.iconContainerChildLayoutDirection;
@@ -128,8 +129,6 @@ inline const DevBasicButtonDef kDevBasicButton = {
 			iconContainerLayout.padding = context.params.iconContainerPadding;
 			iconContainerLayout.childAlignment = context.params.iconContainerChildAlignment;
 			iconContainerLayout.childGap = context.params.iconContainerChildGap;
-
-			iconContainer.id = iconContainerId;
 			iconContainer.layout = iconContainerLayout;
 			iconContainer.backgroundColor = context.params.iconContainerBackgroundColor;
 			iconContainer.border = {.color = context.params.iconContainerBorderColor, .width = context.params.iconContainerBorderWidth};
@@ -137,7 +136,6 @@ inline const DevBasicButtonDef kDevBasicButton = {
 			Clay_LayoutConfig iconLayout{};
 			iconLayout.sizing = context.params.iconSizing;
 
-			iconElement.id = iconId;
 			iconElement.layout = iconLayout;
 			iconElement.backgroundColor = context.params.iconTintColor;
 			iconElement.image = {
@@ -146,7 +144,7 @@ inline const DevBasicButtonDef kDevBasicButton = {
 		}
 
 		auto drawTextChild = [&]() {
-			CLAY({.id = textId}){
+			CLAY(textId, {}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.text),
 					CLAY_TEXT_CONFIG(textConfig)
@@ -155,12 +153,12 @@ inline const DevBasicButtonDef kDevBasicButton = {
 		};
 
 		auto drawIconChild = [&]() {
-			CLAY(iconContainer){
-				CLAY(iconElement){};
+			CLAY(iconContainerId, iconContainer){
+				CLAY(iconElementId, iconElement){};
 			};
 		};
 
-		CLAY(root){
+		CLAY(rootId, root){
 			switch (contentMode)
 			{
 			case devBasicButtonParams::ContentMode::None:

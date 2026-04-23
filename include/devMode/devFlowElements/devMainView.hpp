@@ -33,7 +33,7 @@ inline const MainDevViewDef kMainDevView = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(static_cast<float>(width)),
 			.height = CLAY_SIZING_GROW(0),
@@ -42,7 +42,7 @@ inline const MainDevViewDef kMainDevView = {
 		root.layout.childGap = 0;
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevHeader, context.createChildElementId("header"))
 				.setParameters(devHeaderParams{})

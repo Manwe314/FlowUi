@@ -407,7 +407,7 @@ inline const DevNumericInputDef kDevNumericInput = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -428,10 +428,10 @@ inline const DevNumericInputDef kDevNumericInput = {
 		const std::string hintWithColon =
 			(context.params.hintText.empty() ? std::string("float") : context.params.hintText) + ":";
 
-		CLAY(root){
+		CLAY(rootId, root){
 			if (context.params.showHint)
 			{
-				CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("hint"))}){
+				CLAY(context.uiManager.toClayEID(context.createChildElementId("hint")), {}){
 					CLAY_TEXT(
 						context.uiManager.toClayString(hintWithColon),
 						CLAY_TEXT_CONFIG(hintTextConfig));

@@ -70,7 +70,7 @@ inline const DevBasicToggleDef kDevBasicToggle = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.padding = context.params.padding;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
@@ -89,14 +89,13 @@ inline const DevBasicToggleDef kDevBasicToggle = {
 		textConfig.wrapMode = context.params.textWrapMode;
 		textConfig.textAlignment = context.params.textAlignment;
 
-		CLAY(root){
-			if (!context.params.text.empty())
-			{
-				CLAY({
-					.id = context.uiManager.toClayEID(context.createChildElementId("text")),
-					.layout = {
-						.sizing = {
-							.width = CLAY_SIZING_GROW(0),
+			CLAY(rootId, root){
+				if (!context.params.text.empty())
+				{
+					CLAY(context.uiManager.toClayEID(context.createChildElementId("text")), {
+						.layout = {
+							.sizing = {
+								.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_GROW(0),
 						},
 					},

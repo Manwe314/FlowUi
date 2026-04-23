@@ -419,7 +419,6 @@ inline bool tryApplyDevBorderElementConfigValue(const DevBorderElementConfigValu
 inline bool tryCaptureDevElementDeclarationValue(
 	const Clay_ElementDeclaration& source,
 	DevElementDeclarationValue& outValue) {
-	DevElementIdValue id{};
 	DevLayoutConfigValue layout{};
 	DevFloat4Value backgroundColor{};
 	DevFloat4Value cornerRadius{};
@@ -428,7 +427,6 @@ inline bool tryCaptureDevElementDeclarationValue(
 	DevClipElementConfigValue clip{};
 	DevBorderElementConfigValue border{};
 	if (
-		!tryCaptureDevElementIdValue(source.id, id) ||
 		!tryCaptureDevLayoutConfigValue(source.layout, layout) ||
 		!tryCaptureDevFloat4Value(source.backgroundColor, backgroundColor) ||
 		!tryCaptureDevFloat4Value(source.cornerRadius, cornerRadius) ||
@@ -441,7 +439,7 @@ inline bool tryCaptureDevElementDeclarationValue(
 	}
 
 	outValue = DevElementDeclarationValue{
-		.id = id,
+		.id = DevElementIdValue{},
 		.layout = layout,
 		.backgroundColor = backgroundColor,
 		.cornerRadius = cornerRadius,
@@ -459,7 +457,6 @@ inline bool tryCaptureDevElementDeclarationValue(
 inline bool tryApplyDevElementDeclarationValue(
 	const DevElementDeclarationValue& source,
 	Clay_ElementDeclaration& outValue) {
-	Clay_ElementId id{};
 	Clay_LayoutConfig layout{};
 	Clay_Color backgroundColor{};
 	Clay_CornerRadius cornerRadius{};
@@ -471,7 +468,6 @@ inline bool tryApplyDevElementDeclarationValue(
 	void* customData = nullptr;
 	void* userData = nullptr;
 	if (
-		!tryApplyDevElementIdValue(source.id, id) ||
 		!tryApplyDevLayoutConfigValue(source.layout, layout) ||
 		!tryApplyDevFloat4Value(source.backgroundColor, backgroundColor) ||
 		!tryApplyDevFloat4Value(source.cornerRadius, cornerRadius) ||
@@ -487,7 +483,6 @@ inline bool tryApplyDevElementDeclarationValue(
 	}
 
 	outValue = Clay_ElementDeclaration{};
-	outValue.id = id;
 	outValue.layout = layout;
 	outValue.backgroundColor = backgroundColor;
 	outValue.cornerRadius = cornerRadius;

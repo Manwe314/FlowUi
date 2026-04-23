@@ -113,7 +113,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 			(context.params.hintText.empty() ? std::string("type") : context.params.hintText) + ":";
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		root.layout.padding = context.params.padding;
@@ -131,8 +131,8 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 		hintTextConfig.wrapMode = CLAY_TEXT_WRAP_NONE;
 		hintTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
-		CLAY(root){
-			CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("hint"))}){
+		CLAY(rootId, root){
+			CLAY(context.uiManager.toClayEID(context.createChildElementId("hint")), {}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(hintWithColon),
 					CLAY_TEXT_CONFIG(hintTextConfig));
@@ -141,7 +141,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 			if (state.isExpanded)
 			{
 				Clay_ElementDeclaration dismissLayer{};
-				dismissLayer.id = context.uiManager.toClayEID(context.createChildElementId("dismiss-layer"));
+				const Clay_ElementId dismissLayerId = context.uiManager.toClayEID(context.createChildElementId("dismiss-layer"));
 				dismissLayer.layout.sizing = {
 					.width = CLAY_SIZING_GROW(0),
 					.height = CLAY_SIZING_GROW(0),
@@ -157,7 +157,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 					.attachTo = CLAY_ATTACH_TO_ROOT,
 				};
 
-				CLAY(dismissLayer){
+				CLAY(dismissLayerId, dismissLayer){
 					context.uiManager
 						.createElement(kDevBasicButton, context.createChildElementId("dismiss-layer/button"))
 						.setParameters(devBasicButtonParams{
@@ -183,7 +183,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 			}
 
 			Clay_ElementDeclaration triggerAnchor{};
-			triggerAnchor.id = context.uiManager.toClayEID(context.createChildElementId("trigger-anchor"));
+			const Clay_ElementId triggerAnchorId = context.uiManager.toClayEID(context.createChildElementId("trigger-anchor"));
 			triggerAnchor.layout.sizing = {
 				.width = CLAY_SIZING_FIT(0),
 				.height = CLAY_SIZING_FIT(0),
@@ -195,7 +195,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 			};
 			triggerAnchor.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-			CLAY(triggerAnchor){
+			CLAY(triggerAnchorId, triggerAnchor){
 				context.uiManager
 					.createElement(kDevBasicButton, context.createChildElementId("trigger"))
 					.setParameters(devBasicButtonParams{
@@ -253,7 +253,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 				if (state.isExpanded)
 				{
 				Clay_ElementDeclaration dropdown{};
-				dropdown.id = context.uiManager.toClayEID(context.createChildElementId("dropdown"));
+				const Clay_ElementId dropdownId = context.uiManager.toClayEID(context.createChildElementId("dropdown"));
 				dropdown.layout.sizing = {
 					.width = CLAY_SIZING_PERCENT(1.0f),
 					.height = CLAY_SIZING_FIT(0),
@@ -279,7 +279,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 					.attachTo = CLAY_ATTACH_TO_PARENT,
 				};
 
-				CLAY(dropdown){
+				CLAY(dropdownId, dropdown){
 					if (context.params.options.empty())
 					{
 						Clay_TextElementConfig emptyTextConfig{};
@@ -289,8 +289,7 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 						emptyTextConfig.wrapMode = CLAY_TEXT_WRAP_WORDS;
 						emptyTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
-						CLAY({
-							.id = context.uiManager.toClayEID(context.createChildElementId("dropdown/empty")),
+						CLAY(context.uiManager.toClayEID(context.createChildElementId("dropdown/empty")), {
 							.layout = {
 								.sizing = {
 									.width = CLAY_SIZING_GROW(0),

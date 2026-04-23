@@ -75,7 +75,7 @@ inline const DevHeaderDef kDevHeader = {
 		}
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.padding = context.params.padding;
 		root.layout.layoutDirection = context.params.childLayoutDirection;
@@ -94,15 +94,14 @@ inline const DevHeaderDef kDevHeader = {
 		const Clay_ElementId spacerId = context.uiManager.toClayEID(context.createChildElementId("spacer"));
 		const std::string exportButtonId = context.createChildElementId("export-button");
 
-		CLAY(root){
-			CLAY({.id = titleId}){
+		CLAY(rootId, root){
+			CLAY(titleId, {}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.titleText),
 					CLAY_TEXT_CONFIG(titleTextConfig));
 			};
 
-			CLAY({
-				.id = spacerId,
+			CLAY(spacerId, {
 				.layout = {
 					.sizing = {
 						.width = CLAY_SIZING_GROW(0),

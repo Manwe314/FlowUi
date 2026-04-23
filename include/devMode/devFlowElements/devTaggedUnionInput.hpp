@@ -74,7 +74,7 @@ inline const DevTaggedUnionInputDef kDevTaggedUnionInput = {
 	nullptr,
 	+[](DevTaggedUnionInputDef::BuildContext& context) {
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = context.params.sizing;
 		root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		root.layout.padding = context.params.padding;
@@ -85,7 +85,7 @@ inline const DevTaggedUnionInputDef kDevTaggedUnionInput = {
 		};
 		root.backgroundColor = context.params.backgroundColor;
 
-		CLAY(root){
+		CLAY(rootId, root){
 			context.uiManager
 				.createElement(kDevEnum1Input, context.createChildElementId("tag"))
 				.setParameters(devEnum1InputParams{

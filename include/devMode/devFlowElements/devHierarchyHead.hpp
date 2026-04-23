@@ -60,7 +60,7 @@ inline const DevHierarchyHeadDef kDevHierarchyHead = {
 			: context.params.modeButtonActiveBackgroundColor;
 
 		Clay_ElementDeclaration root{};
-		root.id = context.uiManager.toClayEID(context.elementID);
+		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 		root.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_FIT(0),
@@ -78,7 +78,7 @@ inline const DevHierarchyHeadDef kDevHierarchyHead = {
 		titleTextConfig.textAlignment = CLAY_TEXT_ALIGN_LEFT;
 
 		Clay_ElementDeclaration modeButtonsRow{};
-		modeButtonsRow.id = context.uiManager.toClayEID(context.createChildElementId("mode-buttons-row"));
+		const Clay_ElementId modeButtonsRowId = context.uiManager.toClayEID(context.createChildElementId("mode-buttons-row"));
 		modeButtonsRow.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_FIT(0),
@@ -87,14 +87,14 @@ inline const DevHierarchyHeadDef kDevHierarchyHead = {
 		modeButtonsRow.layout.childGap = context.params.modeButtonsRowGap;
 		modeButtonsRow.backgroundColor = FlowUi::Flow_Color("#00000000");
 
-		CLAY(root){
-			CLAY({.id = context.uiManager.toClayEID(context.createChildElementId("title"))}){
+		CLAY(rootId, root){
+			CLAY(context.uiManager.toClayEID(context.createChildElementId("title")), {}){
 				CLAY_TEXT(
 					context.uiManager.toClayString(context.params.titleText),
 					CLAY_TEXT_CONFIG(titleTextConfig));
 			};
 
-			CLAY(modeButtonsRow){
+			CLAY(modeButtonsRowId, modeButtonsRow){
 				context.uiManager
 					.createElement(kDevBasicButton, context.createChildElementId("instances-button"))
 					.setParameters(devBasicButtonParams{
