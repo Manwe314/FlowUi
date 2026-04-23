@@ -510,6 +510,7 @@ struct App::Impl {
 		frameInputForCurrentFrame = inputQueue.drain(deltaTimeSeconds);
 
 		const float inverseClampedUiScale = 1 / std::max(1.0e-6f, config.ui.uiScale);
+		constexpr float kBaseScrollSensitivity = 20.0f;
 		const VkExtent2D windowExtent = window->windowExtent();
 		const VkExtent2D framebufferExtent = window->framebufferExtent();
 		if (framebufferExtent.width != observedFramebufferExtent.width ||
@@ -529,8 +530,8 @@ struct App::Impl {
 		FrameInput frameInputForLayout = frameInputForCurrentFrame;
 		frameInputForLayout.mouseX *= inverseClampedUiScale;
 		frameInputForLayout.mouseY *= inverseClampedUiScale;
-		frameInputForLayout.scrollX *= inverseClampedUiScale;
-		frameInputForLayout.scrollY *= inverseClampedUiScale;
+		frameInputForLayout.scrollX *= inverseClampedUiScale * kBaseScrollSensitivity;
+		frameInputForLayout.scrollY *= inverseClampedUiScale * kBaseScrollSensitivity;
 		ui.beginFrame(frameSlot, frameInputForLayout, layoutWidth, layoutHeight);
 	}
 

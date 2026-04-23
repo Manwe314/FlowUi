@@ -75,9 +75,9 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 		{
 			std::array<double, 9> slotValues{};
 			slotValues.fill(0.0);
-			slotValues[1] = static_cast<double>(context.params.firstValue);
-			slotValues[3] = static_cast<double>(context.params.secondValue);
-			slotValues[5] = static_cast<double>(context.params.thirdValue);
+			slotValues[3] = static_cast<double>(context.params.firstValue);
+			slotValues[5] = static_cast<double>(context.params.secondValue);
+			slotValues[1] = static_cast<double>(context.params.thirdValue);
 			slotValues[7] = static_cast<double>(context.params.fourthValue);
 
 			Clay_ElementDeclaration root{};
@@ -123,7 +123,7 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 							.fieldIdPrefix = context.params.fieldIdPrefix.empty()
 								? context.createChildElementId("nine-split/fields")
 								: context.params.fieldIdPrefix + "/nine-split",
-							.numericSlots = std::vector<uint8_t>{1, 3, 5, 7},
+							.numericSlots = std::vector<uint8_t>{3, 5, 1, 7},
 							.slotValues = slotValues,
 							.valueKind = devNumericInputValueKind::UnsignedInt,
 							.minValue = context.params.minValue,
@@ -132,16 +132,16 @@ inline const DevEdgeU16InputDef kDevEdgeU16Input = {
 							.onValuesChangedCallback = [
 								onValueChanged = context.params.onValueChangedCallback,
 								fifthValue = context.params.fifthValue
-							](const std::array<double, 9>& values) {
-								if (onValueChanged != nullptr)
-								{
-									onValueChanged(
-										static_cast<int64_t>(std::llround(values[1])),
-										static_cast<int64_t>(std::llround(values[3])),
-										static_cast<int64_t>(std::llround(values[5])),
-										static_cast<int64_t>(std::llround(values[7])),
-										fifthValue);
-								}
+								](const std::array<double, 9>& values) {
+									if (onValueChanged != nullptr)
+									{
+										onValueChanged(
+											static_cast<int64_t>(std::llround(values[3])),
+											static_cast<int64_t>(std::llround(values[5])),
+											static_cast<int64_t>(std::llround(values[1])),
+											static_cast<int64_t>(std::llround(values[7])),
+											fifthValue);
+									}
 							},
 							.sizing = context.params.nineSplitSizing,
 							.rowGap = 2,
