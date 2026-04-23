@@ -16,7 +16,7 @@
 #include "Vulkan/Vk_Context.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include "vk_mem_alloc.h"
+#include "internal/Vma.hpp"
 
 namespace {
 

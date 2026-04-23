@@ -205,9 +205,11 @@ inline const DebugViewDefinition kDebugViewElement = {
 } // namespace
 
 void drawDebugView(UiManager& uiManager) {
+	DebugViewParams params{};
+	params.defaultMainViewWidthPx = std::max(1, static_cast<int>(std::lround(uiManager.devToolsConfig().panelWidthPx)));
 	uiManager
 		.createElement(kDebugViewElement, "flowui/dev/debug-view")
-		.setParameters(DebugViewParams{})
+		.setParameters(params)
 		.draw();
 }
 

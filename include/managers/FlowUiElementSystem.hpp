@@ -742,7 +742,7 @@ struct ElementDefinition
 
     void (*runLogic)(InteractionContext&) = nullptr;
 
-    Clay_ElementDeclaration (*constructElment)(BuildContext&) = nullptr;
+    Clay_ElementDeclaration (*constructElement)(BuildContext&) = nullptr;
     void (*buildElement)(BuildContext&) = nullptr;
 };
 
@@ -844,8 +844,8 @@ private:
 template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::construct(ElementDrawOptions options)
 {
-    if (!elementDefinition_ || !elementDefinition_->constructElment) {
-        throw std::runtime_error("FlowUi: elementDefinition is null or missing constructElment callback.");
+    if (!elementDefinition_ || !elementDefinition_->constructElement) {
+        throw std::runtime_error("FlowUi: elementDefinition is null or missing constructElement callback.");
     }
 
     const Clay_ElementId rootElementId = flowUiToClayElementId(uiManager_, elementID_);
@@ -929,7 +929,7 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::
         params_
     };
 
-    Clay_ElementDeclaration declaration = elementDefinition_->constructElment(buildContext);
+    Clay_ElementDeclaration declaration = elementDefinition_->constructElement(buildContext);
     declaration.id = rootElementId;
     Clay__OpenElement();
     Clay__ConfigureOpenElement(declaration);

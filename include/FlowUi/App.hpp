@@ -105,7 +105,7 @@ inline Clay_Color Flow_Color(std::string_view hexRgba)
 
 class UiManager;
 class ImageManager;
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 class IconManager;
 #endif
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
@@ -132,7 +132,7 @@ public:
 	const FontManager& fonts() const;
 	ImageManager& images();
 	const ImageManager& images() const;
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager& icons();
 	const IconManager& icons() const;
 #endif

@@ -28,7 +28,7 @@ inline void initializeDevFlowElementResourcesFromApp(App& app) {
 	devEnum1InputResources& enum1Resources = *DevEnum1InputDef::resources;
 	devNineSplitResources& nineSplitResources = *DevNineSplitDef::resources;
 
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 	constexpr std::string_view kExportIconKey = "flowui/dev/header/export";
 	constexpr std::string_view kDownArrowIconKey = "flowui/dev/hierarchy/arrow-down";
 	constexpr std::string_view kRightArrowIconKey = "flowui/dev/hierarchy/arrow-right";

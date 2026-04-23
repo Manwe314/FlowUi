@@ -28,9 +28,9 @@ using VkSampler = VkSampler_T*;
 
 namespace FlowUi {
 
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 class App;
-struct SvgManagerConfig;
+struct IconManagerConfig;
 
 namespace detail {
 struct IUiTextureRegistry;
@@ -47,7 +47,7 @@ private:
 	friend class App;
 
 	void setRegistry(detail::IUiTextureRegistry* registry);
-	void init(VulkanContext& vk, const SvgManagerConfig& config);
+	void init(VulkanContext& vk, const IconManagerConfig& config);
 	void prepareFrameTextures(
 		Clay_RenderCommandArray& renderCommands,
 		float uiToFramebufferScaleX,
@@ -200,7 +200,7 @@ private:
 };
 #else
 class App;
-struct SvgManagerConfig;
+struct IconManagerConfig;
 
 namespace detail {
 struct IUiTextureRegistry;
@@ -208,23 +208,23 @@ struct IUiTextureRegistry;
 
 struct IconManager {
 	bool registerSvg(std::string_view, std::string_view) {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_SVG_MANAGER=OFF.");
+		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
 	bool registerFromFile(std::string_view, std::string_view) {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_SVG_MANAGER=OFF.");
+		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
 	bool remove(std::string_view) {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_SVG_MANAGER=OFF.");
+		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
 	bool contains(std::string_view) const {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_SVG_MANAGER=OFF.");
+		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
 	TextureRef textureRef(std::string_view) {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_SVG_MANAGER=OFF.");
+		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
 private:
@@ -232,8 +232,8 @@ private:
 
 	void setRegistry(detail::IUiTextureRegistry*) {}
 
-	void init(VulkanContext&, const SvgManagerConfig&) {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_SVG_MANAGER=OFF.");
+	void init(VulkanContext&, const IconManagerConfig&) {
+		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
 	void prepareFrameTextures(Clay_RenderCommandArray&, float, float) {}

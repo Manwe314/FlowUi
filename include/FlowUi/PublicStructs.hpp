@@ -58,7 +58,7 @@ struct VulkanConfig {
 	bool enableDebugUtils = true;
 	PresentMode presentMode = PresentMode::Fifo;
 	bool preferDiscreteGPU = true;
-	MSAA msaa = MSAA::x1;
+	MSAA msaa = MSAA::x1; //No-op For now
 	bool srgbBackbuffer = true;
 	uint32_t framesInFlight = 2;
 };
@@ -84,11 +84,11 @@ struct UiConfig {
 	float defaultFontPx = 18.0f;
 
 	uint32_t fontAtlasSize = 2048;
-	uint32_t iconAtlasSize = 1024;
+	uint32_t iconAtlasSize = 1024; //No-op for now
 	InputManagerConfig inputManager{};
 };
 
-struct SvgManagerConfig {
+struct IconManagerConfig {
 	uint32_t atlasSize = 2048;
 	uint32_t maxAtlasPages = 10;
 	uint32_t sizeBucketStep = 8;
@@ -119,14 +119,14 @@ struct DevToolsConfig {
 	DevShortcutChord panelToggleChord{};
 	bool excludeInternalDevElementsFromCapture = true;
 	std::filesystem::path overridesPath = ".flowui/overrides.v1.json";
-	bool autoSave = true;
+	bool autoSave = true; //No-op for now
 };
 
 struct AppConfig {
 	WindowConfig window{};
 	VulkanConfig vk{};
 	UiConfig ui{};
-	SvgManagerConfig svgManager{};
+	IconManagerConfig iconManager{};
 	DevToolsConfig dev{};
 };
 

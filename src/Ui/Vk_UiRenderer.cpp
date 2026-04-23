@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "vk_mem_alloc.h"
+#include "internal/Vma.hpp"
 
 namespace {
 
