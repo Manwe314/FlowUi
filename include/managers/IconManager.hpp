@@ -36,11 +36,21 @@ namespace detail {
 struct IUiTextureRegistry;
 } // namespace detail
 
+/** @addtogroup flowui_icon_manager
+ * @{
+ */
+
+/** @brief Registers SVG icons and resolves them to atlas-backed texture references. */
 struct IconManager {
+	/** @brief Register an SVG document from source text. */
 	bool registerSvg(std::string_view key, std::string_view svgSource);
+	/** @brief Register an SVG document from a file path. */
 	bool registerFromFile(std::string_view key, std::string_view filePath);
+	/** @brief Remove a registered SVG document by key. */
 	bool remove(std::string_view key);
+	/** @brief Return true if an SVG key is registered. */
 	bool contains(std::string_view key) const;
+	/** @brief Return a texture request reference for a registered icon key. */
 	TextureRef textureRef(std::string_view key);
 
 private:
@@ -198,6 +208,8 @@ private:
 	std::unordered_map<VariantKey, VariantEntry, VariantKeyHash> variantsByKeyAndSize_;
 	std::vector<AtlasPage> atlasPages_;
 };
+
+/** @} */
 #else
 class App;
 struct IconManagerConfig;
@@ -206,23 +218,33 @@ namespace detail {
 struct IUiTextureRegistry;
 } // namespace detail
 
+/** @addtogroup flowui_icon_manager
+ * @{
+ */
+
+/** @brief Stub IconManager used when FlowUi is built with icon support disabled. */
 struct IconManager {
+	/** @brief Throws because icon support is disabled. */
 	bool registerSvg(std::string_view, std::string_view) {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
+	/** @brief Throws because icon support is disabled. */
 	bool registerFromFile(std::string_view, std::string_view) {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
+	/** @brief Throws because icon support is disabled. */
 	bool remove(std::string_view) {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
+	/** @brief Throws because icon support is disabled. */
 	bool contains(std::string_view) const {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
+	/** @brief Throws because icon support is disabled. */
 	TextureRef textureRef(std::string_view) {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
@@ -240,6 +262,8 @@ private:
 
 	void destroy(VulkanContext&) {}
 };
+
+/** @} */
 #endif
 
 } // namespace FlowUi

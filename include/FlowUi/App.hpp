@@ -16,7 +16,14 @@ struct FontManager;
 
 namespace FlowUi {
 
+/** @addtogroup flowui_app
+ * @{
+ */
+
+/** @brief Stable hashed id for a FlowUi element instance. */
 using FlowElementId = uint64_t;
+
+/** @brief Stable hashed id for a FlowUi element definition. */
 using FlowDefinitionId = uint64_t;
 
 namespace detail {
@@ -44,38 +51,49 @@ constexpr uint64_t flowMix64(uint64_t value) noexcept {
 
 } // namespace detail
 
+/** @brief Hash an element name into a FlowUi element id. */
 constexpr FlowElementId toFlowId(std::string_view elementName) noexcept {
 	return detail::flowHashBytes(elementName);
 }
 
+/** @brief Hash a string literal into a FlowUi element id. */
 template <std::size_t N>
 constexpr FlowElementId toFlowId(const char (&elementName)[N]) noexcept {
 	return detail::flowHashBytes(std::string_view{elementName, N - 1});
 }
 
+/** @brief Hash a definition name into a FlowUi definition id. */
 constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept {
 	return detail::flowHashBytes(definitionName);
 }
 
+/** @brief Hash a string literal into a FlowUi definition id. */
 template <std::size_t N>
 constexpr FlowDefinitionId toFlowDefinitionId(const char (&definitionName)[N]) noexcept {
 	return detail::flowHashBytes(std::string_view{definitionName, N - 1});
 }
 
+/** @brief Create a stable child/index id from a root id and numeric index. */
 constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept {
 	const uint64_t mixedIndex = detail::flowMix64(index + 0x9e3779b97f4a7c15ull);
 	return detail::flowMix64(rootId ^ mixedIndex);
 }
 
+/** @brief Create a stable child/index id from a root name and numeric index. */
 constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept {
 	return createIndexedFlowId(toFlowId(rootName), index);
 }
 
+/** @brief Create a stable child/index id from a root string literal and numeric index. */
 template <std::size_t N>
 constexpr FlowElementId createIndexedFlowId(const char (&rootName)[N], uint64_t index) noexcept {
 	return createIndexedFlowId(toFlowId(rootName), index);
 }
 
+/**
+ * @brief Convert a \#RRGGBBAA color string into a Clay_Color.
+ * @throws std::invalid_argument if the string is not valid \#RRGGBBAA.
+ */
 inline Clay_Color Flow_Color(std::string_view hexRgba)
 {
 	if (hexRgba.size() != 9 || hexRgba[0] != '#') {
@@ -112,45 +130,71 @@ class IconManager;
 class ViewPortManager;
 #endif
 
+/** @brief Main FlowUi application object and owner of runtime managers. */
 class App {
 public:
+	/** @brief Construct an empty app handle. Use makeApplication() to create a running app. */
 	App();
+	/** @brief Move constructor. */
 	App(App&&) noexcept;
+	/** @brief Move assignment. */
 	App& operator=(App&&) noexcept;
 	App(const App&) = delete;
 	App& operator=(const App&) = delete;
+	/** @brief Destroy the app and owned runtime resources. */
 	~App();
 
+	/** @brief Return true when the window backend requests shutdown. */
 	bool shouldClose() const;
 
-	// Frame lifecycle
+	/** @brief Begin a frame and prepare input/UI state. */
 	void beginFrame();
+	/** @brief End UI construction and produce render commands. */
 	void endFrame();
+	/** @brief Submit the current frame for rendering/presentation. */
 	void drawFrame();
 
+	/** @brief Access the font manager. */
 	FontManager& fonts();
+	/** @brief Access the font manager. */
 	const FontManager& fonts() const;
+	/** @brief Access the image manager. */
 	ImageManager& images();
+	/** @brief Access the image manager. */
 	const ImageManager& images() const;
 #if FLOWUI_INCLUDE_ICON_MANAGER
+	/** @brief Access the icon manager. */
 	IconManager& icons();
+	/** @brief Access the icon manager. */
 	const IconManager& icons() const;
 #endif
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
+	/** @brief Access the viewport manager. */
 	ViewPortManager& viewPorts();
+	/** @brief Access the viewport manager. */
 	const ViewPortManager& viewPorts() const;
 #endif
 
+	/** @brief Access the UI manager. */
 	UiManager& ui();
+	/** @brief Access the UI manager. */
 	const UiManager& ui() const;
 
+	/** @brief Set the native window title. */
 	void setWindowTitle(std::string_view title);
+	/** @brief Return the window size in screen coordinates. */
 	std::pair<int,int> windowSize() const;
+	/** @brief Return the framebuffer size in pixels. */
 	std::pair<int,int> framebufferSize() const;
+	/** @brief Apply window input configuration. */
 	void setWindowInputConfig(const WindowInputConfig& config);
+	/** @brief Return the current window input configuration. */
 	WindowInputConfig windowInputConfig() const;
+	/** @brief Return whether the window backend supports raw mouse motion. */
 	bool supportsRawMouseMotion() const;
+	/** @brief Set clipboard text through the window backend. */
 	void setClipboardText(std::string_view text);
+	/** @brief Read clipboard text through the window backend. */
 	std::string clipboardText() const;
 
 private:
@@ -160,9 +204,18 @@ private:
 	friend App makeApplication(const AppConfig& cfg);
 };
 
+/** @brief Create a running FlowUi application from configuration. 
+ * @param cfg the Configguration struct
+ * @code{.cpp}
+*/
 App makeApplication(const AppConfig& cfg);
+
+/** @} */
 
 } // namespace FlowUi
 
+/** @brief Convenience macro for FlowUi::toFlowId(). */
 #define FLOW_ID(label) (::FlowUi::toFlowId(label))
+
+/** @brief Convenience macro for FlowUi::toFlowDefinitionId(). */
 #define FLOW_DEF_ID(label) (::FlowUi::toFlowDefinitionId(label))

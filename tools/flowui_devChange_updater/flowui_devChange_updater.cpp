@@ -444,6 +444,189 @@ std::string cppStringLiteral(std::string_view text) {
 	return std::string("\"") + jsonEscape(text) + "\"";
 }
 
+struct AggregateFieldInfo {
+	std::string_view jsonName{};
+	std::string_view cppName{};
+};
+
+struct AggregateTypeInfo {
+	std::string_view typeName{};
+	std::vector<AggregateFieldInfo> fields{};
+};
+
+std::string makeFloatLiteral(std::string_view numberLexeme) {
+	std::string literal{numberLexeme};
+	if (literal.find_first_of(".eE") == std::string::npos) {
+		literal += ".0";
+	}
+	literal += "f";
+	return literal;
+}
+
+bool parseJsonFloatLiteral(
+	const JsonValue* numericValue,
+	std::string_view valueKind,
+	std::string_view componentName,
+	std::string& outLiteral,
+	std::string& outLexeme,
+	std::string& outError) {
+	if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+		outError = std::string(valueKind) + " change has missing/invalid component: " + std::string(componentName);
+		return false;
+	}
+
+	double numeric = 0.0;
+	try {
+		std::size_t consumed = 0u;
+		numeric = std::stod(numericValue->text, &consumed);
+		if (consumed != numericValue->text.size()) {
+			outError = std::string(valueKind) + " component has invalid numeric lexeme: " + std::string(componentName);
+			return false;
+		}
+	} catch (...) {
+		outError = std::string(valueKind) + " component is not parseable as number: " + std::string(componentName);
+		return false;
+	}
+
+	if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
+		numeric > static_cast<double>(std::numeric_limits<float>::max())) {
+		outError = std::string(valueKind) + " component is out of float range: " + std::string(componentName);
+		return false;
+	}
+
+	outLexeme = numericValue->text;
+	outLiteral = makeFloatLiteral(numericValue->text);
+	return true;
+}
+
+bool parseJsonUInt16Literal(
+	const JsonValue* numericValue,
+	std::string_view valueKind,
+	std::string_view componentName,
+	std::string& outLiteral,
+	std::string& outLexeme,
+	std::string& outError) {
+	if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
+		outError = std::string(valueKind) + " change has missing/invalid component: " + std::string(componentName);
+		return false;
+	}
+
+	long long numeric = 0;
+	try {
+		std::size_t consumed = 0u;
+		numeric = std::stoll(numericValue->text, &consumed, 10);
+		if (consumed != numericValue->text.size()) {
+			outError = std::string(valueKind) + " component has invalid integer lexeme: " + std::string(componentName);
+			return false;
+		}
+	} catch (...) {
+		outError = std::string(valueKind) + " component is not parseable as integer: " + std::string(componentName);
+		return false;
+	}
+
+	if (numeric < 0 || numeric > static_cast<long long>(std::numeric_limits<uint16_t>::max())) {
+		outError = std::string(valueKind) + " component is out of uint16_t range: " + std::string(componentName);
+		return false;
+	}
+
+	outLiteral = std::to_string(numeric);
+	outLexeme = outLiteral;
+	return true;
+}
+
+std::string buildDesignatedAggregate(
+	std::string_view typeName,
+	const std::vector<AggregateFieldInfo>& fields,
+	const std::vector<std::string>& literals) {
+	std::string out{typeName};
+	out += "{";
+	for (std::size_t i = 0u; i < fields.size(); ++i) {
+		if (i > 0u) {
+			out += ", ";
+		}
+		out += ".";
+		out += fields[i].cppName;
+		out += " = ";
+		out += literals[i];
+	}
+	out += "}";
+	return out;
+}
+
+std::string buildAggregateLexeme(
+	std::string_view typeName,
+	const std::vector<AggregateFieldInfo>& fields,
+	const std::vector<std::string>& lexemes) {
+	std::string out{typeName};
+	out += "{";
+	for (std::size_t i = 0u; i < fields.size(); ++i) {
+		if (i > 0u) {
+			out += ", ";
+		}
+		out += fields[i].jsonName;
+		out += "=";
+		out += lexemes[i];
+	}
+	out += "}";
+	return out;
+}
+
+bool parseTypedAggregateChange(
+	const JsonValue& rawValue,
+	std::string_view valueKind,
+	const std::vector<AggregateTypeInfo>& typeInfos,
+	bool parseFloatComponents,
+	std::string& outCppValue,
+	std::string& outValueLexeme,
+	std::string& outError) {
+	if (rawValue.kind != JsonValue::Kind::Object) {
+		outError = std::string(valueKind) + " change has non-object value.";
+		return false;
+	}
+
+	const JsonValue* typeValue = findObjectField(rawValue, "type");
+	if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
+		outError = std::string(valueKind) + " change requires string type.";
+		return false;
+	}
+
+	std::string typeName{};
+	(void)jsonString(*typeValue, typeName);
+	const AggregateTypeInfo* typeInfo = nullptr;
+	for (const AggregateTypeInfo& candidate : typeInfos) {
+		if (candidate.typeName == typeName) {
+			typeInfo = &candidate;
+			break;
+		}
+	}
+	if (typeInfo == nullptr) {
+		outError = std::string(valueKind) + " change has unsupported type: " + typeName;
+		return false;
+	}
+
+	std::vector<std::string> literals{};
+	std::vector<std::string> lexemes{};
+	literals.reserve(typeInfo->fields.size());
+	lexemes.reserve(typeInfo->fields.size());
+	for (const AggregateFieldInfo& field : typeInfo->fields) {
+		std::string literal{};
+		std::string lexeme{};
+		const JsonValue* component = findObjectField(rawValue, field.jsonName);
+		const bool parsed = parseFloatComponents
+			? parseJsonFloatLiteral(component, valueKind, field.jsonName, literal, lexeme, outError)
+			: parseJsonUInt16Literal(component, valueKind, field.jsonName, literal, lexeme, outError);
+		if (!parsed) {
+			return false;
+		}
+		literals.push_back(std::move(literal));
+		lexemes.push_back(std::move(lexeme));
+	}
+
+	outCppValue = buildDesignatedAggregate(typeInfo->typeName, typeInfo->fields, literals);
+	outValueLexeme = buildAggregateLexeme(typeInfo->typeName, typeInfo->fields, lexemes);
+	return true;
+}
+
 struct ParsedChange {
 	uint64_t fieldHash = 0u;
 	std::string fieldName{};
@@ -706,216 +889,41 @@ bool parseChange(const JsonValue& value, ParsedChange& outChange, std::string& o
 		return false;
 	}
 	if (outChange.jsonKind == "float2") {
-		if (rawValue->kind != JsonValue::Kind::Object) {
-			outError = "float2 change has non-object value.";
-			return false;
-		}
-
-		const JsonValue* typeValue = findObjectField(*rawValue, "type");
-		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
-			outError = "float2 change requires string type.";
-			return false;
-		}
-
-		auto parseFloat2Component = [&](
-			const JsonValue* numericValue,
-			const char* componentName,
-			std::string& outLiteral,
-			std::string& outLexeme) -> bool {
-			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
-				outError = std::string("float2 change has missing/invalid component: ") + componentName;
-				return false;
-			}
-
-			double numeric = 0.0;
-			try {
-				std::size_t consumed = 0u;
-				numeric = std::stod(numericValue->text, &consumed);
-				if (consumed != numericValue->text.size()) {
-					outError = std::string("float2 component has invalid numeric lexeme: ") + componentName;
-					return false;
-				}
-			} catch (...) {
-				outError = std::string("float2 component is not parseable as number: ") + componentName;
-				return false;
-			}
-
-			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
-				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
-				outError = std::string("float2 component is out of float range: ") + componentName;
-				return false;
-			}
-
-			outLexeme = numericValue->text;
-			outLiteral = numericValue->text;
-			if (outLiteral.find_first_of(".eE") == std::string::npos) {
-				outLiteral += ".0";
-			}
-			outLiteral += "f";
-			return true;
+		static const std::vector<AggregateTypeInfo> kFloat2TypeInfos{
+			{"Clay_Vector2", {{"x", "x"}, {"y", "y"}}},
+			{"Clay_Dimensions", {{"width", "width"}, {"height", "height"}}},
+			{"Clay_SizingMinMax", {{"min", "min"}, {"max", "max"}}},
 		};
-
-		std::string float2Type{};
-		(void)jsonString(*typeValue, float2Type);
-		if (float2Type == "Clay_Vector2") {
-			std::string xLiteral{};
-			std::string yLiteral{};
-			std::string xLexeme{};
-			std::string yLexeme{};
-			if (
-				!parseFloat2Component(findObjectField(*rawValue, "x"), "x", xLiteral, xLexeme) ||
-				!parseFloat2Component(findObjectField(*rawValue, "y"), "y", yLiteral, yLexeme))
-			{
-				return false;
-			}
-
-			outChange.cppValue = "Clay_Vector2{.x = " + xLiteral + ", .y = " + yLiteral + "}";
-			outChange.valueLexeme = "Clay_Vector2{x=" + xLexeme + ", y=" + yLexeme + "}";
-			return true;
+		if (!parseTypedAggregateChange(
+			*rawValue,
+			"float2",
+			kFloat2TypeInfos,
+			true,
+			outChange.cppValue,
+			outChange.valueLexeme,
+			outError))
+		{
+			return false;
 		}
-		if (float2Type == "Clay_Dimensions") {
-			std::string widthLiteral{};
-			std::string heightLiteral{};
-			std::string widthLexeme{};
-			std::string heightLexeme{};
-			if (
-				!parseFloat2Component(findObjectField(*rawValue, "width"), "width", widthLiteral, widthLexeme) ||
-				!parseFloat2Component(findObjectField(*rawValue, "height"), "height", heightLiteral, heightLexeme))
-			{
-				return false;
-			}
-
-			outChange.cppValue =
-				"Clay_Dimensions{.width = " + widthLiteral + ", .height = " + heightLiteral + "}";
-			outChange.valueLexeme =
-				"Clay_Dimensions{width=" + widthLexeme + ", height=" + heightLexeme + "}";
-			return true;
-		}
-		if (float2Type == "Clay_SizingMinMax") {
-			std::string minLiteral{};
-			std::string maxLiteral{};
-			std::string minLexeme{};
-			std::string maxLexeme{};
-			if (
-				!parseFloat2Component(findObjectField(*rawValue, "min"), "min", minLiteral, minLexeme) ||
-				!parseFloat2Component(findObjectField(*rawValue, "max"), "max", maxLiteral, maxLexeme))
-			{
-				return false;
-			}
-
-			outChange.cppValue = "Clay_SizingMinMax{.min = " + minLiteral + ", .max = " + maxLiteral + "}";
-			outChange.valueLexeme = "Clay_SizingMinMax{min=" + minLexeme + ", max=" + maxLexeme + "}";
-			return true;
-		}
-
-		outError = "float2 change has unsupported type: " + float2Type;
-		return false;
+		return true;
 	}
 	if (outChange.jsonKind == "float4") {
-		if (rawValue->kind != JsonValue::Kind::Object) {
-			outError = "float4 change has non-object value.";
-			return false;
-		}
-
-		const JsonValue* typeValue = findObjectField(*rawValue, "type");
-		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
-			outError = "float4 change requires string type.";
-			return false;
-		}
-
-		auto parseFloat4Component = [&](
-			const JsonValue* numericValue,
-			const char* componentName,
-			std::string& outLiteral,
-			std::string& outLexeme) -> bool {
-			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
-				outError = std::string("float4 change has missing/invalid component: ") + componentName;
-				return false;
-			}
-
-			double numeric = 0.0;
-			try {
-				std::size_t consumed = 0u;
-				numeric = std::stod(numericValue->text, &consumed);
-				if (consumed != numericValue->text.size()) {
-					outError = std::string("float4 component has invalid numeric lexeme: ") + componentName;
-					return false;
-				}
-			} catch (...) {
-				outError = std::string("float4 component is not parseable as number: ") + componentName;
-				return false;
-			}
-
-			if (numeric < -static_cast<double>(std::numeric_limits<float>::max()) ||
-				numeric > static_cast<double>(std::numeric_limits<float>::max())) {
-				outError = std::string("float4 component is out of float range: ") + componentName;
-				return false;
-			}
-
-			outLexeme = numericValue->text;
-			outLiteral = numericValue->text;
-			if (outLiteral.find_first_of(".eE") == std::string::npos) {
-				outLiteral += ".0";
-			}
-			outLiteral += "f";
-			return true;
+		static const std::vector<AggregateTypeInfo> kFloat4TypeInfos{
+			{"Clay_Color", {{"r", "r"}, {"g", "g"}, {"b", "b"}, {"a", "a"}}},
+			{"Clay_CornerRadius", {{"topLeft", "topLeft"}, {"topRight", "topRight"}, {"bottomLeft", "bottomLeft"}, {"bottomRight", "bottomRight"}}},
 		};
-
-		std::string float4Type{};
-		(void)jsonString(*typeValue, float4Type);
-		if (float4Type == "Clay_Color") {
-			std::string rLiteral{};
-			std::string gLiteral{};
-			std::string bLiteral{};
-			std::string aLiteral{};
-			std::string rLexeme{};
-			std::string gLexeme{};
-			std::string bLexeme{};
-			std::string aLexeme{};
-			if (
-				!parseFloat4Component(findObjectField(*rawValue, "r"), "r", rLiteral, rLexeme) ||
-				!parseFloat4Component(findObjectField(*rawValue, "g"), "g", gLiteral, gLexeme) ||
-				!parseFloat4Component(findObjectField(*rawValue, "b"), "b", bLiteral, bLexeme) ||
-				!parseFloat4Component(findObjectField(*rawValue, "a"), "a", aLiteral, aLexeme))
-			{
-				return false;
-			}
-
-			outChange.cppValue =
-				"Clay_Color{.r = " + rLiteral + ", .g = " + gLiteral + ", .b = " + bLiteral + ", .a = " + aLiteral + "}";
-			outChange.valueLexeme =
-				"Clay_Color{r=" + rLexeme + ", g=" + gLexeme + ", b=" + bLexeme + ", a=" + aLexeme + "}";
-			return true;
+		if (!parseTypedAggregateChange(
+			*rawValue,
+			"float4",
+			kFloat4TypeInfos,
+			true,
+			outChange.cppValue,
+			outChange.valueLexeme,
+			outError))
+		{
+			return false;
 		}
-		if (float4Type == "Clay_CornerRadius") {
-			std::string topLeftLiteral{};
-			std::string topRightLiteral{};
-			std::string bottomLeftLiteral{};
-			std::string bottomRightLiteral{};
-			std::string topLeftLexeme{};
-			std::string topRightLexeme{};
-			std::string bottomLeftLexeme{};
-			std::string bottomRightLexeme{};
-			if (
-				!parseFloat4Component(findObjectField(*rawValue, "topLeft"), "topLeft", topLeftLiteral, topLeftLexeme) ||
-				!parseFloat4Component(findObjectField(*rawValue, "topRight"), "topRight", topRightLiteral, topRightLexeme) ||
-				!parseFloat4Component(findObjectField(*rawValue, "bottomLeft"), "bottomLeft", bottomLeftLiteral, bottomLeftLexeme) ||
-				!parseFloat4Component(findObjectField(*rawValue, "bottomRight"), "bottomRight", bottomRightLiteral, bottomRightLexeme))
-			{
-				return false;
-			}
-
-			outChange.cppValue =
-				"Clay_CornerRadius{.topLeft = " + topLeftLiteral + ", .topRight = " + topRightLiteral +
-				", .bottomLeft = " + bottomLeftLiteral + ", .bottomRight = " + bottomRightLiteral + "}";
-			outChange.valueLexeme =
-				"Clay_CornerRadius{topLeft=" + topLeftLexeme + ", topRight=" + topRightLexeme +
-				", bottomLeft=" + bottomLeftLexeme + ", bottomRight=" + bottomRightLexeme + "}";
-			return true;
-		}
-
-		outError = "float4 change has unsupported type: " + float4Type;
-		return false;
+		return true;
 	}
 	if (outChange.jsonKind == "tagged_union") {
 		if (rawValue->kind != JsonValue::Kind::Object) {
@@ -2075,120 +2083,22 @@ bool parseChange(const JsonValue& value, ParsedChange& outChange, std::string& o
 		return false;
 	}
 	if (outChange.jsonKind == "edgeu16") {
-		if (rawValue->kind != JsonValue::Kind::Object) {
-			outError = "edgeu16 change has non-object value.";
-			return false;
-		}
-
-		const JsonValue* typeValue = findObjectField(*rawValue, "type");
-		if (!typeValue || typeValue->kind != JsonValue::Kind::String) {
-			outError = "edgeu16 change requires string type.";
-			return false;
-		}
-
-		auto parseEdgeU16Component = [&](
-			const JsonValue* numericValue,
-			const char* componentName,
-			std::string& outLiteral,
-			std::string& outLexeme) -> bool {
-			if (!numericValue || numericValue->kind != JsonValue::Kind::Number) {
-				outError = std::string("edgeu16 change has missing/invalid component: ") + componentName;
-				return false;
-			}
-
-			long long numeric = 0;
-			try {
-				std::size_t consumed = 0u;
-				numeric = std::stoll(numericValue->text, &consumed, 10);
-				if (consumed != numericValue->text.size()) {
-					outError = std::string("edgeu16 component has invalid integer lexeme: ") + componentName;
-					return false;
-				}
-			} catch (...) {
-				outError = std::string("edgeu16 component is not parseable as integer: ") + componentName;
-				return false;
-			}
-
-			if (numeric < 0 || numeric > static_cast<long long>(std::numeric_limits<uint16_t>::max())) {
-				outError = std::string("edgeu16 component is out of uint16_t range: ") + componentName;
-				return false;
-			}
-
-			outLiteral = std::to_string(numeric);
-			outLexeme = outLiteral;
-			return true;
+		static const std::vector<AggregateTypeInfo> kEdgeU16TypeInfos{
+			{"Clay_Padding", {{"left", "left"}, {"right", "right"}, {"top", "top"}, {"bottom", "bottom"}}},
+			{"Clay_BorderWidth", {{"left", "left"}, {"right", "right"}, {"top", "top"}, {"bottom", "bottom"}, {"betweenChildren", "betweenChildren"}}},
 		};
-
-		std::string edgeType{};
-		(void)jsonString(*typeValue, edgeType);
-		if (edgeType == "Clay_Padding") {
-			std::string leftLiteral{};
-			std::string rightLiteral{};
-			std::string topLiteral{};
-			std::string bottomLiteral{};
-			std::string leftLexeme{};
-			std::string rightLexeme{};
-			std::string topLexeme{};
-			std::string bottomLexeme{};
-			if (
-				!parseEdgeU16Component(findObjectField(*rawValue, "left"), "left", leftLiteral, leftLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "right"), "right", rightLiteral, rightLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "top"), "top", topLiteral, topLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "bottom"), "bottom", bottomLiteral, bottomLexeme))
-			{
-				return false;
-			}
-
-			if (const JsonValue* unusedValue = findObjectField(*rawValue, "unused")) {
-				std::string ignoredLiteral{};
-				std::string ignoredLexeme{};
-				if (!parseEdgeU16Component(unusedValue, "unused", ignoredLiteral, ignoredLexeme)) {
-					return false;
-				}
-			}
-
-			outChange.cppValue =
-				"Clay_Padding{.left = " + leftLiteral + ", .right = " + rightLiteral +
-				", .top = " + topLiteral + ", .bottom = " + bottomLiteral + "}";
-			outChange.valueLexeme =
-				"Clay_Padding{left=" + leftLexeme + ", right=" + rightLexeme +
-				", top=" + topLexeme + ", bottom=" + bottomLexeme + "}";
-			return true;
+		if (!parseTypedAggregateChange(
+			*rawValue,
+			"edgeu16",
+			kEdgeU16TypeInfos,
+			false,
+			outChange.cppValue,
+			outChange.valueLexeme,
+			outError))
+		{
+			return false;
 		}
-		if (edgeType == "Clay_BorderWidth") {
-			std::string leftLiteral{};
-			std::string rightLiteral{};
-			std::string topLiteral{};
-			std::string bottomLiteral{};
-			std::string betweenChildrenLiteral{};
-			std::string leftLexeme{};
-			std::string rightLexeme{};
-			std::string topLexeme{};
-			std::string bottomLexeme{};
-			std::string betweenChildrenLexeme{};
-			if (
-				!parseEdgeU16Component(findObjectField(*rawValue, "left"), "left", leftLiteral, leftLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "right"), "right", rightLiteral, rightLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "top"), "top", topLiteral, topLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "bottom"), "bottom", bottomLiteral, bottomLexeme) ||
-				!parseEdgeU16Component(findObjectField(*rawValue, "betweenChildren"), "betweenChildren", betweenChildrenLiteral, betweenChildrenLexeme))
-			{
-				return false;
-			}
-
-			outChange.cppValue =
-				"Clay_BorderWidth{.left = " + leftLiteral + ", .right = " + rightLiteral +
-				", .top = " + topLiteral + ", .bottom = " + bottomLiteral +
-				", .betweenChildren = " + betweenChildrenLiteral + "}";
-			outChange.valueLexeme =
-				"Clay_BorderWidth{left=" + leftLexeme + ", right=" + rightLexeme +
-				", top=" + topLexeme + ", bottom=" + bottomLexeme +
-				", betweenChildren=" + betweenChildrenLexeme + "}";
-			return true;
-		}
-
-		outError = "edgeu16 change has unsupported type: " + edgeType;
-		return false;
+		return true;
 	}
 	if (outChange.jsonKind == "null") {
 		outError = "null values are not patchable in V1.";

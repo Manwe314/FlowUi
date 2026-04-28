@@ -32,11 +32,20 @@ struct IUiTextureRegistry;
 
 class App;
 
+/** @addtogroup flowui_image_manager
+ * @{
+ */
+
+/** @brief Loads image files and exposes them as FlowUi texture references. */
 class ImageManager {
 public:
+	/** @brief Load and register an image from disk under a caller-provided key. */
 	bool registerImage(std::string_view key, std::string_view filePath);
+	/** @brief Remove a registered image by key. */
 	bool removeImage(std::string_view key);
+	/** @brief Return true if an image key is registered. */
 	bool contains(std::string_view key) const;
+	/** @brief Return the texture reference for a registered image key. */
 	TextureRef getTexture(std::string_view key) const;
 
 private:
@@ -78,5 +87,7 @@ private:
 	mutable std::unordered_set<std::string> missingTextureWarnings_;
 	std::vector<std::vector<ImageResource>> retiredResourcesByFrame_;
 };
+
+/** @} */
 
 } // namespace FlowUi
