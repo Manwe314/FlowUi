@@ -1,4 +1,4 @@
-# FlowUi
+# FlowUi {#mainpage}
 
 FlowUi is a C++23 Vulkan-first UI runtime built around:
 - [Clay](https://github.com/nicbarker/clay) for layout and command generation

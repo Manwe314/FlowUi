@@ -3070,7 +3070,7 @@ void Clay__CalculateFinalLayout(float deltaTime, bool useStoredBoundingBoxes, bo
                         };
                         Clay__AddRenderCommand(renderCommand);
                     }
-                    if (currentElement->config.backgroundColor.a > 0) {
+                    if (currentElement->config.backgroundColor.a > 0 && !currentElement->config.image.imageData && !currentElement->config.custom.customData) {
                         Clay_RenderCommand renderCommand = {
                             .boundingBox = currentElementBoundingBox,
                             .renderData = { .rectangle = {
