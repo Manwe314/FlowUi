@@ -129,6 +129,10 @@ inline TextLayoutResult LayoutTextLine(const TextLayoutRequest& request, EmitGly
 	if (request.emitGlyphQuads && (request.fontFace->atlasWidth == 0 || request.fontFace->atlasHeight == 0)) {
 		return result;
 	}
+	if (request.emitGlyphQuads &&
+		(request.fontFace->sourceAtlasWidth == 0 || request.fontFace->sourceAtlasHeight == 0)) {
+		return result;
+	}
 
 	const float emToPixels = emPixels / std::max(variant->emSize, 1.0e-6f);
 	const float letterSpacingPx = static_cast<float>(request.letterSpacing);
@@ -138,6 +142,15 @@ inline TextLayoutResult LayoutTextLine(const TextLayoutRequest& request, EmitGly
 		: 0.0f;
 	const float invAtlasHeight = request.emitGlyphQuads
 		? (1.0f / static_cast<float>(request.fontFace->atlasHeight))
+		: 0.0f;
+	const float sourceAtlasX = request.emitGlyphQuads
+		? static_cast<float>(request.fontFace->sourceAtlasX)
+		: 0.0f;
+	const float sourceAtlasY = request.emitGlyphQuads
+		? static_cast<float>(request.fontFace->sourceAtlasY)
+		: 0.0f;
+	const float sourceAtlasHeight = request.emitGlyphQuads
+		? static_cast<float>(request.fontFace->sourceAtlasHeight)
 		: 0.0f;
 
 	float penX = request.lineOriginX;
@@ -225,15 +238,19 @@ inline TextLayoutResult LayoutTextLine(const TextLayoutRequest& request, EmitGly
 			const float y1 = baselineY - glyph.planeBottom * emToPixels;
 			const float glyphHeight = y1 - y0;
 			if (glyphWidth > 0.0f && glyphHeight > 0.0f) {
+				const float u0 = (sourceAtlasX + glyph.imageLeft) * invAtlasWidth;
+				const float u1 = (sourceAtlasX + glyph.imageRight) * invAtlasWidth;
+				const float v0 = (sourceAtlasY + (sourceAtlasHeight - glyph.imageTop)) * invAtlasHeight;
+				const float v1 = (sourceAtlasY + (sourceAtlasHeight - glyph.imageBottom)) * invAtlasHeight;
 				emitGlyph(TextLayoutGlyphQuad{
 					.x = x0,
 					.y = y0,
 					.w = glyphWidth,
 					.h = glyphHeight,
-					.u0 = std::clamp(glyph.imageLeft * invAtlasWidth, 0.0f, 1.0f),
-					.v0 = std::clamp(1.0f - glyph.imageTop * invAtlasHeight, 0.0f, 1.0f),
-					.u1 = std::clamp(glyph.imageRight * invAtlasWidth, 0.0f, 1.0f),
-					.v1 = std::clamp(1.0f - glyph.imageBottom * invAtlasHeight, 0.0f, 1.0f),
+					.u0 = std::clamp(u0, 0.0f, 1.0f),
+					.v0 = std::clamp(v0, 0.0f, 1.0f),
+					.u1 = std::clamp(u1, 0.0f, 1.0f),
+					.v1 = std::clamp(v1, 0.0f, 1.0f),
 					.byteStartOffset = codepointStartByteOffset,
 					.byteEndOffset = codepointEndByteOffset,
 				});

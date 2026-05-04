@@ -144,6 +144,14 @@ namespace FlowUi
 			cursorPriority_ = priority;
 		}
 
+		FontId UiManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
+			return fontManager_ ? fontManager_->resolveFont(familyId, weight, style) : 0;
+		}
+
+		FontId UiManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const {
+			return fontManager_ ? fontManager_->resolveFont(familyName, weight, style) : 0;
+		}
+
 		Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
 			if (!config || !text.chars || text.length <= 0) {
 				return Clay_Dimensions{ 0.0f, 0.0f };

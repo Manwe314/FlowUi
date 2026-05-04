@@ -42,6 +42,24 @@ dev tool upgrades:
 	- ability to view Dev tool as additional floating window.
 	- complete "Apply" flow to immediately update codebase.
 
+Font Manager Api surface Possible Update:
+
+	FontFamilyId inter = fonts.createFamily("Inter");
+
+	fonts.addFamilyFace(inter, {
+	    .path = "Inter-Regular.ttf",
+	    .weight = 400,
+	    .style = FontStyle::Normal,
+	    .pixelSize = 32,
+	});
+	
+	fonts.addFamilyFace(inter, {
+	    .path = "Inter-Bold.ttf",
+	    .weight = 700,
+	    .style = FontStyle::Normal,
+	    .pixelSize = 32,
+	});
+
 
 ~~~~ Legacy ~~~~
 

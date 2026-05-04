@@ -101,6 +101,10 @@ public:
 	bool hasClipboardAccess() const;
 	/** @brief Request a cursor shape for the current frame. */
 	void requestCursor(CursorType cursorType, uint8_t priority = 0);
+	/** @brief Resolve a concrete Clay font id for a family/style request. */
+	FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
+	/** @brief Resolve a concrete Clay font id for a named family/style request. */
+	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
 	/** @brief Set clipboard access callbacks. */
 	void setClipboardAccessors(
 		std::function<void(std::string_view)> setClipboardTextAccessor,

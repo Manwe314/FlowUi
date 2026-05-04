@@ -144,12 +144,50 @@ public:
 	/** @brief Destroy the app and owned runtime resources. */
 	~App();
 
-	/** @brief Return true when the window backend requests shutdown. */
+	/** @brief Return true when the window backend requests shutdown.
+	 * @retval true The window requested shutdown
+	 * @retval false Thw window has NOT requested shutdown
+	 */
 	bool shouldClose() const;
 
-	/** @brief Begin a frame and prepare input/UI state. */
+	/** @brief Begin a frame and prepare input/UI state. 
+	 * 
+	 * Polls window backend, prepares per frame UI resources and state
+	 * This function updates the frame input snapshot, refreshes frame-dependent
+ 	 * state, and initializes the UI system using the current window dimensions and
+ 	 * UI scale configuration.
+	 * 
+	 * Example:
+	 * @code{.cpp}
+	 * application.beginFrame();
+	 * buidlUI(application);
+	 * application.endFrame();
+	 * @endcode
+	 * 
+	 * @pre FlowUi::App variable is initialized and its window/Ui systems are valid
+	 * @post The currant Frame is active and Input/UI is ready for Frame logic/build
+	 * @note This function should be called Exactly ONCE per frame.
+	 * 
+	*/
 	void beginFrame();
-	/** @brief End UI construction and produce render commands. */
+	/** @brief End UI construction and produce render commands.
+	 * 
+	 * makes Ui complete the frame and produce rendercommands for this frame
+	 * prepares viewport managers resources and icon managers resources
+	 * 
+	 * Example:
+	 * @code{.cpp}
+	 * BuildUi(application);
+	 * application.endFrame();
+	 * application.drawFrame();
+	 * @endcode
+	 * 
+	 * @pre FlowUi::App's beginFrame was called and Ui was built after.
+	 * @post The render commands for this frame are ready, all viewport handles are sized.
+	 * @note This fucntion should be called Exactly ONCE per frame
+	 * 
+	 * 
+	 */
 	void endFrame();
 	/** @brief Submit the current frame for rendering/presentation. */
 	void drawFrame();
@@ -205,8 +243,15 @@ private:
 };
 
 /** @brief Create a running FlowUi application from configuration. 
+ * creates an App object.
+ * makes a unique pointer and assigns internal impl_ to it.
+ * calls impl_'s init() function
  * @param cfg the Configguration struct
+ * @return App object intialized with passed config struct.
  * @code{.cpp}
+ * FlowUi::Appconfig config{};
+ * FlowUi::App application = makeApplication(config);
+ * @endcode
 */
 App makeApplication(const AppConfig& cfg);
 
