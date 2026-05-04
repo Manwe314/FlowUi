@@ -8,10 +8,14 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <artery-font/stdio-serialization.h>
 #include <artery-font/std-artery-font.h>
+#if defined(FLOWUI_RUNTIME_FONT_BAKING)
+#include <msdf-atlas-gen/msdf-atlas-gen.h>
+#endif
 
 #include "Vulkan/Vk_Context.hpp"
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,6 +23,14 @@
 #include "internal/Vma.hpp"
 
 namespace {
+
+#if defined(FLOWUI_RUNTIME_FONT_BAKING)
+constexpr double kDefaultRuntimeFontPxRange = 2.0;
+constexpr double kDefaultRuntimeFontAngleThreshold = 3.0;
+constexpr double kDefaultRuntimeFontMiterLimit = 1.0;
+constexpr unsigned long long kRuntimeFontLcgMultiplier = 6364136223846793005ull;
+constexpr unsigned long long kRuntimeFontLcgIncrement = 1442695040888963407ull;
+#endif
 
 struct DecodedAtlasImage {
 	uint32_t width = 0;
@@ -615,9 +627,37 @@ DecodedAtlasImage decodeImageToRgba8(const artery_font::StdArteryFont<float>::Im
 	return decoded;
 }
 
+std::vector<uint8_t> copyAtlasIntoPage(
+	const DecodedAtlasImage& source,
+	uint32_t pageWidth,
+	uint32_t pageHeight,
+	const std::filesystem::path& sourcePath) {
+	if (pageWidth == 0 || pageHeight == 0) {
+		throw std::runtime_error("Font atlas page size must be greater than zero.");
+	}
+	if (source.width > pageWidth || source.height > pageHeight) {
+		throw std::runtime_error(
+			".arfont atlas " + std::to_string(source.width) + "x" + std::to_string(source.height) +
+			" is larger than configured ui.fontAtlasSize=" + std::to_string(pageWidth) +
+			" for " + sourcePath.string());
+	}
+
+	const size_t pageRowBytes = static_cast<size_t>(pageWidth) * 4u;
+	const size_t sourceRowBytes = static_cast<size_t>(source.width) * 4u;
+	std::vector<uint8_t> pagePixels(static_cast<size_t>(pageWidth) * static_cast<size_t>(pageHeight) * 4u, 0u);
+
+	for (uint32_t y = 0; y < source.height; ++y) {
+		const size_t sourceOffset = static_cast<size_t>(y) * sourceRowBytes;
+		const size_t pageOffset = static_cast<size_t>(y) * pageRowBytes;
+		std::memcpy(pagePixels.data() + pageOffset, source.rgbaPixels.data() + sourceOffset, sourceRowBytes);
+	}
+
+	return pagePixels;
+}
+
 std::string makeUniqueFontName(
 	std::string baseName,
-	const std::unordered_map<std::string, int>& existingNames) {
+	const std::unordered_map<std::string, FontManager::FontId>& existingNames) {
 	if (baseName.empty()) {
 		baseName = "font";
 	}
@@ -646,6 +686,9 @@ void FontManager::init(VulkanContext& vk, uint32_t atlasSize) {
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw std::runtime_error("FontManager init requires a valid Vulkan device + allocator.");
 	}
+	if (atlasSizeHint_ == 0) {
+		throw std::runtime_error("FontManager init requires a non-zero font atlas size.");
+	}
 
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -654,14 +697,109 @@ void FontManager::init(VulkanContext& vk, uint32_t atlasSize) {
 	vkCheck(vkCreateCommandPool(vk.device, &poolInfo, nullptr, &uploadCommandPool_), "Failed to create font upload command pool.");
 }
 
-int FontManager::loadFont(std::string_view path, float px) {
+FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
+	std::string familyName = createInfo.name.empty() ? std::string("Default") : createInfo.name;
+	if (familyIdByName_.find(familyName) != familyIdByName_.end()) {
+		throw std::runtime_error("Font family already exists: " + familyName);
+	}
+
+	const FontFamilyId familyId = static_cast<FontFamilyId>(families_.size());
+	FontFamilyData family{};
+	family.id = familyId;
+	family.name = std::move(familyName);
+	families_.push_back(std::move(family));
+	familyIdByName_[families_.back().name] = familyId;
+
+	for (const FontFaceCreateInfo& faceInfo : createInfo.faces) {
+		addFamilyFace(familyId, faceInfo);
+	}
+
+	return familyId;
+}
+
+FontManager::FontFamilyId FontManager::getFamilyId(std::string_view familyName) const {
+	const auto it = familyIdByName_.find(std::string(familyName));
+	return (it != familyIdByName_.end()) ? it->second : std::numeric_limits<FontFamilyId>::max();
+}
+
+FontManager::FontId FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) {
+	if (familyId >= families_.size()) {
+		throw std::runtime_error("Font family id does not exist.");
+	}
+
+	const FontId fontId = loadFontFace(createInfo);
+	families_[familyId].faces.push_back(FontFamilyFace{
+		.fontId = fontId,
+		.weight = createInfo.weight,
+		.style = createInfo.style,
+	});
+	return fontId;
+}
+
+FontManager::FontId FontManager::addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) {
+	const FontFamilyId familyId = getFamilyId(familyName);
+	if (familyId == std::numeric_limits<FontFamilyId>::max()) {
+		throw std::runtime_error("Font family does not exist: " + std::string(familyName));
+	}
+	return addFamilyFace(familyId, createInfo);
+}
+
+FontManager::FontId FontManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
+	if (familyId >= families_.size()) {
+		return 0;
+	}
+
+	const FontFamilyData& family = families_[familyId];
+	const FontFamilyFace* bestFace = nullptr;
+	uint32_t bestDistance = std::numeric_limits<uint32_t>::max();
+
+	for (const FontFamilyFace& face : family.faces) {
+		if (face.style != style) {
+			continue;
+		}
+		const uint32_t distance = (face.weight > weight) ? (face.weight - weight) : (weight - face.weight);
+		if (!bestFace || distance < bestDistance) {
+			bestFace = &face;
+			bestDistance = distance;
+		}
+	}
+
+	if (bestFace) {
+		return bestFace->fontId;
+	}
+	if (!family.faces.empty()) {
+		return family.faces.front().fontId;
+	}
+	return 0;
+}
+
+FontManager::FontId FontManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const {
+	const FontFamilyId familyId = getFamilyId(familyName);
+	return (familyId != std::numeric_limits<FontFamilyId>::max()) ? resolveFont(familyId, weight, style) : 0;
+}
+
+FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createInfo) {
+	if (createInfo.path.empty()) {
+		throw std::runtime_error("Font face path must not be empty.");
+	}
+	if (isArfontPath(createInfo.path)) {
+		return registerBakedFont(createInfo.path.string(), createInfo.name);
+	}
+#if defined(FLOWUI_RUNTIME_FONT_BAKING)
+	return registerRuntimeFont(createInfo);
+#else
+	return loadFont(createInfo.path.string(), createInfo.pixelSize);
+#endif
+}
+
+FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 	(void)px;
 	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
 		throw std::runtime_error("FontManager is not initialized.");
 	}
 	const std::filesystem::path fontPath(path);
 	if (fontPath.empty()) {
-		return -1;
+		throw std::runtime_error("Font path must not be empty.");
 	}
 
 	if (isArfontPath(fontPath)) {
@@ -669,14 +807,243 @@ int FontManager::loadFont(std::string_view path, float px) {
 	}
 
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
-	// Runtime TTF->atlas registration is intentionally deferred to a later step.
-	return -1;
+	FontFaceCreateInfo createInfo{};
+	createInfo.path = fontPath;
+	createInfo.pixelSize = px;
+	return registerRuntimeFont(createInfo);
 #else
-	return -1;
+	throw std::runtime_error("Unsupported font file type: " + fontPath.string());
 #endif
 }
 
-int FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
+FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& createInfo) {
+#if defined(FLOWUI_RUNTIME_FONT_BAKING)
+	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
+		throw std::runtime_error("[Flow Ui]: FontManager is not initialized.");
+	}
+	if (uploadCommandPool_ == VK_NULL_HANDLE) {
+		throw std::runtime_error("[Flow Ui]: FontManager is not initialized.");
+	}
+	if (createInfo.path.empty()) {
+		throw std::runtime_error("[Flow Ui]: Runtime font path must not be empty.");
+	}
+	if (createInfo.pixelSize <= 0.0f) {
+		throw std::runtime_error("[Flow Ui]: Runtime font pixel size must be greater than zero.");
+	}
+	if (!std::filesystem::is_regular_file(createInfo.path)) {
+		throw std::runtime_error("[Flow Ui]: Font file does not exist: " + createInfo.path.string());
+	}
+	if (atlasSizeHint_ == 0 || atlasSizeHint_ > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+		throw std::runtime_error("[Flow Ui]: Runtime font atlas page size is invalid.");
+	}
+
+	struct FreetypeGuard {
+		msdfgen::FreetypeHandle* handle = nullptr;
+		~FreetypeGuard() {
+			if (handle) {
+				msdfgen::deinitializeFreetype(handle);
+			}
+		}
+	};
+	struct FontGuard {
+		msdfgen::FontHandle* handle = nullptr;
+		~FontGuard() {
+			if (handle) {
+				msdfgen::destroyFont(handle);
+			}
+		}
+	};
+
+	FreetypeGuard freetype{};
+	freetype.handle = msdfgen::initializeFreetype();
+	if (!freetype.handle) {
+		throw std::runtime_error("Failed to initialize FreeType for runtime font baking.");
+	}
+
+	FontGuard font{};
+	const std::string pathString = createInfo.path.string();
+	font.handle = msdfgen::loadFont(freetype.handle, pathString.c_str());
+	if (!font.handle) {
+		throw std::runtime_error("Failed to load runtime font file: " + pathString);
+	}
+
+	std::vector<msdf_atlas::GlyphGeometry> glyphs;
+	msdf_atlas::FontGeometry fontGeometry(&glyphs);
+	const int glyphsLoaded = fontGeometry.loadCharset(
+		font.handle,
+		1.0,
+		msdf_atlas::Charset::ASCII,
+		false,
+		true);
+
+	if (glyphsLoaded < 0) {
+		throw std::runtime_error("Failed to load glyph geometry from runtime font: " + pathString);
+	}
+	if (glyphsLoaded == 0 || glyphs.empty()) {
+		throw std::runtime_error("No glyphs were loaded from runtime font: " + pathString);
+	}
+
+	unsigned long long glyphSeed = 0;
+	for (msdf_atlas::GlyphGeometry& glyph : glyphs) {
+		glyphSeed = glyphSeed * kRuntimeFontLcgMultiplier + kRuntimeFontLcgIncrement;
+		glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, kDefaultRuntimeFontAngleThreshold, glyphSeed);
+	}
+
+	const uint32_t pageWidth = atlasSizeHint_;
+	const uint32_t pageHeight = atlasSizeHint_;
+	msdf_atlas::TightAtlasPacker packer;
+	packer.setDimensions(static_cast<int>(pageWidth), static_cast<int>(pageHeight));
+	packer.setSpacing(0);
+	packer.setScale(static_cast<double>(createInfo.pixelSize));
+	packer.setPixelRange(kDefaultRuntimeFontPxRange);
+	packer.setMiterLimit(kDefaultRuntimeFontMiterLimit);
+	packer.setOriginPixelAlignment(false, true);
+
+	const int remaining = packer.pack(glyphs.data(), static_cast<int>(glyphs.size()));
+	if (remaining < 0) {
+		throw std::runtime_error("Failed to pack runtime font glyphs into atlas: " + pathString);
+	}
+	if (remaining > 0) {
+		throw std::runtime_error(
+			"Could not fit " + std::to_string(remaining) +
+			" runtime font glyphs into configured ui.fontAtlasSize=" + std::to_string(pageWidth) +
+			" for " + pathString);
+	}
+
+	msdf_atlas::GeneratorAttributes attributes;
+	attributes.config.overlapSupport = true;
+	attributes.scanlinePass = true;
+
+	using MtsdfGenerator = msdf_atlas::ImmediateAtlasGenerator<
+		float,
+		4,
+		msdf_atlas::mtsdfGenerator,
+		msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 4>>;
+
+	MtsdfGenerator generator(static_cast<int>(pageWidth), static_cast<int>(pageHeight));
+	generator.setAttributes(attributes);
+	generator.setThreadCount(static_cast<int>(std::max(1u, std::thread::hardware_concurrency())));
+	generator.generate(glyphs.data(), glyphs.size());
+
+	msdfgen::BitmapConstSection<msdf_atlas::byte, 4> atlasBitmap =
+		static_cast<msdfgen::BitmapConstSection<msdf_atlas::byte, 4>>(generator.atlasStorage());
+	atlasBitmap.reorient(msdfgen::Y_DOWNWARD);
+
+	std::vector<uint8_t> pagePixels(static_cast<size_t>(pageWidth) * static_cast<size_t>(pageHeight) * 4u);
+	const size_t rowBytes = static_cast<size_t>(pageWidth) * 4u;
+	for (uint32_t y = 0; y < pageHeight; ++y) {
+		std::memcpy(
+			pagePixels.data() + static_cast<size_t>(y) * rowBytes,
+			atlasBitmap(0, static_cast<int>(y)),
+			rowBytes);
+	}
+
+	VulkanContext& vk = *vk_;
+	ensureAtlasStorageCapacity(vk, uploadCommandPool_, atlas_, pageWidth, pageHeight, atlas_.layersUsed + 1u);
+	const uint32_t assignedLayer = atlas_.layersUsed;
+	uploadLayerPixels(vk, uploadCommandPool_, atlas_, assignedLayer, pagePixels);
+	atlas_.layersUsed += 1u;
+
+	FontFaceData fontFace{};
+	if (nextFontId_ == std::numeric_limits<FontId>::max()) {
+		throw std::runtime_error("FlowUi font id limit exceeded.");
+	}
+	fontFace.id = nextFontId_++;
+	fontFace.sourcePath = createInfo.path;
+	fontFace.atlasLayer = assignedLayer;
+	fontFace.atlasWidth = pageWidth;
+	fontFace.atlasHeight = pageHeight;
+	fontFace.sourceAtlasX = 0;
+	fontFace.sourceAtlasY = 0;
+	fontFace.sourceAtlasWidth = pageWidth;
+	fontFace.sourceAtlasHeight = pageHeight;
+	fontFace.imageType = static_cast<uint32_t>(artery_font::IMAGE_MTSDF);
+	fontFace.metadata = "runtime-msdf";
+	fontFace.defaultVariantIndex = 0;
+
+	FontVariantData variant{};
+	variant.weight = createInfo.weight;
+	variant.fontSizePx = static_cast<float>(packer.getScale());
+	const msdfgen::Range finalPxRange = packer.getPixelRange();
+	variant.distanceRange = static_cast<float>(finalPxRange.upper - finalPxRange.lower);
+	variant.distanceRangeMiddle = static_cast<float>(0.5 * (finalPxRange.lower + finalPxRange.upper));
+
+	const msdfgen::FontMetrics& metrics = fontGeometry.getMetrics();
+	variant.emSize = static_cast<float>(metrics.emSize);
+	variant.ascender = static_cast<float>(metrics.ascenderY);
+	variant.descender = static_cast<float>(metrics.descenderY);
+	variant.lineHeight = static_cast<float>(metrics.lineHeight);
+	variant.underlineY = static_cast<float>(metrics.underlineY);
+	variant.underlineThickness = static_cast<float>(metrics.underlineThickness);
+	variant.name = createInfo.name.empty() ? createInfo.path.stem().string() : createInfo.name;
+	variant.metadata = "runtime-msdf";
+	variant.glyphs.reserve(glyphs.size());
+
+	for (const msdf_atlas::GlyphGeometry& glyphGeometry : fontGeometry.getGlyphs()) {
+		double planeLeft = 0.0;
+		double planeBottom = 0.0;
+		double planeRight = 0.0;
+		double planeTop = 0.0;
+		glyphGeometry.getQuadPlaneBounds(planeLeft, planeBottom, planeRight, planeTop);
+
+		double imageLeft = 0.0;
+		double imageBottom = 0.0;
+		double imageRight = 0.0;
+		double imageTop = 0.0;
+		glyphGeometry.getQuadAtlasBounds(imageLeft, imageBottom, imageRight, imageTop);
+
+		GlyphData glyph{};
+		glyph.codepoint = glyphGeometry.getCodepoint();
+		glyph.sourceImageIndex = 0;
+		glyph.planeLeft = static_cast<float>(planeLeft);
+		glyph.planeBottom = static_cast<float>(planeBottom);
+		glyph.planeRight = static_cast<float>(planeRight);
+		glyph.planeTop = static_cast<float>(planeTop);
+		glyph.imageLeft = static_cast<float>(imageLeft);
+		glyph.imageBottom = static_cast<float>(imageBottom);
+		glyph.imageRight = static_cast<float>(imageRight);
+		glyph.imageTop = static_cast<float>(imageTop);
+		glyph.advanceX = static_cast<float>(glyphGeometry.getAdvance());
+		glyph.advanceY = 0.0f;
+
+		const uint32_t newGlyphIndex = static_cast<uint32_t>(variant.glyphs.size());
+		variant.glyphs.push_back(glyph);
+		if (glyph.codepoint != 0) {
+			variant.unicodeToGlyphIndex.emplace(glyph.codepoint, newGlyphIndex);
+		}
+	}
+
+	for (const auto& pair : fontGeometry.getKerning()) {
+		const msdf_atlas::GlyphGeometry* leftGlyph = fontGeometry.getGlyph(msdfgen::GlyphIndex(pair.first.first));
+		const msdf_atlas::GlyphGeometry* rightGlyph = fontGeometry.getGlyph(msdfgen::GlyphIndex(pair.first.second));
+		if (!leftGlyph || !rightGlyph || leftGlyph->getCodepoint() == 0 || rightGlyph->getCodepoint() == 0) {
+			continue;
+		}
+		const uint64_t key = FontVariantData::kerningKey(leftGlyph->getCodepoint(), rightGlyph->getCodepoint());
+		variant.kerningPairs[key] = static_cast<float>(pair.second);
+	}
+
+	if (const auto questionIt = variant.unicodeToGlyphIndex.find('?'); questionIt != variant.unicodeToGlyphIndex.end()) {
+		variant.fallbackGlyphIndex = questionIt->second;
+	} else if (variant.fallbackGlyphIndex >= variant.glyphs.size()) {
+		variant.fallbackGlyphIndex = 0;
+	}
+
+	fontFace.name = makeUniqueFontName(variant.name, fontIdByName_);
+	fontFace.variants.push_back(std::move(variant));
+
+	const size_t newIndex = fonts_.size();
+	fonts_.push_back(std::move(fontFace));
+	fontIndexById_[fonts_.back().id] = newIndex;
+	fontIdByName_[fonts_.back().name] = fonts_.back().id;
+	return fonts_.back().id;
+#else
+	(void)createInfo;
+	throw std::runtime_error("Runtime font baking is not enabled.");
+#endif
+}
+
+FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
 	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
 		throw std::runtime_error("FontManager is not initialized.");
 	}
@@ -688,7 +1055,7 @@ int FontManager::registerBakedFont(std::string_view arfontPath, std::string_view
 
 	const std::filesystem::path path(arfontPath);
 	if (!isArfontPath(path)) {
-		return -1;
+		throw std::runtime_error("Unsupported baked font file type: " + path.string());
 	}
 	if (!std::filesystem::is_regular_file(path)) {
 		throw std::runtime_error("Font file does not exist: " + path.string());
@@ -713,29 +1080,39 @@ int FontManager::registerBakedFont(std::string_view arfontPath, std::string_view
 
 	const auto* images = listData(arteryFont.images);
 	const DecodedAtlasImage decodedImage = decodeImageToRgba8(images[imageIndex]);
+	const uint32_t pageWidth = atlasSizeHint_;
+	const uint32_t pageHeight = atlasSizeHint_;
+	std::vector<uint8_t> pagePixels = copyAtlasIntoPage(decodedImage, pageWidth, pageHeight, path);
 
-	if (atlas_.layersUsed == 0 && atlasSizeHint_ > 0 &&
-		(decodedImage.width != atlasSizeHint_ || decodedImage.height != atlasSizeHint_)) {
+	if (decodedImage.width != pageWidth || decodedImage.height != pageHeight) {
 		std::fprintf(
 			stderr,
-			"[FlowUi] Warning: .arfont atlas %ux%u does not match configured ui.fontAtlasSize=%u.\n",
+			"[FlowUi] Warning: .arfont atlas %ux%u was copied into configured font atlas page %ux%u.\n",
 			decodedImage.width,
 			decodedImage.height,
-			atlasSizeHint_);
+			pageWidth,
+			pageHeight);
 	}
 
-	ensureAtlasStorageCapacity(vk, uploadCommandPool_, atlas_, decodedImage.width, decodedImage.height, atlas_.layersUsed + 1u);
+	ensureAtlasStorageCapacity(vk, uploadCommandPool_, atlas_, pageWidth, pageHeight, atlas_.layersUsed + 1u);
 	const uint32_t assignedLayer = atlas_.layersUsed;
-	uploadLayerPixels(vk, uploadCommandPool_, atlas_, assignedLayer, decodedImage.rgbaPixels);
+	uploadLayerPixels(vk, uploadCommandPool_, atlas_, assignedLayer, pagePixels);
 	atlas_.layersUsed += 1u;
 
 	const auto* variants = listData(arteryFont.variants);
 	FontFaceData fontFace{};
-	fontFace.id = static_cast<int>(nextFontId_++);
+	if (nextFontId_ == std::numeric_limits<FontId>::max()) {
+		throw std::runtime_error("FlowUi font id limit exceeded.");
+	}
+	fontFace.id = nextFontId_++;
 	fontFace.sourcePath = path;
 	fontFace.atlasLayer = assignedLayer;
-	fontFace.atlasWidth = decodedImage.width;
-	fontFace.atlasHeight = decodedImage.height;
+	fontFace.atlasWidth = pageWidth;
+	fontFace.atlasHeight = pageHeight;
+	fontFace.sourceAtlasX = 0;
+	fontFace.sourceAtlasY = 0;
+	fontFace.sourceAtlasWidth = decodedImage.width;
+	fontFace.sourceAtlasHeight = decodedImage.height;
 	fontFace.imageType = static_cast<uint32_t>(images[imageIndex].imageType);
 	fontFace.metadata = toStdString(arteryFont.metadata);
 	fontFace.defaultVariantIndex = 0;
@@ -821,12 +1198,7 @@ int FontManager::registerBakedFont(std::string_view arfontPath, std::string_view
 	return fonts_.back().id;
 }
 
-int FontManager::getFontId(std::string_view fontName) const {
-	const auto it = fontIdByName_.find(std::string(fontName));
-	return (it != fontIdByName_.end()) ? it->second : -1;
-}
-
-const FontManager::FontFaceData* FontManager::getFontById(int fontId) const {
+const FontManager::FontFaceData* FontManager::getFontById(FontId fontId) const {
 	const auto it = fontIndexById_.find(fontId);
 	if (it == fontIndexById_.end()) {
 		return nullptr;
@@ -835,12 +1207,9 @@ const FontManager::FontFaceData* FontManager::getFontById(int fontId) const {
 	return (index < fonts_.size()) ? &fonts_[index] : nullptr;
 }
 
-const FontManager::FontFaceData* FontManager::getFontByName(std::string_view fontName) const {
-	const int fontId = getFontId(fontName);
-	return (fontId >= 0) ? getFontById(fontId) : nullptr;
-}
-
 void FontManager::destroy(VulkanContext& vk) {
+	familyIdByName_.clear();
+	families_.clear();
 	fontIdByName_.clear();
 	fontIndexById_.clear();
 	fonts_.clear();

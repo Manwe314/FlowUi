@@ -10,6 +10,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "FlowUi/PublicStructs.hpp"
+
 struct VmaAllocation_T;
 struct VulkanContext;
 
@@ -23,6 +25,12 @@ class App;
 
 /** @brief Loads baked fonts and owns the font atlas used by text rendering. */
 struct FontManager {
+	using FontId = FlowUi::FontId;
+	using FontFamilyId = FlowUi::FontFamilyId;
+	using FontStyle = FlowUi::FontStyle;
+	using FontFaceCreateInfo = FlowUi::FontFaceCreateInfo;
+	using FontFamilyCreateInfo = FlowUi::FontFamilyCreateInfo;
+
 	/** @brief Initial number of font atlas array layers. */
 	static constexpr uint32_t kInitialAtlasLayerCapacity = 32;
 	/** @brief Number of atlas layers added when the atlas grows. */
@@ -108,7 +116,7 @@ struct FontManager {
 	/** @brief Loaded font face and its baked variants. */
 	struct FontFaceData {
 		/** @brief FlowUi font id. */
-		int id = -1;
+		FontId id = 0;
 		/** @brief Font face name. */
 		std::string name;
 		/** @brief Source file path. */
@@ -119,6 +127,14 @@ struct FontManager {
 		uint32_t atlasWidth = 0;
 		/** @brief Atlas height in pixels. */
 		uint32_t atlasHeight = 0;
+		/** @brief X offset where this face's source atlas was placed inside the atlas page. */
+		uint32_t sourceAtlasX = 0;
+		/** @brief Y offset where this face's source atlas was placed inside the atlas page. */
+		uint32_t sourceAtlasY = 0;
+		/** @brief Source atlas width before placement into the atlas page. */
+		uint32_t sourceAtlasWidth = 0;
+		/** @brief Source atlas height before placement into the atlas page. */
+		uint32_t sourceAtlasHeight = 0;
 		/** @brief Brief goes here. */
 		uint32_t imageType = 0;
 		/** @brief Raw metadata associated with the face. */
@@ -159,16 +175,20 @@ struct FontManager {
 		uint32_t bindingRevision = 0;
 	};
 
-	/** @brief Load a font file at the requested pixel size. */
-	int loadFont(std::string_view path, float px);
-	/** @brief Register a baked `.arfont` file. */
-	int registerBakedFont(std::string_view arfontPath, std::string_view requestedName = {});
-	/** @brief Find a font id by registered font name. */
-	int getFontId(std::string_view fontName) const;
-	/** @brief Return font data by id, or nullptr if not found. */
-	const FontFaceData* getFontById(int fontId) const;
-	/** @brief Return font data by name, or nullptr if not found. */
-	const FontFaceData* getFontByName(std::string_view fontName) const;
+	/** @brief Create a logical font family and register its initial faces. */
+	FontFamilyId createFamily(const FontFamilyCreateInfo& createInfo);
+	/** @brief Return a family id by name, or UINT32_MAX if not found. */
+	FontFamilyId getFamilyId(std::string_view familyName) const;
+	/** @brief Add a concrete face to an existing family. */
+	FontId addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo);
+	/** @brief Add a concrete face to a named family. */
+	FontId addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo);
+	/** @brief Resolve a concrete Clay font id for a family/style request. */
+	FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
+	/** @brief Resolve a concrete Clay font id for a named family/style request. */
+	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
+	/** @brief Return font data by concrete id for FlowUi layout/render internals. */
+	const FontFaceData* getFontById(FontId fontId) const;
 	/** @brief Return the active font atlas Vulkan resource. */
 	const AtlasArrayResource& getAtlasResource() const { return atlas_; }
 
@@ -178,14 +198,33 @@ private:
 	void init(VulkanContext& vk, uint32_t atlasSize);
 	void destroy(VulkanContext& vk);
 
+	struct FontFamilyFace {
+		FontId fontId = 0;
+		uint32_t weight = 400;
+		FontStyle style = FontStyle::Normal;
+	};
+
+	struct FontFamilyData {
+		FontFamilyId id = 0;
+		std::string name;
+		std::vector<FontFamilyFace> faces;
+	};
+
+	FontId loadFontFace(const FontFaceCreateInfo& createInfo);
+	FontId loadFont(std::string_view path, float px);
+	FontId registerBakedFont(std::string_view arfontPath, std::string_view requestedName = {});
+	FontId registerRuntimeFont(const FontFaceCreateInfo& createInfo);
+
 	VulkanContext* vk_ = nullptr;
 	AtlasArrayResource atlas_{};
 	VkCommandPool uploadCommandPool_ = VK_NULL_HANDLE;
 	uint32_t atlasSizeHint_ = 0;
-	uint32_t nextFontId_ = 0;
+	FontId nextFontId_ = 0;
+	std::vector<FontFamilyData> families_;
+	std::unordered_map<std::string, FontFamilyId> familyIdByName_;
 	std::vector<FontFaceData> fonts_;
-	std::unordered_map<int, size_t> fontIndexById_;
-	std::unordered_map<std::string, int> fontIdByName_;
+	std::unordered_map<FontId, size_t> fontIndexById_;
+	std::unordered_map<std::string, FontId> fontIdByName_;
 };
 
 /** @} */

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <filesystem>
+#include <vector>
 
 #include <clay.h>
 
@@ -22,6 +23,47 @@ enum class MSAA { x1 = 1, x2 = 2, x4 = 4, x8 = 8 };
 
 /** @brief Window cursor visibility and capture mode. */
 enum class CursorMode : uint8_t { Normal = 0, Hidden = 1, Disabled = 2 };
+
+/** @brief Stable concrete font id consumed by Clay text configuration. */
+using FontId = uint16_t;
+
+/** @brief Stable logical font family id returned by FontManager. */
+using FontFamilyId = uint32_t;
+
+/** @brief Font style requested when resolving a family face. */
+enum class FontStyle : uint8_t {
+	Normal,
+	Italic,
+};
+
+/** @brief One font face source inside a family. */
+struct FontFaceCreateInfo {
+	/** @brief Source .arfont, .ttf, .otf, or future supported font file path. */
+	std::filesystem::path path{};
+	/** @brief Bake/load size in pixels per em. */
+	float pixelSize = 18.0f;
+	/** @brief CSS-style font weight, where 400 is regular and 700 is bold. */
+	uint32_t weight = 400;
+	/** @brief Font style represented by this face. */
+	FontStyle style = FontStyle::Normal;
+	/** @brief Optional registered face name. Empty means infer from source metadata/path. */
+	std::string name{};
+};
+
+/** @brief Font family creation data with one or more concrete faces. */
+struct FontFamilyCreateInfo {
+	/** @brief Logical family name used by string-based resolution. */
+	std::string name = "Default";
+	/** @brief Concrete faces initially registered for this family. */
+	std::vector<FontFaceCreateInfo> faces{
+		FontFaceCreateInfo{
+			.path = "assets/fonts/Inter.arfont",
+			.pixelSize = 18.0f,
+			.weight = 400,
+			.style = FontStyle::Normal,
+		},
+	};
+};
 
 /** @brief Cursor shape requested by FlowUi UI code. */
 enum class CursorType : uint8_t {
@@ -124,10 +166,8 @@ struct UiConfig {
 	/** @brief Clay arena size. 0 means use Clay_MinMemorySize(). */
 	size_t clayArenaCapacityBytes = 0;
 
-	/** @brief Default baked font path loaded during app startup. */
-	std::filesystem::path defaultFontPath = "assets/fonts/Inter.arfont";
-	/** @brief Default font size in pixels. */
-	float defaultFontPx = 18.0f;
+	/** @brief Default font family loaded during app startup. Family 0 is the fallback family. */
+	FontFamilyCreateInfo defaultFontFamily{};
 
 	/** @brief Font atlas texture size. */
 	uint32_t fontAtlasSize = 2048;
