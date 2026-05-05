@@ -226,6 +226,8 @@ public:
 	std::pair<int,int> framebufferSize() const;
 	/** @brief Apply window input configuration. */
 	void setWindowInputConfig(const WindowInputConfig& config);
+	/** @brief Return the backend native window handle, or nullptr if unavailable. */
+	void* nativeWindowHandle() const;
 	/** @brief Return the current window input configuration. */
 	WindowInputConfig windowInputConfig() const;
 	/** @brief Return whether the window backend supports raw mouse motion. */

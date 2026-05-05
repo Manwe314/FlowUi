@@ -836,6 +836,13 @@ void App::setWindowTitle(std::string_view title) {
 	}
 }
 
+void* App::nativeWindowHandle() const {
+	if (!impl_ || !impl_->window) {
+		return nullptr;
+	}
+	return impl_->window->nativeHandle();
+}
+
 void App::setWindowInputConfig(const WindowInputConfig& config) {
 	if (!impl_ || !impl_->window) {
 		return;

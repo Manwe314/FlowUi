@@ -4,7 +4,7 @@
 4. Add ComputeQFamily Optional grab
 5. IconManager might have issues with frames in flight at LRU policy
 6. footer functionality in debugView
-7. font weight support
+7. 
 8. Optimise GPU side
 9. gradient support at Clay or Flow level
 10. upgrade texture ref management with automatic frame persistence saving?
@@ -30,6 +30,7 @@ Possible Big Upgrades:
 	- Animation Manager With Newer version of Clay 
 	- Networking Manager
 	- Total Memory allocation upfront with custom memeory management
+	- As much Retained mode support as **logical**
 
 
 dev tool upgrades:
@@ -41,6 +42,11 @@ dev tool upgrades:
 	- Transactional Safety (rollback feature on failure)
 	- ability to view Dev tool as additional floating window.
 	- complete "Apply" flow to immediately update codebase.
+
+
+
+
+~~~~ Legacy ~~~~
 
 Font Manager Api surface Possible Update:
 
@@ -59,9 +65,6 @@ Font Manager Api surface Possible Update:
 	    .style = FontStyle::Normal,
 	    .pixelSize = 32,
 	});
-
-
-~~~~ Legacy ~~~~
 
 the paradigm re design: COMPLETED
 	- a lot of static work is done every frame. work beyond Layout. it should be simpler to aquire resources once and reuse across frames
