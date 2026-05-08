@@ -20,10 +20,18 @@ namespace FlowUi {
  * @{
  */
 
-/** @brief Stable hashed id for a FlowUi element instance. */
+/** @brief id for element instances.
+ * 
+ * an alias for uint64_t for hashed FlowUi elements
+ * @see @ref flowui_element_system Element System
+ */
 using FlowElementId = uint64_t;
 
-/** @brief Stable hashed id for a FlowUi element definition. */
+/** @brief id for element definitions. 
+ * 
+ * an alias for uint64_t for hashed FlowUi element Definitions
+ * @see @ref flowui_element_system Element System
+*/
 using FlowDefinitionId = uint64_t;
 
 namespace detail {
@@ -51,40 +59,71 @@ constexpr uint64_t flowMix64(uint64_t value) noexcept {
 
 } // namespace detail
 
-/** @brief Hash an element name into a FlowUi element id. */
+/** @brief Hash an element name into a FlowUi element id.
+ * 
+ * @param elementName string or string_view representation of Element name.
+ * @return FlowElementId generated from hashed string.
+ */
 constexpr FlowElementId toFlowId(std::string_view elementName) noexcept {
 	return detail::flowHashBytes(elementName);
 }
 
-/** @brief Hash a string literal into a FlowUi element id. */
+/** @brief Hash an element name into a FlowUi element id. 
+ * 
+ * @param elementName string literal representation of element name.
+ * @return FlowElementId generated from hashed string.
+*/
 template <std::size_t N>
 constexpr FlowElementId toFlowId(const char (&elementName)[N]) noexcept {
 	return detail::flowHashBytes(std::string_view{elementName, N - 1});
 }
 
-/** @brief Hash a definition name into a FlowUi definition id. */
+/** @brief Hash a definition name into a FlowUi definition id. 
+ * 
+ * @param definitionName string or string_view representation of element definition name.
+ * @return FlowDefinitionId generated from hashed string.
+*/
 constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept {
 	return detail::flowHashBytes(definitionName);
 }
 
-/** @brief Hash a string literal into a FlowUi definition id. */
+/** @brief Hash a string literal into a FlowUi definition id.
+ * 
+ * @param definitionName string literal representation of element definition name.
+ * @return FlowDefinitionId generated from hashed string.
+ */
 template <std::size_t N>
 constexpr FlowDefinitionId toFlowDefinitionId(const char (&definitionName)[N]) noexcept {
 	return detail::flowHashBytes(std::string_view{definitionName, N - 1});
 }
 
-/** @brief Create a stable child/index id from a root id and numeric index. */
+/** @brief Create a stable child/index id from a root and numeric index. 
+ * 
+ * @param rootId FlowElementId to serve as the root
+ * @param index uint64_t value to be mixed in with root
+ * @return FlowElementId created by mixing root and index 
+*/
 constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept {
 	const uint64_t mixedIndex = detail::flowMix64(index + 0x9e3779b97f4a7c15ull);
 	return detail::flowMix64(rootId ^ mixedIndex);
 }
 
-/** @brief Create a stable child/index id from a root name and numeric index. */
+/** @brief Create a stable child/index id from a root and numeric index. 
+ * 
+ * @param rootId string or String_view to serve as the root
+ * @param index uint64_t value to be mixed in with root
+ * @return FlowElementId created by mixing root and index 
+*/
 constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept {
 	return createIndexedFlowId(toFlowId(rootName), index);
 }
 
-/** @brief Create a stable child/index id from a root string literal and numeric index. */
+/** @brief Create a stable child/index id from a root and numeric index. 
+ * 
+ * @param rootId StringLiteral to serve as the root
+ * @param index uint64_t value to be mixed in with root
+ * @return FlowElementId created by mixing root id and index 
+*/
 template <std::size_t N>
 constexpr FlowElementId createIndexedFlowId(const char (&rootName)[N], uint64_t index) noexcept {
 	return createIndexedFlowId(toFlowId(rootName), index);
@@ -133,20 +172,46 @@ class ViewPortManager;
 /** @brief Main FlowUi application object and owner of runtime managers. */
 class App {
 public:
-	/** @brief Construct an empty app handle. Use makeApplication() to create a running app. */
+	/** @brief Construct an empty app handle. 
+	 * 
+	 * Default constructor for App class
+	 * 
+	 * @warning Do not manually construct App use makeApplication() instead.
+	 * @see makeApplication()
+	 * 
+	 */
 	App();
-	/** @brief Move constructor. */
+	/** @brief Move constructor. 
+	 * Default Move constructor
+	*/
 	App(App&&) noexcept;
-	/** @brief Move assignment. */
+	/** @brief Move assignment. 
+	 * Default move assignment
+	*/
 	App& operator=(App&&) noexcept;
 	App(const App&) = delete;
 	App& operator=(const App&) = delete;
-	/** @brief Destroy the app and owned runtime resources. */
+	/** @brief Destroy the app and owned runtime resources. 
+	 * Cleans up App's resources
+	*/
 	~App();
 
-	/** @brief Return true when the window backend requests shutdown.
+	/** @brief query the window backend if it requests a shutdown.
+	 * 
+	 * use this function to set up the app lifecycle loop
+	 * 
+	 * Example:
+	 * @code{.cpp}
+	 * FlowUi::App application = makeApplication(config);
+	 * while(!application.shouldClose())
+	 * {
+	 * 	//per Frame Code here
+	 * }
+	 * @endcode
+	 * 
+	 * 
 	 * @retval true The window requested shutdown
-	 * @retval false Thw window has NOT requested shutdown
+	 * @retval false The window has NOT requested shutdown
 	 */
 	bool shouldClose() const;
 
@@ -189,10 +254,34 @@ public:
 	 * 
 	 */
 	void endFrame();
-	/** @brief Submit the current frame for rendering/presentation. */
+	/** @brief Submit the current frame for rendering/presentation. 
+	 *  
+	 * takes the rendercommands outputed by endFrame and builds GPU draw runs
+	 * finally Renders all the runs generated and passes the output to Swapchain to be presented
+	 * 
+	 * Example:
+	 * @code{.cpp}
+	 * application.endFrame();
+	 * application.drawFrame();
+	 * @endcode
+	 * 
+	 * @pre FlowUi::App's endFrame was called successfuly.
+	 * @post This Frame is rendered and output is Presented
+	 * @note This function should be called Exactly ONCE per frame
+	*/
 	void drawFrame();
 
-	/** @brief Access the font manager. */
+	/** @brief Access the font manager.
+	 * 
+	 * Example:
+	 * @code{.cpp}
+	 * FlowUi::App application = makeApplication(config);
+	 * FlowUi::FontManager& fontManager = application.fonts();
+	 * @endcode
+	 * 
+	 * 
+	 * @return Referance to the FlowUi::fontManager
+	 */
 	FontManager& fonts();
 	/** @brief Access the font manager. */
 	const FontManager& fonts() const;
