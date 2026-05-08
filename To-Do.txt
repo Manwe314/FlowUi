@@ -4,7 +4,7 @@
 4. Add ComputeQFamily Optional grab
 5. IconManager might have issues with frames in flight at LRU policy
 6. footer functionality in debugView
-7. 
+7. dev updater tool ordering incorectly
 8. Optimise GPU side
 9. gradient support at Clay or Flow level
 10. upgrade texture ref management with automatic frame persistence saving?
