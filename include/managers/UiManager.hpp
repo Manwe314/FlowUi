@@ -14,6 +14,7 @@
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "internal/FlowUiElementBridge.hpp"
 #include "managers/FlowUiElementSystem.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
@@ -53,7 +54,7 @@ public:
 		const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition,
 		std::string_view elementID
 #if FLOW_UI_DEV_MODE
-		, devCaptureDetail::DevSourceLocation sourceLocation = devCaptureDetail::DevSourceLocation::current()
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
 #endif
 		)
 	{
@@ -119,7 +120,7 @@ private:
 	friend class App;
 	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 	friend class ElementBuilder;
-	friend void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
+	friend void detail::pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
 
 	void initStringArenas(const AppConfig& cfg);
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);

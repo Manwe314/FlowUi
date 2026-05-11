@@ -154,7 +154,6 @@ private:
 	};
 
 	TransientRasterResult rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const;
-	uint32_t bucketRequestedDimension(uint32_t requested) const;
 	VariantKey makeVariantKey(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const;
 	void advanceFrameCounter();
 	void touchVariant(VariantEntry& variant, uint32_t frameIndex);
@@ -184,8 +183,8 @@ private:
 	bool evictLeastRecentlyUsedVariant();
 	VariantEntry* findBestCachedVariant(
 		std::string_view nameKey,
-		uint32_t bucketedWidth,
-		uint32_t bucketedHeight);
+		uint32_t requestedWidth,
+		uint32_t requestedHeight);
 	VariantEntry& ensureVariantForRequest(
 		std::string_view nameKey,
 		uint32_t requestedWidth,
@@ -199,7 +198,7 @@ private:
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
 	uint32_t atlasSize_ = 0u;
 	uint32_t atlasPadding_ = 1u;
-	uint32_t sizeBucketStep_ = 8u;
+	uint32_t sizeReuseTolerance_ = 8u;
 	uint32_t maxAtlasPages_ = 10u;
 	uint32_t frameCounter_ = 0u;
 	std::unordered_map<std::string, DocumentRecord> documentsByKey_;

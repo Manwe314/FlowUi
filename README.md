@@ -21,9 +21,7 @@ There are also higher-abstraction libraries and tools for building desktop appli
 
 FlowUi is for the niche case where you want to grab a library, build and link it into an application, and immediately start writing app code while keeping low-level access, *crucially* with an [immediate-mode UI](https://en.wikipedia.org/wiki/Immediate_mode_(computer_graphics)).
 
-The window provider can be swapped out, but the renderer is currently locked to Vulkan. Vulkan is a modern cross-platform graphics API and should be suitable most of the time, though pluggable rendering backends may come in the future.
-
-The biggest reason to use FlowUi is if you already want Clay as your layout library. Thinking about UI the way Clay encourages can be a powerful way to approach interface work. FlowUi is trying to support that workflow, not change it.
+But The biggest reason to use FlowUi is if you already want Clay as your layout library. Thinking about UI the way Clay encourages can be a powerful way to approach interface work. FlowUi is trying to support that workflow, not change it.
 
 ### Overview of FlowUi's functionality
 
@@ -47,27 +45,7 @@ FlowUi uses:
 - [VMA](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) for Vulkan memory allocation.
 - And, of course, [Clay](https://github.com/nicbarker/clay) for UI layout.
 
-## Quick Start
-
-### Requirements
-- CMake `>= 3.20`
-- C++23 compiler
-- Vulkan SDK (`glslc` preferred)
-- GLFW3
-- Git submodules initialized
-
-```bash
-git submodule update --init --recursive
-```
-
-### Build
-
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel
-```
-
-### Minimal App Loop
+## Minimal App Loop Example
 
 ```cpp
 #include <FlowUi/Flow.hpp>

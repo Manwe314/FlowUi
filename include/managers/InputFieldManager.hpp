@@ -104,7 +104,7 @@ public:
 	};
 
 	/** @brief Apply input field rendering configuration. */
-	void setConfig(const UiConfig::InputManagerConfig& config);
+	void setConfig(const InputManagerConfig& config);
 	/** @brief Set font manager used for text measurement. */
 	void setFontManager(const ::FontManager* fontManager, float pointsToPixelsScale);
 	/** @brief Begin input field processing for a frame. */
@@ -195,7 +195,7 @@ private:
 	FrameInput previousInput_{};
 	std::unordered_map<std::string, FieldState> fieldsById_{};
 	std::string primaryFieldId_{};
-	UiConfig::InputManagerConfig config_{};
+	InputManagerConfig config_{};
 	const ::FontManager* fontManager_ = nullptr;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
 	KeyRepeatState leftKeyRepeat_{};
