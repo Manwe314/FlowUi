@@ -16,6 +16,8 @@
 16. add config for Drag scrolling
 17. upgrade devNumeric to better authoring values
 18. more complete msdf atlas handling
+19. eliminate throwing in an uncought way
+20. debugg mesages
 
 For IconManager:
 	- Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.

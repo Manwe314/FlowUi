@@ -36,25 +36,61 @@ enum class FontStyle : uint8_t {
 	Italic,
 };
 
-/** @brief One font face source inside a family. */
+/**
+ * @brief Describes a single concrete font face to register in a font family.
+ *
+ * A face corresponds to one source file and one style/weight variant that can
+ * later be selected during text style resolution.
+ */
 struct FontFaceCreateInfo {
-	/** @brief Source .arfont, .ttf, .otf, or future supported font file path. */
+	/**
+	 * @brief Path to the font source file for this face.
+	 *
+	 * Must refer to a supported font asset such as .arfont or .ttf.
+	 */
 	std::filesystem::path path{};
-	/** @brief Bake/load size in pixels per em. */
+
+	/**
+	 * @brief Requested font size in pixels per em for loading or baking.
+	 *
+	 * Must be greater than zero.
+	 */
 	float pixelSize = 18.0f;
-	/** @brief CSS-style font weight, where 400 is regular and 700 is bold. */
+
+	/**
+	 * @brief CSS-style font weight for this face.
+	 *
+	 * Common values are 400 for regular and 700 for bold.
+	 */
 	uint32_t weight = 400;
-	/** @brief Font style represented by this face. */
+
+	/** @brief Style variant represented by this face. */
 	FontStyle style = FontStyle::Normal;
-	/** @brief Optional registered face name. Empty means infer from source metadata/path. */
+
+	/**
+	 * @brief Optional explicit face name.
+	 *
+	 * If empty, the face name is inferred from the font source metadata or file path.
+	 */
 	std::string name{};
 };
 
-/** @brief Font family creation data with one or more concrete faces. */
+/**
+ * @brief Describes a logical font family and its initially available faces.
+ *
+ * The family name is used for string-based font lookup, while the contained
+ * faces provide the concrete style/weight variants available for resolution.
+ */
 struct FontFamilyCreateInfo {
-	/** @brief Logical family name used by string-based resolution. */
+	/** @brief Logical family name used for font-family lookup. */
 	std::string name = "Default";
-	/** @brief Concrete faces initially registered for this family. */
+
+	/**
+	 * @brief Initial set of concrete faces available in this family.
+	 *
+	 * Each entry typically represents one style/weight variant, such as regular,
+	 * bold, or italic.
+	 */
 	std::vector<FontFaceCreateInfo> faces{
 		FontFaceCreateInfo{
 			.path = "assets/fonts/Inter.arfont",
@@ -85,121 +121,291 @@ enum class CursorType : uint8_t {
 	Custom,
 };
 
-/** @brief Window input behavior toggles. */
+/**
+ * @brief Configures low-level window input behavior.
+ *
+ * These options are forwarded to the window backend during window creation and
+ * whenever the input configuration is updated at runtime.
+ */
 struct WindowInputConfig {
-	/** @brief Cursor mode applied to the window backend. */
+	/** @brief Cursor visibility and capture mode applied to the window. */
 	CursorMode cursorMode = CursorMode::Normal;
-	/** @brief Brief goes here. */
+
+	/**
+	 * @brief Keep key press events available until they are polled.
+	 *
+	 * Useful when the app wants to avoid missing short key presses between
+	 * input polling points.
+	 */
 	bool stickyKeys = false;
-	/** @brief Brief goes here. */
+
+	/**
+	 * @brief Keep mouse button press events available until they are polled.
+	 *
+	 * Useful when the app wants to avoid missing short mouse clicks between
+	 * input polling points.
+	 */
 	bool stickyMouseButtons = false;
-	/** @brief Brief goes here. */
+
+	/**
+	 * @brief Preserve lock-key modifier state in reported input events.
+	 *
+	 * When supported by the backend, events include Caps Lock and Num Lock
+	 * modifier bits while those locks are active.
+	 */
 	bool lockKeyMods = false;
-	/** @brief Request raw mouse motion when supported by the backend. */
+
+	/**
+	 * @brief Request unaccelerated mouse motion when the backend supports it.
+	 *
+	 * Unsupported backends or platforms disable this option automatically.
+	 */
 	bool rawMouseMotion = false;
 };
 
-/** @brief Window creation and runtime window defaults. */
+/**
+ * @brief Describes the native window created for the app.
+ *
+ * Width, height, title, and input settings also provide the initial runtime
+ * defaults used by FlowUi managers.
+ */
 struct WindowConfig {
-	/** @brief Initial window width in screen coordinates. */
+	/** @brief Initial window width in screen coordinates.
+	 *
+	 * Must be a positive integer greater than 0.
+	 */
 	int width = 1280;
-	/** @brief Initial window height in screen coordinates. */
+
+	/** @brief Initial window height in screen coordinates.
+	 *
+	 * Must be a positive integer greater than 0.
+	 */
 	int height = 720;
-	/** @brief Initial window title. */
+
+	/** @brief Initial native window title. */
 	std::string title = "FlowUi App";
-	/** @brief Whether the window can be resized. */
+
+	/** @brief Allow the user or window manager to resize the window. */
 	bool resizable = true;
-	/** @brief Whether the window starts maximized. */
+
+	/** @brief Create the window in a maximized state when supported. */
 	bool maximized = false;
-	/** @brief Whether the window starts fullscreen. */
+
+	/** @brief Create the window on the primary monitor in fullscreen mode.
+	 *
+	 * @warning The GLFW backend creates a true fullscreen window without
+	 * normal title-bar controls, so users may not have a visible close or
+	 * minimize button. Provide an app-level exit path, such as a key chord
+	 * or menu action, before enabling fullscreen by default.
+	 */
 	bool fullscreen = false;
-	/** @brief Whether the window backend should prefer high-DPI framebuffer behavior. */
+
+	/** @brief Prefer high-DPI framebuffer behavior for capable backends. */
 	bool highDPI = true;
-	/** @brief Window input configuration. */
+
+	/** @brief Initial low-level input behavior for the window. */
 	WindowInputConfig input{};
 };
 
-/** @brief Vulkan runtime configuration. */
+/**
+ * @brief Configures Vulkan device, swapchain, and frame scheduling defaults.
+ *
+ * These options are consumed during renderer initialization.
+ */
 struct VulkanConfig {
-	/** @brief Enable Vulkan validation layers when available. */
+	/** @brief Enable Vulkan validation layers when they are available. */
 	bool enableValidation = true;
-	/** @brief Enable Vulkan debug utils when available. */
+
+	/** @brief Enable Vulkan debug utils messenger support when available. */
 	bool enableDebugUtils = true;
+
 	/** @brief Preferred swapchain presentation mode. */
 	PresentMode presentMode = PresentMode::Fifo;
-	/** @brief Prefer a discrete GPU when one is available. */
+
+	/** @brief Prefer a discrete GPU when selecting a physical device. */
 	bool preferDiscreteGPU = true;
-	/** @brief Requested MSAA level. No-op for now. */
-	MSAA msaa = MSAA::x1; //No-op For now
-	/** @brief Request an sRGB swapchain format when available. */
+
+	/**
+	 * @brief Requested multisample anti-aliasing level.
+	 *
+	 * @note Disabled in v0.9.0; this value is retained for future renderer support.
+	 */
+	MSAA msaa = MSAA::x1;
+
+	/** @brief Prefer an sRGB swapchain format when the surface supports one. */
 	bool srgbBackbuffer = true;
-	/** @brief Number of frames held in flight by the renderer. */
+
+	/** @brief Number of frames the renderer may keep in flight. */
 	uint32_t framesInFlight = 2;
 };
 
-/** @brief UI runtime configuration. */
-struct UiConfig {
-	/** @brief Input field rendering configuration. */
-	struct InputManagerConfig {
-		/** @brief Caret width in pixels. */
-		float caretWidthPx = 2.0f;
-		/** @brief Extra caret height above the text bounds. */
-		float caretHeightOverflowTopPx = 1.0f;
-		/** @brief Extra caret height below the text bounds. */
-		float caretHeightOverflowBottomPx = 1.0f;
-		/** @brief Caret color. */
-		Clay_Color caretColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};
-		/** @brief Selection highlight rectangle color. */
-		Clay_Color highlightBoxColor = Clay_Color{66.0f, 133.0f, 244.0f, 150.0f};
-		/** @brief Text color used for selected text. */
-		Clay_Color highlightedTextColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};
-	};
+/**
+ * @brief Configures input field editing visuals.
+ *
+ * These values control caret and selection rendering for FlowUi text input
+ * fields; they do not affect low-level window input behavior.
+ */
+struct InputManagerConfig {
+	/** @brief Caret width in pixels. */
+	float caretWidthPx = 2.0f;
+	/** @brief Extra caret height above the text bounds. */
+	float caretHeightOverflowTopPx = 1.0f;
+	/** @brief Extra caret height below the text bounds. */
+	float caretHeightOverflowBottomPx = 1.0f;
+	/** @brief Caret color. */
+	Clay_Color caretColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};
+	/** @brief Selection highlight rectangle color. */
+	Clay_Color highlightBoxColor = Clay_Color{66.0f, 133.0f, 244.0f, 150.0f};
+	/** @brief Text color used for selected text. */
+	Clay_Color highlightedTextColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};
+};
 
-	/** @brief Logical dots-per-inch used for point-to-pixel conversion. */
+/**
+ * @brief Configures FlowUi layout, text, and UI resource defaults.
+ *
+ * These values are consumed during app and UI manager initialization. They affect
+ * Clay layout memory, transient per-frame UI storage, text scaling, and the
+ * default font resources used by text rendering.
+ */
+struct UiConfig {
+	/**
+	 * @brief Logical dots-per-inch used for point-to-pixel conversion.
+	 *
+	 * Text sizes are specified in points and converted to pixels as dpi / 72.
+	 * Values below 1 are clamped to 1 during initialization.
+	 *
+	 * For example, a 12 pt text size at the default 96 dpi is laid out as
+	 * 12 * (96 / 72) = 16 px before fontScale is applied.
+	 */
 	float dpi = 96.0f;
-	/** @brief Global UI scale multiplier. */
+
+	/**
+	 * @brief Global layout scale applied to UI coordinates and input.
+	 *
+	 * Values above 1 make the logical layout space smaller relative to the
+	 * native window size, producing larger rendered UI.
+	 */
 	float uiScale = 1.0f;
-	/** @brief Global font scale multiplier. */
+
+	/**
+	 * @brief Global multiplier applied after DPI font scaling.
+	 *
+	 * If the configured value is zero or negative, FlowUi falls back to the
+	 * DPI-derived point-to-pixel scale.
+	 */
 	float fontScale = 1.0f;
-	/** @brief Size of each transient string arena used during UI construction. */
+
+	/**
+	 * @brief Byte capacity of each transient UI arena.
+	 *
+	 * FlowUi creates one arena per frame in flight and resets the active arena at
+	 * the beginning of each UI frame. These arenas store temporary Clay strings,
+	 * element ids, and texture references created during UI construction.
+	 * 
+	 * @note The Size set here is for ONE arena. Total Size used will be stringArenaSize * framesInFlight
+	 *
+	 * @see FlowUi::VulkanConfig::framesInFlight
+	 */
 	size_t stringArenaSize = 256 * 1024;
-	/** @brief Clay arena size. 0 means use Clay_MinMemorySize(). */
+
+	/**
+	 * @brief Byte capacity of the persistent Clay layout arena.
+	 *
+	 * A value of 0 uses Clay_MinMemorySize(). Non-zero values are clamped up to
+	 * at least Clay_MinMemorySize() before Clay_Initialize is called.
+	 */
 	size_t clayArenaCapacityBytes = 0;
 
-	/** @brief Default font family loaded during app startup. Family 0 is the fallback family. */
+	/**
+	 * @brief Default font family loaded during app startup.
+	 *
+	 * This family is registered first, so family id 0 is the fallback family used
+	 * by default text rendering. If loading fails, FlowUi attempts built-in
+	 * fallback font candidates.
+	 *
+	 * @see FlowUi::FontFamilyCreateInfo
+	 */
 	FontFamilyCreateInfo defaultFontFamily{};
 
-	/** @brief Font atlas texture size. */
+	/**
+	 * @brief Width and height in pixels of each font atlas page.
+	 *
+	 * The font manager uploads each loaded font face into square atlas layers of
+	 * this size. The value must be non-zero and large enough for the source
+	 * .arfont atlas or runtime-baked glyph atlas.
+	 */
 	uint32_t fontAtlasSize = 2048;
-	/** @brief Icon atlas texture size. No-op for now. */
-	uint32_t iconAtlasSize = 1024; //No-op for now
-	/** @brief Input field manager configuration. */
+
+	/**
+	 * @brief Reserved legacy icon atlas size setting.
+	 *
+	 * @note This value is currently unused. Configure icon atlas sizing through
+	 * AppConfig::iconManager instead.
+	 *
+	 * @see FlowUi::IconManagerConfig
+	 */
+	uint32_t iconAtlasSize = 1024;
+
+	/**
+	 * @brief Input field caret and selection rendering configuration.
+	 *
+	 * @see FlowUi::InputManagerConfig
+	 */
 	InputManagerConfig inputManager{};
 };
 
-/** @brief Icon atlas and cache configuration. */
+/**
+ * @brief Configures SVG icon rasterization, caching, and atlas storage.
+ *
+ * Icons are rasterized on demand at the size required by the current frame,
+ * then cached in atlas pages for reuse by later frames.
+ */
 struct IconManagerConfig {
-	/** @brief Atlas page width and height in pixels. */
+	/** @brief Width and height in pixels of each icon atlas page. */
 	uint32_t atlasSize = 2048;
-	/** @brief Maximum icon atlas page count. */
+
+	/**
+	 * @brief Maximum number of icon atlas pages the manager may allocate.
+	 *
+	 * More pages allow more cached icon variants to stay resident, at the cost of
+	 * additional GPU memory.
+	 */
 	uint32_t maxAtlasPages = 10;
-	/** @brief Icon raster size bucket step in pixels. */
+
+	/**
+	 * @brief Pixel tolerance for reusing cached icon raster sizes.
+	 *
+	 * FlowUi first looks for an existing cached raster of the same icon whose
+	 * width and height are within this many pixels of the requested size. Larger
+	 * cached rasters are preferred over smaller ones to preserve quality. If no
+	 * cached raster is close enough, the SVG is rasterized at the exact requested
+	 * size.
+	 */
 	uint32_t sizeBucketStep = 8;
-	/** @brief Padding around atlas allocations in pixels. */
+
+	/** @brief Empty pixel padding reserved around each atlas allocation. */
 	uint32_t atlasPadding = 1;
 };
 
-/** @brief Developer panel shortcut trigger mode. */
+/** @brief Developer panel shortcut trigger mode. 
+ * 
+ * @see DevShortcutchord
+*/
 enum class DevShortcutTrigger : uint8_t {
 	Press = 0,
 	Release = 1,
 	Down = 2,
 };
 
-/** @brief Keyboard chord used by developer tooling. */
+/** @brief Keyboard chord used by developer tooling. 
+ * 
+ * Default Key Chord used to open DeV tool window
+ * by default it is set to  ctrl + shift + D 
+ * triggers on Press
+*/
 struct DevShortcutChord {
 	/** @brief Platform key code consumed by FlowUi's ShortcutManager backend. */
-	int key = 68; // Default: 'D'
+	int key = 68;
 	/** @brief Whether Ctrl is required. */
 	bool ctrl = true;
 	/** @brief Whether Shift is required. */
@@ -212,78 +418,170 @@ struct DevShortcutChord {
 	DevShortcutTrigger trigger = DevShortcutTrigger::Press;
 };
 
-/** @brief Developer tooling runtime configuration. */
+/**
+ * @brief Configures FlowUi developer tooling and capture behavior.
+ *
+ * These options are only used when developer mode support is compiled in.
+ */
 struct DevToolsConfig {
 	/** @brief Enable developer tooling at runtime. */
 	bool enabled = false;
-	/** @brief Open the developer panel on startup. */
+
+	/** @brief Open the developer panel during UI manager initialization. */
 	bool panelOpenByDefault = false;
+
 	/** @brief Initial developer panel width in pixels. */
 	float panelWidthPx = 420.0f;
-	/** @brief Use ShortcutManager to toggle the developer panel. */
+
+	/**
+	 * @brief Register the panel toggle chord with FlowUi's ShortcutManager.
+	 *
+	 * Disable this when the application wants to own panel toggling itself.
+	 */
 	bool useShortcutManagerForPanelToggle = true;
-	/** @brief Shortcut used to toggle the developer panel. */
+
+	/** @brief Keyboard chord used to toggle the developer panel. */
 	DevShortcutChord panelToggleChord{};
-	/** @brief Exclude internal developer UI elements from dev capture. */
+
+	/**
+	 * @brief Hide FlowUi's internal developer elements from captured UI data.
+	 *
+	 * @note Keeping this enabled is strongly recommended. Capturing the developer
+	 * panel itself can add noisy internal elements to inspection/export data and
+	 * make user-authored UI harder to reason about.
+	 */
 	bool excludeInternalDevElementsFromCapture = true;
-	/** @brief Path used for developer override export data. */
+
+	/**
+	 * @brief File path used when exporting developer override data.
+	 *
+	 * Explicit developer exports write to this path.
+	 */
 	std::filesystem::path overridesPath = ".flowui/overrides.v1.json";
-	/** @brief Auto-save developer changes. No-op for now. */
-	bool autoSave = true; //No-op for now
+
+	/**
+	 * @brief Request automatic saving of developer changes.
+	 *
+	 * @note No-op in v0.9.0; developer data is only written by explicit export
+	 * paths.
+	 */
+	bool autoSave = true;
 };
 
-/** @brief Top-level FlowUi application configuration. */
+/**
+ * @brief Top-level configuration used to initialize a FlowUi app.
+ *
+ * This struct groups the subsystem-specific configuration blocks passed through
+ * app startup.
+ */
 struct AppConfig {
-	/** @brief Window configuration. */
+	/**
+	 * @brief Native window creation and input defaults.
+	 *
+	 * @see FlowUi::WindowConfig
+	 */
 	WindowConfig window{};
-	/** @brief Vulkan configuration. */
+
+	/**
+	 * @brief Vulkan device, swapchain, and frame scheduling defaults.
+	 *
+	 * @see FlowUi::VulkanConfig
+	 */
 	VulkanConfig vk{};
-	/** @brief UI runtime configuration. */
+
+	/**
+	 * @brief Layout, text, and UI resource defaults.
+	 *
+	 * @see FlowUi::UiConfig
+	 */
 	UiConfig ui{};
-	/** @brief Icon manager configuration. */
+
+	/**
+	 * @brief SVG icon rasterization and atlas cache defaults.
+	 *
+	 * @see FlowUi::IconManagerConfig
+	 */
 	IconManagerConfig iconManager{};
-	/** @brief Developer tooling configuration. */
+
+	/**
+	 * @brief Developer tooling and capture defaults.
+	 *
+	 * @see FlowUi::DevToolsConfig
+	 */
 	DevToolsConfig dev{};
 };
 
 /** @brief Texture layout mode inside a target rectangle. */
 enum class TextureFitMode : uint8_t {
+	/** @brief Scale independently on each axis to fill the target rectangle. */
 	Stretch = 0,
+	/** @brief Fit the whole texture inside the target rectangle without cropping. */
 	Contain = 1,
+	/** @brief Fill the target rectangle while preserving aspect ratio; may crop. */
 	Cover = 2,
+	/** @brief Draw at source size without fit scaling. */
 	None = 3,
 };
 
 /** @brief Texture sampling mode. */
 enum class TextureSamplingMode : uint8_t {
+	/** @brief Smoothly filter between neighboring texels. */
 	Linear = 0,
+	/** @brief Use the nearest texel for crisp pixel edges. */
 	Nearest = 1,
 };
 
-/** @brief Renderer texture reference used by image, icon, and viewport APIs. */
+/**
+ * @brief Renderer texture reference returned by image, icon, and viewport managers.
+ *
+ * Treat this as a manager-owned handle with optional render settings. After
+ * obtaining a TextureRef, application code may adjust fitMode, samplingMode, and
+ * tintEnabled. The id, UV coordinates, and source dimensions are populated by
+ * FlowUi managers and should normally be left unchanged.
+ */
 struct TextureRef {
-	/** @brief Texture registry slot id. */
+	/** @brief Manager-owned texture registry slot id; do not edit manually. */
 	uint32_t id = 0;
 
-	/** @brief Left U coordinate. */
+	/** @brief Manager-owned left U coordinate; do not edit manually. */
 	float uv0x = 0.0f;
-	/** @brief Top V coordinate. */
+	/** @brief Manager-owned top V coordinate; do not edit manually. */
 	float uv0y = 0.0f;
-	/** @brief Right U coordinate. */
+	/** @brief Manager-owned right U coordinate; do not edit manually. */
 	float uv1x = 1.0f;
-	/** @brief Bottom V coordinate. */
+	/** @brief Manager-owned bottom V coordinate; do not edit manually. */
 	float uv1y = 1.0f;
 
-	/** @brief Fit mode used when rendering the texture. */
+	/**
+	 * @brief Texture fit behavior inside the target rectangle.
+	 *
+	 * Application code may change this after obtaining the TextureRef.
+	 *
+	 * @see FlowUi::TextureFitMode
+	 */
 	TextureFitMode fitMode = TextureFitMode::Contain;
-	/** @brief Sampling mode. Stored in V1 but intentionally not applied by renderer yet. */
+
+	/**
+	 * @brief Requested texture filtering mode.
+	 *
+	 * Application code may set this for future renderer support.
+	 *
+	 * @note Stored in v0.9.0 but not applied by the textured renderer yet.
+	 *
+	 * @see FlowUi::TextureSamplingMode
+	 */
 	TextureSamplingMode samplingMode = TextureSamplingMode::Linear;
-	/** @brief Whether texture tinting is enabled. */
+
+	/**
+	 * @brief Enable multiplication by the image command color while rendering.
+	 *
+	 * Application code may change this after obtaining the TextureRef.
+	 */
 	bool tintEnabled = false;
 
-	/** @brief Source texture width in pixels. */
+	/** @brief Manager-owned source texture width in pixels; do not edit manually. */
 	int32_t sourceWidth = 0;
-	/** @brief Source texture height in pixels. */
+	/** @brief Manager-owned source texture height in pixels; do not edit manually. */
 	int32_t sourceHeight = 0;
 };
 

@@ -317,19 +317,12 @@ uint32_t IconManager::frameAge(uint32_t currentFrame, uint32_t lastUsedFrame) {
 	return currentFrame - lastUsedFrame;
 }
 
-uint32_t IconManager::bucketRequestedDimension(uint32_t requested) const {
-	const uint32_t clamped = std::max<uint32_t>(1u, requested);
-	const uint32_t step = std::max<uint32_t>(1u, sizeBucketStep_);
-	const uint32_t rounded = ((clamped + step - 1u) / step) * step;
-	return rounded;
-}
-
 IconManager::VariantKey IconManager::makeVariantKey(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const
 {
 	VariantKey variantKey{};
 	variantKey.nameKey = std::string(key);
-	variantKey.requestedWidth = bucketRequestedDimension(requestedWidth);
-	variantKey.requestedHeight = bucketRequestedDimension(requestedHeight);
+	variantKey.requestedWidth = std::max<uint32_t>(1u, requestedWidth);
+	variantKey.requestedHeight = std::max<uint32_t>(1u, requestedHeight);
 	return variantKey;
 }
 
@@ -795,9 +788,9 @@ bool IconManager::evictLeastRecentlyUsedVariant() {
 
 IconManager::VariantEntry* IconManager::findBestCachedVariant(
 	std::string_view nameKey,
-	uint32_t bucketedWidth,
-	uint32_t bucketedHeight) {
-	const uint32_t maxBucketGap = std::max<uint32_t>(1u, sizeBucketStep_);
+	uint32_t requestedWidth,
+	uint32_t requestedHeight) {
+	const uint32_t maxSizeGap = std::max<uint32_t>(1u, sizeReuseTolerance_);
 
 	VariantEntry* bestAbove = nullptr;
 	uint64_t bestAboveGap = std::numeric_limits<uint64_t>::max();
@@ -815,14 +808,14 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 		const uint32_t variantWidth = variant.key.requestedWidth;
 		const uint32_t variantHeight = variant.key.requestedHeight;
 
-		if (variantWidth == bucketedWidth && variantHeight == bucketedHeight) {
+		if (variantWidth == requestedWidth && variantHeight == requestedHeight) {
 			return &variant;
 		}
 
-		if (variantWidth >= bucketedWidth && variantHeight >= bucketedHeight) {
-			const uint32_t widthGap = variantWidth - bucketedWidth;
-			const uint32_t heightGap = variantHeight - bucketedHeight;
-			if (widthGap > maxBucketGap || heightGap > maxBucketGap) {
+		if (variantWidth >= requestedWidth && variantHeight >= requestedHeight) {
+			const uint32_t widthGap = variantWidth - requestedWidth;
+			const uint32_t heightGap = variantHeight - requestedHeight;
+			if (widthGap > maxSizeGap || heightGap > maxSizeGap) {
 				continue;
 			}
 
@@ -838,10 +831,10 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 			continue;
 		}
 
-		if (variantWidth <= bucketedWidth && variantHeight <= bucketedHeight) {
-			const uint32_t widthGap = bucketedWidth - variantWidth;
-			const uint32_t heightGap = bucketedHeight - variantHeight;
-			if (widthGap > maxBucketGap || heightGap > maxBucketGap) {
+		if (variantWidth <= requestedWidth && variantHeight <= requestedHeight) {
+			const uint32_t widthGap = requestedWidth - variantWidth;
+			const uint32_t heightGap = requestedHeight - variantHeight;
+			if (widthGap > maxSizeGap || heightGap > maxSizeGap) {
 				continue;
 			}
 
@@ -871,12 +864,12 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	std::string_view nameKey,
 	uint32_t requestedWidth,
 	uint32_t requestedHeight) {
-	const VariantKey bucketedKey = makeVariantKey(nameKey, requestedWidth, requestedHeight);
-	if (VariantEntry* cached = findBestCachedVariant(nameKey, bucketedKey.requestedWidth, bucketedKey.requestedHeight)) {
+	const VariantKey requestKey = makeVariantKey(nameKey, requestedWidth, requestedHeight);
+	if (VariantEntry* cached = findBestCachedVariant(nameKey, requestKey.requestedWidth, requestKey.requestedHeight)) {
 		return *cached;
 	}
 
-	TransientRasterResult raster = rasterizeForAtlas(nameKey, bucketedKey.requestedWidth, bucketedKey.requestedHeight);
+	TransientRasterResult raster = rasterizeForAtlas(nameKey, requestKey.requestedWidth, requestKey.requestedHeight);
 	AtlasAllocation allocation{};
 	if (!tryAllocateAtlasRegion(raster.width, raster.height, allocation)) {
 		throw std::runtime_error("IconManager atlas is full and no evictable entries are available.");
@@ -889,7 +882,7 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	uploadRasterToAtlasPage(page, raster, allocation.contentRect);
 
 	VariantEntry entry{};
-	entry.key = bucketedKey;
+	entry.key = requestKey;
 	entry.pageIndex = allocation.pageIndex;
 	entry.slotId = page.slotId;
 	entry.paddedRect = allocation.paddedRect;
@@ -983,7 +976,7 @@ void IconManager::init(VulkanContext& vk, const IconManagerConfig& config) {
 	vk_ = &vk;
 	atlasSize_ = std::max<uint32_t>(1u, config.atlasSize);
 	atlasPadding_ = config.atlasPadding;
-	sizeBucketStep_ = std::max<uint32_t>(1u, config.sizeBucketStep);
+	sizeReuseTolerance_ = std::max<uint32_t>(1u, config.sizeBucketStep);
 	maxAtlasPages_ = std::max<uint32_t>(1u, config.maxAtlasPages);
 	frameCounter_ = 0u;
 
@@ -1310,7 +1303,7 @@ void IconManager::destroy(VulkanContext& vk) {
 	registry_ = nullptr;
 	atlasSize_ = 0u;
 	atlasPadding_ = 1u;
-	sizeBucketStep_ = 8u;
+	sizeReuseTolerance_ = 8u;
 	maxAtlasPages_ = 10u;
 	frameCounter_ = 0u;
 }
