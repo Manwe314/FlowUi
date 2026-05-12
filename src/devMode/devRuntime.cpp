@@ -87,6 +87,9 @@ std::size_t InstanceFieldKeyHash::operator()(const InstanceFieldKey& key) const 
 
 void DevRuntime::beginFrame() {
 	++frameCounter_;
+	lastSeenParamsByInstance_.clear();
+	lastSeenStateByInstance_.clear();
+	lastSeenResourcesByDefinition_.clear();
 	beginElementTreeCapture();
 }
 
@@ -98,6 +101,7 @@ void DevRuntime::beginElementTreeCapture() {
 	elementTreeCaptureActive_ = true;
 	elementTreeCaptureDepth_ = 0u;
 	nextElementCaptureOrder_ = 0u;
+	elementCaptureSuppressedStack_.clear();
 	elementTreePlaceholder_.clear();
 }
 
@@ -107,8 +111,8 @@ void DevRuntime::endElementTreeCapture() {
 }
 
 std::size_t DevRuntime::appendCapturedElement(const ElementTreePlaceholder::FlatNode& nodeTemplate) {
-	if (!elementTreeCaptureActive_) {
-		return elementTreePlaceholder_.flatNodes.size();
+	if (!elementTreeCaptureActive_ || isSuppressedCaptureActive()) {
+		return kInvalidCaptureIndex;
 	}
 
 	ElementTreePlaceholder::FlatNode node = nodeTemplate;
@@ -133,14 +137,31 @@ bool DevRuntime::popElementTreeDepth() {
 	return true;
 }
 
-std::size_t DevRuntime::beginCapturedElement(const ElementTreePlaceholder::FlatNode& nodeTemplate) {
-	const std::size_t index = appendCapturedElement(nodeTemplate);
+std::size_t DevRuntime::beginCapturedElement(
+	const ElementTreePlaceholder::FlatNode& nodeTemplate,
+	bool suppressCapture) {
+	if (!elementTreeCaptureActive_) {
+		return kInvalidCaptureIndex;
+	}
+
+	const bool suppressFromParent = isSuppressedCaptureActive();
+	const bool suppressThisNode = suppressCapture || suppressFromParent;
+	elementCaptureSuppressedStack_.push_back(suppressThisNode);
+
+	const std::size_t index = suppressThisNode ? kInvalidCaptureIndex : appendCapturedElement(nodeTemplate);
 	pushElementTreeDepth();
 	return index;
 }
 
 bool DevRuntime::endCapturedElement() {
-	return popElementTreeDepth();
+	if (!elementTreeCaptureActive_) {
+		return false;
+	}
+	const bool popped = popElementTreeDepth();
+	if (!elementCaptureSuppressedStack_.empty()) {
+		elementCaptureSuppressedStack_.pop_back();
+	}
+	return popped;
 }
 
 std::size_t DevRuntime::beginCapturedFlowElement(
@@ -162,7 +183,7 @@ std::size_t DevRuntime::beginCapturedFlowElement(
 	node.definitionTypeToken.assign(definitionTypeToken.data(), definitionTypeToken.size());
 	node.isInternalToDevMode = isInternalToDevMode;
 	node.isFloating = isFloating;
-	return beginCapturedElement(node);
+	return beginCapturedElement(node, isInternalToDevMode);
 }
 
 std::size_t DevRuntime::appendCapturedClayElement(
@@ -170,6 +191,10 @@ std::size_t DevRuntime::appendCapturedClayElement(
 	uint64_t flowId,
 	bool isInternalToDevMode,
 	bool isFloating) {
+	if (isInternalToDevMode || isSuppressedCaptureActive()) {
+		return kInvalidCaptureIndex;
+	}
+
 	ElementTreePlaceholder::FlatNode node{};
 	node.kind = ElementTreePlaceholder::ElementKind::ClayElement;
 	node.flowId = flowId;
@@ -177,6 +202,10 @@ std::size_t DevRuntime::appendCapturedClayElement(
 	node.isInternalToDevMode = isInternalToDevMode;
 	node.isFloating = isFloating;
 	return appendCapturedElement(node);
+}
+
+bool DevRuntime::isSuppressedCaptureActive() const {
+	return !elementCaptureSuppressedStack_.empty() && elementCaptureSuppressedStack_.back();
 }
 
 bool DevRuntime::setCapturedElementSource(
@@ -278,6 +307,7 @@ void DevRuntime::clearAllSnapshots() {
 	elementTreeCaptureActive_ = false;
 	elementTreeCaptureDepth_ = 0u;
 	nextElementCaptureOrder_ = 0u;
+	elementCaptureSuppressedStack_.clear();
 }
 
 void DevRuntime::setDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash, const DevValue& value) {

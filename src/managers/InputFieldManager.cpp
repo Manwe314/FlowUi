@@ -65,7 +65,7 @@ bool appendUtf8Codepoint(std::string& out, char32_t codepoint) {
 
 namespace FlowUi {
 
-void InputFieldManager::setConfig(const UiConfig::InputManagerConfig& config) {
+void InputFieldManager::setConfig(const InputManagerConfig& config) {
 	config_ = config;
 }
 

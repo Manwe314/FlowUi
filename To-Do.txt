@@ -2,34 +2,75 @@
 2. Add support for Dynamic font baking
 3. Add HarfBuzz support for more scripts
 4. Add ComputeQFamily Optional grab
-5. Svg Manager Might have issues with Frames In Flight at LRU pollicy
-6. Add more types of element Properties - ??(std containers?)
-7. streamline element registry - ??
+5. IconManager might have issues with frames in flight at LRU policy
+6. footer functionality in debugView
+7. dev updater tool ordering incorectly
 8. Optimise GPU side
-9. Bug with oy whiteSpace Charaters in input fields
-10. upgrade texture ref managemetn with automatic frame persistance saving?
-11. 
+9. gradient support at Clay or Flow level
+10. upgrade texture ref management with automatic frame persistence saving?
+11. multi window management 
 12. Update FlowUi Arena naming and handling
 13. Revisit how TextureRef's get stored for frames. 
 14. come back to enforcing PIMPL
-15. 
+15. updater tool bug with not detecting mergeParameters
+16. add config for Drag scrolling
+17. upgrade devNumeric to better authoring values
+18. more complete msdf atlas handling
+19. eliminate throwing in an uncought way
+20. debugg mesages
 
-For SVG Manager:
-	Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.
-	If atlas is full and everything is “in use this frame,” allocation currently fails instead of forcing eviction.
-	No debug/stats API yet (cache hit rate, page usage, evictions).
-
-
-the paradigm re design:
-	- a lot of static work is done every frame. work beyond Layout. it should be simpler to aquire resources once and reuse across frames
-	- elements might want to manage states. some long lived varable management system would be nice. beyond user maintained struct.
-	- closed elements that relay on .draw() if utilizing other elements as children are forced to forward setable defaults causing init function to call exploding amounts of setters and getters.
-	- a more pre configured easly tweakable reusable form of element should exist that doesnt also destory the immediate mode paradigm.
-	- reusability comes at a function calling cost to not give up immediate mode. this should not be a tradeoff. both performance and unclogged files should be given without a sacriface to immediate mode thinking.
+For IconManager:
+	- Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.
+	- If atlas is full and everything is “in use this frame,” allocation currently fails instead of forcing eviction.
+	- No debug/stats API yet (cache hit rate, page usage, evictions).
 
 
 Possible Big Upgrades:
-- add a scripting language dynamic interpreter.
-- allow changing values of UI elements like color, sizing ints and such simply and without need of recompilation OR re runing of the app
-- a simple way to link specific variables with elment variables.
-- potentially a debug "app" built WITH flowUI bundeled with it for visual authoring at debug mode.
+	- add a scripting language dynamic interpreter.
+	- a simple way to link specific variables with element variables.
+	- Point and click selection from User UI for Dev tools with Debug Highlighting
+	- Animation Manager With Newer version of Clay 
+	- Networking Manager
+	- Total Memory allocation upfront with custom memeory management
+	- As much Retained mode support as **logical**
+
+
+dev tool upgrades:
+	- Ability to register Any struct and Dev mode construct composite editor inputs.
+	- Flow Element definition source metadata registration
+	- Relative path Source location resolver
+	- UX upgrade with visual upgrade (color coding, effects)
+	- UX upgrade with quality of life buttons / shortcuts (copy delete | reset clear)
+	- Transactional Safety (rollback feature on failure)
+	- ability to view Dev tool as additional floating window.
+	- complete "Apply" flow to immediately update codebase.
+
+
+
+
+~~~~ Legacy ~~~~
+
+Font Manager Api surface Possible Update:
+
+	FontFamilyId inter = fonts.createFamily("Inter");
+
+	fonts.addFamilyFace(inter, {
+	    .path = "Inter-Regular.ttf",
+	    .weight = 400,
+	    .style = FontStyle::Normal,
+	    .pixelSize = 32,
+	});
+	
+	fonts.addFamilyFace(inter, {
+	    .path = "Inter-Bold.ttf",
+	    .weight = 700,
+	    .style = FontStyle::Normal,
+	    .pixelSize = 32,
+	});
+
+the paradigm re design: COMPLETED
+	- a lot of static work is done every frame. work beyond Layout. it should be simpler to aquire resources once and reuse across frames
+	- elements might want to manage states. some long-lived variable management system would be nice, beyond a user-maintained struct.
+	- closed elements that rely on `.draw()` while using other elements as children are forced to forward settable defaults, causing init functions to call exploding amounts of setters and getters.
+	- a more preconfigured, easily tweakable reusable form of element should exist that does not also destroy the immediate mode paradigm.
+	- reusability comes at a function-calling cost to not give up immediate mode. this should not be a tradeoff. both performance and unclogged files should be given without a sacrifice to immediate mode thinking.

@@ -6,8 +6,8 @@
 #include "managers/ImageManager.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
-#if FLOWUI_INCLUDE_SVG_MANAGER
-#include "managers/SvgManager.hpp"
+#if FLOWUI_INCLUDE_ICON_MANAGER
+#include "managers/IconManager.hpp"
 #endif
 #include "managers/UiManager.hpp"
 #include "clay.h"

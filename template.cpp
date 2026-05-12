@@ -20,7 +20,7 @@ FlowUi::FlowElementId getTemplateElementFlowId(std::string_view elementID)
 
 bool isTemplateElementEnabled(std::string_view elementID)
 {
-	const templateState* state = TemplateDefiition::tryGetStateConst(FlowUi::toFlowId(elementID));
+	const templateState* state = TemplateDefinition::tryGetStateConst(FlowUi::toFlowId(elementID));
 	if (!state) {
 		return false;
 	}
@@ -29,16 +29,16 @@ bool isTemplateElementEnabled(std::string_view elementID)
 
 void setTemplateElementEnabled(std::string_view elementID, bool enabled)
 {
-	templateState& state = TemplateDefiition::getOrCreateState(FlowUi::toFlowId(elementID));
+	templateState& state = TemplateDefinition::getOrCreateState(FlowUi::toFlowId(elementID));
 	state.enabled = enabled;
 }
 
 bool eraseTemplateElementState(std::string_view elementID)
 {
-	return TemplateDefiition::eraseState(FlowUi::toFlowId(elementID));
+	return TemplateDefinition::eraseState(FlowUi::toFlowId(elementID));
 }
 
 void initTemplateResources(FlowUi::App& app)
 {
-	(void)TemplateDefiition::getResources(app);
+	(void)TemplateDefinition::getResources(app);
 }

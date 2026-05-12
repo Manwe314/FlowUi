@@ -10,7 +10,7 @@
 #include "internal/UiTextureRegistry.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
-#include "vk_mem_alloc.h"
+#include "internal/Vma.hpp"
 
 namespace {
 
@@ -306,14 +306,8 @@ void ViewPortManager::onFrameStart(VulkanContext& vk, uint32_t frameIndex) {
 void ViewPortManager::resetFrameTracking() {
 	for (auto& [_, record] : viewPortsByKey_) {
 		record.referencedThisFrame = false;
-		uint32_t baseWidth = 1u;
-		uint32_t baseHeight = 1u;
-		if (!record.imagesByFrame.empty()) {
-			baseWidth = std::max<uint32_t>(1u, record.imagesByFrame[0].width);
-			baseHeight = std::max<uint32_t>(1u, record.imagesByFrame[0].height);
-		}
-		record.desiredWidth = baseWidth;
-		record.desiredHeight = baseHeight;
+		record.desiredWidth = 1u;
+		record.desiredHeight = 1u;
 	}
 }
 

@@ -7,6 +7,7 @@
 /FlowPlotGUI/build-*/
 **/build/
 **/build-*/
+.flowui*
 
 # -----------------------------
 # CMake / Ninja generated files
@@ -67,6 +68,7 @@
 *.swp
 *.swo
 *~
+.codex
 
 # -----------------------------
 # OS-generated files
@@ -81,3 +83,6 @@ Desktop.ini
 .env
 .env.*
 *.local
+
+
+

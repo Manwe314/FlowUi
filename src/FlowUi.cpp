@@ -3,11 +3,14 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
-#if FLOWUI_INCLUDE_SVG_MANAGER
-#include "managers/SvgManager.hpp"
+#if FLOWUI_INCLUDE_ICON_MANAGER
+#include "managers/IconManager.hpp"
 #endif
 #include "managers/ViewPortManager.hpp"
 #include "managers/UiManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/debugView.hpp"
+#endif
 #include "internal/UiTextureRegistry.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
@@ -21,6 +24,7 @@
 #include <chrono>
 #include <cstdio>
 #include <filesystem>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -350,7 +354,7 @@ struct App::Impl {
 	FontManager fonts;
 	ImageManager imageManager;
 	ViewPortManager viewPortManager;
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager icons;
 #endif
 	FrameInput frameInputForCurrentFrame{};
@@ -387,6 +391,12 @@ struct App::Impl {
 					}
 					return window->getClipboardText();
 				});
+			ui.setCursorAccessor(
+				[this](CursorType cursorType) {
+					if (window) {
+						window->setCursorType(cursorType);
+					}
+				});
 
 		// 2) instance/surface/device
 		vk.createInstance(config, window->requiredInstanceExtensions());
@@ -410,34 +420,30 @@ struct App::Impl {
 		fonts.init(vk, config.ui.fontAtlasSize);
 		ui.setFontManager(&fonts);
 		renderer.setFontManager(&fonts);
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 		icons.setRegistry(&textureRegistry);
-		icons.init(vk, config.svgManager);
+		icons.init(vk, config.iconManager);
 #endif
 
 		bool defaultFontLoaded = false;
-		if (!config.ui.defaultFontPath.empty()) {
-			const std::filesystem::path defaultFontPath = config.ui.defaultFontPath;
-			if (!isArfontPath(defaultFontPath)) {
-				std::fprintf(
-					stderr,
-					"[FlowUi] Warning: ui.defaultFontPath is not an .arfont file: %s\n",
-					defaultFontPath.string().c_str());
-			} else if (!std::filesystem::is_regular_file(defaultFontPath)) {
-				std::fprintf(
-					stderr,
-					"[FlowUi] Warning: ui.defaultFontPath does not exist: %s\n",
-					defaultFontPath.string().c_str());
-			} else {
-				const int defaultFontId = fonts.loadFont(defaultFontPath.string(), config.ui.defaultFontPx);
-				if (defaultFontId < 0) {
-					throw std::runtime_error("Failed to register default .arfont font: " + defaultFontPath.string());
-				}
-				defaultFontLoaded = true;
-			}
+		try {
+			const FontManager::FontFamilyId defaultFamilyId = fonts.createFamily(config.ui.defaultFontFamily);
+			const FontManager::FontId defaultFontId = fonts.resolveFont(defaultFamilyId);
+			defaultFontLoaded = fonts.getFontById(defaultFontId) != nullptr;
+		} catch (const std::exception& e) {
+			std::fprintf(stderr, "[FlowUi] Warning: failed loading ui.defaultFontFamily (%s)\n", e.what());
 		}
 
 		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
+			const std::string fallbackFamilyName =
+				config.ui.defaultFontFamily.name.empty() ? std::string("Default") : config.ui.defaultFontFamily.name;
+			if (fonts.getFamilyId(fallbackFamilyName) == std::numeric_limits<FontManager::FontFamilyId>::max()) {
+				FlowUi::FontFamilyCreateInfo fallbackFamily{};
+				fallbackFamily.name = fallbackFamilyName;
+				fallbackFamily.faces.clear();
+				fonts.createFamily(fallbackFamily);
+			}
+
 			const std::array<std::filesystem::path, 5> fallbackCandidates = {
 				std::filesystem::path(FLOWUI_SOURCE_DIR) / "assets/fonts/FacultyGlyphic-Regular.arfont",
 				std::filesystem::path(FLOWUI_SOURCE_DIR) / "external/msdf-atlas-gen/artery-font-format/example.arfont",
@@ -452,15 +458,18 @@ struct App::Impl {
 				}
 
 				try {
-					const int loadedId = fonts.loadFont(fallbackPath.string(), config.ui.defaultFontPx);
-					if (loadedId >= 0) {
-						std::fprintf(
-							stderr,
-							"[FlowUi] Warning: loaded fallback font because ui.defaultFontPath was not usable: %s\n",
-							fallbackPath.string().c_str());
-						defaultFontLoaded = true;
-						break;
-					}
+					FlowUi::FontFaceCreateInfo fallbackFace{};
+					fallbackFace.path = fallbackPath;
+					fallbackFace.pixelSize = config.ui.defaultFontFamily.faces.empty()
+						? 18.0f
+						: config.ui.defaultFontFamily.faces.front().pixelSize;
+					fonts.addFamilyFace(fallbackFamilyName, fallbackFace);
+					std::fprintf(
+						stderr,
+						"[FlowUi] Warning: loaded fallback font because ui.defaultFontFamily was not usable: %s\n",
+						fallbackPath.string().c_str());
+					defaultFontLoaded = true;
+					break;
 				} catch (const std::exception& e) {
 					std::fprintf(
 						stderr,
@@ -501,6 +510,7 @@ struct App::Impl {
 		frameInputForCurrentFrame = inputQueue.drain(deltaTimeSeconds);
 
 		const float inverseClampedUiScale = 1 / std::max(1.0e-6f, config.ui.uiScale);
+		constexpr float kBaseScrollSensitivity = 20.0f;
 		const VkExtent2D windowExtent = window->windowExtent();
 		const VkExtent2D framebufferExtent = window->framebufferExtent();
 		if (framebufferExtent.width != observedFramebufferExtent.width ||
@@ -520,8 +530,8 @@ struct App::Impl {
 		FrameInput frameInputForLayout = frameInputForCurrentFrame;
 		frameInputForLayout.mouseX *= inverseClampedUiScale;
 		frameInputForLayout.mouseY *= inverseClampedUiScale;
-		frameInputForLayout.scrollX *= inverseClampedUiScale;
-		frameInputForLayout.scrollY *= inverseClampedUiScale;
+		frameInputForLayout.scrollX *= inverseClampedUiScale * kBaseScrollSensitivity;
+		frameInputForLayout.scrollY *= inverseClampedUiScale * kBaseScrollSensitivity;
 		ui.beginFrame(frameSlot, frameInputForLayout, layoutWidth, layoutHeight);
 	}
 
@@ -531,7 +541,7 @@ struct App::Impl {
 			renderCommandsForCurrentFrame,
 			uiToFramebufferScaleX,
 			uiToFramebufferScaleY);
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 		icons.prepareFrameTextures(
 			renderCommandsForCurrentFrame,
 			uiToFramebufferScaleX,
@@ -555,7 +565,7 @@ struct App::Impl {
 			}
 		}
 
-		FrameVk::Frame& frame = frames.getCurrantFrame();
+		FrameVk::Frame& frame = frames.getCurrentFrame();
 		vkCheck(
 			vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
 			"Failed to wait for in-flight fence.");
@@ -693,7 +703,7 @@ struct App::Impl {
 
 		viewPortManager.destroy(vk);
 		imageManager.destroy(vk);
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 		icons.destroy(vk);
 #endif
 		textureRegistry.destroy(vk);
@@ -774,7 +784,7 @@ const ImageManager& App::images() const {
 	return impl_->imageManager;
 }
 
-#if FLOWUI_INCLUDE_SVG_MANAGER
+#if FLOWUI_INCLUDE_ICON_MANAGER
 IconManager& App::icons() {
 	if (!impl_) {
 		throw std::runtime_error("FlowUi::App not initialized.");
@@ -824,6 +834,13 @@ void App::setWindowTitle(std::string_view title) {
 	if (impl_ && impl_->window) {
 		impl_->window->setTitle(title);
 	}
+}
+
+void* App::nativeWindowHandle() const {
+	if (!impl_ || !impl_->window) {
+		return nullptr;
+	}
+	return impl_->window->nativeHandle();
 }
 
 void App::setWindowInputConfig(const WindowInputConfig& config) {
@@ -881,6 +898,9 @@ App makeApplication(const AppConfig& cfg) {
 	App app;
 	app.impl_ = std::make_unique<App::Impl>(cfg);
 	app.impl_->init();
+#if FLOW_UI_DEV_MODE
+	devMode::initializeDevFlowElementResourcesFromApp(app);
+#endif
 	return app;
 }
 
