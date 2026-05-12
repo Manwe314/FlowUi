@@ -18,50 +18,50 @@ struct templateResources {
 	}
 };
 
-using TemplateDefiition = FlowUi::ElementDefinition<
+using TemplateDefinition = FlowUi::ElementDefinition<
 	templateParams,
 	templateState,
 	templateResources,
 	FLOW_DEF_ID("template")>;
 
-inline const TemplateDefiition kTemplate = {
+inline const TemplateDefinition kTemplate = {
 	// onHovered: optional callback when this element was hovered in the previous frame
-	+[](TemplateDefiition::InteractionContext& context) {
+	+[](TemplateDefinition::InteractionContext& context) {
 		(void)context;
 	},
 
 	// onPressed: optional callback when this element was pressed in the previous frame
-	+[](TemplateDefiition::InteractionContext& context) {
+	+[](TemplateDefinition::InteractionContext& context) {
 		(void)context;
 	},
 
 	// onHeld: optional callback when this element was held in the previous frame
-	+[](TemplateDefiition::InteractionContext& context) {
+	+[](TemplateDefinition::InteractionContext& context) {
 		(void)context;
 	},
 
 	// onReleased: optional callback when this element was released in the previous frame
-	+[](TemplateDefiition::InteractionContext& context) {
+	+[](TemplateDefinition::InteractionContext& context) {
 		(void)context;
 	},
 
 	// runLogic: optional per-frame logic callback before build/construct callback
-	+[](TemplateDefiition::InteractionContext& context) {
+	+[](TemplateDefinition::InteractionContext& context) {
 		(void)context;
 		// Example state access:
-		// auto& state = TemplateDefiition::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		// auto& state = TemplateDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
 	},
 
-	// constructElment: optional callback used by .construct() flows
-	+[](TemplateDefiition::BuildContext& context) -> Clay_ElementDeclaration {
+	// constructElement: optional callback used by .construct() flows
+	+[](TemplateDefinition::BuildContext& context) -> Clay_ElementDeclaration {
 		(void)context;
 		// Example resources access:
-		// auto& resources = TemplateDefiition::resources.value();
+		// auto& resources = TemplateDefinition::resources.value();
 		return Clay_ElementDeclaration{};
 	},
 
 	// buildElement: callback used by .draw()
-	+[](TemplateDefiition::BuildContext& context) {
+	+[](TemplateDefinition::BuildContext& context) {
 		(void)context;
 	},
 };
@@ -78,4 +78,4 @@ FLOWUI_DEV_REGISTER_STRUCT(
 // Empty registration is valid when a struct has no editable fields yet.
 FLOWUI_DEV_REGISTER_STRUCT(templateResources);
 
-FLOWUI_DEV_REGISTER_ELEMENT(TemplateDefiition, "Template");
+FLOWUI_DEV_REGISTER_ELEMENT(TemplateDefinition, "Template");

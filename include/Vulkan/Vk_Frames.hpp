@@ -25,7 +25,7 @@ struct FrameVk {
 	void create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t swapImageCount);
 	void destroy(VulkanContext& vk);
 
-	Frame& getCurrantFrame() { return frames[currentFrame]; }
+	Frame& getCurrentFrame() { return frames[currentFrame]; }
 	void advance() { currentFrame = (currentFrame + 1) % (uint32_t)frames.size(); }
 
 	void onSwapchainRecreated(VulkanContext& vk, size_t newSwapImageCount);

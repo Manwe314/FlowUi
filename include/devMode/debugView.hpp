@@ -3,6 +3,9 @@
 #include <cstdint>
 
 #include "FlowUi/BuildConfig.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/devFlowElements.hpp"
+#endif
 
 namespace FlowUi {
 class UiManager;
@@ -11,12 +14,17 @@ class UiManager;
 namespace FlowUi::devMode {
 
 struct DebugViewParams {
-	float leftPanelWidthPx = 300.0f;
-	float footerHeightPx = 34.0f;
+	float defaultMainViewSplitRatio = 0.30f;
+	int defaultMainViewWidthPx = 420;
+	int minMainViewWidthPx = 220;
+	int maxMainViewWidthPx = 1200;
+	int separatorThicknessPx = 6;
 };
 
 struct DebugViewState {
-	uint64_t selectedDefinitionId = 0u;
+	float mainViewSplitRatio = 0.30f;
+	bool splitInitialized = false;
+	int lastRootWidthPx = 0;
 };
 
 struct DebugViewResources {};

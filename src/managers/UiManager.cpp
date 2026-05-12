@@ -132,6 +132,26 @@ namespace FlowUi
 			getClipboardTextAccessor_ = std::move(getClipboardTextAccessor);
 		}
 
+		void UiManager::setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor) {
+			setCursorTypeAccessor_ = std::move(setCursorTypeAccessor);
+		}
+
+		void UiManager::requestCursor(CursorType cursorType, uint8_t priority) {
+			if (priority < cursorPriority_) {
+				return;
+			}
+			cursor_ = cursorType;
+			cursorPriority_ = priority;
+		}
+
+		FontId UiManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
+			return fontManager_ ? fontManager_->resolveFont(familyId, weight, style) : 0;
+		}
+
+		FontId UiManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const {
+			return fontManager_ ? fontManager_->resolveFont(familyName, weight, style) : 0;
+		}
+
 		Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
 			if (!config || !text.chars || text.length <= 0) {
 				return Clay_Dimensions{ 0.0f, 0.0f };
@@ -197,6 +217,8 @@ namespace FlowUi
 		frameInputForCurrentLayout_ = frameInput;
 		inputFieldManager_.beginFrame(frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
 		shortcutManager_.beginFrame(*this, frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
+		cursor_ = CursorType::Arrow;
+		cursorPriority_ = 0;
 
 		Clay_SetCurrentContext(clayContext_);
 
@@ -207,7 +229,7 @@ namespace FlowUi
 			Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
 			frameInput.mouseDown[0]);
 		Clay_UpdateScrollContainers(
-			true,
+			false,
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 			static_cast<float>(frameInput.dt));
 		constructedElementStack_.clear();
@@ -219,11 +241,11 @@ namespace FlowUi
 #if FLOW_UI_DEV_MODE
 		if (devToolsConfig_.enabled && devPanelVisible_) {
 			Clay_ElementDeclaration devRoot{};
-			devRoot.id = toClaySID("_Flow_Dev_root_");
+			const Clay_ElementId devRootId = toClaySID("_Flow_Dev_root_");
 			devRoot.layout.sizing.width = CLAY_SIZING_GROW(0);
 			devRoot.layout.sizing.height = CLAY_SIZING_GROW(0);
 			devRoot.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-			Clay__OpenElement();
+			Clay__OpenElementWithId(devRootId);
 			Clay__ConfigureOpenElement(devRoot);
 			devRootElementOpenThisFrame_ = true;
 		}
@@ -261,7 +283,7 @@ namespace FlowUi
 			devRootElementOpenThisFrame_ = false;
 		}
 #endif
-		Clay_RenderCommandArray renderCommands = Clay_EndLayout();
+		Clay_RenderCommandArray renderCommands = Clay_EndLayout(static_cast<float>(frameInputForCurrentLayout_.dt));
 
 		InteractionSnapshot interactionSnapshot;
 		Clay_ElementIdArray hoveredIds = Clay_GetPointerOverIds();
@@ -282,6 +304,12 @@ namespace FlowUi
 
 		renderCommands = inputFieldManager_.endFrame(renderCommands);
 		setCurrentInteractionSnapshot(std::move(interactionSnapshot));
+		if (cursor_ != previousCursor_) {
+			if (setCursorTypeAccessor_) {
+				setCursorTypeAccessor_(cursor_);
+			}
+			previousCursor_ = cursor_;
+		}
 #if FLOW_UI_DEV_MODE
 		devRuntime_.endFrame();
 #endif
@@ -334,30 +362,35 @@ namespace FlowUi
 
 
 
-	Clay_ElementId flowUiToClayElementId(UiManager& uiManager, std::string_view elementID) {
+namespace detail {
+
+	Clay_ElementId toClayElementId(UiManager& uiManager, std::string_view elementID) {
 		return uiManager.toClayEID(elementID);
 	}
 
-	const InteractionSnapshot& flowUiPreviousInteraction(const UiManager& uiManager) {
+	const InteractionSnapshot& previousInteraction(const UiManager& uiManager) {
 		return uiManager.getPreviousFramesInteraction();
 	}
 
-	void flowUiPushConstructedElement(UiManager& uiManager, Clay_ElementId elementId) {
+	void pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId) {
 		uiManager.pushConstructedElement(elementId);
 	}
 
 #if FLOW_UI_DEV_MODE
-	devMode::DevRuntime& flowUiDevRuntime(UiManager& uiManager) {
-		return uiManager.devRuntime();
-	}
+namespace devModeBridge {
 
-	std::size_t flowUiDevBeginCapturedFlowElement(
+	std::size_t beginCapturedFlowElement(
 		UiManager& uiManager,
 		uint64_t definitionId,
 		uint64_t definitionTypeHash,
 		std::string_view definitionTypeToken,
 		std::string_view elementID,
-		uint64_t flowId) {
+		uint64_t flowId,
+		bool isInternalToDevMode) {
+		if (isInternalToDevMode && uiManager.devToolsConfig().excludeInternalDevElementsFromCapture) {
+			return devMode::DevRuntime::kInvalidCaptureIndex;
+		}
+
 		devMode::DevRuntime& runtime = uiManager.devRuntime();
 		const std::size_t captureIndex = runtime.beginCapturedFlowElement(
 			definitionId,
@@ -365,7 +398,12 @@ namespace FlowUi
 			flowId,
 			elementID,
 			{},
-			definitionTypeToken);
+			definitionTypeToken,
+			isInternalToDevMode);
+
+		if (captureIndex == devMode::DevRuntime::kInvalidCaptureIndex) {
+			return captureIndex;
+		}
 
 		const devMode::DevRegistry& registry = devMode::DevRegistry::instance();
 		const devMode::ElementDescriptor* descriptor = registry.findElementByDefinitionId(definitionId);
@@ -393,9 +431,23 @@ namespace FlowUi
 		return captureIndex;
 	}
 
-	bool flowUiDevEndCapturedFlowElement(UiManager& uiManager) {
+	bool endCapturedFlowElement(UiManager& uiManager) {
 		return uiManager.devRuntime().endCapturedElement();
 	}
+
+} // namespace devModeBridge
+#endif
+
+} // namespace detail
+
+#if FLOW_UI_DEV_MODE
+namespace devMode::elementCapture {
+
+	DevRuntime& runtime(UiManager& uiManager) {
+		return uiManager.devRuntime();
+	}
+
+} // namespace devMode::elementCapture
 #endif
 
 	void UiManager::drawConstructed() {

@@ -6,9 +6,9 @@ option(FLOWUI_INSTALL "Enable install rules" ON)
 option(FLOWUI_BUILD_FONT_BAKER "Build FlowUi offline font baker tool" ON)
 option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generation" OFF)
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
-option(FLOWUI_INCLUDE_SVG_MANAGER "Enable SVG manager support (PlutoSVG)." ON)
+option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
-set(FLOWUI_INCLUDE_SVG_MANAGER "${FLOWUI_INCLUDE_SVG_MANAGER}")
+set(FLOWUI_INCLUDE_ICON_MANAGER "${FLOWUI_INCLUDE_ICON_MANAGER}")
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
 
@@ -19,16 +19,35 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json" FORCE)
 
+# Default single-config generators (Ninja/Unix Makefiles) to optimized builds.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+endif()
+
+# Ensure release configurations use -O3 on GCC/Clang-like toolchains.
+if(NOT MSVC)
+    string(FIND " ${CMAKE_CXX_FLAGS_RELEASE} " " -O3 " FLOWUI_HAS_O3_RELEASE)
+    if(FLOWUI_HAS_O3_RELEASE EQUAL -1)
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+    endif()
+
+    string(FIND " ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} " " -O3 " FLOWUI_HAS_O3_RELWITHDEBINFO)
+    if(FLOWUI_HAS_O3_RELWITHDEBINFO EQUAL -1)
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3")
+    endif()
+endif()
+
 if(FLOWUI_PUBLIC_VULKAN_INTEROP)
     set(FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE 1)
 else()
     set(FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE 0)
 endif()
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
-    set(FLOWUI_INCLUDE_SVG_MANAGER_VALUE 1)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    set(FLOWUI_INCLUDE_ICON_MANAGER_VALUE 1)
 else()
-    set(FLOWUI_INCLUDE_SVG_MANAGER_VALUE 0)
+    set(FLOWUI_INCLUDE_ICON_MANAGER_VALUE 0)
 endif()
 
 if(FLOW_UI_DEV_MODE)
@@ -106,7 +125,7 @@ endif()
 add_library(flowui_artery INTERFACE)
 add_library(FlowUi::artery ALIAS flowui_artery)
 set_target_properties(flowui_artery PROPERTIES EXPORT_NAME artery)
-target_include_directories(flowui_artery INTERFACE
+target_include_directories(flowui_artery SYSTEM INTERFACE
     $<BUILD_INTERFACE:${FLOWUI_ARTERY_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/external/artery-font-format>
 )
@@ -123,7 +142,7 @@ if(FLOWUI_NEED_MSDF_ATLAS_GEN)
     add_subdirectory(external/msdf-atlas-gen)
 endif()
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/plutosvg/CMakeLists.txt")
         message(FATAL_ERROR "Could not find external/plutosvg (did you init submodules with --recursive?)")
     endif()
@@ -189,6 +208,7 @@ target_sources(flowui
         src/managers/FlowUiElementSystem.cpp
         src/managers/UiManager.cpp
         src/devMode/debugView.cpp
+        src/devMode/devJson.cpp
         src/devMode/devRuntime.cpp
         src/Ui/Vk_UiRenderer.cpp
         src/window/Inputs.cpp
@@ -200,10 +220,16 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/elementDevCapture.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/debugView.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devJson.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/FlowUiElementSystem.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FlowUiElementStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/systems/FlowUiElementBuilder.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/IWindow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Inputs.hpp>
@@ -212,19 +238,22 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Swapchain.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Ui/Vk_UiRenderer.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/clay.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/vk_mem_alloc.h>
 )
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
-    target_sources(flowui PRIVATE src/managers/SvgManager.cpp)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    target_sources(flowui PRIVATE src/managers/IconManager.cpp)
 endif()
 
 target_include_directories(flowui
     PUBLIC
         $<BUILD_INTERFACE:${FLOWUI_GENERATED_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_include_directories(flowui
+    SYSTEM PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/external>
 )
 
@@ -235,7 +264,7 @@ target_link_libraries(flowui
         FlowUi::artery
 )
 
-if(FLOWUI_INCLUDE_SVG_MANAGER)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
     target_link_libraries(flowui PRIVATE plutosvg::plutosvg)
 endif()
 
@@ -247,7 +276,7 @@ endif()
 target_compile_definitions(flowui
     PUBLIC
         FLOWUI_PUBLIC_VULKAN_INTEROP=${FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE}
-        FLOWUI_INCLUDE_SVG_MANAGER=${FLOWUI_INCLUDE_SVG_MANAGER_VALUE}
+        FLOWUI_INCLUDE_ICON_MANAGER=${FLOWUI_INCLUDE_ICON_MANAGER_VALUE}
     PRIVATE
         FLOWUI_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         FLOWUI_SHADER_OUTPUT_DIR="${FLOWUI_SHADER_OUTPUT_DIR}"
