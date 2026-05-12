@@ -139,6 +139,9 @@ if(FLOWUI_BUILD_FONT_BAKER)
     target_compile_features(flowui_font_baker PRIVATE cxx_std_23)
 endif()
 
+add_executable(flowui_example example.cpp)
+target_compile_features(flowui_example PRIVATE cxx_std_23)
+
 if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
    (FLOWUI_GLFW_PROVIDER STREQUAL "auto" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/CMakeLists.txt"))
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -258,6 +261,8 @@ function(flowui_link target)
     endif()
     target_link_libraries(${target} PRIVATE FlowUi::FlowUi)
 endfunction()
+
+flowui_link(flowui_example)
 
 if(FLOWUI_INSTALL)
     include(CMakePackageConfigHelpers)
