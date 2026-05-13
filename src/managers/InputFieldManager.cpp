@@ -1221,7 +1221,7 @@ float InputFieldManager::measureTextSlice(const Clay_StringSlice& text, const Cl
 		return 0.0f;
 	}
 
-	const FontManager::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, textData.fontId);
+	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, textData.fontId);
 	if (!fontFace) {
 		const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, textData.fontSize)) * pointsToPixelsScale_;
 		return static_cast<float>(text.length) * fallbackEmPixels * 0.5f;

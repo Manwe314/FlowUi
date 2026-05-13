@@ -2,10 +2,11 @@
 
 #include "FlowUi/App.hpp"
 #include "managers/FontManager.hpp"
-#include "managers/FlowUiElementSystem.hpp"
 #include "managers/ImageManager.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
+#include "managers/structs/FlowUiElementStructs.hpp"
+#include "managers/systems/FlowUiElementBuilder.hpp"
 #if FLOWUI_INCLUDE_ICON_MANAGER
 #include "managers/IconManager.hpp"
 #endif

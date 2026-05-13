@@ -40,17 +40,142 @@ struct IUiTextureRegistry;
  * @{
  */
 
-/** @brief Registers SVG icons and resolves them to atlas-backed texture references. */
+/**
+ * @brief Registers SVG icons and resolves them to atlas-backed texture references.
+ *
+ * IconManager is available only when FlowUi is built with
+ * FLOWUI_INCLUDE_ICON_MANAGER enabled. When enabled, it stores parsed SVG
+ * documents by application-defined keys and returns TextureRef request handles
+ * that FlowUi resolves into cached atlas variants at the size required by the
+ * current frame.
+ *
+ * @code{.cpp}
+ * FlowUi::IconManager& icons = app.icons();
+ * (void)icons.registerFromFile("toolbar/save", "assets/icons/save.svg");
+ *
+ * FlowUi::TextureRef saveIcon = icons.textureRef("toolbar/save");
+ * saveIcon.fitMode = FlowUi::TextureFitMode::Contain;
+ * @endcode
+ */
 struct IconManager {
-	/** @brief Register an SVG document from source text. */
+	/**
+	 * @brief Register an SVG document from source text.
+	 *
+	 * The key is the stable string name used later with contains(),
+	 * remove(), and textureRef(). The SVG source is parsed immediately; raster
+	 * variants are created lazily when the icon is rendered.
+	 *
+	 * @param key string icon key.
+	 * @param svgSource Complete SVG document source text.
+	 * @retval true The SVG was parsed and registered under key.
+	 * @retval false key was already registered and the existing icon was left
+	 * unchanged.
+	 *
+	 * @throws std::runtime_error if IconManager is not initialized, key is empty,
+	 * svgSource is empty, svgSource is too large, or the SVG cannot be parsed.
+	 *
+	 * @code{.cpp}
+	 * constexpr std::string_view kCheckSvg = R"(
+	 * <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+	 *     <path d="M6.2 11.3 2.9 8l1.2-1.2 2.1 2.1 5.7-5.7L13.1 4z"/>
+	 * </svg>
+	 * )";
+	 *
+	 * const bool inserted = app.icons().registerSvg("status/check", kCheckSvg);
+	 * (void)inserted;
+	 * @endcode
+	 */
 	bool registerSvg(std::string_view key, std::string_view svgSource);
-	/** @brief Register an SVG document from a file path. */
+
+	/**
+	 * @brief Register an SVG document from a file path.
+	 *
+	 * The key is the stable string name used later with contains(),
+	 * remove(), and textureRef(). The file is parsed immediately; raster variants
+	 * are created lazily when the icon is rendered.
+	 *
+	 * @param key string icon key.
+	 * @param filePath Path to an SVG file on disk.
+	 * @retval true The SVG file was parsed and registered under key.
+	 * @retval false key was already registered and the existing icon was left
+	 * unchanged.
+	 *
+	 * @throws std::runtime_error if IconManager is not initialized, key is empty,
+	 * filePath does not refer to a regular file, or the SVG cannot be parsed.
+	 *
+	 * @code{.cpp}
+	 * const bool inserted = app.icons().registerFromFile(
+	 *     "toolbar/open",
+	 *     "assets/icons/open.svg");
+	 * (void)inserted;
+	 * @endcode
+	 */
 	bool registerFromFile(std::string_view key, std::string_view filePath);
-	/** @brief Remove a registered SVG document by key. */
+
+	/**
+	 * @brief Remove a registered SVG document by key.
+	 *
+	 * Removing an icon also removes its request texture id and cached atlas
+	 * variants. TextureRef values previously returned for the key should be
+	 * treated as invalid after removal.
+	 *
+	 * @param key Application-defined icon key to remove.
+	 * @retval true A registered SVG existed and was removed.
+	 * @retval false No SVG was registered for key.
+	 *
+	 * @throws std::runtime_error if IconManager is not initialized.
+	 *
+	 * @code{.cpp}
+	 * if (app.icons().remove("toolbar/open")) {
+	 *     // The icon can be registered again under the same key.
+	 * }
+	 * @endcode
+	 */
 	bool remove(std::string_view key);
-	/** @brief Return true if an SVG key is registered. */
+
+	/**
+	 * @brief Return whether an SVG key is registered.
+	 *
+	 * This is a non-throwing lookup in the currently registered SVG document
+	 * table. It does not force rasterization or atlas allocation.
+	 *
+	 * @param key Application-defined icon key to test.
+	 * @retval true key is registered.
+	 * @retval false key is not registered.
+	 *
+	 * @code{.cpp}
+	 * if (!app.icons().contains("toolbar/save")) {
+	 *     (void)app.icons().registerFromFile("toolbar/save", "assets/icons/save.svg");
+	 * }
+	 * @endcode
+	 */
 	bool contains(std::string_view key) const;
-	/** @brief Return a texture request reference for a registered icon key. */
+
+	/**
+	 * @brief Return a texture request reference for a registered icon key.
+	 *
+	 * The returned TextureRef is a request handle, not necessarily the final atlas
+	 * variant. During frame preparation, FlowUi inspects image commands using this
+	 * id, rasterizes the SVG at the requested draw size, caches it in an atlas
+	 * page, and rewrites the command to the cached atlas region.
+	 *
+	 * Application code may adjust TextureRef fields such as fitMode and
+	 * tintEnabled before passing it to image drawing code. Manager-owned id and
+	 * UV fields should be left unchanged.
+	 *
+	 * @param key Registered application-defined icon key.
+	 * @return TextureRef request handle for the icon.
+	 *
+	 * @throws std::runtime_error if IconManager is not initialized, the texture
+	 * registry is not installed, atlas pages are unavailable, key is empty, or key
+	 * is not registered.
+	 *
+	 * @code{.cpp}
+	 * FlowUi::TextureRef deleteIcon = app.icons().textureRef("toolbar/delete");
+	 * deleteIcon.fitMode = FlowUi::TextureFitMode::Contain;
+	 * deleteIcon.tintEnabled = true;
+	 * @endcode
+	 */
 	TextureRef textureRef(std::string_view key);
 
 private:
@@ -221,30 +346,96 @@ struct IUiTextureRegistry;
  * @{
  */
 
-/** @brief Stub IconManager used when FlowUi is built with icon support disabled. */
+/**
+ * @brief Stub IconManager used when FlowUi is built with icon support disabled.
+ *
+ * This struct preserves the public type when FLOWUI_INCLUDE_ICON_MANAGER is
+ * disabled. Public calls throw std::runtime_error so code paths that require
+ * icon support fail explicitly.
+ */
 struct IconManager {
-	/** @brief Throws because icon support is disabled. */
-	bool registerSvg(std::string_view, std::string_view) {
+	/**
+	 * @brief Throws because icon support is disabled.
+	 *
+	 * @param key Unused icon key.
+	 * @param svgSource Unused SVG source.
+	 * @throws std::runtime_error always.
+	 *
+	 * @code{.cpp}
+	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
+	 * (void)app.icons().registerSvg("status/check", svgSource);
+	 * @endcode
+	 */
+	bool registerSvg(std::string_view key, std::string_view svgSource) {
+		(void)key;
+		(void)svgSource;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
-	/** @brief Throws because icon support is disabled. */
-	bool registerFromFile(std::string_view, std::string_view) {
+	/**
+	 * @brief Throws because icon support is disabled.
+	 *
+	 * @param key Unused icon key.
+	 * @param filePath Unused SVG file path.
+	 * @throws std::runtime_error always.
+	 *
+	 * @code{.cpp}
+	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
+	 * (void)app.icons().registerFromFile("toolbar/open", "assets/icons/open.svg");
+	 * @endcode
+	 */
+	bool registerFromFile(std::string_view key, std::string_view filePath) {
+		(void)key;
+		(void)filePath;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
-	/** @brief Throws because icon support is disabled. */
-	bool remove(std::string_view) {
+	/**
+	 * @brief Throws because icon support is disabled.
+	 *
+	 * @param key Unused icon key.
+	 * @throws std::runtime_error always.
+	 *
+	 * @code{.cpp}
+	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
+	 * (void)app.icons().remove("toolbar/open");
+	 * @endcode
+	 */
+	bool remove(std::string_view key) {
+		(void)key;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
-	/** @brief Throws because icon support is disabled. */
-	bool contains(std::string_view) const {
+	/**
+	 * @brief Throws because icon support is disabled.
+	 *
+	 * @param key Unused icon key.
+	 * @throws std::runtime_error always.
+	 *
+	 * @code{.cpp}
+	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
+	 * const bool hasIcon = app.icons().contains("toolbar/open");
+	 * (void)hasIcon;
+	 * @endcode
+	 */
+	bool contains(std::string_view key) const {
+		(void)key;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
-	/** @brief Throws because icon support is disabled. */
-	TextureRef textureRef(std::string_view) {
+	/**
+	 * @brief Throws because icon support is disabled.
+	 *
+	 * @param key Unused icon key.
+	 * @throws std::runtime_error always.
+	 *
+	 * @code{.cpp}
+	 * // Requires FLOWUI_INCLUDE_ICON_MANAGER enabled.
+	 * FlowUi::TextureRef icon = app.icons().textureRef("toolbar/open");
+	 * @endcode
+	 */
+	TextureRef textureRef(std::string_view key) {
+		(void)key;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 

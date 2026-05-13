@@ -10,9 +10,9 @@
 
 #include <vulkan/vulkan.h>
 
+#include "FlowUi/FontResources.hpp"
 #include "FlowUi/PublicStructs.hpp"
 
-struct VmaAllocation_T;
 struct VulkanContext;
 
 namespace FlowUi {
@@ -23,7 +23,37 @@ class App;
  * @{
  */
 
-/** @brief Loads baked fonts and owns the font atlas used by text rendering. */
+/**
+ * @brief Loads font faces and owns the atlas used by FlowUi text rendering.
+ *
+ * FontManager registers concrete font faces, groups them into logical font
+ * families, and resolves a requested family/weight/style into the concrete
+ * FontId consumed by Clay text configuration. Applications normally access it
+ * through App::fonts() after App initialization.
+ *
+ * Loaded faces are uploaded into a Vulkan 2D array atlas. Each face occupies one
+ * array layer, so the atlas can grow by allocating more layers without changing
+ * the page width or height configured by UiConfig::fontAtlasSize.
+ *
+ * @code{.cpp}
+ * FlowUi::App app(config);
+ *
+ * const FlowUi::FontFamilyId bodyFamily = app.fonts().createFamily({
+ *     .name = "Body",
+ *     .faces = {
+ *         FlowUi::FontFaceCreateInfo{
+ *             .path = "assets/fonts/Inter-Regular.arfont",
+ *             .pixelSize = 18.0f,
+ *             .weight = 400,
+ *             .style = FlowUi::FontStyle::Normal,
+ *         },
+ *     },
+ * });
+ *
+ * const FlowUi::FontId bodyFont =
+ *     app.fonts().resolveFont(bodyFamily, 400, FlowUi::FontStyle::Normal);
+ * @endcode
+ */
 struct FontManager {
 	using FontId = FlowUi::FontId;
 	using FontFamilyId = FlowUi::FontFamilyId;
@@ -31,166 +61,242 @@ struct FontManager {
 	using FontFaceCreateInfo = FlowUi::FontFaceCreateInfo;
 	using FontFamilyCreateInfo = FlowUi::FontFamilyCreateInfo;
 
-	/** @brief Initial number of font atlas array layers. */
+	/**
+	 * @brief Number of font atlas array layers allocated for the first atlas image.
+	 *
+	 * A layer is one square atlas page of UiConfig::fontAtlasSize by
+	 * UiConfig::fontAtlasSize pixels. Because each loaded face is uploaded into
+	 * one layer, this value is the number of faces the initial atlas allocation
+	 * can hold before storage has to grow.
+	 */
 	static constexpr uint32_t kInitialAtlasLayerCapacity = 32;
-	/** @brief Number of atlas layers added when the atlas grows. */
+
+	/**
+	 * @brief Number of atlas array layers added when the font atlas grows.
+	 *
+	 * When registered faces exceed the current capacity, FontManager creates a
+	 * larger atlas image and copies the already-uploaded layers into it. Capacity
+	 * grows in fixed steps of this many layers to avoid reallocating for every
+	 * additional face.
+	 */
 	static constexpr uint32_t kAtlasLayerGrowthStep = 32;
 
-	/** @brief Baked glyph metrics and atlas coordinates. */
-	struct GlyphData {
-		/** @brief Unicode codepoint represented by the glyph. */
-		uint32_t codepoint = 0;
-		/** @brief Source atlas image index. */
-		uint32_t sourceImageIndex = 0;
-		/** @brief Brief goes here. */
-		float planeLeft = 0.0f;
-		/** @brief Brief goes here. */
-		float planeBottom = 0.0f;
-		/** @brief Brief goes here. */
-		float planeRight = 0.0f;
-		/** @brief Brief goes here. */
-		float planeTop = 0.0f;
-		/** @brief Brief goes here. */
-		float imageLeft = 0.0f;
-		/** @brief Brief goes here. */
-		float imageBottom = 0.0f;
-		/** @brief Brief goes here. */
-		float imageRight = 0.0f;
-		/** @brief Brief goes here. */
-		float imageTop = 0.0f;
-		/** @brief Horizontal glyph advance. */
-		float advanceX = 0.0f;
-		/** @brief Vertical glyph advance. */
-		float advanceY = 0.0f;
-	};
-
-	/** @brief One baked variant of a font face. */
-	struct FontVariantData {
-		/** @brief Brief goes here. */
-		uint32_t flags = 0;
-		/** @brief Font weight. */
-		uint32_t weight = 0;
-		/** @brief Glyph index used as fallback. */
-		uint32_t fallbackGlyphIndex = 0;
-		/** @brief Baked font size in pixels. */
-		float fontSizePx = 0.0f;
-		/** @brief MSDF distance range. */
-		float distanceRange = 0.0f;
-		/** @brief EM size from font metadata. */
-		float emSize = 0.0f;
-		/** @brief Font ascender metric. */
-		float ascender = 0.0f;
-		/** @brief Font descender metric. */
-		float descender = 0.0f;
-		/** @brief Font line height metric. */
-		float lineHeight = 0.0f;
-		/** @brief Underline Y metric. */
-		float underlineY = 0.0f;
-		/** @brief Underline thickness metric. */
-		float underlineThickness = 0.0f;
-		/** @brief MSDF distance range midpoint. */
-		float distanceRangeMiddle = 0.0f;
-		/** @brief Variant name. */
-		std::string name;
-		/** @brief Raw metadata associated with the variant. */
-		std::string metadata;
-		/** @brief Glyph table. */
-		std::vector<GlyphData> glyphs;
-		/** @brief Unicode codepoint to glyph index lookup. */
-		std::unordered_map<uint32_t, uint32_t> unicodeToGlyphIndex;
-		/** @brief Kerning pair lookup table. */
-		std::unordered_map<uint64_t, float> kerningPairs;
-
-		/** @brief Pack two codepoints into the kerning lookup key. */
-		static uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint) {
-			return (static_cast<uint64_t>(leftCodepoint) << 32u) | static_cast<uint64_t>(rightCodepoint);
-		}
-
-		/** @brief Return kerning advance for a codepoint pair. */
-		float kerningAdvance(uint32_t leftCodepoint, uint32_t rightCodepoint) const {
-			const auto it = kerningPairs.find(kerningKey(leftCodepoint, rightCodepoint));
-			return (it != kerningPairs.end()) ? it->second : 0.0f;
-		}
-	};
-
-	/** @brief Loaded font face and its baked variants. */
-	struct FontFaceData {
-		/** @brief FlowUi font id. */
-		FontId id = 0;
-		/** @brief Font face name. */
-		std::string name;
-		/** @brief Source file path. */
-		std::filesystem::path sourcePath;
-		/** @brief Atlas layer used by this font face. */
-		uint32_t atlasLayer = 0;
-		/** @brief Atlas width in pixels. */
-		uint32_t atlasWidth = 0;
-		/** @brief Atlas height in pixels. */
-		uint32_t atlasHeight = 0;
-		/** @brief X offset where this face's source atlas was placed inside the atlas page. */
-		uint32_t sourceAtlasX = 0;
-		/** @brief Y offset where this face's source atlas was placed inside the atlas page. */
-		uint32_t sourceAtlasY = 0;
-		/** @brief Source atlas width before placement into the atlas page. */
-		uint32_t sourceAtlasWidth = 0;
-		/** @brief Source atlas height before placement into the atlas page. */
-		uint32_t sourceAtlasHeight = 0;
-		/** @brief Brief goes here. */
-		uint32_t imageType = 0;
-		/** @brief Raw metadata associated with the face. */
-		std::string metadata;
-		/** @brief Default variant index. */
-		uint32_t defaultVariantIndex = 0;
-		/** @brief Baked variants for this face. */
-		std::vector<FontVariantData> variants;
-
-		/** @brief Return the default variant, or nullptr if unavailable. */
-		const FontVariantData* defaultVariant() const {
-			if (variants.empty() || defaultVariantIndex >= variants.size()) {
-				return nullptr;
-			}
-			return &variants[defaultVariantIndex];
-		}
-	};
-
-	/** @brief Vulkan resources for the font atlas array. */
-	struct AtlasArrayResource {
-		/** @brief Vulkan image handle. */
-		VkImage image = VK_NULL_HANDLE;
-		/** @brief VMA allocation handle. */
-		VmaAllocation_T* allocation = nullptr;
-		/** @brief Vulkan image view handle. */
-		VkImageView view = VK_NULL_HANDLE;
-		/** @brief Vulkan sampler handle. */
-		VkSampler sampler = VK_NULL_HANDLE;
-		/** @brief Atlas width in pixels. */
-		uint32_t width = 0;
-		/** @brief Atlas height in pixels. */
-		uint32_t height = 0;
-		/** @brief Number of atlas layers currently used. */
-		uint32_t layersUsed = 0;
-		/** @brief Number of atlas layers currently allocated. */
-		uint32_t layersCapacity = 0;
-		/** @brief Revision incremented when atlas binding data changes. */
-		uint32_t bindingRevision = 0;
-	};
-
-	/** @brief Create a logical font family and register its initial faces. */
+	/**
+	 * @brief Create a logical font family and register its initial faces.
+	 *
+	 * The family name is used for string-based lookup and each face is loaded
+	 * immediately. If createInfo.name is empty, the family is named "Default".
+	 * Family ids are stable until FontManager is destroyed.
+	 *
+	 * Face paths ending in .arfont load baked font assets. Paths to .ttf files
+	 * only work when FlowUi is built with runtime font baking enabled.
+	 *
+	 * @param createInfo Family name and initial concrete faces to load.
+	 * @return Id of the newly created font family.
+	 *
+	 * @throws std::runtime_error if the family name already exists or any face
+	 * cannot be loaded.
+	 * 
+	 * @note For now Font Family with the name "Default" will be created at init time so its best not to keep createInfo.name empty
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::FontFamilyId titleFamily = app.fonts().createFamily({
+	 *     .name = "Title",
+	 *     .faces = {
+	 *         FlowUi::FontFaceCreateInfo{
+	 *             .path = "assets/fonts/Inter-Bold.arfont",
+	 *             .pixelSize = 24.0f,
+	 *             .weight = 700,
+	 *             .style = FlowUi::FontStyle::Normal,
+	 *         },
+	 *     },
+	 * });
+	 * @endcode
+	 */
 	FontFamilyId createFamily(const FontFamilyCreateInfo& createInfo);
-	/** @brief Return a family id by name, or UINT32_MAX if not found. */
+
+	/**
+	 * @brief Return a family id by name.
+	 *
+	 * This is a non-throwing lookup for code that wants to cache the id returned
+	 * by a previously registered family. Missing families return
+	 * std::numeric_limits<FontFamilyId>::max().
+	 *
+	 * @param familyName Logical family name passed to createFamily().
+	 * @return Matching family id, or UINT32_MAX when no family has that name.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId("Body");
+	 * if (bodyFamily != std::numeric_limits<FlowUi::FontFamilyId>::max()) {
+	 *     const FlowUi::FontId bodyFont = app.fonts().resolveFont(bodyFamily);
+	 *     (void)bodyFont;
+	 * }
+	 * @endcode
+	 */
 	FontFamilyId getFamilyId(std::string_view familyName) const;
-	/** @brief Add a concrete face to an existing family. */
+
+	/**
+	 * @brief Add a concrete face to an existing family.
+	 *
+	 * The face is loaded immediately and becomes available to resolveFont() for
+	 * the provided weight and style. Use this overload when the caller already
+	 * cached a FontFamilyId.
+	 *
+	 * Paths ending in .arfont load baked font assets. Paths to .ttf files only
+	 * work when FlowUi is built with runtime font baking enabled.
+	 *
+	 * @param familyId Existing logical family id.
+	 * @param createInfo Concrete face source path, pixel size, weight, style,
+	 * and optional name.
+	 * @return FontId of the newly loaded concrete face.
+	 *
+	 * @throws std::runtime_error if familyId does not exist or the face cannot be
+	 * loaded.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId("Body");
+	 * const FlowUi::FontId italicFont = app.fonts().addFamilyFace(
+	 *     bodyFamily,
+	 *     FlowUi::FontFaceCreateInfo{
+	 *         .path = "assets/fonts/Inter-Italic.arfont",
+	 *         .pixelSize = 18.0f,
+	 *         .weight = 400,
+	 *         .style = FlowUi::FontStyle::Italic,
+	 *     });
+	 * @endcode
+	 */
 	FontId addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo);
-	/** @brief Add a concrete face to a named family. */
+
+	/**
+	 * @brief Add a concrete face to a named family.
+	 *
+	 * The face is loaded immediately and becomes available to resolveFont() for
+	 * the provided weight and style. Use this overload when the caller wants the
+	 * manager to look up the family by name.
+	 *
+	 * Paths ending in .arfont load baked font assets. Paths to .ttf files only
+	 * work when FlowUi is built with runtime font baking enabled.
+	 *
+	 * @param familyName Existing logical family name.
+	 * @param createInfo Concrete face source path, pixel size, weight, style,
+	 * and optional name.
+	 * @return FontId of the newly loaded concrete face.
+	 *
+	 * @throws std::runtime_error if familyName does not exist or the face cannot
+	 * be loaded.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::FontId boldFont = app.fonts().addFamilyFace(
+	 *     "Body",
+	 *     FlowUi::FontFaceCreateInfo{
+	 *         .path = "assets/fonts/Inter-Bold.arfont",
+	 *         .pixelSize = 18.0f,
+	 *         .weight = 700,
+	 *         .style = FlowUi::FontStyle::Normal,
+	 *     });
+	 * @endcode
+	 */
 	FontId addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo);
-	/** @brief Resolve a concrete Clay font id for a family/style request. */
+
+	/**
+	 * @brief Resolve a concrete Clay font id for a family, weight, and style.
+	 *
+	 * Resolution first considers faces with the requested style, then chooses the
+	 * face whose CSS-style weight is closest to weight. If the family has no
+	 * matching style, the first registered face in the family is returned as a
+	 * fallback.
+	 *
+	 * @see docs/font-resolution.md for the planned detailed fallthrough
+	 * resolution rules.
+	 *
+	 * @param familyId Existing logical family id.
+	 * @param weight Requested CSS-style font weight, such as 400 or 700.
+	 * @param style Requested normal or italic style.
+	 * @return Concrete FontId for Clay text, or 0 if the family is invalid or
+	 * empty.
+	 *
+	 * @code{.cpp}
+	 * Clay_TextElementConfig titleText{};
+	 * titleText.fontId = app.fonts().resolveFont(
+	 *     titleFamily,
+	 *     700,
+	 *     FlowUi::FontStyle::Normal);
+	 * @endcode
+	 */
 	FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
-	/** @brief Resolve a concrete Clay font id for a named family/style request. */
+
+	/**
+	 * @brief Resolve a concrete Clay font id for a named family, weight, and style.
+	 *
+	 * Resolution first looks up familyName, then considers faces with the
+	 * requested style and chooses the face whose CSS-style weight is closest to
+	 * weight. If the family has no matching style, the first registered face in
+	 * the family is returned as a fallback.
+	 *
+	 * @see docs/font-resolution.md for the planned detailed fallthrough
+	 * resolution rules.
+	 *
+	 * @param familyName Existing logical family name.
+	 * @param weight Requested CSS-style font weight, such as 400 or 700.
+	 * @param style Requested normal or italic style.
+	 * @return Concrete FontId for Clay text, or 0 if the family is missing or
+	 * empty.
+	 *
+	 * @code{.cpp}
+	 * Clay_TextElementConfig labelText{};
+	 * labelText.fontId = app.fonts().resolveFont(
+	 *     "Body",
+	 *     400,
+	 *     FlowUi::FontStyle::Normal);
+	 * @endcode
+	 */
 	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
-	/** @brief Return font data by concrete id for FlowUi layout/render internals. */
-	const FontFaceData* getFontById(FontId fontId) const;
-	/** @brief Return the active font atlas Vulkan resource. */
-	const AtlasArrayResource& getAtlasResource() const { return atlas_; }
+
+	/**
+	 * @brief Return loaded font data by concrete font id.
+	 *
+	 * This exposes the baked metrics, glyph table, kerning table, and atlas
+	 * placement for renderer or layout integrations that need direct access to
+	 * a registered face. Normal UI code usually only needs resolveFont().
+	 *
+	 * @param fontId Concrete id returned by createFamily(), addFamilyFace(), or
+	 * resolveFont().
+	 * @return Pointer to loaded face data, or nullptr if fontId is unknown.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::FontId bodyFont = app.fonts().resolveFont("Body");
+	 * if (const FlowUi::Font::FontFaceData* face = app.fonts().getFontById(bodyFont)) {
+	 *     const FlowUi::Font::FontVariantData* variant = face->defaultVariant();
+	 *     const uint32_t atlasLayer = face->atlasLayer;
+	 *     (void)variant;
+	 *     (void)atlasLayer;
+	 * }
+	 * @endcode
+	 */
+	const FlowUi::Font::FontFaceData* getFontById(FontId fontId) const;
+
+	/**
+	 * @brief Return the active Vulkan font atlas array resource.
+	 *
+	 * Render integrations use this to bind the atlas image view and sampler. The
+	 * returned reference is owned by FontManager and remains valid until the font
+	 * manager is destroyed or reinitialized. Check bindingRevision to know when a
+	 * descriptor using the atlas should be refreshed.
+	 *
+	 * @return Font atlas image, allocation, image view, sampler, dimensions,
+	 * layer counts, and binding revision.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::Font::AtlasArrayResource& atlas = app.fonts().getAtlasResource();
+	 * if (atlas.view != VK_NULL_HANDLE && atlas.sampler != VK_NULL_HANDLE) {
+	 *     VkDescriptorImageInfo imageInfo{};
+	 *     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	 *     imageInfo.imageView = atlas.view;
+	 *     imageInfo.sampler = atlas.sampler;
+	 * }
+	 * @endcode
+	 */
+	const FlowUi::Font::AtlasArrayResource& getAtlasResource() const { return atlas_; }
 
 private:
 	friend class FlowUi::App;
@@ -216,13 +322,13 @@ private:
 	FontId registerRuntimeFont(const FontFaceCreateInfo& createInfo);
 
 	VulkanContext* vk_ = nullptr;
-	AtlasArrayResource atlas_{};
+	FlowUi::Font::AtlasArrayResource atlas_{};
 	VkCommandPool uploadCommandPool_ = VK_NULL_HANDLE;
 	uint32_t atlasSizeHint_ = 0;
 	FontId nextFontId_ = 0;
 	std::vector<FontFamilyData> families_;
 	std::unordered_map<std::string, FontFamilyId> familyIdByName_;
-	std::vector<FontFaceData> fonts_;
+	std::vector<FlowUi::Font::FontFaceData> fonts_;
 	std::unordered_map<FontId, size_t> fontIndexById_;
 	std::unordered_map<std::string, FontId> fontIdByName_;
 };

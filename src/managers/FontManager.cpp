@@ -22,6 +22,8 @@
 #include "stb_image.h"
 #include "internal/Vma.hpp"
 
+namespace Font = FlowUi::Font;
+
 namespace {
 
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
@@ -157,7 +159,7 @@ void cmdTransitionImageLayout(
 		&barrier);
 }
 
-void destroyAtlasImageStorage(VulkanContext& vk, FontManager::AtlasArrayResource& atlas) {
+void destroyAtlasImageStorage(VulkanContext& vk, Font::AtlasArrayResource& atlas) {
 	if (atlas.view != VK_NULL_HANDLE) {
 		vkDestroyImageView(vk.device, atlas.view, nullptr);
 		atlas.view = VK_NULL_HANDLE;
@@ -248,7 +250,7 @@ void transitionImageToShaderRead(VulkanContext& vk, VkCommandPool commandPool, V
 void growAtlasStorage(
 	VulkanContext& vk,
 	VkCommandPool commandPool,
-	FontManager::AtlasArrayResource& atlas,
+	Font::AtlasArrayResource& atlas,
 	uint32_t newCapacity) {
 	VkImage newImage = VK_NULL_HANDLE;
 	VmaAllocation newAllocation = nullptr;
@@ -343,7 +345,7 @@ void growAtlasStorage(
 void ensureAtlasStorageCapacity(
 	VulkanContext& vk,
 	VkCommandPool commandPool,
-	FontManager::AtlasArrayResource& atlas,
+	Font::AtlasArrayResource& atlas,
 	uint32_t width,
 	uint32_t height,
 	uint32_t requiredLayers) {
@@ -428,7 +430,7 @@ void destroyStagingBuffer(VulkanContext& vk, StagingBuffer& staging) {
 void uploadLayerPixels(
 	VulkanContext& vk,
 	VkCommandPool commandPool,
-	FontManager::AtlasArrayResource& atlas,
+	Font::AtlasArrayResource& atlas,
 	uint32_t layer,
 	const std::vector<uint8_t>& rgbaPixels) {
 	const size_t expectedBytes = static_cast<size_t>(atlas.width) * static_cast<size_t>(atlas.height) * 4u;
@@ -944,7 +946,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	uploadLayerPixels(vk, uploadCommandPool_, atlas_, assignedLayer, pagePixels);
 	atlas_.layersUsed += 1u;
 
-	FontFaceData fontFace{};
+	Font::FontFaceData fontFace{};
 	if (nextFontId_ == std::numeric_limits<FontId>::max()) {
 		throw std::runtime_error("FlowUi font id limit exceeded.");
 	}
@@ -961,7 +963,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	fontFace.metadata = "runtime-msdf";
 	fontFace.defaultVariantIndex = 0;
 
-	FontVariantData variant{};
+	Font::FontVariantData variant{};
 	variant.weight = createInfo.weight;
 	variant.fontSizePx = static_cast<float>(packer.getScale());
 	const msdfgen::Range finalPxRange = packer.getPixelRange();
@@ -992,7 +994,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		double imageTop = 0.0;
 		glyphGeometry.getQuadAtlasBounds(imageLeft, imageBottom, imageRight, imageTop);
 
-		GlyphData glyph{};
+		Font::GlyphData glyph{};
 		glyph.codepoint = glyphGeometry.getCodepoint();
 		glyph.sourceImageIndex = 0;
 		glyph.planeLeft = static_cast<float>(planeLeft);
@@ -1019,7 +1021,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		if (!leftGlyph || !rightGlyph || leftGlyph->getCodepoint() == 0 || rightGlyph->getCodepoint() == 0) {
 			continue;
 		}
-		const uint64_t key = FontVariantData::kerningKey(leftGlyph->getCodepoint(), rightGlyph->getCodepoint());
+		const uint64_t key = Font::FontVariantData::kerningKey(leftGlyph->getCodepoint(), rightGlyph->getCodepoint());
 		variant.kerningPairs[key] = static_cast<float>(pair.second);
 	}
 
@@ -1100,7 +1102,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	atlas_.layersUsed += 1u;
 
 	const auto* variants = listData(arteryFont.variants);
-	FontFaceData fontFace{};
+	Font::FontFaceData fontFace{};
 	if (nextFontId_ == std::numeric_limits<FontId>::max()) {
 		throw std::runtime_error("FlowUi font id limit exceeded.");
 	}
@@ -1120,7 +1122,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 
 	for (int variantIndex = 0; variantIndex < arteryFont.variants.length(); ++variantIndex) {
 		const auto& sourceVariant = variants[variantIndex];
-		FontVariantData variant{};
+		Font::FontVariantData variant{};
 		variant.flags = sourceVariant.flags;
 		variant.weight = sourceVariant.weight;
 		variant.fallbackGlyphIndex = sourceVariant.fallbackGlyph;
@@ -1145,7 +1147,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 					".arfont references multiple atlas images per variant, which is not supported yet.");
 			}
 
-			GlyphData glyph{};
+			Font::GlyphData glyph{};
 			glyph.codepoint = sourceGlyph.codepoint;
 			glyph.sourceImageIndex = sourceGlyph.image;
 			glyph.planeLeft = sourceGlyph.planeBounds.l;
@@ -1170,7 +1172,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 		const auto* sourceKernPairs = listData(sourceVariant.kernPairs);
 		for (int kernIndex = 0; kernIndex < sourceVariant.kernPairs.length(); ++kernIndex) {
 			const auto& pair = sourceKernPairs[kernIndex];
-			const uint64_t key = FontVariantData::kerningKey(pair.codepoint1, pair.codepoint2);
+			const uint64_t key = Font::FontVariantData::kerningKey(pair.codepoint1, pair.codepoint2);
 			variant.kerningPairs[key] = pair.advance.h;
 		}
 
@@ -1198,7 +1200,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	return fonts_.back().id;
 }
 
-const FontManager::FontFaceData* FontManager::getFontById(FontId fontId) const {
+const Font::FontFaceData* FontManager::getFontById(FontId fontId) const {
 	const auto it = fontIndexById_.find(fontId);
 	if (it == fontIndexById_.end()) {
 		return nullptr;
@@ -1226,7 +1228,7 @@ void FontManager::destroy(VulkanContext& vk) {
 		}
 	}
 
-	atlas_ = AtlasArrayResource{};
+	atlas_ = Font::AtlasArrayResource{};
 	atlas_.layersCapacity = kInitialAtlasLayerCapacity;
 	uploadCommandPool_ = VK_NULL_HANDLE;
 	vk_ = nullptr;
