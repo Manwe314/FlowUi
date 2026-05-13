@@ -158,9 +158,6 @@ if(FLOWUI_BUILD_FONT_BAKER)
     target_compile_features(flowui_font_baker PRIVATE cxx_std_23)
 endif()
 
-add_executable(flowui_example example.cpp)
-target_compile_features(flowui_example PRIVATE cxx_std_23)
-
 if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
    (FLOWUI_GLFW_PROVIDER STREQUAL "auto" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/CMakeLists.txt"))
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -219,6 +216,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
@@ -227,7 +225,6 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devJson.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/FlowUiElementSystem.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FlowUiElementStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/systems/FlowUiElementBuilder.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
@@ -283,15 +280,6 @@ target_compile_definitions(flowui
 )
 
 target_compile_features(flowui PUBLIC cxx_std_23)
-
-function(flowui_link target)
-    if(NOT TARGET ${target})
-        message(FATAL_ERROR "flowui_link: target '${target}' does not exist.")
-    endif()
-    target_link_libraries(${target} PRIVATE FlowUi::FlowUi)
-endfunction()
-
-flowui_link(flowui_example)
 
 if(FLOWUI_INSTALL)
     include(CMakePackageConfigHelpers)

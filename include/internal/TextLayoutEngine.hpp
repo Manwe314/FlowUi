@@ -24,7 +24,7 @@ struct TextLayoutGlyphQuad {
 
 struct TextLayoutRequest {
 	Clay_StringSlice text{};
-	const FontManager::FontFaceData* fontFace = nullptr;
+	const FlowUi::Font::FontFaceData* fontFace = nullptr;
 	float pointsToPixelsScale = 96.0f / 72.0f;
 	uint16_t fontSize = 0;
 	uint16_t letterSpacing = 0;
@@ -43,12 +43,12 @@ struct TextLayoutResult {
 	float distanceRangePx = 2.0f;
 };
 
-inline const FontManager::FontFaceData* ResolveFontFace(const FontManager* fontManager, uint16_t fontId) {
+inline const FlowUi::Font::FontFaceData* ResolveFontFace(const FontManager* fontManager, uint16_t fontId) {
 	if (!fontManager) {
 		return nullptr;
 	}
 
-	const FontManager::FontFaceData* face = fontManager->getFontById(static_cast<int>(fontId));
+	const FlowUi::Font::FontFaceData* face = fontManager->getFontById(static_cast<int>(fontId));
 	if (!face) {
 		face = fontManager->getFontById(0);
 	}
@@ -113,7 +113,7 @@ inline TextLayoutResult LayoutTextLine(const TextLayoutRequest& request, EmitGly
 		return result;
 	}
 
-	const FontManager::FontVariantData* variant = request.fontFace->defaultVariant();
+	const FlowUi::Font::FontVariantData* variant = request.fontFace->defaultVariant();
 	if (!variant || variant->glyphs.empty()) {
 		return result;
 	}
@@ -218,7 +218,7 @@ inline TextLayoutResult LayoutTextLine(const TextLayoutRequest& request, EmitGly
 			glyphIndex = 0;
 		}
 
-		const FontManager::GlyphData& glyph = variant->glyphs[glyphIndex];
+		const FlowUi::Font::GlyphData& glyph = variant->glyphs[glyphIndex];
 		const float x0 = penX + glyph.planeLeft * emToPixels;
 		const float x1 = penX + glyph.planeRight * emToPixels;
 		const float glyphWidth = x1 - x0;

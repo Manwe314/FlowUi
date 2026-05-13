@@ -285,7 +285,7 @@ static bool LayoutMsdfTextToGlyphs(
 	outAtlasLayer = 0u;
 	outDistanceRangePx = 2.0f;
 
-	const FontManager::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager, text.fontId);
+	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager, text.fontId);
 	if (!fontFace) {
 		return false;
 	}
@@ -1221,7 +1221,7 @@ static void UpdateTextureDescriptorsForFrame(VulkanUiRenderer& renderer, VkDevic
 	fontAtlasInfo.imageView = renderer.placeholderFontAtlas_.view;
 	fontAtlasInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	if (renderer.fontManager_) {
-		const FontManager::AtlasArrayResource& atlas = renderer.fontManager_->getAtlasResource();
+		const FlowUi::Font::AtlasArrayResource& atlas = renderer.fontManager_->getAtlasResource();
 		if (atlas.view != VK_NULL_HANDLE && atlas.sampler != VK_NULL_HANDLE && atlas.layersUsed > 0u) {
 			fontAtlasInfo.sampler = atlas.sampler;
 			fontAtlasInfo.imageView = atlas.view;

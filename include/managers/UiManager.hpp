@@ -15,9 +15,10 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "internal/FlowUiElementBridge.hpp"
-#include "managers/FlowUiElementSystem.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
+#include "managers/structs/FlowUiElementStructs.hpp"
+#include "managers/systems/FlowUiElementBuilder.hpp"
 #include "window/Inputs.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/devRuntime.hpp"

@@ -157,7 +157,7 @@ namespace FlowUi
 				return Clay_Dimensions{ 0.0f, 0.0f };
 			}
 
-		const FontManager::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, config->fontId);
+		const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, config->fontId);
 		if (!fontFace) {
 			const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, config->fontSize)) * pointsToPixelsScale_;
 			return Clay_Dimensions{

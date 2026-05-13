@@ -22,7 +22,24 @@ namespace FlowUi {
  * @{
  */
 
-/** @brief Fluent builder returned by UiManager::createElement(). */
+/**
+ * @brief builder returned by UiManager::createElement().
+ *
+ * ElementBuilder stores the element definition, element id, and parameter
+ * values for one element invocation. The builder is normally created through
+ * UiManager::createElement(); users should not need to construct it directly.
+ *
+ * The final call is usually draw() or construct(). draw() executes the element's
+ * draw flow immediately. construct() opens and configures the element root for
+ * a manual closing flow.
+ *
+ * @tparam Parameters Parameter struct used by the element definition.
+ * @tparam State State struct used by the element definition.
+ * @tparam Resources Resources struct used by the element definition.
+ * @tparam DefinitionId Compile-time id used by the element definition.
+ * @tparam IsDevInternal Whether the element definition is internal to FlowUi
+ * dev tooling.
+ */
 template <
 	typename Parameters = NoElementParameters,
 	typename State = void,
@@ -31,16 +48,36 @@ template <
 	bool IsDevInternal = false>
 class ElementBuilder {
 public:
-	/** @brief Element definition type. */
+	/** @brief Element definition type used by this builder. */
 	using DefinitionType = ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>;
-	/** @brief Resolved parameter type. */
+
+	/** @brief Parameter struct stored by this builder. */
 	using ParametersType = typename DefinitionType::ParametersType;
+
 	/** @brief Build callback context type. */
 	using BuildContext = typename DefinitionType::BuildContext;
+
 	/** @brief Interaction callback context type. */
 	using InteractionContext = typename DefinitionType::InteractionContext;
 
-	/** @brief Construct an element builder. */
+	/**
+	 * @brief Construct an element builder.
+	 *
+	 * The constructor stores references and values used by draw() or construct().
+	 * UiManager::createElement() is the intended public entry point because it
+	 * supplies the correct UiManager, element definition, and dev-mode source
+	 * location data.
+	 * 
+	 * Intended Usage Example:
+	 * @code{.cpp}
+	 *   FlowUi::UiManager& ui = app.ui();
+	 * 	 ui.createElement(kExampleElement, "ExampleId").draw();
+	 * @endcode	
+	 *
+	 * @param uiManager UI manager that owns the active frame.
+	 * @param definition Element definition used for callbacks.
+	 * @param elementID Flow element id string for this builder invocation.
+	 */
 	ElementBuilder(UiManager& uiManager, const DefinitionType* definition, std::string elementID
 #if FLOW_UI_DEV_MODE
 		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
@@ -55,21 +92,76 @@ public:
 #endif
 		{}
 
-	/** @brief Replace element parameters. */
+	/**
+	 * @brief Replace element parameters by copy.
+	 *
+	 * The copied parameters are stored in the builder and are passed by reference
+	 * to interaction and build callbacks when draw() or construct() is called.
+	 *
+	 * @param parameters Parameter values to copy into the builder.
+	 * @return Reference to this builder for fluent chaining.
+	 *
+	 * @code{.cpp}
+	 * ui.createElement(kButton, "submit")
+	 *     .setParameters(ButtonParams{
+	 *         .label = "Submit",
+	 *         .enabled = true,
+	 *     })
+	 *     .draw();
+	 * @endcode
+	 */
 	ElementBuilder& setParameters(const ParametersType& parameters)
 	{
 		params_ = parameters;
 		return *this;
 	}
 
-	/** @brief Move-replace element parameters. */
+	/**
+	 * @brief Replace element parameters by move.
+	 *
+	 * The moved parameters are stored in the builder and are passed by reference
+	 * to interaction and build callbacks when draw() or construct() is called.
+	 *
+	 * @param parameters Parameter values to move into the builder.
+	 * @return Reference to this builder for fluent chaining.
+	 *
+	 * @code{.cpp}
+	 * ButtonParams params{};
+	 * params.label = makeDynamicLabel();
+	 *
+	 * ui.createElement(kButton, "dynamic-button")
+	 *     .setParameters(std::move(params))
+	 *     .draw();
+	 * @endcode
+	 */
 	ElementBuilder& setParameters(ParametersType&& parameters)
 	{
 		params_ = std::move(parameters);
 		return *this;
 	}
 
-	/** @brief Mutate element parameters with a callable. */
+	/**
+	 * @brief Mutate stored element parameters with a callable.
+	 *
+	 * mergeParams invokes mergeFn with ParametersType&. This is useful when the
+	 * default parameter values are mostly correct and only a few fields need to
+	 * be changed.
+	 *
+	 * @tparam MergeFn Callable type invocable with ParametersType&.
+	 * @param mergeFn Callable that mutates the builder's parameter storage.
+	 * @return Reference to this builder for fluent chaining.
+	 *
+	 * @warning mergeFn must be invocable with ParametersType&; otherwise the
+	 * static_assert fails at compile time.
+	 *
+	 * @code{.cpp}
+	 * ui.createElement(kButton, "submit")
+	 *     .mergeParams([](ButtonParams& params) {
+	 *         params.enabled = false;
+	 *     })
+	 *     .draw();
+	 * @endcode
+	 */
 	template <typename MergeFn>
 	ElementBuilder& mergeParams(MergeFn&& mergeFn)
 	{
@@ -80,23 +172,99 @@ public:
 		return *this;
 	}
 
-	/** @brief Replace the element id string. */
+	/**
+	 * @brief Replace the element id string stored by the builder.
+	 *
+	 * This changes the Flow element id used by later draw() or construct()
+	 * calls. It is most useful when an ElementBuilder is stored in a local
+	 * variable and emitted later with an id chosen after the builder was created.
+	 *
+	 * @param elementID Replacement Flow element id string.
+	 * @return Reference to this builder for fluent chaining.
+	 *
+	 * @code{.cpp}
+	 * auto button = ui.createElement(kButton, "pending-button")
+	 *     .setParameters(ButtonParams{.label = "Open"});
+	 *
+	 * const std::string buttonId = isPrimary ? "toolbar/open-primary" : "toolbar/open-secondary";
+	 * button.withElementID(buttonId).draw();
+	 * @endcode
+	 */
 	ElementBuilder& withElementID(std::string_view elementID)
 	{
 		elementID_.assign(elementID.data(), elementID.size());
 		return *this;
 	}
 
-	/** @brief Control whether this element is captured as internal developer UI. */
+	/**
+	 * @brief Control whether this invocation is captured as internal developer UI.
+	 *
+	 * The value is passed to the dev capture runtime when FLOW_UI_DEV_MODE is
+	 * enabled. By default it is initialized from DefinitionType::isDevInternal.
+	 *
+	 * @param isDevInternal true to mark this invocation as dev-internal.
+	 * @return Reference to this builder for fluent chaining.
+	 *
+	 * @note This is mainly for FlowUi internal dev tooling. Normal user elements
+	 * should not need to call this function.
+	 *
+	 * @code{.cpp}
+	 * ui.createElement(kDevOverlay, "flowui/dev/overlay")
+	 *     .setDevInternalCapture(true)
+	 *     .draw();
+	 * @endcode
+	 */
 	ElementBuilder& setDevInternalCapture(bool isDevInternal = true)
 	{
 		captureAsDevInternal_ = isDevInternal;
 		return *this;
 	}
 
-	/** @brief Construct and push a Clay element declaration. */
+	/**
+	 * @brief Run callbacks and open a constructed Clay element.
+	 *
+	 * construct() executes enabled event callbacks, then runLogic, then
+	 * constructElement. constructElement returns the root Clay declaration; the
+	 * builder opens and configures that root using the builder's element id.
+	 * 
+	 * nodes created after Construct() call and before drawConstructed() will be interpreted as children of the "Constructed" element
+	 *
+	 * @param options Callback phases to skip for this invocation.
+	 *
+	 * @throws std::runtime_error if the definition pointer is null or the
+	 * definition has no constructElement callback.
+	 *
+	 * @code{.cpp}
+	 * ui.createElement(kPanel, "settings-panel")
+	 *     .setParameters(PanelParams{.backgroundColor = FlowUi::Flow_Color("#202020ff")})
+	 *     .construct();
+	 *
+	 * Clay_ElementDeclaration child{};
+	 * child.layout.sizing.width = CLAY_SIZING_GROW(0);
+	 * CLAY(child) {}
+	 * ui.drawConstructed();
+	 * @endcode
+	 */
 	void construct(ElementDrawOptions options = ElementDrawOptions::Default);
-	/** @brief Run callbacks and draw the element. */
+
+	/**
+	 * @brief Run callbacks and emit this element's draw flow.
+	 *
+	 * draw() executes enabled event callbacks, then runLogic, then buildElement
+	 * unless ElementDrawOptions::SkipBuildCallback is set. buildElement owns the
+	 * Clay emission for this element.
+	 *
+	 * @param options Callback phases to skip for this invocation.
+	 *
+	 * @throws std::runtime_error if the definition pointer is null or the
+	 * definition has no buildElement callback.
+	 *
+	 * @code{.cpp}
+	 * ui.createElement(kButton, "submit")
+	 *     .setParameters(ButtonParams{.label = "Submit"})
+	 *     .draw();
+	 * @endcode
+	 */
 	void draw(ElementDrawOptions options = ElementDrawOptions::Default);
 
 private:
