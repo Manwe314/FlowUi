@@ -1,13 +1,12 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 #include <unordered_map>
 #include <vector>
 
 #include <clay.h>
 
-#include "window/Inputs.hpp"
+#include "managers/structs/ShortcutManagerStructs.hpp"
 
 namespace FlowUi {
 
@@ -17,79 +16,163 @@ class UiManager;
  * @{
  */
 
-/** @brief Scope that controls when a shortcut is eligible to run. */
-enum class ShortcutScope : uint8_t {
-	FocusedInput = 0,
-	FocusedElement = 1,
-	Global = 2,
-};
-
-/** @brief Input transition used to trigger a shortcut. */
-enum class ShortcutTrigger : uint8_t {
-	Press = 0,
-	Release = 1,
-	Down = 2,
-};
-
-/** @brief Keyboard chord registered with ShortcutManager. */
-struct ShortcutChord {
-	/** @brief Platform key code. */
-	int key = -1;
-	/** @brief Whether Ctrl is required. */
-	bool ctrl = false;
-	/** @brief Whether Shift is required. */
-	bool shift = false;
-	/** @brief Whether Alt is required. */
-	bool alt = false;
-	/** @brief Whether Super/Command is required. */
-	bool super = false;
-	/** @brief Trigger mode for the chord. */
-	ShortcutTrigger trigger = ShortcutTrigger::Press;
-};
-
-/** @brief Runtime data passed to shortcut callbacks. */
-struct ShortcutContext {
-	/** @brief UI manager for the active frame. */
-	UiManager& ui;
-	/** @brief Current frame input. */
-	const FrameInput& currentInput;
-	/** @brief Previous frame input. */
-	const FrameInput& previousInput;
-	/** @brief Focused Clay element id. */
-	Clay_ElementId focusedElementId{};
-};
-
-/** @brief Shortcut callback. Return true when the shortcut is handled. */
-using ShortcutCallback = std::function<bool(ShortcutContext&)>;
-
-/** @brief Opaque shortcut registration id. */
-using ShortcutId = uint32_t;
-
-/** @brief Registers and dispatches keyboard shortcuts. */
+/**
+ * @brief Registers and dispatches keyboard shortcuts.
+ *
+ * ShortcutManager stores keyboard chords and evaluates them once per FlowUi
+ * frame from the current and previous FrameInput. Matching shortcuts are
+ * filtered by ShortcutScope, then invoked in priority order. A callback that
+ * returns true handles the chord and stops later callbacks for that same match.
+ *
+ * ShortcutId value 0 is reserved as an invalid id. registerShortcut() returns 0
+ * when registration fails, so application code can treat 0 as "not registered".
+ */
 class ShortcutManager {
 public:
-	/** @brief Register a shortcut and return its id. */
+	/**
+	 * @brief Register a shortcut and return its id.
+	 *
+	 * The chord is matched against frame input using its key, modifier flags,
+	 * and trigger mode. The scope controls when the callback is eligible to run.
+	 * When multiple callbacks match the same chord, focused scopes are considered
+	 * before global shortcuts, higher priority values run first, and callbacks
+	 * with the same scope and priority run in registration order.
+	 *
+	 * A callback should return true after it handles the shortcut. Returning
+	 * false allows the next matching callback for the same chord to run.
+	 *
+	 * @param chord Key, modifier requirements, and trigger transition to match.
+	 * @param scope Focus condition required before the shortcut may run.
+	 * @param priority Ordering value within the same scope. Higher values run
+	 * first.
+	 * @param callback Function invoked when the chord and scope match.
+	 * @return Opaque registration id used with unregisterShortcut(). Returns 0
+	 * when callback is empty or chord.key is outside FrameInput's keyboard range.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ShortcutId copyShortcut =
+	 *     app.ui().shortcuts().registerShortcut(
+	 *         FlowUi::ShortcutChord{
+	 *             .key = GLFW_KEY_C,
+	 *             .ctrl = true,
+	 *             .trigger = FlowUi::ShortcutTrigger::Press,
+	 *         },
+	 *         FlowUi::ShortcutScope::FocusedInput,
+	 *         100,
+	 *         [](FlowUi::ShortcutContext& context) {
+	 *             const std::string selected(context.ui.inputFields().getSelectedText());
+	 *             if (selected.empty()) {
+	 *                 return false;
+	 *             }
+	 *             context.ui.setClipboardText(selected);
+	 *             return true;
+	 *         });
+	 *
+	 * const FlowUi::ShortcutId pasteShortcut =
+	 *     app.ui().shortcuts().registerShortcut(
+	 *         FlowUi::ShortcutChord{
+	 *             .key = GLFW_KEY_V,
+	 *             .ctrl = true,
+	 *             .trigger = FlowUi::ShortcutTrigger::Press,
+	 *         },
+	 *         FlowUi::ShortcutScope::FocusedInput,
+	 *         100,
+	 *         [](FlowUi::ShortcutContext& context) {
+	 *             return context.ui.inputFields().insertTextAtPrimaryCaret(
+	 *                 context.ui.clipboardText());
+	 *         });
+	 *
+	 * if (copyShortcut == 0 || pasteShortcut == 0) {
+	 *     // Registration failed; key values or callbacks should be checked.
+	 * }
+	 * @endcode
+	 */
 	ShortcutId registerShortcut(
 		const ShortcutChord& chord,
 		ShortcutScope scope,
 		int32_t priority,
 		ShortcutCallback callback);
-	/** @brief Unregister a shortcut by id. */
+
+	/**
+	 * @brief Unregister a shortcut by id.
+	 *
+	 * Removes the registered callback and releases the manager's internal
+	 * reference to the chord key. It is valid to unregister from inside a
+	 * shortcut callback.
+	 *
+	 * @param id Registration id returned by registerShortcut().
+	 * @retval true A shortcut with id existed and was removed.
+	 * @retval false id was 0 or did not match an active registration.
+	 *
+	 * @code{.cpp}
+	 * if (copyShortcut != 0) {
+	 *     (void)app.ui().shortcuts().unregisterShortcut(copyShortcut);
+	 * }
+	 * @endcode
+	 */
 	bool unregisterShortcut(ShortcutId id);
-	/** @brief Remove all registered shortcuts. */
+
+	/**
+	 * @brief Remove all registered shortcuts.
+	 *
+	 * Clears every chord registration, resets registration ids, and clears the
+	 * focused element marker.
+	 *
+	 * @code{.cpp}
+	 * app.ui().shortcuts().clear();
+	 * @endcode
+	 */
 	void clear();
 
-	/** @brief Set the currently focused Clay element id. */
+	/**
+	 * @brief Set the currently focused Clay element id.
+	 *
+	 * The focused element marker is used by ShortcutScope::FocusedElement. It is
+	 * a lightweight shortcut classification value; callbacks can inspect
+	 * ShortcutContext::focusedElementId when they need element-specific behavior.
+	 * Conditions with which an element becomes focused is up to the user to decide by calling this function.
+	 *
+	 * @param elementId Clay element id to treat as focused.
+	 *
+	 * @code{.cpp}
+	 * app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));
+	 * @endcode
+	 */
 	void setFocusedElement(Clay_ElementId elementId);
-	/** @brief Clear focused element state. */
+
+	/**
+	 * @brief Clear focused element state.
+	 *
+	 * After this call, FocusedElement shortcuts are not eligible until another
+	 * non-zero focused element id is set.
+	 *
+	 * @code{.cpp}
+	 * app.ui().shortcuts().clearFocusedElement();
+	 * @endcode
+	 */
 	void clearFocusedElement();
-	/** @brief Return the currently focused Clay element id. */
+
+	/**
+	 * @brief Return the currently focused Clay element id.
+	 *
+	 * @return Clay element id currently tracked by ShortcutManager. A zero id
+	 * means no shortcut-focused element is set.
+	 *
+	 * @code{.cpp}
+	 * const Clay_ElementId focused = app.ui().shortcuts().focusedElement();
+	 * if (focused.id != 0u) {
+	 *     // FocusedElement shortcuts can be eligible this frame.
+	 * }
+	 * @endcode
+	 */
 	Clay_ElementId focusedElement() const { return focusedElementId_; }
+
+private:
+	friend class UiManager;
 
 	/** @brief Dispatch shortcuts for the current frame. */
 	void beginFrame(UiManager& ui, const FrameInput& currentInput, const FrameInput& previousInput);
 
-private:
 	struct ShortcutExecutable {
 		ShortcutScope scope = ShortcutScope::Global;
 		int32_t priority = 0;

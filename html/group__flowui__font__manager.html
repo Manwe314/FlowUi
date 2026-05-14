@@ -125,6 +125,26 @@ document.addEventListener('DOMContentLoaded', () => {
 Classes</h2></td></tr>
 <tr class="memitem:FontManager" id="r_FontManager"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_font_manager.html">FontManager</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads font faces and owns the atlas used by FlowUi text rendering.  <a href="struct_font_manager.html#details">More...</a><br /></td></tr>
+<tr class="memitem:FlowUi_3A_3AFontFaceCreateInfo" id="r_FlowUi_3A_3AFontFaceCreateInfo"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_flow_ui_1_1_font_face_create_info.html">FlowUi::FontFaceCreateInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Describes a single concrete font face to register in a font family.  <a href="struct_flow_ui_1_1_font_face_create_info.html#details">More...</a><br /></td></tr>
+<tr class="memitem:FlowUi_3A_3AFontFamilyCreateInfo" id="r_FlowUi_3A_3AFontFamilyCreateInfo"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_flow_ui_1_1_font_family_create_info.html">FlowUi::FontFamilyCreateInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Describes a logical font family and its initially available faces.  <a href="struct_flow_ui_1_1_font_family_create_info.html#details">More...</a><br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga45ed3353542a8e69aead84b91e7d88ed" id="r_ga45ed3353542a8e69aead84b91e7d88ed"><td class="memItemLeft"><a id="ga45ed3353542a8e69aead84b91e7d88ed" name="ga45ed3353542a8e69aead84b91e7d88ed"></a>
+using&#160;</td><td class="memItemRight"><b>FlowUi::FontId</b> = uint16_t</td></tr>
+<tr class="memdesc:ga45ed3353542a8e69aead84b91e7d88ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable concrete font id consumed by Clay text configuration. <br /></td></tr>
+<tr class="memitem:ga95598f991c84086ade49a9b22410496a" id="r_ga95598f991c84086ade49a9b22410496a"><td class="memItemLeft"><a id="ga95598f991c84086ade49a9b22410496a" name="ga95598f991c84086ade49a9b22410496a"></a>
+using&#160;</td><td class="memItemRight"><b>FlowUi::FontFamilyId</b> = uint32_t</td></tr>
+<tr class="memdesc:ga95598f991c84086ade49a9b22410496a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable logical font family id returned by <a class="el" href="struct_font_manager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FontManager</a>. <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:gaf7e7d0763efe0b722c07ea3892e9a52e" id="r_gaf7e7d0763efe0b722c07ea3892e9a52e"><td class="memItemLeft"><a id="gaf7e7d0763efe0b722c07ea3892e9a52e" name="gaf7e7d0763efe0b722c07ea3892e9a52e"></a>enum class &#160;</td><td class="memItemRight"><a class="el" href="#gaf7e7d0763efe0b722c07ea3892e9a52e">FlowUi::FontStyle</a> : uint8_t { <b>Normal</b>
+, <b>Italic</b>
+ }</td></tr>
+<tr class="memdesc:gaf7e7d0763efe0b722c07ea3892e9a52e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Font style requested when resolving a family face. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public font loading and lookup API. </p>

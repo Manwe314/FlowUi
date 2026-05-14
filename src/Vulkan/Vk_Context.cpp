@@ -267,7 +267,7 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	}
 }
 
-void VulkanContext::createSurface(IWindowBackend& window) {
+void VulkanContext::createSurface(FlowUi::detail::IWindowBackend& window) {
 	if (instance == VK_NULL_HANDLE) {
 		throw std::runtime_error("Vulkan instance must be created before surface.");
 	}

@@ -1,5 +1,19 @@
 var group__flowui__element__system =
 [
+    [ "FlowUi::ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt;", "class_flow_ui_1_1_element_builder.html", [
+      [ "BuildContext", "class_flow_ui_1_1_element_builder.html#a0bf7f6f47ab725c357fed3b158406149", null ],
+      [ "DefinitionType", "class_flow_ui_1_1_element_builder.html#a784792bf088af4b5e23ba20773c058c9", null ],
+      [ "InteractionContext", "class_flow_ui_1_1_element_builder.html#ad35bca2cca9e02dcb9bf862952f1c402", null ],
+      [ "ParametersType", "class_flow_ui_1_1_element_builder.html#aaf199807afe81b4efc05fdeb3141df91", null ],
+      [ "ElementBuilder", "class_flow_ui_1_1_element_builder.html#a52d8e6efbf9d67f42453a973e9938072", null ],
+      [ "construct", "group__flowui__element__system.html#gadd7adf768823bd01379c9054c516448f", null ],
+      [ "draw", "group__flowui__element__system.html#ga7cefdbb08aab1d49879d08adc61d0509", null ],
+      [ "mergeParams", "class_flow_ui_1_1_element_builder.html#a0cb3694ec3a0bc7ac94feee7217f4788", null ],
+      [ "setDevInternalCapture", "class_flow_ui_1_1_element_builder.html#ab2a74747085369a4b157d804c85f9699", null ],
+      [ "setParameters", "class_flow_ui_1_1_element_builder.html#a55159e63934e32a22bd30889b5639a99", null ],
+      [ "setParameters", "class_flow_ui_1_1_element_builder.html#a711158a45396b9b1a83522eaa051f26e", null ],
+      [ "withElementID", "class_flow_ui_1_1_element_builder.html#addcbec2dd601b254be83f4114cb679f7", null ]
+    ] ],
     [ "FlowUi::InteractionSnapshot", "struct_flow_ui_1_1_interaction_snapshot.html", [
       [ "isHeld", "struct_flow_ui_1_1_interaction_snapshot.html#acb7231c76df9dbfbba2bdc1c02daeb02", null ],
       [ "isHovered", "struct_flow_ui_1_1_interaction_snapshot.html#ad98a8c6a0e0664f27c24c97c11e1e031", null ],
@@ -42,20 +56,6 @@ var group__flowui__element__system =
       [ "onPressed", "struct_flow_ui_1_1_element_definition.html#ac129ed086c6ec6251579c8cbdebccd1b", null ],
       [ "onReleased", "struct_flow_ui_1_1_element_definition.html#a96b44ff2bef86e267f1be67aa9c05ace", null ],
       [ "runLogic", "struct_flow_ui_1_1_element_definition.html#a70d373a490a9d103d90c2db3d66ada65", null ]
-    ] ],
-    [ "FlowUi::ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt;", "class_flow_ui_1_1_element_builder.html", [
-      [ "BuildContext", "class_flow_ui_1_1_element_builder.html#a0bf7f6f47ab725c357fed3b158406149", null ],
-      [ "DefinitionType", "class_flow_ui_1_1_element_builder.html#a784792bf088af4b5e23ba20773c058c9", null ],
-      [ "InteractionContext", "class_flow_ui_1_1_element_builder.html#ad35bca2cca9e02dcb9bf862952f1c402", null ],
-      [ "ParametersType", "class_flow_ui_1_1_element_builder.html#aaf199807afe81b4efc05fdeb3141df91", null ],
-      [ "ElementBuilder", "class_flow_ui_1_1_element_builder.html#a52d8e6efbf9d67f42453a973e9938072", null ],
-      [ "construct", "group__flowui__element__system.html#gadd7adf768823bd01379c9054c516448f", null ],
-      [ "draw", "group__flowui__element__system.html#ga7cefdbb08aab1d49879d08adc61d0509", null ],
-      [ "mergeParams", "class_flow_ui_1_1_element_builder.html#a0cb3694ec3a0bc7ac94feee7217f4788", null ],
-      [ "setDevInternalCapture", "class_flow_ui_1_1_element_builder.html#ab2a74747085369a4b157d804c85f9699", null ],
-      [ "setParameters", "class_flow_ui_1_1_element_builder.html#a55159e63934e32a22bd30889b5639a99", null ],
-      [ "setParameters", "class_flow_ui_1_1_element_builder.html#a711158a45396b9b1a83522eaa051f26e", null ],
-      [ "withElementID", "class_flow_ui_1_1_element_builder.html#addcbec2dd601b254be83f4114cb679f7", null ]
     ] ],
     [ "FlowUi::ElementDrawOptions", "group__flowui__element__system.html#ga061f4f4bff223fbdde2f92f78d1f28a3", [
       [ "FlowUi::ElementDrawOptions::Default", "group__flowui__element__system.html#gga061f4f4bff223fbdde2f92f78d1f28a3a7a1920d61156abc05a60135aefe8bc67", null ],

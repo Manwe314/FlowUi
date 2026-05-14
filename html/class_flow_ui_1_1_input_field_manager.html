@@ -123,65 +123,323 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <p><code>#include &lt;<a class="el" href="_input_field_manager_8hpp_source.html">InputFieldManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:FieldConfig" id="r_FieldConfig"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_flow_ui_1_1_input_field_manager_1_1_field_config.html">FieldConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuration for a requested input field.  <a href="struct_flow_ui_1_1_input_field_manager_1_1_field_config.html#details">More...</a><br /></td></tr>
-<tr class="memitem:FieldRequest" id="r_FieldRequest"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_flow_ui_1_1_input_field_manager_1_1_field_request.html">FieldRequest</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input field request submitted by UI code.  <a href="struct_flow_ui_1_1_input_field_manager_1_1_field_request.html#details">More...</a><br /></td></tr>
-<tr class="memitem:FieldQueryResult" id="r_FieldQueryResult"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_flow_ui_1_1_input_field_manager_1_1_field_query_result.html">FieldQueryResult</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Result returned from an input field request.  <a href="struct_flow_ui_1_1_input_field_manager_1_1_field_query_result.html#details">More...</a><br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
-Public Types</h2></td></tr>
-<tr class="memitem:a41a3814567f7668b9b92db0a331b117c" id="r_a41a3814567f7668b9b92db0a331b117c"><td class="memItemLeft"><a id="a41a3814567f7668b9b92db0a331b117c" name="a41a3814567f7668b9b92db0a331b117c"></a>enum class &#160;</td><td class="memItemRight"><a class="el" href="#a41a3814567f7668b9b92db0a331b117c">CaretRequestKind</a> : uint8_t { <b>SetPrimary</b> = 0
-, <b>Add</b> = 1
-, <b>ClearAll</b> = 2
- }</td></tr>
-<tr class="memdesc:a41a3814567f7668b9b92db0a331b117c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Requested caret operation for an input field. <br /></td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a23590d508ee8cdef5d1153e32cfed6e4" id="r_a23590d508ee8cdef5d1153e32cfed6e4"><td class="memItemLeft"><a id="a23590d508ee8cdef5d1153e32cfed6e4" name="a23590d508ee8cdef5d1153e32cfed6e4"></a>
-void&#160;</td><td class="memItemRight"><b>setConfig</b> (const <a class="el" href="struct_flow_ui_1_1_input_manager_config.html">InputManagerConfig</a> &amp;config)</td></tr>
-<tr class="memdesc:a23590d508ee8cdef5d1153e32cfed6e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply input field rendering configuration. <br /></td></tr>
-<tr class="memitem:ad30ebd6a9947ab96a891d2590055d8b4" id="r_ad30ebd6a9947ab96a891d2590055d8b4"><td class="memItemLeft"><a id="ad30ebd6a9947ab96a891d2590055d8b4" name="ad30ebd6a9947ab96a891d2590055d8b4"></a>
-void&#160;</td><td class="memItemRight"><b>setFontManager</b> (const <a class="el" href="struct_font_manager.html">::FontManager</a> *fontManager, float pointsToPixelsScale)</td></tr>
-<tr class="memdesc:ad30ebd6a9947ab96a891d2590055d8b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set font manager used for text measurement. <br /></td></tr>
-<tr class="memitem:ad5ba473051d297a8b287974917816018" id="r_ad5ba473051d297a8b287974917816018"><td class="memItemLeft"><a id="ad5ba473051d297a8b287974917816018" name="ad5ba473051d297a8b287974917816018"></a>
-void&#160;</td><td class="memItemRight"><b>beginFrame</b> (const <a class="el" href="struct_frame_input.html">FrameInput</a> &amp;currentInput, const <a class="el" href="struct_frame_input.html">FrameInput</a> &amp;previousInput)</td></tr>
-<tr class="memdesc:ad5ba473051d297a8b287974917816018"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin input field processing for a frame. <br /></td></tr>
-<tr class="memitem:ae860b0309bf96dc4140c50cf036bb01c" id="r_ae860b0309bf96dc4140c50cf036bb01c"><td class="memItemLeft"><a id="ae860b0309bf96dc4140c50cf036bb01c" name="ae860b0309bf96dc4140c50cf036bb01c"></a>
-Clay_RenderCommandArray&#160;</td><td class="memItemRight"><b>endFrame</b> (const Clay_RenderCommandArray &amp;renderCommands)</td></tr>
-<tr class="memdesc:ae860b0309bf96dc4140c50cf036bb01c"><td class="mdescLeft">&#160;</td><td class="mdescRight">End input field processing and return adjusted render commands. <br /></td></tr>
-<tr class="memitem:ae032b22f75c958048bee7b6eebc57bb7" id="r_ae032b22f75c958048bee7b6eebc57bb7"><td class="memItemLeft"><a id="ae032b22f75c958048bee7b6eebc57bb7" name="ae032b22f75c958048bee7b6eebc57bb7"></a>
-const <a class="el" href="struct_flow_ui_1_1_input_field_frame_overrides.html">InputFieldFrameOverrides</a> &amp;&#160;</td><td class="memItemRight"><b>frameOverrides</b> () const</td></tr>
-<tr class="memdesc:ae032b22f75c958048bee7b6eebc57bb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return render overrides produced this frame. <br /></td></tr>
-<tr class="memitem:a6deadc46f16595277ae8e2258e63b787" id="r_a6deadc46f16595277ae8e2258e63b787"><td class="memItemLeft"><a id="a6deadc46f16595277ae8e2258e63b787" name="a6deadc46f16595277ae8e2258e63b787"></a>
-<a class="el" href="struct_flow_ui_1_1_input_field_manager_1_1_field_query_result.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><b>requestField</b> (const <a class="el" href="struct_flow_ui_1_1_input_field_manager_1_1_field_request.html">FieldRequest</a> &amp;request)</td></tr>
-<tr class="memdesc:a6deadc46f16595277ae8e2258e63b787"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register/update an input field for the current frame. <br /></td></tr>
-<tr class="memitem:aad13550088f959cf6d948173d8afa446" id="r_aad13550088f959cf6d948173d8afa446"><td class="memItemLeft"><a id="aad13550088f959cf6d948173d8afa446" name="aad13550088f959cf6d948173d8afa446"></a>
-void&#160;</td><td class="memItemRight"><b>requestCaret</b> (std::string_view fieldId, <a class="el" href="#a41a3814567f7668b9b92db0a331b117c">CaretRequestKind</a> kind)</td></tr>
-<tr class="memdesc:aad13550088f959cf6d948173d8afa446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request focus/caret changes for a field. <br /></td></tr>
-<tr class="memitem:a1e0319ffec372a95e5d129a5d8bda14a" id="r_a1e0319ffec372a95e5d129a5d8bda14a"><td class="memItemLeft"><a id="a1e0319ffec372a95e5d129a5d8bda14a" name="a1e0319ffec372a95e5d129a5d8bda14a"></a>
-bool&#160;</td><td class="memItemRight"><b>removeField</b> (std::string_view fieldId)</td></tr>
-<tr class="memdesc:a1e0319ffec372a95e5d129a5d8bda14a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a field by id. <br /></td></tr>
-<tr class="memitem:a7ac0604f2391bfe2ea5d16b008b68d18" id="r_a7ac0604f2391bfe2ea5d16b008b68d18"><td class="memItemLeft"><a id="a7ac0604f2391bfe2ea5d16b008b68d18" name="a7ac0604f2391bfe2ea5d16b008b68d18"></a>
-void&#160;</td><td class="memItemRight"><b>clear</b> ()</td></tr>
-<tr class="memdesc:a7ac0604f2391bfe2ea5d16b008b68d18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear all managed field state. <br /></td></tr>
-<tr class="memitem:a4f494c501874c594a05a8e28f8e9954f" id="r_a4f494c501874c594a05a8e28f8e9954f"><td class="memItemLeft"><a id="a4f494c501874c594a05a8e28f8e9954f" name="a4f494c501874c594a05a8e28f8e9954f"></a>
-bool&#160;</td><td class="memItemRight"><b>hasPrimaryFieldFocus</b> () const</td></tr>
-<tr class="memdesc:a4f494c501874c594a05a8e28f8e9954f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if any field owns primary focus. <br /></td></tr>
-<tr class="memitem:a997c4fea775ebe55ae427e901c38f50c" id="r_a997c4fea775ebe55ae427e901c38f50c"><td class="memItemLeft"><a id="a997c4fea775ebe55ae427e901c38f50c" name="a997c4fea775ebe55ae427e901c38f50c"></a>
-std::string_view&#160;</td><td class="memItemRight"><b>getSelectedText</b> () const</td></tr>
-<tr class="memdesc:a997c4fea775ebe55ae427e901c38f50c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current selected text. <br /></td></tr>
-<tr class="memitem:a109309cb439eaa40a24f8ada6409da8e" id="r_a109309cb439eaa40a24f8ada6409da8e"><td class="memItemLeft"><a id="a109309cb439eaa40a24f8ada6409da8e" name="a109309cb439eaa40a24f8ada6409da8e"></a>
-bool&#160;</td><td class="memItemRight"><b>insertTextAtPrimaryCaret</b> (std::string_view utf8Text)</td></tr>
-<tr class="memdesc:a109309cb439eaa40a24f8ada6409da8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert UTF-8 text at the primary caret. <br /></td></tr>
+<tr class="memitem:a6deadc46f16595277ae8e2258e63b787" id="r_a6deadc46f16595277ae8e2258e63b787"><td class="memItemLeft"><a class="el" href="struct_flow_ui_1_1_field_query_result.html">FieldQueryResult</a>&#160;</td><td class="memItemRight"><a class="el" href="#a6deadc46f16595277ae8e2258e63b787">requestField</a> (const <a class="el" href="struct_flow_ui_1_1_field_request.html">FieldRequest</a> &amp;request)</td></tr>
+<tr class="memdesc:a6deadc46f16595277ae8e2258e63b787"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register or update an input field for the current frame.  <br /></td></tr>
+<tr class="memitem:aad13550088f959cf6d948173d8afa446" id="r_aad13550088f959cf6d948173d8afa446"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aad13550088f959cf6d948173d8afa446">requestCaret</a> (std::string_view fieldId, <a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a> kind)</td></tr>
+<tr class="memdesc:aad13550088f959cf6d948173d8afa446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request focus or caret changes for an input field.  <br /></td></tr>
+<tr class="memitem:a1e0319ffec372a95e5d129a5d8bda14a" id="r_a1e0319ffec372a95e5d129a5d8bda14a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1e0319ffec372a95e5d129a5d8bda14a">removeField</a> (std::string_view fieldId)</td></tr>
+<tr class="memdesc:a1e0319ffec372a95e5d129a5d8bda14a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a managed field by id.  <br /></td></tr>
+<tr class="memitem:a7ac0604f2391bfe2ea5d16b008b68d18" id="r_a7ac0604f2391bfe2ea5d16b008b68d18"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18">clear</a> ()</td></tr>
+<tr class="memdesc:a7ac0604f2391bfe2ea5d16b008b68d18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear all managed input field state.  <br /></td></tr>
+<tr class="memitem:a4f494c501874c594a05a8e28f8e9954f" id="r_a4f494c501874c594a05a8e28f8e9954f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4f494c501874c594a05a8e28f8e9954f">hasPrimaryFieldFocus</a> () const</td></tr>
+<tr class="memdesc:a4f494c501874c594a05a8e28f8e9954f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether any field owns primary input focus.  <br /></td></tr>
+<tr class="memitem:a997c4fea775ebe55ae427e901c38f50c" id="r_a997c4fea775ebe55ae427e901c38f50c"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a997c4fea775ebe55ae427e901c38f50c">getSelectedText</a> () const</td></tr>
+<tr class="memdesc:a997c4fea775ebe55ae427e901c38f50c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return selected text from the primary input field.  <br /></td></tr>
+<tr class="memitem:a109309cb439eaa40a24f8ada6409da8e" id="r_a109309cb439eaa40a24f8ada6409da8e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a109309cb439eaa40a24f8ada6409da8e">insertTextAtPrimaryCaret</a> (std::string_view utf8Text)</td></tr>
+<tr class="memdesc:a109309cb439eaa40a24f8ada6409da8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert UTF-8 text at the primary caret.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
+class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Manages text input fields, focus, caret state, and edit operations. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+<p><a class="el" href="class_flow_ui_1_1_input_field_manager.html" title="Manages text input fields, focus, caret state, and edit operations.">InputFieldManager</a> is the public entry point for custom FlowUi elements that need editable text. The manager owns persistent field state, keyed by <a class="el" href="struct_flow_ui_1_1_field_request.html#a692fd9cdb9cbb26068d2a187396ba270" title="Stable field id.">FieldRequest::fieldId</a>, while the element remains responsible for drawing the Clay containers and text node for that field.</p>
+<p>A field becomes part of the current frame when custom UI code calls <a class="el" href="#a6deadc46f16595277ae8e2258e63b787" title="Register or update an input field for the current frame.">requestField()</a>. The request updates the field configuration and Clay element ids, then returns the current manager-owned text. The initial text is copied only when a field id is first seen; later requests with the same id keep the edited text until <a class="el" href="#a1e0319ffec372a95e5d129a5d8bda14a" title="Remove a managed field by id.">removeField()</a> or <a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18" title="Clear all managed input field state.">clear()</a> resets it.</p>
+<p>Focus and caret changes are requested separately through <a class="el" href="#aad13550088f959cf6d948173d8afa446" title="Request focus or caret changes for an input field.">requestCaret()</a>, normally from an element interaction callback. FlowUi's frame lifecycle then handles pointer hit testing, keyboard input, caret movement, selection rendering, and text mutation before the frame is rendered.</p>
+<div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> MyTextInputDef kMyTextInput = {</div>
+<div class="line">    <span class="keyword">nullptr</span>, <span class="comment">// onHovered</span></div>
+<div class="line">    +[](MyTextInputDef::InteractionContext&amp; context) {</div>
+<div class="line">        context.uiManager.inputFields().requestCaret(</div>
+<div class="line">            context.elementID,</div>
+<div class="line">            <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+<div class="line">    },      <span class="comment">// onPressed</span></div>
+<div class="line">    <span class="keyword">nullptr</span>, <span class="comment">// onHeld</span></div>
+<div class="line">    <span class="keyword">nullptr</span>, <span class="comment">// onReleased</span></div>
+<div class="line">    <span class="keyword">nullptr</span>, <span class="comment">// runLogic</span></div>
+<div class="line">    <span class="keyword">nullptr</span>, <span class="comment">// constructElement</span></div>
+<div class="line">    +[](MyTextInputDef::BuildContext&amp; context) {</div>
+<div class="line">        <span class="keyword">const</span> Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);</div>
+<div class="line">        <span class="keyword">const</span> std::string textElementId = context.createChildElementId(<span class="stringliteral">&quot;text&quot;</span>);</div>
+<div class="line">        <span class="keyword">const</span> std::string contentElementId = context.createChildElementId(<span class="stringliteral">&quot;content&quot;</span>);</div>
+<div class="line">        <span class="keyword">const</span> Clay_ElementId contentId = context.uiManager.toClayEID(contentElementId);</div>
+<div class="line"> </div>
+<div class="line">        <span class="keyword">const</span> <a class="code hl_struct" href="struct_flow_ui_1_1_field_query_result.html">FlowUi::FieldQueryResult</a> field =</div>
+<div class="line">            context.uiManager.inputFields().requestField({</div>
+<div class="line">                .fieldId = context.elementID,</div>
+<div class="line">                .initialText = context.params.initialText,</div>
+<div class="line">                .config = <a class="code hl_struct" href="struct_flow_ui_1_1_field_config.html">FlowUi::FieldConfig</a>{</div>
+<div class="line">                    .readOnly = <span class="keyword">false</span>,</div>
+<div class="line">                    .allowNewline = <span class="keyword">false</span>,</div>
+<div class="line">                },</div>
+<div class="line">                .textElementId = context.uiManager.toClayEID(textElementId),</div>
+<div class="line">                .contentElementId = contentId,</div>
+<div class="line">            });</div>
+<div class="line"> </div>
+<div class="line">        Clay_TextElementConfig textConfig{};</div>
+<div class="line">        textConfig.fontId = context.params.fontId;</div>
+<div class="line">        textConfig.fontSize = 14;</div>
+<div class="line"> </div>
+<div class="line">        CLAY(rootId, {}) {</div>
+<div class="line">            CLAY(contentId, {}) {</div>
+<div class="line">                CLAY_TEXT(</div>
+<div class="line">                    context.uiManager.toClayString(field.<a class="code hl_variable" href="struct_flow_ui_1_1_field_query_result.html#a4f806c61052a963d166a482ff44a849c">text</a>),</div>
+<div class="line">                    CLAY_TEXT_CONFIG(textConfig));</div>
+<div class="line">            };</div>
+<div class="line">        };</div>
+<div class="line">    },      <span class="comment">// buildElement</span></div>
+<div class="line">};</div>
+<div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:31</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_field_config_html"><div class="ttname"><a href="struct_flow_ui_1_1_field_config.html">FlowUi::FieldConfig</a></div><div class="ttdoc">Behavior configuration for a requested input field.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:59</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_field_query_result_html"><div class="ttname"><a href="struct_flow_ui_1_1_field_query_result.html">FlowUi::FieldQueryResult</a></div><div class="ttdoc">Result returned from an input field request.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:150</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_field_query_result_html_a4f806c61052a963d166a482ff44a849c"><div class="ttname"><a href="struct_flow_ui_1_1_field_query_result.html#a4f806c61052a963d166a482ff44a849c">FlowUi::FieldQueryResult::text</a></div><div class="ttdeci">std::string_view text</div><div class="ttdoc">Current text for the field.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:157</div></div>
+</div><!-- fragment --> </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a7ac0604f2391bfe2ea5d16b008b68d18" name="a7ac0604f2391bfe2ea5d16b008b68d18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ac0604f2391bfe2ea5d16b008b68d18">&#9670;&#160;</a></span>clear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::InputFieldManager::clear </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clear all managed input field state. </p>
+<p><a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18" title="Clear all managed input field state.">clear()</a> removes every field, clears primary focus, resets key repeat and pointer drag state, and drops any frame render overrides. It is a global reset for the input field system.</p>
+<div class="fragment"><div class="line">app.ui().inputFields().clear();</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a997c4fea775ebe55ae427e901c38f50c" name="a997c4fea775ebe55ae427e901c38f50c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a997c4fea775ebe55ae427e901c38f50c">&#9670;&#160;</a></span>getSelectedText()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view FlowUi::InputFieldManager::getSelectedText </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return selected text from the primary input field. </p>
+<p>When the focused field has multiple selections, the earliest selected range is returned. If no primary field exists, the primary field is gone, or no selection is active, the returned view is empty.</p>
+<dl class="section return"><dt>Returns</dt><dd>View of the selected text in manager-owned storage, or an empty view when there is no active selection. The view remains valid until the selected field text changes or the field is removed.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::string selected(app.ui().inputFields().getSelectedText());</div>
+<div class="line"><span class="keywordflow">if</span> (!selected.empty()) {</div>
+<div class="line">    app.ui().setClipboardText(selected);</div>
+<div class="line">}</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a4f494c501874c594a05a8e28f8e9954f" name="a4f494c501874c594a05a8e28f8e9954f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f494c501874c594a05a8e28f8e9954f">&#9670;&#160;</a></span>hasPrimaryFieldFocus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::hasPrimaryFieldFocus </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return whether any field owns primary input focus. </p>
+<p>This is useful when global shortcuts should be suppressed while the user is editing text. <a class="el" href="class_flow_ui_1_1_shortcut_manager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> uses the same state for <a class="el" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694" title="Run only while an input field owns primary text focus.">ShortcutScope::FocusedInput</a>.</p>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">true</td><td>a primary field id is set and that field has at least one caret. </td></tr>
+    <tr><td class="paramname">false</td><td>no primary field id is set.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.ui().inputFields().hasPrimaryFieldFocus()) {</div>
+<div class="line">    runGlobalShortcut();</div>
+<div class="line">}</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a109309cb439eaa40a24f8ada6409da8e" name="a109309cb439eaa40a24f8ada6409da8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a109309cb439eaa40a24f8ada6409da8e">&#9670;&#160;</a></span>insertTextAtPrimaryCaret()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::insertTextAtPrimaryCaret </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>utf8Text</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Insert UTF-8 text at the primary caret. </p>
+<p>The text is inserted into the focused field at each caret position. Active selections are replaced. The operation respects <a class="el" href="struct_flow_ui_1_1_field_config.html#a58e48e6172c02b7c03adfea1208f5779" title="Whether the field rejects text edits.">FieldConfig::readOnly</a> and <a class="el" href="struct_flow_ui_1_1_field_config.html#abe7381874b2dd1222a019466249ff434" title="Maximum stored UTF-8 byte count.">FieldConfig::maxBytes</a> for the target field.</p>
+<p>This function is intended for paste commands, virtual keyboards, or other application-driven text insertion. Normal keyboard text input is collected by FlowUi's frame input pipeline and applied automatically.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">utf8Text</td><td>UTF-8 text to insert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">true</td><td>the focused field text or caret positions changed. </td></tr>
+    <tr><td class="paramname">false</td><td>utf8Text is empty, no field is focused, the field is read-only, the field has no caret, or the insertion was rejected by maxBytes.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::bad_alloc</td><td>if copying or inserting text requires allocation and allocation fails.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> std::string clipboard = app.ui().clipboardText();</div>
+<div class="line">(void)app.ui().inputFields().insertTextAtPrimaryCaret(clipboard);</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a1e0319ffec372a95e5d129a5d8bda14a" name="a1e0319ffec372a95e5d129a5d8bda14a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e0319ffec372a95e5d129a5d8bda14a">&#9670;&#160;</a></span>removeField()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::InputFieldManager::removeField </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remove a managed field by id. </p>
+<p>This discards the field's stored text, config, Clay element ids, carets, and selection state. Use it when an external value should replace the current editable text, or when a dynamic field is permanently removed from the UI.</p>
+<p>If the removed field owns primary input focus, focus is cleared or moved to another field that still has carets.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fieldId</td><td>Stable id of the field state to remove. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">true</td><td>a field with fieldId existed and was removed. </td></tr>
+    <tr><td class="paramname">false</td><td>fieldId is empty or no matching field exists.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (externalValueChanged) {</div>
+<div class="line">    (void)context.uiManager.inputFields().removeField(fieldId);</div>
+<div class="line">}</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="aad13550088f959cf6d948173d8afa446" name="aad13550088f959cf6d948173d8afa446"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad13550088f959cf6d948173d8afa446">&#9670;&#160;</a></span>requestCaret()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::InputFieldManager::requestCaret </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>fieldId</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__input__field__manager.html#gafeb7e7dce488c324629200446fdbf6c0">CaretRequestKind</a></td>          <td class="paramname"><span class="paramname"><em>kind</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Request focus or caret changes for an input field. </p>
+<p>Caret requests are applied immediately to manager state. SetPrimary is the normal focus operation for a clicked input field. ClearAll removes focus from every field and ignores fieldId. Add creates another caret for the requested field and is intended for advanced multi-caret editing.</p>
+<p>Calling SetPrimary for a field id that has not been requested yet creates empty manager state for that id. The next <a class="el" href="#a6deadc46f16595277ae8e2258e63b787" title="Register or update an input field for the current frame.">requestField()</a> call for the same id will attach config and Clay element ids to that state.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fieldId</td><td>Stable id of the field to focus or modify. Ignored when kind is <a class="el" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995" title="Clear all carets and remove primary input focus.">CaretRequestKind::ClearAll</a>. </td></tr>
+    <tr><td class="paramname">kind</td><td>Caret operation to perform.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::bad_alloc</td><td>if the request creates a new field state and internal storage allocation fails.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(</div>
+<div class="line">    context.elementID,</div>
+<div class="line">    <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a6deadc46f16595277ae8e2258e63b787" name="a6deadc46f16595277ae8e2258e63b787"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6deadc46f16595277ae8e2258e63b787">&#9670;&#160;</a></span>requestField()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_flow_ui_1_1_field_query_result.html">FieldQueryResult</a> FlowUi::InputFieldManager::requestField </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="struct_flow_ui_1_1_field_request.html">FieldRequest</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>request</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Register or update an input field for the current frame. </p>
+<p><a class="el" href="#a6deadc46f16595277ae8e2258e63b787" title="Register or update an input field for the current frame.">requestField()</a> marks the field as present for this frame, creates manager state when fieldId is new, updates the field config and Clay element ids, and returns the current text/focus snapshot for the field. Call it once per frame from the element that draws the field.</p>
+<p>If the currently focused field is not requested in a frame, FlowUi clears primary input focus for that field when the frame is finalized. Non-focused field state remains cached until <a class="el" href="#a1e0319ffec372a95e5d129a5d8bda14a" title="Remove a managed field by id.">removeField()</a> or <a class="el" href="#a7ac0604f2391bfe2ea5d16b008b68d18" title="Clear all managed input field state.">clear()</a> is called.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">request</td><td>Field id, first-use text, behavior configuration, and Clay element ids used for text measurement and pointer hit testing. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Current manager-owned text plus focus and selection flags. Returns an empty result when request.fieldId is empty.</dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::bad_alloc</td><td>if internal field storage allocation fails.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="struct_flow_ui_1_1_field_query_result.html">FlowUi::FieldQueryResult</a> field =</div>
+<div class="line">    context.uiManager.inputFields().requestField({</div>
+<div class="line">        .fieldId = context.elementID,</div>
+<div class="line">        .initialText = <span class="stringliteral">&quot;Search&quot;</span>,</div>
+<div class="line">        .config = <a class="code hl_struct" href="struct_flow_ui_1_1_field_config.html">FlowUi::FieldConfig</a>{</div>
+<div class="line">            .readOnly = <span class="keyword">false</span>,</div>
+<div class="line">            .allowNewline = <span class="keyword">false</span>,</div>
+<div class="line">            .maxBytes = 256,</div>
+<div class="line">        },</div>
+<div class="line">        .textElementId = context.uiManager.toClayEID(textId),</div>
+<div class="line">        .contentElementId = context.uiManager.toClayEID(contentId),</div>
+<div class="line">    });</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/managers/<a class="el" href="_input_field_manager_8hpp_source.html">InputFieldManager.hpp</a></li>
 </ul>
 </div><!-- contents -->

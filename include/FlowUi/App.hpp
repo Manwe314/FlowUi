@@ -446,8 +446,7 @@ public:
 	 *
 	 * @return Native backend window handle, or nullptr if unavailable.
 	 *
-	 * @see ::IWindowBackend
-	 * @see FlowUi::detail::GlfwWindowBackend
+	 * @note The concrete handle type depends on the active window backend.
 	 */
 	void* nativeWindowHandle() const;
 	/** @brief Return whether the window backend supports raw mouse motion.
@@ -460,14 +459,11 @@ public:
 	 *
 	 * @param text String view for the text to set in the system clipboard.
 	 *
-	 * @see FlowUi::detail::GlfwWindowBackend
 	 */
 	void setClipboardText(std::string_view text);
 	/** @brief Read clipboard text through the window backend.
 	 *
 	 * @return std::string containing the current clipboard text.
-	 *
-	 * @see FlowUi::detail::GlfwWindowBackend
 	 */
 	std::string clipboardText() const;
 

@@ -252,8 +252,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Read clipboard text through the window backend. </p>
-<dl class="section return"><dt>Returns</dt><dd>std::string containing the current clipboard text.</dd></dl>
-<dl class="section see"><dt>See also</dt><dd>FlowUi::detail::GlfwWindowBackend </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>std::string containing the current clipboard text. </dd></dl>
 
 </div>
 </div>
@@ -442,9 +441,7 @@ Friends</h2></td></tr>
 
 <p>Return the backend native window handle. </p>
 <dl class="section return"><dt>Returns</dt><dd>Native backend window handle, or nullptr if unavailable.</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="struct_i_window_backend.html" title="Interface implemented by platform window backends.">IWindowBackend</a> </dd>
-<dd>
-FlowUi::detail::GlfwWindowBackend </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The concrete handle type depends on the active window backend. </dd></dl>
 
 </div>
 </div>
@@ -466,11 +463,10 @@ FlowUi::detail::GlfwWindowBackend </dd></dl>
 <p>Set clipboard text through the window backend. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">text</td><td>String view for the text to set in the system clipboard.</td></tr>
+    <tr><td class="paramname">text</td><td>String view for the text to set in the system clipboard. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd>FlowUi::detail::GlfwWindowBackend </dd></dl>
 
 </div>
 </div>
@@ -611,8 +607,8 @@ FlowUi::detail::GlfwWindowBackend </dd></dl>
 <p>Example: </p><div class="fragment"><div class="line"><a class="code hl_class" href="class_flow_ui_1_1_app.html">FlowUi::App</a> application = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
 <div class="line"><a class="code hl_class" href="class_flow_ui_1_1_ui_manager.html">FlowUi::UiManager</a>&amp; uiManager = application.<a class="code hl_function" href="#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>();</div>
 <div class="ttc" id="aclass_flow_ui_1_1_app_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclass_flow_ui_1_1_ui_manager_html"><div class="ttname"><a href="class_flow_ui_1_1_ui_manager.html">FlowUi::UiManager</a></div><div class="ttdoc">Bridges FlowUi application code with Clay layout and per-frame UI services.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:38</div></div>
-</div><!-- fragment --><dl class="section return"><dt>Returns</dt><dd>Reference to the <a class="el" href="class_flow_ui_1_1_ui_manager.html" title="Bridges FlowUi application code with Clay layout and per-frame UI services.">FlowUi::UiManager</a>. </dd></dl>
+<div class="ttc" id="aclass_flow_ui_1_1_ui_manager_html"><div class="ttname"><a href="class_flow_ui_1_1_ui_manager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:60</div></div>
+</div><!-- fragment --><dl class="section return"><dt>Returns</dt><dd>Reference to the <a class="el" href="class_flow_ui_1_1_ui_manager.html" title="Frame-scoped UI construction context and service bridge.">FlowUi::UiManager</a>. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__flowui__ui__manager.html" title="UI Manager">UI Manager</a> </dd></dl>
 
 </div>
@@ -635,7 +631,7 @@ FlowUi::detail::GlfwWindowBackend </dd></dl>
 <p>Access the UI manager. </p>
 <p>Example: </p><div class="fragment"><div class="line"><a class="code hl_class" href="class_flow_ui_1_1_app.html">FlowUi::App</a> application = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
 <div class="line"><span class="keyword">const</span> <a class="code hl_class" href="class_flow_ui_1_1_ui_manager.html">FlowUi::UiManager</a>&amp; uiManager = application.<a class="code hl_function" href="#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>();</div>
-</div><!-- fragment --><dl class="section return"><dt>Returns</dt><dd>Const reference to the <a class="el" href="class_flow_ui_1_1_ui_manager.html" title="Bridges FlowUi application code with Clay layout and per-frame UI services.">FlowUi::UiManager</a>. </dd></dl>
+</div><!-- fragment --><dl class="section return"><dt>Returns</dt><dd>Const reference to the <a class="el" href="class_flow_ui_1_1_ui_manager.html" title="Frame-scoped UI construction context and service bridge.">FlowUi::UiManager</a>. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__flowui__ui__manager.html" title="UI Manager">UI Manager</a> </dd></dl>
 
 </div>
@@ -711,7 +707,7 @@ FlowUi::detail::GlfwWindowBackend </dd></dl>
 <p>Creates an <a class="el" href="class_flow_ui_1_1_app.html" title="Main FlowUi application object and owner of runtime managers.">App</a> object, allocates its internal implementation, and initializes the runtime managers.</p>
 <p>Example: </p><div class="fragment"><div class="line"><a class="code hl_struct" href="struct_flow_ui_1_1_app_config.html">FlowUi::AppConfig</a> config{};</div>
 <div class="line"><a class="code hl_class" href="class_flow_ui_1_1_app.html">FlowUi::App</a> application = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="astruct_flow_ui_1_1_app_config_html"><div class="ttname"><a href="struct_flow_ui_1_1_app_config.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:477</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_app_config_html"><div class="ttname"><a href="struct_flow_ui_1_1_app_config.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:401</div></div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cfg</td><td>Configuration struct used for initialization. </td></tr>

@@ -26,44 +26,33 @@ var NAVTREE =
 [
   [ "Flow UI", "index.html", [
     [ "FlowUi", "index.html", "index" ],
-    [ "FlowUi", "md__r_e_a_d_m_e.html", [
-      [ "Overview", "md__r_e_a_d_m_e.html#autotoc_md1", [
-        [ "What is FlowUi?", "md__r_e_a_d_m_e.html#autotoc_md2", null ],
-        [ "Why Use FlowUi?", "md__r_e_a_d_m_e.html#autotoc_md3", null ],
-        [ "Overview of FlowUi's functionality", "md__r_e_a_d_m_e.html#autotoc_md4", null ],
-        [ "External tools used by FlowUi", "md__r_e_a_d_m_e.html#autotoc_md5", null ]
-      ] ],
-      [ "Minimal App Loop Example", "md__r_e_a_d_m_e.html#autotoc_md6", [
-        [ "Build Options", "md__r_e_a_d_m_e.html#autotoc_md7", null ]
-      ] ]
-    ] ],
     [ "FlowUi Quick Start", "md_docs_2tutorials_2quick__start.html", [
-      [ "Contents", "md_docs_2tutorials_2quick__start.html#autotoc_md19", null ],
-      [ "Requirements", "md_docs_2tutorials_2quick__start.html#autotoc_md20", null ],
-      [ "Chapter 1: Set Up a FlowUi Project", "md_docs_2tutorials_2quick__start.html#autotoc_md21", [
-        [ "Create the Project Layout", "md_docs_2tutorials_2quick__start.html#autotoc_md22", null ],
-        [ "Add FlowUi as an External Library", "md_docs_2tutorials_2quick__start.html#autotoc_md23", null ],
-        [ "Write the Root CMake File", "md_docs_2tutorials_2quick__start.html#autotoc_md24", null ],
-        [ "Add the First Source Files", "md_docs_2tutorials_2quick__start.html#autotoc_md25", null ],
-        [ "Configure and Build", "md_docs_2tutorials_2quick__start.html#autotoc_md26", null ]
+      [ "Contents", "md_docs_2tutorials_2quick__start.html#autotoc_md11", null ],
+      [ "Requirements", "md_docs_2tutorials_2quick__start.html#autotoc_md12", null ],
+      [ "Chapter 1: Set Up a FlowUi Project", "md_docs_2tutorials_2quick__start.html#autotoc_md13", [
+        [ "Create the Project Layout", "md_docs_2tutorials_2quick__start.html#autotoc_md14", null ],
+        [ "Add FlowUi as an External Library", "md_docs_2tutorials_2quick__start.html#autotoc_md15", null ],
+        [ "Write the Root CMake File", "md_docs_2tutorials_2quick__start.html#autotoc_md16", null ],
+        [ "Add the First Source Files", "md_docs_2tutorials_2quick__start.html#autotoc_md17", null ],
+        [ "Configure and Build", "md_docs_2tutorials_2quick__start.html#autotoc_md18", null ]
       ] ],
-      [ "Chapter 2: Build the First FlowUi App", "md_docs_2tutorials_2quick__start.html#autotoc_md27", [
-        [ "Create the App Config", "md_docs_2tutorials_2quick__start.html#autotoc_md28", null ],
-        [ "Write the App Lifecycle", "md_docs_2tutorials_2quick__start.html#autotoc_md29", null ],
-        [ "Add a Custom Rainbow Button Element", "md_docs_2tutorials_2quick__start.html#autotoc_md30", [
-          [ "Define Parameters Struct", "md_docs_2tutorials_2quick__start.html#autotoc_md31", null ],
-          [ "Define State Struct", "md_docs_2tutorials_2quick__start.html#autotoc_md32", null ],
-          [ "Define Resources Struct", "md_docs_2tutorials_2quick__start.html#autotoc_md33", null ],
-          [ "Write the Element Definition", "md_docs_2tutorials_2quick__start.html#autotoc_md34", null ],
-          [ "Write the Necessary Function Pointers", "md_docs_2tutorials_2quick__start.html#autotoc_md35", null ],
-          [ "Write the Final Element Definition Variable", "md_docs_2tutorials_2quick__start.html#autotoc_md36", null ],
-          [ "Write a Small Helper and Register to Developer Mode", "md_docs_2tutorials_2quick__start.html#autotoc_md37", null ],
-          [ "Final look at <span class=\"tt\">application.hpp</span>", "md_docs_2tutorials_2quick__start.html#autotoc_md38", null ]
+      [ "Chapter 2: Build the First FlowUi App", "md_docs_2tutorials_2quick__start.html#autotoc_md19", [
+        [ "Create the App Config", "md_docs_2tutorials_2quick__start.html#autotoc_md20", null ],
+        [ "Write the App Lifecycle", "md_docs_2tutorials_2quick__start.html#autotoc_md21", null ],
+        [ "Add a Custom Rainbow Button Element", "md_docs_2tutorials_2quick__start.html#autotoc_md22", [
+          [ "Define Parameters Struct", "md_docs_2tutorials_2quick__start.html#autotoc_md23", null ],
+          [ "Define State Struct", "md_docs_2tutorials_2quick__start.html#autotoc_md24", null ],
+          [ "Define Resources Struct", "md_docs_2tutorials_2quick__start.html#autotoc_md25", null ],
+          [ "Write the Element Definition", "md_docs_2tutorials_2quick__start.html#autotoc_md26", null ],
+          [ "Write the Necessary Function Pointers", "md_docs_2tutorials_2quick__start.html#autotoc_md27", null ],
+          [ "Write the Final Element Definition Variable", "md_docs_2tutorials_2quick__start.html#autotoc_md28", null ],
+          [ "Write a Small Helper and Register to Developer Mode", "md_docs_2tutorials_2quick__start.html#autotoc_md29", null ],
+          [ "Final look at <span class=\"tt\">application.hpp</span>", "md_docs_2tutorials_2quick__start.html#autotoc_md30", null ]
         ] ],
-        [ "Initialize Element Resources", "md_docs_2tutorials_2quick__start.html#autotoc_md39", null ],
-        [ "Draw the Element", "md_docs_2tutorials_2quick__start.html#autotoc_md40", null ]
+        [ "Initialize Element Resources", "md_docs_2tutorials_2quick__start.html#autotoc_md31", null ],
+        [ "Draw the Element", "md_docs_2tutorials_2quick__start.html#autotoc_md32", null ]
       ] ],
-      [ "Complete Example Files", "md_docs_2tutorials_2quick__start.html#autotoc_md41", null ]
+      [ "Complete Example Files", "md_docs_2tutorials_2quick__start.html#autotoc_md33", null ]
     ] ],
     [ "Topics", "topics.html", "topics" ],
     [ "Classes", "annotated.html", [
@@ -72,9 +61,8 @@ var NAVTREE =
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
         [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", "functions_vars" ],
+        [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", null ],
-        [ "Enumerations", "functions_enum.html", null ],
         [ "Related Symbols", "functions_rela.html", null ]
       ] ]
     ] ],
@@ -87,8 +75,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_app_8hpp_source.html",
-"md__r_e_a_d_m_e.html#autotoc_md4",
-"struct_flow_ui_1_1_view_port_vulkan_interop.html#a2010347e1ced0f4b80fe098d518612b0"
+"struct_flow_ui_1_1_element_build_context.html#a20050ef1f592eaa1d1deaa23508bc35f"
 ];
 
 const SYNCONMSG = 'click to disable panel synchronization';

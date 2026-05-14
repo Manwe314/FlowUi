@@ -484,7 +484,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		if (w <= 0.0f || h <= 0.0f) {
 			return;
 		}
-		InputFieldRectOverride rectOverride{};
+		detail::InputFieldRectOverride rectOverride{};
 		rectOverride.insertBeforeCommandIndex = std::clamp(insertBeforeCommandIndex, 0, maxInsertionIndex);
 		rectOverride.boundingBox = Clay_BoundingBox{
 			.x = x,
@@ -511,7 +511,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			return;
 		}
 
-		InputFieldTextColorOverride textOverride{};
+		detail::InputFieldTextColorOverride textOverride{};
 		textOverride.commandIndex = std::clamp(commandIndex, 0, std::max(0, renderCommands.length - 1));
 		textOverride.color = config_.highlightedTextColor;
 		textOverride.ranges.reserve(localSelections.size());
@@ -522,7 +522,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			if (end <= start) {
 				continue;
 			}
-			textOverride.ranges.push_back(InputFieldTextColorRangeOverride{
+			textOverride.ranges.push_back(detail::InputFieldTextColorRangeOverride{
 				.startByteOffset = start,
 				.endByteOffset = end,
 			});
@@ -624,13 +624,13 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		std::stable_sort(
 			frameOverrides_.rects.begin(),
 			frameOverrides_.rects.end(),
-			[](const InputFieldRectOverride& a, const InputFieldRectOverride& b) {
+			[](const detail::InputFieldRectOverride& a, const detail::InputFieldRectOverride& b) {
 				return a.insertBeforeCommandIndex < b.insertBeforeCommandIndex;
 			});
 		std::stable_sort(
 			frameOverrides_.textColorOverrides.begin(),
 			frameOverrides_.textColorOverrides.end(),
-			[](const InputFieldTextColorOverride& a, const InputFieldTextColorOverride& b) {
+			[](const detail::InputFieldTextColorOverride& a, const detail::InputFieldTextColorOverride& b) {
 				return a.commandIndex < b.commandIndex;
 			});
 		return renderCommands;
@@ -668,20 +668,20 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	std::stable_sort(
 		frameOverrides_.rects.begin(),
 		frameOverrides_.rects.end(),
-		[](const InputFieldRectOverride& a, const InputFieldRectOverride& b) {
+		[](const detail::InputFieldRectOverride& a, const detail::InputFieldRectOverride& b) {
 			return a.insertBeforeCommandIndex < b.insertBeforeCommandIndex;
 		});
 	std::stable_sort(
 		frameOverrides_.textColorOverrides.begin(),
 		frameOverrides_.textColorOverrides.end(),
-		[](const InputFieldTextColorOverride& a, const InputFieldTextColorOverride& b) {
+		[](const detail::InputFieldTextColorOverride& a, const detail::InputFieldTextColorOverride& b) {
 			return a.commandIndex < b.commandIndex;
 		});
 
 	return renderCommands;
 }
 
-InputFieldManager::FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
+FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
 	if (request.fieldId.empty()) {
 		return {};
 	}

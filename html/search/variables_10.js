@@ -2,9 +2,9 @@ var searchData=
 [
   ['sampler_0',['sampler',['../struct_flow_ui_1_1_font_1_1_atlas_array_resource.html#af998adbcc3b30134597ed71f55f75bdb',1,'FlowUi::Font::AtlasArrayResource']]],
   ['samplingmode_1',['samplingMode',['../struct_flow_ui_1_1_texture_ref.html#a4cffc00827033ba13c36c7ac126837eb',1,'FlowUi::TextureRef']]],
-  ['scrollx_2',['scrollX',['../struct_frame_input.html#adddd789179dc244f97ba93e5625474f3',1,'FrameInput']]],
-  ['scrolly_3',['scrollY',['../struct_frame_input.html#a4d6a2af9e1657f550cfac33f48c126e4',1,'FrameInput']]],
-  ['shift_4',['shift',['../struct_flow_ui_1_1_dev_shortcut_chord.html#a2ee624b2e3d6cc10ea580af3e60bb185',1,'FlowUi::DevShortcutChord::shift'],['../struct_flow_ui_1_1_shortcut_chord.html#a7625914626aad948c38070645cd26452',1,'FlowUi::ShortcutChord::shift'],['../struct_frame_input.html#a7d0dfe4835662b3c03bfb364e96fbdf2',1,'FrameInput::shift']]],
+  ['scrollx_2',['scrollX',['../struct_flow_ui_1_1_frame_input.html#a2cc30aed2f6f968480ce49df132cc215',1,'FlowUi::FrameInput']]],
+  ['scrolly_3',['scrollY',['../struct_flow_ui_1_1_frame_input.html#a77615caa0a1cd2a6e4f4d570d41722de',1,'FlowUi::FrameInput']]],
+  ['shift_4',['shift',['../struct_flow_ui_1_1_dev_shortcut_chord.html#a2ee624b2e3d6cc10ea580af3e60bb185',1,'FlowUi::DevShortcutChord::shift'],['../struct_flow_ui_1_1_frame_input.html#a6dd43d399d0e716037b2a5f540a85238',1,'FlowUi::FrameInput::shift'],['../struct_flow_ui_1_1_shortcut_chord.html#a7625914626aad948c38070645cd26452',1,'FlowUi::ShortcutChord::shift']]],
   ['sizebucketstep_5',['sizeBucketStep',['../struct_flow_ui_1_1_icon_manager_config.html#a516bba081281883eccbba2f9a1e968cb',1,'FlowUi::IconManagerConfig']]],
   ['sourceatlasheight_6',['sourceAtlasHeight',['../struct_flow_ui_1_1_font_1_1_font_face_data.html#a95cb0edf7a76e7dafab75f035e9e555e',1,'FlowUi::Font::FontFaceData']]],
   ['sourceatlaswidth_7',['sourceAtlasWidth',['../struct_flow_ui_1_1_font_1_1_font_face_data.html#aea2ecf821e618ed833cbb964183711b8',1,'FlowUi::Font::FontFaceData']]],
@@ -15,11 +15,10 @@ var searchData=
   ['sourcepath_12',['sourcePath',['../struct_flow_ui_1_1_font_1_1_font_face_data.html#a61c7c0c65e9839d2cdd1bd10148b29c5',1,'FlowUi::Font::FontFaceData']]],
   ['sourcewidth_13',['sourceWidth',['../struct_flow_ui_1_1_texture_ref.html#a6a9d218f073e486e784478abe06cbd91',1,'FlowUi::TextureRef']]],
   ['srgbbackbuffer_14',['srgbBackbuffer',['../struct_flow_ui_1_1_vulkan_config.html#a27609afa6b372beb9c1106f5bc018bd8',1,'FlowUi::VulkanConfig']]],
-  ['startbyteoffset_15',['startByteOffset',['../struct_flow_ui_1_1_input_field_text_color_range_override.html#ab8cee221177acea904686993de2f34d0',1,'FlowUi::InputFieldTextColorRangeOverride']]],
-  ['statepool_16',['statePool',['../struct_flow_ui_1_1_element_definition.html#a06215fff8f23471d8b82b03ed4affe51',1,'FlowUi::ElementDefinition']]],
-  ['stickykeys_17',['stickyKeys',['../struct_flow_ui_1_1_window_input_config.html#a0a2ec170b498c78f7080fe14f6830fc4',1,'FlowUi::WindowInputConfig']]],
-  ['stickymousebuttons_18',['stickyMouseButtons',['../struct_flow_ui_1_1_window_input_config.html#a076f04ec508997b382370d748104bebc',1,'FlowUi::WindowInputConfig']]],
-  ['stringarenasize_19',['stringArenaSize',['../struct_flow_ui_1_1_ui_config.html#a2d1e958b117a67d93875c8db44c20c04',1,'FlowUi::UiConfig']]],
-  ['style_20',['style',['../struct_flow_ui_1_1_font_face_create_info.html#a5fd2d512f5a79b9a1e068761a77391fb',1,'FlowUi::FontFaceCreateInfo']]],
-  ['super_21',['super',['../struct_flow_ui_1_1_dev_shortcut_chord.html#a5044aaec41c7839b29ed8dc231818015',1,'FlowUi::DevShortcutChord::super'],['../struct_flow_ui_1_1_shortcut_chord.html#a7b81765210865212f20ffa2a36f59368',1,'FlowUi::ShortcutChord::super'],['../struct_frame_input.html#aa51795691448aee86763a6efaf47812f',1,'FrameInput::super']]]
+  ['statepool_15',['statePool',['../struct_flow_ui_1_1_element_definition.html#a06215fff8f23471d8b82b03ed4affe51',1,'FlowUi::ElementDefinition']]],
+  ['stickykeys_16',['stickyKeys',['../struct_flow_ui_1_1_window_input_config.html#a0a2ec170b498c78f7080fe14f6830fc4',1,'FlowUi::WindowInputConfig']]],
+  ['stickymousebuttons_17',['stickyMouseButtons',['../struct_flow_ui_1_1_window_input_config.html#a076f04ec508997b382370d748104bebc',1,'FlowUi::WindowInputConfig']]],
+  ['stringarenasize_18',['stringArenaSize',['../struct_flow_ui_1_1_ui_config.html#a2d1e958b117a67d93875c8db44c20c04',1,'FlowUi::UiConfig']]],
+  ['style_19',['style',['../struct_flow_ui_1_1_font_face_create_info.html#a5fd2d512f5a79b9a1e068761a77391fb',1,'FlowUi::FontFaceCreateInfo']]],
+  ['super_20',['super',['../struct_flow_ui_1_1_dev_shortcut_chord.html#a5044aaec41c7839b29ed8dc231818015',1,'FlowUi::DevShortcutChord::super'],['../struct_flow_ui_1_1_frame_input.html#af84121e285a0104883cc8931873ba00a',1,'FlowUi::FrameInput::super'],['../struct_flow_ui_1_1_shortcut_chord.html#a7b81765210865212f20ffa2a36f59368',1,'FlowUi::ShortcutChord::super']]]
 ];

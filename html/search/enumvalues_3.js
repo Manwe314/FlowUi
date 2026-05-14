@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['nearest_0',['Nearest',['../group__flowui__config.html#gga45632b801edaf6ba2ce69d7892e23ec9a60494f02d440f316319dd0fad40ad007',1,'FlowUi']]],
-  ['none_1',['None',['../group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca6adf97f83acf6453d4a6a4b1070f3754',1,'FlowUi']]]
+  ['focusedelement_0',['FocusedElement',['../group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3',1,'FlowUi']]],
+  ['focusedinput_1',['FocusedInput',['../group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694',1,'FlowUi']]]
 ];

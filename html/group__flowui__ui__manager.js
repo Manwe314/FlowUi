@@ -1,8 +1,6 @@
 var group__flowui__ui__manager =
 [
     [ "FlowUi::UiManager", "class_flow_ui_1_1_ui_manager.html", [
-      [ "UiManager", "class_flow_ui_1_1_ui_manager.html#a688d12fc8c9ea952d61f2a744c0ae0ac", null ],
-      [ "advanceFrameInteractionSnapshots", "class_flow_ui_1_1_ui_manager.html#a75804d596e11255b39ff7f3e9ad9f80f", null ],
       [ "clipboardText", "class_flow_ui_1_1_ui_manager.html#a4b3ec28e336b11fc18d35639a360544e", null ],
       [ "createElement", "class_flow_ui_1_1_ui_manager.html#a68b455b65c1d5b8d625e2992de8819f5", null ],
       [ "drawConstructed", "class_flow_ui_1_1_ui_manager.html#a857a971efa5a8e904806b9398e0e4883", null ],
@@ -15,9 +13,7 @@ var group__flowui__ui__manager =
       [ "requestCursor", "class_flow_ui_1_1_ui_manager.html#a73558c0199600f70651c54dba7211498", null ],
       [ "resolveFont", "class_flow_ui_1_1_ui_manager.html#adbbbc7d049cee3b9e97242fc44585c2d", null ],
       [ "resolveFont", "class_flow_ui_1_1_ui_manager.html#a43b32fe49c09bc873a6691764164ba6b", null ],
-      [ "setClipboardAccessors", "class_flow_ui_1_1_ui_manager.html#a1d6ae6e5c59be265896215071fb08531", null ],
       [ "setClipboardText", "class_flow_ui_1_1_ui_manager.html#af951ad4db8a17064009ed8ff9ac9f79a", null ],
-      [ "setCurrentInteractionSnapshot", "class_flow_ui_1_1_ui_manager.html#ad2c0a5a70595cc2d1153be4b81e4fc2b", null ],
       [ "shortcuts", "class_flow_ui_1_1_ui_manager.html#a61893809f24d2017db5642a3a780065f", null ],
       [ "shortcuts", "class_flow_ui_1_1_ui_manager.html#a0e207879dfd35c910841bc23509c0abc", null ],
       [ "storeTexture", "class_flow_ui_1_1_ui_manager.html#ad796d47d74be0f2b856012a8d48305a9", null ],

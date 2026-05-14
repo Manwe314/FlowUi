@@ -24,7 +24,7 @@ struct VulkanContext {
 
 	void createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts);
 
-	void createSurface(IWindowBackend& window);
+	void createSurface(FlowUi::detail::IWindowBackend& window);
 
 	void pickPhysicalDevice(const FlowUi::AppConfig& config);
 	void createDevice(const FlowUi::AppConfig& config);

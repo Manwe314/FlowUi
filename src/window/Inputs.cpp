@@ -1,4 +1,4 @@
-#include "window/Inputs.hpp"
+#include "internal/InputQueue.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -8,14 +8,16 @@
 namespace {
 
 bool isValidKeyboardKey(int key) {
-	return key >= 0 && key < static_cast<int>(FrameInput::kKeyboardKeyCount);
+	return key >= 0 && key < static_cast<int>(FlowUi::FrameInput::kKeyboardKeyCount);
 }
 
 bool isValidMouseButton(int button) {
-	return button >= 0 && button < static_cast<int>(FrameInput::kMouseButtonCount);
+	return button >= 0 && button < static_cast<int>(FlowUi::FrameInput::kMouseButtonCount);
 }
 
 } // namespace
+
+namespace FlowUi::detail {
 
 void InputQueue::pushChar(char32_t c) {
 	queuedTextInput_.push_back(c);
@@ -77,3 +79,5 @@ FrameInput InputQueue::drain(double dt) {
 	queuedScrollY_ = 0.0f;
 	return frameInput;
 }
+
+} // namespace FlowUi::detail

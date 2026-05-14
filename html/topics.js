@@ -9,6 +9,6 @@ var topics =
     [ "Input Field Manager", "group__flowui__input__field__manager.html", "group__flowui__input__field__manager" ],
     [ "Shortcut Manager", "group__flowui__shortcut__manager.html", "group__flowui__shortcut__manager" ],
     [ "UI Manager", "group__flowui__ui__manager.html", "group__flowui__ui__manager" ],
-    [ "ViewPort Manager", "group__flowui__viewport__manager.html", "group__flowui__viewport__manager" ],
+    [ "ViewPort Manager", "group__flowui__viewport__manager.html", null ],
     [ "Flowui_font_resources", "group__flowui__font__resources.html", "group__flowui__font__resources" ]
 ];

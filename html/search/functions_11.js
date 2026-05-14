@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['ui_0',['ui',['../class_flow_ui_1_1_app.html#a788f5bbe3b0d496a41a71494a5f485bc',1,'FlowUi::App::ui()'],['../class_flow_ui_1_1_app.html#a4579cf4d39c726a5d2e625218bcfa059',1,'FlowUi::App::ui() const']]],
-  ['uimanager_1',['UiManager',['../class_flow_ui_1_1_ui_manager.html#a688d12fc8c9ea952d61f2a744c0ae0ac',1,'FlowUi::UiManager']]],
-  ['unregistershortcut_2',['unregisterShortcut',['../class_flow_ui_1_1_shortcut_manager.html#aa1243fa0e00dffc89ec688db82954a5e',1,'FlowUi::ShortcutManager']]]
+  ['windowinputconfig_0',['windowInputConfig',['../class_flow_ui_1_1_app.html#a9796415e95b720977162b8758e66f757',1,'FlowUi::App']]],
+  ['windowsize_1',['windowSize',['../class_flow_ui_1_1_app.html#add8511c39a52e3d2bc9f5afedddf3228',1,'FlowUi::App']]],
+  ['withelementid_2',['withElementID',['../class_flow_ui_1_1_element_builder.html#addcbec2dd601b254be83f4114cb679f7',1,'FlowUi::ElementBuilder']]]
 ];

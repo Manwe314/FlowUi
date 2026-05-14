@@ -18,8 +18,8 @@
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
-#include "managers/systems/FlowUiElementBuilder.hpp"
-#include "window/Inputs.hpp"
+#include "managers/FlowUiElementBuilder.hpp"
+#include "managers/structs/InputStructs.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/devRuntime.hpp"
 #endif
@@ -34,22 +34,140 @@ class App;
  * @{
  */
 
-/** @brief Bridges FlowUi application code with Clay layout and per-frame UI services. */
+/**
+ * @brief Frame-scoped UI construction context and service bridge.
+ *
+ * UiManager owns the Clay layout context used by App during each frame. User
+ * code normally reaches it through App::ui(), then uses it to create typed
+ * FlowUi elements, convert Flow element ids and dynamic strings into Clay data,
+ * query frame input and previous-frame interaction state, and access scoped UI
+ * services such as input fields, shortcuts, clipboard helpers, cursor requests,
+ * and font resolution.
+ *
+ * App owns the UiManager lifecycle. beginFrame(), endFrame(), renderer bridge
+ * data, clipboard backend wiring, and font-manager wiring are internal to App,
+ * so custom elements should treat UiManager as the frame-local authoring
+ * surface rather than as a standalone runtime object.
+ *
+ * @code{.cpp}
+ * FlowUi::UiManager& ui = app.ui();
+ *
+ * ui.createElement(kButton, "toolbar/save")
+ *     .setParameters(ButtonParams{.label = "Save"})
+ *     .draw();
+ * @endcode
+ */
 class UiManager {
 public:
-	/** @brief Construct a UI manager from app configuration. */
-	UiManager(const AppConfig& appConfig);
-
-	/** @brief Store a string in the current frame arena and return a Clay string. */
+	/**
+	 * @brief Store a string in the current frame arena and return a Clay string.
+	 *
+	 * Clay stores string data by pointer, so dynamic strings emitted during UI
+	 * construction must live at least until the frame ends. This function copies
+	 * the input into UiManager's active frame arena and returns a Clay_String
+	 * pointing at that copy.
+	 *
+	 * @param s UTF-8/string data to copy into the current frame arena.
+	 * @return Clay string view backed by UiManager frame storage.
+	 *
+	 * @throws std::runtime_error if the current frame arena does not have enough
+	 * capacity. Increase UiConfig::stringArenaSize.
+	 * @throws std::bad_alloc if arena storage allocation has failed earlier.
+	 *
+	 * @code{.cpp}
+	 * CLAY_TEXT(
+	 *     context.uiManager.toClayString(context.params.label),
+	 *     CLAY_TEXT_CONFIG(textConfig));
+	 * @endcode
+	 */
 	Clay_String toClayString(std::string_view s);
-	/** @brief Store a texture reference for use by Clay render data. */
+
+	/**
+	 * @brief Store a texture reference for use by Clay image render data.
+	 *
+	 * Clay image commands carry an opaque pointer. This helper copies TextureRef
+	 * into the current frame arena and returns a pointer suitable for
+	 * Clay_ImageElementConfig::imageData.
+	 *
+	 * @param textureRef Texture request or registered texture handle to store.
+	 * @return Pointer to the frame-arena copy of textureRef.
+	 *
+	 * @throws std::runtime_error if the current frame arena does not have enough
+	 * capacity. Increase UiConfig::stringArenaSize.
+	 * 
+	 * @note This function should be used as .imageData instead of raw variable address
+	 *
+	 * @code{.cpp}
+	 * Clay_ImageElementConfig image{};
+	 * image.imageData = context.uiManager.storeTexture(textureRef);
+	 * @endcode
+	 */
 	TextureRef* storeTexture(const TextureRef& textureRef);
-	/** @brief Convert a string id to a Clay string id. */
+
+	/**
+	 * @brief Convert a string id to a Clay string id.
+	 *
+	 * This is a convenience wrapper around CLAY_SID using UiManager frame string
+	 * storage. Use it when Clay's string-id path is desired for the current
+	 * frame.
+	 *
+	 * @param s Element id string.
+	 * @return Clay element id generated from s.
+	 *
+	 * @throws std::runtime_error if the current frame arena does not have enough
+	 * capacity.
+	 *
+	 * @code{.cpp}
+	 * const Clay_ElementId overlayId = ui.toClaySID("overlay/root");
+	 * @endcode
+	 */
 	Clay_ElementId toClaySID(std::string_view s);
-	/** @brief Convert an element id string to a Clay element id. */
+
+	/**
+	 * @brief Convert an element id string to a Clay element id.
+	 *
+	 * This is the usual helper for FlowUi element ids and child ids. For custom
+	 * elements, the root Clay element should normally use context.elementID.
+	 *
+	 * @param s Element id string.
+	 * @return Clay element id generated from s.
+	 *
+	 * @throws std::runtime_error if the current frame arena does not have enough
+	 * capacity.
+	 *
+	 * @code{.cpp}
+	 * const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
+	 * const Clay_ElementId labelId =
+	 *     context.uiManager.toClayEID(context.createChildElementId("label"));
+	 * @endcode
+	 */
 	Clay_ElementId toClayEID(std::string_view s);
 
-	/** @brief Create a builder for a typed FlowUi element instance. */
+	/**
+	 * @brief Create a builder for a typed FlowUi element instance.
+	 *
+	 * createElement() is the public entry point for invoking FlowUi element
+	 * definitions. The returned ElementBuilder owns the element id and parameter
+	 * storage for this invocation until draw() or construct() is called.
+	 *
+	 * @tparam Parameters Parameter struct used by the element definition.
+	 * @tparam State State struct used by the element definition.
+	 * @tparam Resources Resources struct used by the element definition.
+	 * @tparam DefinitionId Compile-time definition id.
+	 * @tparam IsDevInternal Whether the definition is internal to dev tooling.
+	 * @param elementDefinition Element definition to invoke.
+	 * @param elementID Stable Flow element id for this invocation.
+	 * @return ElementBuilder configured for the passed definition and element id.
+	 *
+	 * @throws std::bad_alloc if copying elementID into the builder fails.
+	 *
+	 * @code{.cpp}
+	 * app.ui()
+	 *     .createElement(kButton, "toolbar/save")
+	 *     .setParameters(ButtonParams{.label = "Save"})
+	 *     .draw();
+	 * @endcode
+	 */
 	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 	ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(
 		const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition,
@@ -68,54 +186,239 @@ public:
 #endif
 		);
 	}
-	/** @brief Draw the current constructed element stack. */
+
+	/**
+	 * @brief Close the current element opened by ElementBuilder::construct().
+	 *
+	 * Call this after emitting child Clay nodes for an element opened through
+	 * createElement(...).construct(). drawConstructed() closes that constructed
+	 * root and ends any active dev-mode capture for it.
+	 *
+	 * @throws std::runtime_error if there is no active constructed element or if
+	 * the Clay context is not initialized.
+	 *
+	 * @code{.cpp}
+	 * ui.createElement(kPanel, "settings").construct();
+	 * CLAY(ui.toClayEID("settings/body"), {}) {}
+	 * ui.drawConstructed();
+	 * @endcode
+	 */
 	void drawConstructed();
 
-	/** @brief Return the previous frame's interaction snapshot. */
+	/**
+	 * @brief Return the previous completed frame's interaction snapshot.
+	 *
+	 * Element callbacks use the previous snapshot while constructing the current
+	 * frame so hover, press, hold, and release queries are stable.
+	 *
+	 * @return Interaction data collected when the previous frame ended.
+	 *
+	 * @code{.cpp}
+	 * if (context.uiManager.getPreviousFramesInteraction().isHovered(rootId)) {
+	 *     context.uiManager.requestCursor(FlowUi::CursorType::PointingHand);
+	 * }
+	 * @endcode
+	 */
     const InteractionSnapshot& getPreviousFramesInteraction() const { return previousInteractionSnapshot_; }
-	/** @brief Return input for the current layout frame. */
+
+	/**
+	 * @brief Return input for the current layout frame.
+	 *
+	 * Coordinates are in FlowUi layout space after App has applied UI scaling.
+	 *
+	 * @return Current frame input used by UiManager during this layout pass.
+	 *
+	 * @code{.cpp}
+	 * const FrameInput& input = context.uiManager.getCurrentFrameInput();
+	 * const float mouseX = input.mouseX;
+	 * @endcode
+	 */
 	const FrameInput& getCurrentFrameInput() const { return frameInputForCurrentLayout_; }
-	/** @brief Return input for the previous layout frame. */
+
+	/**
+	 * @brief Return input for the previous layout frame.
+	 *
+	 * Use this with getCurrentFrameInput() for custom edge detection or drag
+	 * calculations.
+	 *
+	 * @return Previous frame input in FlowUi layout space.
+	 *
+	 * @code{.cpp}
+	 * const bool pressed =
+	 *     context.uiManager.getCurrentFrameInput().mouseDown[0] &&
+	 *     !context.uiManager.getPreviousFrameInput().mouseDown[0];
+	 * @endcode
+	 */
 	const FrameInput& getPreviousFrameInput() const { return previousFrameInputForCurrentLayout_; }
-	/** @brief Access the input field manager. */
+
+	/**
+	 * @brief Access the input field manager.
+	 *
+	 * @return Mutable InputFieldManager owned by this UiManager.
+	 *
+	 * @code{.cpp}
+	 * context.uiManager.inputFields().requestCaret(
+	 *     fieldId,
+	 *     FlowUi::CaretRequestKind::SetPrimary);
+	 * @endcode
+	 */
 	InputFieldManager& inputFields() { return inputFieldManager_; }
-	/** @brief Access the input field manager. */
+
+	/**
+	 * @brief Access the input field manager.
+	 *
+	 * @return Immutable InputFieldManager owned by this UiManager.
+	 */
 	const InputFieldManager& inputFields() const { return inputFieldManager_; }
-	/** @brief Access the shortcut manager. */
+
+	/**
+	 * @brief Access the shortcut manager.
+	 *
+	 * @return Mutable ShortcutManager owned by this UiManager.
+	 *
+	 * @code{.cpp}
+	 * const FlowUi::ShortcutId id = app.ui().shortcuts().registerShortcut(
+	 *     chord,
+	 *     FlowUi::ShortcutScope::Global,
+	 *     0,
+	 *     callback);
+	 * @endcode
+	 */
 	ShortcutManager& shortcuts() { return shortcutManager_; }
-	/** @brief Access the shortcut manager. */
+
+	/**
+	 * @brief Access the shortcut manager.
+	 *
+	 * @return Immutable ShortcutManager owned by this UiManager.
+	 */
 	const ShortcutManager& shortcuts() const { return shortcutManager_; }
 #if FLOW_UI_DEV_MODE
-	/** @brief Access the developer runtime. */
+	/**
+	 * @brief Access the developer runtime.
+	 *
+	 * @return Mutable dev-mode runtime for the active UiManager.
+	 */
 	devMode::DevRuntime& devRuntime() { return devRuntime_; }
-	/** @brief Access the developer runtime. */
+
+	/**
+	 * @brief Access the developer runtime.
+	 *
+	 * @return Immutable dev-mode runtime for the active UiManager.
+	 */
 	const devMode::DevRuntime& devRuntime() const { return devRuntime_; }
-	/** @brief Access developer tooling config. */
+
+	/**
+	 * @brief Access developer tooling config.
+	 *
+	 * @return Mutable developer tooling configuration.
+	 */
 	DevToolsConfig& devToolsConfig() { return devToolsConfig_; }
-	/** @brief Access developer tooling config. */
+
+	/**
+	 * @brief Access developer tooling config.
+	 *
+	 * @return Immutable developer tooling configuration.
+	 */
 	const DevToolsConfig& devToolsConfig() const { return devToolsConfig_; }
 #endif
-	/** @brief Set clipboard text through configured clipboard accessors. */
-	void setClipboardText(std::string_view text) const;
-	/** @brief Read clipboard text through configured clipboard accessors. */
-	std::string clipboardText() const;
-	/** @brief Return true if clipboard accessors are installed. */
-	bool hasClipboardAccess() const;
-	/** @brief Request a cursor shape for the current frame. */
-	void requestCursor(CursorType cursorType, uint8_t priority = 0);
-	/** @brief Resolve a concrete Clay font id for a family/style request. */
-	FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
-	/** @brief Resolve a concrete Clay font id for a named family/style request. */
-	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
-	/** @brief Set clipboard access callbacks. */
-	void setClipboardAccessors(
-		std::function<void(std::string_view)> setClipboardTextAccessor,
-		std::function<std::string()> getClipboardTextAccessor);
 
-	/** @brief Set the current interaction snapshot. */
-    void setCurrentInteractionSnapshot(InteractionSnapshot snapshot);
-	/** @brief Advance stored interaction snapshots by one frame. */
-    void advanceFrameInteractionSnapshots();
+	/**
+	 * @brief Set clipboard text through the configured clipboard accessor.
+	 *
+	 * If no clipboard setter is installed, this function does nothing.
+	 *
+	 * @param text Text to copy to the system or configured clipboard.
+	 *
+	 * @throws Any exception thrown by the configured clipboard setter.
+	 *
+	 * @code{.cpp}
+	 * context.uiManager.setClipboardText("Copied text");
+	 * @endcode
+	 */
+	void setClipboardText(std::string_view text) const;
+
+	/**
+	 * @brief Read clipboard text through the configured clipboard accessor.
+	 *
+	 * @return Clipboard text, or an empty string when no getter is installed.
+	 *
+	 * @throws Any exception thrown by the configured clipboard getter.
+	 *
+	 * @code{.cpp}
+	 * const std::string pasted = context.uiManager.clipboardText();
+	 * @endcode
+	 */
+	std::string clipboardText() const;
+
+	/**
+	 * @brief Return whether clipboard accessors are installed.
+	 *
+	 * @retval true Both clipboard setter and getter callbacks are installed.
+	 * @retval false At least one clipboard callback is missing.
+	 *
+	 * @code{.cpp}
+	 * if (context.uiManager.hasClipboardAccess()) {
+	 *     context.uiManager.setClipboardText(selectedText);
+	 * }
+	 * @endcode
+	 */
+	bool hasClipboardAccess() const;
+
+	/**
+	 * @brief Request a cursor shape for the current frame.
+	 *
+	 * Cursor requests are reset at the beginning of each frame. When multiple
+	 * requests are made in one frame, the request with the highest priority wins;
+	 * equal priority requests may replace earlier requests.
+	 *
+	 * @param cursorType Cursor shape requested by UI code.
+	 * @param priority Ordering priority for this frame's cursor request.
+	 *
+	 * @code{.cpp}
+	 * context.uiManager.requestCursor(FlowUi::CursorType::IBeam, 10);
+	 * @endcode
+	 */
+	void requestCursor(CursorType cursorType, uint8_t priority = 0);
+
+	/**
+	 * @brief Resolve a concrete Clay font id for a family/style request.
+	 *
+	 * This forwards to FontManager when the App-owned font manager is connected
+	 * to UiManager. It is useful in element callbacks that receive UiManager but
+	 * not FontManager directly.
+	 *
+	 * @param familyId Existing logical font family id.
+	 * @param weight Requested CSS-style font weight.
+	 * @param style Requested font style.
+	 * @return Concrete FontId for Clay text, or 0 if no font manager is attached
+	 * or the family cannot be resolved.
+	 *
+	 * @code{.cpp}
+	 * textConfig.fontId = context.uiManager.resolveFont(bodyFamily, 700);
+	 * @endcode
+	 */
+	FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
+
+	/**
+	 * @brief Resolve a concrete Clay font id for a named family/style request.
+	 *
+	 * This forwards to FontManager when available and returns 0 when the family
+	 * name cannot be resolved.
+	 *
+	 * @param familyName Existing logical font family name string.
+	 * @param weight Requested CSS-style font weight.
+	 * @param style Requested font style.
+	 * @return Concrete FontId for Clay text, or 0 if no font manager is attached
+	 * or the family cannot be resolved.
+	 *
+	 * @code{.cpp}
+	 * textConfig.fontId = context.uiManager.resolveFont(
+	 *     "Body",
+	 *     400,
+	 *     FlowUi::FontStyle::Normal);
+	 * @endcode
+	 */
+	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
 
 private:
 	friend class App;
@@ -123,11 +426,19 @@ private:
 	friend class ElementBuilder;
 	friend void detail::pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
 
+	UiManager(const AppConfig& appConfig);
+
 	void initStringArenas(const AppConfig& cfg);
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
 	Clay_RenderCommandArray endFrame();
+	const detail::InputFieldFrameOverrides& inputFieldFrameOverrides() const { return inputFieldManager_.frameOverrides(); }
 	void setFontManager(const ::FontManager* fontManager);
 	void setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor);
+	void setClipboardAccessors(
+		std::function<void(std::string_view)> setClipboardTextAccessor,
+		std::function<std::string()> getClipboardTextAccessor);
+	void setCurrentInteractionSnapshot(InteractionSnapshot snapshot);
+	void advanceFrameInteractionSnapshots();
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
 	void pushConstructedElement(Clay_ElementId elementId);
 
