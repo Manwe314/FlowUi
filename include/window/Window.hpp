@@ -11,7 +11,7 @@
 
 #include "FlowUi/PublicStructs.hpp"
 #include "IWindow.hpp"
-#include "Inputs.hpp"
+#include "internal/InputQueue.hpp"
 
 #ifndef GLFW_INCLUDE_VULKAN
 #define GLFW_INCLUDE_VULKAN
@@ -393,9 +393,11 @@ private:
 	FlowUi::WindowInputConfig inputConfig_{};
 };
 
-} // namespace FlowUi::detail
-
-inline std::unique_ptr<IWindowBackend> makeDefaultWindowBackend( const FlowUi::WindowConfig& config, InputQueue* inputQueue)
+inline std::unique_ptr<IWindowBackend> makeDefaultWindowBackend(
+	const FlowUi::WindowConfig& config,
+	FlowUi::detail::InputQueue* inputQueue)
 {
 	return std::make_unique<FlowUi::detail::GlfwWindowBackend>(config, inputQueue);
 }
+
+} // namespace FlowUi::detail

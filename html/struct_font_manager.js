@@ -1,5 +1,10 @@
 var struct_font_manager =
 [
+    [ "FontFaceCreateInfo", "struct_font_manager.html#a6093e1614a69ac026284ae7b0b5ad38c", null ],
+    [ "FontFamilyCreateInfo", "struct_font_manager.html#aec9d426f57b89a721e06805393fb1432", null ],
+    [ "FontFamilyId", "struct_font_manager.html#a870dac0c7a1b27245619fb2da13781c7", null ],
+    [ "FontId", "struct_font_manager.html#a3e0e381cdd4d077b9eee5b6c0f5085d8", null ],
+    [ "FontStyle", "struct_font_manager.html#a70aa489e91a585feed3dac66bbe452b5", null ],
     [ "addFamilyFace", "struct_font_manager.html#adc69168a0ef9958a53a1b35dc724214b", null ],
     [ "addFamilyFace", "struct_font_manager.html#a0dfa09749c88c42f5086547a6aaa46aa", null ],
     [ "createFamily", "struct_font_manager.html#acb8d5cbda74bc4615b9d9413c596a120", null ],

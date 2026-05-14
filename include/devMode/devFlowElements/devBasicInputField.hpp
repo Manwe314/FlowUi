@@ -56,7 +56,7 @@ inline const DevBasicInputFieldDef kDevBasicInputField = {
 			: std::string_view(context.params.fieldId);
 		context.uiManager.inputFields().requestCaret(
 			fieldId,
-			FlowUi::InputFieldManager::CaretRequestKind::SetPrimary);
+			FlowUi::CaretRequestKind::SetPrimary);
 	},
 	nullptr,
 	nullptr,
@@ -74,11 +74,11 @@ inline const DevBasicInputFieldDef kDevBasicInputField = {
 		const std::string textElementPath = context.createChildElementId("text");
 		const Clay_ElementId textId = context.uiManager.toClayEID(textElementPath);
 
-		const FlowUi::InputFieldManager::FieldQueryResult result =
+		const FlowUi::FieldQueryResult result =
 			context.uiManager.inputFields().requestField({
 				.fieldId = fieldId,
 				.initialText = context.params.initialText,
-				.config = FlowUi::InputFieldManager::FieldConfig{
+				.config = FlowUi::FieldConfig{
 					.readOnly = context.params.readOnly,
 					.allowNewline = context.params.allowNewline,
 					.allowArrowNavigation = context.params.allowArrowNavigation,

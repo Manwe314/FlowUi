@@ -125,31 +125,252 @@ document.addEventListener('DOMContentLoaded', () => {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a185118dced81d2cccdc61bbc5e74307f" id="r_a185118dced81d2cccdc61bbc5e74307f"><td class="memItemLeft"><a id="a185118dced81d2cccdc61bbc5e74307f" name="a185118dced81d2cccdc61bbc5e74307f"></a>
-<a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a>&#160;</td><td class="memItemRight"><b>registerShortcut</b> (const <a class="el" href="struct_flow_ui_1_1_shortcut_chord.html">ShortcutChord</a> &amp;chord, <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a> scope, int32_t priority, <a class="el" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">ShortcutCallback</a> callback)</td></tr>
-<tr class="memdesc:a185118dced81d2cccdc61bbc5e74307f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a shortcut and return its id. <br /></td></tr>
-<tr class="memitem:aa1243fa0e00dffc89ec688db82954a5e" id="r_aa1243fa0e00dffc89ec688db82954a5e"><td class="memItemLeft"><a id="aa1243fa0e00dffc89ec688db82954a5e" name="aa1243fa0e00dffc89ec688db82954a5e"></a>
-bool&#160;</td><td class="memItemRight"><b>unregisterShortcut</b> (<a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> id)</td></tr>
-<tr class="memdesc:aa1243fa0e00dffc89ec688db82954a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unregister a shortcut by id. <br /></td></tr>
-<tr class="memitem:af08e7e2bb696cec1bf476a3afda5d6b1" id="r_af08e7e2bb696cec1bf476a3afda5d6b1"><td class="memItemLeft"><a id="af08e7e2bb696cec1bf476a3afda5d6b1" name="af08e7e2bb696cec1bf476a3afda5d6b1"></a>
-void&#160;</td><td class="memItemRight"><b>clear</b> ()</td></tr>
-<tr class="memdesc:af08e7e2bb696cec1bf476a3afda5d6b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all registered shortcuts. <br /></td></tr>
-<tr class="memitem:a8a496694eeaf4fdf03166ecf9c273212" id="r_a8a496694eeaf4fdf03166ecf9c273212"><td class="memItemLeft"><a id="a8a496694eeaf4fdf03166ecf9c273212" name="a8a496694eeaf4fdf03166ecf9c273212"></a>
-void&#160;</td><td class="memItemRight"><b>setFocusedElement</b> (Clay_ElementId elementId)</td></tr>
-<tr class="memdesc:a8a496694eeaf4fdf03166ecf9c273212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the currently focused Clay element id. <br /></td></tr>
-<tr class="memitem:abf2f8245061c1fd51116e79c615ce52d" id="r_abf2f8245061c1fd51116e79c615ce52d"><td class="memItemLeft"><a id="abf2f8245061c1fd51116e79c615ce52d" name="abf2f8245061c1fd51116e79c615ce52d"></a>
-void&#160;</td><td class="memItemRight"><b>clearFocusedElement</b> ()</td></tr>
-<tr class="memdesc:abf2f8245061c1fd51116e79c615ce52d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear focused element state. <br /></td></tr>
-<tr class="memitem:a2d2a678228d439ea9889a30b1a6c94b2" id="r_a2d2a678228d439ea9889a30b1a6c94b2"><td class="memItemLeft"><a id="a2d2a678228d439ea9889a30b1a6c94b2" name="a2d2a678228d439ea9889a30b1a6c94b2"></a>
-Clay_ElementId&#160;</td><td class="memItemRight"><b>focusedElement</b> () const</td></tr>
-<tr class="memdesc:a2d2a678228d439ea9889a30b1a6c94b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the currently focused Clay element id. <br /></td></tr>
-<tr class="memitem:a79a05d2b0eaf1003c4d6248f7e66951a" id="r_a79a05d2b0eaf1003c4d6248f7e66951a"><td class="memItemLeft"><a id="a79a05d2b0eaf1003c4d6248f7e66951a" name="a79a05d2b0eaf1003c4d6248f7e66951a"></a>
-void&#160;</td><td class="memItemRight"><b>beginFrame</b> (<a class="el" href="class_flow_ui_1_1_ui_manager.html">UiManager</a> &amp;ui, const <a class="el" href="struct_frame_input.html">FrameInput</a> &amp;currentInput, const <a class="el" href="struct_frame_input.html">FrameInput</a> &amp;previousInput)</td></tr>
-<tr class="memdesc:a79a05d2b0eaf1003c4d6248f7e66951a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dispatch shortcuts for the current frame. <br /></td></tr>
+<tr class="memitem:a185118dced81d2cccdc61bbc5e74307f" id="r_a185118dced81d2cccdc61bbc5e74307f"><td class="memItemLeft"><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a> (const <a class="el" href="struct_flow_ui_1_1_shortcut_chord.html">ShortcutChord</a> &amp;chord, <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a> scope, int32_t priority, <a class="el" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">ShortcutCallback</a> callback)</td></tr>
+<tr class="memdesc:a185118dced81d2cccdc61bbc5e74307f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a shortcut and return its id.  <br /></td></tr>
+<tr class="memitem:aa1243fa0e00dffc89ec688db82954a5e" id="r_aa1243fa0e00dffc89ec688db82954a5e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa1243fa0e00dffc89ec688db82954a5e">unregisterShortcut</a> (<a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> id)</td></tr>
+<tr class="memdesc:aa1243fa0e00dffc89ec688db82954a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unregister a shortcut by id.  <br /></td></tr>
+<tr class="memitem:af08e7e2bb696cec1bf476a3afda5d6b1" id="r_af08e7e2bb696cec1bf476a3afda5d6b1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af08e7e2bb696cec1bf476a3afda5d6b1">clear</a> ()</td></tr>
+<tr class="memdesc:af08e7e2bb696cec1bf476a3afda5d6b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all registered shortcuts.  <br /></td></tr>
+<tr class="memitem:a8a496694eeaf4fdf03166ecf9c273212" id="r_a8a496694eeaf4fdf03166ecf9c273212"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a8a496694eeaf4fdf03166ecf9c273212">setFocusedElement</a> (Clay_ElementId elementId)</td></tr>
+<tr class="memdesc:a8a496694eeaf4fdf03166ecf9c273212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the currently focused Clay element id.  <br /></td></tr>
+<tr class="memitem:abf2f8245061c1fd51116e79c615ce52d" id="r_abf2f8245061c1fd51116e79c615ce52d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abf2f8245061c1fd51116e79c615ce52d">clearFocusedElement</a> ()</td></tr>
+<tr class="memdesc:abf2f8245061c1fd51116e79c615ce52d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear focused element state.  <br /></td></tr>
+<tr class="memitem:a2d2a678228d439ea9889a30b1a6c94b2" id="r_a2d2a678228d439ea9889a30b1a6c94b2"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a2d2a678228d439ea9889a30b1a6c94b2">focusedElement</a> () const</td></tr>
+<tr class="memdesc:a2d2a678228d439ea9889a30b1a6c94b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the currently focused Clay element id.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aedcadf9ffa4a2a8a0069d732c7c3374c" id="r_aedcadf9ffa4a2a8a0069d732c7c3374c"><td class="memItemLeft"><a id="aedcadf9ffa4a2a8a0069d732c7c3374c" name="aedcadf9ffa4a2a8a0069d732c7c3374c"></a>
+class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Registers and dispatches keyboard shortcuts. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+<p><a class="el" href="class_flow_ui_1_1_shortcut_manager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> stores keyboard chords and evaluates them once per FlowUi frame from the current and previous <a class="el" href="struct_flow_ui_1_1_frame_input.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a>. Matching shortcuts are filtered by <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee" title="Scope that controls when a shortcut is eligible to run.">ShortcutScope</a>, then invoked in priority order. A callback that returns true handles the chord and stops later callbacks for that same match.</p>
+<p><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a> value 0 is reserved as an invalid id. <a class="el" href="#a185118dced81d2cccdc61bbc5e74307f" title="Register a shortcut and return its id.">registerShortcut()</a> returns 0 when registration fails, so application code can treat 0 as "not registered". </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="af08e7e2bb696cec1bf476a3afda5d6b1" name="af08e7e2bb696cec1bf476a3afda5d6b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af08e7e2bb696cec1bf476a3afda5d6b1">&#9670;&#160;</a></span>clear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ShortcutManager::clear </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remove all registered shortcuts. </p>
+<p>Clears every chord registration, resets registration ids, and clears the focused element marker.</p>
+<div class="fragment"><div class="line">app.ui().shortcuts().clear();</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="abf2f8245061c1fd51116e79c615ce52d" name="abf2f8245061c1fd51116e79c615ce52d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf2f8245061c1fd51116e79c615ce52d">&#9670;&#160;</a></span>clearFocusedElement()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ShortcutManager::clearFocusedElement </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clear focused element state. </p>
+<p>After this call, FocusedElement shortcuts are not eligible until another non-zero focused element id is set.</p>
+<div class="fragment"><div class="line">app.ui().shortcuts().clearFocusedElement();</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a2d2a678228d439ea9889a30b1a6c94b2" name="a2d2a678228d439ea9889a30b1a6c94b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d2a678228d439ea9889a30b1a6c94b2">&#9670;&#160;</a></span>focusedElement()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_ElementId FlowUi::ShortcutManager::focusedElement </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the currently focused Clay element id. </p>
+<dl class="section return"><dt>Returns</dt><dd>Clay element id currently tracked by <a class="el" href="class_flow_ui_1_1_shortcut_manager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>. A zero id means no shortcut-focused element is set.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> Clay_ElementId focused = app.ui().shortcuts().focusedElement();</div>
+<div class="line"><span class="keywordflow">if</span> (focused.id != 0u) {</div>
+<div class="line">    <span class="comment">// FocusedElement shortcuts can be eligible this frame.</span></div>
+<div class="line">}</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a185118dced81d2cccdc61bbc5e74307f" name="a185118dced81d2cccdc61bbc5e74307f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a185118dced81d2cccdc61bbc5e74307f">&#9670;&#160;</a></span>registerShortcut()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a> FlowUi::ShortcutManager::registerShortcut </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="struct_flow_ui_1_1_shortcut_chord.html">ShortcutChord</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>chord</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee">ShortcutScope</a></td>          <td class="paramname"><span class="paramname"><em>scope</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t</td>          <td class="paramname"><span class="paramname"><em>priority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35">ShortcutCallback</a></td>          <td class="paramname"><span class="paramname"><em>callback</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Register a shortcut and return its id. </p>
+<p>The chord is matched against frame input using its key, modifier flags, and trigger mode. The scope controls when the callback is eligible to run. When multiple callbacks match the same chord, focused scopes are considered before global shortcuts, higher priority values run first, and callbacks with the same scope and priority run in registration order.</p>
+<p>A callback should return true after it handles the shortcut. Returning false allows the next matching callback for the same chord to run.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">chord</td><td>Key, modifier requirements, and trigger transition to match. </td></tr>
+    <tr><td class="paramname">scope</td><td>Focus condition required before the shortcut may run. </td></tr>
+    <tr><td class="paramname">priority</td><td>Ordering value within the same scope. Higher values run first. </td></tr>
+    <tr><td class="paramname">callback</td><td>Function invoked when the chord and scope match. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Opaque registration id used with <a class="el" href="#aa1243fa0e00dffc89ec688db82954a5e" title="Unregister a shortcut by id.">unregisterShortcut()</a>. Returns 0 when callback is empty or chord.key is outside <a class="el" href="struct_flow_ui_1_1_frame_input.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a>'s keyboard range.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> copyShortcut =</div>
+<div class="line">    app.ui().shortcuts().registerShortcut(</div>
+<div class="line">        <a class="code hl_struct" href="struct_flow_ui_1_1_shortcut_chord.html">FlowUi::ShortcutChord</a>{</div>
+<div class="line">            .key = GLFW_KEY_C,</div>
+<div class="line">            .ctrl = <span class="keyword">true</span>,</div>
+<div class="line">            .trigger = <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307">FlowUi::ShortcutTrigger::Press</a>,</div>
+<div class="line">        },</div>
+<div class="line">        <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a>,</div>
+<div class="line">        100,</div>
+<div class="line">        [](<a class="code hl_struct" href="struct_flow_ui_1_1_shortcut_context.html">FlowUi::ShortcutContext</a>&amp; context) {</div>
+<div class="line">            <span class="keyword">const</span> std::string selected(context.ui.inputFields().getSelectedText());</div>
+<div class="line">            <span class="keywordflow">if</span> (selected.empty()) {</div>
+<div class="line">                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">            }</div>
+<div class="line">            context.ui.setClipboardText(selected);</div>
+<div class="line">            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">        });</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> pasteShortcut =</div>
+<div class="line">    app.ui().shortcuts().registerShortcut(</div>
+<div class="line">        FlowUi::ShortcutChord{</div>
+<div class="line">            .key = GLFW_KEY_V,</div>
+<div class="line">            .ctrl = <span class="keyword">true</span>,</div>
+<div class="line">            .trigger = <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307">FlowUi::ShortcutTrigger::Press</a>,</div>
+<div class="line">        },</div>
+<div class="line">        <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a>,</div>
+<div class="line">        100,</div>
+<div class="line">        [](FlowUi::ShortcutContext&amp; context) {</div>
+<div class="line">            <span class="keywordflow">return</span> context.ui.inputFields().insertTextAtPrimaryCaret(</div>
+<div class="line">                context.ui.clipboardText());</div>
+<div class="line">        });</div>
+<div class="line"> </div>
+<div class="line"><span class="keywordflow">if</span> (copyShortcut == 0 || pasteShortcut == 0) {</div>
+<div class="line">    <span class="comment">// Registration failed; key values or callbacks should be checked.</span></div>
+<div class="line">}</div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_ga1797e2b57628fb0d605888569f1c1dc9"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a></div><div class="ttdeci">uint32_t ShortcutId</div><div class="ttdoc">Opaque shortcut registration id.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:111</div></div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694">FlowUi::ShortcutScope::FocusedInput</a></div><div class="ttdeci">@ FocusedInput</div><div class="ttdoc">Run only while an input field owns primary text focus.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:27</div></div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307">FlowUi::ShortcutTrigger::Press</a></div><div class="ttdeci">@ Press</div><div class="ttdoc">Fire on the frame where the key changes from up to down.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:45</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_shortcut_chord_html"><div class="ttname"><a href="struct_flow_ui_1_1_shortcut_chord.html">FlowUi::ShortcutChord</a></div><div class="ttdoc">Keyboard chord registered with ShortcutManager.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:60</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_shortcut_context_html"><div class="ttname"><a href="struct_flow_ui_1_1_shortcut_context.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:88</div></div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="a8a496694eeaf4fdf03166ecf9c273212" name="a8a496694eeaf4fdf03166ecf9c273212"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a496694eeaf4fdf03166ecf9c273212">&#9670;&#160;</a></span>setFocusedElement()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ShortcutManager::setFocusedElement </td>
+          <td>(</td>
+          <td class="paramtype">Clay_ElementId</td>          <td class="paramname"><span class="paramname"><em>elementId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the currently focused Clay element id. </p>
+<p>The focused element marker is used by <a class="el" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3" title="Run only while ShortcutManager has a focused Clay element id.">ShortcutScope::FocusedElement</a>. It is a lightweight shortcut classification value; callbacks can inspect <a class="el" href="struct_flow_ui_1_1_shortcut_context.html#a83af3b604bb2d9ecfa2a884f8d049d57" title="Focused Clay element id tracked by ShortcutManager.">ShortcutContext::focusedElementId</a> when they need element-specific behavior. Conditions with which an element becomes focused is up to the user to decide by calling this function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">elementId</td><td>Clay element id to treat as focused.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line">app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<a id="aa1243fa0e00dffc89ec688db82954a5e" name="aa1243fa0e00dffc89ec688db82954a5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1243fa0e00dffc89ec688db82954a5e">&#9670;&#160;</a></span>unregisterShortcut()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::ShortcutManager::unregisterShortcut </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">ShortcutId</a></td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Unregister a shortcut by id. </p>
+<p>Removes the registered callback and releases the manager's internal reference to the chord key. It is valid to unregister from inside a shortcut callback.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">id</td><td>Registration id returned by <a class="el" href="#a185118dced81d2cccdc61bbc5e74307f" title="Register a shortcut and return its id.">registerShortcut()</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">true</td><td>A shortcut with id existed and was removed. </td></tr>
+    <tr><td class="paramname">false</td><td>id was 0 or did not match an active registration.</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (copyShortcut != 0) {</div>
+<div class="line">    (void)app.ui().shortcuts().unregisterShortcut(copyShortcut);</div>
+<div class="line">}</div>
+</div><!-- fragment --> 
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/managers/<a class="el" href="_shortcut_manager_8hpp_source.html">ShortcutManager.hpp</a></li>
 </ul>
 </div><!-- contents -->

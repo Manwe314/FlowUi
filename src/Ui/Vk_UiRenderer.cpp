@@ -363,7 +363,7 @@ static void EmitSolidRect(
 }
 
 static void EmitSolidRectOverride(
-	const FlowUi::InputFieldRectOverride& rectOverride,
+	const FlowUi::detail::InputFieldRectOverride& rectOverride,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
 	std::vector<UiInstance>& instances) {
@@ -407,7 +407,7 @@ static void EmitTextMsdf(
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
-	const FlowUi::InputFieldTextColorOverride* textColorOverride,
+	const FlowUi::detail::InputFieldTextColorOverride* textColorOverride,
 	std::vector<UiInstance>& instances)
 {
 	const Clay_BoundingBox& bounds = command.boundingBox;
@@ -451,7 +451,7 @@ static void EmitTextMsdf(
 		if (hasTextColorOverride) {
 			const size_t glyphStart = static_cast<size_t>(std::max(0, glyph.byteStartOffset));
 			const size_t glyphEnd = static_cast<size_t>(std::max(glyph.byteStartOffset, glyph.byteEndOffset));
-			for (const FlowUi::InputFieldTextColorRangeOverride& range : textColorOverride->ranges) {
+			for (const FlowUi::detail::InputFieldTextColorRangeOverride& range : textColorOverride->ranges) {
 				if (ByteRangesIntersect(glyphStart, glyphEnd, range.startByteOffset, range.endByteOffset)) {
 					glyphColor = overrideColor;
 					break;
@@ -513,7 +513,7 @@ static void EmitTexturedImage(
 
 static void BuildInstancesAndRunsFromClay(
 	const Clay_RenderCommandArray& commands,
-	const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
+	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
 	const FontManager* fontManager,
 	float pointsToPixelsScale,
@@ -558,13 +558,13 @@ static void BuildInstancesAndRunsFromClay(
 		}
 	};
 
-	const std::vector<FlowUi::InputFieldRectOverride>& inputRectOverrides = inputFieldOverrides.rects;
+	const std::vector<FlowUi::detail::InputFieldRectOverride>& inputRectOverrides = inputFieldOverrides.rects;
 	size_t inputRectOverrideCursor = 0u;
-	const std::vector<FlowUi::InputFieldTextColorOverride>& inputTextColorOverrides = inputFieldOverrides.textColorOverrides;
+	const std::vector<FlowUi::detail::InputFieldTextColorOverride>& inputTextColorOverrides = inputFieldOverrides.textColorOverrides;
 	size_t inputTextColorOverrideCursor = 0u;
 	auto emitInputOverridesBefore = [&](int32_t commandIndex) {
 		while (inputRectOverrideCursor < inputRectOverrides.size()) {
-			const FlowUi::InputFieldRectOverride& rectOverride = inputRectOverrides[inputRectOverrideCursor];
+			const FlowUi::detail::InputFieldRectOverride& rectOverride = inputRectOverrides[inputRectOverrideCursor];
 			if (rectOverride.insertBeforeCommandIndex > commandIndex) {
 				break;
 			}
@@ -581,7 +581,7 @@ static void BuildInstancesAndRunsFromClay(
 			inputTextColorOverrides[inputTextColorOverrideCursor].commandIndex < i) {
 			++inputTextColorOverrideCursor;
 		}
-		const FlowUi::InputFieldTextColorOverride* inputTextColorOverride = nullptr;
+		const FlowUi::detail::InputFieldTextColorOverride* inputTextColorOverride = nullptr;
 		if (
 			inputTextColorOverrideCursor < inputTextColorOverrides.size() &&
 			inputTextColorOverrides[inputTextColorOverrideCursor].commandIndex == i) {
@@ -1549,7 +1549,7 @@ void VulkanUiRenderer::render(
 	VulkanContext& vk,
 	VkCommandBuffer cmd,
 	const Clay_RenderCommandArray& renderCommands,
-	const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
+	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
 	VkImageView targetView,
 	uint32_t frameIndex,

@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <p>Runtime data passed to shortcut callbacks.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="_shortcut_manager_8hpp_source.html">ShortcutManager.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="_shortcut_manager_structs_8hpp_source.html">ShortcutManagerStructs.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -129,19 +129,20 @@ Public Attributes</h2></td></tr>
 <a class="el" href="class_flow_ui_1_1_ui_manager.html">UiManager</a> &amp;&#160;</td><td class="memItemRight"><b>ui</b></td></tr>
 <tr class="memdesc:ad6602d04e786957ea9308061db6a367f"><td class="mdescLeft">&#160;</td><td class="mdescRight">UI manager for the active frame. <br /></td></tr>
 <tr class="memitem:ad6fc0abe94fc443879e920f1acee747b" id="r_ad6fc0abe94fc443879e920f1acee747b"><td class="memItemLeft"><a id="ad6fc0abe94fc443879e920f1acee747b" name="ad6fc0abe94fc443879e920f1acee747b"></a>
-const <a class="el" href="struct_frame_input.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><b>currentInput</b></td></tr>
+const <a class="el" href="struct_flow_ui_1_1_frame_input.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><b>currentInput</b></td></tr>
 <tr class="memdesc:ad6fc0abe94fc443879e920f1acee747b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current frame input. <br /></td></tr>
 <tr class="memitem:af989dd7f2a815f0c2495813e20cb13e8" id="r_af989dd7f2a815f0c2495813e20cb13e8"><td class="memItemLeft"><a id="af989dd7f2a815f0c2495813e20cb13e8" name="af989dd7f2a815f0c2495813e20cb13e8"></a>
-const <a class="el" href="struct_frame_input.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><b>previousInput</b></td></tr>
+const <a class="el" href="struct_flow_ui_1_1_frame_input.html">FrameInput</a> &amp;&#160;</td><td class="memItemRight"><b>previousInput</b></td></tr>
 <tr class="memdesc:af989dd7f2a815f0c2495813e20cb13e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Previous frame input. <br /></td></tr>
 <tr class="memitem:a83af3b604bb2d9ecfa2a884f8d049d57" id="r_a83af3b604bb2d9ecfa2a884f8d049d57"><td class="memItemLeft"><a id="a83af3b604bb2d9ecfa2a884f8d049d57" name="a83af3b604bb2d9ecfa2a884f8d049d57"></a>
 Clay_ElementId&#160;</td><td class="memItemRight"><b>focusedElementId</b> {}</td></tr>
-<tr class="memdesc:a83af3b604bb2d9ecfa2a884f8d049d57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Focused Clay element id. <br /></td></tr>
+<tr class="memdesc:a83af3b604bb2d9ecfa2a884f8d049d57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Focused Clay element id tracked by <a class="el" href="class_flow_ui_1_1_shortcut_manager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Runtime data passed to shortcut callbacks. </p>
+<p><a class="el" href="struct_flow_ui_1_1_shortcut_context.html" title="Runtime data passed to shortcut callbacks.">ShortcutContext</a> provides access to the frame input used for dispatch and to the active <a class="el" href="class_flow_ui_1_1_ui_manager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. focusedElementId is <a class="el" href="class_flow_ui_1_1_shortcut_manager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>'s lightweight focus marker for FocusedElement shortcuts; callbacks may inspect it when they need to distinguish which focused element should handle a shared chord. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/managers/<a class="el" href="_shortcut_manager_8hpp_source.html">ShortcutManager.hpp</a></li>
+<li>include/managers/structs/<a class="el" href="_shortcut_manager_structs_8hpp_source.html">ShortcutManagerStructs.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

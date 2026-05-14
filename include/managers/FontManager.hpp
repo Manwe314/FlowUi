@@ -11,7 +11,7 @@
 #include <vulkan/vulkan.h>
 
 #include "FlowUi/FontResources.hpp"
-#include "FlowUi/PublicStructs.hpp"
+#include "managers/structs/FontManagerStructs.hpp"
 
 struct VulkanContext;
 
@@ -55,10 +55,19 @@ class App;
  * @endcode
  */
 struct FontManager {
+	/** @brief Convenience alias for FlowUi::FontId. */
 	using FontId = FlowUi::FontId;
+
+	/** @brief Convenience alias for FlowUi::FontFamilyId. */
 	using FontFamilyId = FlowUi::FontFamilyId;
+
+	/** @brief Convenience alias for FlowUi::FontStyle. */
 	using FontStyle = FlowUi::FontStyle;
+
+	/** @brief Convenience alias for FlowUi::FontFaceCreateInfo. */
 	using FontFaceCreateInfo = FlowUi::FontFaceCreateInfo;
+
+	/** @brief Convenience alias for FlowUi::FontFamilyCreateInfo. */
 	using FontFamilyCreateInfo = FlowUi::FontFamilyCreateInfo;
 
 	/**

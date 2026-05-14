@@ -12,6 +12,7 @@
 #include "devMode/debugView.hpp"
 #endif
 #include "internal/UiTextureRegistry.hpp"
+#include "internal/InputQueue.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "Vulkan/Vk_Frames.hpp"
@@ -341,8 +342,8 @@ private:
 struct App::Impl {
 	AppConfig config{};
 
-	std::unique_ptr<IWindowBackend> window;
-	InputQueue inputQueue;
+	std::unique_ptr<detail::IWindowBackend> window;
+	detail::InputQueue inputQueue;
 
 	VulkanContext vk;
 	Swapchain swap;
@@ -377,7 +378,7 @@ struct App::Impl {
 
 		void init() {
 			// 1) window backend
-			window = makeDefaultWindowBackend(config.window, &inputQueue);
+			window = detail::makeDefaultWindowBackend(config.window, &inputQueue);
 			window->setInputConfig(config.window.input);
 			ui.setClipboardAccessors(
 				[this](std::string_view text) {
@@ -624,7 +625,7 @@ struct App::Impl {
 			vk,
 			frame.cmd,
 			renderCommandsForCurrentFrame,
-			ui.inputFields().frameOverrides(),
+			ui.inputFieldFrameOverrides(),
 			swap.extent,
 			swap.views[swapchainImageIndex],
 			frames.currentFrame,

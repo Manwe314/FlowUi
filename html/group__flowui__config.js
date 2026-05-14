@@ -1,16 +1,5 @@
 var group__flowui__config =
 [
-    [ "FlowUi::FontFaceCreateInfo", "struct_flow_ui_1_1_font_face_create_info.html", [
-      [ "name", "struct_flow_ui_1_1_font_face_create_info.html#a6abf248d60c7222a0fe456a87456c019", null ],
-      [ "path", "struct_flow_ui_1_1_font_face_create_info.html#abd1ad940cbd3b2f1e1a1a711d72e8bd5", null ],
-      [ "pixelSize", "struct_flow_ui_1_1_font_face_create_info.html#a8ac080ea869a908b0f3c74fe2a0ee6de", null ],
-      [ "style", "struct_flow_ui_1_1_font_face_create_info.html#a5fd2d512f5a79b9a1e068761a77391fb", null ],
-      [ "weight", "struct_flow_ui_1_1_font_face_create_info.html#ad0c101c4bb3693e5c513ea01cb9501e2", null ]
-    ] ],
-    [ "FlowUi::FontFamilyCreateInfo", "struct_flow_ui_1_1_font_family_create_info.html", [
-      [ "faces", "struct_flow_ui_1_1_font_family_create_info.html#a2673be27c5d6a61470667b25fbeb590e", null ],
-      [ "name", "struct_flow_ui_1_1_font_family_create_info.html#a979e043a307b07b831fd831f7dca6000", null ]
-    ] ],
     [ "FlowUi::WindowInputConfig", "struct_flow_ui_1_1_window_input_config.html", [
       [ "cursorMode", "struct_flow_ui_1_1_window_input_config.html#a6a75cb788a742f82bb95543a15c90dd9", null ],
       [ "lockKeyMods", "struct_flow_ui_1_1_window_input_config.html#a88a6f00d74fdd4aebf67459750e12016", null ],
@@ -99,36 +88,23 @@ var group__flowui__config =
       [ "uv1x", "struct_flow_ui_1_1_texture_ref.html#a3ab8409b8b98148fdae0875ec0ff7df0", null ],
       [ "uv1y", "struct_flow_ui_1_1_texture_ref.html#ab493e246cf30856eb386ca05d1d50cc7", null ]
     ] ],
-    [ "FrameInput", "struct_frame_input.html", [
-      [ "alt", "struct_frame_input.html#a39dc35295710dbe370bfd48e7eefe4ad", null ],
-      [ "ctrl", "struct_frame_input.html#a16fc7bdf1d0a90d2b40a37819eddfb4b", null ],
-      [ "dt", "struct_frame_input.html#a0889932b8850f8952ae28248b3448366", null ],
-      [ "keyDown", "struct_frame_input.html#ac679425cb70ffe39277a4ad14126ef9f", null ],
-      [ "mouseDown", "struct_frame_input.html#a8bec232101b63726850d900426228a38", null ],
-      [ "mouseX", "struct_frame_input.html#a0099a42fed30caf5b76778c13eaae710", null ],
-      [ "mouseY", "struct_frame_input.html#a6650a64ef52bb07ecca714b0c5392935", null ],
-      [ "scrollX", "struct_frame_input.html#adddd789179dc244f97ba93e5625474f3", null ],
-      [ "scrollY", "struct_frame_input.html#a4d6a2af9e1657f550cfac33f48c126e4", null ],
-      [ "shift", "struct_frame_input.html#a7d0dfe4835662b3c03bfb364e96fbdf2", null ],
-      [ "super", "struct_frame_input.html#aa51795691448aee86763a6efaf47812f", null ],
-      [ "text", "struct_frame_input.html#a4736fb99c5e1386648180042ce16b263", null ]
+    [ "FlowUi::FrameInput", "struct_flow_ui_1_1_frame_input.html", [
+      [ "alt", "struct_flow_ui_1_1_frame_input.html#a40d39219bb7961cdd7897153c973dea0", null ],
+      [ "ctrl", "struct_flow_ui_1_1_frame_input.html#a4ec6a58ee1a8ee6254d80b8260be34a9", null ],
+      [ "dt", "struct_flow_ui_1_1_frame_input.html#aa674bc1fccd2120042ffef7e9b323e50", null ],
+      [ "keyDown", "struct_flow_ui_1_1_frame_input.html#a63a5af5eacf8ced50d59f4973acf9c59", null ],
+      [ "mouseDown", "struct_flow_ui_1_1_frame_input.html#ad452ab0c1a10ba4938ed4cc235dadc38", null ],
+      [ "mouseX", "struct_flow_ui_1_1_frame_input.html#a9a75539258d14d48e716e4fb5096fd9c", null ],
+      [ "mouseY", "struct_flow_ui_1_1_frame_input.html#af26a7a1a649fe61f64afb3bf5e346563", null ],
+      [ "scrollX", "struct_flow_ui_1_1_frame_input.html#a2cc30aed2f6f968480ce49df132cc215", null ],
+      [ "scrollY", "struct_flow_ui_1_1_frame_input.html#a77615caa0a1cd2a6e4f4d570d41722de", null ],
+      [ "shift", "struct_flow_ui_1_1_frame_input.html#a6dd43d399d0e716037b2a5f540a85238", null ],
+      [ "super", "struct_flow_ui_1_1_frame_input.html#af84121e285a0104883cc8931873ba00a", null ],
+      [ "text", "struct_flow_ui_1_1_frame_input.html#a72e6dfc1d2fc70ed0d25ae94984fd391", null ]
     ] ],
-    [ "InputQueue", "struct_input_queue.html", [
-      [ "clearKeyboardState", "struct_input_queue.html#a809e0628894e6fbbc60f9313824de14e", null ],
-      [ "clearMouseButtonsState", "struct_input_queue.html#a3baab224ccbe9c90b9132ea2943a94e9", null ],
-      [ "drain", "struct_input_queue.html#ab1681263c84dd7eb4620bdca99f5dcc6", null ],
-      [ "pushChar", "struct_input_queue.html#a4daebeadb1cbbfd30511455b0beeb0a2", null ],
-      [ "pushKey", "struct_input_queue.html#abbe2cbd5041a554918306ea2285e3b87", null ],
-      [ "pushMouseButton", "struct_input_queue.html#ab66f651f7901d28cb272bc3e8013cf7b", null ],
-      [ "pushScroll", "struct_input_queue.html#a52532d5bde56bea7dac181c67969e6a9", null ],
-      [ "setMousePos", "struct_input_queue.html#a0b7379b326c35306373cdccdfb10d8c6", null ]
-    ] ],
-    [ "FlowUi::FontFamilyId", "group__flowui__config.html#ga95598f991c84086ade49a9b22410496a", null ],
-    [ "FlowUi::FontId", "group__flowui__config.html#ga45ed3353542a8e69aead84b91e7d88ed", null ],
     [ "FlowUi::CursorMode", "group__flowui__config.html#gab16c6b47535f12e71d87fde2f71bcdaa", null ],
     [ "FlowUi::CursorType", "group__flowui__config.html#ga8363459dc99cb2c2add5540efe09c80a", null ],
     [ "FlowUi::DevShortcutTrigger", "group__flowui__config.html#ga157149dd05c1f77199e9c13fd9c24ddb", null ],
-    [ "FlowUi::FontStyle", "group__flowui__config.html#gaf7e7d0763efe0b722c07ea3892e9a52e", null ],
     [ "FlowUi::MSAA", "group__flowui__config.html#ga1aa5fdfbd4b122c5e35ea2807a786c28", null ],
     [ "FlowUi::PresentMode", "group__flowui__config.html#gaf7bc37822958bca0754c99ef6e7ab536", null ],
     [ "FlowUi::TextureFitMode", "group__flowui__config.html#gaf2bd0da1549931d06a4ae124e15a54cc", [

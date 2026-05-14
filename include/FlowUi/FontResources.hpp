@@ -8,7 +8,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "FlowUi/PublicStructs.hpp"
+#include "managers/structs/FontManagerStructs.hpp"
 
 struct VmaAllocation_T;
 

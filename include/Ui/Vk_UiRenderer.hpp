@@ -8,10 +8,7 @@
 
 #include "Vulkan/Vk_Context.hpp"
 #include "FlowUi/PublicStructs.hpp"
-
-namespace FlowUi {
-struct InputFieldFrameOverrides;
-}
+#include "internal/InputFieldRenderOverrides.hpp"
 
 enum class UiType : uint8_t {
 	Solid = 0,
@@ -121,7 +118,7 @@ struct VulkanUiRenderer {
 		VulkanContext& vk,
 		VkCommandBuffer cmd,
 		const Clay_RenderCommandArray& renderCommands,
-		const FlowUi::InputFieldFrameOverrides& inputFieldOverrides,
+		const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 		VkExtent2D extent,
 		VkImageView targetView,
 		uint32_t frameIndex,

@@ -124,11 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
 <li>A custom Vulkan renderer</li>
 <li>A typed element system for reusable UI components</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md8"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md0"></a>
 What is FlowUi?</h1>
 <p>FlowUi is a runtime library for cross-platform desktop applications. At its core, FlowUi acts as a C++ wrapper around <a href="https://github.com/nicbarker/clay">Clay</a>, paired with a built-in custom <a href="https://www.vulkan.org/">Vulkan</a> renderer.</p>
 <p>FlowUi also offers more than that minimal layer. With multiple managers, a custom element system, and developer tooling built around those systems, FlowUi aims to make low-level desktop application development faster to start and easier to iterate on.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md1"></a>
 How to Start Using FlowUi</h1>
 <p>For a full guided setup, start with the <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start tutorial</a>. For a shorter bootstrap, the usual project shape is:</p>
 <div class="fragment"><div class="line">MyApp/</div>
@@ -197,13 +197,13 @@ How to Start Using FlowUi</h1>
 <div class="ttc" id="aclass_flow_ui_1_1_app_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="class_flow_ui_1_1_app.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
 <div class="ttc" id="aclass_flow_ui_1_1_app_html_ad256201c79c7e07675e12b5bd0d8c8aa"><div class="ttname"><a href="class_flow_ui_1_1_app.html#ad256201c79c7e07675e12b5bd0d8c8aa">FlowUi::App::drawFrame</a></div><div class="ttdeci">void drawFrame()</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
-<div class="ttc" id="astruct_flow_ui_1_1_app_config_html"><div class="ttname"><a href="struct_flow_ui_1_1_app_config.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:477</div></div>
-<div class="ttc" id="astruct_flow_ui_1_1_app_config_html_a172fe9b539d98ff43a4d23a0b737a000"><div class="ttname"><a href="struct_flow_ui_1_1_app_config.html#a172fe9b539d98ff43a4d23a0b737a000">FlowUi::AppConfig::window</a></div><div class="ttdeci">WindowConfig window</div><div class="ttdoc">Native window creation and input defaults.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:483</div></div>
-<div class="ttc" id="astruct_flow_ui_1_1_window_config_html_a7b66165f48aee47c4680c11454196892"><div class="ttname"><a href="struct_flow_ui_1_1_window_config.html#a7b66165f48aee47c4680c11454196892">FlowUi::WindowConfig::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Initial native window title.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:186</div></div>
-<div class="ttc" id="astruct_flow_ui_1_1_window_config_html_ad67749033ec49f5d39776149fb4d37ee"><div class="ttname"><a href="struct_flow_ui_1_1_window_config.html#ad67749033ec49f5d39776149fb4d37ee">FlowUi::WindowConfig::width</a></div><div class="ttdeci">int width</div><div class="ttdoc">Initial window width in screen coordinates.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:177</div></div>
-<div class="ttc" id="astruct_flow_ui_1_1_window_config_html_add143cbfcadd4db14d2d76ad409ea37d"><div class="ttname"><a href="struct_flow_ui_1_1_window_config.html#add143cbfcadd4db14d2d76ad409ea37d">FlowUi::WindowConfig::height</a></div><div class="ttdeci">int height</div><div class="ttdoc">Initial window height in screen coordinates.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:183</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_app_config_html"><div class="ttname"><a href="struct_flow_ui_1_1_app_config.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:401</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_app_config_html_a172fe9b539d98ff43a4d23a0b737a000"><div class="ttname"><a href="struct_flow_ui_1_1_app_config.html#a172fe9b539d98ff43a4d23a0b737a000">FlowUi::AppConfig::window</a></div><div class="ttdeci">WindowConfig window</div><div class="ttdoc">Native window creation and input defaults.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:407</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_window_config_html_a7b66165f48aee47c4680c11454196892"><div class="ttname"><a href="struct_flow_ui_1_1_window_config.html#a7b66165f48aee47c4680c11454196892">FlowUi::WindowConfig::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Initial native window title.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:110</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_window_config_html_ad67749033ec49f5d39776149fb4d37ee"><div class="ttname"><a href="struct_flow_ui_1_1_window_config.html#ad67749033ec49f5d39776149fb4d37ee">FlowUi::WindowConfig::width</a></div><div class="ttdeci">int width</div><div class="ttdoc">Initial window width in screen coordinates.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:101</div></div>
+<div class="ttc" id="astruct_flow_ui_1_1_window_config_html_add143cbfcadd4db14d2d76ad409ea37d"><div class="ttname"><a href="struct_flow_ui_1_1_window_config.html#add143cbfcadd4db14d2d76ad409ea37d">FlowUi::WindowConfig::height</a></div><div class="ttdeci">int height</div><div class="ttdoc">Initial window height in screen coordinates.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:107</div></div>
 </div><!-- fragment --><p>If this is your first FlowUi project, the <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start tutorial</a> continues from this loop into a custom element example.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md2"></a>
 Build Options</h1>
 <p>These options are set before <span class="tt">add_subdirectory(external/FlowUi)</span>.</p>
 <table class="markdownTable">
@@ -226,7 +226,7 @@ Build Options</h1>
 </table>
 <p><span class="tt">FLOWUI_GLFW_PROVIDER=auto</span> uses the vendored GLFW submodule when it is present, otherwise it falls back to a system <span class="tt">glfw3</span> package.</p>
 <p>FlowUi requires Vulkan. During configuration it looks for <span class="tt">glslc</span> first and falls back to <span class="tt">glslangValidator</span> for shader compilation.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md11"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
 Minimal App Loop Example</h1>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;FlowUi/Flow.hpp&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;backgroundElement.hpp&quot;</span></div>
@@ -247,9 +247,9 @@ Minimal App Loop Example</h1>
 <div class="line">    }</div>
 <div class="line">}</div>
 <div class="ttc" id="aclass_flow_ui_1_1_app_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="class_flow_ui_1_1_app.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclass_flow_ui_1_1_ui_manager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="class_flow_ui_1_1_ui_manager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:54</div></div>
+<div class="ttc" id="aclass_flow_ui_1_1_ui_manager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="class_flow_ui_1_1_ui_manager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:172</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md12"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md4"></a>
 Core FlowUi Concepts</h1>
 <p>FlowUi is intended to keep the core application loop explicit while making UI code reusable and inspectable.</p>
 <ul>
@@ -261,9 +261,9 @@ Core FlowUi Concepts</h1>
 <li><b>Developer mode is opt-in.</b> <span class="tt">FLOW_UI_DEV_MODE</span> enables the dev registration and capture systems used to inspect and edit Flow elements while building an app.</li>
 <li><b>Vulkan interop is a first-class path.</b> Viewport APIs can expose Vulkan render context data when <span class="tt">FLOWUI_PUBLIC_VULKAN_INTEROP</span> is enabled, so apps can integrate custom rendering where needed.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md13"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md5"></a>
 Documentation Map</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md6"></a>
 Quick Start</h2>
 <ul>
 <li><a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start tutorial</a></li>
@@ -275,7 +275,7 @@ Quick Start</h2>
 <li><a href="tutorials/quick_start.md#initialize-element-resources">Initialize element resources</a></li>
 <li><a href="tutorials/quick_start.md#draw-the-element">Draw the element</a></li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md15"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md7"></a>
 Tutorials</h2>
 <ul>
 <li><a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start</a></li>
@@ -286,7 +286,7 @@ Tutorials</h2>
 <li>Planned: Viewports and Vulkan interop</li>
 <li>Planned: Developer-mode workflow</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md16"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md8"></a>
 Public API</h2>
 <ul>
 <li><a class="el" href="group__flowui__app.html" title="App">App and lifecycle</a></li>
@@ -300,7 +300,7 @@ Public API</h2>
 <li><a class="el" href="group__flowui__shortcut__manager.html" title="Shortcut Manager">Shortcut manager</a></li>
 <li><a class="el" href="group__flowui__viewport__manager.html" title="ViewPort Manager">Viewport manager</a></li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md17"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
 Internal and Backend Notes</h2>
 <ul>
 <li>Planned: Window backends</li>
