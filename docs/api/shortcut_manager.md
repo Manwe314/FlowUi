@@ -50,7 +50,6 @@ Runtime data passed to shortcut callbacks. It exposes UiManager, current and pre
 
 ## Public API
 
-
 ### **registerShortcut**
 ---
 
@@ -60,6 +59,12 @@ Runtime data passed to shortcut callbacks. It exposes UiManager, current and pre
 - **Arguments:** `chord` key/modifier/trigger match, `scope` eligibility scope, `priority` ordering value, `callback` handler.
 
 Registers a keyboard shortcut and returns an opaque id. Matching callbacks run by scope and priority, and a callback returning `true` stops later handlers for the same chord.
+
+**Example:**
+
+```cpp
+FlowUi::ShortcutId saveShortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = true}, FlowUi::ShortcutScope::Global, 100, saveCallback);
+```
 
 ### **unregisterShortcut**
 ---
@@ -71,6 +76,12 @@ Registers a keyboard shortcut and returns an opaque id. Matching callbacks run b
 
 Removes a registered shortcut. It is valid to unregister a shortcut from inside a shortcut callback.
 
+**Example:**
+
+```cpp
+const bool removed = app.ui().shortcuts().unregisterShortcut(saveShortcut);
+```
+
 ### **clear**
 ---
 
@@ -80,6 +91,12 @@ Removes a registered shortcut. It is valid to unregister a shortcut from inside 
 - **Arguments:** none.
 
 Removes every registered shortcut and resets focused-element shortcut state. Use this for app-level shortcut reloads or teardown.
+
+**Example:**
+
+```cpp
+app.ui().shortcuts().clear();
+```
 
 ### **setFocusedElement**
 ---
@@ -91,6 +108,12 @@ Removes every registered shortcut and resets focused-element shortcut state. Use
 
 Sets the focused element marker used by `ShortcutScope::FocusedElement`. Application or element code decides when an element should become shortcut-focused.
 
+**Example:**
+
+```cpp
+app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));
+```
+
 ### **clearFocusedElement**
 ---
 
@@ -101,6 +124,12 @@ Sets the focused element marker used by `ShortcutScope::FocusedElement`. Applica
 
 Clears the focused element marker. After this, focused-element shortcuts are not eligible until another element id is set.
 
+**Example:**
+
+```cpp
+app.ui().shortcuts().clearFocusedElement();
+```
+
 ### **focusedElement**
 ---
 
@@ -110,3 +139,9 @@ Clears the focused element marker. After this, focused-element shortcuts are not
 - **Arguments:** none.
 
 Returns the currently focused Clay element id for shortcut dispatch. A zero id means no shortcut-focused element is active.
+
+**Example:**
+
+```cpp
+Clay_ElementId focused = app.ui().shortcuts().focusedElement();
+```

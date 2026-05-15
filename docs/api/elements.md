@@ -95,6 +95,12 @@ Builder returned by UiManager::createElement. It stores definition, id, and para
 
 Hashes a runtime string into a stable FlowUi element id. Use this when looking up or managing state for an element instance outside the builder path.
 
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId saveButtonId = FlowUi::toFlowId("toolbar/save");
+```
+
 ### **toFlowId** `2/2`
 ---
 
@@ -104,6 +110,12 @@ Hashes a runtime string into a stable FlowUi element id. Use this when looking u
 - **Arguments:** `elementName` string literal to hash into an element instance id.
 
 String-literal overload for `toFlowId`. It avoids counting the terminating null byte and can be used in constant expressions.
+
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId saveButtonId = FlowUi::toFlowId("toolbar/save");
+```
 
 ### **toFlowDefinitionId** `1/2`
 ---
@@ -115,6 +127,12 @@ String-literal overload for `toFlowId`. It avoids counting the terminating null 
 
 Hashes a runtime string into a stable FlowUi element definition id. This is the function behind definition ids used by `ElementDefinition`.
 
+**Example:**
+
+```cpp
+constexpr FlowUi::FlowDefinitionId buttonDefinitionId = FlowUi::toFlowDefinitionId("button");
+```
+
 ### **toFlowDefinitionId** `2/2`
 ---
 
@@ -124,6 +142,12 @@ Hashes a runtime string into a stable FlowUi element definition id. This is the 
 - **Arguments:** `definitionName` string literal to hash into an element definition id.
 
 String-literal overload for `toFlowDefinitionId`. Prefer this through `FLOW_DEF_ID("name")` when declaring custom element definition types.
+
+**Example:**
+
+```cpp
+constexpr FlowUi::FlowDefinitionId buttonDefinitionId = FlowUi::toFlowDefinitionId("button");
+```
 
 ### **createIndexedFlowId** `1/3`
 ---
@@ -135,6 +159,12 @@ String-literal overload for `toFlowDefinitionId`. Prefer this through `FLOW_DEF_
 
 Creates a stable child-style id by mixing an existing Flow id with an index. This is useful for repeated UI rows or generated children where a string id would be awkward.
 
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
+```
+
 ### **createIndexedFlowId** `2/3`
 ---
 
@@ -144,6 +174,12 @@ Creates a stable child-style id by mixing an existing Flow id with an index. Thi
 - **Arguments:** `rootName` parent/root name, `index` numeric child/index value.
 
 Hashes the root name and then mixes in the numeric index. Use this when generating stable ids from a named collection or repeated layout section.
+
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
+```
 
 ### **createIndexedFlowId** `3/3`
 ---
@@ -155,6 +191,12 @@ Hashes the root name and then mixes in the numeric index. Use this when generati
 
 String-literal overload for indexed id creation. It is useful for compile-time root names paired with runtime loop indexes.
 
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
+```
+
 ### **operator|**
 ---
 
@@ -164,6 +206,12 @@ String-literal overload for indexed id creation. It is useful for compile-time r
 - **Arguments:** `a` first option flag, `b` second option flag.
 
 Combines draw-option flags for `ElementBuilder::draw()` and `ElementBuilder::construct()`. This is the normal way to skip multiple callback phases in one builder call.
+
+**Example:**
+
+```cpp
+auto options = FlowUi::ElementDrawOptions::SkipEventCallbacks | FlowUi::ElementDrawOptions::SkipLogicCallback;
+```
 
 ### **elementDrawOptionsHas**
 ---
@@ -175,6 +223,12 @@ Combines draw-option flags for `ElementBuilder::draw()` and `ElementBuilder::con
 
 Checks whether an `ElementDrawOptions` value contains a specific flag. This is mostly useful inside infrastructure or advanced element helper code.
 
+**Example:**
+
+```cpp
+const bool skipsLogic = FlowUi::elementDrawOptionsHas(options, FlowUi::ElementDrawOptions::SkipLogicCallback);
+```
+
 ### **ElementBuilder**
 ---
 
@@ -184,6 +238,12 @@ Checks whether an `ElementDrawOptions` value contains a specific flag. This is m
 - **Arguments:** `uiManager` active UI manager, `definition` element definition pointer, `elementID` stable element instance id.
 
 Constructs a builder for one element invocation. User code normally gets builders from `UiManager::createElement()` rather than calling this constructor directly.
+
+**Example:**
+
+```cpp
+auto builder = app.ui().createElement(kButton, "toolbar/save");
+```
 
 ### **setParameters** `1/2`
 ---
@@ -195,6 +255,12 @@ Constructs a builder for one element invocation. User code normally gets builder
 
 Copies parameter values into the builder. The stored parameters are passed to interaction, logic, construct, and build callbacks.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").setParameters(ButtonParams{.label = "Save"}).draw();
+```
+
 ### **setParameters** `2/2`
 ---
 
@@ -204,6 +270,12 @@ Copies parameter values into the builder. The stored parameters are passed to in
 - **Arguments:** `parameters` parameter values to move.
 
 Moves parameter values into the builder. Use this when parameter construction is dynamic or owns heavier data.
+
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").setParameters(ButtonParams{.label = "Save"}).draw();
+```
 
 ### **mergeParams**
 ---
@@ -215,6 +287,12 @@ Moves parameter values into the builder. Use this when parameter construction is
 
 Mutates the builder's existing parameter storage. This is useful when defaults are mostly correct and only a few fields need to be changed.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").mergeParams([](ButtonParams& params) { params.enabled = false; }).draw();
+```
+
 ### **withElementID**
 ---
 
@@ -224,6 +302,12 @@ Mutates the builder's existing parameter storage. This is useful when defaults a
 - **Arguments:** `elementID` replacement element id string.
 
 Replaces the id stored by the builder. Use it when a builder is created before the final stable id is known.
+
+**Example:**
+
+```cpp
+buttonBuilder.withElementID("toolbar/save-secondary").draw();
+```
 
 ### **setDevInternalCapture**
 ---
@@ -235,6 +319,12 @@ Replaces the id stored by the builder. Use it when a builder is created before t
 
 Controls how this element invocation is captured in developer mode. Normal user elements usually do not need this.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kDevPanel, "flowui/dev/panel").setDevInternalCapture(true).draw();
+```
+
 ### **construct**
 ---
 
@@ -244,6 +334,12 @@ Controls how this element invocation is captured in developer mode. Normal user 
 - **Arguments:** `options` callback phases to skip.
 
 Runs enabled callbacks and opens a constructed Clay root using the definition's `constructElement` callback. Emit child nodes after this call, then close the element with `UiManager::drawConstructed()`.
+
+**Example:**
+
+```cpp
+app.ui().createElement(kPanel, "settings").construct();
+```
 
 ### **draw**
 ---
@@ -255,6 +351,12 @@ Runs enabled callbacks and opens a constructed Clay root using the definition's 
 
 Runs enabled callbacks and emits the element through its `buildElement` callback. This is the most common final call for a FlowUi element builder.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").draw();
+```
+
 ### **contains**
 ---
 
@@ -264,6 +366,12 @@ Runs enabled callbacks and emits the element through its `buildElement` callback
 - **Arguments:** `list` interaction id list, `id` Clay element id to find.
 
 Checks whether a Clay element id exists in an interaction list. Comparison uses the underlying Clay id value.
+
+**Example:**
+
+```cpp
+const bool hasButton = FlowUi::InteractionSnapshot::contains(snapshot.pressedElementIds, buttonId);
+```
 
 ### **isHovered**
 ---
@@ -275,6 +383,12 @@ Checks whether a Clay element id exists in an interaction list. Comparison uses 
 
 Reports whether the element was hovered in this snapshot. Element callbacks commonly use this for child interaction checks.
 
+**Example:**
+
+```cpp
+const bool hovered = context.previousInteraction.isHovered(rootId);
+```
+
 ### **isPressed**
 ---
 
@@ -284,6 +398,12 @@ Reports whether the element was hovered in this snapshot. Element callbacks comm
 - **Arguments:** `id` Clay element id.
 
 Reports whether the element received a primary pointer press in this snapshot. This is based on the previous completed frame when used from element callbacks.
+
+**Example:**
+
+```cpp
+const bool pressed = context.previousInteraction.isPressed(rootId);
+```
 
 ### **isHeld**
 ---
@@ -295,6 +415,12 @@ Reports whether the element received a primary pointer press in this snapshot. T
 
 Reports whether the element was held by the primary pointer in this snapshot. Use it for drag-like or continuous pressed behavior.
 
+**Example:**
+
+```cpp
+const bool held = context.previousInteraction.isHeld(rootId);
+```
+
 ### **isReleased**
 ---
 
@@ -304,6 +430,12 @@ Reports whether the element was held by the primary pointer in this snapshot. Us
 - **Arguments:** `id` Clay element id.
 
 Reports whether the element received a primary pointer release in this snapshot. Use it for release-triggered actions.
+
+**Example:**
+
+```cpp
+const bool released = context.previousInteraction.isReleased(rootId);
+```
 
 ### **createChildElementId**
 ---
@@ -315,6 +447,12 @@ Reports whether the element received a primary pointer release in this snapshot.
 
 Creates a stable child id by appending the local child id to the current element id. Use this for child Clay nodes or nested Flow elements owned by the current element.
 
+**Example:**
+
+```cpp
+Clay_ElementId labelId = context.uiManager.toClayEID(context.createChildElementId("label"));
+```
+
 ### **createChildElementId**
 ---
 
@@ -324,6 +462,12 @@ Creates a stable child id by appending the local child id to the current element
 - **Arguments:** `localChildId` child id segment or relative child path.
 
 Creates a stable child id from inside interaction or logic callbacks. This is useful when querying previous interaction for child elements.
+
+**Example:**
+
+```cpp
+Clay_ElementId labelId = context.uiManager.toClayEID(context.createChildElementId("label"));
+```
 
 ### **getResources**
 ---
@@ -335,6 +479,12 @@ Creates a stable child id from inside interaction or logic callbacks. This is us
 
 Lazily creates and returns the shared resources instance for this element definition specialization. Available only when the `Resources` template argument is not `void`.
 
+**Example:**
+
+```cpp
+ButtonResources& resources = ButtonDefinition::getResources(app);
+```
+
 ### **getOrCreateState**
 ---
 
@@ -344,6 +494,12 @@ Lazily creates and returns the shared resources instance for this element defini
 - **Arguments:** `elementFlowId` Flow id for one element instance.
 
 Returns existing state for an element instance or creates default state when missing. Available only when the `State` template argument is not `void`.
+
+**Example:**
+
+```cpp
+ButtonState& state = ButtonDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
+```
 
 ### **tryGetState**
 ---
@@ -355,6 +511,12 @@ Returns existing state for an element instance or creates default state when mis
 
 Looks up mutable state without creating it. Returns `nullptr` when the element instance has no stored state.
 
+**Example:**
+
+```cpp
+if (ButtonState* state = ButtonDefinition::tryGetState(FLOW_ID("toolbar/save"))) { state->pressed = false; }
+```
+
 ### **tryGetStateConst**
 ---
 
@@ -365,6 +527,12 @@ Looks up mutable state without creating it. Returns `nullptr` when the element i
 
 Looks up immutable state without creating it. Use this for read-only checks outside element callbacks.
 
+**Example:**
+
+```cpp
+const ButtonState* state = ButtonDefinition::tryGetStateConst(FLOW_ID("toolbar/save"));
+```
+
 ### **eraseState**
 ---
 
@@ -374,3 +542,9 @@ Looks up immutable state without creating it. Use this for read-only checks outs
 - **Arguments:** `elementFlowId` Flow id for one element instance.
 
 Erases stored state for one element instance. FlowUi does not automatically garbage-collect custom element state, so dynamic UI can use this to keep state pools bounded.
+
+**Example:**
+
+```cpp
+const bool erased = ButtonDefinition::eraseState(FLOW_ID("toolbar/save"));
+```

@@ -51,6 +51,12 @@ Renderer texture handle and draw options returned by image, icon, and viewport m
 
 Creates and initializes a running FlowUi application. Use this instead of manually constructing `App`; it wires the window, managers, renderer, and configuration together.
 
+**Example:**
+
+```cpp
+FlowUi::App app = FlowUi::makeApplication(config);
+```
+
 ### **App** `1/2`
 ---
 
@@ -60,6 +66,12 @@ Creates and initializes a running FlowUi application. Use this instead of manual
 - **Arguments:** none.
 
 Constructs an empty app handle. Public for move/handle mechanics, but normal application code should create an initialized app with `makeApplication()`.
+
+**Example:**
+
+```cpp
+FlowUi::App emptyHandle{};
+```
 
 ### **App** `2/2`
 ---
@@ -71,6 +83,12 @@ Constructs an empty app handle. Public for move/handle mechanics, but normal app
 
 Moves an app handle and its owned runtime implementation. Copying is disabled because the app owns unique window, renderer, and manager resources.
 
+**Example:**
+
+```cpp
+FlowUi::App emptyHandle{};
+```
+
 ### **operator=**
 ---
 
@@ -80,6 +98,12 @@ Moves an app handle and its owned runtime implementation. Copying is disabled be
 - **Arguments:** rvalue `App` to move from.
 
 Move-assigns an app handle. The target takes ownership of the source runtime resources, and the source becomes a moved-from handle.
+
+**Example:**
+
+```cpp
+runningApp = std::move(replacementApp);
+```
 
 ### **~App**
 ---
@@ -91,6 +115,12 @@ Move-assigns an app handle. The target takes ownership of the source runtime res
 
 Destroys the app runtime and releases owned resources. This includes managers, renderer state, window backend state, and GPU resources owned by the app.
 
+**Example:**
+
+```cpp
+{ FlowUi::App app = FlowUi::makeApplication(config); }
+```
+
 ### **shouldClose**
 ---
 
@@ -100,6 +130,12 @@ Destroys the app runtime and releases owned resources. This includes managers, r
 - **Arguments:** none.
 
 Reports whether the window backend has requested shutdown. Use this as the condition for the main application loop.
+
+**Example:**
+
+```cpp
+while (!app.shouldClose()) { app.beginFrame(); app.endFrame(); app.drawFrame(); }
+```
 
 ### **beginFrame**
 ---
@@ -111,6 +147,12 @@ Reports whether the window backend has requested shutdown. Use this as the condi
 
 Begins one FlowUi frame. It polls input, prepares frame-local UI state, and sets up the layout/input snapshot used while building UI.
 
+**Example:**
+
+```cpp
+app.beginFrame();
+```
+
 ### **endFrame**
 ---
 
@@ -120,6 +162,12 @@ Begins one FlowUi frame. It polls input, prepares frame-local UI state, and sets
 - **Arguments:** none.
 
 Ends UI construction for the current frame. It finalizes Clay render commands and prepares frame-dependent resources before rendering.
+
+**Example:**
+
+```cpp
+app.endFrame();
+```
 
 ### **drawFrame**
 ---
@@ -131,6 +179,12 @@ Ends UI construction for the current frame. It finalizes Clay render commands an
 
 Submits and presents the frame produced by `endFrame()`. Call it once after UI construction has been finalized.
 
+**Example:**
+
+```cpp
+app.drawFrame();
+```
+
 ### **fonts** `1/2`
 ---
 
@@ -140,6 +194,12 @@ Submits and presents the frame produced by `endFrame()`. Call it once after UI c
 - **Arguments:** none.
 
 Returns the mutable font manager owned by the app. Use it to create font families, add faces, resolve fonts, or inspect the atlas resource.
+
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
+```
 
 ### **fonts** `2/2`
 ---
@@ -151,6 +211,12 @@ Returns the mutable font manager owned by the app. Use it to create font familie
 
 Returns the immutable font manager owned by the app. Use this for read-only font lookup from const app contexts.
 
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
+```
+
 ### **images** `1/2`
 ---
 
@@ -160,6 +226,12 @@ Returns the immutable font manager owned by the app. Use this for read-only font
 - **Arguments:** none.
 
 Returns the mutable image manager owned by the app. Use it to register image files and resolve texture references for UI image drawing.
+
+**Example:**
+
+```cpp
+app.images().registerImage("logo", "assets/logo.png");
+```
 
 ### **images** `2/2`
 ---
@@ -171,6 +243,12 @@ Returns the mutable image manager owned by the app. Use it to register image fil
 
 Returns the immutable image manager owned by the app. Use this when only checking or resolving already registered image keys.
 
+**Example:**
+
+```cpp
+app.images().registerImage("logo", "assets/logo.png");
+```
+
 ### **icons** `1/2`
 ---
 
@@ -180,6 +258,12 @@ Returns the immutable image manager owned by the app. Use this when only checkin
 - **Arguments:** none.
 
 Returns the mutable icon manager when icon support is compiled in. Use it to register SVG icons and request texture references for UI rendering.
+
+**Example:**
+
+```cpp
+app.icons().registerFromFile("save", "assets/icons/save.svg");
+```
 
 ### **icons** `2/2`
 ---
@@ -191,6 +275,12 @@ Returns the mutable icon manager when icon support is compiled in. Use it to reg
 
 Returns the immutable icon manager when icon support is compiled in. Use this for read-only icon lookup paths.
 
+**Example:**
+
+```cpp
+app.icons().registerFromFile("save", "assets/icons/save.svg");
+```
+
 ### **viewPorts** `1/2`
 ---
 
@@ -200,6 +290,12 @@ Returns the immutable icon manager when icon support is compiled in. Use this fo
 - **Arguments:** none.
 
 Returns the mutable viewport manager when public Vulkan interop is enabled. Use it to create offscreen UI viewports and attach custom Vulkan render callbacks.
+
+**Example:**
+
+```cpp
+app.viewPorts().create("scene-preview");
+```
 
 ### **viewPorts** `2/2`
 ---
@@ -211,6 +307,12 @@ Returns the mutable viewport manager when public Vulkan interop is enabled. Use 
 
 Returns the immutable viewport manager when public Vulkan interop is enabled. Use this for read-only viewport lookup and texture access.
 
+**Example:**
+
+```cpp
+app.viewPorts().create("scene-preview");
+```
+
 ### **ui** `1/2`
 ---
 
@@ -220,6 +322,12 @@ Returns the immutable viewport manager when public Vulkan interop is enabled. Us
 - **Arguments:** none.
 
 Returns the mutable UI manager for frame construction. This is the main surface for creating FlowUi elements and accessing frame-scoped UI services.
+
+**Example:**
+
+```cpp
+FlowUi::UiManager& ui = app.ui();
+```
 
 ### **ui** `2/2`
 ---
@@ -231,6 +339,12 @@ Returns the mutable UI manager for frame construction. This is the main surface 
 
 Returns the immutable UI manager. Use it for read-only access to UI frame state and managers from const contexts.
 
+**Example:**
+
+```cpp
+FlowUi::UiManager& ui = app.ui();
+```
+
 ### **setWindowTitle**
 ---
 
@@ -240,6 +354,12 @@ Returns the immutable UI manager. Use it for read-only access to UI frame state 
 - **Arguments:** `title` new native window title.
 
 Updates the native window title after app creation. The initial title comes from `WindowConfig::title`.
+
+**Example:**
+
+```cpp
+app.setWindowTitle("Project - Saved");
+```
 
 ### **windowSize**
 ---
@@ -251,6 +371,12 @@ Updates the native window title after app creation. The initial title comes from
 
 Returns the current window size in screen coordinates. This is separate from framebuffer pixel size on high-DPI systems.
 
+**Example:**
+
+```cpp
+auto [windowWidth, windowHeight] = app.windowSize();
+```
+
 ### **framebufferSize**
 ---
 
@@ -260,6 +386,12 @@ Returns the current window size in screen coordinates. This is separate from fra
 - **Arguments:** none.
 
 Returns the current framebuffer size in pixels. Use this for renderer-facing size logic where pixel dimensions matter.
+
+**Example:**
+
+```cpp
+auto [fbWidth, fbHeight] = app.framebufferSize();
+```
 
 ### **setWindowInputConfig**
 ---
@@ -271,6 +403,12 @@ Returns the current framebuffer size in pixels. Use this for renderer-facing siz
 
 Applies cursor, sticky input, lock modifier, and raw mouse settings to the window backend. The initial input configuration comes from `WindowConfig::input`.
 
+**Example:**
+
+```cpp
+app.setWindowInputConfig(FlowUi::WindowInputConfig{.cursorMode = FlowUi::CursorMode::Normal});
+```
+
 ### **windowInputConfig**
 ---
 
@@ -280,6 +418,12 @@ Applies cursor, sticky input, lock modifier, and raw mouse settings to the windo
 - **Arguments:** none.
 
 Returns the currently active low-level window input configuration. Use this when temporarily changing input behavior and later restoring it.
+
+**Example:**
+
+```cpp
+FlowUi::WindowInputConfig inputConfig = app.windowInputConfig();
+```
 
 ### **nativeWindowHandle**
 ---
@@ -291,6 +435,12 @@ Returns the currently active low-level window input configuration. Use this when
 
 Returns the backend native window handle when available. The concrete pointed-to type depends on the active window backend.
 
+**Example:**
+
+```cpp
+void* nativeWindow = app.nativeWindowHandle();
+```
+
 ### **supportsRawMouseMotion**
 ---
 
@@ -300,6 +450,12 @@ Returns the backend native window handle when available. The concrete pointed-to
 - **Arguments:** none.
 
 Reports whether the current backend and platform support raw mouse motion. Check this before enabling raw motion for camera-like or pointer-lock input.
+
+**Example:**
+
+```cpp
+if (app.supportsRawMouseMotion()) { app.setWindowInputConfig({.rawMouseMotion = true}); }
+```
 
 ### **setClipboardText**
 ---
@@ -311,6 +467,12 @@ Reports whether the current backend and platform support raw mouse motion. Check
 
 Writes clipboard text through the window backend. This is the app-level clipboard path; UI code can also use `UiManager` clipboard helpers.
 
+**Example:**
+
+```cpp
+app.setClipboardText("Copied from FlowUi");
+```
+
 ### **clipboardText**
 ---
 
@@ -320,3 +482,9 @@ Writes clipboard text through the window backend. This is the app-level clipboar
 - **Arguments:** none.
 
 Reads clipboard text through the window backend. Returns the current clipboard text as an owning string.
+
+**Example:**
+
+```cpp
+std::string pastedText = app.clipboardText();
+```
