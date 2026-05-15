@@ -27,7 +27,6 @@ Renderer texture handle and draw options returned by ImageManager. App code may 
 
 ## Public API
 
-
 ### **registerImage**
 ---
 
@@ -37,6 +36,12 @@ Renderer texture handle and draw options returned by ImageManager. App code may 
 - **Arguments:** `key` application image key, `filePath` image file path.
 
 Loads an image file, uploads it, and registers it under the provided key. Returns `true` for a new key and `false` when replacing an existing key.
+
+**Example:**
+
+```cpp
+app.images().registerImage("avatar", "assets/avatar.png");
+```
 
 ### **removeImage**
 ---
@@ -48,6 +53,12 @@ Loads an image file, uploads it, and registers it under the provided key. Return
 
 Removes an image registration and retires the GPU resource safely. Existing `TextureRef` values for that key should be treated as invalid after removal.
 
+**Example:**
+
+```cpp
+const bool removed = app.images().removeImage("avatar");
+```
+
 ### **contains**
 ---
 
@@ -58,6 +69,12 @@ Removes an image registration and retires the GPU resource safely. Existing `Tex
 
 Checks whether an image key is currently registered. This performs no file IO or GPU work.
 
+**Example:**
+
+```cpp
+if (!app.images().contains("avatar")) { app.images().registerImage("avatar", "assets/avatar.png"); }
+```
+
 ### **getTexture**
 ---
 
@@ -67,3 +84,9 @@ Checks whether an image key is currently registered. This performs no file IO or
 - **Arguments:** `key` registered image key.
 
 Returns the texture reference for a registered image. Missing keys return fallback texture id `0` and log a warning once for that key.
+
+**Example:**
+
+```cpp
+FlowUi::TextureRef avatar = app.images().getTexture("avatar");
+```

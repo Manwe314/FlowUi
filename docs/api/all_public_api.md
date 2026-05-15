@@ -14,6 +14,12 @@ This page is a scan-first cheat sheet for public FlowUi functions. It sits betwe
 
 Hashes a runtime string into a stable FlowUi element id. Use this when looking up or managing state for an element instance outside the builder path.
 
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId saveButtonId = FlowUi::toFlowId("toolbar/save");
+```
+
 ### **toFlowId** `2/2`
 ---
 
@@ -23,6 +29,12 @@ Hashes a runtime string into a stable FlowUi element id. Use this when looking u
 - **Arguments:** `elementName` string literal to hash into an element instance id.
 
 String-literal overload for `toFlowId`. It avoids counting the terminating null byte and can be used in constant expressions.
+
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId saveButtonId = FlowUi::toFlowId("toolbar/save");
+```
 
 ### **toFlowDefinitionId** `1/2`
 ---
@@ -34,6 +46,12 @@ String-literal overload for `toFlowId`. It avoids counting the terminating null 
 
 Hashes a runtime string into a stable FlowUi element definition id. This is the function behind definition ids used by `ElementDefinition`.
 
+**Example:**
+
+```cpp
+constexpr FlowUi::FlowDefinitionId buttonDefinitionId = FlowUi::toFlowDefinitionId("button");
+```
+
 ### **toFlowDefinitionId** `2/2`
 ---
 
@@ -43,6 +61,12 @@ Hashes a runtime string into a stable FlowUi element definition id. This is the 
 - **Arguments:** `definitionName` string literal to hash into an element definition id.
 
 String-literal overload for `toFlowDefinitionId`. Prefer this through `FLOW_DEF_ID("name")` when declaring custom element definition types.
+
+**Example:**
+
+```cpp
+constexpr FlowUi::FlowDefinitionId buttonDefinitionId = FlowUi::toFlowDefinitionId("button");
+```
 
 ### **createIndexedFlowId** `1/3`
 ---
@@ -54,6 +78,12 @@ String-literal overload for `toFlowDefinitionId`. Prefer this through `FLOW_DEF_
 
 Creates a stable child-style id by mixing an existing Flow id with an index. This is useful for repeated UI rows or generated children where a string id would be awkward.
 
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
+```
+
 ### **createIndexedFlowId** `2/3`
 ---
 
@@ -63,6 +93,12 @@ Creates a stable child-style id by mixing an existing Flow id with an index. Thi
 - **Arguments:** `rootName` parent/root name, `index` numeric child/index value.
 
 Hashes the root name and then mixes in the numeric index. Use this when generating stable ids from a named collection or repeated layout section.
+
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
+```
 
 ### **createIndexedFlowId** `3/3`
 ---
@@ -74,6 +110,12 @@ Hashes the root name and then mixes in the numeric index. Use this when generati
 
 String-literal overload for indexed id creation. It is useful for compile-time root names paired with runtime loop indexes.
 
+**Example:**
+
+```cpp
+const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
+```
+
 ### **Flow_Color**
 ---
 
@@ -83,6 +125,12 @@ String-literal overload for indexed id creation. It is useful for compile-time r
 - **Arguments:** `hexRgba` color string in `#RRGGBBAA` form.
 
 Converts a hex RGBA string into a Clay color. The input must include the leading `#` and eight hex digits; invalid input throws `std::invalid_argument`.
+
+**Example:**
+
+```cpp
+Clay_Color panelColor = FlowUi::Flow_Color("#20242cff");
+```
 
 ### **makeApplication**
 ---
@@ -94,6 +142,12 @@ Converts a hex RGBA string into a Clay color. The input must include the leading
 
 Creates and initializes a running FlowUi application. Use this instead of manually constructing `App`; it wires the window, managers, renderer, and configuration together.
 
+**Example:**
+
+```cpp
+FlowUi::App app = FlowUi::makeApplication(config);
+```
+
 ### **operator|**
 ---
 
@@ -104,6 +158,12 @@ Creates and initializes a running FlowUi application. Use this instead of manual
 
 Combines draw-option flags for `ElementBuilder::draw()` and `ElementBuilder::construct()`. This is the normal way to skip multiple callback phases in one builder call.
 
+**Example:**
+
+```cpp
+auto options = FlowUi::ElementDrawOptions::SkipEventCallbacks | FlowUi::ElementDrawOptions::SkipLogicCallback;
+```
+
 ### **elementDrawOptionsHas**
 ---
 
@@ -113,6 +173,12 @@ Combines draw-option flags for `ElementBuilder::draw()` and `ElementBuilder::con
 - **Arguments:** `value` combined option value, `flag` flag to test.
 
 Checks whether an `ElementDrawOptions` value contains a specific flag. This is mostly useful inside infrastructure or advanced element helper code.
+
+**Example:**
+
+```cpp
+const bool skipsLogic = FlowUi::elementDrawOptionsHas(options, FlowUi::ElementDrawOptions::SkipLogicCallback);
+```
 
 ## FlowUi::App
 
@@ -126,6 +192,12 @@ Checks whether an `ElementDrawOptions` value contains a specific flag. This is m
 
 Constructs an empty app handle. Public for move/handle mechanics, but normal application code should create an initialized app with `makeApplication()`.
 
+**Example:**
+
+```cpp
+FlowUi::App emptyHandle{};
+```
+
 ### **App** `2/2`
 ---
 
@@ -135,6 +207,12 @@ Constructs an empty app handle. Public for move/handle mechanics, but normal app
 - **Arguments:** rvalue `App` to move from.
 
 Moves an app handle and its owned runtime implementation. Copying is disabled because the app owns unique window, renderer, and manager resources.
+
+**Example:**
+
+```cpp
+FlowUi::App emptyHandle{};
+```
 
 ### **operator=**
 ---
@@ -146,6 +224,12 @@ Moves an app handle and its owned runtime implementation. Copying is disabled be
 
 Move-assigns an app handle. The target takes ownership of the source runtime resources, and the source becomes a moved-from handle.
 
+**Example:**
+
+```cpp
+runningApp = std::move(replacementApp);
+```
+
 ### **~App**
 ---
 
@@ -155,6 +239,12 @@ Move-assigns an app handle. The target takes ownership of the source runtime res
 - **Arguments:** none.
 
 Destroys the app runtime and releases owned resources. This includes managers, renderer state, window backend state, and GPU resources owned by the app.
+
+**Example:**
+
+```cpp
+{ FlowUi::App app = FlowUi::makeApplication(config); }
+```
 
 ### **shouldClose**
 ---
@@ -166,6 +256,12 @@ Destroys the app runtime and releases owned resources. This includes managers, r
 
 Reports whether the window backend has requested shutdown. Use this as the condition for the main application loop.
 
+**Example:**
+
+```cpp
+while (!app.shouldClose()) { app.beginFrame(); app.endFrame(); app.drawFrame(); }
+```
+
 ### **beginFrame**
 ---
 
@@ -175,6 +271,12 @@ Reports whether the window backend has requested shutdown. Use this as the condi
 - **Arguments:** none.
 
 Begins one FlowUi frame. It polls input, prepares frame-local UI state, and sets up the layout/input snapshot used while building UI.
+
+**Example:**
+
+```cpp
+app.beginFrame();
+```
 
 ### **endFrame**
 ---
@@ -186,6 +288,12 @@ Begins one FlowUi frame. It polls input, prepares frame-local UI state, and sets
 
 Ends UI construction for the current frame. It finalizes Clay render commands and prepares frame-dependent resources before rendering.
 
+**Example:**
+
+```cpp
+app.endFrame();
+```
+
 ### **drawFrame**
 ---
 
@@ -195,6 +303,12 @@ Ends UI construction for the current frame. It finalizes Clay render commands an
 - **Arguments:** none.
 
 Submits and presents the frame produced by `endFrame()`. Call it once after UI construction has been finalized.
+
+**Example:**
+
+```cpp
+app.drawFrame();
+```
 
 ### **fonts** `1/2`
 ---
@@ -206,6 +320,12 @@ Submits and presents the frame produced by `endFrame()`. Call it once after UI c
 
 Returns the mutable font manager owned by the app. Use it to create font families, add faces, resolve fonts, or inspect the atlas resource.
 
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
+```
+
 ### **fonts** `2/2`
 ---
 
@@ -215,6 +335,12 @@ Returns the mutable font manager owned by the app. Use it to create font familie
 - **Arguments:** none.
 
 Returns the immutable font manager owned by the app. Use this for read-only font lookup from const app contexts.
+
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
+```
 
 ### **images** `1/2`
 ---
@@ -226,6 +352,12 @@ Returns the immutable font manager owned by the app. Use this for read-only font
 
 Returns the mutable image manager owned by the app. Use it to register image files and resolve texture references for UI image drawing.
 
+**Example:**
+
+```cpp
+app.images().registerImage("logo", "assets/logo.png");
+```
+
 ### **images** `2/2`
 ---
 
@@ -235,6 +367,12 @@ Returns the mutable image manager owned by the app. Use it to register image fil
 - **Arguments:** none.
 
 Returns the immutable image manager owned by the app. Use this when only checking or resolving already registered image keys.
+
+**Example:**
+
+```cpp
+app.images().registerImage("logo", "assets/logo.png");
+```
 
 ### **icons** `1/2`
 ---
@@ -246,6 +384,12 @@ Returns the immutable image manager owned by the app. Use this when only checkin
 
 Returns the mutable icon manager when icon support is compiled in. Use it to register SVG icons and request texture references for UI rendering.
 
+**Example:**
+
+```cpp
+app.icons().registerFromFile("save", "assets/icons/save.svg");
+```
+
 ### **icons** `2/2`
 ---
 
@@ -255,6 +399,12 @@ Returns the mutable icon manager when icon support is compiled in. Use it to reg
 - **Arguments:** none.
 
 Returns the immutable icon manager when icon support is compiled in. Use this for read-only icon lookup paths.
+
+**Example:**
+
+```cpp
+app.icons().registerFromFile("save", "assets/icons/save.svg");
+```
 
 ### **viewPorts** `1/2`
 ---
@@ -266,6 +416,12 @@ Returns the immutable icon manager when icon support is compiled in. Use this fo
 
 Returns the mutable viewport manager when public Vulkan interop is enabled. Use it to create offscreen UI viewports and attach custom Vulkan render callbacks.
 
+**Example:**
+
+```cpp
+app.viewPorts().create("scene-preview");
+```
+
 ### **viewPorts** `2/2`
 ---
 
@@ -275,6 +431,12 @@ Returns the mutable viewport manager when public Vulkan interop is enabled. Use 
 - **Arguments:** none.
 
 Returns the immutable viewport manager when public Vulkan interop is enabled. Use this for read-only viewport lookup and texture access.
+
+**Example:**
+
+```cpp
+app.viewPorts().create("scene-preview");
+```
 
 ### **ui** `1/2`
 ---
@@ -286,6 +448,12 @@ Returns the immutable viewport manager when public Vulkan interop is enabled. Us
 
 Returns the mutable UI manager for frame construction. This is the main surface for creating FlowUi elements and accessing frame-scoped UI services.
 
+**Example:**
+
+```cpp
+FlowUi::UiManager& ui = app.ui();
+```
+
 ### **ui** `2/2`
 ---
 
@@ -295,6 +463,12 @@ Returns the mutable UI manager for frame construction. This is the main surface 
 - **Arguments:** none.
 
 Returns the immutable UI manager. Use it for read-only access to UI frame state and managers from const contexts.
+
+**Example:**
+
+```cpp
+FlowUi::UiManager& ui = app.ui();
+```
 
 ### **setWindowTitle**
 ---
@@ -306,6 +480,12 @@ Returns the immutable UI manager. Use it for read-only access to UI frame state 
 
 Updates the native window title after app creation. The initial title comes from `WindowConfig::title`.
 
+**Example:**
+
+```cpp
+app.setWindowTitle("Project - Saved");
+```
+
 ### **windowSize**
 ---
 
@@ -315,6 +495,12 @@ Updates the native window title after app creation. The initial title comes from
 - **Arguments:** none.
 
 Returns the current window size in screen coordinates. This is separate from framebuffer pixel size on high-DPI systems.
+
+**Example:**
+
+```cpp
+auto [windowWidth, windowHeight] = app.windowSize();
+```
 
 ### **framebufferSize**
 ---
@@ -326,6 +512,12 @@ Returns the current window size in screen coordinates. This is separate from fra
 
 Returns the current framebuffer size in pixels. Use this for renderer-facing size logic where pixel dimensions matter.
 
+**Example:**
+
+```cpp
+auto [fbWidth, fbHeight] = app.framebufferSize();
+```
+
 ### **setWindowInputConfig**
 ---
 
@@ -335,6 +527,12 @@ Returns the current framebuffer size in pixels. Use this for renderer-facing siz
 - **Arguments:** `config` low-level window input configuration.
 
 Applies cursor, sticky input, lock modifier, and raw mouse settings to the window backend. The initial input configuration comes from `WindowConfig::input`.
+
+**Example:**
+
+```cpp
+app.setWindowInputConfig(FlowUi::WindowInputConfig{.cursorMode = FlowUi::CursorMode::Normal});
+```
 
 ### **windowInputConfig**
 ---
@@ -346,6 +544,12 @@ Applies cursor, sticky input, lock modifier, and raw mouse settings to the windo
 
 Returns the currently active low-level window input configuration. Use this when temporarily changing input behavior and later restoring it.
 
+**Example:**
+
+```cpp
+FlowUi::WindowInputConfig inputConfig = app.windowInputConfig();
+```
+
 ### **nativeWindowHandle**
 ---
 
@@ -355,6 +559,12 @@ Returns the currently active low-level window input configuration. Use this when
 - **Arguments:** none.
 
 Returns the backend native window handle when available. The concrete pointed-to type depends on the active window backend.
+
+**Example:**
+
+```cpp
+void* nativeWindow = app.nativeWindowHandle();
+```
 
 ### **supportsRawMouseMotion**
 ---
@@ -366,6 +576,12 @@ Returns the backend native window handle when available. The concrete pointed-to
 
 Reports whether the current backend and platform support raw mouse motion. Check this before enabling raw motion for camera-like or pointer-lock input.
 
+**Example:**
+
+```cpp
+if (app.supportsRawMouseMotion()) { app.setWindowInputConfig({.rawMouseMotion = true}); }
+```
+
 ### **setClipboardText**
 ---
 
@@ -376,6 +592,12 @@ Reports whether the current backend and platform support raw mouse motion. Check
 
 Writes clipboard text through the window backend. This is the app-level clipboard path; UI code can also use `UiManager` clipboard helpers.
 
+**Example:**
+
+```cpp
+app.setClipboardText("Copied from FlowUi");
+```
+
 ### **clipboardText**
 ---
 
@@ -385,6 +607,12 @@ Writes clipboard text through the window backend. This is the app-level clipboar
 - **Arguments:** none.
 
 Reads clipboard text through the window backend. Returns the current clipboard text as an owning string.
+
+**Example:**
+
+```cpp
+std::string pastedText = app.clipboardText();
+```
 
 ## FlowUi::UiManager
 
@@ -398,6 +626,12 @@ Reads clipboard text through the window backend. Returns the current clipboard t
 
 Copies dynamic text into frame-owned storage and returns a Clay string pointing at that copy. Use this for any string emitted to Clay when the original data may not live until frame end.
 
+**Example:**
+
+```cpp
+CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(textConfig));
+```
+
 ### **storeTexture**
 ---
 
@@ -407,6 +641,12 @@ Copies dynamic text into frame-owned storage and returns a Clay string pointing 
 - **Arguments:** `textureRef` texture reference to copy into frame storage.
 
 Stores a texture reference in the current frame arena and returns a pointer suitable for `Clay_ImageElementConfig::imageData`. Use this instead of taking the address of a temporary or local `TextureRef`.
+
+**Example:**
+
+```cpp
+imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture("logo"));
+```
 
 ### **toClaySID**
 ---
@@ -418,6 +658,12 @@ Stores a texture reference in the current frame arena and returns a pointer suit
 
 Converts a string into a Clay string id using FlowUi frame storage. This is useful when you want Clay's string-id path directly.
 
+**Example:**
+
+```cpp
+Clay_ElementId overlayId = ui.toClaySID("overlay/root");
+```
+
 ### **toClayEID**
 ---
 
@@ -427,6 +673,12 @@ Converts a string into a Clay string id using FlowUi frame storage. This is usef
 - **Arguments:** `s` element id string.
 
 Converts a FlowUi element id string into a Clay element id. This is the normal helper for root and child Clay nodes inside FlowUi element callbacks.
+
+**Example:**
+
+```cpp
+Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
+```
 
 ### **createElement**
 ---
@@ -438,6 +690,12 @@ Converts a FlowUi element id string into a Clay element id. This is the normal h
 
 Creates a builder for one typed FlowUi element invocation. Chain parameter setup and finish with `draw()` or `construct()`.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").draw();
+```
+
 ### **drawConstructed**
 ---
 
@@ -447,6 +705,12 @@ Creates a builder for one typed FlowUi element invocation. Chain parameter setup
 - **Arguments:** none.
 
 Closes the current element opened by `ElementBuilder::construct()`. Call this after emitting the manually supplied child Clay nodes for a constructed element flow.
+
+**Example:**
+
+```cpp
+ui.drawConstructed();
+```
 
 ### **getPreviousFramesInteraction**
 ---
@@ -458,6 +722,12 @@ Closes the current element opened by `ElementBuilder::construct()`. Call this af
 
 Returns the previous completed frame's interaction snapshot. Use it for stable hover, press, hold, and release queries while building the current frame.
 
+**Example:**
+
+```cpp
+const bool wasPressed = ui.getPreviousFramesInteraction().isPressed(buttonId);
+```
+
 ### **getCurrentFrameInput**
 ---
 
@@ -467,6 +737,12 @@ Returns the previous completed frame's interaction snapshot. Use it for stable h
 - **Arguments:** none.
 
 Returns the current frame input in FlowUi layout space. Custom elements can use this for low-level pointer, scroll, keyboard, or timing behavior.
+
+**Example:**
+
+```cpp
+const FlowUi::FrameInput& input = ui.getCurrentFrameInput();
+```
 
 ### **getPreviousFrameInput**
 ---
@@ -478,6 +754,12 @@ Returns the current frame input in FlowUi layout space. Custom elements can use 
 
 Returns the previous frame input in FlowUi layout space. Compare it with `getCurrentFrameInput()` for custom edge detection or drag calculations.
 
+**Example:**
+
+```cpp
+const bool pressedThisFrame = ui.getCurrentFrameInput().mouseDown[0] && !ui.getPreviousFrameInput().mouseDown[0];
+```
+
 ### **inputFields** `1/2`
 ---
 
@@ -487,6 +769,12 @@ Returns the previous frame input in FlowUi layout space. Compare it with `getCur
 - **Arguments:** none.
 
 Returns the mutable input field manager owned by the UI manager. Custom editable text elements use it to request fields, focus, carets, and text edits.
+
+**Example:**
+
+```cpp
+context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+```
 
 ### **inputFields** `2/2`
 ---
@@ -498,6 +786,12 @@ Returns the mutable input field manager owned by the UI manager. Custom editable
 
 Returns the immutable input field manager. Use it for read-only input focus and selection checks.
 
+**Example:**
+
+```cpp
+context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+```
+
 ### **shortcuts** `1/2`
 ---
 
@@ -507,6 +801,12 @@ Returns the immutable input field manager. Use it for read-only input focus and 
 - **Arguments:** none.
 
 Returns the mutable shortcut manager owned by the UI manager. Use it to register app or element keyboard shortcuts.
+
+**Example:**
+
+```cpp
+FlowUi::ShortcutManager& shortcuts = app.ui().shortcuts();
+```
 
 ### **shortcuts** `2/2`
 ---
@@ -518,6 +818,12 @@ Returns the mutable shortcut manager owned by the UI manager. Use it to register
 
 Returns the immutable shortcut manager. Use it for read-only focused element inspection.
 
+**Example:**
+
+```cpp
+FlowUi::ShortcutManager& shortcuts = app.ui().shortcuts();
+```
+
 ### **devRuntime** `1/2`
 ---
 
@@ -527,6 +833,12 @@ Returns the immutable shortcut manager. Use it for read-only focused element ins
 - **Arguments:** none.
 
 Returns the mutable developer runtime when `FLOW_UI_DEV_MODE` is enabled. This is mainly for developer tooling and custom dev integrations.
+
+**Example:**
+
+```cpp
+auto& devRuntime = app.ui().devRuntime();
+```
 
 ### **devRuntime** `2/2`
 ---
@@ -538,6 +850,12 @@ Returns the mutable developer runtime when `FLOW_UI_DEV_MODE` is enabled. This i
 
 Returns the immutable developer runtime when `FLOW_UI_DEV_MODE` is enabled. Use it for read-only inspection of dev-mode state.
 
+**Example:**
+
+```cpp
+auto& devRuntime = app.ui().devRuntime();
+```
+
 ### **devToolsConfig** `1/2`
 ---
 
@@ -547,6 +865,12 @@ Returns the immutable developer runtime when `FLOW_UI_DEV_MODE` is enabled. Use 
 - **Arguments:** none.
 
 Returns mutable developer tooling configuration when `FLOW_UI_DEV_MODE` is enabled. This allows runtime updates to developer panel and capture behavior.
+
+**Example:**
+
+```cpp
+app.ui().devToolsConfig().panelOpenByDefault = true;
+```
 
 ### **devToolsConfig** `2/2`
 ---
@@ -558,6 +882,12 @@ Returns mutable developer tooling configuration when `FLOW_UI_DEV_MODE` is enabl
 
 Returns immutable developer tooling configuration when `FLOW_UI_DEV_MODE` is enabled. Use it for read-only access to current dev settings.
 
+**Example:**
+
+```cpp
+app.ui().devToolsConfig().panelOpenByDefault = true;
+```
+
 ### **setClipboardText**
 ---
 
@@ -567,6 +897,12 @@ Returns immutable developer tooling configuration when `FLOW_UI_DEV_MODE` is ena
 - **Arguments:** `text` text to copy.
 
 Writes clipboard text through the clipboard accessor installed by `App`. If no accessor is installed, this function does nothing.
+
+**Example:**
+
+```cpp
+context.uiManager.setClipboardText(selectedText);
+```
 
 ### **clipboardText**
 ---
@@ -578,6 +914,12 @@ Writes clipboard text through the clipboard accessor installed by `App`. If no a
 
 Reads clipboard text through the installed clipboard accessor. Returns an empty string when no getter is installed.
 
+**Example:**
+
+```cpp
+std::string pasted = context.uiManager.clipboardText();
+```
+
 ### **hasClipboardAccess**
 ---
 
@@ -587,6 +929,12 @@ Reads clipboard text through the installed clipboard accessor. Returns an empty 
 - **Arguments:** none.
 
 Reports whether both clipboard read and write accessors are installed. Use this before exposing clipboard-dependent UI behavior.
+
+**Example:**
+
+```cpp
+if (context.uiManager.hasClipboardAccess()) { context.uiManager.setClipboardText(selectedText); }
+```
 
 ### **requestCursor**
 ---
@@ -598,6 +946,12 @@ Reports whether both clipboard read and write accessors are installed. Use this 
 
 Requests a cursor shape for the current frame. Cursor requests reset each frame, and higher-priority requests win when multiple UI elements request different cursors.
 
+**Example:**
+
+```cpp
+context.uiManager.requestCursor(FlowUi::CursorType::PointingHand, 10);
+```
+
 ### **resolveFont** `1/2`
 ---
 
@@ -608,6 +962,12 @@ Requests a cursor shape for the current frame. Cursor requests reset each frame,
 
 Resolves a logical family/style request to a concrete Clay font id through the connected font manager. Returns `0` when no font manager is attached or the family cannot be resolved.
 
+**Example:**
+
+```cpp
+textConfig.fontId = context.uiManager.resolveFont("Body", 700, FlowUi::FontStyle::Normal);
+```
+
 ### **resolveFont** `2/2`
 ---
 
@@ -617,6 +977,12 @@ Resolves a logical family/style request to a concrete Clay font id through the c
 - **Arguments:** `familyName` logical family name, `weight` requested font weight, `style` requested font style.
 
 Named-family overload for font resolution. Use it when you want a concise lookup by family name rather than caching a `FontFamilyId`.
+
+**Example:**
+
+```cpp
+textConfig.fontId = context.uiManager.resolveFont("Body", 700, FlowUi::FontStyle::Normal);
+```
 
 ## FontManager
 
@@ -630,6 +996,12 @@ Named-family overload for font resolution. Use it when you want a concise lookup
 
 Creates a logical font family and immediately loads its listed faces. Family names must be unique, and face paths load baked `.arfont` files unless runtime font baking is enabled for `.ttf`.
 
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId bodyFamily = app.fonts().createFamily({.name = "Body"});
+```
+
 ### **getFamilyId**
 ---
 
@@ -639,6 +1011,12 @@ Creates a logical font family and immediately loads its listed faces. Family nam
 - **Arguments:** `familyName` logical family name.
 
 Looks up a previously registered family id by name. Missing families return `UINT32_MAX`, making this a non-throwing cache-friendly lookup.
+
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId("Body");
+```
 
 ### **addFamilyFace** `1/2`
 ---
@@ -650,6 +1028,12 @@ Looks up a previously registered family id by name. Missing families return `UIN
 
 Adds a concrete face to an existing family by id. The new face becomes available to `resolveFont()` for its weight and style.
 
+**Example:**
+
+```cpp
+FlowUi::FontId boldFace = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+```
+
 ### **addFamilyFace** `2/2`
 ---
 
@@ -659,6 +1043,12 @@ Adds a concrete face to an existing family by id. The new face becomes available
 - **Arguments:** `familyName` existing family name, `createInfo` concrete face source and style data.
 
 Adds a concrete face to an existing family by name. Use this when the caller has not cached the family id.
+
+**Example:**
+
+```cpp
+FlowUi::FontId boldFace = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+```
 
 ### **resolveFont** `1/2`
 ---
@@ -670,6 +1060,12 @@ Adds a concrete face to an existing family by name. Use this when the caller has
 
 Resolves a logical font request to the best concrete face in a family. It prefers matching style and closest weight, with fallback behavior for missing variants.
 
+**Example:**
+
+```cpp
+FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+```
+
 ### **resolveFont** `2/2`
 ---
 
@@ -679,6 +1075,12 @@ Resolves a logical font request to the best concrete face in a family. It prefer
 - **Arguments:** `familyName` existing family name, `weight` requested weight, `style` requested style.
 
 Named-family overload for resolving a concrete Clay font id. Returns `0` when the family is missing or empty.
+
+**Example:**
+
+```cpp
+FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+```
 
 ### **getFontById**
 ---
@@ -690,6 +1092,12 @@ Named-family overload for resolving a concrete Clay font id. Returns `0` when th
 
 Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete face. Normal UI code usually only needs `resolveFont()`, but renderer or advanced layout integrations may need this data.
 
+**Example:**
+
+```cpp
+const FlowUi::Font::FontFaceData* face = app.fonts().getFontById(bodyFont);
+```
+
 ### **getAtlasResource**
 ---
 
@@ -699,6 +1107,12 @@ Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete
 - **Arguments:** none.
 
 Returns the Vulkan atlas array resource used by FlowUi text rendering. Use `bindingRevision` to decide when external descriptors need refreshing.
+
+**Example:**
+
+```cpp
+const FlowUi::Font::AtlasArrayResource& atlas = app.fonts().getAtlasResource();
+```
 
 ## FlowUi::ImageManager
 
@@ -712,6 +1126,12 @@ Returns the Vulkan atlas array resource used by FlowUi text rendering. Use `bind
 
 Loads an image file, uploads it, and registers it under the provided key. Returns `true` for a new key and `false` when replacing an existing key.
 
+**Example:**
+
+```cpp
+app.images().registerImage("avatar", "assets/avatar.png");
+```
+
 ### **removeImage**
 ---
 
@@ -721,6 +1141,12 @@ Loads an image file, uploads it, and registers it under the provided key. Return
 - **Arguments:** `key` registered image key.
 
 Removes an image registration and retires the GPU resource safely. Existing `TextureRef` values for that key should be treated as invalid after removal.
+
+**Example:**
+
+```cpp
+const bool removed = app.images().removeImage("avatar");
+```
 
 ### **contains**
 ---
@@ -732,6 +1158,12 @@ Removes an image registration and retires the GPU resource safely. Existing `Tex
 
 Checks whether an image key is currently registered. This performs no file IO or GPU work.
 
+**Example:**
+
+```cpp
+if (!app.images().contains("avatar")) { app.images().registerImage("avatar", "assets/avatar.png"); }
+```
+
 ### **getTexture**
 ---
 
@@ -741,6 +1173,12 @@ Checks whether an image key is currently registered. This performs no file IO or
 - **Arguments:** `key` registered image key.
 
 Returns the texture reference for a registered image. Missing keys return fallback texture id `0` and log a warning once for that key.
+
+**Example:**
+
+```cpp
+FlowUi::TextureRef avatar = app.images().getTexture("avatar");
+```
 
 ## FlowUi::IconManager
 
@@ -754,6 +1192,12 @@ Returns the texture reference for a registered image. Missing keys return fallba
 
 Parses and registers an SVG document from memory. Raster variants are created lazily later when the icon is drawn at a particular size.
 
+**Example:**
+
+```cpp
+app.icons().registerSvg("check", checkSvgSource);
+```
+
 ### **registerFromFile**
 ---
 
@@ -763,6 +1207,12 @@ Parses and registers an SVG document from memory. Raster variants are created la
 - **Arguments:** `key` icon key, `filePath` SVG file path.
 
 Parses and registers an SVG document from disk. Returns `false` if the key already exists and the current icon is left unchanged.
+
+**Example:**
+
+```cpp
+app.icons().registerFromFile("save", "assets/icons/save.svg");
+```
 
 ### **remove**
 ---
@@ -774,6 +1224,12 @@ Parses and registers an SVG document from disk. Returns `false` if the key alrea
 
 Removes a registered SVG document and its cached atlas variants. Previously returned texture references for the key should be discarded.
 
+**Example:**
+
+```cpp
+const bool removed = app.icons().remove("save");
+```
+
 ### **contains**
 ---
 
@@ -784,6 +1240,12 @@ Removes a registered SVG document and its cached atlas variants. Previously retu
 
 Checks whether an SVG document key is registered. This does not force rasterization or atlas allocation.
 
+**Example:**
+
+```cpp
+if (!app.icons().contains("save")) { app.icons().registerFromFile("save", "assets/icons/save.svg"); }
+```
+
 ### **textureRef**
 ---
 
@@ -793,6 +1255,12 @@ Checks whether an SVG document key is registered. This does not force rasterizat
 - **Arguments:** `key` registered icon key.
 
 Returns a texture request reference for a registered icon. FlowUi later resolves the request into a cached atlas variant sized to the rendered UI image area.
+
+**Example:**
+
+```cpp
+FlowUi::TextureRef saveIcon = app.icons().textureRef("save");
+```
 
 ## FlowUi::InputFieldManager
 
@@ -806,6 +1274,12 @@ Returns a texture request reference for a registered icon. FlowUi later resolves
 
 Registers or updates an input field for the current frame and returns its current manager-owned state. Call this once per frame from the element that draws the editable field.
 
+**Example:**
+
+```cpp
+FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField({.fieldId = context.elementID, .initialText = "Search", .textElementId = textId, .contentElementId = contentId});
+```
+
 ### **requestCaret**
 ---
 
@@ -815,6 +1289,12 @@ Registers or updates an input field for the current frame and returns its curren
 - **Arguments:** `fieldId` field to focus or edit, `kind` requested caret operation.
 
 Requests focus or caret changes for an input field. `SetPrimary` is the common operation for clicked fields, while `ClearAll` removes text focus globally.
+
+**Example:**
+
+```cpp
+context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+```
 
 ### **removeField**
 ---
@@ -826,6 +1306,12 @@ Requests focus or caret changes for an input field. `SetPrimary` is the common o
 
 Deletes stored text, config, caret, and selection state for one field. Use this when a dynamic field is removed or when external state should replace the edited text.
 
+**Example:**
+
+```cpp
+const bool removed = app.ui().inputFields().removeField("settings/name");
+```
+
 ### **clear**
 ---
 
@@ -835,6 +1321,12 @@ Deletes stored text, config, caret, and selection state for one field. Use this 
 - **Arguments:** none.
 
 Clears all managed input field state. This resets fields, focus, key repeat, pointer drag, and frame render overrides.
+
+**Example:**
+
+```cpp
+app.ui().inputFields().clear();
+```
 
 ### **hasPrimaryFieldFocus**
 ---
@@ -846,6 +1338,12 @@ Clears all managed input field state. This resets fields, focus, key repeat, poi
 
 Reports whether any input field currently owns primary text focus. This is useful for suppressing global shortcuts while the user is editing text.
 
+**Example:**
+
+```cpp
+if (!app.ui().inputFields().hasPrimaryFieldFocus()) { runGlobalShortcut(); }
+```
+
 ### **getSelectedText**
 ---
 
@@ -856,6 +1354,12 @@ Reports whether any input field currently owns primary text focus. This is usefu
 
 Returns selected text from the primary field, or an empty view when no selection exists. The view points into manager-owned storage and is invalidated when that field text changes or is removed.
 
+**Example:**
+
+```cpp
+std::string selected(app.ui().inputFields().getSelectedText());
+```
+
 ### **insertTextAtPrimaryCaret**
 ---
 
@@ -865,6 +1369,12 @@ Returns selected text from the primary field, or an empty view when no selection
 - **Arguments:** `utf8Text` text to insert.
 
 Inserts UTF-8 text at the primary caret, replacing active selections. The operation respects read-only state and `FieldConfig::maxBytes`.
+
+**Example:**
+
+```cpp
+const bool pasted = app.ui().inputFields().insertTextAtPrimaryCaret(app.ui().clipboardText());
+```
 
 ## FlowUi::ShortcutManager
 
@@ -878,6 +1388,12 @@ Inserts UTF-8 text at the primary caret, replacing active selections. The operat
 
 Registers a keyboard shortcut and returns an opaque id. Matching callbacks run by scope and priority, and a callback returning `true` stops later handlers for the same chord.
 
+**Example:**
+
+```cpp
+FlowUi::ShortcutId saveShortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = true}, FlowUi::ShortcutScope::Global, 100, saveCallback);
+```
+
 ### **unregisterShortcut**
 ---
 
@@ -887,6 +1403,12 @@ Registers a keyboard shortcut and returns an opaque id. Matching callbacks run b
 - **Arguments:** `id` shortcut id returned by `registerShortcut()`.
 
 Removes a registered shortcut. It is valid to unregister a shortcut from inside a shortcut callback.
+
+**Example:**
+
+```cpp
+const bool removed = app.ui().shortcuts().unregisterShortcut(saveShortcut);
+```
 
 ### **clear**
 ---
@@ -898,6 +1420,12 @@ Removes a registered shortcut. It is valid to unregister a shortcut from inside 
 
 Removes every registered shortcut and resets focused-element shortcut state. Use this for app-level shortcut reloads or teardown.
 
+**Example:**
+
+```cpp
+app.ui().shortcuts().clear();
+```
+
 ### **setFocusedElement**
 ---
 
@@ -907,6 +1435,12 @@ Removes every registered shortcut and resets focused-element shortcut state. Use
 - **Arguments:** `elementId` Clay element id to treat as shortcut-focused.
 
 Sets the focused element marker used by `ShortcutScope::FocusedElement`. Application or element code decides when an element should become shortcut-focused.
+
+**Example:**
+
+```cpp
+app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));
+```
 
 ### **clearFocusedElement**
 ---
@@ -918,6 +1452,12 @@ Sets the focused element marker used by `ShortcutScope::FocusedElement`. Applica
 
 Clears the focused element marker. After this, focused-element shortcuts are not eligible until another element id is set.
 
+**Example:**
+
+```cpp
+app.ui().shortcuts().clearFocusedElement();
+```
+
 ### **focusedElement**
 ---
 
@@ -927,6 +1467,12 @@ Clears the focused element marker. After this, focused-element shortcuts are not
 - **Arguments:** none.
 
 Returns the currently focused Clay element id for shortcut dispatch. A zero id means no shortcut-focused element is active.
+
+**Example:**
+
+```cpp
+Clay_ElementId focused = app.ui().shortcuts().focusedElement();
+```
 
 ## FlowUi::ViewPort
 
@@ -940,6 +1486,12 @@ Returns the currently focused Clay element id for shortcut dispatch. A zero id m
 
 Returns the stable key used to create and look up this viewport. The key is owned by the viewport object.
 
+**Example:**
+
+```cpp
+std::string_view viewportKey = viewport->getKey();
+```
+
 ### **hasValidSize**
 ---
 
@@ -949,6 +1501,12 @@ Returns the stable key used to create and look up this viewport. The key is owne
 - **Arguments:** none.
 
 Reports whether the viewport currently has positive width and height. A viewport may be invalid before its texture has been referenced and sized by UI image commands.
+
+**Example:**
+
+```cpp
+if (viewport->hasValidSize()) { renderScene(viewport->getSize()); }
+```
 
 ### **getSize**
 ---
@@ -960,6 +1518,12 @@ Reports whether the viewport currently has positive width and height. A viewport
 
 Returns the current render target size in pixels. FlowUi derives this from the largest UI image area using the viewport texture.
 
+**Example:**
+
+```cpp
+VkExtent2D extent = viewport->getSize();
+```
+
 ### **textureRef**
 ---
 
@@ -969,6 +1533,12 @@ Returns the current render target size in pixels. FlowUi derives this from the l
 - **Arguments:** none.
 
 Returns a texture reference for this viewport's current frame image. `ViewPortManager::getTexture()` is usually more convenient when drawing by key.
+
+**Example:**
+
+```cpp
+FlowUi::TextureRef sceneTexture = viewport->textureRef();
+```
 
 ### **setRenderCallback** `1/2`
 ---
@@ -980,6 +1550,12 @@ Returns a texture reference for this viewport's current frame image. `ViewPortMa
 
 Installs a custom render callback for this viewport. FlowUi begins and ends the provided secondary command buffer, so callback code records commands but does not begin or end the buffer.
 
+**Example:**
+
+```cpp
+viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) { recordSceneCommands(ctx); });
+```
+
 ### **setRenderCallback** `2/2`
 ---
 
@@ -989,6 +1565,12 @@ Installs a custom render callback for this viewport. FlowUi begins and ends the 
 - **Arguments:** `userData` retained callback payload, `callback` callable invoked with render context and `T&`.
 
 Installs a render callback that keeps typed shared user data alive. This is useful for binding scene renderers or other stateful rendering helpers to a viewport.
+
+**Example:**
+
+```cpp
+viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) { recordSceneCommands(ctx); });
+```
 
 ### **clearRenderCallback**
 ---
@@ -1000,6 +1582,12 @@ Installs a render callback that keeps typed shared user data alive. This is usef
 
 Clears the viewport render callback. FlowUi continues to manage the viewport texture, but no custom draw commands are recorded.
 
+**Example:**
+
+```cpp
+viewport->clearRenderCallback();
+```
+
 ### **hasRenderCallback**
 ---
 
@@ -1009,6 +1597,12 @@ Clears the viewport render callback. FlowUi continues to manage the viewport tex
 - **Arguments:** none.
 
 Reports whether a render callback is currently installed. Use this to avoid redundant setup or to display fallback content.
+
+**Example:**
+
+```cpp
+if (!viewport->hasRenderCallback()) { viewport->setRenderCallback(renderScene); }
+```
 
 ### **setClearColor**
 ---
@@ -1020,6 +1614,12 @@ Reports whether a render callback is currently installed. Use this to avoid redu
 
 Sets the viewport clear color. The color is used by the viewport render pass when clearing is enabled.
 
+**Example:**
+
+```cpp
+viewport->setClearColor(0.02f, 0.02f, 0.03f, 1.0f);
+```
+
 ### **clearColor**
 ---
 
@@ -1029,6 +1629,12 @@ Sets the viewport clear color. The color is used by the viewport render pass whe
 - **Arguments:** none.
 
 Returns the current viewport clear color. The values are RGBA channels.
+
+**Example:**
+
+```cpp
+std::array<float, 4> color = viewport->clearColor();
+```
 
 ### **setClearEveryFrame**
 ---
@@ -1040,6 +1646,12 @@ Returns the current viewport clear color. The values are RGBA channels.
 
 Controls whether FlowUi clears the viewport image every frame. Disabling clear can be useful for persistent render target effects.
 
+**Example:**
+
+```cpp
+viewport->setClearEveryFrame(false);
+```
+
 ### **clearEveryFrame**
 ---
 
@@ -1049,6 +1661,12 @@ Controls whether FlowUi clears the viewport image every frame. Disabling clear c
 - **Arguments:** none.
 
 Reports whether the viewport clears before rendering each frame. When false, FlowUi loads previous image contents after initialization.
+
+**Example:**
+
+```cpp
+const bool clears = viewport->clearEveryFrame();
+```
 
 ## FlowUi::ViewPortManager
 
@@ -1062,6 +1680,12 @@ Reports whether the viewport clears before rendering each frame. When false, Flo
 
 Creates a named offscreen viewport. Newly created viewports resize automatically when their texture is referenced by UI image commands.
 
+**Example:**
+
+```cpp
+app.viewPorts().create("scene", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});
+```
+
 ### **remove**
 ---
 
@@ -1071,6 +1695,12 @@ Creates a named offscreen viewport. Newly created viewports resize automatically
 - **Arguments:** `key` viewport key.
 
 Removes a viewport and destroys its per-frame resources. This can block because the implementation waits for the Vulkan device to become idle before releasing resources.
+
+**Example:**
+
+```cpp
+const bool removed = app.viewPorts().remove("scene");
+```
 
 ### **contains**
 ---
@@ -1082,6 +1712,12 @@ Removes a viewport and destroys its per-frame resources. This can block because 
 
 Checks whether a viewport exists for the key. This is a lightweight lookup with no rendering side effects.
 
+**Example:**
+
+```cpp
+if (!app.viewPorts().contains("scene")) { app.viewPorts().create("scene"); }
+```
+
 ### **getViewPort** `1/2`
 ---
 
@@ -1091,6 +1727,12 @@ Checks whether a viewport exists for the key. This is a lightweight lookup with 
 - **Arguments:** `key` viewport key.
 
 Returns a mutable viewport pointer, or `nullptr` when missing. Use this to set callbacks, clear color, or persistent clear behavior.
+
+**Example:**
+
+```cpp
+FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene");
+```
 
 ### **getViewPort** `2/2`
 ---
@@ -1102,6 +1744,12 @@ Returns a mutable viewport pointer, or `nullptr` when missing. Use this to set c
 
 Returns an immutable viewport pointer, or `nullptr` when missing. Use this for read-only viewport inspection.
 
+**Example:**
+
+```cpp
+FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene");
+```
+
 ### **getTexture**
 ---
 
@@ -1112,6 +1760,12 @@ Returns an immutable viewport pointer, or `nullptr` when missing. Use this for r
 
 Returns a texture reference for the current frame's viewport image. Missing keys return fallback texture id `0` and log a warning once.
 
+**Example:**
+
+```cpp
+FlowUi::TextureRef sceneTexture = app.viewPorts().getTexture("scene");
+```
+
 ### **getVulkanInterop**
 ---
 
@@ -1121,6 +1775,12 @@ Returns a texture reference for the current frame's viewport image. Missing keys
 - **Arguments:** none.
 
 Returns shared Vulkan handles owned by the FlowUi app. Use these handles only to create compatible resources or record viewport work; do not destroy them.
+
+**Example:**
+
+```cpp
+const FlowUi::ViewPortVulkanInterop& vk = app.viewPorts().getVulkanInterop();
+```
 
 ## FlowUi::ElementBuilder
 
@@ -1134,6 +1794,12 @@ Returns shared Vulkan handles owned by the FlowUi app. Use these handles only to
 
 Constructs a builder for one element invocation. User code normally gets builders from `UiManager::createElement()` rather than calling this constructor directly.
 
+**Example:**
+
+```cpp
+auto builder = app.ui().createElement(kButton, "toolbar/save");
+```
+
 ### **setParameters** `1/2`
 ---
 
@@ -1143,6 +1809,12 @@ Constructs a builder for one element invocation. User code normally gets builder
 - **Arguments:** `parameters` parameter values to copy.
 
 Copies parameter values into the builder. The stored parameters are passed to interaction, logic, construct, and build callbacks.
+
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").setParameters(ButtonParams{.label = "Save"}).draw();
+```
 
 ### **setParameters** `2/2`
 ---
@@ -1154,6 +1826,12 @@ Copies parameter values into the builder. The stored parameters are passed to in
 
 Moves parameter values into the builder. Use this when parameter construction is dynamic or owns heavier data.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").setParameters(ButtonParams{.label = "Save"}).draw();
+```
+
 ### **mergeParams**
 ---
 
@@ -1163,6 +1841,12 @@ Moves parameter values into the builder. Use this when parameter construction is
 - **Arguments:** `mergeFn` callable invoked with `ParametersType&`.
 
 Mutates the builder's existing parameter storage. This is useful when defaults are mostly correct and only a few fields need to be changed.
+
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").mergeParams([](ButtonParams& params) { params.enabled = false; }).draw();
+```
 
 ### **withElementID**
 ---
@@ -1174,6 +1858,12 @@ Mutates the builder's existing parameter storage. This is useful when defaults a
 
 Replaces the id stored by the builder. Use it when a builder is created before the final stable id is known.
 
+**Example:**
+
+```cpp
+buttonBuilder.withElementID("toolbar/save-secondary").draw();
+```
+
 ### **setDevInternalCapture**
 ---
 
@@ -1183,6 +1873,12 @@ Replaces the id stored by the builder. Use it when a builder is created before t
 - **Arguments:** `isDevInternal` whether dev capture should mark this invocation internal.
 
 Controls how this element invocation is captured in developer mode. Normal user elements usually do not need this.
+
+**Example:**
+
+```cpp
+app.ui().createElement(kDevPanel, "flowui/dev/panel").setDevInternalCapture(true).draw();
+```
 
 ### **construct**
 ---
@@ -1194,6 +1890,12 @@ Controls how this element invocation is captured in developer mode. Normal user 
 
 Runs enabled callbacks and opens a constructed Clay root using the definition's `constructElement` callback. Emit child nodes after this call, then close the element with `UiManager::drawConstructed()`.
 
+**Example:**
+
+```cpp
+app.ui().createElement(kPanel, "settings").construct();
+```
+
 ### **draw**
 ---
 
@@ -1203,6 +1905,12 @@ Runs enabled callbacks and opens a constructed Clay root using the definition's 
 - **Arguments:** `options` callback phases to skip.
 
 Runs enabled callbacks and emits the element through its `buildElement` callback. This is the most common final call for a FlowUi element builder.
+
+**Example:**
+
+```cpp
+app.ui().createElement(kButton, "toolbar/save").draw();
+```
 
 ## FlowUi::InteractionSnapshot
 
@@ -1216,6 +1924,12 @@ Runs enabled callbacks and emits the element through its `buildElement` callback
 
 Checks whether a Clay element id exists in an interaction list. Comparison uses the underlying Clay id value.
 
+**Example:**
+
+```cpp
+const bool hasButton = FlowUi::InteractionSnapshot::contains(snapshot.pressedElementIds, buttonId);
+```
+
 ### **isHovered**
 ---
 
@@ -1225,6 +1939,12 @@ Checks whether a Clay element id exists in an interaction list. Comparison uses 
 - **Arguments:** `id` Clay element id.
 
 Reports whether the element was hovered in this snapshot. Element callbacks commonly use this for child interaction checks.
+
+**Example:**
+
+```cpp
+const bool hovered = context.previousInteraction.isHovered(rootId);
+```
 
 ### **isPressed**
 ---
@@ -1236,6 +1956,12 @@ Reports whether the element was hovered in this snapshot. Element callbacks comm
 
 Reports whether the element received a primary pointer press in this snapshot. This is based on the previous completed frame when used from element callbacks.
 
+**Example:**
+
+```cpp
+const bool pressed = context.previousInteraction.isPressed(rootId);
+```
+
 ### **isHeld**
 ---
 
@@ -1246,6 +1972,12 @@ Reports whether the element received a primary pointer press in this snapshot. T
 
 Reports whether the element was held by the primary pointer in this snapshot. Use it for drag-like or continuous pressed behavior.
 
+**Example:**
+
+```cpp
+const bool held = context.previousInteraction.isHeld(rootId);
+```
+
 ### **isReleased**
 ---
 
@@ -1255,6 +1987,12 @@ Reports whether the element was held by the primary pointer in this snapshot. Us
 - **Arguments:** `id` Clay element id.
 
 Reports whether the element received a primary pointer release in this snapshot. Use it for release-triggered actions.
+
+**Example:**
+
+```cpp
+const bool released = context.previousInteraction.isReleased(rootId);
+```
 
 ## FlowUi::ElementBuildContext
 
@@ -1268,6 +2006,12 @@ Reports whether the element received a primary pointer release in this snapshot.
 
 Creates a stable child id by appending the local child id to the current element id. Use this for child Clay nodes or nested Flow elements owned by the current element.
 
+**Example:**
+
+```cpp
+Clay_ElementId labelId = context.uiManager.toClayEID(context.createChildElementId("label"));
+```
+
 ## FlowUi::ElementInteractionContext
 
 ### **createChildElementId**
@@ -1279,6 +2023,12 @@ Creates a stable child id by appending the local child id to the current element
 - **Arguments:** `localChildId` child id segment or relative child path.
 
 Creates a stable child id from inside interaction or logic callbacks. This is useful when querying previous interaction for child elements.
+
+**Example:**
+
+```cpp
+Clay_ElementId labelId = context.uiManager.toClayEID(context.createChildElementId("label"));
+```
 
 ## FlowUi::ElementDefinition
 
@@ -1292,6 +2042,12 @@ Creates a stable child id from inside interaction or logic callbacks. This is us
 
 Lazily creates and returns the shared resources instance for this element definition specialization. Available only when the `Resources` template argument is not `void`.
 
+**Example:**
+
+```cpp
+ButtonResources& resources = ButtonDefinition::getResources(app);
+```
+
 ### **getOrCreateState**
 ---
 
@@ -1301,6 +2057,12 @@ Lazily creates and returns the shared resources instance for this element defini
 - **Arguments:** `elementFlowId` Flow id for one element instance.
 
 Returns existing state for an element instance or creates default state when missing. Available only when the `State` template argument is not `void`.
+
+**Example:**
+
+```cpp
+ButtonState& state = ButtonDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
+```
 
 ### **tryGetState**
 ---
@@ -1312,6 +2074,12 @@ Returns existing state for an element instance or creates default state when mis
 
 Looks up mutable state without creating it. Returns `nullptr` when the element instance has no stored state.
 
+**Example:**
+
+```cpp
+if (ButtonState* state = ButtonDefinition::tryGetState(FLOW_ID("toolbar/save"))) { state->pressed = false; }
+```
+
 ### **tryGetStateConst**
 ---
 
@@ -1322,6 +2090,12 @@ Looks up mutable state without creating it. Returns `nullptr` when the element i
 
 Looks up immutable state without creating it. Use this for read-only checks outside element callbacks.
 
+**Example:**
+
+```cpp
+const ButtonState* state = ButtonDefinition::tryGetStateConst(FLOW_ID("toolbar/save"));
+```
+
 ### **eraseState**
 ---
 
@@ -1331,6 +2105,12 @@ Looks up immutable state without creating it. Use this for read-only checks outs
 - **Arguments:** `elementFlowId` Flow id for one element instance.
 
 Erases stored state for one element instance. FlowUi does not automatically garbage-collect custom element state, so dynamic UI can use this to keep state pools bounded.
+
+**Example:**
+
+```cpp
+const bool erased = ButtonDefinition::eraseState(FLOW_ID("toolbar/save"));
+```
 
 ## FlowUi::Font::FontVariantData
 
@@ -1344,6 +2124,12 @@ Erases stored state for one element instance. FlowUi does not automatically garb
 
 Packs two codepoints into the key used by the kerning lookup table. This is mainly useful when inspecting or extending font metric data.
 
+**Example:**
+
+```cpp
+uint64_t key = FlowUi::Font::FontVariantData::kerningKey(U'A', U'V');
+```
+
 ### **kerningAdvance**
 ---
 
@@ -1353,6 +2139,12 @@ Packs two codepoints into the key used by the kerning lookup table. This is main
 - **Arguments:** `leftCodepoint` left glyph codepoint, `rightCodepoint` right glyph codepoint.
 
 Returns kerning advance for a codepoint pair. Missing pairs return `0.0f`.
+
+**Example:**
+
+```cpp
+float advance = variant.kerningAdvance(U'A', U'V');
+```
 
 ## FlowUi::Font::FontFaceData
 
@@ -1365,3 +2157,9 @@ Returns kerning advance for a codepoint pair. Missing pairs return `0.0f`.
 - **Arguments:** none.
 
 Returns the default baked variant for a loaded font face. Returns `nullptr` when the face has no variants or the default index is invalid.
+
+**Example:**
+
+```cpp
+const FlowUi::Font::FontVariantData* variant = face->defaultVariant();
+```

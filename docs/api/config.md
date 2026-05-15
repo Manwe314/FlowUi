@@ -141,3 +141,9 @@ Normalized per-frame input snapshot consumed by managers and custom elements. It
 - **Arguments:** `hexRgba` color string in `#RRGGBBAA` form.
 
 Converts a hex RGBA string into a Clay color. The input must include the leading `#` and eight hex digits; invalid input throws `std::invalid_argument`.
+
+**Example:**
+
+```cpp
+Clay_Color panelColor = FlowUi::Flow_Color("#20242cff");
+```

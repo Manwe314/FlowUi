@@ -71,7 +71,6 @@ Vulkan resources for the font atlas array. Renderer integrations can inspect ima
 
 ## Public API
 
-
 ### **createFamily**
 ---
 
@@ -81,6 +80,12 @@ Vulkan resources for the font atlas array. Renderer integrations can inspect ima
 - **Arguments:** `createInfo` logical family name and initial concrete faces.
 
 Creates a logical font family and immediately loads its listed faces. Family names must be unique, and face paths load baked `.arfont` files unless runtime font baking is enabled for `.ttf`.
+
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId bodyFamily = app.fonts().createFamily({.name = "Body"});
+```
 
 ### **getFamilyId**
 ---
@@ -92,6 +97,12 @@ Creates a logical font family and immediately loads its listed faces. Family nam
 
 Looks up a previously registered family id by name. Missing families return `UINT32_MAX`, making this a non-throwing cache-friendly lookup.
 
+**Example:**
+
+```cpp
+FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId("Body");
+```
+
 ### **addFamilyFace** `1/2`
 ---
 
@@ -101,6 +112,12 @@ Looks up a previously registered family id by name. Missing families return `UIN
 - **Arguments:** `familyId` existing family id, `createInfo` concrete face source and style data.
 
 Adds a concrete face to an existing family by id. The new face becomes available to `resolveFont()` for its weight and style.
+
+**Example:**
+
+```cpp
+FlowUi::FontId boldFace = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+```
 
 ### **addFamilyFace** `2/2`
 ---
@@ -112,6 +129,12 @@ Adds a concrete face to an existing family by id. The new face becomes available
 
 Adds a concrete face to an existing family by name. Use this when the caller has not cached the family id.
 
+**Example:**
+
+```cpp
+FlowUi::FontId boldFace = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+```
+
 ### **resolveFont** `1/2`
 ---
 
@@ -121,6 +144,12 @@ Adds a concrete face to an existing family by name. Use this when the caller has
 - **Arguments:** `familyId` existing family id, `weight` requested weight, `style` requested style.
 
 Resolves a logical font request to the best concrete face in a family. It prefers matching style and closest weight, with fallback behavior for missing variants.
+
+**Example:**
+
+```cpp
+FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+```
 
 ### **resolveFont** `2/2`
 ---
@@ -132,6 +161,12 @@ Resolves a logical font request to the best concrete face in a family. It prefer
 
 Named-family overload for resolving a concrete Clay font id. Returns `0` when the family is missing or empty.
 
+**Example:**
+
+```cpp
+FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
+```
+
 ### **getFontById**
 ---
 
@@ -141,6 +176,12 @@ Named-family overload for resolving a concrete Clay font id. Returns `0` when th
 - **Arguments:** `fontId` concrete font id.
 
 Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete face. Normal UI code usually only needs `resolveFont()`, but renderer or advanced layout integrations may need this data.
+
+**Example:**
+
+```cpp
+const FlowUi::Font::FontFaceData* face = app.fonts().getFontById(bodyFont);
+```
 
 ### **getAtlasResource**
 ---
@@ -152,7 +193,11 @@ Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete
 
 Returns the Vulkan atlas array resource used by FlowUi text rendering. Use `bindingRevision` to decide when external descriptors need refreshing.
 
+**Example:**
 
+```cpp
+const FlowUi::Font::AtlasArrayResource& atlas = app.fonts().getAtlasResource();
+```
 
 ### **kerningKey**
 ---
@@ -164,6 +209,12 @@ Returns the Vulkan atlas array resource used by FlowUi text rendering. Use `bind
 
 Packs two codepoints into the key used by the kerning lookup table. This is mainly useful when inspecting or extending font metric data.
 
+**Example:**
+
+```cpp
+uint64_t key = FlowUi::Font::FontVariantData::kerningKey(U'A', U'V');
+```
+
 ### **kerningAdvance**
 ---
 
@@ -174,7 +225,11 @@ Packs two codepoints into the key used by the kerning lookup table. This is main
 
 Returns kerning advance for a codepoint pair. Missing pairs return `0.0f`.
 
+**Example:**
 
+```cpp
+float advance = variant.kerningAdvance(U'A', U'V');
+```
 
 ### **defaultVariant**
 ---
@@ -185,3 +240,9 @@ Returns kerning advance for a codepoint pair. Missing pairs return `0.0f`.
 - **Arguments:** none.
 
 Returns the default baked variant for a loaded font face. Returns `nullptr` when the face has no variants or the default index is invalid.
+
+**Example:**
+
+```cpp
+const FlowUi::Font::FontVariantData* variant = face->defaultVariant();
+```

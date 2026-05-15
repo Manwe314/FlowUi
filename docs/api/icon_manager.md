@@ -34,7 +34,6 @@ Texture request handle returned by IconManager. FlowUi resolves it to a cached a
 
 ## Public API
 
-
 ### **registerSvg**
 ---
 
@@ -44,6 +43,12 @@ Texture request handle returned by IconManager. FlowUi resolves it to a cached a
 - **Arguments:** `key` icon key, `svgSource` complete SVG source text.
 
 Parses and registers an SVG document from memory. Raster variants are created lazily later when the icon is drawn at a particular size.
+
+**Example:**
+
+```cpp
+app.icons().registerSvg("check", checkSvgSource);
+```
 
 ### **registerFromFile**
 ---
@@ -55,6 +60,12 @@ Parses and registers an SVG document from memory. Raster variants are created la
 
 Parses and registers an SVG document from disk. Returns `false` if the key already exists and the current icon is left unchanged.
 
+**Example:**
+
+```cpp
+app.icons().registerFromFile("save", "assets/icons/save.svg");
+```
+
 ### **remove**
 ---
 
@@ -64,6 +75,12 @@ Parses and registers an SVG document from disk. Returns `false` if the key alrea
 - **Arguments:** `key` registered icon key.
 
 Removes a registered SVG document and its cached atlas variants. Previously returned texture references for the key should be discarded.
+
+**Example:**
+
+```cpp
+const bool removed = app.icons().remove("save");
+```
 
 ### **contains**
 ---
@@ -75,6 +92,12 @@ Removes a registered SVG document and its cached atlas variants. Previously retu
 
 Checks whether an SVG document key is registered. This does not force rasterization or atlas allocation.
 
+**Example:**
+
+```cpp
+if (!app.icons().contains("save")) { app.icons().registerFromFile("save", "assets/icons/save.svg"); }
+```
+
 ### **textureRef**
 ---
 
@@ -84,3 +107,9 @@ Checks whether an SVG document key is registered. This does not force rasterizat
 - **Arguments:** `key` registered icon key.
 
 Returns a texture request reference for a registered icon. FlowUi later resolves the request into a cached atlas variant sized to the rendered UI image area.
+
+**Example:**
+
+```cpp
+FlowUi::TextureRef saveIcon = app.icons().textureRef("save");
+```

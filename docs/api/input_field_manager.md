@@ -41,7 +41,6 @@ Current manager-owned field state returned by requestField. It exposes text, pri
 
 ## Public API
 
-
 ### **requestField**
 ---
 
@@ -51,6 +50,12 @@ Current manager-owned field state returned by requestField. It exposes text, pri
 - **Arguments:** `request` stable field id, initial text, config, and Clay element ids.
 
 Registers or updates an input field for the current frame and returns its current manager-owned state. Call this once per frame from the element that draws the editable field.
+
+**Example:**
+
+```cpp
+FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField({.fieldId = context.elementID, .initialText = "Search", .textElementId = textId, .contentElementId = contentId});
+```
 
 ### **requestCaret**
 ---
@@ -62,6 +67,12 @@ Registers or updates an input field for the current frame and returns its curren
 
 Requests focus or caret changes for an input field. `SetPrimary` is the common operation for clicked fields, while `ClearAll` removes text focus globally.
 
+**Example:**
+
+```cpp
+context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+```
+
 ### **removeField**
 ---
 
@@ -71,6 +82,12 @@ Requests focus or caret changes for an input field. `SetPrimary` is the common o
 - **Arguments:** `fieldId` field state to remove.
 
 Deletes stored text, config, caret, and selection state for one field. Use this when a dynamic field is removed or when external state should replace the edited text.
+
+**Example:**
+
+```cpp
+const bool removed = app.ui().inputFields().removeField("settings/name");
+```
 
 ### **clear**
 ---
@@ -82,6 +99,12 @@ Deletes stored text, config, caret, and selection state for one field. Use this 
 
 Clears all managed input field state. This resets fields, focus, key repeat, pointer drag, and frame render overrides.
 
+**Example:**
+
+```cpp
+app.ui().inputFields().clear();
+```
+
 ### **hasPrimaryFieldFocus**
 ---
 
@@ -91,6 +114,12 @@ Clears all managed input field state. This resets fields, focus, key repeat, poi
 - **Arguments:** none.
 
 Reports whether any input field currently owns primary text focus. This is useful for suppressing global shortcuts while the user is editing text.
+
+**Example:**
+
+```cpp
+if (!app.ui().inputFields().hasPrimaryFieldFocus()) { runGlobalShortcut(); }
+```
 
 ### **getSelectedText**
 ---
@@ -102,6 +131,12 @@ Reports whether any input field currently owns primary text focus. This is usefu
 
 Returns selected text from the primary field, or an empty view when no selection exists. The view points into manager-owned storage and is invalidated when that field text changes or is removed.
 
+**Example:**
+
+```cpp
+std::string selected(app.ui().inputFields().getSelectedText());
+```
+
 ### **insertTextAtPrimaryCaret**
 ---
 
@@ -111,3 +146,9 @@ Returns selected text from the primary field, or an empty view when no selection
 - **Arguments:** `utf8Text` text to insert.
 
 Inserts UTF-8 text at the primary caret, replacing active selections. The operation respects read-only state and `FieldConfig::maxBytes`.
+
+**Example:**
+
+```cpp
+const bool pasted = app.ui().inputFields().insertTextAtPrimaryCaret(app.ui().clipboardText());
+```

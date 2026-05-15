@@ -55,7 +55,6 @@ App-owned manager for named offscreen viewports. It creates, tracks, sizes, rend
 
 ## Public API
 
-
 ### **getKey**
 ---
 
@@ -65,6 +64,12 @@ App-owned manager for named offscreen viewports. It creates, tracks, sizes, rend
 - **Arguments:** none.
 
 Returns the stable key used to create and look up this viewport. The key is owned by the viewport object.
+
+**Example:**
+
+```cpp
+std::string_view viewportKey = viewport->getKey();
+```
 
 ### **hasValidSize**
 ---
@@ -76,6 +81,12 @@ Returns the stable key used to create and look up this viewport. The key is owne
 
 Reports whether the viewport currently has positive width and height. A viewport may be invalid before its texture has been referenced and sized by UI image commands.
 
+**Example:**
+
+```cpp
+if (viewport->hasValidSize()) { renderScene(viewport->getSize()); }
+```
+
 ### **getSize**
 ---
 
@@ -85,6 +96,12 @@ Reports whether the viewport currently has positive width and height. A viewport
 - **Arguments:** none.
 
 Returns the current render target size in pixels. FlowUi derives this from the largest UI image area using the viewport texture.
+
+**Example:**
+
+```cpp
+VkExtent2D extent = viewport->getSize();
+```
 
 ### **textureRef**
 ---
@@ -96,6 +113,12 @@ Returns the current render target size in pixels. FlowUi derives this from the l
 
 Returns a texture reference for this viewport's current frame image. `ViewPortManager::getTexture()` is usually more convenient when drawing by key.
 
+**Example:**
+
+```cpp
+FlowUi::TextureRef sceneTexture = viewport->textureRef();
+```
+
 ### **setRenderCallback** `1/2`
 ---
 
@@ -105,6 +128,12 @@ Returns a texture reference for this viewport's current frame image. `ViewPortMa
 - **Arguments:** `callback` function invoked for viewport rendering.
 
 Installs a custom render callback for this viewport. FlowUi begins and ends the provided secondary command buffer, so callback code records commands but does not begin or end the buffer.
+
+**Example:**
+
+```cpp
+viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) { recordSceneCommands(ctx); });
+```
 
 ### **setRenderCallback** `2/2`
 ---
@@ -116,6 +145,12 @@ Installs a custom render callback for this viewport. FlowUi begins and ends the 
 
 Installs a render callback that keeps typed shared user data alive. This is useful for binding scene renderers or other stateful rendering helpers to a viewport.
 
+**Example:**
+
+```cpp
+viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) { recordSceneCommands(ctx); });
+```
+
 ### **clearRenderCallback**
 ---
 
@@ -125,6 +160,12 @@ Installs a render callback that keeps typed shared user data alive. This is usef
 - **Arguments:** none.
 
 Clears the viewport render callback. FlowUi continues to manage the viewport texture, but no custom draw commands are recorded.
+
+**Example:**
+
+```cpp
+viewport->clearRenderCallback();
+```
 
 ### **hasRenderCallback**
 ---
@@ -136,6 +177,12 @@ Clears the viewport render callback. FlowUi continues to manage the viewport tex
 
 Reports whether a render callback is currently installed. Use this to avoid redundant setup or to display fallback content.
 
+**Example:**
+
+```cpp
+if (!viewport->hasRenderCallback()) { viewport->setRenderCallback(renderScene); }
+```
+
 ### **setClearColor**
 ---
 
@@ -145,6 +192,12 @@ Reports whether a render callback is currently installed. Use this to avoid redu
 - **Arguments:** `r`, `g`, `b`, `a` clear color channels.
 
 Sets the viewport clear color. The color is used by the viewport render pass when clearing is enabled.
+
+**Example:**
+
+```cpp
+viewport->setClearColor(0.02f, 0.02f, 0.03f, 1.0f);
+```
 
 ### **clearColor**
 ---
@@ -156,6 +209,12 @@ Sets the viewport clear color. The color is used by the viewport render pass whe
 
 Returns the current viewport clear color. The values are RGBA channels.
 
+**Example:**
+
+```cpp
+std::array<float, 4> color = viewport->clearColor();
+```
+
 ### **setClearEveryFrame**
 ---
 
@@ -165,6 +224,12 @@ Returns the current viewport clear color. The values are RGBA channels.
 - **Arguments:** `enabled` true to clear each rendered frame.
 
 Controls whether FlowUi clears the viewport image every frame. Disabling clear can be useful for persistent render target effects.
+
+**Example:**
+
+```cpp
+viewport->setClearEveryFrame(false);
+```
 
 ### **clearEveryFrame**
 ---
@@ -176,7 +241,11 @@ Controls whether FlowUi clears the viewport image every frame. Disabling clear c
 
 Reports whether the viewport clears before rendering each frame. When false, FlowUi loads previous image contents after initialization.
 
+**Example:**
 
+```cpp
+const bool clears = viewport->clearEveryFrame();
+```
 
 ### **create**
 ---
@@ -188,6 +257,12 @@ Reports whether the viewport clears before rendering each frame. When false, Flo
 
 Creates a named offscreen viewport. Newly created viewports resize automatically when their texture is referenced by UI image commands.
 
+**Example:**
+
+```cpp
+app.viewPorts().create("scene", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});
+```
+
 ### **remove**
 ---
 
@@ -197,6 +272,12 @@ Creates a named offscreen viewport. Newly created viewports resize automatically
 - **Arguments:** `key` viewport key.
 
 Removes a viewport and destroys its per-frame resources. This can block because the implementation waits for the Vulkan device to become idle before releasing resources.
+
+**Example:**
+
+```cpp
+const bool removed = app.viewPorts().remove("scene");
+```
 
 ### **contains**
 ---
@@ -208,6 +289,12 @@ Removes a viewport and destroys its per-frame resources. This can block because 
 
 Checks whether a viewport exists for the key. This is a lightweight lookup with no rendering side effects.
 
+**Example:**
+
+```cpp
+if (!app.viewPorts().contains("scene")) { app.viewPorts().create("scene"); }
+```
+
 ### **getViewPort** `1/2`
 ---
 
@@ -217,6 +304,12 @@ Checks whether a viewport exists for the key. This is a lightweight lookup with 
 - **Arguments:** `key` viewport key.
 
 Returns a mutable viewport pointer, or `nullptr` when missing. Use this to set callbacks, clear color, or persistent clear behavior.
+
+**Example:**
+
+```cpp
+FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene");
+```
 
 ### **getViewPort** `2/2`
 ---
@@ -228,6 +321,12 @@ Returns a mutable viewport pointer, or `nullptr` when missing. Use this to set c
 
 Returns an immutable viewport pointer, or `nullptr` when missing. Use this for read-only viewport inspection.
 
+**Example:**
+
+```cpp
+FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene");
+```
+
 ### **getTexture**
 ---
 
@@ -238,6 +337,12 @@ Returns an immutable viewport pointer, or `nullptr` when missing. Use this for r
 
 Returns a texture reference for the current frame's viewport image. Missing keys return fallback texture id `0` and log a warning once.
 
+**Example:**
+
+```cpp
+FlowUi::TextureRef sceneTexture = app.viewPorts().getTexture("scene");
+```
+
 ### **getVulkanInterop**
 ---
 
@@ -247,3 +352,9 @@ Returns a texture reference for the current frame's viewport image. Missing keys
 - **Arguments:** none.
 
 Returns shared Vulkan handles owned by the FlowUi app. Use these handles only to create compatible resources or record viewport work; do not destroy them.
+
+**Example:**
+
+```cpp
+const FlowUi::ViewPortVulkanInterop& vk = app.viewPorts().getVulkanInterop();
+```
