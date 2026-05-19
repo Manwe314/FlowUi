@@ -19,6 +19,7 @@
 19. eliminate throwing in an uncought way ??
 20. debugg mesages
 21. add fixed extent option in viewPort CreateInfo for non ndynamic viewport sizing
+22. Inter font has some small artifacts text rendering need help.
 
 For IconManager:
 	- Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.
