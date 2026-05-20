@@ -56,7 +56,8 @@
 # -----------------------------
 # Local binaries / logs
 # -----------------------------
-/FlowPlotGUI/FlowPlotGUI
+./flowui_devChnage_updater
+./flowui_font_baker
 *.log
 
 # -----------------------------
