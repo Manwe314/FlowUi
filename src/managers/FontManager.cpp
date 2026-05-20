@@ -27,7 +27,7 @@ namespace Font = FlowUi::Font;
 namespace {
 
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
-constexpr double kDefaultRuntimeFontPxRange = 2.0;
+constexpr double kDefaultRuntimeFontPxRange = 6.0;
 constexpr double kDefaultRuntimeFontAngleThreshold = 3.0;
 constexpr double kDefaultRuntimeFontMiterLimit = 1.0;
 constexpr unsigned long long kRuntimeFontLcgMultiplier = 6364136223846793005ull;
@@ -895,7 +895,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	const uint32_t pageHeight = atlasSizeHint_;
 	msdf_atlas::TightAtlasPacker packer;
 	packer.setDimensions(static_cast<int>(pageWidth), static_cast<int>(pageHeight));
-	packer.setSpacing(0);
+	packer.setSpacing(2);
 	packer.setScale(static_cast<double>(createInfo.pixelSize));
 	packer.setPixelRange(kDefaultRuntimeFontPxRange);
 	packer.setMiterLimit(kDefaultRuntimeFontMiterLimit);

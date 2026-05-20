@@ -17,10 +17,11 @@ vec4 normalizedRadii(vec2 halfExtent, vec4 radii) {
 	float rmax = min(halfExtent.x, halfExtent.y);
 	vec4 r = clamp(radii, 0.0, rmax);
 
-	float kxTop = (r.x + r.y) > 0.0 ? min(1.0, halfExtent.x / (r.x + r.y)) : 1.0;
-	float kxBottom = (r.w + r.z) > 0.0 ? min(1.0, halfExtent.x / (r.w + r.z)) : 1.0;
-	float kyLeft = (r.x + r.w) > 0.0 ? min(1.0, halfExtent.y / (r.x + r.w)) : 1.0;
-	float kyRight = (r.y + r.z) > 0.0 ? min(1.0, halfExtent.y / (r.y + r.z)) : 1.0;
+	vec2 extent = halfExtent * 2.0;
+	float kxTop = (r.x + r.y) > 0.0 ? min(1.0, extent.x / (r.x + r.y)) : 1.0;
+	float kxBottom = (r.w + r.z) > 0.0 ? min(1.0, extent.x / (r.w + r.z)) : 1.0;
+	float kyLeft = (r.x + r.w) > 0.0 ? min(1.0, extent.y / (r.x + r.w)) : 1.0;
+	float kyRight = (r.y + r.z) > 0.0 ? min(1.0, extent.y / (r.y + r.z)) : 1.0;
 
 	float k = min(min(kxTop, kxBottom), min(kyLeft, kyRight));
 	return r * k;

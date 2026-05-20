@@ -82,7 +82,7 @@ inline const DevSliderDef kDevSlider = {
 	},
 	+[](DevSliderDef::InteractionContext& context) {
 		devSliderState& state = DevSliderDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
-		const FrameInput& input = context.uiManager.getCurrentFrameInput();
+		const FlowUi::FrameInput& input = context.uiManager.getCurrentFrameInput();
 		if (!input.mouseDown[0])
 		{
 			state.dragging = false;
