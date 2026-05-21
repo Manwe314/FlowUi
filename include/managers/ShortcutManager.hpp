@@ -26,6 +26,8 @@ class UiManager;
  *
  * ShortcutId value 0 is reserved as an invalid id. registerShortcut() returns 0
  * when registration fails, so application code can treat 0 as "not registered".
+ *
+ * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
  */
 class ShortcutManager {
 public:
@@ -86,6 +88,8 @@ public:
 	 *     // Registration failed; key values or callbacks should be checked.
 	 * }
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
 	ShortcutId registerShortcut(
 		const ShortcutChord& chord,

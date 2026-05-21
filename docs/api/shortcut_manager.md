@@ -3,14 +3,14 @@
 ## Aliases
 
 ### **ShortcutCallback**
----
+
 
 #### `using ShortcutCallback = std::function<bool(ShortcutContext&)>`
 
 Callback invoked when a shortcut chord matches. Return true to mark the shortcut handled and stop later callbacks for the same chord.
 
 ### **ShortcutId**
----
+
 
 #### `using ShortcutId = uint32_t`
 
@@ -19,14 +19,14 @@ Opaque shortcut registration id returned by registerShortcut. Value 0 is reserve
 ## Enums
 
 ### **ShortcutScope**
----
+
 
 #### `enum class ShortcutScope : uint8_t`
 
 Scope controlling when a shortcut is eligible to run. Focused input and focused element scopes run before global shortcuts.
 
 ### **ShortcutTrigger**
----
+
 
 #### `enum class ShortcutTrigger : uint8_t`
 
@@ -35,14 +35,14 @@ Input transition used to trigger a shortcut. It supports press, release, and eve
 ## Public Structs
 
 ### **ShortcutChord**
----
+
 
 #### `struct ShortcutChord`
 
 Keyboard chord registered with ShortcutManager. It stores backend key code, modifier requirements, and trigger mode.
 
 ### **ShortcutContext**
----
+
 
 #### `struct ShortcutContext`
 
@@ -51,7 +51,7 @@ Runtime data passed to shortcut callbacks. It exposes UiManager, current and pre
 ## Public API
 
 ### **registerShortcut**
----
+
 
 #### `ShortcutId registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback)`
 
@@ -66,8 +66,10 @@ Registers a keyboard shortcut and returns an opaque id. Matching callbacks run b
 FlowUi::ShortcutId saveShortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = true}, FlowUi::ShortcutScope::Global, 100, saveCallback);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f).
+
 ### **unregisterShortcut**
----
+
 
 #### `bool unregisterShortcut(ShortcutId id)`
 
@@ -82,8 +84,10 @@ Removes a registered shortcut. It is valid to unregister a shortcut from inside 
 const bool removed = app.ui().shortcuts().unregisterShortcut(saveShortcut);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e).
+
 ### **clear**
----
+
 
 #### `void clear()`
 
@@ -98,8 +102,10 @@ Removes every registered shortcut and resets focused-element shortcut state. Use
 app.ui().shortcuts().clear();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#af08e7e2bb696cec1bf476a3afda5d6b1).
+
 ### **setFocusedElement**
----
+
 
 #### `void setFocusedElement(Clay_ElementId elementId)`
 
@@ -114,8 +120,10 @@ Sets the focused element marker used by `ShortcutScope::FocusedElement`. Applica
 app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#a8a496694eeaf4fdf03166ecf9c273212).
+
 ### **clearFocusedElement**
----
+
 
 #### `void clearFocusedElement()`
 
@@ -130,8 +138,10 @@ Clears the focused element marker. After this, focused-element shortcuts are not
 app.ui().shortcuts().clearFocusedElement();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#abf2f8245061c1fd51116e79c615ce52d).
+
 ### **focusedElement**
----
+
 
 #### `Clay_ElementId focusedElement() const`
 
@@ -145,3 +155,5 @@ Returns the currently focused Clay element id for shortcut dispatch. A zero id m
 ```cpp
 Clay_ElementId focused = app.ui().shortcuts().focusedElement();
 ```
+
+See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2).

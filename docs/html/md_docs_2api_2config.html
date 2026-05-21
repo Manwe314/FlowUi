@@ -106,107 +106,65 @@ $(function() {
   <div class="headertitle"><div class="title">Configuration API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md354"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md355"></a>
-Enums</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md356"></a>
-### <b>PresentMode</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md357"></a>
-<span class="tt">enum class PresentMode</span></h3>
+<div class="textblock"><h1>Enums</h1>
+<h2><b>PresentMode</b></h2>
+<h3><span class="tt">enum class PresentMode</span></h3>
 <p>Requested Vulkan swapchain presentation mode. Use it to choose FIFO, mailbox, or immediate presentation behavior.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md358"></a>
-### <b>MSAA</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md359"></a>
-<span class="tt">enum class MSAA</span></h3>
+<h2><b>MSAA</b></h2>
+<h3><span class="tt">enum class MSAA</span></h3>
 <p>Requested multisample anti-aliasing sample count. The value is retained for renderer configuration even where current support is limited.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md360"></a>
-### <b>CursorMode</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md361"></a>
-<span class="tt">enum class CursorMode : uint8_t</span></h3>
+<h2><b>CursorMode</b></h2>
+<h3><span class="tt">enum class CursorMode : uint8_t</span></h3>
 <p>Native cursor visibility and capture mode. It controls whether the cursor is normal, hidden, or disabled/captured.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md362"></a>
-### <b>CursorType</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md363"></a>
-<span class="tt">enum class CursorType : uint8_t</span></h3>
+<h2><b>CursorType</b></h2>
+<h3><span class="tt">enum class CursorType : uint8_t</span></h3>
 <p>Cursor shape requested by UI code. UiManager cursor requests use these values before forwarding to the window backend.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md364"></a>
-### <b>DevShortcutTrigger</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md365"></a>
-<span class="tt">enum class DevShortcutTrigger : uint8_t</span></h3>
+<h2><b>DevShortcutTrigger</b></h2>
+<h3><span class="tt">enum class DevShortcutTrigger : uint8_t</span></h3>
 <p>Trigger mode used by the developer panel shortcut. It describes whether the chord fires on press, release, or while held.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md366"></a>
-### <b>TextureFitMode</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md367"></a>
-<span class="tt">enum class TextureFitMode : uint8_t</span></h3>
+<h2><b>TextureFitMode</b></h2>
+<h3><span class="tt">enum class TextureFitMode : uint8_t</span></h3>
 <p>Texture layout mode inside a target rectangle. It controls stretch, contain, cover, or source-size drawing behavior.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md368"></a>
-### <b>TextureSamplingMode</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md369"></a>
-<span class="tt">enum class TextureSamplingMode : uint8_t</span></h3>
+<h2><b>TextureSamplingMode</b></h2>
+<h3><span class="tt">enum class TextureSamplingMode : uint8_t</span></h3>
 <p>Texture filtering preference stored on TextureRef. It distinguishes smooth linear sampling from nearest-neighbor sampling.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md370"></a>
-Public Structs</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md371"></a>
-### <b>WindowInputConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md372"></a>
-<span class="tt">struct WindowInputConfig</span></h3>
+<h1>Public Structs</h1>
+<h2><b>WindowInputConfig</b></h2>
+<h3><span class="tt">struct WindowInputConfig</span></h3>
 <p>Configures low-level window input behavior. These settings are forwarded to the window backend during creation and runtime updates.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md373"></a>
-### <b>WindowConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md374"></a>
-<span class="tt">struct WindowConfig</span></h3>
+<h2><b>WindowConfig</b></h2>
+<h3><span class="tt">struct WindowConfig</span></h3>
 <p>Describes the native window created for the app. It owns initial size, title, resize/fullscreen behavior, high-DPI preference, and input defaults.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md375"></a>
-### <b>VulkanConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md376"></a>
-<span class="tt">struct VulkanConfig</span></h3>
+<h2><b>VulkanConfig</b></h2>
+<h3><span class="tt">struct VulkanConfig</span></h3>
 <p>Configures Vulkan device, swapchain, validation, and frame scheduling defaults. These values are consumed during renderer initialization.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md377"></a>
-### <b>InputManagerConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md378"></a>
-<span class="tt">struct InputManagerConfig</span></h3>
+<h2><b>InputManagerConfig</b></h2>
+<h3><span class="tt">struct InputManagerConfig</span></h3>
 <p>Configures caret and selection rendering for text input fields. It affects editing visuals, not low-level window input.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md379"></a>
-### <b>UiConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md380"></a>
-<span class="tt">struct UiConfig</span></h3>
+<h2><b>UiConfig</b></h2>
+<h3><span class="tt">struct UiConfig</span></h3>
 <p>Configures layout, text scaling, transient UI storage, Clay memory, and default font resources. These values are consumed during app and UI manager initialization.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md381"></a>
-### <b>IconManagerConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md382"></a>
-<span class="tt">struct IconManagerConfig</span></h3>
+<h2><b>IconManagerConfig</b></h2>
+<h3><span class="tt">struct IconManagerConfig</span></h3>
 <p>Configures SVG icon rasterization, atlas storage, and cache behavior. It controls atlas size, page count, raster-size reuse, and padding.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md383"></a>
-### <b>DevShortcutChord</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md384"></a>
-<span class="tt">struct DevShortcutChord</span></h3>
+<h2><b>DevShortcutChord</b></h2>
+<h3><span class="tt">struct DevShortcutChord</span></h3>
 <p>Keyboard chord used by developer tooling. The default chord is intended to toggle the developer panel.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md385"></a>
-### <b>DevToolsConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md386"></a>
-<span class="tt">struct DevToolsConfig</span></h3>
+<h2><b>DevToolsConfig</b></h2>
+<h3><span class="tt">struct DevToolsConfig</span></h3>
 <p>Configures developer tooling, capture behavior, panel defaults, and export paths. These settings are used only when developer mode support is compiled in.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md387"></a>
-### <b>AppConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md388"></a>
-<span class="tt">struct AppConfig</span></h3>
+<h2><b>AppConfig</b></h2>
+<h3><span class="tt">struct AppConfig</span></h3>
 <p>Top-level app configuration. It groups all subsystem-specific configuration blocks passed through startup.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md389"></a>
-### <b>TextureRef</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md390"></a>
-<span class="tt">struct TextureRef</span></h3>
+<h2><b>TextureRef</b></h2>
+<h3><span class="tt">struct TextureRef</span></h3>
 <p>Texture handle and render options returned by resource managers. Manager-owned fields identify the texture, while app code may tune fit, sampling, and tint options.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md391"></a>
-### <b>FrameInput</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md392"></a>
-<span class="tt">struct FrameInput</span></h3>
+<h2><b>FrameInput</b></h2>
+<h3><span class="tt">struct FrameInput</span></h3>
 <p>Normalized per-frame input snapshot consumed by managers and custom elements. It stores timing, pointer, scroll, key, modifier, and text input state.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md393"></a>
-Public API</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md394"></a>
-### <b>Flow_Color</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md395"></a>
-<span class="tt">Clay_Color Flow_Color(std::string_view hexRgba)</span></h3>
+<h1>Public API</h1>
+<h2><b>Flow_Color</b></h2>
+<h3><span class="tt">Clay_Color Flow_Color(std::string_view hexRgba)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">Clay_Color</span></li>
 <li><b>Arguments:</b> <span class="tt">hexRgba</span> color string in <span class="tt">#RRGGBBAA</span> form.</li>
@@ -215,7 +173,8 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">Clay_Color panelColor = <a class="code hl_function" href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#20242cff&quot;</span>);</div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">Full Doxygen reference</a>. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
@@ -229,6 +188,7 @@ Public API</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_api_cheat_sheet.html">API Cheat Sheet</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

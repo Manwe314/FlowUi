@@ -3,7 +3,7 @@
 ## Enums
 
 ### **TextureFitMode**
----
+
 
 #### `enum class TextureFitMode : uint8_t`
 
@@ -12,42 +12,42 @@ Texture layout mode used when drawing viewport textures into UI rectangles. View
 ## Public Structs
 
 ### **TextureRef**
----
+
 
 #### `struct TextureRef`
 
 Texture reference returned for viewport images. It points at the current frame viewport target or fallback texture id 0 when unavailable.
 
 ### **ViewPortVulkanInterop**
----
+
 
 #### `struct ViewPortVulkanInterop`
 
 Shared Vulkan handles exposed for viewport integrations. The handles are owned by FlowUi App and must not be destroyed by user code.
 
 ### **ViewPortRenderContext**
----
+
 
 #### `struct ViewPortRenderContext`
 
 Per-frame context passed to viewport render callbacks. It contains the begun secondary command buffer, extent, color format, frame index, key, and interop handles.
 
 ### **ViewPortCreateInfo**
----
+
 
 #### `struct ViewPortCreateInfo`
 
 Creation settings for a viewport render target. It controls color format, clear color, and whether the target clears every frame.
 
 ### **ViewPort**
----
+
 
 #### `class ViewPort`
 
 Named offscreen render target managed by ViewPortManager. It stores render callback, clear behavior, current size, key, and texture access.
 
 ### **ViewPortManager**
----
+
 
 #### `class ViewPortManager`
 
@@ -56,7 +56,7 @@ App-owned manager for named offscreen viewports. It creates, tracks, sizes, rend
 ## Public API
 
 ### **getKey**
----
+
 
 #### `std::string_view getKey() const`
 
@@ -71,8 +71,10 @@ Returns the stable key used to create and look up this viewport. The key is owne
 std::string_view viewportKey = viewport->getKey();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#ac2b642087b0c4fdf18ab3d41cd36c582).
+
 ### **hasValidSize**
----
+
 
 #### `bool hasValidSize() const`
 
@@ -87,8 +89,10 @@ Reports whether the viewport currently has positive width and height. A viewport
 if (viewport->hasValidSize()) { renderScene(viewport->getSize()); }
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#af9f3839dfa6d587a58dc0ec31e54d0aa).
+
 ### **getSize**
----
+
 
 #### `VkExtent2D getSize() const`
 
@@ -103,8 +107,10 @@ Returns the current render target size in pixels. FlowUi derives this from the l
 VkExtent2D extent = viewport->getSize();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#af26b8ce43556bdf7af7718dbd33a31d4).
+
 ### **textureRef**
----
+
 
 #### `TextureRef textureRef() const`
 
@@ -119,8 +125,10 @@ Returns a texture reference for this viewport's current frame image. `ViewPortMa
 FlowUi::TextureRef sceneTexture = viewport->textureRef();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a16a189477b7c50b6d0415441f3dd72f1).
+
 ### **setRenderCallback** `1/2`
----
+
 
 #### `void setRenderCallback(RenderCallback callback)`
 
@@ -135,8 +143,10 @@ Installs a custom render callback for this viewport. FlowUi begins and ends the 
 viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) { recordSceneCommands(ctx); });
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f).
+
 ### **setRenderCallback** `2/2`
----
+
 
 #### `template <typename T, typename Fn> void setRenderCallback(std::shared_ptr<T> userData, Fn&& callback)`
 
@@ -151,8 +161,10 @@ Installs a render callback that keeps typed shared user data alive. This is usef
 viewport->setRenderCallback([](const FlowUi::ViewPortRenderContext& ctx) { recordSceneCommands(ctx); });
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a8ac28ba477958a85dff2a9af682d1431).
+
 ### **clearRenderCallback**
----
+
 
 #### `void clearRenderCallback()`
 
@@ -167,8 +179,10 @@ Clears the viewport render callback. FlowUi continues to manage the viewport tex
 viewport->clearRenderCallback();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a41cbb5a21265263d5cb7bfab078b9b99).
+
 ### **hasRenderCallback**
----
+
 
 #### `bool hasRenderCallback() const`
 
@@ -183,8 +197,10 @@ Reports whether a render callback is currently installed. Use this to avoid redu
 if (!viewport->hasRenderCallback()) { viewport->setRenderCallback(renderScene); }
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a0b98f73f56b90fefe2cac173f49aff0e).
+
 ### **setClearColor**
----
+
 
 #### `void setClearColor(float r, float g, float b, float a)`
 
@@ -199,8 +215,10 @@ Sets the viewport clear color. The color is used by the viewport render pass whe
 viewport->setClearColor(0.02f, 0.02f, 0.03f, 1.0f);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a5041209fac6a58554ebe927bc70d194d).
+
 ### **clearColor**
----
+
 
 #### `std::array<float, 4> clearColor() const`
 
@@ -215,8 +233,10 @@ Returns the current viewport clear color. The values are RGBA channels.
 std::array<float, 4> color = viewport->clearColor();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a36354a3627449b1c250cb31d63f26175).
+
 ### **setClearEveryFrame**
----
+
 
 #### `void setClearEveryFrame(bool enabled)`
 
@@ -231,8 +251,10 @@ Controls whether FlowUi clears the viewport image every frame. Disabling clear c
 viewport->setClearEveryFrame(false);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#a39b1ba8923020766f15ee701575aa0ca).
+
 ### **clearEveryFrame**
----
+
 
 #### `bool clearEveryFrame() const`
 
@@ -247,8 +269,10 @@ Reports whether the viewport clears before rendering each frame. When false, Flo
 const bool clears = viewport->clearEveryFrame();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPort.html#aa397c0dfbcd5ebcf8b6b5290adcff367).
+
 ### **create**
----
+
 
 #### `bool create(std::string_view key, const ViewPortCreateInfo& createInfo = {})`
 
@@ -263,8 +287,10 @@ Creates a named offscreen viewport. Newly created viewports resize automatically
 app.viewPorts().create("scene", {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#af6f5b9b1adf89a9ea58bec5fbf3ba86c).
+
 ### **remove**
----
+
 
 #### `bool remove(std::string_view key)`
 
@@ -279,8 +305,10 @@ Removes a viewport and destroys its per-frame resources. This can block because 
 const bool removed = app.viewPorts().remove("scene");
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#a393b43dacaeb66f2ebd66be2d15329c0).
+
 ### **contains**
----
+
 
 #### `bool contains(std::string_view key) const`
 
@@ -295,8 +323,10 @@ Checks whether a viewport exists for the key. This is a lightweight lookup with 
 if (!app.viewPorts().contains("scene")) { app.viewPorts().create("scene"); }
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#a6ae77f78ebf36af55bf61ff75bef31ec).
+
 ### **getViewPort** `1/2`
----
+
 
 #### `ViewPort* getViewPort(std::string_view key)`
 
@@ -311,8 +341,10 @@ Returns a mutable viewport pointer, or `nullptr` when missing. Use this to set c
 FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene");
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb).
+
 ### **getViewPort** `2/2`
----
+
 
 #### `const ViewPort* getViewPort(std::string_view key) const`
 
@@ -327,8 +359,10 @@ Returns an immutable viewport pointer, or `nullptr` when missing. Use this for r
 FlowUi::ViewPort* scene = app.viewPorts().getViewPort("scene");
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#a0d6ce77f3c9c25cd6e1a8e99be0b031a).
+
 ### **getTexture**
----
+
 
 #### `TextureRef getTexture(std::string_view key) const`
 
@@ -343,8 +377,10 @@ Returns a texture reference for the current frame's viewport image. Missing keys
 FlowUi::TextureRef sceneTexture = app.viewPorts().getTexture("scene");
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921).
+
 ### **getVulkanInterop**
----
+
 
 #### `const ViewPortVulkanInterop& getVulkanInterop() const`
 
@@ -358,3 +394,5 @@ Returns shared Vulkan handles owned by the FlowUi app. Use these handles only to
 ```cpp
 const FlowUi::ViewPortVulkanInterop& vk = app.viewPorts().getVulkanInterop();
 ```
+
+See: [Full Doxygen reference](classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec).

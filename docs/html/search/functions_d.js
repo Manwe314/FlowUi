@@ -4,7 +4,7 @@ var searchData=
   ['registerimage_1',['registerImage',['../classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23',1,'FlowUi::ImageManager']]],
   ['registershortcut_2',['registerShortcut',['../classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f',1,'FlowUi::ShortcutManager']]],
   ['registersvg_3',['registerSvg',['../structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c',1,'FlowUi::IconManager']]],
-  ['remove_4',['remove',['../structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29',1,'FlowUi::IconManager']]],
+  ['remove_4',['remove',['../structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29',1,'FlowUi::IconManager::remove()'],['../classFlowUi_1_1ViewPortManager.html#a393b43dacaeb66f2ebd66be2d15329c0',1,'FlowUi::ViewPortManager::remove()']]],
   ['removefield_5',['removeField',['../classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a',1,'FlowUi::InputFieldManager']]],
   ['removeimage_6',['removeImage',['../classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5',1,'FlowUi::ImageManager']]],
   ['requestcaret_7',['requestCaret',['../classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446',1,'FlowUi::InputFieldManager']]],

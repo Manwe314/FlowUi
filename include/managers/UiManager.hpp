@@ -55,6 +55,10 @@ struct FontManager;
  *     .setParameters(ButtonParams{.label = "Save"})
  *     .draw();
  * @endcode
+ *
+ * @see @ref md_docs_2concepts_2mental__model "Core Mental Model"
+ * @see @ref md_docs_2concepts_2element__system "Element System"
+ * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
  */
 class UiManager {
 public:
@@ -156,6 +160,8 @@ public:
 	 * @tparam IsDevInternal Whether the definition is internal to dev tooling.
 	 * @param elementDefinition Element definition to invoke.
 	 * @param elementID Stable Flow element id for this invocation.
+	 * @param sourceLocation Source location captured for developer-mode
+	 * inspection when FLOW_UI_DEV_MODE is enabled.
 	 * @return ElementBuilder configured for the passed definition and element id.
 	 *
 	 * @throws std::bad_alloc if copying elementID into the builder fails.
@@ -166,6 +172,9 @@ public:
 	 *     .setParameters(ButtonParams{.label = "Save"})
 	 *     .draw();
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
+	 * @see @ref md_docs_2tutorials_2developer__mode "Developer Mode"
 	 */
 	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 	ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(

@@ -122,9 +122,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab5a7131ff83f731ff6f99006f4563d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a string id to a Clay string id.  <br /></td></tr>
 <tr class="memitem:a67ed60b989b4c54ca6aae7aad7bed4d0" id="r_a67ed60b989b4c54ca6aae7aad7bed4d0"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a67ed60b989b4c54ca6aae7aad7bed4d0">toClayEID</a> (std::string_view s)</td></tr>
 <tr class="memdesc:a67ed60b989b4c54ca6aae7aad7bed4d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert an element id string to a Clay element id.  <br /></td></tr>
-<tr class="memitem:a68b455b65c1d5b8d625e2992de8819f5" id="r_a68b455b65c1d5b8d625e2992de8819f5"><td class="memTemplParams" colspan="2">template&lt;typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal&gt; </td></tr>
-<tr class="memitem:a68b455b65c1d5b8d625e2992de8819f5 template"><td class="memItemLeft">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a68b455b65c1d5b8d625e2992de8819f5">createElement</a> (const <a class="el" href="structFlowUi_1_1ElementDefinition.html">ElementDefinition</a>&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</td></tr>
-<tr class="memdesc:a68b455b65c1d5b8d625e2992de8819f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a builder for a typed FlowUi element instance.  <br /></td></tr>
+<tr class="memitem:a2a9c6c1f0719e6dd203ad4de09007ee4" id="r_a2a9c6c1f0719e6dd203ad4de09007ee4"><td class="memTemplParams" colspan="2">template&lt;typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal&gt; </td></tr>
+<tr class="memitem:a2a9c6c1f0719e6dd203ad4de09007ee4 template"><td class="memItemLeft">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a> (const <a class="el" href="structFlowUi_1_1ElementDefinition.html">ElementDefinition</a>&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</td></tr>
+<tr class="memdesc:a2a9c6c1f0719e6dd203ad4de09007ee4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a builder for a typed FlowUi element instance.  <br /></td></tr>
 <tr class="memitem:a857a971efa5a8e904806b9398e0e4883" id="r_a857a971efa5a8e904806b9398e0e4883"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a857a971efa5a8e904806b9398e0e4883">drawConstructed</a> ()</td></tr>
 <tr class="memdesc:a857a971efa5a8e904806b9398e0e4883"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the current element opened by <a class="el" href="group__flowui__element__system.html#gadd7adf768823bd01379c9054c516448f" title="Run callbacks and open a constructed Clay element.">ElementBuilder::construct()</a>.  <br /></td></tr>
 <tr class="memitem:a428e81a65fec2e616b90be54b58744c4" id="r_a428e81a65fec2e616b90be54b58744c4"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a428e81a65fec2e616b90be54b58744c4">getPreviousFramesInteraction</a> () const</td></tr>
@@ -141,6 +141,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a61893809f24d2017db5642a3a780065f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the shortcut manager.  <br /></td></tr>
 <tr class="memitem:a0e207879dfd35c910841bc23509c0abc" id="r_a0e207879dfd35c910841bc23509c0abc"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a0e207879dfd35c910841bc23509c0abc">shortcuts</a> () const</td></tr>
 <tr class="memdesc:a0e207879dfd35c910841bc23509c0abc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the shortcut manager.  <br /></td></tr>
+<tr class="memitem:a27ecba8061cf9a454320450d533c2b0c" id="r_a27ecba8061cf9a454320450d533c2b0c"><td class="memItemLeft">devMode::DevRuntime &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a27ecba8061cf9a454320450d533c2b0c">devRuntime</a> ()</td></tr>
+<tr class="memdesc:a27ecba8061cf9a454320450d533c2b0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the developer runtime.  <br /></td></tr>
+<tr class="memitem:af44b4564bc6f0af50ab7ea3c678a7deb" id="r_af44b4564bc6f0af50ab7ea3c678a7deb"><td class="memItemLeft">const devMode::DevRuntime &amp;&#160;</td><td class="memItemRight"><a class="el" href="#af44b4564bc6f0af50ab7ea3c678a7deb">devRuntime</a> () const</td></tr>
+<tr class="memdesc:af44b4564bc6f0af50ab7ea3c678a7deb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the developer runtime.  <br /></td></tr>
+<tr class="memitem:a15f634a57bdcc1cc0838007554144c5d" id="r_a15f634a57bdcc1cc0838007554144c5d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a15f634a57bdcc1cc0838007554144c5d">devToolsConfig</a> ()</td></tr>
+<tr class="memdesc:a15f634a57bdcc1cc0838007554144c5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access developer tooling config.  <br /></td></tr>
+<tr class="memitem:a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9" id="r_a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">devToolsConfig</a> () const</td></tr>
+<tr class="memdesc:a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access developer tooling config.  <br /></td></tr>
 <tr class="memitem:af951ad4db8a17064009ed8ff9ac9f79a" id="r_af951ad4db8a17064009ed8ff9ac9f79a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af951ad4db8a17064009ed8ff9ac9f79a">setClipboardText</a> (std::string_view text) const</td></tr>
 <tr class="memdesc:af951ad4db8a17064009ed8ff9ac9f79a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set clipboard text through the configured clipboard accessor.  <br /></td></tr>
 <tr class="memitem:a4b3ec28e336b11fc18d35639a360544e" id="r_a4b3ec28e336b11fc18d35639a360544e"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a4b3ec28e336b11fc18d35639a360544e">clipboardText</a> () const</td></tr>
@@ -170,12 +178,17 @@ void&#160;</td><td class="memItemRight"><b>detail::pushConstructedElement</b> (U
 <p><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> owns the <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> lifecycle. beginFrame(), endFrame(), renderer bridge data, clipboard backend wiring, and font-manager wiring are internal to <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a>, so custom elements should treat <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> as the frame-local authoring surface rather than as a standalone runtime object.</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.ui();</div>
 <div class="line"> </div>
-<div class="line">ui.<a class="code hl_function" href="#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
+<div class="line">ui.<a class="code hl_function" href="#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
 <div class="line">    .setParameters(ButtonParams{.label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
 <div class="line">    .draw();</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:59</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
-</div><!-- fragment --> </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:63</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2concepts_2mental__model.html" title="Core Mental Model">Core Mental Model</a> </dd>
+<dd>
+<a class="el" href="md_docs_2concepts_2element__system.html" title="Element System">Element System</a> </dd>
+<dd>
+<a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">Custom Elements</a> </dd></dl>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a4b3ec28e336b11fc18d35639a360544e" name="a4b3ec28e336b11fc18d35639a360544e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4b3ec28e336b11fc18d35639a360544e">&#9670;&#160;</a></span>clipboardText()</h2>
 
@@ -203,8 +216,8 @@ void&#160;</td><td class="memItemRight"><b>detail::pushConstructedElement</b> (U
 </div><!-- fragment --> 
 </div>
 </div>
-<a id="a68b455b65c1d5b8d625e2992de8819f5" name="a68b455b65c1d5b8d625e2992de8819f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a68b455b65c1d5b8d625e2992de8819f5">&#9670;&#160;</a></span>createElement()</h2>
+<a id="a2a9c6c1f0719e6dd203ad4de09007ee4" name="a2a9c6c1f0719e6dd203ad4de09007ee4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a9c6c1f0719e6dd203ad4de09007ee4">&#9670;&#160;</a></span>createElement()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -222,7 +235,12 @@ template&lt;typename Parameters, typename State, typename Resources, uint64_t De
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>elementID</em></span>&#160;)</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>elementID</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">devMode::elementCapture::SourceLocation</td>          <td class="paramname"><span class="paramname"><em>sourceLocation</em></span><span class="paramdefsep"> = </span><span class="paramdefval">devMode::elementCapture::SourceLocation::current()</span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -233,7 +251,7 @@ template&lt;typename Parameters, typename State, typename Resources, uint64_t De
 </div><div class="memdoc">
 
 <p>Create a builder for a typed FlowUi element instance. </p>
-<p><a class="el" href="#a68b455b65c1d5b8d625e2992de8819f5" title="Create a builder for a typed FlowUi element instance.">createElement()</a> is the public entry point for invoking FlowUi element definitions. The returned <a class="el" href="classFlowUi_1_1ElementBuilder.html" title="builder returned by UiManager::createElement().">ElementBuilder</a> owns the element id and parameter storage for this invocation until draw() or construct() is called.</p>
+<p><a class="el" href="#a2a9c6c1f0719e6dd203ad4de09007ee4" title="Create a builder for a typed FlowUi element instance.">createElement()</a> is the public entry point for invoking FlowUi element definitions. The returned <a class="el" href="classFlowUi_1_1ElementBuilder.html" title="builder returned by UiManager::createElement().">ElementBuilder</a> owns the element id and parameter storage for this invocation until draw() or construct() is called.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">Parameters</td><td>Parameter struct used by the element definition. </td></tr>
@@ -248,6 +266,7 @@ template&lt;typename Parameters, typename State, typename Resources, uint64_t De
   <table class="params">
     <tr><td class="paramname">elementDefinition</td><td>Element definition to invoke. </td></tr>
     <tr><td class="paramname">elementID</td><td>Stable Flow element id for this invocation. </td></tr>
+    <tr><td class="paramname">sourceLocation</td><td>Source location captured for developer-mode inspection when FLOW_UI_DEV_MODE is enabled. </td></tr>
   </table>
   </dd>
 </dl>
@@ -262,7 +281,122 @@ template&lt;typename Parameters, typename State, typename Resources, uint64_t De
 <div class="line">    .createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
 <div class="line">    .setParameters(ButtonParams{.label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
 <div class="line">    .draw();</div>
-</div><!-- fragment --> 
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">Custom Elements</a> </dd>
+<dd>
+<a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Mode">Developer Mode</a> </dd></dl>
+
+</div>
+</div>
+<a id="a27ecba8061cf9a454320450d533c2b0c" name="a27ecba8061cf9a454320450d533c2b0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27ecba8061cf9a454320450d533c2b0c">&#9670;&#160;</a></span>devRuntime() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">devMode::DevRuntime &amp; FlowUi::UiManager::devRuntime </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access the developer runtime. </p>
+<dl class="section return"><dt>Returns</dt><dd>Mutable dev-mode runtime for the active <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. </dd></dl>
+
+</div>
+</div>
+<a id="af44b4564bc6f0af50ab7ea3c678a7deb" name="af44b4564bc6f0af50ab7ea3c678a7deb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af44b4564bc6f0af50ab7ea3c678a7deb">&#9670;&#160;</a></span>devRuntime() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const devMode::DevRuntime &amp; FlowUi::UiManager::devRuntime </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access the developer runtime. </p>
+<dl class="section return"><dt>Returns</dt><dd>Immutable dev-mode runtime for the active <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a15f634a57bdcc1cc0838007554144c5d" name="a15f634a57bdcc1cc0838007554144c5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15f634a57bdcc1cc0838007554144c5d">&#9670;&#160;</a></span>devToolsConfig() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp; FlowUi::UiManager::devToolsConfig </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access developer tooling config. </p>
+<dl class="section return"><dt>Returns</dt><dd>Mutable developer tooling configuration. </dd></dl>
+
+</div>
+</div>
+<a id="a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9" name="a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">&#9670;&#160;</a></span>devToolsConfig() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a> &amp; FlowUi::UiManager::devToolsConfig </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access developer tooling config. </p>
+<dl class="section return"><dt>Returns</dt><dd>Immutable developer tooling configuration. </dd></dl>
+
 </div>
 </div>
 <a id="a857a971efa5a8e904806b9398e0e4883" name="a857a971efa5a8e904806b9398e0e4883"></a>

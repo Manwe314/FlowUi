@@ -39,6 +39,10 @@ namespace FlowUi {
  * @tparam DefinitionId Compile-time id used by the element definition.
  * @tparam IsDevInternal Whether the element definition is internal to FlowUi
  * dev tooling.
+ *
+ * @see @ref md_docs_2concepts_2element__system "Element System"
+ * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
+ * @see @ref md_docs_2tutorials_2developer__mode "Developer Mode"
  */
 template <
 	typename Parameters = NoElementParameters,
@@ -77,6 +81,8 @@ public:
 	 * @param uiManager UI manager that owns the active frame.
 	 * @param definition Element definition used for callbacks.
 	 * @param elementID Flow element id string for this builder invocation.
+	 * @param sourceLocation Source location captured for developer-mode
+	 * inspection when FLOW_UI_DEV_MODE is enabled.
 	 */
 	ElementBuilder(UiManager& uiManager, const DefinitionType* definition, std::string elementID
 #if FLOW_UI_DEV_MODE

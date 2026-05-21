@@ -11,6 +11,8 @@ var group__flowui__app =
       [ "fonts", "classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a", null ],
       [ "fonts", "classFlowUi_1_1App.html#abd633c521ed80977c1992cf3cccc0310", null ],
       [ "framebufferSize", "classFlowUi_1_1App.html#a304bb3c1528da2273dbb711d83fd6728", null ],
+      [ "icons", "classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac", null ],
+      [ "icons", "classFlowUi_1_1App.html#a4aea0f22867850b6c6791ef76a827608", null ],
       [ "images", "classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9", null ],
       [ "images", "classFlowUi_1_1App.html#a04135a9974e2ea4aa8563083ebe51d40", null ],
       [ "nativeWindowHandle", "classFlowUi_1_1App.html#a336d18e6c4db2aee3e904ffed6364ffb", null ],
@@ -22,6 +24,8 @@ var group__flowui__app =
       [ "supportsRawMouseMotion", "classFlowUi_1_1App.html#a2717e2f03db8d86a85cc4c420547899b", null ],
       [ "ui", "classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc", null ],
       [ "ui", "classFlowUi_1_1App.html#a4579cf4d39c726a5d2e625218bcfa059", null ],
+      [ "viewPorts", "classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8", null ],
+      [ "viewPorts", "classFlowUi_1_1App.html#a28bca3bac1b8cba55d79950ad56515b2", null ],
       [ "windowInputConfig", "classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757", null ],
       [ "windowSize", "classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228", null ],
       [ "makeApplication", "classFlowUi_1_1App.html#a0e81b469c9c30dc378eb1a22914a1ef0", null ]

@@ -106,10 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">Developer Mode </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md831"></a></p>
-<p>This tutorial shows how to make FlowUi elements visible to developer mode, edit their registered fields at runtime, export those changes as JSON, and use the updater tool to fold those exported values back into source.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md832"></a>
-Contents</h1>
+<div class="textblock"><p>This tutorial shows how to make FlowUi elements visible to developer mode, edit their registered fields at runtime, export those changes as JSON, and use the updater tool to fold those exported values back into source.</p>
+<h1>Contents</h1>
 <ul>
 <li>Chapter 1: What We Are Building<ul>
 <li>The Target</li>
@@ -153,10 +151,8 @@ Contents</h1>
 </li>
 <li>Final Shape</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md833"></a>
-Chapter 1: What We Are Building</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md834"></a>
-The Target</h2>
+<h1>Chapter 1: What We Are Building</h1>
+<h2>The Target</h2>
 <p>Assume the app has reusable dashboard cards. A card has a tone enum, a title, a root Clay declaration, and a few resource defaults. During development, we want to open the dev panel, select a card instance, tweak colors, padding, and text, then export those changes.</p>
 <div class="fragment"><div class="line"><span class="keyword">enum class</span> CardTone : uint8_t {</div>
 <div class="line">    Neutral,</div>
@@ -181,8 +177,7 @@ The Target</h2>
 <div class="line">};</div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
 </div><!-- fragment --><p>This is intentionally close to normal element code. Developer mode does not replace your element system; it adds reflection metadata around the same parameter, state, resource, enum, and definition types you already use.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md835"></a>
-The Runtime Flow</h2>
+<h2>The Runtime Flow</h2>
 <p>Developer mode works in a few stages:</p>
 <ol type="1">
 <li>Registration macros describe structs, fields, enums, and element definitions.</li>
@@ -192,10 +187,8 @@ The Runtime Flow</h2>
 <li>Export writes those overrides to <span class="tt">.flowui/overrides.v1.json</span> or another configured path.</li>
 <li>The updater tool reads that JSON and patches source defaults where it can resolve a source location.</li>
 </ol>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md836"></a>
-Chapter 2: Enable Developer Mode</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md837"></a>
-App Config</h2>
+<h1>Chapter 2: Enable Developer Mode</h1>
+<h2>App Config</h2>
 <p>Developer tooling is configured through <span class="tt"><a class="el" href="structFlowUi_1_1DevToolsConfig.html" title="Configures FlowUi developer tooling and capture behavior.">FlowUi::DevToolsConfig</a></span> inside <span class="tt">AppConfig</span>.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a1f8cc8ccd021852cf71ab170e65dbbe6">enabled</a> = <span class="keyword">true</span>;</div>
@@ -204,7 +197,7 @@ App Config</h2>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a6beaa59bdf1eaab9d7118f0e6b777310">overridesPath</a> = <span class="stringliteral">&quot;.flowui/dashboard-card-overrides.json&quot;</span>;</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
 <div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:401</div></div>
 <div class="ttc" id="astructFlowUi_1_1AppConfig_html_a125d002104cf364c3cb283fd0121e028"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">FlowUi::AppConfig::dev</a></div><div class="ttdeci">DevToolsConfig dev</div><div class="ttdoc">Developer tooling and capture defaults.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:435</div></div>
@@ -213,12 +206,12 @@ App Config</h2>
 <div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_a6beaa59bdf1eaab9d7118f0e6b777310"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#a6beaa59bdf1eaab9d7118f0e6b777310">FlowUi::DevToolsConfig::overridesPath</a></div><div class="ttdeci">std::filesystem::path overridesPath</div><div class="ttdoc">File path used when exporting developer override data.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:384</div></div>
 <div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_a9f7ce91f7cf4587034618f505ae58ae1"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#a9f7ce91f7cf4587034618f505ae58ae1">FlowUi::DevToolsConfig::panelWidthPx</a></div><div class="ttdeci">float panelWidthPx</div><div class="ttdoc">Initial developer panel width in pixels.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:358</div></div>
 </div><!-- fragment --><p>The runtime config is still available from <span class="tt">UiManager</span>.</p>
-<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().devToolsConfig().panelOpenByDefault = <span class="keyword">true</span>;</div>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">devToolsConfig</a>().<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a623cac59825e97831d348b5eaa30c7e1">panelOpenByDefault</a> = <span class="keyword">true</span>;</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a15f634a57bdcc1cc0838007554144c5d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">FlowUi::UiManager::devToolsConfig</a></div><div class="ttdeci">DevToolsConfig &amp; devToolsConfig()</div><div class="ttdoc">Access developer tooling config.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:323</div></div>
 </div><!-- fragment --><p>Most applications should keep <span class="tt">excludeInternalDevElementsFromCapture</span> enabled. The dev panel itself is made from Flow elements, and hiding those internal nodes keeps the hierarchy focused on user-authored UI.</p>
 <p><span class="tt">autoSave</span> is present on the config, but in the current V1 workflow exports are explicit. Treat the export button or <span class="tt">exportOverridesAsJson()</span> call as the point where runtime edits become a file on disk.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md838"></a>
-Panel Toggle</h2>
+<h2>Panel Toggle</h2>
 <p>By default, developer mode can register its panel toggle with <span class="tt">ShortcutManager</span>.</p>
 <div class="fragment"><div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a4b2b91f85e95aebce82c5aab188067b9">useShortcutManagerForPanelToggle</a> = <span class="keyword">true</span>;</div>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#adfea4290f3b16a381cfdabe48bd43984">panelToggleChord</a>.<a class="code hl_variable" href="structFlowUi_1_1DevShortcutChord.html#a9d68d7f37f4182007ec0aa3284e8ba93">ctrl</a> = <span class="keyword">true</span>;</div>
@@ -231,10 +224,8 @@ Panel Toggle</h2>
 <div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_adfea4290f3b16a381cfdabe48bd43984"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#adfea4290f3b16a381cfdabe48bd43984">FlowUi::DevToolsConfig::panelToggleChord</a></div><div class="ttdeci">DevShortcutChord panelToggleChord</div><div class="ttdoc">Keyboard chord used to toggle the developer panel.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:368</div></div>
 </div><!-- fragment --><p>If the application owns all global shortcuts, disable this and toggle the panel through app code instead.</p>
 <div class="fragment"><div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a4b2b91f85e95aebce82c5aab188067b9">useShortcutManagerForPanelToggle</a> = <span class="keyword">false</span>;</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md839"></a>
-Chapter 3: Register Editable Types</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md840"></a>
-Register Enums</h2>
+</div><!-- fragment --><h1>Chapter 3: Register Editable Types</h1>
+<h2>Register Enums</h2>
 <p>Enums must be registered when you want symbolic values in the editor and exported JSON. In the current registry, enum registration expects a <span class="tt">uint8_t</span> backed enum.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;devMode/devApi.hpp&quot;</span></div>
 <div class="line"> </div>
@@ -244,8 +235,7 @@ Register Enums</h2>
 <div class="line">    FLOWUI_DEV_ENUM_VALUE(CardTone::Warning),</div>
 <div class="line">    FLOWUI_DEV_ENUM_VALUE(CardTone::Success));</div>
 </div><!-- fragment --><p>The enum value names are used by the panel and by JSON export. This matters when the updater tries to patch source because symbolic enum names are much safer than only numeric values.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md841"></a>
-Register Parameter Structs</h2>
+<h2>Register Parameter Structs</h2>
 <p>Register the params struct and list every field you want developer mode to capture and edit.</p>
 <div class="fragment"><div class="line">FLOWUI_DEV_REGISTER_STRUCT(</div>
 <div class="line">    DashboardCardParams,</div>
@@ -255,8 +245,7 @@ Register Parameter Structs</h2>
 <div class="line">    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, titleText));</div>
 </div><!-- fragment --><p>Each reflected field stores its name, type hash, owner type, member pointer, and capture/apply functions. At runtime, <span class="tt">ElementBuilder</span> can capture the current value and apply a matching override back into the params object before the element builds.</p>
 <p>Use this for fields that are genuinely useful to tune. Registering every member of every struct is possible, but it makes the dev panel noisier and exported JSON harder to review.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md842"></a>
-Register State and Resource Structs</h2>
+<h2>Register State and Resource Structs</h2>
 <p>State and resources can also be registered.</p>
 <div class="fragment"><div class="line">FLOWUI_DEV_REGISTER_STRUCT(</div>
 <div class="line">    DashboardCardState,</div>
@@ -268,10 +257,8 @@ Register State and Resource Structs</h2>
 <div class="line">    FLOWUI_DEV_REFLECT_FIELD(DashboardCardResources, successColor));</div>
 </div><!-- fragment --><p>Params are the main export path today. Registering state and resources is still useful because the dev panel can display richer element metadata and because the runtime has separate override/snapshot storage for definition params, instance params, state, and resources.</p>
 <p>When <span class="tt">FLOW_UI_DEV_MODE</span> is disabled, these macros compile away. That lets you leave registration beside the element code without adding release-mode work.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md843"></a>
-Chapter 4: Register Elements</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md844"></a>
-Element Shape</h2>
+<h1>Chapter 4: Register Elements</h1>
+<h2>Element Shape</h2>
 <p>The element definition uses the same shape covered in the custom elements tutorial.</p>
 <div class="fragment"><div class="line"><span class="keyword">using </span>DashboardCardDefinition = <a class="code hl_struct" href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a>&lt;</div>
 <div class="line">    DashboardCardParams,</div>
@@ -297,17 +284,15 @@ Element Shape</h2>
 <div class="line">        }</div>
 <div class="line">    },</div>
 <div class="line">};</div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:302</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
 </div><!-- fragment --><p>The key part is that the element consumes its params normally. Developer overrides are applied before the build callback, so the callback can stay ordinary element code.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md845"></a>
-Registration</h2>
+<h2>Registration</h2>
 <p>Register the definition type, not the <span class="tt">inline const</span> object.</p>
 <div class="fragment"><div class="line">FLOWUI_DEV_REGISTER_ELEMENT(DashboardCardDefinition, <span class="stringliteral">&quot;Dashboard Card&quot;</span>);</div>
 </div><!-- fragment --><p>The display name is optional.</p>
 <div class="fragment"><div class="line">FLOWUI_DEV_REGISTER_ELEMENT(DashboardCardDefinition);</div>
 </div><!-- fragment --><p>The registry records the definition type hash, definition id, params struct type, state struct type, and resources struct type. That is how the dev panel connects a captured instance back to the structs you registered.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md846"></a>
-What the Registry Stores</h2>
+<h2>What the Registry Stores</h2>
 <p>The registration layer is deliberately metadata-only. It does not own your element, and it does not create element instances. It only describes enough about known types for runtime capture and editing:</p>
 <ul>
 <li>structs: field names, type hashes, member pointers, capture functions, apply functions</li>
@@ -315,13 +300,11 @@ What the Registry Stores</h2>
 <li>elements: definition id and the params/state/resources type hashes</li>
 </ul>
 <p>Because this is static registration, put the macros in a translation unit or header that is actually linked into the app.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md847"></a>
-Chapter 5: Edit Instances and Definitions</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md848"></a>
-Instance Overrides</h2>
+<h1>Chapter 5: Edit Instances and Definitions</h1>
+<h2>Instance Overrides</h2>
 <p>An instance override targets one call site and one element id.</p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kDashboardCard, <span class="stringliteral">&quot;dashboard/cards/primary&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kDashboardCard, <span class="stringliteral">&quot;dashboard/cards/primary&quot;</span>)</div>
 <div class="line">    .setParameters(DashboardCardParams{</div>
 <div class="line">        .title = <span class="stringliteral">&quot;Revenue&quot;</span>,</div>
 <div class="line">        .tone = CardTone::Success,</div>
@@ -330,39 +313,33 @@ Instance Overrides</h2>
 <div class="line">    })</div>
 <div class="line">    .draw();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a1db6aceb22351a9a0c199e1faeb9405a"><div class="ttname"><a href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a">FlowUi::App::fonts</a></div><div class="ttdeci">FontManager &amp; fonts()</div><div class="ttdoc">Access the font manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
 </div><!-- fragment --><p>If you select this exact instance and change <span class="tt">titleText.textColor</span>, the override is keyed by definition id, Flow id, element id, and field hash. Other <span class="tt">DashboardCardDefinition</span> instances keep their own values.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md849"></a>
-Definition Overrides</h2>
+<h2>Definition Overrides</h2>
 <p>A definition override targets the element definition rather than one instance. This is useful when every card should get the same default padding, border, or text style.</p>
 <p>The runtime applies definition params first, then instance params. That means an instance-specific edit can still specialize one element after a broader definition edit.</p>
 <p>For source patching, definition exports currently map back to the registered params struct and update that struct's default member initializers. In this example, a definition-level edit to <span class="tt">title</span> would patch <span class="tt">DashboardCardParams::title = "Untitled"</span> rather than a specific <span class="tt">.createElement(...)</span> call.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md850"></a>
-Why Source Location Matters</h2>
+<h2>Why Source Location Matters</h2>
 <p><span class="tt">UiManager::createElement()</span> captures source location in dev mode. The exported JSON includes that location for instance overrides, and struct registration includes source metadata for definition-level defaults.</p>
 <p>Keep element creation calls direct and stable while doing visual iteration. The V1 updater expects to find <span class="tt">.createElement</span> on the captured source line, then it searches the chained call for <span class="tt">.setParameters(...)</span>, <span class="tt">.setParams(...)</span>, or <span class="tt">mergeParams(...)</span>.</p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kDashboardCard, <span class="stringliteral">&quot;dashboard/cards/primary&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kDashboardCard, <span class="stringliteral">&quot;dashboard/cards/primary&quot;</span>)</div>
 <div class="line">    .setParameters(DashboardCardParams{.title = <span class="stringliteral">&quot;Revenue&quot;</span>})</div>
 <div class="line">    .draw();</div>
 </div><!-- fragment --><p>Heavily generated element ids or deeply hidden factory functions can still work at runtime, but they may make exported source patches harder to apply automatically.</p>
 <p>The updater also expects source paths in the export to be absolute. If your compiler expands <span class="tt">__FILE__</span> to relative paths, runtime editing still works, but automatic patching may report unresolved entries until the build is configured to emit absolute file paths or the changes are applied manually.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md851"></a>
-Chapter 6: Export JSON</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md852"></a>
-Export Path</h2>
+<h1>Chapter 6: Export JSON</h1>
+<h2>Export Path</h2>
 <p>Exports write to <span class="tt">DevToolsConfig::overridesPath</span>.</p>
 <div class="fragment"><div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a125d002104cf364c3cb283fd0121e028">dev</a>.<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a6beaa59bdf1eaab9d7118f0e6b777310">overridesPath</a> = <span class="stringliteral">&quot;.flowui/overrides.v1.json&quot;</span>;</div>
 </div><!-- fragment --><p>The default path is <span class="tt">.flowui/overrides.v1.json</span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md853"></a>
-Manual Export</h2>
+<h2>Manual Export</h2>
 <p>The dev panel exposes export through its header. App code can also call the same function directly.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;devMode/devJson.hpp&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> exported = FlowUi::devMode::exportOverridesAsJson(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>());</div>
 </div><!-- fragment --><p>The function returns <span class="tt">false</span> if developer mode is not compiled in, the path is empty, the directory cannot be created, or the file cannot be written.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md854"></a>
-What the JSON Means</h2>
+<h2>What the JSON Means</h2>
 <p>The JSON has two main target lists: <span class="tt">definitions</span> and <span class="tt">instances</span>.</p>
 <div class="fragment"><div class="line">{</div>
 <div class="line">  &quot;schema&quot;: &quot;flowui.dev.export.v1&quot;,</div>
@@ -408,10 +385,8 @@ What the JSON Means</h2>
 <div class="line">  ]</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>Definition targets are meant for changing reusable defaults. Instance targets are meant for changing one specific call site. Every change also carries hashes and type data in the real file, so tooling can verify that the exported value still matches the reflected field.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md855"></a>
-Chapter 7: Apply Exported Changes</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md856"></a>
-Build the Updater</h2>
+<h1>Chapter 7: Apply Exported Changes</h1>
+<h2>Build the Updater</h2>
 <p>The source patching tool lives here:</p>
 <div class="fragment"><div class="line">tools/flowui_devChange_updater/flowui_devChange_updater.cpp</div>
 </div><!-- fragment --><p>If your build system does not already compile it, build it as a standalone C++ tool with your normal compiler. It only depends on the C++ standard library.</p>
@@ -419,22 +394,19 @@ Build the Updater</h2>
 <div class="fragment"><div class="line">cl /std:c++20 /EHsc tools\flowui_devChange_updater\flowui_devChange_updater.cpp /Fe:flowui_devChange_updater.exe</div>
 </div><!-- fragment --><p>On Linux with GCC or Clang:</p>
 <div class="fragment"><div class="line">c++ -std=c++20 tools/flowui_devChange_updater/flowui_devChange_updater.cpp -o flowui_devChange_updater</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md857"></a>
-Run the Updater</h2>
+</div><!-- fragment --><h2>Run the Updater</h2>
 <p>Run the tool with the exported JSON path. The optional second argument is a report path.</p>
 <p>On Windows:</p>
 <div class="fragment"><div class="line">.\flowui_devChange_updater.exe .flowui\overrides.v1.json .flowui\apply-report.json</div>
 </div><!-- fragment --><p>On Linux:</p>
 <div class="fragment"><div class="line">./flowui_devChange_updater .flowui/overrides.v1.json .flowui/apply-report.json</div>
 </div><!-- fragment --><p>The updater reads the JSON, groups targets by source file, patches the referenced files in place, and writes a report JSON. The console output summarizes how many definition targets, instance targets, and files were patched.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md858"></a>
-Review the Result</h2>
+<h2>Review the Result</h2>
 <p>Always review the patch before committing it.</p>
 <div class="fragment"><div class="line">git diff</div>
 </div><!-- fragment --><p>Some entries can be unresolved. Common reasons are missing source metadata, relative source paths, source files that moved, values the V1 patcher cannot express, or source code that changed enough that the tool cannot safely find the initializer/call site.</p>
 <p>The report file keeps unresolved entries with a reason. Treat that as a to-do list: either apply those values by hand or adjust the source shape so future exports can patch it.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md859"></a>
-Final Shape</h1>
+<h1>Final Shape</h1>
 <p>The complete workflow looks like this:</p>
 <div class="fragment"><div class="line">FLOWUI_DEV_REGISTER_ENUM(</div>
 <div class="line">    CardTone,</div>
@@ -466,7 +438,7 @@ Final Shape</h1>
 <div class="line"> </div>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
 </div><!-- fragment --><div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kDashboardCard, <span class="stringliteral">&quot;dashboard/cards/primary&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kDashboardCard, <span class="stringliteral">&quot;dashboard/cards/primary&quot;</span>)</div>
 <div class="line">    .setParameters(DashboardCardParams{</div>
 <div class="line">        .title = <span class="stringliteral">&quot;Revenue&quot;</span>,</div>
 <div class="line">        .tone = CardTone::Success,</div>
@@ -489,6 +461,7 @@ Final Shape</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_tutorials.html">Tutorials</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

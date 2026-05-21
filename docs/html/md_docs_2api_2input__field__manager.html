@@ -106,42 +106,26 @@ $(function() {
   <div class="headertitle"><div class="title">Input Field Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md566"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md567"></a>
-Enums</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md568"></a>
-### <b>CaretRequestKind</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md569"></a>
-<span class="tt">enum class CaretRequestKind : uint8_t</span></h3>
+<div class="textblock"><h1>Enums</h1>
+<h2><b>CaretRequestKind</b></h2>
+<h3><span class="tt">enum class CaretRequestKind : uint8_t</span></h3>
 <p>Requested caret operation for an input field. It supports setting primary focus, adding a caret, or clearing all carets and focus.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md570"></a>
-Public Structs</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md571"></a>
-### <b>InputManagerConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md572"></a>
-<span class="tt">struct InputManagerConfig</span></h3>
+<h1>Public Structs</h1>
+<h2><b>InputManagerConfig</b></h2>
+<h3><span class="tt">struct InputManagerConfig</span></h3>
 <p>Caret and selection rendering configuration. It controls caret dimensions, caret color, selection color, and selected text color.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md573"></a>
-### <b>FieldConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md574"></a>
-<span class="tt">struct FieldConfig</span></h3>
+<h2><b>FieldConfig</b></h2>
+<h3><span class="tt">struct FieldConfig</span></h3>
 <p>Behavior configuration for an editable field. It controls read-only state, newline insertion, arrow navigation, and maximum stored bytes.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md575"></a>
-### <b>FieldRequest</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md576"></a>
-<span class="tt">struct FieldRequest</span></h3>
+<h2><b>FieldRequest</b></h2>
+<h3><span class="tt">struct FieldRequest</span></h3>
 <p>Per-frame request submitted by a custom input element. It marks a field present, provides initial text, config, and Clay ids for text and content areas.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md577"></a>
-### <b>FieldQueryResult</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md578"></a>
-<span class="tt">struct FieldQueryResult</span></h3>
+<h2><b>FieldQueryResult</b></h2>
+<h3><span class="tt">struct FieldQueryResult</span></h3>
 <p>Current manager-owned field state returned by requestField. It exposes text, primary caret state, and selection state.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md579"></a>
-Public API</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md580"></a>
-### <b>requestField</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md581"></a>
-<span class="tt">FieldQueryResult requestField(const FieldRequest&amp; request)</span></h3>
+<h1>Public API</h1>
+<h2><b>requestField</b></h2>
+<h3><span class="tt">FieldQueryResult requestField(const FieldRequest&amp; request)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">FieldQueryResult</span></li>
 <li><b>Arguments:</b> <span class="tt">request</span> stable field id, initial text, config, and Clay element ids.</li>
@@ -150,10 +134,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = context.uiManager.inputFields().requestField({.fieldId = context.elementID, .initialText = <span class="stringliteral">&quot;Search&quot;</span>, .textElementId = textId, .contentElementId = contentId});</div>
 <div class="ttc" id="astructFlowUi_1_1FieldQueryResult_html"><div class="ttname"><a href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a></div><div class="ttdoc">Result returned from an input field request.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:150</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md582"></a>
-### <b>requestCaret</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md583"></a>
-<span class="tt">void requestCaret(std::string_view fieldId, CaretRequestKind kind)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787">Full Doxygen reference</a>.</p>
+<h2><b>requestCaret</b></h2>
+<h3><span class="tt">void requestCaret(std::string_view fieldId, CaretRequestKind kind)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">fieldId</span> field to focus or edit, <span class="tt">kind</span> requested caret operation.</li>
@@ -162,10 +145,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.elementID, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
 <div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:31</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md584"></a>
-### <b>removeField</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md585"></a>
-<span class="tt">bool removeField(std::string_view fieldId)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446">Full Doxygen reference</a>.</p>
+<h2><b>removeField</b></h2>
+<h3><span class="tt">bool removeField(std::string_view fieldId)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> <span class="tt">fieldId</span> field state to remove.</li>
@@ -173,10 +155,9 @@ Public API</h1>
 <p>Deletes stored text, config, caret, and selection state for one field. Use this when a dynamic field is removed or when external state should replace the edited text.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.ui().inputFields().removeField(<span class="stringliteral">&quot;settings/name&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md586"></a>
-### <b>clear</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md587"></a>
-<span class="tt">void clear()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a">Full Doxygen reference</a>.</p>
+<h2><b>clear</b></h2>
+<h3><span class="tt">void clear()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -184,10 +165,9 @@ Public API</h1>
 <p>Clears all managed input field state. This resets fields, focus, key repeat, pointer drag, and frame render overrides.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().inputFields().clear();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md588"></a>
-### <b>hasPrimaryFieldFocus</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md589"></a>
-<span class="tt">bool hasPrimaryFieldFocus() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a7ac0604f2391bfe2ea5d16b008b68d18">Full Doxygen reference</a>.</p>
+<h2><b>hasPrimaryFieldFocus</b></h2>
+<h3><span class="tt">bool hasPrimaryFieldFocus() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -195,10 +175,9 @@ Public API</h1>
 <p>Reports whether any input field currently owns primary text focus. This is useful for suppressing global shortcuts while the user is editing text.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.ui().inputFields().hasPrimaryFieldFocus()) { runGlobalShortcut(); }</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md590"></a>
-### <b>getSelectedText</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md591"></a>
-<span class="tt">std::string_view getSelectedText() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a4f494c501874c594a05a8e28f8e9954f">Full Doxygen reference</a>.</p>
+<h2><b>getSelectedText</b></h2>
+<h3><span class="tt">std::string_view getSelectedText() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::string_view</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -206,10 +185,9 @@ Public API</h1>
 <p>Returns selected text from the primary field, or an empty view when no selection exists. The view points into manager-owned storage and is invalidated when that field text changes or is removed.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">std::string selected(app.ui().inputFields().getSelectedText());</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md592"></a>
-### <b>insertTextAtPrimaryCaret</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md593"></a>
-<span class="tt">bool insertTextAtPrimaryCaret(std::string_view utf8Text)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a997c4fea775ebe55ae427e901c38f50c">Full Doxygen reference</a>.</p>
+<h2><b>insertTextAtPrimaryCaret</b></h2>
+<h3><span class="tt">bool insertTextAtPrimaryCaret(std::string_view utf8Text)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> <span class="tt">utf8Text</span> text to insert.</li>
@@ -217,7 +195,8 @@ Public API</h1>
 <p>Inserts UTF-8 text at the primary caret, replacing active selections. The operation respects read-only state and <span class="tt">FieldConfig::maxBytes</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> pasted = app.ui().inputFields().insertTextAtPrimaryCaret(app.ui().clipboardText());</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a109309cb439eaa40a24f8ada6409da8e">Full Doxygen reference</a>. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
@@ -231,6 +210,7 @@ Public API</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_api_cheat_sheet.html">API Cheat Sheet</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

@@ -106,9 +106,7 @@ $(function() {
   <div class="headertitle"><div class="title">Frame Lifecycle </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md756"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md757"></a>
-Introduction</h1>
+<div class="textblock"><h1>Introduction</h1>
 <p>FlowUi's frame lifecycle is the internal path that turns one loop iteration of user code into presented pixels. At the public API level this looks small: <span class="tt">shouldClose()</span>, <span class="tt">beginFrame()</span>, UI construction, <span class="tt">endFrame()</span>, and <span class="tt">drawFrame()</span>. Internally, each step coordinates the window backend, frame input, Clay layout, frame-local arenas, input fields, shortcuts, icons, viewports, texture registry state, Vulkan frame resources, swapchain images, and the UI renderer. The public configuration structs affect this path before the loop even starts: most importantly, <span class="tt">AppConfig::vk.framesInFlight</span> chooses how many frame slots FlowUi creates and then manages internally for command buffers, fences, semaphores, UI arenas, texture retirement buckets, viewport resources, renderer instance buffers, and descriptor sets.</p>
 <p>The frame can be pictured as a pipeline:</p>
 <div class="fragment"><div class="line">App::shouldClose()</div>
@@ -142,13 +140,11 @@ Introduction</h1>
 <div class="line">    presents the image</div>
 <div class="line">    advances to the next frame resource</div>
 </div><!-- fragment --><p>That separation affects how user code should be written. <span class="tt">beginFrame()</span> is the point where input and transient frame memory become valid. UI should be built only between <span class="tt">beginFrame()</span> and <span class="tt">endFrame()</span>. <span class="tt">endFrame()</span> is the point where layout is finalized and render commands become available to the runtime. <span class="tt">drawFrame()</span> is the point where FlowUi consumes those commands and submits GPU work.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md758"></a>
-TL;DR</h1>
+<h1>TL;DR</h1>
 <p>FlowUi rebuilds UI every frame, but it does not rebuild the whole runtime every frame. The frame loop resets temporary frame data, collects input, lets user code describe UI, finalizes Clay output, prepares resource-dependent systems, records Vulkan work, presents, and then advances the active frame slot.</p>
 <p><span class="tt">framesInFlight</span> is the main configuration value that changes the shape of this process. A higher value gives FlowUi more independent frame resources to rotate through, while the public loop remains the same.</p>
 <p>Interaction is intentionally snapshot-based. Clay only knows final element bounds after layout finishes, so FlowUi captures current interaction at <span class="tt">endFrame()</span> and uses the previous completed snapshot while building the next frame. That means root element callbacks such as hover and press are delayed by one frame; in practice this is small, and with <span class="tt">VulkanConfig::presentMode = PresentMode::Immediate</span> it is usually even less noticeable.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md759"></a>
-Frame Configuration and Frame Slots</h1>
+<h1>Frame Configuration and Frame Slots</h1>
 <p>Before the first frame, <span class="tt">makeApplication()</span> creates <span class="tt">App::Impl</span>, initializes the window backend, creates Vulkan instance/surface/device state, creates the swapchain, creates <span class="tt">FrameVk</span>, initializes the UI renderer, and connects managers to shared runtime services such as the texture registry and font manager.</p>
 <p>FlowUi uses PIMPL for <span class="tt">App</span>: public <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a></span> methods are thin handles that forward into <span class="tt">App::Impl</span>. That keeps public headers small and keeps window/Vulkan/backend details out of the public <span class="tt">App</span> class. For frame lifecycle docs, the important detail is that <span class="tt">App::beginFrame()</span>, <span class="tt">App::endFrame()</span>, and <span class="tt">App::drawFrame()</span> are public entry points, but almost all real work happens inside the internal implementation.</p>
 <p><span class="tt">AppConfig::vk.framesInFlight</span> is clamped to at least one frame and then used by several systems:</p>
@@ -160,8 +156,7 @@ Frame Configuration and Frame Slots</h1>
 <li><span class="tt">VulkanUiRenderer</span> creates per-frame instance buffers and descriptor sets.</li>
 </ul>
 <p>The user does not manually rotate these slots. The runtime uses <span class="tt">frames.currentFrame</span>, passes that slot into the managers that need it, and calls <span class="tt">frames.advance()</span> after presentation.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md760"></a>
-Close Check and Window Backend</h1>
+<h1>Close Check and Window Backend</h1>
 <p>The frame loop usually starts with:</p>
 <div class="fragment"><div class="line"><span class="keywordflow">while</span> (!app.shouldClose()) {</div>
 <div class="line">    app.beginFrame();</div>
@@ -171,8 +166,7 @@ Close Check and Window Backend</h1>
 <div class="line">}</div>
 </div><!-- fragment --><p><span class="tt">App::shouldClose()</span> forwards into the internal window backend. If the app is not initialized, or the backend is gone, it returns <span class="tt">true</span>. In a normal running app, the backend answers from native window state: close button, OS window events, or whatever the backend considers a close request.</p>
 <p>The window backend also participates later in the frame. During <span class="tt">beginFrame()</span> it is polled for events. Its input queue receives mouse, keyboard, scroll, text input, window size, framebuffer size, cursor, and clipboard-related events. The close check is therefore the simplest public view of a larger responsibility: FlowUi keeps platform-specific window behavior behind <span class="tt">App</span>, but uses that backend every frame to feed input and presentation state into the rest of the runtime.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md761"></a>
-Begin Frame</h1>
+<h1>Begin Frame</h1>
 <p><span class="tt">beginFrame()</span> starts by measuring delta time from the previous <span class="tt">beginFrame()</span> call. This value becomes <span class="tt">FrameInput::dt</span>, which is used by systems such as input field caret blinking, key repeat, scroll updates, and any custom element code that reads current frame input.</p>
 <p>Next, the runtime resolves the current frame slot:</p>
 <div class="fragment"><div class="line">frameSlot = frames.currentFrame % frames.frames.size()</div>
@@ -194,19 +188,18 @@ Begin Frame</h1>
 <li>Input fields have already applied keyboard edits for the active field.</li>
 <li>Clay is inside an active layout.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md762"></a>
-UI Construction</h1>
+<h1>UI Construction</h1>
 <p>The code between <span class="tt">beginFrame()</span> and <span class="tt">endFrame()</span> is where user code describes the frame. This is immediate-mode UI: the tree is emitted again every frame, but long-lived data is stored elsewhere.</p>
 <p>Typical user code touches several layers at once:</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.ui();</div>
 <div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> icon = app.icons().textureRef(<span class="stringliteral">&quot;save&quot;</span>);</div>
 <div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> labelFont = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">resolveFont</a>(<span class="stringliteral">&quot;Body&quot;</span>, 600, FlowUi::FontStyle::Normal);</div>
 <div class="line"> </div>
-<div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kToolbarButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
+<div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kToolbarButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
 <div class="line">    .setParameters(ToolbarButtonParams{.icon = icon, .label = <span class="stringliteral">&quot;Save&quot;</span>, .fontId = labelFont})</div>
 <div class="line">    .draw();</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:59</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:63</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_adbbbc7d049cee3b9e97242fc44585c2d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">FlowUi::UiManager::resolveFont</a></div><div class="ttdeci">FontId resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</div><div class="ttdoc">Resolve a concrete Clay font id for a family/style request.</div></div>
 <div class="ttc" id="agroup__flowui__font__manager_html_ga45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdoc">Stable concrete font id consumed by Clay text configuration.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:15</div></div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
@@ -221,8 +214,7 @@ UI Construction</h1>
 <li>Developer capture records element definition and instance metadata.</li>
 </ul>
 <p>This phase does not present anything. It builds a layout description and registers enough frame-local metadata for later systems to interpret the Clay output correctly.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md763"></a>
-End Frame</h1>
+<h1>End Frame</h1>
 <p><span class="tt">endFrame()</span> closes UI construction and turns the frame's immediate-mode description into renderable command data.</p>
 <p>The public <span class="tt">App::endFrame()</span> forwards into <span class="tt">App::Impl::endFrame()</span>, which first calls <span class="tt">UiManager::endFrame()</span>. The UI manager ensures constructed elements are closed. If user code called <span class="tt">construct()</span> without a matching <span class="tt">drawConstructed()</span>, FlowUi auto-closes those roots and warns. In developer mode, the dev panel can be drawn before the root is closed.</p>
 <p>Then <span class="tt">Clay_EndLayout()</span> finalizes layout and produces a <span class="tt">Clay_RenderCommandArray</span>. At this point Clay has measured text, resolved layout sizes, generated bounding boxes, and produced commands such as rectangles, borders, text, images, and custom commands.</p>
@@ -236,8 +228,7 @@ End Frame</h1>
 <li><span class="tt">IconManager::prepareFrameTextures()</span> looks at icon texture requests, rasterizes SVG variants at the requested draw size when needed, stores them in atlas pages, and rewrites the frame's texture references to concrete atlas-backed entries.</li>
 </ul>
 <p>After <span class="tt">endFrame()</span>, the frame has a stable command array and any per-command texture or viewport remapping needed for rendering has been prepared.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md764"></a>
-Draw Frame</h1>
+<h1>Draw Frame</h1>
 <p><span class="tt">drawFrame()</span> consumes the prepared frame and submits GPU work. Like the other public lifecycle methods, <span class="tt">App::drawFrame()</span> is a small PIMPL forwarder; the internal <span class="tt">App::Impl::drawFrame()</span> owns the actual Vulkan flow.</p>
 <p>The function first checks whether frame resources and swapchain views exist. If the framebuffer size changed, or if a previous acquire/present reported the swapchain as out of date, FlowUi attempts to recreate the swapchain before drawing. If the framebuffer has zero width or height, such as while minimized, swapchain recreation is deferred and drawing returns early.</p>
 <p>After resize handling, FlowUi grabs the current <span class="tt">FrameVk::Frame</span>. That frame contains the command pool, primary command buffer, image-available semaphore, and in-flight fence for the current frame slot. The runtime waits on the frame's fence so the CPU does not overwrite resources still in use by the GPU.</p>
@@ -254,14 +245,12 @@ Draw Frame</h1>
 <p>If the per-frame instance buffer is too small, the renderer grows it and updates the descriptor for that frame slot. The renderer then uploads the instance vector, begins dynamic rendering against the swapchain image view, binds viewport/scissor, the quad vertex buffer, descriptor sets, and the appropriate pipeline per run. Each run is flushed with one instanced draw over a quad vertex buffer.</p>
 <p>After UI rendering, FlowUi transitions the swapchain image to present layout, ends the command buffer, submits it to the graphics queue, and signals the semaphore that presentation will wait on. Finally, it presents through the present queue. If presentation reports the swapchain as out of date or suboptimal, FlowUi marks the framebuffer as resized and attempts recreation.</p>
 <p>At the very end, <span class="tt">frames.advance()</span> moves <span class="tt">currentFrame</span> to the next frame slot. The next loop iteration will use a different command pool, command buffer, fence, descriptors, arenas, and per-frame resource bucket according to the configured frames in flight.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md765"></a>
-Swapchain Recreation and Resize</h1>
+<h1>Swapchain Recreation and Resize</h1>
 <p>Window resizing is detected in two places. <span class="tt">beginFrame()</span> compares the current framebuffer extent with the previously observed extent and marks <span class="tt">framebufferResized</span> when it changes. <span class="tt">drawFrame()</span> repeats that check before acquiring the next swapchain image. Vulkan can also report resize-related state through <span class="tt">VK_ERROR_OUT_OF_DATE_KHR</span> or <span class="tt">VK_SUBOPTIMAL_KHR</span> during acquire or present.</p>
 <p>When recreation is needed, FlowUi waits for the device to become idle, recreates the swapchain with the new framebuffer extent, updates frame data that depends on the number of swapchain images, notifies the renderer about the swapchain format, resets tracked image layouts to undefined, and clears the resize flag.</p>
 <p>If the framebuffer extent is zero, FlowUi does not recreate immediately. This commonly happens when a window is minimized. In that case the resize flag stays set and drawing returns early until a non-zero framebuffer size is available.</p>
 <p>From user code's perspective, this means normal resize handling is internal. Applications generally keep writing the same frame loop. Layout dimensions, UI-to-framebuffer scale, swapchain images, and renderer targets are refreshed by FlowUi as the window changes.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md766"></a>
-User Code Rules of Thumb</h1>
+<h1>User Code Rules of Thumb</h1>
 <p>Call the lifecycle methods in order:</p>
 <div class="fragment"><div class="line">app.beginFrame();</div>
 <div class="line">buildUi(app);</div>
@@ -274,8 +263,7 @@ User Code Rules of Thumb</h1>
 <p>Use stable ids for anything that must survive across frames. The UI tree is rebuilt every frame, but state, resources, input fields, shortcut focus, viewport references, and developer capture need stable names.</p>
 <p>Use managers for long-lived subsystem state. Font faces, image textures, icon documents, input text, shortcuts, and viewports should live in their managers rather than in temporary frame-local code.</p>
 <p>Remember that Flow element interaction callbacks read the previous completed interaction snapshot. If an interaction must react to raw input in the same construction frame, read <span class="tt">UiManager::getCurrentFrameInput()</span> directly and do your own hit or state logic. For normal root hover, press, hold, and release behavior, prefer the built-in callbacks and accept the intentional one-frame delay.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md767"></a>
-What to Read Next</h1>
+<h1>What to Read Next</h1>
 <ul>
 <li><a class="el" href="md_docs_2concepts_2mental__model.html" title="Core Mental Model">Core Mental Model</a></li>
 <li><a class="el" href="md_docs_2concepts_2element__system.html" title="Element System">Element System</a></li>
@@ -296,6 +284,7 @@ What to Read Next</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_concepts_details.html">Concepts &amp; Details</a></li><li class="navelem"><a href="flowui_concepts.html">Concepts</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

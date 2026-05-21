@@ -3,7 +3,7 @@
 ## Enums
 
 ### **CaretRequestKind**
----
+
 
 #### `enum class CaretRequestKind : uint8_t`
 
@@ -12,28 +12,28 @@ Requested caret operation for an input field. It supports setting primary focus,
 ## Public Structs
 
 ### **InputManagerConfig**
----
+
 
 #### `struct InputManagerConfig`
 
 Caret and selection rendering configuration. It controls caret dimensions, caret color, selection color, and selected text color.
 
 ### **FieldConfig**
----
+
 
 #### `struct FieldConfig`
 
 Behavior configuration for an editable field. It controls read-only state, newline insertion, arrow navigation, and maximum stored bytes.
 
 ### **FieldRequest**
----
+
 
 #### `struct FieldRequest`
 
 Per-frame request submitted by a custom input element. It marks a field present, provides initial text, config, and Clay ids for text and content areas.
 
 ### **FieldQueryResult**
----
+
 
 #### `struct FieldQueryResult`
 
@@ -42,7 +42,7 @@ Current manager-owned field state returned by requestField. It exposes text, pri
 ## Public API
 
 ### **requestField**
----
+
 
 #### `FieldQueryResult requestField(const FieldRequest& request)`
 
@@ -57,8 +57,10 @@ Registers or updates an input field for the current frame and returns its curren
 FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField({.fieldId = context.elementID, .initialText = "Search", .textElementId = textId, .contentElementId = contentId});
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787).
+
 ### **requestCaret**
----
+
 
 #### `void requestCaret(std::string_view fieldId, CaretRequestKind kind)`
 
@@ -73,8 +75,10 @@ Requests focus or caret changes for an input field. `SetPrimary` is the common o
 context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446).
+
 ### **removeField**
----
+
 
 #### `bool removeField(std::string_view fieldId)`
 
@@ -89,8 +93,10 @@ Deletes stored text, config, caret, and selection state for one field. Use this 
 const bool removed = app.ui().inputFields().removeField("settings/name");
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a).
+
 ### **clear**
----
+
 
 #### `void clear()`
 
@@ -105,8 +111,10 @@ Clears all managed input field state. This resets fields, focus, key repeat, poi
 app.ui().inputFields().clear();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a7ac0604f2391bfe2ea5d16b008b68d18).
+
 ### **hasPrimaryFieldFocus**
----
+
 
 #### `bool hasPrimaryFieldFocus() const`
 
@@ -121,8 +129,10 @@ Reports whether any input field currently owns primary text focus. This is usefu
 if (!app.ui().inputFields().hasPrimaryFieldFocus()) { runGlobalShortcut(); }
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a4f494c501874c594a05a8e28f8e9954f).
+
 ### **getSelectedText**
----
+
 
 #### `std::string_view getSelectedText() const`
 
@@ -137,8 +147,10 @@ Returns selected text from the primary field, or an empty view when no selection
 std::string selected(app.ui().inputFields().getSelectedText());
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a997c4fea775ebe55ae427e901c38f50c).
+
 ### **insertTextAtPrimaryCaret**
----
+
 
 #### `bool insertTextAtPrimaryCaret(std::string_view utf8Text)`
 
@@ -152,3 +164,5 @@ Inserts UTF-8 text at the primary caret, replacing active selections. The operat
 ```cpp
 const bool pasted = app.ui().inputFields().insertTextAtPrimaryCaret(app.ui().clipboardText());
 ```
+
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a109309cb439eaa40a24f8ada6409da8e).

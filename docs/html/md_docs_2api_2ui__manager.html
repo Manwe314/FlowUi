@@ -106,49 +106,30 @@ $(function() {
   <div class="headertitle"><div class="title">UI Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md623"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md624"></a>
-Aliases</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md625"></a>
-### <b>FontId</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md626"></a>
-<span class="tt">using FontId = uint16_t</span></h3>
+<div class="textblock"><h1>Aliases</h1>
+<h2><b>FontId</b></h2>
+<h3><span class="tt">using FontId = uint16_t</span></h3>
 <p>Concrete font id consumed by Clay text configuration. UiManager can resolve this through the connected <span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></span>.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md627"></a>
-### <b>FontFamilyId</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md628"></a>
-<span class="tt">using FontFamilyId = uint32_t</span></h3>
+<h2><b>FontFamilyId</b></h2>
+<h3><span class="tt">using FontFamilyId = uint32_t</span></h3>
 <p>Logical font family id returned by <span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></span>. UiManager accepts this for font resolution.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md629"></a>
-Enums</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md630"></a>
-### <b>CursorType</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md631"></a>
-<span class="tt">enum class CursorType : uint8_t</span></h3>
+<h1>Enums</h1>
+<h2><b>CursorType</b></h2>
+<h3><span class="tt">enum class CursorType : uint8_t</span></h3>
 <p>Cursor shape requested by UI code. UiManager collects per-frame cursor requests and forwards the winning shape to the window backend.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md632"></a>
-Public Structs</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md633"></a>
-### <b>FrameInput</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md634"></a>
-<span class="tt">struct FrameInput</span></h3>
+<h1>Public Structs</h1>
+<h2><b>FrameInput</b></h2>
+<h3><span class="tt">struct FrameInput</span></h3>
 <p>Current or previous normalized input snapshot exposed by UiManager. Custom elements use it for low-level pointer, keyboard, scroll, and timing behavior.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md635"></a>
-### <b>InteractionSnapshot</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md636"></a>
-<span class="tt">struct InteractionSnapshot</span></h3>
+<h2><b>InteractionSnapshot</b></h2>
+<h3><span class="tt">struct InteractionSnapshot</span></h3>
 <p>Previous-frame interaction data returned by UiManager. Custom elements use it to query hover, press, hold, and release state.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md637"></a>
-### <b>TextureRef</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md638"></a>
-<span class="tt">struct TextureRef</span></h3>
+<h2><b>TextureRef</b></h2>
+<h3><span class="tt">struct TextureRef</span></h3>
 <p>Texture handle copied into frame storage by storeTexture. It is used as Clay image data for images, icons, and viewports.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md639"></a>
-Public API</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md640"></a>
-### <b>toClayString</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md641"></a>
-<span class="tt">Clay_String toClayString(std::string_view s)</span></h3>
+<h1>Public API</h1>
+<h2><b>toClayString</b></h2>
+<h3><span class="tt">Clay_String toClayString(std::string_view s)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">Clay_String</span></li>
 <li><b>Arguments:</b> <span class="tt">s</span> string data to copy into the current frame arena.</li>
@@ -156,10 +137,9 @@ Public API</h1>
 <p>Copies dynamic text into frame-owned storage and returns a Clay string pointing at that copy. Use this for any string emitted to Clay when the original data may not live until frame end.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(textConfig));</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md642"></a>
-### <b>storeTexture</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md643"></a>
-<span class="tt">TextureRef* storeTexture(const TextureRef&amp; textureRef)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">Full Doxygen reference</a>.</p>
+<h2><b>storeTexture</b></h2>
+<h3><span class="tt">TextureRef* storeTexture(const TextureRef&amp; textureRef)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">TextureRef*</span></li>
 <li><b>Arguments:</b> <span class="tt">textureRef</span> texture reference to copy into frame storage.</li>
@@ -167,10 +147,9 @@ Public API</h1>
 <p>Stores a texture reference in the current frame arena and returns a pointer suitable for <span class="tt">Clay_ImageElementConfig::imageData</span>. Use this instead of taking the address of a temporary or local <span class="tt">TextureRef</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture(<span class="stringliteral">&quot;logo&quot;</span>));</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md644"></a>
-### <b>toClaySID</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md645"></a>
-<span class="tt">Clay_ElementId toClaySID(std::string_view s)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9">Full Doxygen reference</a>.</p>
+<h2><b>toClaySID</b></h2>
+<h3><span class="tt">Clay_ElementId toClaySID(std::string_view s)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">Clay_ElementId</span></li>
 <li><b>Arguments:</b> <span class="tt">s</span> id string.</li>
@@ -178,10 +157,9 @@ Public API</h1>
 <p>Converts a string into a Clay string id using FlowUi frame storage. This is useful when you want Clay's string-id path directly.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">Clay_ElementId overlayId = ui.toClaySID(<span class="stringliteral">&quot;overlay/root&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md646"></a>
-### <b>toClayEID</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md647"></a>
-<span class="tt">Clay_ElementId toClayEID(std::string_view s)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">Full Doxygen reference</a>.</p>
+<h2><b>toClayEID</b></h2>
+<h3><span class="tt">Clay_ElementId toClayEID(std::string_view s)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">Clay_ElementId</span></li>
 <li><b>Arguments:</b> <span class="tt">s</span> element id string.</li>
@@ -189,10 +167,9 @@ Public API</h1>
 <p>Converts a FlowUi element id string into a Clay element id. This is the normal helper for root and child Clay nodes inside FlowUi element callbacks.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md648"></a>
-### <b>createElement</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md649"></a>
-<span class="tt">template &lt;typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal&gt; ElementBuilder&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt; createElement(const ElementDefinition&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;&amp; elementDefinition, std::string_view elementID)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">Full Doxygen reference</a>.</p>
+<h2><b>createElement</b></h2>
+<h3><span class="tt">template &lt;typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal&gt; ElementBuilder&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt; createElement(const ElementDefinition&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;&amp; elementDefinition, std::string_view elementID)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">ElementBuilder&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;</span></li>
 <li><b>Arguments:</b> <span class="tt">elementDefinition</span> typed definition to invoke, <span class="tt">elementID</span> stable instance id string.</li>
@@ -200,10 +177,9 @@ Public API</h1>
 <p>Creates a builder for one typed FlowUi element invocation. Chain parameter setup and finish with <span class="tt">draw()</span> or <span class="tt">construct()</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).draw();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md650"></a>
-### <b>drawConstructed</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md651"></a>
-<span class="tt">void drawConstructed()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">Full Doxygen reference</a>.</p>
+<h2><b>drawConstructed</b></h2>
+<h3><span class="tt">void drawConstructed()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -211,10 +187,9 @@ Public API</h1>
 <p>Closes the current element opened by <span class="tt">ElementBuilder::construct()</span>. Call this after emitting the manually supplied child Clay nodes for a constructed element flow.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">ui.drawConstructed();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md652"></a>
-### <b>getPreviousFramesInteraction</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md653"></a>
-<span class="tt">const InteractionSnapshot&amp; getPreviousFramesInteraction() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">Full Doxygen reference</a>.</p>
+<h2><b>getPreviousFramesInteraction</b></h2>
+<h3><span class="tt">const InteractionSnapshot&amp; getPreviousFramesInteraction() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const InteractionSnapshot&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -222,10 +197,9 @@ Public API</h1>
 <p>Returns the previous completed frame's interaction snapshot. Use it for stable hover, press, hold, and release queries while building the current frame.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> wasPressed = ui.getPreviousFramesInteraction().isPressed(buttonId);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md654"></a>
-### <b>getCurrentFrameInput</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md655"></a>
-<span class="tt">const FrameInput&amp; getCurrentFrameInput() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">Full Doxygen reference</a>.</p>
+<h2><b>getCurrentFrameInput</b></h2>
+<h3><span class="tt">const FrameInput&amp; getCurrentFrameInput() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const FrameInput&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -234,10 +208,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a>&amp; input = ui.getCurrentFrameInput();</div>
 <div class="ttc" id="astructFlowUi_1_1FrameInput_html"><div class="ttname"><a href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a></div><div class="ttdoc">Per-frame input snapshot consumed by FlowUi managers and elements.</div><div class="ttdef"><b>Definition</b> InputStructs.hpp:25</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md656"></a>
-### <b>getPreviousFrameInput</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md657"></a>
-<span class="tt">const FrameInput&amp; getPreviousFrameInput() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">Full Doxygen reference</a>.</p>
+<h2><b>getPreviousFrameInput</b></h2>
+<h3><span class="tt">const FrameInput&amp; getPreviousFrameInput() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const FrameInput&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -245,10 +218,9 @@ Public API</h1>
 <p>Returns the previous frame input in FlowUi layout space. Compare it with <span class="tt">getCurrentFrameInput()</span> for custom edge detection or drag calculations.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> pressedThisFrame = ui.getCurrentFrameInput().mouseDown[0] &amp;&amp; !ui.getPreviousFrameInput().mouseDown[0];</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md658"></a>
-### <b>inputFields</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md659"></a>
-<span class="tt">InputFieldManager&amp; inputFields()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">Full Doxygen reference</a>.</p>
+<h2><b>inputFields</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">InputFieldManager&amp; inputFields()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">InputFieldManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -257,10 +229,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.elementID, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
 <div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:31</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md660"></a>
-### <b>inputFields</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md661"></a>
-<span class="tt">const InputFieldManager&amp; inputFields() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">Full Doxygen reference</a>.</p>
+<h2><b>inputFields</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const InputFieldManager&amp; inputFields() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const InputFieldManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -268,10 +239,9 @@ Public API</h1>
 <p>Returns the immutable input field manager. Use it for read-only input focus and selection checks.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.elementID, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md662"></a>
-### <b>shortcuts</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md663"></a>
-<span class="tt">ShortcutManager&amp; shortcuts()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ad9373da210911028ada7f4559cc760b3">Full Doxygen reference</a>.</p>
+<h2><b>shortcuts</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">ShortcutManager&amp; shortcuts()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">ShortcutManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -279,11 +249,10 @@ Public API</h1>
 <p>Returns the mutable shortcut manager owned by the UI manager. Use it to register app or element keyboard shortcuts.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a>&amp; shortcuts = app.ui().shortcuts();</div>
-<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:30</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md664"></a>
-### <b>shortcuts</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md665"></a>
-<span class="tt">const ShortcutManager&amp; shortcuts() const</span></h3>
+<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:32</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">Full Doxygen reference</a>.</p>
+<h2><b>shortcuts</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const ShortcutManager&amp; shortcuts() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const ShortcutManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -291,10 +260,9 @@ Public API</h1>
 <p>Returns the immutable shortcut manager. Use it for read-only focused element inspection.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a>&amp; shortcuts = app.ui().shortcuts();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md666"></a>
-### <b>devRuntime</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md667"></a>
-<span class="tt">devMode::DevRuntime&amp; devRuntime()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc">Full Doxygen reference</a>.</p>
+<h2><b>devRuntime</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">devMode::DevRuntime&amp; devRuntime()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">devMode::DevRuntime&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -302,10 +270,9 @@ Public API</h1>
 <p>Returns the mutable developer runtime when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. This is mainly for developer tooling and custom dev integrations.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; devRuntime = app.ui().devRuntime();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md668"></a>
-### <b>devRuntime</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md669"></a>
-<span class="tt">const devMode::DevRuntime&amp; devRuntime() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">Full Doxygen reference</a>.</p>
+<h2><b>devRuntime</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const devMode::DevRuntime&amp; devRuntime() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const devMode::DevRuntime&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -313,10 +280,9 @@ Public API</h1>
 <p>Returns the immutable developer runtime when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. Use it for read-only inspection of dev-mode state.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; devRuntime = app.ui().devRuntime();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md670"></a>
-### <b>devToolsConfig</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md671"></a>
-<span class="tt">DevToolsConfig&amp; devToolsConfig()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab7ea3c678a7deb">Full Doxygen reference</a>.</p>
+<h2><b>devToolsConfig</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">DevToolsConfig&amp; devToolsConfig()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">DevToolsConfig&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -324,10 +290,9 @@ Public API</h1>
 <p>Returns mutable developer tooling configuration when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. This allows runtime updates to developer panel and capture behavior.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().devToolsConfig().panelOpenByDefault = <span class="keyword">true</span>;</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md672"></a>
-### <b>devToolsConfig</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md673"></a>
-<span class="tt">const DevToolsConfig&amp; devToolsConfig() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">Full Doxygen reference</a>.</p>
+<h2><b>devToolsConfig</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const DevToolsConfig&amp; devToolsConfig() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const DevToolsConfig&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -335,10 +300,9 @@ Public API</h1>
 <p>Returns immutable developer tooling configuration when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. Use it for read-only access to current dev settings.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().devToolsConfig().panelOpenByDefault = <span class="keyword">true</span>;</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md674"></a>
-### <b>setClipboardText</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md675"></a>
-<span class="tt">void setClipboardText(std::string_view text) const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">Full Doxygen reference</a>.</p>
+<h2><b>setClipboardText</b></h2>
+<h3><span class="tt">void setClipboardText(std::string_view text) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">text</span> text to copy.</li>
@@ -346,10 +310,9 @@ Public API</h1>
 <p>Writes clipboard text through the clipboard accessor installed by <span class="tt">App</span>. If no accessor is installed, this function does nothing.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">context.uiManager.setClipboardText(selectedText);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md676"></a>
-### <b>clipboardText</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md677"></a>
-<span class="tt">std::string clipboardText() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a">Full Doxygen reference</a>.</p>
+<h2><b>clipboardText</b></h2>
+<h3><span class="tt">std::string clipboardText() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::string</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -357,10 +320,9 @@ Public API</h1>
 <p>Reads clipboard text through the installed clipboard accessor. Returns an empty string when no getter is installed.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">std::string pasted = context.uiManager.clipboardText();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md678"></a>
-### <b>hasClipboardAccess</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md679"></a>
-<span class="tt">bool hasClipboardAccess() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e">Full Doxygen reference</a>.</p>
+<h2><b>hasClipboardAccess</b></h2>
+<h3><span class="tt">bool hasClipboardAccess() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -368,10 +330,9 @@ Public API</h1>
 <p>Reports whether both clipboard read and write accessors are installed. Use this before exposing clipboard-dependent UI behavior.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (context.uiManager.hasClipboardAccess()) { context.uiManager.setClipboardText(selectedText); }</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md680"></a>
-### <b>requestCursor</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md681"></a>
-<span class="tt">void requestCursor(CursorType cursorType, uint8_t priority = 0)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f">Full Doxygen reference</a>.</p>
+<h2><b>requestCursor</b></h2>
+<h3><span class="tt">void requestCursor(CursorType cursorType, uint8_t priority = 0)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">cursorType</span> requested cursor shape, <span class="tt">priority</span> ordering priority for competing requests.</li>
@@ -379,10 +340,9 @@ Public API</h1>
 <p>Requests a cursor shape for the current frame. Cursor requests reset each frame, and higher-priority requests win when multiple UI elements request different cursors.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">context.uiManager.requestCursor(FlowUi::CursorType::PointingHand, 10);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md682"></a>
-### <b>resolveFont</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md683"></a>
-<span class="tt">FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498">Full Doxygen reference</a>.</p>
+<h2><b>resolveFont</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">FontId</span></li>
 <li><b>Arguments:</b> <span class="tt">familyId</span> logical family id, <span class="tt">weight</span> requested font weight, <span class="tt">style</span> requested font style.</li>
@@ -390,10 +350,9 @@ Public API</h1>
 <p>Resolves a logical family/style request to a concrete Clay font id through the connected font manager. Returns <span class="tt">0</span> when no font manager is attached or the family cannot be resolved.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">textConfig.fontId = context.uiManager.resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 700, FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md684"></a>
-### <b>resolveFont</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md685"></a>
-<span class="tt">FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">Full Doxygen reference</a>.</p>
+<h2><b>resolveFont</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">FontId</span></li>
 <li><b>Arguments:</b> <span class="tt">familyName</span> logical family name, <span class="tt">weight</span> requested font weight, <span class="tt">style</span> requested font style.</li>
@@ -401,7 +360,8 @@ Public API</h1>
 <p>Named-family overload for font resolution. Use it when you want a concise lookup by family name rather than caching a <span class="tt">FontFamilyId</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">textConfig.fontId = context.uiManager.resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 700, FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b">Full Doxygen reference</a>. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
@@ -415,6 +375,7 @@ Public API</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_api_cheat_sheet.html">API Cheat Sheet</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

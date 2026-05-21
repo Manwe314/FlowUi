@@ -209,4 +209,4 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 
 ### Troubleshooting
 
-- [Troubleshooting](troubleshooting.md)
+- [Troubleshooting](concepts/troubleshooting.md)

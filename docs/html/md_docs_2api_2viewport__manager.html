@@ -106,52 +106,32 @@ $(function() {
   <div class="headertitle"><div class="title">Viewport Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md686"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md687"></a>
-Enums</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md688"></a>
-### <b>TextureFitMode</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md689"></a>
-<span class="tt">enum class TextureFitMode : uint8_t</span></h3>
+<div class="textblock"><h1>Enums</h1>
+<h2><b>TextureFitMode</b></h2>
+<h3><span class="tt">enum class TextureFitMode : uint8_t</span></h3>
 <p>Texture layout mode used when drawing viewport textures into UI rectangles. Viewports often use contain or cover depending on preview behavior.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md690"></a>
-Public Structs</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md691"></a>
-### <b>TextureRef</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md692"></a>
-<span class="tt">struct TextureRef</span></h3>
+<h1>Public Structs</h1>
+<h2><b>TextureRef</b></h2>
+<h3><span class="tt">struct TextureRef</span></h3>
 <p>Texture reference returned for viewport images. It points at the current frame viewport target or fallback texture id 0 when unavailable.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md693"></a>
-### <b>ViewPortVulkanInterop</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md694"></a>
-<span class="tt">struct ViewPortVulkanInterop</span></h3>
+<h2><b>ViewPortVulkanInterop</b></h2>
+<h3><span class="tt">struct ViewPortVulkanInterop</span></h3>
 <p>Shared Vulkan handles exposed for viewport integrations. The handles are owned by FlowUi App and must not be destroyed by user code.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md695"></a>
-### <b>ViewPortRenderContext</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md696"></a>
-<span class="tt">struct ViewPortRenderContext</span></h3>
+<h2><b>ViewPortRenderContext</b></h2>
+<h3><span class="tt">struct ViewPortRenderContext</span></h3>
 <p>Per-frame context passed to viewport render callbacks. It contains the begun secondary command buffer, extent, color format, frame index, key, and interop handles.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md697"></a>
-### <b>ViewPortCreateInfo</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md698"></a>
-<span class="tt">struct ViewPortCreateInfo</span></h3>
+<h2><b>ViewPortCreateInfo</b></h2>
+<h3><span class="tt">struct ViewPortCreateInfo</span></h3>
 <p>Creation settings for a viewport render target. It controls color format, clear color, and whether the target clears every frame.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md699"></a>
-### <b>ViewPort</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md700"></a>
-<span class="tt">class ViewPort</span></h3>
+<h2><b>ViewPort</b></h2>
+<h3><span class="tt">class ViewPort</span></h3>
 <p>Named offscreen render target managed by ViewPortManager. It stores render callback, clear behavior, current size, key, and texture access.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md701"></a>
-### <b>ViewPortManager</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md702"></a>
-<span class="tt">class ViewPortManager</span></h3>
+<h2><b>ViewPortManager</b></h2>
+<h3><span class="tt">class ViewPortManager</span></h3>
 <p>App-owned manager for named offscreen viewports. It creates, tracks, sizes, renders, and exposes viewport textures to the UI renderer.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md703"></a>
-Public API</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md704"></a>
-### <b>getKey</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md705"></a>
-<span class="tt">std::string_view getKey() const</span></h3>
+<h1>Public API</h1>
+<h2><b>getKey</b></h2>
+<h3><span class="tt">std::string_view getKey() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::string_view</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -159,10 +139,9 @@ Public API</h1>
 <p>Returns the stable key used to create and look up this viewport. The key is owned by the viewport object.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">std::string_view viewportKey = viewport-&gt;getKey();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md706"></a>
-### <b>hasValidSize</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md707"></a>
-<span class="tt">bool hasValidSize() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#ac2b642087b0c4fdf18ab3d41cd36c582">Full Doxygen reference</a>.</p>
+<h2><b>hasValidSize</b></h2>
+<h3><span class="tt">bool hasValidSize() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -170,10 +149,9 @@ Public API</h1>
 <p>Reports whether the viewport currently has positive width and height. A viewport may be invalid before its texture has been referenced and sized by UI image commands.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (viewport-&gt;hasValidSize()) { renderScene(viewport-&gt;getSize()); }</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md708"></a>
-### <b>getSize</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md709"></a>
-<span class="tt">VkExtent2D getSize() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#af9f3839dfa6d587a58dc0ec31e54d0aa">Full Doxygen reference</a>.</p>
+<h2><b>getSize</b></h2>
+<h3><span class="tt">VkExtent2D getSize() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">VkExtent2D</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -181,10 +159,9 @@ Public API</h1>
 <p>Returns the current render target size in pixels. FlowUi derives this from the largest UI image area using the viewport texture.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">VkExtent2D extent = viewport-&gt;getSize();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md710"></a>
-### <b>textureRef</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md711"></a>
-<span class="tt">TextureRef textureRef() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#af26b8ce43556bdf7af7718dbd33a31d4">Full Doxygen reference</a>.</p>
+<h2><b>textureRef</b></h2>
+<h3><span class="tt">TextureRef textureRef() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">TextureRef</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -193,32 +170,30 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = viewport-&gt;textureRef();</div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md712"></a>
-### <b>setRenderCallback</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md713"></a>
-<span class="tt">void setRenderCallback(RenderCallback callback)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a16a189477b7c50b6d0415441f3dd72f1">Full Doxygen reference</a>.</p>
+<h2><b>setRenderCallback</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">void setRenderCallback(RenderCallback callback)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">callback</span> function invoked for viewport rendering.</li>
 </ul>
 <p>Installs a custom render callback for this viewport. FlowUi begins and ends the provided secondary command buffer, so callback code records commands but does not begin or end the buffer.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;setRenderCallback([](<span class="keyword">const</span> FlowUi::ViewPortRenderContext&amp; ctx) { recordSceneCommands(ctx); });</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md714"></a>
-### <b>setRenderCallback</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md715"></a>
-<span class="tt">template &lt;typename T, typename Fn&gt; void setRenderCallback(std::shared_ptr&lt;T&gt; userData, Fn&amp;&amp; callback)</span></h3>
+<div class="fragment"><div class="line">viewport-&gt;setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; ctx) { recordSceneCommands(ctx); });</div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> ViewPortManagerStructs.hpp:59</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f">Full Doxygen reference</a>.</p>
+<h2><b>setRenderCallback</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">template &lt;typename T, typename Fn&gt; void setRenderCallback(std::shared_ptr&lt;T&gt; userData, Fn&amp;&amp; callback)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">userData</span> retained callback payload, <span class="tt">callback</span> callable invoked with render context and <span class="tt">T&amp;</span>.</li>
 </ul>
 <p>Installs a render callback that keeps typed shared user data alive. This is useful for binding scene renderers or other stateful rendering helpers to a viewport.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">viewport-&gt;setRenderCallback([](<span class="keyword">const</span> FlowUi::ViewPortRenderContext&amp; ctx) { recordSceneCommands(ctx); });</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md716"></a>
-### <b>clearRenderCallback</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md717"></a>
-<span class="tt">void clearRenderCallback()</span></h3>
+<div class="fragment"><div class="line">viewport-&gt;setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; ctx) { recordSceneCommands(ctx); });</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a8ac28ba477958a85dff2a9af682d1431">Full Doxygen reference</a>.</p>
+<h2><b>clearRenderCallback</b></h2>
+<h3><span class="tt">void clearRenderCallback()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -226,10 +201,9 @@ Public API</h1>
 <p>Clears the viewport render callback. FlowUi continues to manage the viewport texture, but no custom draw commands are recorded.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">viewport-&gt;clearRenderCallback();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md718"></a>
-### <b>hasRenderCallback</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md719"></a>
-<span class="tt">bool hasRenderCallback() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a41cbb5a21265263d5cb7bfab078b9b99">Full Doxygen reference</a>.</p>
+<h2><b>hasRenderCallback</b></h2>
+<h3><span class="tt">bool hasRenderCallback() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -237,10 +211,9 @@ Public API</h1>
 <p>Reports whether a render callback is currently installed. Use this to avoid redundant setup or to display fallback content.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!viewport-&gt;hasRenderCallback()) { viewport-&gt;setRenderCallback(renderScene); }</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md720"></a>
-### <b>setClearColor</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md721"></a>
-<span class="tt">void setClearColor(float r, float g, float b, float a)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a0b98f73f56b90fefe2cac173f49aff0e">Full Doxygen reference</a>.</p>
+<h2><b>setClearColor</b></h2>
+<h3><span class="tt">void setClearColor(float r, float g, float b, float a)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">r</span>, <span class="tt">g</span>, <span class="tt">b</span>, <span class="tt">a</span> clear color channels.</li>
@@ -248,10 +221,9 @@ Public API</h1>
 <p>Sets the viewport clear color. The color is used by the viewport render pass when clearing is enabled.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">viewport-&gt;setClearColor(0.02f, 0.02f, 0.03f, 1.0f);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md722"></a>
-### <b>clearColor</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md723"></a>
-<span class="tt">std::array&lt;float, 4&gt; clearColor() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a5041209fac6a58554ebe927bc70d194d">Full Doxygen reference</a>.</p>
+<h2><b>clearColor</b></h2>
+<h3><span class="tt">std::array&lt;float, 4&gt; clearColor() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::array&lt;float, 4&gt;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -259,10 +231,9 @@ Public API</h1>
 <p>Returns the current viewport clear color. The values are RGBA channels.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">std::array&lt;float, 4&gt; color = viewport-&gt;clearColor();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md724"></a>
-### <b>setClearEveryFrame</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md725"></a>
-<span class="tt">void setClearEveryFrame(bool enabled)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a36354a3627449b1c250cb31d63f26175">Full Doxygen reference</a>.</p>
+<h2><b>setClearEveryFrame</b></h2>
+<h3><span class="tt">void setClearEveryFrame(bool enabled)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">enabled</span> true to clear each rendered frame.</li>
@@ -270,10 +241,9 @@ Public API</h1>
 <p>Controls whether FlowUi clears the viewport image every frame. Disabling clear can be useful for persistent render target effects.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">viewport-&gt;setClearEveryFrame(<span class="keyword">false</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md726"></a>
-### <b>clearEveryFrame</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md727"></a>
-<span class="tt">bool clearEveryFrame() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#a39b1ba8923020766f15ee701575aa0ca">Full Doxygen reference</a>.</p>
+<h2><b>clearEveryFrame</b></h2>
+<h3><span class="tt">bool clearEveryFrame() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -281,10 +251,9 @@ Public API</h1>
 <p>Reports whether the viewport clears before rendering each frame. When false, FlowUi loads previous image contents after initialization.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> clears = viewport-&gt;clearEveryFrame();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md728"></a>
-### <b>create</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md729"></a>
-<span class="tt">bool create(std::string_view key, const ViewPortCreateInfo&amp; createInfo = {})</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPort.html#aa397c0dfbcd5ebcf8b6b5290adcff367">Full Doxygen reference</a>.</p>
+<h2><b>create</b></h2>
+<h3><span class="tt">bool create(std::string_view key, const ViewPortCreateInfo&amp; createInfo = {})</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> <span class="tt">key</span> viewport key, <span class="tt">createInfo</span> initial format and clear settings.</li>
@@ -292,10 +261,9 @@ Public API</h1>
 <p>Creates a named offscreen viewport. Newly created viewports resize automatically when their texture is referenced by UI image commands.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.viewPorts().create(<span class="stringliteral">&quot;scene&quot;</span>, {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md730"></a>
-### <b>remove</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md731"></a>
-<span class="tt">bool remove(std::string_view key)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#af6f5b9b1adf89a9ea58bec5fbf3ba86c">Full Doxygen reference</a>.</p>
+<h2><b>remove</b></h2>
+<h3><span class="tt">bool remove(std::string_view key)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
@@ -303,10 +271,9 @@ Public API</h1>
 <p>Removes a viewport and destroys its per-frame resources. This can block because the implementation waits for the Vulkan device to become idle before releasing resources.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.viewPorts().remove(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md732"></a>
-### <b>contains</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md733"></a>
-<span class="tt">bool contains(std::string_view key) const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#a393b43dacaeb66f2ebd66be2d15329c0">Full Doxygen reference</a>.</p>
+<h2><b>contains</b></h2>
+<h3><span class="tt">bool contains(std::string_view key) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
@@ -314,32 +281,30 @@ Public API</h1>
 <p>Checks whether a viewport exists for the key. This is a lightweight lookup with no rendering side effects.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.viewPorts().contains(<span class="stringliteral">&quot;scene&quot;</span>)) { app.viewPorts().create(<span class="stringliteral">&quot;scene&quot;</span>); }</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md734"></a>
-### <b>getViewPort</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md735"></a>
-<span class="tt">ViewPort* getViewPort(std::string_view key)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#a6ae77f78ebf36af55bf61ff75bef31ec">Full Doxygen reference</a>.</p>
+<h2><b>getViewPort</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">ViewPort* getViewPort(std::string_view key)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">ViewPort*</span></li>
 <li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
 </ul>
 <p>Returns a mutable viewport pointer, or <span class="tt">nullptr</span> when missing. Use this to set callbacks, clear color, or persistent clear behavior.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">FlowUi::ViewPort* scene = app.viewPorts().getViewPort(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md736"></a>
-### <b>getViewPort</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md737"></a>
-<span class="tt">const ViewPort* getViewPort(std::string_view key) const</span></h3>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* scene = app.viewPorts().getViewPort(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:62</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">Full Doxygen reference</a>.</p>
+<h2><b>getViewPort</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const ViewPort* getViewPort(std::string_view key) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const ViewPort*</span></li>
 <li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
 </ul>
 <p>Returns an immutable viewport pointer, or <span class="tt">nullptr</span> when missing. Use this for read-only viewport inspection.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">FlowUi::ViewPort* scene = app.viewPorts().getViewPort(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md738"></a>
-### <b>getTexture</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md739"></a>
-<span class="tt">TextureRef getTexture(std::string_view key) const</span></h3>
+<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* scene = app.viewPorts().getViewPort(<span class="stringliteral">&quot;scene&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#a0d6ce77f3c9c25cd6e1a8e99be0b031a">Full Doxygen reference</a>.</p>
+<h2><b>getTexture</b></h2>
+<h3><span class="tt">TextureRef getTexture(std::string_view key) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">TextureRef</span></li>
 <li><b>Arguments:</b> <span class="tt">key</span> viewport key.</li>
@@ -347,18 +312,19 @@ Public API</h1>
 <p>Returns a texture reference for the current frame's viewport image. Missing keys return fallback texture id <span class="tt">0</span> and log a warning once.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> sceneTexture = app.viewPorts().getTexture(<span class="stringliteral">&quot;scene&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md740"></a>
-### <b>getVulkanInterop</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md741"></a>
-<span class="tt">const ViewPortVulkanInterop&amp; getVulkanInterop() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921">Full Doxygen reference</a>.</p>
+<h2><b>getVulkanInterop</b></h2>
+<h3><span class="tt">const ViewPortVulkanInterop&amp; getVulkanInterop() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const ViewPortVulkanInterop&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
 <p>Returns shared Vulkan handles owned by the FlowUi app. Use these handles only to create compatible resources or record viewport work; do not destroy them.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> FlowUi::ViewPortVulkanInterop&amp; vk = app.viewPorts().getVulkanInterop();</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a>&amp; vk = app.viewPorts().getVulkanInterop();</div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortVulkanInterop_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortVulkanInterop.html">FlowUi::ViewPortVulkanInterop</a></div><div class="ttdoc">Vulkan handles exposed to viewport render callbacks.</div><div class="ttdef"><b>Definition</b> ViewPortManagerStructs.hpp:29</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec">Full Doxygen reference</a>. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
@@ -372,6 +338,7 @@ Public API</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_api_cheat_sheet.html">API Cheat Sheet</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

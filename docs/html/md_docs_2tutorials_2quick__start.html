@@ -106,10 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">FlowUi Quick Start </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md937"></a></p>
-<p>Fast-track a new C++ app from an empty folder to a running FlowUi window with a small custom element.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md938"></a>
-Contents</h1>
+<div class="textblock"><p>Fast-track a new C++ app from an empty folder to a running FlowUi window with a small custom element.</p>
+<h1>Contents</h1>
 <ul>
 <li>Requirements</li>
 <li>Chapter 1: Set Up a FlowUi Project<ul>
@@ -130,8 +128,7 @@ Contents</h1>
 </li>
 <li>Complete Example Files</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md939"></a>
-Requirements</h1>
+<h1>Requirements</h1>
 <p>FlowUi is a C++23 Vulkan-first UI library. Before creating an app, make sure these are installed:</p>
 <ul>
 <li><b>CMake 3.20 or newer</b><ul>
@@ -167,8 +164,7 @@ Requirements</h1>
 </ul>
 </li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md940"></a>
-Chapter 1: Set Up a FlowUi Project</h1>
+<h1>Chapter 1: Set Up a FlowUi Project</h1>
 <p>This chapter creates a small app project that vendors FlowUi as an external dependency and proves the project compiles.</p>
 <p>The app will use this layout:</p>
 <div class="fragment"><div class="line">RainbowApp/</div>
@@ -179,14 +175,12 @@ Chapter 1: Set Up a FlowUi Project</h1>
 <div class="line">│   └── application.hpp</div>
 <div class="line">└── src/</div>
 <div class="line">    └── main.cpp</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md941"></a>
-Create the Project Layout</h2>
+</div><!-- fragment --><h2>Create the Project Layout</h2>
 <div class="fragment"><div class="line">mkdir RainbowApp</div>
 <div class="line">cd RainbowApp</div>
 <div class="line"> </div>
 <div class="line">mkdir src include external</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md942"></a>
-Add FlowUi as an External Library</h2>
+</div><!-- fragment --><h2>Add FlowUi as an External Library</h2>
 <p>From the root of <span class="tt">RainbowApp</span>, clone FlowUi into <span class="tt">external/FlowUi</span>. Replace <span class="tt">&lt;flowui-repository-url&gt;</span> with the Git URL for the FlowUi repository you want to use:</p>
 <div class="fragment"><div class="line">git clone --recursive &lt;flowui-repository-url&gt; external/FlowUi</div>
 </div><!-- fragment --><p>If you already cloned without <span class="tt">--recursive</span>, initialize FlowUi's submodules afterward:</p>
@@ -195,8 +189,7 @@ Add FlowUi as an External Library</h2>
 <div class="fragment"><div class="line">git -C external/FlowUi fetch --tags</div>
 <div class="line">git -C external/FlowUi checkout &lt;version-tag-or-commit&gt;</div>
 <div class="line">git -C external/FlowUi submodule update --init --recursive</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md943"></a>
-Write the Root CMake File</h2>
+</div><!-- fragment --><h2>Write the Root CMake File</h2>
 <p>Create <span class="tt">CMakeLists.txt</span> in the <span class="tt">RainbowApp</span> root:</p>
 <div class="fragment"><div class="line">cmake_minimum_required(VERSION 3.20)</div>
 <div class="line"> </div>
@@ -225,8 +218,7 @@ Write the Root CMake File</h2>
 <div class="line">        FlowUi::FlowUi</div>
 <div class="line">)</div>
 </div><!-- fragment --><p>This uses FlowUi's default build options and only turns developer mode on.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md944"></a>
-Add the First Source Files</h2>
+<h2>Add the First Source Files</h2>
 <p>Create <span class="tt">include/application.hpp</span>:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#pragma once</span></div>
 <div class="line"> </div>
@@ -241,8 +233,7 @@ Add the First Source Files</h2>
 <div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>This first program does not open a FlowUi window yet. It is only a fast compile/link check that your CMake project can see FlowUi.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md945"></a>
-Configure and Build</h2>
+<h2>Configure and Build</h2>
 <p>From the <span class="tt">RainbowApp</span> root:</p>
 <div class="fragment"><div class="line">cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug</div>
 <div class="line">cmake --build build --parallel</div>
@@ -253,8 +244,7 @@ Configure and Build</h2>
 <div class="line">cmake --build build --config Debug --parallel</div>
 <div class="line">.\build\Debug\rainbow_app.exe</div>
 </div><!-- fragment --><p>If this prints <span class="tt">Hello from RainbowApp.</span>, Chapter 1 is done.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md946"></a>
-Chapter 2: Build the First FlowUi App</h1>
+<h1>Chapter 2: Build the First FlowUi App</h1>
 <p>This chapter turns the compile check into a real FlowUi app:</p>
 <ul>
 <li>Create an <span class="tt">AppConfig</span>.</li>
@@ -262,8 +252,7 @@ Chapter 2: Build the First FlowUi App</h1>
 <li>Run the <span class="tt">while (!app.shouldClose())</span> lifecycle loop.</li>
 <li>Add one custom element that cycles through rainbow colors when pressed.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md947"></a>
-Create the App Config</h2>
+<h2>Create the App Config</h2>
 <p>Replace <span class="tt">src/main.cpp</span> with a first FlowUi window:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;application.hpp&quot;</span></div>
 <div class="line"> </div>
@@ -284,7 +273,7 @@ Create the App Config</h2>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a2a1be3d0f458e4fdd5392dcdfe4555f1"><div class="ttname"><a href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">FlowUi::App::beginFrame</a></div><div class="ttdeci">void beginFrame()</div><div class="ttdoc">Begin a frame and prepare input/UI state.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5c6ee53de89f3dd55d43e4742905414a"><div class="ttname"><a href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">FlowUi::App::endFrame</a></div><div class="ttdeci">void endFrame()</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
@@ -301,8 +290,7 @@ Create the App Config</h2>
 <div class="fragment"><div class="line">cmake --build build --parallel</div>
 <div class="line">./build/rainbow_app</div>
 </div><!-- fragment --><p>You should now get a FlowUi window. It is empty because no UI has been drawn yet.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md948"></a>
-Write the App Lifecycle</h2>
+<h2>Write the App Lifecycle</h2>
 <p>The core FlowUi lifecycle is:</p>
 <div class="fragment"><div class="line"><span class="keywordflow">while</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">shouldClose</a>()) {</div>
 <div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>();</div>
@@ -319,13 +307,11 @@ Write the App Lifecycle</h2>
 <li><span class="tt">endFrame()</span> finalizes Clay render commands and frame-dependent resources.</li>
 <li><span class="tt">drawFrame()</span> records and presents the Vulkan frame.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md949"></a>
-Add a Custom Rainbow Button Element</h2>
+<h2>Add a Custom Rainbow Button Element</h2>
 <p>Now update <span class="tt">include/application.hpp</span> with a real element. We can follow the shape of <span class="tt">template.hpp</span>.</p>
 <p><span class="tt"><a class="el" href="structFlowUi_1_1ElementDefinition.html" title="Typed definition for a FlowUi element.">FlowUi::ElementDefinition</a></span> has three template struct types: parameters, state, and resources. Flow elements also have seven function pointers that can be set for interaction, logic, construction, and drawing.</p>
 <p><span class="tt">template.hpp</span> already has those pieces written with placeholders, so we can copy that structure and replace the placeholder names with our own. Start with the structs, then fill in the function pointers.</p>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md950"></a>
-Define Parameters Struct</h3>
+<h3>Define Parameters Struct</h3>
 <p>Parameters are per-instance data that is created and passed into the element each frame. Store values here when you might want different element instances to draw with different settings.</p>
 <p>In this example, the parameters store a <span class="tt">Clay_Sizing</span> value and a <span class="tt">cornerRadius</span> float.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>RainbowButtonParams {</div>
@@ -335,15 +321,13 @@ Define Parameters Struct</h3>
 <div class="line">    };</div>
 <div class="line">    <span class="keywordtype">float</span> cornerRadius = 12.0f;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md951"></a>
-Define State Struct</h3>
+</div><!-- fragment --><h3>Define State Struct</h3>
 <p>State is persistent data storage that also exists <b>per instance</b>. Unlike the parameters struct, state is not recreated each frame.</p>
 <p>Use state to keep track of element-specific data that should survive across frames. In this example, a single <span class="tt">int</span> tracks which background color to use.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>RainbowButtonState {</div>
 <div class="line">    <span class="keywordtype">int</span> colorIndex = 0;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md952"></a>
-Define Resources Struct</h3>
+</div><!-- fragment --><h3>Define Resources Struct</h3>
 <p>Resources are also persistent data storage, but unlike state, resources are stored <b>per element definition</b>, not per instance.</p>
 <p>Use resources for data or objects that are shared by every instance of the element. Resource structs also need a constructor that can receive a <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a>&amp;</span>.</p>
 <p>In this example, the button only cycles through rainbow colors, so we create the color array once and store one <span class="tt">std::array</span> for all future <span class="tt">RainbowButton</span> elements to use.</p>
@@ -364,8 +348,7 @@ Define Resources Struct</h3>
 <div class="line">    }</div>
 <div class="line">};</div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md953"></a>
-Write the Element Definition</h3>
+</div><!-- fragment --><h3>Write the Element Definition</h3>
 <p>To use Flow elements, we pass element definitions to the UI manager. Because of this, it is useful to store the element definition in a named <span class="tt">const</span> variable.</p>
 <p>Using a type alias keeps the later callback code shorter:</p>
 <div class="fragment"><div class="line"><span class="keyword">using </span>RainbowButtonDefinition = <a class="code hl_struct" href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a>&lt;</div>
@@ -375,9 +358,8 @@ Write the Element Definition</h3>
 <div class="line">    FLOW_DEF_ID(<span class="stringliteral">&quot;rainbow_button&quot;</span>)&gt;;</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> RainbowButtonDefinition kRainbowButton = { <span class="comment">/* Function pointers set here. */</span> };</div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:302</div></div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md954"></a>
-Write the Necessary Function Pointers</h3>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
+</div><!-- fragment --><h3>Write the Necessary Function Pointers</h3>
 <p>Flow elements have seven function pointers that can be set. Each one is triggered during the app lifecycle by events or explicit draw calls.</p>
 <p>Each callback receives either an <span class="tt">InteractionContext</span> or a <span class="tt">BuildContext</span>, matching the placeholders shown in <span class="tt">template.hpp</span>.</p>
 <p>Without going over every function pointer in detail, focus on the two callbacks this example needs: <span class="tt">onPressed</span> and <span class="tt">buildElement</span>.</p>
@@ -407,8 +389,7 @@ Write the Necessary Function Pointers</h3>
 <div class="line"> </div>
 <div class="line">    CLAY(context.uiManager.toClayEID(context.elementID), root) {}</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md955"></a>
-Write the Final Element Definition Variable</h3>
+</div><!-- fragment --><h3>Write the Final Element Definition Variable</h3>
 <p>Now that we know which callbacks to use, we can finish the <span class="tt">const</span> variable by setting every unused function pointer to <span class="tt">nullptr</span>:</p>
 <div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> RainbowButtonDefinition kRainbowButton = {</div>
 <div class="line">    <span class="comment">// onHovered</span></div>
@@ -450,8 +431,7 @@ Write the Final Element Definition Variable</h3>
 <div class="line">        CLAY(context.uiManager.toClayEID(context.elementID), root) {}</div>
 <div class="line">    },</div>
 <div class="line">};</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md956"></a>
-Write a Small Helper and Register to Developer Mode</h3>
+</div><!-- fragment --><h3>Write a Small Helper and Register to Developer Mode</h3>
 <p>Element resources need a reference to <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a></span> for initialization. Since they should be created once, ideally before the main lifecycle loop, we can write a small inline helper and call it from <span class="tt">main.cpp</span>.</p>
 <div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keywordtype">void</span> initializeApplicationResources(<a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a>&amp; app) {</div>
 <div class="line">    (void)RainbowButtonDefinition::getResources(app);</div>
@@ -470,8 +450,7 @@ Write a Small Helper and Register to Developer Mode</h3>
 <div class="line">FLOWUI_DEV_REGISTER_STRUCT(RainbowButtonResources);</div>
 <div class="line"> </div>
 <div class="line">FLOWUI_DEV_REGISTER_ELEMENT(RainbowButtonDefinition, <span class="stringliteral">&quot;Rainbow Button&quot;</span>);</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md957"></a>
-Final look at <span class="tt">application.hpp</span></h3>
+</div><!-- fragment --><h3>Final look at <span class="tt">application.hpp</span></h3>
 <p>At the end, <span class="tt">include/application.hpp</span> should look like this:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#pragma once</span></div>
 <div class="line"> </div>
@@ -582,8 +561,7 @@ Final look at <span class="tt">application.hpp</span></h3>
 <li><span class="tt">onPressed</span> advances the color index.</li>
 <li><span class="tt">buildElement</span> emits one Clay node using the current color.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md958"></a>
-Initialize Element Resources</h2>
+<h2>Initialize Element Resources</h2>
 <p><span class="tt">RainbowButtonDefinition::resources</span> is lazy, but this element expects resources to exist before drawing. Call <span class="tt">initializeApplicationResources(app)</span> after <span class="tt">makeApplication</span>.</p>
 <p>Update <span class="tt">src/main.cpp</span>:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;application.hpp&quot;</span></div>
@@ -607,14 +585,13 @@ Initialize Element Resources</h2>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md959"></a>
-Draw the Element</h2>
+</div><!-- fragment --><h2>Draw the Element</h2>
 <p>Now draw the button between <span class="tt">beginFrame()</span> and <span class="tt">endFrame()</span>:</p>
 <div class="fragment"><div class="line"><span class="keywordflow">while</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">shouldClose</a>()) {</div>
 <div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>();</div>
 <div class="line"> </div>
 <div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">        .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kRainbowButton, <span class="stringliteral">&quot;main/rainbow-button&quot;</span>)</div>
+<div class="line">        .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kRainbowButton, <span class="stringliteral">&quot;main/rainbow-button&quot;</span>)</div>
 <div class="line">        .setParameters(RainbowButtonParams{</div>
 <div class="line">            .cornerRadius = 24.0f,</div>
 <div class="line">        })</div>
@@ -624,14 +601,13 @@ Draw the Element</h2>
 <div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">drawFrame</a>();</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
 </div><!-- fragment --><p>The default size still comes from <span class="tt">RainbowButtonParams</span>, but this call overrides <span class="tt">cornerRadius</span> to demonstrate per-instance parameters.</p>
 <p>Build and run:</p>
 <div class="fragment"><div class="line">cmake --build build --parallel</div>
 <div class="line">./build/rainbow_app</div>
 </div><!-- fragment --><p>Click the colored rectangle. Each press should advance to the next rainbow color.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md960"></a>
-Complete Example Files</h1>
+<h1>Complete Example Files</h1>
 <p>At this point, the important files should look like this.</p>
 <p><span class="tt">CMakeLists.txt</span>:</p>
 <div class="fragment"><div class="line">cmake_minimum_required(VERSION 3.20)</div>
@@ -765,7 +741,7 @@ Complete Example Files</h1>
 <div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>();</div>
 <div class="line"> </div>
 <div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">            .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kRainbowButton, <span class="stringliteral">&quot;main/rainbow-button&quot;</span>)</div>
+<div class="line">            .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kRainbowButton, <span class="stringliteral">&quot;main/rainbow-button&quot;</span>)</div>
 <div class="line">            .setParameters(RainbowButtonParams{</div>
 <div class="line">                .cornerRadius = 24.0f,</div>
 <div class="line">            })</div>
@@ -791,6 +767,7 @@ Complete Example Files</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_tutorials.html">Tutorials</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

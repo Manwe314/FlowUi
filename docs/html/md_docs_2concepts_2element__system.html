@@ -106,16 +106,12 @@ $(function() {
   <div class="headertitle"><div class="title">Element System </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md742"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md743"></a>
-Introduction</h1>
+<div class="textblock"><h1>Introduction</h1>
 <p>FlowUi's element system is a C++ wrapper pattern for building reusable UI blocks on top of Clay. Clay already makes reuse possible because a Clay UI block is just code that emits layout nodes during the frame. FlowUi keeps that immediate-mode shape, but adds a standard typed definition object, a builder API, root interaction callbacks, per-instance state storage, shared resources, and developer-mode capture hooks. The result is still Clay-driven UI, but reusable blocks have a consistent structure that FlowUi can invoke, inspect, configure, and share.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md744"></a>
-TL;DR</h1>
+<h1>TL;DR</h1>
 <p>A Flow element is a typed reusable UI definition that eventually emits one root Clay element and usually a small Clay subtree below it. <span class="tt">ElementDefinition&lt;Params, State, Resources, Id&gt;</span> describes the shape and callbacks, while <span class="tt">UiManager::createElement(...).setParameters(...).draw()</span> or <span class="tt">.construct()</span> invokes that definition during a frame.</p>
 <p>Params are per-frame configuration, state is persistent per instance, and resources are shared per definition. This gives reusable UI blocks a standard home for immediate-mode inputs, instance-specific memory, and expensive app-lifetime data.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md745"></a>
-Conceptual Idea Behind Flow Elements</h1>
+<h1>Conceptual Idea Behind Flow Elements</h1>
 <p>A normal Clay element is created with a macro shape like:</p>
 <div class="fragment"><div class="line">CLAY(rootId, declaration) {</div>
 <div class="line">    <span class="comment">// child Clay nodes here</span></div>
@@ -165,7 +161,7 @@ Conceptual Idea Behind Flow Elements</h1>
 <div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> StatusCardDefinition kStatusCard = {</div>
 <div class="line">    <span class="comment">// callbacks go here</span></div>
 <div class="line">};</div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:302</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
 </div><!-- fragment --><p>Because <span class="tt">ElementDefinition</span> is an object with a standard type shape, <span class="tt">UiManager::createElement()</span> can invoke it through <span class="tt">ElementBuilder</span>. That means user code can build any Flow element with the same surface:</p>
 <div class="fragment"><div class="line">app.ui()</div>
 <div class="line">    .createElement(kStatusCard, <span class="stringliteral">&quot;sidebar/status-card&quot;</span>)</div>
@@ -173,8 +169,7 @@ Conceptual Idea Behind Flow Elements</h1>
 <div class="line">    .draw();</div>
 </div><!-- fragment --><p>The element definition gives FlowUi two major conveniences. First, FlowUi can manage root interaction callbacks for the element. You can write <span class="tt">onHovered</span>, <span class="tt">onPressed</span>, <span class="tt">onHeld</span>, and <span class="tt">onReleased</span> callbacks, and the builder calls them when the element's root Clay node appeared in the previous frame's interaction snapshot.</p>
 <p>Second, FlowUi gives element data a standard shape. What would have become a growing function argument list is split into three user-defined structs: params, state, and resources.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md746"></a>
-ElementDefinition Shape</h1>
+<h1>ElementDefinition Shape</h1>
 <p>The public definition type is:</p>
 <div class="fragment"><div class="line"><span class="keyword">template</span> &lt;</div>
 <div class="line">    <span class="keyword">typename</span> Parameters = NoElementParameters,</div>
@@ -198,8 +193,7 @@ ElementDefinition Shape</h1>
 <div class="line"><span class="keyword">using </span>InteractionContext = ElementInteractionContext&lt;Parameters&gt;;</div>
 </div><!-- fragment --><p><span class="tt">BuildContext</span> is passed to <span class="tt">constructElement</span> and <span class="tt">buildElement</span>. It exposes <span class="tt">uiManager</span>, <span class="tt">elementID</span>, <span class="tt">params</span>, and <span class="tt">createChildElementId()</span>.</p>
 <p><span class="tt">InteractionContext</span> is passed to event callbacks and <span class="tt">runLogic</span>. It exposes the same element id and params, plus <span class="tt">previousInteraction</span>, which is the interaction snapshot captured at the end of the previous frame.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md747"></a>
-Parameters</h1>
+<h1>Parameters</h1>
 <p><span class="tt">Params</span> are the per-frame configuration for an element invocation. They are the direct replacement for most function arguments in a plain Clay helper function.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ToggleParams {</div>
 <div class="line">    std::string_view label = <span class="stringliteral">&quot;Enabled&quot;</span>;</div>
@@ -226,8 +220,7 @@ Parameters</h1>
 <div class="line">    .setParameters(std::move(params))</div>
 <div class="line">    .draw();</div>
 </div><!-- fragment --><p>Moving can help when the params object already exists and owns data, but it does not change the conceptual lifetime: params belong to this one element invocation in this one frame.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md748"></a>
-State</h1>
+<h1>State</h1>
 <p><span class="tt">State</span> is persistent per-instance data for one element definition. It is keyed by <span class="tt">FlowElementId</span>, usually derived from the string id passed to <span class="tt">createElement()</span>.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ToggleState {</div>
 <div class="line">    <span class="keywordtype">bool</span> enabled = <span class="keyword">false</span>;</div>
@@ -243,8 +236,7 @@ State</h1>
 <div class="line">ToggleState* maybeState = ToggleDefinition::tryGetState(FLOW_ID(<span class="stringliteral">&quot;settings/grid&quot;</span>));</div>
 <div class="line"><span class="keyword">const</span> ToggleState* readOnlyState = ToggleDefinition::tryGetStateConst(FLOW_ID(<span class="stringliteral">&quot;settings/grid&quot;</span>));</div>
 <div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> erased = ToggleDefinition::eraseState(FLOW_ID(<span class="stringliteral">&quot;settings/grid&quot;</span>));</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md749"></a>
-Resources</h1>
+</div><!-- fragment --><h1>Resources</h1>
 <p><span class="tt">Resources</span> are shared per definition, not per instance and not per frame. They are the place for long-lived data that is expensive or unnecessary to recreate every frame and is useful to every instance of the same element definition.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ToggleResources {</div>
 <div class="line">    std::array&lt;Clay_Color, 2&gt; trackColors{</div>
@@ -256,7 +248,7 @@ Resources</h1>
 <div class="line">        (void)app;</div>
 <div class="line">    }</div>
 <div class="line">};</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 </div><!-- fragment --><p>Resources are lazily initialized through:</p>
 <div class="fragment"><div class="line">ToggleResources&amp; resources = ToggleDefinition::getResources(app);</div>
 </div><!-- fragment --><p>The constructor selection prefers <span class="tt">ResourcesType(App&amp;)</span>, then <span class="tt">ResourcesType(UiManager&amp;)</span>, then a default constructor. This lets a resource object use app-owned managers during setup when needed.</p>
@@ -267,8 +259,7 @@ Resources</h1>
 <li>State: persistent data for one element instance.</li>
 <li>Resources: persistent data shared by all instances of one definition.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md750"></a>
-Callback Flow and Interaction</h1>
+<h1>Callback Flow and Interaction</h1>
 <p><span class="tt">ElementDefinition</span> has seven callback fields:</p>
 <div class="fragment"><div class="line">void (*onHovered)(InteractionContext&amp;) = <span class="keyword">nullptr</span>;</div>
 <div class="line">void (*onPressed)(InteractionContext&amp;) = <span class="keyword">nullptr</span>;</div>
@@ -295,8 +286,7 @@ Callback Flow and Interaction</h1>
 <div class="line">        state.enabled = <span class="keyword">true</span>;</div>
 <div class="line">    }</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md751"></a>
-ElementBuilder</h1>
+</div><!-- fragment --><h1>ElementBuilder</h1>
 <p><span class="tt">ElementBuilder</span> is the object returned by <span class="tt">UiManager::createElement()</span>. It stores:</p>
 <ul>
 <li>the active <span class="tt">UiManager</span></li>
@@ -344,8 +334,7 @@ ElementBuilder</h1>
 <div class="line"> </div>
 <div class="line">ui.drawConstructed();</div>
 </div><!-- fragment --><p>If constructed elements are left open at <span class="tt">UiManager::endFrame()</span>, FlowUi auto-closes them and prints a warning. That helps keep Clay layout balanced, but user code should still close constructed elements intentionally.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md752"></a>
-Drawing Elements During a Frame</h1>
+<h1>Drawing Elements During a Frame</h1>
 <p>Flow elements are built between <span class="tt">app.beginFrame()</span> and <span class="tt">app.endFrame()</span>.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">while</span> (!app.shouldClose()) {</div>
 <div class="line">    app.beginFrame();</div>
@@ -367,8 +356,7 @@ Drawing Elements During a Frame</h1>
 <li>Input field and shortcut managers must be using current frame input.</li>
 </ul>
 <p>Calling element builders outside the active frame does not match the runtime model. Elements are immediate-mode UI descriptions, so they belong in the UI construction phase.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md753"></a>
-Root IDs and Child IDs</h1>
+<h1>Root IDs and Child IDs</h1>
 <p>The element id passed to <span class="tt">createElement()</span> should be treated as the identity of the Flow element instance and the identity of the root Clay node that the element builds.</p>
 <div class="fragment"><div class="line">ui.createElement(kToggle, <span class="stringliteral">&quot;settings/grid&quot;</span>).draw();</div>
 </div><!-- fragment --><p>Inside <span class="tt">buildElement</span>, the root Clay node should use the same id:</p>
@@ -380,8 +368,7 @@ Root IDs and Child IDs</h1>
 <div class="fragment"><div class="line">std::string labelId = context.createChildElementId(<span class="stringliteral">&quot;label&quot;</span>);</div>
 <div class="line">std::string iconId = context.createChildElementId(<span class="stringliteral">&quot;icon&quot;</span>);</div>
 </div><!-- fragment --><p>For repeated elements, use stable names or indexed id helpers. Do not reuse the same id for different logical rows unless they intentionally share state and interaction identity.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md754"></a>
-A Compact Full Example</h1>
+<h1>A Compact Full Example</h1>
 <p>This example shows the shape of a small toggle element. It uses params for configuration, state for the current enabled value, resources for shared colors, <span class="tt">onPressed</span> for root interaction, and <span class="tt">buildElement</span> to emit Clay nodes.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ToggleParams {</div>
 <div class="line">    std::string_view label = <span class="stringliteral">&quot;Toggle&quot;</span>;</div>
@@ -445,8 +432,7 @@ A Compact Full Example</h1>
 <div class="line">    .setParameters(ToggleParams{.label = <span class="stringliteral">&quot;Show grid&quot;</span>, .fontId = bodyFont})</div>
 <div class="line">    .draw();</div>
 </div><!-- fragment --><p>In a real app, the enabled value might be mirrored into application state or driven by application state instead. The example uses element state only to show where per-instance UI behavior can live.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md755"></a>
-What to Read Next</h1>
+<h1>What to Read Next</h1>
 <ul>
 <li><a class="el" href="md_docs_2concepts_2mental__model.html" title="Core Mental Model">Core Mental Model</a></li>
 <li><a class="el" href="md_docs_2concepts_2frame__lifecycle.html" title="Frame Lifecycle">Frame Lifecycle</a></li>
@@ -467,6 +453,7 @@ What to Read Next</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_concepts_details.html">Concepts &amp; Details</a></li><li class="navelem"><a href="flowui_concepts.html">Concepts</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>
