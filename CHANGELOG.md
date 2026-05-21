@@ -48,7 +48,41 @@ library moves toward a stable release.
 
 - No dedicated security review has been completed for this pre-release.
 
+## [0.9.1] - 2026-05-21
+
+
+### Added
+
+- No added Features
+
+### Changed
+
+- Updated Doxyfile.
+- Updated Docs layout.
+- Updated linking across docs.
+
+### Deprecated
+
+- Nothing deprecated
+
+### Removed
+
+- Nothing removed.
+
+### Fixed
+
+- no release-to-release fixes.
+
+### Known Limitations
+
+- Still same as v0.9.0
+
+### Security
+
+- No dedicated security review has been completed for v0.9.1.
+
 <!-- Release links -->
 
 
 [0.9.0]: https://github.com/manwe314/FlowUi/releases/tag/v0.9.0
+[0.9.1]: https://github.com/manwe314/FlowUi/releases/tag/v0.9.1

@@ -135,7 +135,8 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Registers and dispatches keyboard shortcuts. </p>
 <p><a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a> stores keyboard chords and evaluates them once per FlowUi frame from the current and previous <a class="el" href="structFlowUi_1_1FrameInput.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a>. Matching shortcuts are filtered by <a class="el" href="group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee" title="Scope that controls when a shortcut is eligible to run.">ShortcutScope</a>, then invoked in priority order. A callback that returns true handles the chord and stops later callbacks for that same match.</p>
-<p><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a> value 0 is reserved as an invalid id. <a class="el" href="#a185118dced81d2cccdc61bbc5e74307f" title="Register a shortcut and return its id.">registerShortcut()</a> returns 0 when registration fails, so application code can treat 0 as "not registered". </p>
+<p><a class="el" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9" title="Opaque shortcut registration id.">ShortcutId</a> value 0 is reserved as an invalid id. <a class="el" href="#a185118dced81d2cccdc61bbc5e74307f" title="Register a shortcut and return its id.">registerShortcut()</a> returns 0 when registration fails, so application code can treat 0 as "not registered".</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2input__fields__and__shortcuts.html" title="Input Fields and Shortcuts">Input Fields and Shortcuts</a> </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="af08e7e2bb696cec1bf476a3afda5d6b1" name="af08e7e2bb696cec1bf476a3afda5d6b1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af08e7e2bb696cec1bf476a3afda5d6b1">&#9670;&#160;</a></span>clear()</h2>
@@ -293,7 +294,8 @@ class&#160;</td><td class="memItemRight"><b>UiManager</b></td></tr>
 <div class="ttc" id="agroup__flowui__shortcut__manager_html_ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ggad9aa94e86980abfc8ec6a69b0aacb6b1a0610123bdd4ffc191a3ea05a847e1307">FlowUi::ShortcutTrigger::Press</a></div><div class="ttdeci">@ Press</div><div class="ttdoc">Fire on the frame where the key changes from up to down.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:45</div></div>
 <div class="ttc" id="astructFlowUi_1_1ShortcutChord_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a></div><div class="ttdoc">Keyboard chord registered with ShortcutManager.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:60</div></div>
 <div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:88</div></div>
-</div><!-- fragment --> 
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2input__fields__and__shortcuts.html" title="Input Fields and Shortcuts">Input Fields and Shortcuts</a> </dd></dl>
+
 </div>
 </div>
 <a id="a8a496694eeaf4fdf03166ecf9c273212" name="a8a496694eeaf4fdf03166ecf9c273212"></a>

@@ -52,6 +52,9 @@ class App;
  * const FlowUi::FontId bodyFont =
  *     app.fonts().resolveFont(bodyFamily, 400, FlowUi::FontStyle::Normal);
  * @endcode
+ *
+ * @see @ref md_docs_2tutorials_2fonts__and__text "Fonts and Text"
+ * @see @ref md_docs_2concepts_2managers "Managers"
  */
 struct FontManager {
 	/** @brief Convenience alias for FlowUi::FontId. */
@@ -120,6 +123,8 @@ struct FontManager {
 	 *     },
 	 * });
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2fonts__and__text "Fonts and Text"
 	 */
 	FontFamilyId createFamily(const FontFamilyCreateInfo& createInfo);
 

@@ -195,17 +195,22 @@ struct FlowUi::ElementDefinition&lt; Parameters, State, Resources, DefinitionId,
 <div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> exampleElementDefinition kExampleElement = {</div>
 <div class="line"><span class="comment">// function pointers set here.</span></div>
 <div class="line">};</div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:302</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
 </div><!-- fragment --><dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">Parameters</td><td>User-defined parameter struct copied into each builder instance. Use void or omit the argument for elements with no parameters. </td></tr>
     <tr><td class="paramname">State</td><td>User-defined per-element-instance state struct keyed by Flow element id. Use void for stateless elements. </td></tr>
     <tr><td class="paramname">Resources</td><td>User-defined shared resource struct stored once per definition specialization. Use void for elements with no shared resources. </td></tr>
     <tr><td class="paramname">DefinitionId</td><td>Compile-time id for this element definition. </td></tr>
-    <tr><td class="paramname">IsDevInternal</td><td>Marks this definition as internal to FlowUi dev tooling. </td></tr>
+    <tr><td class="paramname">IsDevInternal</td><td>Marks this definition as internal to FlowUi dev tooling.</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2concepts_2element__system.html" title="Element System">Element System</a> </dd>
+<dd>
+<a class="el" href="md_docs_2tutorials_2custom__elements.html" title="Custom Elements">Custom Elements</a> </dd>
+<dd>
+<a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Mode">Developer Mode</a> </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a86a3273921a616d575a46a3538b88382" name="a86a3273921a616d575a46a3538b88382"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a86a3273921a616d575a46a3538b88382">&#9670;&#160;</a></span>eraseState()</h2>
@@ -353,8 +358,8 @@ template&lt;typename Parameters = NoElementParameters, typename State = void, ty
 <div class="line">    ButtonResources&amp; <a class="code hl_variable" href="#acb4320f129035684cf6dcdb1f3519bad">resources</a> = ButtonDefinition::getResources(app);</div>
 <div class="line">    (void)<a class="code hl_variable" href="#acb4320f129035684cf6dcdb1f3519bad">resources</a>;</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html_acb4320f129035684cf6dcdb1f3519bad"><div class="ttname"><a href="#acb4320f129035684cf6dcdb1f3519bad">FlowUi::ElementDefinition::resources</a></div><div class="ttdeci">static std::optional&lt; ResourcesType &gt; resources</div><div class="ttdoc">Shared resources container for this definition specialization.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:362</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html_acb4320f129035684cf6dcdb1f3519bad"><div class="ttname"><a href="#acb4320f129035684cf6dcdb1f3519bad">FlowUi::ElementDefinition::resources</a></div><div class="ttdeci">static std::optional&lt; ResourcesType &gt; resources</div><div class="ttdoc">Shared resources container for this definition specialization.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:366</div></div>
 </div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>returned Resources is Mustable but normally this struct would be used for app lifetime constant values. rarely it might be useful to mutate resources at runtime. </dd></dl>
 
 </div>

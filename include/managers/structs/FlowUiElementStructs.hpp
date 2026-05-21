@@ -291,6 +291,10 @@ struct ElementInteractionContext
  * definition specialization. Use void for elements with no shared resources.
  * @tparam DefinitionId Compile-time id for this element definition.
  * @tparam IsDevInternal Marks this definition as internal to FlowUi dev tooling.
+ *
+ * @see @ref md_docs_2concepts_2element__system "Element System"
+ * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
+ * @see @ref md_docs_2tutorials_2developer__mode "Developer Mode"
  */
 template <
 	typename Parameters = NoElementParameters,

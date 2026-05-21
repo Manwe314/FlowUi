@@ -2,7 +2,11 @@ var group__flowui__ui__manager =
 [
     [ "FlowUi::UiManager", "classFlowUi_1_1UiManager.html", [
       [ "clipboardText", "classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e", null ],
-      [ "createElement", "classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5", null ],
+      [ "createElement", "classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4", null ],
+      [ "devRuntime", "classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c", null ],
+      [ "devRuntime", "classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab7ea3c678a7deb", null ],
+      [ "devToolsConfig", "classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d", null ],
+      [ "devToolsConfig", "classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9", null ],
       [ "drawConstructed", "classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883", null ],
       [ "getCurrentFrameInput", "classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a", null ],
       [ "getPreviousFrameInput", "classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac", null ],

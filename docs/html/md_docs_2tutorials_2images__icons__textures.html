@@ -106,10 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">Images, Icons, and Texture References </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md880"></a></p>
-<p>This tutorial follows one app-level asset story from startup registration to <span class="tt">Clay_ImageElementConfig</span>. The focus is images, SVG icons, <span class="tt">TextureRef</span>, and the icon atlas cache that turns size-dependent icon requests into reusable texture variants.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md881"></a>
-Contents</h1>
+<div class="textblock"><p>This tutorial follows one app-level asset story from startup registration to <span class="tt">Clay_ImageElementConfig</span>. The focus is images, SVG icons, <span class="tt">TextureRef</span>, and the icon atlas cache that turns size-dependent icon requests into reusable texture variants.</p>
+<h1>Contents</h1>
 <ul>
 <li>Chapter 1: The Example App<ul>
 <li>What We Are Building</li>
@@ -152,10 +150,8 @@ Contents</h1>
 </li>
 <li>Final Shape</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md882"></a>
-Chapter 1: The Example App</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md883"></a>
-What We Are Building</h2>
+<h1>Chapter 1: The Example App</h1>
+<h2>What We Are Building</h2>
 <p>Assume the app is a small asset browser. It has a toolbar, a project thumbnail grid, user avatars, and status badges.</p>
 <div class="fragment"><div class="line">[open] [save] [sync]       Asset Browser</div>
 <div class="line"> </div>
@@ -171,8 +167,7 @@ What We Are Building</h2>
 <li>UI drawing receives <span class="tt">TextureRef</span> values from those managers.</li>
 <li><span class="tt">UiManager::storeTexture()</span> copies each <span class="tt">TextureRef</span> into frame-local storage for Clay image commands.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md884"></a>
-Asset Discovery</h2>
+<h2>Asset Discovery</h2>
 <p>Pretend the app has project asset discovery functions.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ProjectImageAsset {</div>
 <div class="line">    std::string key;</div>
@@ -199,8 +194,7 @@ Asset Discovery</h2>
 <div class="line">    {<span class="stringliteral">&quot;status/warning&quot;</span>, <span class="stringliteral">&quot;assets/icons/warning.svg&quot;</span>},</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>We will also register one inline SVG source for a checkmark status icon.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md885"></a>
-TextureRef Model</h2>
+<h2>TextureRef Model</h2>
 <p>Images, icons, and viewports all eventually draw through <span class="tt"><a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">FlowUi::TextureRef</a></span>.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> ref{};</div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
@@ -230,44 +224,38 @@ TextureRef Model</h2>
 <div class="line">saveIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
 <div class="line">saveIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">true</span>;</div>
 <div class="ttc" id="agroup__flowui__config_html_ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484"><div class="ttname"><a href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a></div><div class="ttdeci">@ Contain</div><div class="ttdoc">Fit the whole texture inside the target rectangle without cropping.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:443</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md886"></a>
-Chapter 2: Configure Icon Caching</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md887"></a>
-Atlas Pages</h2>
+</div><!-- fragment --><h1>Chapter 2: Configure Icon Caching</h1>
+<h2>Atlas Pages</h2>
 <p>Icons are SVG documents. FlowUi rasterizes them on demand and stores rasterized variants inside atlas pages. Configure that before <span class="tt">makeApplication()</span>.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca">iconManager</a>.<a class="code hl_variable" href="structFlowUi_1_1IconManagerConfig.html#ac26bb87530afeb03ed7a9cbfd52657fa">atlasSize</a> = 2048;</div>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca">iconManager</a>.<a class="code hl_variable" href="structFlowUi_1_1IconManagerConfig.html#ae9d3fd532b06411bae834887b29d7608">maxAtlasPages</a> = 6;</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
 <div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:401</div></div>
 <div class="ttc" id="astructFlowUi_1_1AppConfig_html_a935554fb6a68988987eec05055d799ca"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca">FlowUi::AppConfig::iconManager</a></div><div class="ttdeci">IconManagerConfig iconManager</div><div class="ttdoc">SVG icon rasterization and atlas cache defaults.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:428</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManagerConfig_html_ac26bb87530afeb03ed7a9cbfd52657fa"><div class="ttname"><a href="structFlowUi_1_1IconManagerConfig.html#ac26bb87530afeb03ed7a9cbfd52657fa">FlowUi::IconManagerConfig::atlasSize</a></div><div class="ttdeci">uint32_t atlasSize</div><div class="ttdoc">Width and height in pixels of each icon atlas page.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:289</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManagerConfig_html_ae9d3fd532b06411bae834887b29d7608"><div class="ttname"><a href="structFlowUi_1_1IconManagerConfig.html#ae9d3fd532b06411bae834887b29d7608">FlowUi::IconManagerConfig::maxAtlasPages</a></div><div class="ttdeci">uint32_t maxAtlasPages</div><div class="ttdoc">Maximum number of icon atlas pages the manager may allocate.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:297</div></div>
 </div><!-- fragment --><p><span class="tt">atlasSize</span> is the width and height of each icon atlas page. <span class="tt">maxAtlasPages</span> limits how many pages the cache can allocate before it has to evict old variants.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md888"></a>
-Size Reuse Tolerance</h2>
+<h2>Size Reuse Tolerance</h2>
 <p><span class="tt">sizeBucketStep</span> controls how aggressively icon variants are reused across close sizes.</p>
 <div class="fragment"><div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca">iconManager</a>.<a class="code hl_variable" href="structFlowUi_1_1IconManagerConfig.html#a516bba081281883eccbba2f9a1e968cb">sizeBucketStep</a> = 8;</div>
 <div class="ttc" id="astructFlowUi_1_1IconManagerConfig_html_a516bba081281883eccbba2f9a1e968cb"><div class="ttname"><a href="structFlowUi_1_1IconManagerConfig.html#a516bba081281883eccbba2f9a1e968cb">FlowUi::IconManagerConfig::sizeBucketStep</a></div><div class="ttdeci">uint32_t sizeBucketStep</div><div class="ttdoc">Pixel tolerance for reusing cached icon raster sizes.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:308</div></div>
 </div><!-- fragment --><p>If an icon was cached at <span class="tt">32x32</span> and later requested at <span class="tt">34x34</span>, a tolerance of <span class="tt">8</span> lets FlowUi reuse the existing cached raster. This avoids creating a new atlas entry for every tiny layout change.</p>
 <p>The cache prefers an exact match first. If there is no exact match, it looks for a close-enough larger variant before a close-enough smaller variant, because using a slightly larger raster usually preserves quality better.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md889"></a>
-Atlas Padding</h2>
+<h2>Atlas Padding</h2>
 <p><span class="tt">atlasPadding</span> reserves empty pixels around each cached icon variant.</p>
 <div class="fragment"><div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca">iconManager</a>.<a class="code hl_variable" href="structFlowUi_1_1IconManagerConfig.html#a762852dc5f90a34ab54951e61b20f2b8">atlasPadding</a> = 1;</div>
 <div class="ttc" id="astructFlowUi_1_1IconManagerConfig_html_a762852dc5f90a34ab54951e61b20f2b8"><div class="ttname"><a href="structFlowUi_1_1IconManagerConfig.html#a762852dc5f90a34ab54951e61b20f2b8">FlowUi::IconManagerConfig::atlasPadding</a></div><div class="ttdeci">uint32_t atlasPadding</div><div class="ttdoc">Empty pixel padding reserved around each atlas allocation.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:311</div></div>
 </div><!-- fragment --><p>Padding helps avoid filtering bleed between neighboring icons in the same atlas page.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md890"></a>
-Chapter 3: Register Images</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md891"></a>
-Register Static Image Files</h2>
+<h1>Chapter 3: Register Images</h1>
+<h2>Register Static Image Files</h2>
 <p>Use <span class="tt">app.images()</span> to access the app-owned <span class="tt"><a class="el" href="classFlowUi_1_1ImageManager.html" title="Loads image files and exposes them as FlowUi texture references.">FlowUi::ImageManager</a></span>.</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a>&amp; imageManager = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5cf823f81759a819dc7fce58e75054f9"><div class="ttname"><a href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">FlowUi::App::images</a></div><div class="ttdeci">ImageManager &amp; images()</div><div class="ttdoc">Access the image manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:55</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:58</div></div>
 </div><!-- fragment --><p>Register discovered image files with application-defined keys.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keyword">const</span> ProjectImageAsset&amp; image : images) {</div>
 <div class="line">    <span class="keyword">const</span> <span class="keywordtype">bool</span> inserted = imageManager.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(image.key, image.path.string());</div>
@@ -275,16 +263,14 @@ Register Static Image Files</h2>
 <div class="line">}</div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a87c55cc08f33bb3fd8f83108aa15ea23"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">FlowUi::ImageManager::registerImage</a></div><div class="ttdeci">bool registerImage(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Load and register an image from disk under a caller-provided key.</div></div>
 </div><!-- fragment --><p><span class="tt">registerImage()</span> decodes the file, uploads it as a Vulkan texture, and registers it under the key. It returns <span class="tt">true</span> for a new key and <span class="tt">false</span> when an existing key was replaced.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md892"></a>
-Check Existing Images</h2>
+<h2>Check Existing Images</h2>
 <p>Use <span class="tt">contains()</span> for non-throwing lookup.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!imageManager.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1">contains</a>(<span class="stringliteral">&quot;avatar/lee&quot;</span>)) {</div>
 <div class="line">    (void)imageManager.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;avatar/lee&quot;</span>, <span class="stringliteral">&quot;assets/images/avatars/lee.png&quot;</span>);</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a3ce30605daebf796adc6e757a93848c1"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1">FlowUi::ImageManager::contains</a></div><div class="ttdeci">bool contains(std::string_view key) const</div><div class="ttdoc">Return whether an image key is registered.</div></div>
 </div><!-- fragment --><p>This does not perform file IO or GPU work. It only checks the current registration table.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md893"></a>
-Replace and Remove Images</h2>
+<h2>Replace and Remove Images</h2>
 <p>Registering an existing image key replaces the texture while keeping the key active.</p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> inserted = imageManager.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(</div>
 <div class="line">    <span class="stringliteral">&quot;thumbnail/tree&quot;</span>,</div>
@@ -297,30 +283,27 @@ Replace and Remove Images</h2>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = imageManager.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5">removeImage</a>(<span class="stringliteral">&quot;thumbnail/house&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_ab1bb3be63b631b3947dc8d8a1950b7b5"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5">FlowUi::ImageManager::removeImage</a></div><div class="ttdeci">bool removeImage(std::string_view key)</div><div class="ttdoc">Remove a registered image by key.</div></div>
 </div><!-- fragment --><p>Removed GPU resources are retired safely through FlowUi's frame cleanup path. Any old <span class="tt">TextureRef</span> values for that image key should be discarded.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md894"></a>
-Get Image Texture References</h2>
+<h2>Get Image Texture References</h2>
 <p>Use <span class="tt">getTexture()</span> during UI construction.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> treeThumbnail = imageManager.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;thumbnail/tree&quot;</span>);</div>
 <div class="line">treeThumbnail.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54ccac795dfff10a7c952f4c5438951e9ece9">FlowUi::TextureFitMode::Cover</a>;</div>
 <div class="line">treeThumbnail.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">false</span>;</div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a8db367968a237f11a7157d194a3720bc"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">FlowUi::ImageManager::getTexture</a></div><div class="ttdeci">TextureRef getTexture(std::string_view key) const</div><div class="ttdoc">Return the texture reference for a registered image key.</div></div>
 </div><!-- fragment --><p>If the key is missing, FlowUi returns fallback texture id <span class="tt">0</span> and logs a warning once for that missing key.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md895"></a>
-Chapter 4: Register Icons</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md896"></a>
-Register SVG Files</h2>
-<p>Use <span class="tt">app.icons()</span> to access the app-owned <span class="tt"><a class="el" href="structFlowUi_1_1IconManager.html" title="Stub IconManager used when FlowUi is built with icon support disabled.">FlowUi::IconManager</a></span>.</p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a>&amp; iconManager = app.icons();</div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">Stub IconManager used when FlowUi is built with icon support disabled.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:356</div></div>
+<h1>Chapter 4: Register Icons</h1>
+<h2>Register SVG Files</h2>
+<p>Use <span class="tt">app.icons()</span> to access the app-owned <span class="tt"><a class="el" href="structFlowUi_1_1IconManager.html" title="Registers SVG icons and resolves them to atlas-backed texture references.">FlowUi::IconManager</a></span>.</p>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a>&amp; iconManager = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>();</div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a7ef478693b7f8354db690c2ffc2e4cac"><div class="ttname"><a href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">FlowUi::App::icons</a></div><div class="ttdeci">IconManager &amp; icons()</div><div class="ttdoc">Access the icon manager.</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">Registers SVG icons and resolves them to atlas-backed texture references.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:63</div></div>
 </div><!-- fragment --><p>Register discovered SVG files with application-defined keys.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keyword">const</span> ProjectIconAsset&amp; icon : icons) {</div>
 <div class="line">    <span class="keyword">const</span> <span class="keywordtype">bool</span> inserted = iconManager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(icon.key, icon.path.string());</div>
 <div class="line">    (void)inserted;</div>
 <div class="line">}</div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_a3014f0a3c8ae23869d23c107c6f469eb"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">FlowUi::IconManager::registerFromFile</a></div><div class="ttdeci">bool registerFromFile(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Throws because icon support is disabled.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:387</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a3014f0a3c8ae23869d23c107c6f469eb"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">FlowUi::IconManager::registerFromFile</a></div><div class="ttdeci">bool registerFromFile(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Register an SVG document from a file path.</div></div>
 </div><!-- fragment --><p><span class="tt">registerFromFile()</span> parses the SVG immediately and stores the SVG document. It does not rasterize the icon yet.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md897"></a>
-Register SVG Source Text</h2>
+<h2>Register SVG Source Text</h2>
 <p>Use <span class="tt">registerSvg()</span> when the SVG is generated or embedded in code.</p>
 <div class="fragment"><div class="line"><span class="keyword">constexpr</span> std::string_view kCheckSvg = R<span class="stringliteral">&quot;(</span></div>
 <div class="line"><span class="stringliteral">&lt;svg viewBox=&quot;0 0 16 16&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;</span></div>
@@ -330,44 +313,39 @@ Register SVG Source Text</h2>
 <div class="line"><span class="stringliteral"></span> </div>
 <div class="line"><span class="stringliteral"></span><span class="keyword">const</span> <span class="keywordtype">bool</span> inserted = iconManager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">registerSvg</a>(<span class="stringliteral">&quot;status/check&quot;</span>, kCheckSvg);</div>
 <div class="line">(void)inserted;</div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_af03e06a033403fd88d04412b6d11395c"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">FlowUi::IconManager::registerSvg</a></div><div class="ttdeci">bool registerSvg(std::string_view key, std::string_view svgSource)</div><div class="ttdoc">Throws because icon support is disabled.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:369</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_af03e06a033403fd88d04412b6d11395c"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">FlowUi::IconManager::registerSvg</a></div><div class="ttdeci">bool registerSvg(std::string_view key, std::string_view svgSource)</div><div class="ttdoc">Register an SVG document from source text.</div></div>
 </div><!-- fragment --><p>Like file registration, this parses the document immediately and delays rasterization until the icon is actually drawn.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md898"></a>
-Check and Remove Icons</h2>
+<h2>Check and Remove Icons</h2>
 <p>Use <span class="tt">contains()</span> to test whether an SVG document key is registered.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!iconManager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">contains</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>)) {</div>
 <div class="line">    (void)iconManager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
 <div class="line">}</div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_aacefdec239a3b1fcd8aadae4eec05516"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">FlowUi::IconManager::contains</a></div><div class="ttdeci">bool contains(std::string_view key) const</div><div class="ttdoc">Throws because icon support is disabled.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:421</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_aacefdec239a3b1fcd8aadae4eec05516"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">FlowUi::IconManager::contains</a></div><div class="ttdeci">bool contains(std::string_view key) const</div><div class="ttdoc">Return whether an SVG key is registered.</div></div>
 </div><!-- fragment --><p>Use <span class="tt">remove()</span> to remove the SVG document and its cached atlas variants.</p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = iconManager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">remove</a>(<span class="stringliteral">&quot;status/warning&quot;</span>);</div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_a152fda978ab8ce39d2b33ab74cf7df29"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">FlowUi::IconManager::remove</a></div><div class="ttdeci">bool remove(std::string_view key)</div><div class="ttdoc">Throws because icon support is disabled.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:404</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a152fda978ab8ce39d2b33ab74cf7df29"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">FlowUi::IconManager::remove</a></div><div class="ttdeci">bool remove(std::string_view key)</div><div class="ttdoc">Remove a registered SVG document by key.</div></div>
 </div><!-- fragment --><p>After removal, previously returned <span class="tt">TextureRef</span> values for that icon key should be discarded.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md899"></a>
-Get Icon Texture Requests</h2>
+<h2>Get Icon Texture Requests</h2>
 <p>Use <span class="tt">textureRef()</span> during UI construction.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> saveIcon = iconManager.<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
 <div class="line">saveIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
 <div class="line">saveIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">true</span>;</div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_a0de1a60d027cd3b9985f73aebf128f48"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">FlowUi::IconManager::textureRef</a></div><div class="ttdeci">TextureRef textureRef(std::string_view key)</div><div class="ttdoc">Throws because icon support is disabled.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:437</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a0de1a60d027cd3b9985f73aebf128f48"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">FlowUi::IconManager::textureRef</a></div><div class="ttdeci">TextureRef textureRef(std::string_view key)</div><div class="ttdoc">Return a texture request reference for a registered icon key.</div></div>
 </div><!-- fragment --><p>This is a request handle, not necessarily the final atlas texture. FlowUi resolves it after layout, when the icon's rendered size is known.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md900"></a>
-Chapter 5: Draw Textures in UI</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md901"></a>
-Store Texture References for Clay</h2>
+<h1>Chapter 5: Draw Textures in UI</h1>
+<h2>Store Texture References for Clay</h2>
 <p>Clay image commands carry opaque image data. In FlowUi, pass a frame-stored <span class="tt">TextureRef*</span>.</p>
 <div class="fragment"><div class="line">Clay_ImageElementConfig image{};</div>
 <div class="line">image.imageData = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9">storeTexture</a>(treeThumbnail);</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_ad796d47d74be0f2b856012a8d48305a9"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9">FlowUi::UiManager::storeTexture</a></div><div class="ttdeci">TextureRef * storeTexture(const TextureRef &amp;textureRef)</div><div class="ttdoc">Store a texture reference for use by Clay image render data.</div></div>
 </div><!-- fragment --><p>Do not pass the address of a temporary or local <span class="tt">TextureRef</span>. <span class="tt">storeTexture()</span> copies the ref into <span class="tt">UiManager</span> frame storage and returns a pointer that stays valid until the frame ends.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md902"></a>
-Draw Image Cards</h2>
+<h2>Draw Image Cards</h2>
 <p>The thumbnail card uses an image texture and an icon texture in the same Clay subtree.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> thumbnail = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;thumbnail/tree&quot;</span>);</div>
 <div class="line">thumbnail.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54ccac795dfff10a7c952f4c5438951e9ece9">FlowUi::TextureFitMode::Cover</a>;</div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> status = app.icons().textureRef(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> status = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>().<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
 <div class="line">status.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
 <div class="line">status.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">true</span>;</div>
 <div class="line"> </div>
@@ -402,10 +380,9 @@ Draw Image Cards</h2>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a67ed60b989b4c54ca6aae7aad7bed4d0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">FlowUi::UiManager::toClayEID</a></div><div class="ttdeci">Clay_ElementId toClayEID(std::string_view s)</div><div class="ttdoc">Convert an element id string to a Clay element id.</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
 </div><!-- fragment --><p>The image manager texture is already a concrete texture slot. The icon manager texture is a request that will be resolved after Clay computes <span class="tt">statusBox</span> bounds.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md903"></a>
-Draw Toolbar Icons</h2>
+<h2>Draw Toolbar Icons</h2>
 <p>Toolbar icons are just more image commands. The only difference is that tinting is usually enabled and the bounding boxes are smaller.</p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> openIcon = app.icons().textureRef(<span class="stringliteral">&quot;toolbar/open&quot;</span>);</div>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> openIcon = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>().<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(<span class="stringliteral">&quot;toolbar/open&quot;</span>);</div>
 <div class="line">openIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
 <div class="line">openIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">true</span>;</div>
 <div class="line"> </div>
@@ -422,14 +399,11 @@ Draw Toolbar Icons</h2>
 <div class="line">    CLAY_IMAGE(openImage);</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>If this icon is drawn at <span class="tt">20x20</span> inside the padded button, FlowUi requests a cached icon variant close to <span class="tt">20x20</span> after layout.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md904"></a>
-Chapter 6: How the Icon Cache Works</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md905"></a>
-Registration Is Not Rasterization</h2>
+<h1>Chapter 6: How the Icon Cache Works</h1>
+<h2>Registration Is Not Rasterization</h2>
 <p><span class="tt">registerSvg()</span> and <span class="tt">registerFromFile()</span> parse and store SVG documents. They do not allocate atlas space and do not produce a raster image yet.</p>
 <p>That is important because SVG icons are size-dependent. A save icon drawn at <span class="tt">16x16</span>, <span class="tt">24x24</span>, and <span class="tt">48x48</span> may need different raster variants for good quality.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md906"></a>
-Frame Preparation Resolves Requests</h2>
+<h2>Frame Preparation Resolves Requests</h2>
 <p>During UI construction, <span class="tt">textureRef("toolbar/save")</span> returns a request id. The request is stored in the Clay image command through <span class="tt">storeTexture()</span>.</p>
 <p>After <span class="tt">endFrame()</span>, Clay has final bounding boxes for image nodes. FlowUi's icon manager then scans image render commands. For each icon request, it:</p>
 <ul>
@@ -439,8 +413,7 @@ Frame Preparation Resolves Requests</h2>
 <li>Replaces the request texture ref with the final cached atlas texture slot and UVs.</li>
 </ul>
 <p>This is why icon rasterization happens after layout instead of when <span class="tt">textureRef()</span> is called.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md907"></a>
-Cache Lookup and Rasterization</h2>
+<h2>Cache Lookup and Rasterization</h2>
 <p>For each icon key and requested size, the manager looks for a cached variant.</p>
 <p>The lookup order is:</p>
 <ol type="1">
@@ -451,8 +424,7 @@ Cache Lookup and Rasterization</h2>
 </ol>
 <p>Larger close variants are preferred before smaller close variants because downsampling is usually better than stretching a smaller raster.</p>
 <p>When a cached variant is used, FlowUi marks it as used for the current frame. When a new variant is needed, FlowUi rasterizes the SVG, allocates an atlas rectangle, uploads pixels into that atlas page, and records the texture slot and UV coordinates.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md908"></a>
-Atlas Allocation and Eviction</h2>
+<h2>Atlas Allocation and Eviction</h2>
 <p>Atlas pages are allocated up to <span class="tt">maxAtlasPages</span>. Each page has a free-rectangle allocator and uses <span class="tt">atlasPadding</span> around content.</p>
 <p>If a new variant does not fit:</p>
 <ul>
@@ -463,8 +435,7 @@ Atlas Allocation and Eviction</h2>
 </ul>
 <p>If every cached variant is currently referenced and no space can be freed, the manager throws because the atlas is full and there is no evictable entry.</p>
 <p>Removing an icon with <span class="tt">remove()</span> also removes its request id and cached variants, which frees atlas regions associated with that icon.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md909"></a>
-Final Shape</h1>
+<h1>Final Shape</h1>
 <p>The complete resource setup looks like this:</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca">iconManager</a>.<a class="code hl_variable" href="structFlowUi_1_1IconManagerConfig.html#ac26bb87530afeb03ed7a9cbfd52657fa">atlasSize</a> = 2048;</div>
@@ -475,7 +446,7 @@ Final Shape</h1>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a>&amp; images = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>();</div>
-<div class="line"><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a>&amp; icons = app.icons();</div>
+<div class="line"><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a>&amp; icons = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>();</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordflow">for</span> (<span class="keyword">const</span> ProjectImageAsset&amp; image : discoverProjectImages()) {</div>
 <div class="line">    <span class="keywordflow">if</span> (!images.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1">contains</a>(image.key)) {</div>
@@ -497,7 +468,7 @@ Final Shape</h1>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> thumbnail = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;thumbnail/tree&quot;</span>);</div>
 <div class="line">    thumbnail.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54ccac795dfff10a7c952f4c5438951e9ece9">FlowUi::TextureFitMode::Cover</a>;</div>
 <div class="line"> </div>
-<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> icon = app.icons().textureRef(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
+<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> icon = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>().<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(<span class="stringliteral">&quot;status/check&quot;</span>);</div>
 <div class="line">    icon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
 <div class="line">    icon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">true</span>;</div>
 <div class="line"> </div>
@@ -537,6 +508,7 @@ Final Shape</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_tutorials.html">Tutorials</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

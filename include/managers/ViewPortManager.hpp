@@ -282,6 +282,9 @@ private:
  *
  * @warning Vulkan interop resources returned by getVulkanInterop() are
  * App-managed. Do not destroy or replace those handles from application code.
+ *
+ * @see @ref md_docs_2tutorials_2viewports__vulkan__interop "Viewports and Vulkan Interop"
+ * @see @ref md_docs_2concepts_2managers "Managers"
  */
 class ViewPortManager {
 public:
@@ -421,6 +424,8 @@ public:
 	 * VkDevice device = vk.device;
 	 * uint32_t graphicsFamily = vk.graphicsQueueFamily;
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2viewports__vulkan__interop "Viewports and Vulkan Interop"
 	 */
 	const ViewPortVulkanInterop& getVulkanInterop() const;
 

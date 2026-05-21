@@ -3,14 +3,14 @@
 ## Aliases
 
 ### **FontId**
----
+
 
 #### `using FontId = uint16_t`
 
 Concrete font id consumed by Clay text configuration. UiManager can resolve this through the connected `FlowUi::FontManager`.
 
 ### **FontFamilyId**
----
+
 
 #### `using FontFamilyId = uint32_t`
 
@@ -19,7 +19,7 @@ Logical font family id returned by `FlowUi::FontManager`. UiManager accepts this
 ## Enums
 
 ### **CursorType**
----
+
 
 #### `enum class CursorType : uint8_t`
 
@@ -28,21 +28,21 @@ Cursor shape requested by UI code. UiManager collects per-frame cursor requests 
 ## Public Structs
 
 ### **FrameInput**
----
+
 
 #### `struct FrameInput`
 
 Current or previous normalized input snapshot exposed by UiManager. Custom elements use it for low-level pointer, keyboard, scroll, and timing behavior.
 
 ### **InteractionSnapshot**
----
+
 
 #### `struct InteractionSnapshot`
 
 Previous-frame interaction data returned by UiManager. Custom elements use it to query hover, press, hold, and release state.
 
 ### **TextureRef**
----
+
 
 #### `struct TextureRef`
 
@@ -51,7 +51,7 @@ Texture handle copied into frame storage by storeTexture. It is used as Clay ima
 ## Public API
 
 ### **toClayString**
----
+
 
 #### `Clay_String toClayString(std::string_view s)`
 
@@ -66,8 +66,10 @@ Copies dynamic text into frame-owned storage and returns a Clay string pointing 
 CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(textConfig));
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437).
+
 ### **storeTexture**
----
+
 
 #### `TextureRef* storeTexture(const TextureRef& textureRef)`
 
@@ -82,8 +84,10 @@ Stores a texture reference in the current frame arena and returns a pointer suit
 imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture("logo"));
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9).
+
 ### **toClaySID**
----
+
 
 #### `Clay_ElementId toClaySID(std::string_view s)`
 
@@ -98,8 +102,10 @@ Converts a string into a Clay string id using FlowUi frame storage. This is usef
 Clay_ElementId overlayId = ui.toClaySID("overlay/root");
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29).
+
 ### **toClayEID**
----
+
 
 #### `Clay_ElementId toClayEID(std::string_view s)`
 
@@ -114,8 +120,10 @@ Converts a FlowUi element id string into a Clay element id. This is the normal h
 Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0).
+
 ### **createElement**
----
+
 
 #### `template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal> ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition, std::string_view elementID)`
 
@@ -130,8 +138,10 @@ Creates a builder for one typed FlowUi element invocation. Chain parameter setup
 app.ui().createElement(kButton, "toolbar/save").draw();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4).
+
 ### **drawConstructed**
----
+
 
 #### `void drawConstructed()`
 
@@ -146,8 +156,10 @@ Closes the current element opened by `ElementBuilder::construct()`. Call this af
 ui.drawConstructed();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883).
+
 ### **getPreviousFramesInteraction**
----
+
 
 #### `const InteractionSnapshot& getPreviousFramesInteraction() const`
 
@@ -162,8 +174,10 @@ Returns the previous completed frame's interaction snapshot. Use it for stable h
 const bool wasPressed = ui.getPreviousFramesInteraction().isPressed(buttonId);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4).
+
 ### **getCurrentFrameInput**
----
+
 
 #### `const FrameInput& getCurrentFrameInput() const`
 
@@ -178,8 +192,10 @@ Returns the current frame input in FlowUi layout space. Custom elements can use 
 const FlowUi::FrameInput& input = ui.getCurrentFrameInput();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a).
+
 ### **getPreviousFrameInput**
----
+
 
 #### `const FrameInput& getPreviousFrameInput() const`
 
@@ -194,8 +210,10 @@ Returns the previous frame input in FlowUi layout space. Compare it with `getCur
 const bool pressedThisFrame = ui.getCurrentFrameInput().mouseDown[0] && !ui.getPreviousFrameInput().mouseDown[0];
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac).
+
 ### **inputFields** `1/2`
----
+
 
 #### `InputFieldManager& inputFields()`
 
@@ -210,8 +228,10 @@ Returns the mutable input field manager owned by the UI manager. Custom editable
 context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba).
+
 ### **inputFields** `2/2`
----
+
 
 #### `const InputFieldManager& inputFields() const`
 
@@ -226,8 +246,10 @@ Returns the immutable input field manager. Use it for read-only input focus and 
 context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ad9373da210911028ada7f4559cc760b3).
+
 ### **shortcuts** `1/2`
----
+
 
 #### `ShortcutManager& shortcuts()`
 
@@ -242,8 +264,10 @@ Returns the mutable shortcut manager owned by the UI manager. Use it to register
 FlowUi::ShortcutManager& shortcuts = app.ui().shortcuts();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f).
+
 ### **shortcuts** `2/2`
----
+
 
 #### `const ShortcutManager& shortcuts() const`
 
@@ -258,8 +282,10 @@ Returns the immutable shortcut manager. Use it for read-only focused element ins
 FlowUi::ShortcutManager& shortcuts = app.ui().shortcuts();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc).
+
 ### **devRuntime** `1/2`
----
+
 
 #### `devMode::DevRuntime& devRuntime()`
 
@@ -274,8 +300,10 @@ Returns the mutable developer runtime when `FLOW_UI_DEV_MODE` is enabled. This i
 auto& devRuntime = app.ui().devRuntime();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c).
+
 ### **devRuntime** `2/2`
----
+
 
 #### `const devMode::DevRuntime& devRuntime() const`
 
@@ -290,8 +318,10 @@ Returns the immutable developer runtime when `FLOW_UI_DEV_MODE` is enabled. Use 
 auto& devRuntime = app.ui().devRuntime();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab7ea3c678a7deb).
+
 ### **devToolsConfig** `1/2`
----
+
 
 #### `DevToolsConfig& devToolsConfig()`
 
@@ -306,8 +336,10 @@ Returns mutable developer tooling configuration when `FLOW_UI_DEV_MODE` is enabl
 app.ui().devToolsConfig().panelOpenByDefault = true;
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d).
+
 ### **devToolsConfig** `2/2`
----
+
 
 #### `const DevToolsConfig& devToolsConfig() const`
 
@@ -322,8 +354,10 @@ Returns immutable developer tooling configuration when `FLOW_UI_DEV_MODE` is ena
 app.ui().devToolsConfig().panelOpenByDefault = true;
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9).
+
 ### **setClipboardText**
----
+
 
 #### `void setClipboardText(std::string_view text) const`
 
@@ -338,8 +372,10 @@ Writes clipboard text through the clipboard accessor installed by `App`. If no a
 context.uiManager.setClipboardText(selectedText);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a).
+
 ### **clipboardText**
----
+
 
 #### `std::string clipboardText() const`
 
@@ -354,8 +390,10 @@ Reads clipboard text through the installed clipboard accessor. Returns an empty 
 std::string pasted = context.uiManager.clipboardText();
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e).
+
 ### **hasClipboardAccess**
----
+
 
 #### `bool hasClipboardAccess() const`
 
@@ -370,8 +408,10 @@ Reports whether both clipboard read and write accessors are installed. Use this 
 if (context.uiManager.hasClipboardAccess()) { context.uiManager.setClipboardText(selectedText); }
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f).
+
 ### **requestCursor**
----
+
 
 #### `void requestCursor(CursorType cursorType, uint8_t priority = 0)`
 
@@ -386,8 +426,10 @@ Requests a cursor shape for the current frame. Cursor requests reset each frame,
 context.uiManager.requestCursor(FlowUi::CursorType::PointingHand, 10);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498).
+
 ### **resolveFont** `1/2`
----
+
 
 #### `FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const`
 
@@ -402,8 +444,10 @@ Resolves a logical family/style request to a concrete Clay font id through the c
 textConfig.fontId = context.uiManager.resolveFont("Body", 700, FlowUi::FontStyle::Normal);
 ```
 
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d).
+
 ### **resolveFont** `2/2`
----
+
 
 #### `FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const`
 
@@ -417,3 +461,5 @@ Named-family overload for font resolution. Use it when you want a concise lookup
 ```cpp
 textConfig.fontId = context.uiManager.resolveFont("Body", 700, FlowUi::FontStyle::Normal);
 ```
+
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b).

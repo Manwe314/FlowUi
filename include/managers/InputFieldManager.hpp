@@ -85,6 +85,9 @@ struct FontManager;
  *     },      // buildElement
  * };
  * @endcode
+ *
+ * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
+ * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
  */
 class InputFieldManager {
 public:
@@ -121,6 +124,8 @@ public:
 	 *         .contentElementId = context.uiManager.toClayEID(contentId),
 	 *     });
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
 	FieldQueryResult requestField(const FieldRequest& request);
 

@@ -179,7 +179,13 @@ class IconManager;
 class ViewPortManager;
 #endif
 
-/** @brief Main FlowUi application object and owner of runtime managers. */
+/**
+ * @brief Main FlowUi application object and owner of runtime managers.
+ *
+ * @see @ref md_docs_2tutorials_2quick__start "Quick Start"
+ * @see @ref md_docs_2concepts_2frame__lifecycle "Frame Lifecycle"
+ * @see @ref md_docs_2concepts_2managers "Managers"
+ */
 class App {
 public:
 	/** @brief Construct an empty app handle.
@@ -233,6 +239,8 @@ public:
 	 * @pre The FlowUi::App instance is initialized and its window/UI systems are valid.
 	 * @post The current frame is active and input/UI state is ready for frame logic/building.
 	 * @note This function should be called exactly once per frame.
+	 * @see @ref md_docs_2concepts_2frame__lifecycle "Frame Lifecycle"
+	 * @see @ref md_docs_2tutorials_2quick__start "Quick Start"
 	 */
 	void beginFrame();
 	/** @brief End UI construction and produce render commands.

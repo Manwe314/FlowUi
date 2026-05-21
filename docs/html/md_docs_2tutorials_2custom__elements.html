@@ -106,10 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">Custom Elements </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md812"></a></p>
-<p>This tutorial builds a small RGB color picker from several custom FlowUi elements. The focus is the element system itself: callbacks, state, resources, nested elements, constructed containers, and practical builder usage.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md813"></a>
-Contents</h1>
+<div class="textblock"><p>This tutorial builds a small RGB color picker from several custom FlowUi elements. The focus is the element system itself: callbacks, state, resources, nested elements, constructed containers, and practical builder usage.</p>
+<h1>Contents</h1>
 <ul>
 <li>Chapter 1: Overview<ul>
 <li>What We Are Building</li>
@@ -137,15 +135,12 @@ Contents</h1>
 <li>Chapter 6: Register for Developer Mode</li>
 <li>Final Shape</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md814"></a>
-Chapter 1: Overview</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md815"></a>
-What We Are Building</h2>
+<h1>Chapter 1: Overview</h1>
+<h2>What We Are Building</h2>
 <p>The target is a contained RGB color picker. It draws three channel rows, one for <span class="tt">R</span>, <span class="tt">G</span>, and <span class="tt">B</span>. Each row owns a <span class="tt">0..255</span> numeric value and contains:</p>
 <div class="fragment"><div class="line">label    [ fill ][ handle ][ unfilled ]    input field</div>
 </div><!-- fragment --><p>The slider stores a normalized <span class="tt">0.0..1.0</span> value internally. When dragged, it emits a discrete <span class="tt">0..255</span> value. The input field reads and writes the same row value through <span class="tt">InputFieldManager</span>. The parent color picker collects the three row values into its own state, and the app uses that color to draw a preview box next to the picker.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md816"></a>
-Implementation Plan</h2>
+<h2>Implementation Plan</h2>
 <p>We will build the UI as a small tree of Flow elements:</p>
 <ul>
 <li><span class="tt">kChannelInput</span>: wraps <span class="tt">InputFieldManager</span> and emits <span class="tt">onValueChanged(uint8_t)</span> when the field text changes.</li>
@@ -155,10 +150,8 @@ Implementation Plan</h2>
 <li><span class="tt">kColorWorkbenchPanel</span>: a constructed left-to-right container used by the app to place the picker and preview box side by side.</li>
 </ul>
 <p>One important practical detail: <span class="tt">InputFieldManager</span> does not expose a direct "set text by field id" API. To push a slider value into the sibling input, the row removes that field with <span class="tt">removeField(fieldId)</span>, then the input recreates it on the next <span class="tt">requestField()</span> call using the new <span class="tt">initialText</span>.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md817"></a>
-Chapter 2: Build the Input and Slider</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md818"></a>
-Shared Helpers</h2>
+<h1>Chapter 2: Build the Input and Slider</h1>
+<h2>Shared Helpers</h2>
 <p>The row, input, slider, and preview all need the same conversions.</p>
 <div class="fragment"><div class="line"><span class="keyword">inline</span> uint8_t clampByte(<span class="keywordtype">int</span> value) {</div>
 <div class="line">    <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(std::clamp(value, 0, 255));</div>
@@ -185,8 +178,7 @@ Shared Helpers</h2>
 <div class="line">    <span class="keywordflow">return</span> Clay_Color{<span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(r), <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(g), <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span><span class="keyword">&gt;</span>(b), 255.0f};</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>These helpers keep the element code focused on FlowUi behavior rather than conversion noise.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md819"></a>
-Channel Input Element</h2>
+<h2>Channel Input Element</h2>
 <p>The input element receives the field id and the external value that should appear when the field is recreated.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ChannelInputParams {</div>
 <div class="line">    std::string fieldId;</div>
@@ -206,7 +198,7 @@ Channel Input Element</h2>
 <div class="line">    ChannelInputState,</div>
 <div class="line">    void,</div>
 <div class="line">    FLOW_DEF_ID(<span class="stringliteral">&quot;tutorial_channel_input&quot;</span>)&gt;;</div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:302</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
 </div><!-- fragment --><p>Use <span class="tt">onHovered</span> and <span class="tt">onPressed</span> for normal input behavior: show the I-beam cursor and focus the field.</p>
 <div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> ChannelInputDefinition kChannelInput = {</div>
 <div class="line">    +[](ChannelInputDefinition::InteractionContext&amp; context) {</div>
@@ -271,8 +263,7 @@ Channel Input Element</h2>
 <div class="line">    },</div>
 <div class="line">};</div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md820"></a>
-Channel Slider Element</h2>
+</div><!-- fragment --><h2>Channel Slider Element</h2>
 <p>The slider consumes a normalized value and emits a byte value when dragging changes it.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ChannelSliderParams {</div>
 <div class="line">    <span class="keywordtype">float</span> value = 0.0f;</div>
@@ -375,10 +366,8 @@ Channel Slider Element</h2>
 <div class="line">    },</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>This intentionally keeps the press target as the slider root. If you wanted only the track to be interactive, you could query child ids through <span class="tt">context.previousInteraction</span> inside the callbacks.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md821"></a>
-Chapter 3: Build Rows and the Color Picker</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md822"></a>
-Channel Row Element</h2>
+<h1>Chapter 3: Build Rows and the Color Picker</h1>
+<h2>Channel Row Element</h2>
 <p>Each row owns one channel value as <span class="tt">0..255</span>.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ColorChannelRowParams {</div>
 <div class="line">    std::string label = <span class="stringliteral">&quot;R&quot;</span>;</div>
@@ -462,8 +451,7 @@ Channel Row Element</h2>
 <li>Slider drag updates row state, removes the sibling field, and recreates input text from the new value.</li>
 <li>Input edit updates row state, and the slider consumes that row value on the next build.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md823"></a>
-Color Picker Element</h2>
+<h2>Color Picker Element</h2>
 <p>The parent color picker owns only the combined color state and layout parameters.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ColorPickerParams {</div>
 <div class="line">    std::string title = <span class="stringliteral">&quot;Color&quot;</span>;</div>
@@ -492,7 +480,7 @@ Color Picker Element</h2>
 <div class="line">        (void)app;</div>
 <div class="line">    }</div>
 <div class="line">};</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 </div><!-- fragment --><p>The definition draws three row elements and then collects their states.</p>
 <div class="fragment"><div class="line"><span class="keyword">using </span>ColorPickerDefinition = <a class="code hl_struct" href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a>&lt;</div>
 <div class="line">    ColorPickerParams,</div>
@@ -545,18 +533,15 @@ Color Picker Element</h2>
 <div class="line">    },</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>The parent is not directly editing row internals during construction. It draws rows, then collects the public result stored in their element state.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md824"></a>
-Nested IDs</h2>
+<h2>Nested IDs</h2>
 <p>The color picker never hard-codes absolute ids for child elements. It derives them from <span class="tt">context.elementID</span>:</p>
 <div class="fragment"><div class="line">context.createChildElementId(<span class="stringliteral">&quot;R&quot;</span>)</div>
 <div class="line">context.createChildElementId(<span class="stringliteral">&quot;R/slider&quot;</span>)</div>
 <div class="line">context.createChildElementId(<span class="stringliteral">&quot;R/input&quot;</span>)</div>
 <div class="line">context.createChildElementId(<span class="stringliteral">&quot;R/field&quot;</span>)</div>
 </div><!-- fragment --><p>If the app draws the picker as <span class="tt">"workbench/color-picker"</span>, all child state and input field ids are automatically scoped below that instance.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md825"></a>
-Chapter 4: Use It in an App</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md826"></a>
-Construct a Demo Container</h2>
+<h1>Chapter 4: Use It in an App</h1>
+<h2>Construct a Demo Container</h2>
 <p>The app example uses a constructed Flow element as a layout container. It opens a left-to-right root, then the app draws the picker and preview box as children.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>ColorWorkbenchPanelParams {</div>
 <div class="line">    Clay_Sizing sizing{.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};</div>
@@ -587,19 +572,18 @@ Construct a Demo Container</h2>
 <div class="line">    },</div>
 <div class="line">    <span class="keyword">nullptr</span>,</div>
 <div class="line">};</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md827"></a>
-Draw the Picker and Preview Box</h2>
+</div><!-- fragment --><h2>Draw the Picker and Preview Box</h2>
 <p>Initialize the color picker resources after creating the app.</p>
 <div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keywordtype">void</span> initializeColorTutorialResources(<a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a>&amp; app) {</div>
 <div class="line">    (void)ColorPickerDefinition::getResources(app);</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>In the frame loop, construct the panel, draw the picker, then draw a plain Clay preview box using the picker state.</p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kColorWorkbenchPanel, <span class="stringliteral">&quot;workbench&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kColorWorkbenchPanel, <span class="stringliteral">&quot;workbench&quot;</span>)</div>
 <div class="line">    .construct();</div>
 <div class="line"> </div>
 <div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kColorPicker, <span class="stringliteral">&quot;workbench/color-picker&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kColorPicker, <span class="stringliteral">&quot;workbench/color-picker&quot;</span>)</div>
 <div class="line">    .setParameters(ColorPickerParams{.title = <span class="stringliteral">&quot;Base Color&quot;</span>, .fontId = bodyFont})</div>
 <div class="line">    .draw();</div>
 <div class="line"> </div>
@@ -615,27 +599,25 @@ Draw the Picker and Preview Box</h2>
 <div class="line"> </div>
 <div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">drawConstructed</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a67ed60b989b4c54ca6aae7aad7bed4d0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">FlowUi::UiManager::toClayEID</a></div><div class="ttdeci">Clay_ElementId toClayEID(std::string_view s)</div><div class="ttdoc">Convert an element id string to a Clay element id.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a857a971efa5a8e904806b9398e0e4883"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">FlowUi::UiManager::drawConstructed</a></div><div class="ttdeci">void drawConstructed()</div><div class="ttdoc">Close the current element opened by ElementBuilder::construct().</div></div>
 </div><!-- fragment --><p><span class="tt">drawConstructed()</span> closes the panel opened by <span class="tt">construct()</span>. Everything emitted before that call becomes a child of the constructed panel.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md828"></a>
-setParameters and mergeParams</h2>
+<h2>setParameters and mergeParams</h2>
 <p><span class="tt">setParameters()</span> replaces the builder's parameter object with the one you pass. Default field values still exist because <span class="tt">ColorPickerParams{...}</span> is default-initialized before the designated fields are assigned.</p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kColorPicker, <span class="stringliteral">&quot;workbench/color-picker&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kColorPicker, <span class="stringliteral">&quot;workbench/color-picker&quot;</span>)</div>
 <div class="line">    .setParameters(ColorPickerParams{.title = <span class="stringliteral">&quot;Base Color&quot;</span>, .fontId = bodyFont})</div>
 <div class="line">    .draw();</div>
 </div><!-- fragment --><p><span class="tt">mergeParams()</span> is for preserving params that are already stored on a builder and changing only part of that existing object. This is useful when a builder is configured once, then reused across call sites.</p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> picker = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kColorPicker, <span class="stringliteral">&quot;unused&quot;</span>)</div>
+<div class="line">    .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kColorPicker, <span class="stringliteral">&quot;unused&quot;</span>)</div>
 <div class="line">    .setParameters(ColorPickerParams{.fontId = bodyFont, .backgroundColor = <a class="code hl_function" href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#202633ff&quot;</span>)});</div>
 <div class="line"> </div>
 <div class="line">picker.withElementID(<span class="stringliteral">&quot;workbench/base&quot;</span>).mergeParams([](ColorPickerParams&amp; params) { params.title = <span class="stringliteral">&quot;Base&quot;</span>; }).draw();</div>
 <div class="line">picker.withElementID(<span class="stringliteral">&quot;workbench/tint&quot;</span>).mergeParams([](ColorPickerParams&amp; params) { params.title = <span class="stringliteral">&quot;Tint&quot;</span>; }).draw();</div>
 </div><!-- fragment --><p>In that example, <span class="tt">mergeParams()</span> preserves <span class="tt">fontId</span> and <span class="tt">backgroundColor</span> from the builder's existing params while changing the title for each instance.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md829"></a>
-Chapter 6: Register for Developer Mode</h1>
+<h1>Chapter 6: Register for Developer Mode</h1>
 <p>Developer-mode registration is optional for runtime behavior, but it makes the types visible to FlowUi's dev tooling.</p>
 <div class="fragment"><div class="line">FLOWUI_DEV_REGISTER_STRUCT(</div>
 <div class="line">    ChannelInputParams,</div>
@@ -698,8 +680,7 @@ Chapter 6: Register for Developer Mode</h1>
 <div class="line">FLOWUI_DEV_REGISTER_ELEMENT(ColorPickerDefinition, <span class="stringliteral">&quot;Tutorial Color Picker&quot;</span>);</div>
 <div class="line">FLOWUI_DEV_REGISTER_ELEMENT(ColorWorkbenchPanelDefinition, <span class="stringliteral">&quot;Tutorial Color Workbench Panel&quot;</span>);</div>
 </div><!-- fragment --><p>Registering the definitions lets the dev runtime identify element instances. Registering structs lets it inspect reflected parameter and state fields.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md830"></a>
-Final Shape</h1>
+<h1>Final Shape</h1>
 <p>The final element tree is:</p>
 <div class="fragment"><div class="line">kColorWorkbenchPanel (construct)</div>
 <div class="line">  kColorPicker</div>
@@ -725,8 +706,8 @@ Final Shape</h1>
 <div class="line"> </div>
 <div class="line">    <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> bodyFont = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">resolveFont</a>(<span class="stringliteral">&quot;Body&quot;</span>);</div>
 <div class="line"> </div>
-<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kColorWorkbenchPanel, <span class="stringliteral">&quot;workbench&quot;</span>).construct();</div>
-<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kColorPicker, <span class="stringliteral">&quot;workbench/color-picker&quot;</span>).setParameters(ColorPickerParams{.title = <span class="stringliteral">&quot;Base Color&quot;</span>, .fontId = bodyFont}).draw();</div>
+<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kColorWorkbenchPanel, <span class="stringliteral">&quot;workbench&quot;</span>).construct();</div>
+<div class="line">    app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kColorPicker, <span class="stringliteral">&quot;workbench/color-picker&quot;</span>).setParameters(ColorPickerParams{.title = <span class="stringliteral">&quot;Base Color&quot;</span>, .fontId = bodyFont}).draw();</div>
 <div class="line"> </div>
 <div class="line">    <span class="keyword">const</span> ColorPickerState* color = ColorPickerDefinition::tryGetState(<a class="code hl_function" href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a>(<span class="stringliteral">&quot;workbench/color-picker&quot;</span>));</div>
 <div class="line">    Clay_ElementDeclaration preview{};</div>
@@ -762,6 +743,7 @@ Final Shape</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_tutorials.html">Tutorials</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

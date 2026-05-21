@@ -136,13 +136,16 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <div class="line"> </div>
 <div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> logo = images.<a class="code hl_function" href="#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;hero/logo&quot;</span>);</div>
 <div class="line">logo.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:55</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:58</div></div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a87c55cc08f33bb3fd8f83108aa15ea23"><div class="ttname"><a href="#a87c55cc08f33bb3fd8f83108aa15ea23">FlowUi::ImageManager::registerImage</a></div><div class="ttdeci">bool registerImage(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Load and register an image from disk under a caller-provided key.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a8db367968a237f11a7157d194a3720bc"><div class="ttname"><a href="#a8db367968a237f11a7157d194a3720bc">FlowUi::ImageManager::getTexture</a></div><div class="ttdeci">TextureRef getTexture(std::string_view key) const</div><div class="ttdoc">Return the texture reference for a registered image key.</div></div>
 <div class="ttc" id="agroup__flowui__config_html_ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484"><div class="ttname"><a href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a></div><div class="ttdeci">@ Contain</div><div class="ttdoc">Fit the whole texture inside the target rectangle without cropping.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:443</div></div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html_a6eaac4b006ded5cf41011800cce39c7c"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">FlowUi::TextureRef::fitMode</a></div><div class="ttdeci">TextureFitMode fitMode</div><div class="ttdoc">Texture fit behavior inside the target rectangle.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:486</div></div>
-</div><!-- fragment --> </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd>
+<dd>
+<a class="el" href="md_docs_2concepts_2managers.html" title="Managers">Managers</a> </dd></dl>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a3ce30605daebf796adc6e757a93848c1" name="a3ce30605daebf796adc6e757a93848c1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3ce30605daebf796adc6e757a93848c1">&#9670;&#160;</a></span>contains()</h2>
 
@@ -209,7 +212,8 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <div class="line">avatar.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">false</span>;</div>
 <div class="ttc" id="agroup__flowui__config_html_ggaf2bd0da1549931d06a4ae124e15a54ccac795dfff10a7c952f4c5438951e9ece9"><div class="ttname"><a href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54ccac795dfff10a7c952f4c5438951e9ece9">FlowUi::TextureFitMode::Cover</a></div><div class="ttdeci">@ Cover</div><div class="ttdoc">Fill the target rectangle while preserving aspect ratio; may crop.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:445</div></div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html_a532a39c57e8c9a6a19e8253e11f93649"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">FlowUi::TextureRef::tintEnabled</a></div><div class="ttdeci">bool tintEnabled</div><div class="ttdoc">Enable multiplication by the image command color while rendering.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:504</div></div>
-</div><!-- fragment --> 
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd></dl>
+
 </div>
 </div>
 <a id="a87c55cc08f33bb3fd8f83108aa15ea23" name="a87c55cc08f33bb3fd8f83108aa15ea23"></a>

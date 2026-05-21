@@ -3,14 +3,14 @@
 ## Enums
 
 ### **TextureFitMode**
----
+
 
 #### `enum class TextureFitMode : uint8_t`
 
 Texture layout mode inside a target rectangle. Icon texture refs typically use contain sizing.
 
 ### **TextureSamplingMode**
----
+
 
 #### `enum class TextureSamplingMode : uint8_t`
 
@@ -19,14 +19,14 @@ Texture filtering preference stored on TextureRef. It records intended filtering
 ## Public Structs
 
 ### **IconManagerConfig**
----
+
 
 #### `struct IconManagerConfig`
 
 Configures SVG icon rasterization and atlas caching. It controls atlas size, maximum pages, size reuse tolerance, and padding.
 
 ### **TextureRef**
----
+
 
 #### `struct TextureRef`
 
@@ -35,7 +35,7 @@ Texture request handle returned by IconManager. FlowUi resolves it to a cached a
 ## Public API
 
 ### **registerSvg**
----
+
 
 #### `bool registerSvg(std::string_view key, std::string_view svgSource)`
 
@@ -50,8 +50,10 @@ Parses and registers an SVG document from memory. Raster variants are created la
 app.icons().registerSvg("check", checkSvgSource);
 ```
 
+See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c).
+
 ### **registerFromFile**
----
+
 
 #### `bool registerFromFile(std::string_view key, std::string_view filePath)`
 
@@ -66,8 +68,10 @@ Parses and registers an SVG document from disk. Returns `false` if the key alrea
 app.icons().registerFromFile("save", "assets/icons/save.svg");
 ```
 
+See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb).
+
 ### **remove**
----
+
 
 #### `bool remove(std::string_view key)`
 
@@ -82,8 +86,10 @@ Removes a registered SVG document and its cached atlas variants. Previously retu
 const bool removed = app.icons().remove("save");
 ```
 
+See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29).
+
 ### **contains**
----
+
 
 #### `bool contains(std::string_view key) const`
 
@@ -98,8 +104,10 @@ Checks whether an SVG document key is registered. This does not force rasterizat
 if (!app.icons().contains("save")) { app.icons().registerFromFile("save", "assets/icons/save.svg"); }
 ```
 
+See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516).
+
 ### **textureRef**
----
+
 
 #### `TextureRef textureRef(std::string_view key)`
 
@@ -113,3 +121,5 @@ Returns a texture request reference for a registered icon. FlowUi later resolves
 ```cpp
 FlowUi::TextureRef saveIcon = app.icons().textureRef("save");
 ```
+
+See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48).

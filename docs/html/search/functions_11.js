@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['windowinputconfig_0',['windowInputConfig',['../classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757',1,'FlowUi::App']]],
-  ['windowsize_1',['windowSize',['../classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228',1,'FlowUi::App']]],
-  ['withelementid_2',['withElementID',['../classFlowUi_1_1ElementBuilder.html#addcbec2dd601b254be83f4114cb679f7',1,'FlowUi::ElementBuilder']]]
+  ['viewports_0',['viewPorts',['../classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8',1,'FlowUi::App::viewPorts()'],['../classFlowUi_1_1App.html#a28bca3bac1b8cba55d79950ad56515b2',1,'FlowUi::App::viewPorts() const']]]
 ];

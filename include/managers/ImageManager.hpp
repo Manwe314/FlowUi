@@ -51,6 +51,9 @@ class App;
  * FlowUi::TextureRef logo = images.getTexture("hero/logo");
  * logo.fitMode = FlowUi::TextureFitMode::Contain;
  * @endcode
+ *
+ * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
+ * @see @ref md_docs_2concepts_2managers "Managers"
  */
 class ImageManager {
 public:
@@ -141,6 +144,8 @@ public:
 	 * avatar.fitMode = FlowUi::TextureFitMode::Cover;
 	 * avatar.tintEnabled = false;
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
 	 */
 	TextureRef getTexture(std::string_view key) const;
 

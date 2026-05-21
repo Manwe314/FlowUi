@@ -106,23 +106,19 @@ $(function() {
   <div class="headertitle"><div class="title">Managers </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md768"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md769"></a>
-Introduction</h1>
+<div class="textblock"><h1>Introduction</h1>
 <p>FlowUi managers are compact subsystem objects owned by the main <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a></span>. They are "singleton-like" within one app instance: there is one UI manager, one font manager, one image manager, one viewport manager, and so on for that running application. Users do not create, initialize, destroy, or synchronize these managers manually. <span class="tt">App</span> owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes references through accessors such as <span class="tt">app.ui()</span>, <span class="tt">app.fonts()</span>, <span class="tt">app.images()</span>, and <span class="tt">app.viewPorts()</span>.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md770"></a>
-TL;DR</h1>
+<h1>TL;DR</h1>
 <p>Managers exist because Clay is a layout library, not a full desktop application runtime. FlowUi adds app-owned subsystems for text, textures, icons, input fields, shortcuts, viewports, frame-local UI services, and rendering support so users can start writing application code sooner.</p>
 <p>You normally access a manager by reference and pass that reference around:</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.ui();</div>
 <div class="line"><a class="code hl_struct" href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a>&amp; fonts = app.fonts();</div>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a>&amp; images = app.images();</div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:55</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:59</div></div>
-<div class="ttc" id="astructFlowUi_1_1FontManager_html"><div class="ttname"><a href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a></div><div class="ttdoc">Loads font faces and owns the atlas used by FlowUi text rendering.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:56</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:58</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:63</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontManager_html"><div class="ttname"><a href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a></div><div class="ttdoc">Loads font faces and owns the atlas used by FlowUi text rendering.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:59</div></div>
 </div><!-- fragment --><p>The manager object carries the relevant internal logic and lifetime rules for its subsystem. User code asks it to do useful work; <span class="tt">App</span> handles ownership and frame integration.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md771"></a>
-Why Managers Exist</h1>
+<h1>Why Managers Exist</h1>
 <p>Clay gives FlowUi a fast immediate-mode layout engine. That solves layout, but a desktop UI runtime needs more than layout:</p>
 <ul>
 <li>text needs fonts, glyph metrics, atlas textures, and measurement</li>
@@ -135,8 +131,7 @@ Why Managers Exist</h1>
 </ul>
 <p>Managers group those responsibilities into named subsystems. This avoids one giant global API and keeps each kind of lifetime in the place that understands it. Font resources live in the font manager. Editable text state lives in the input field manager. Shortcut registrations live in the shortcut manager. Viewport images and command resources live in the viewport manager.</p>
 <p>The result is a runtime that stays explicit but does not force every user application to rebuild the same infrastructure before drawing a useful app.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md772"></a>
-Ownership Model</h1>
+<h1>Ownership Model</h1>
 <p>Managers are owned by <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a></span>. They are initialized during <span class="tt">makeApplication()</span> and destroyed during <span class="tt">App</span> cleanup. Most of them depend on internal runtime objects that user code should not own directly: the Vulkan device, allocator, renderer, texture registry, frame count, window clipboard bridge, cursor bridge, and font manager connection.</p>
 <p>This is why the public API returns references:</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.ui();</div>
@@ -145,20 +140,19 @@ Ownership Model</h1>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> drawToolbar(<a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui, <a class="code hl_class" href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a>&amp; images) {</div>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> logo = images.<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;toolbar/logo&quot;</span>);</div>
 <div class="line">    (void)logo;</div>
-<div class="line">    ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kToolbar, <span class="stringliteral">&quot;toolbar&quot;</span>).draw();</div>
+<div class="line">    ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kToolbar, <span class="stringliteral">&quot;toolbar&quot;</span>).draw();</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a8db367968a237f11a7157d194a3720bc"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">FlowUi::ImageManager::getTexture</a></div><div class="ttdeci">TextureRef getTexture(std::string_view key) const</div><div class="ttdoc">Return the texture reference for a registered image key.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
 <div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
 </div><!-- fragment --><p>The references should not outlive the <span class="tt">App</span> that owns them. They are not independent services. They are parts of one running FlowUi application.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md773"></a>
-UiManager</h1>
+<h1>UiManager</h1>
 <p><span class="tt">UiManager</span> is the main frame-authoring surface. Most user UI code touches it directly or indirectly.</p>
 <p>It owns the Clay context, frame-local string arenas, frame-local texture reference storage, current and previous frame input snapshots, previous/current interaction snapshots, cursor requests, clipboard accessors, and the input field and shortcut managers. It also bridges font resolution by forwarding requests to the connected <span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></span>.</p>
 <p>Common use cases:</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.ui();</div>
 <div class="line"> </div>
-<div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
+<div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
 <div class="line">    .setParameters(ButtonParams{.label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
 <div class="line">    .draw();</div>
 </div><!-- fragment --><div class="fragment"><div class="line">Clay_String label = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(dynamicLabel);</div>
@@ -168,8 +162,7 @@ UiManager</h1>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_ac1694a665b71269470ff22a2adc00437"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">FlowUi::UiManager::toClayString</a></div><div class="ttdeci">Clay_String toClayString(std::string_view s)</div><div class="ttdoc">Store a string in the current frame arena and return a Clay string.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_ad796d47d74be0f2b856012a8d48305a9"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9">FlowUi::UiManager::storeTexture</a></div><div class="ttdeci">TextureRef * storeTexture(const TextureRef &amp;textureRef)</div><div class="ttdoc">Store a texture reference for use by Clay image render data.</div></div>
 </div><!-- fragment --><p><span class="tt">UiManager</span> is frame-sensitive. Functions like <span class="tt">toClayString()</span> and <span class="tt">storeTexture()</span> use frame-local arena memory, so their returned pointers are only valid for the current frame. This is part of why <span class="tt">UiManager</span> is app-owned and integrated with <span class="tt">beginFrame()</span> and <span class="tt">endFrame()</span>.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md774"></a>
-FlowUi::FontManager</h1>
+<h1><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></h1>
 <p><span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a></span> owns loaded font faces, logical font families, font resolution, and the Vulkan font atlas array used by text rendering.</p>
 <p>The common workflow is:</p>
 <div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> body = app.fonts().createFamily({</div>
@@ -184,8 +177,7 @@ FlowUi::FontManager</h1>
 <p>It also supports adding more faces to a family:</p>
 <div class="fragment"><div class="line">app.fonts().addFamilyFace(<span class="stringliteral">&quot;Body&quot;</span>, {.path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>, .weight = 700});</div>
 </div><!-- fragment --><p>This lets UI code ask for "Body, weight 700" without caring which exact baked face was loaded internally.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md775"></a>
-ImageManager</h1>
+<h1>ImageManager</h1>
 <p><span class="tt">ImageManager</span> loads image files and exposes them as <span class="tt">TextureRef</span> values for UI drawing.</p>
 <p>Typical usage:</p>
 <div class="fragment"><div class="line">app.images().registerImage(<span class="stringliteral">&quot;profile/avatar&quot;</span>, <span class="stringliteral">&quot;assets/avatar.png&quot;</span>);</div>
@@ -194,19 +186,17 @@ ImageManager</h1>
 <p>The image manager also owns replacement and removal behavior:</p>
 <div class="fragment"><div class="line">app.images().removeImage(<span class="stringliteral">&quot;profile/avatar&quot;</span>);</div>
 </div><!-- fragment --><p>That matters because GPU resources cannot always be destroyed immediately while frames are still in flight. The manager hides those frame-safe lifetime details from user code.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md776"></a>
-IconManager</h1>
+<h1>IconManager</h1>
 <p><span class="tt">IconManager</span> is the SVG icon subsystem. It is available when FlowUi is built with icon manager support enabled.</p>
 <p>Typical usage:</p>
 <div class="fragment"><div class="line">app.icons().registerFromFile(<span class="stringliteral">&quot;toolbar/save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
 <div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> saveIcon = app.icons().textureRef(<span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
 </div><!-- fragment --><p>SVG icons are different from normal images because the useful raster size depends on where the icon is drawn. FlowUi stores the SVG document under a key, then during frame preparation it rasterizes and caches atlas variants sized for the rendered UI area.</p>
 <p>This means app code can work with stable icon keys and texture refs while the manager handles parsing, rasterization, atlas allocation, cache reuse, and texture remapping.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md777"></a>
-InputFieldManager</h1>
+<h1>InputFieldManager</h1>
 <p><span class="tt">InputFieldManager</span> owns editable text field state. It is reached through <span class="tt">UiManager</span>:</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1InputFieldManager.html">FlowUi::InputFieldManager</a>&amp; inputFields = app.ui().inputFields();</div>
-<div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html">FlowUi::InputFieldManager</a></div><div class="ttdoc">Manages text input fields, focus, caret state, and edit operations.</div><div class="ttdef"><b>Definition</b> InputFieldManager.hpp:89</div></div>
+<div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html">FlowUi::InputFieldManager</a></div><div class="ttdoc">Manages text input fields, focus, caret state, and edit operations.</div><div class="ttdef"><b>Definition</b> InputFieldManager.hpp:92</div></div>
 </div><!-- fragment --><p>Clay can lay out text and boxes, but editable input needs persistent text, focus, carets, selections, pointer hit testing, keyboard edits, key repeat, copy/paste support, and caret/selection rendering. <span class="tt">InputFieldManager</span> owns that behavior so custom input elements can be written as reusable visual wrappers instead of full text editor implementations.</p>
 <p>Typical custom element code requests a field every frame:</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1FieldQueryResult.html">FlowUi::FieldQueryResult</a> field = context.uiManager.inputFields().requestField({</div>
@@ -220,11 +210,10 @@ InputFieldManager</h1>
 <div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(context.elementID, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a>);</div>
 <div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a90106dbd8237948d5be42c7407b344dd">FlowUi::CaretRequestKind::SetPrimary</a></div><div class="ttdeci">@ SetPrimary</div><div class="ttdoc">Make the requested field the primary focused input field.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:31</div></div>
 </div><!-- fragment --><p>The field's text lives in the manager, not in the element's params. That lets the element be rebuilt every frame while the user's edited text persists.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md778"></a>
-ShortcutManager</h1>
+<h1>ShortcutManager</h1>
 <p><span class="tt">ShortcutManager</span> owns keyboard shortcut registration and dispatch. It is also reached through <span class="tt">UiManager</span>:</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a>&amp; shortcuts = app.ui().shortcuts();</div>
-<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:30</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:32</div></div>
 </div><!-- fragment --><p>Shortcuts are registered as chords with a scope, priority, and callback:</p>
 <div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> saveShortcut = shortcuts.<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a>(</div>
 <div class="line">    {.key = GLFW_KEY_S, .ctrl = <span class="keyword">true</span>},</div>
@@ -240,23 +229,23 @@ ShortcutManager</h1>
 <div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:88</div></div>
 </div><!-- fragment --><p>Each frame, the shortcut manager compares current and previous <span class="tt">FrameInput</span>, detects press/release/down transitions, checks scope, orders callbacks by priority, and stops dispatch when a callback returns <span class="tt">true</span>.</p>
 <p>Scopes let local behavior handle a chord before global fallback behavior. For example, a focused input field can handle copy/paste while the app still has global shortcuts elsewhere.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md779"></a>
-ViewPortManager</h1>
+<h1>ViewPortManager</h1>
 <p><span class="tt">ViewPortManager</span> owns offscreen render targets that can be displayed inside the UI as textures. It is available when public Vulkan interop is enabled.</p>
 <p>Typical usage:</p>
 <div class="fragment"><div class="line">app.viewPorts().create(<span class="stringliteral">&quot;preview&quot;</span>, {.clearColor = {0.02f, 0.02f, 0.03f, 1.0f}});</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordflow">if</span> (FlowUi::ViewPort* preview = app.viewPorts().getViewPort(<span class="stringliteral">&quot;preview&quot;</span>)) {</div>
-<div class="line">    preview-&gt;setRenderCallback([](<span class="keyword">const</span> FlowUi::ViewPortRenderContext&amp; context) {</div>
+<div class="line"><span class="keywordflow">if</span> (<a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* preview = app.viewPorts().getViewPort(<span class="stringliteral">&quot;preview&quot;</span>)) {</div>
+<div class="line">    preview-&gt;setRenderCallback([](<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a>&amp; context) {</div>
 <div class="line">        recordPreviewCommands(context);</div>
 <div class="line">    });</div>
 <div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:62</div></div>
+<div class="ttc" id="astructFlowUi_1_1ViewPortRenderContext_html"><div class="ttname"><a href="structFlowUi_1_1ViewPortRenderContext.html">FlowUi::ViewPortRenderContext</a></div><div class="ttdoc">Per-frame context passed to a viewport render callback.</div><div class="ttdef"><b>Definition</b> ViewPortManagerStructs.hpp:59</div></div>
 </div><!-- fragment --><p>Then UI can display it through a texture ref:</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> previewTexture = app.viewPorts().getTexture(<span class="stringliteral">&quot;preview&quot;</span>);</div>
 </div><!-- fragment --><p>The manager handles per-frame render target images, size tracking from UI image bounds, command resources, texture registry slots, and invoking render callbacks. User code records custom Vulkan work into the callback context, but the manager owns the target and frame integration.</p>
 <p>This is the subsystem to use for scene previews, graph views, custom renderers, editor canvases, and other content that needs to be rendered separately and then composed into the Clay UI.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md780"></a>
-Texture Registry and Renderer-Side Management</h1>
+<h1>Texture Registry and Renderer-Side Management</h1>
 <p>The UI texture registry is internal, but it explains why image, icon, and viewport managers can all return the same <span class="tt">TextureRef</span> type.</p>
 <p>Managers do not hand Clay raw Vulkan handles. Instead, they register image views and samplers into renderer texture slots. A <span class="tt">TextureRef</span> carries the slot id, UV coordinates, source size, fit mode, sampling mode, and tint behavior. During rendering, the UI renderer reads the texture ref from Clay image data and uses it to produce textured draw instances.</p>
 <p>This lets different resource systems share one rendering path:</p>
@@ -266,8 +255,7 @@ Texture Registry and Renderer-Side Management</h1>
 <li><span class="tt">ViewPortManager</span> registers per-frame viewport images.</li>
 </ul>
 <p>User code only needs to pass <span class="tt">TextureRef</span> values through UI code.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md781"></a>
-How Managers Work Together During a Frame</h1>
+<h1>How Managers Work Together During a Frame</h1>
 <p>Managers are not isolated utilities; they are wired into the frame lifecycle.</p>
 <p>During <span class="tt">beginFrame()</span>:</p>
 <ul>
@@ -296,8 +284,7 @@ How Managers Work Together During a Frame</h1>
 <li>manager-owned resources are used without user code manually binding them</li>
 </ul>
 <p>The point is that managers are not just containers. They are subsystems that know when their data should be updated, prepared, retired, or consumed.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md782"></a>
-What to Read Next</h1>
+<h1>What to Read Next</h1>
 <ul>
 <li><a class="el" href="md_docs_2concepts_2mental__model.html" title="Core Mental Model">Core Mental Model</a></li>
 <li><a class="el" href="md_docs_2concepts_2frame__lifecycle.html" title="Frame Lifecycle">Frame Lifecycle</a></li>
@@ -324,6 +311,7 @@ What to Read Next</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_concepts_details.html">Concepts &amp; Details</a></li><li class="navelem"><a href="flowui_concepts.html">Concepts</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

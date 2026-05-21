@@ -56,6 +56,9 @@ struct IUiTextureRegistry;
  * FlowUi::TextureRef saveIcon = icons.textureRef("toolbar/save");
  * saveIcon.fitMode = FlowUi::TextureFitMode::Contain;
  * @endcode
+ *
+ * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
+ * @see @ref md_docs_2concepts_2managers "Managers"
  */
 struct IconManager {
 	/**
@@ -175,6 +178,8 @@ struct IconManager {
 	 * deleteIcon.fitMode = FlowUi::TextureFitMode::Contain;
 	 * deleteIcon.tintEnabled = true;
 	 * @endcode
+	 *
+	 * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
 	 */
 	TextureRef textureRef(std::string_view key);
 

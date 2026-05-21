@@ -106,42 +106,26 @@ $(function() {
   <div class="headertitle"><div class="title">App API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md284"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md285"></a>
-Aliases</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md286"></a>
-### <b>FlowElementId</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md287"></a>
-<span class="tt">using FlowElementId = uint64_t</span></h3>
+<div class="textblock"><h1>Aliases</h1>
+<h2><b>FlowElementId</b></h2>
+<h3><span class="tt">using FlowElementId = uint64_t</span></h3>
 <p>Stable hashed id for a FlowUi element instance. It is used to key per-instance element state and generated child ids.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md288"></a>
-### <b>FlowDefinitionId</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md289"></a>
-<span class="tt">using FlowDefinitionId = uint64_t</span></h3>
+<h2><b>FlowDefinitionId</b></h2>
+<h3><span class="tt">using FlowDefinitionId = uint64_t</span></h3>
 <p>Stable hashed id for a FlowUi element definition. It identifies the definition type rather than one rendered instance.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md290"></a>
-Public Structs</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md291"></a>
-### <b>AppConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md292"></a>
-<span class="tt">struct AppConfig</span></h3>
+<h1>Public Structs</h1>
+<h2><b>AppConfig</b></h2>
+<h3><span class="tt">struct AppConfig</span></h3>
 <p>Top-level configuration passed to makeApplication. It groups window, Vulkan, UI, icon manager, and developer tooling settings.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md293"></a>
-### <b>WindowInputConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md294"></a>
-<span class="tt">struct WindowInputConfig</span></h3>
+<h2><b>WindowInputConfig</b></h2>
+<h3><span class="tt">struct WindowInputConfig</span></h3>
 <p>Low-level window input behavior shared by app creation and runtime input updates. It controls cursor mode, sticky input, lock modifiers, and raw mouse motion.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md295"></a>
-### <b>TextureRef</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md296"></a>
-<span class="tt">struct TextureRef</span></h3>
+<h2><b>TextureRef</b></h2>
+<h3><span class="tt">struct TextureRef</span></h3>
 <p>Renderer texture handle and draw options returned by image, icon, and viewport managers. App code can adjust fit, sampling, and tint fields while leaving manager-owned id and UV fields alone.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md297"></a>
-Public API</h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md298"></a>
-### <b>makeApplication</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md299"></a>
-<span class="tt">App makeApplication(const AppConfig&amp; cfg)</span></h3>
+<h1>Public API</h1>
+<h2><b>makeApplication</b></h2>
+<h3><span class="tt">App makeApplication(const AppConfig&amp; cfg)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">App</span></li>
 <li><b>Arguments:</b> <span class="tt">cfg</span> top-level FlowUi app configuration.</li>
@@ -149,12 +133,11 @@ Public API</h1>
 <p>Creates and initializes a running FlowUi application. Use this instead of manually constructing <span class="tt">App</span>; it wires the window, managers, renderer, and configuration together.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md300"></a>
-### <b>App</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md301"></a>
-<span class="tt">App()</span></h3>
+</div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">Full Doxygen reference</a>.</p>
+<h2><b>App</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">App()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">App</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -162,10 +145,9 @@ Public API</h1>
 <p>Constructs an empty app handle. Public for move/handle mechanics, but normal application code should create an initialized app with <span class="tt">makeApplication()</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> emptyHandle{};</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md302"></a>
-### <b>App</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md303"></a>
-<span class="tt">App(App&amp;&amp;) noexcept</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a9ea3c124f860be1faf8f5645d582943c">Full Doxygen reference</a>.</p>
+<h2><b>App</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">App(App&amp;&amp;) noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">App</span></li>
 <li><b>Arguments:</b> rvalue <span class="tt">App</span> to move from.</li>
@@ -173,10 +155,9 @@ Public API</h1>
 <p>Moves an app handle and its owned runtime implementation. Copying is disabled because the app owns unique window, renderer, and manager resources.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> emptyHandle{};</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md304"></a>
-### <b>operator=</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md305"></a>
-<span class="tt">App&amp; operator=(App&amp;&amp;) noexcept</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a9ea3c124f860be1faf8f5645d582943c">Full Doxygen reference</a>.</p>
+<h2><b>operator=</b></h2>
+<h3><span class="tt">App&amp; operator=(App&amp;&amp;) noexcept</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">App&amp;</span></li>
 <li><b>Arguments:</b> rvalue <span class="tt">App</span> to move from.</li>
@@ -184,10 +165,9 @@ Public API</h1>
 <p>Move-assigns an app handle. The target takes ownership of the source runtime resources, and the source becomes a moved-from handle.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">runningApp = std::move(replacementApp);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md306"></a>
-### **~App**</h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md307"></a>
-<span class="tt">~App()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#afb8878c9292ddcff6382a9e22fedb8bb">Full Doxygen reference</a>.</p>
+<h2>**~App**</h2>
+<h3><span class="tt">~App()</span></h3>
 <ul>
 <li><b>Returns:</b> none.</li>
 <li><b>Arguments:</b> none.</li>
@@ -195,10 +175,9 @@ Public API</h1>
 <p>Destroys the app runtime and releases owned resources. This includes managers, renderer state, window backend state, and GPU resources owned by the app.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">{ <a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config); }</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md308"></a>
-### <b>shouldClose</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md309"></a>
-<span class="tt">bool shouldClose() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#aaad78bc0186f550641ae5959d54f2e2c">Full Doxygen reference</a>.</p>
+<h2><b>shouldClose</b></h2>
+<h3><span class="tt">bool shouldClose() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -210,10 +189,9 @@ Public API</h1>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5c6ee53de89f3dd55d43e4742905414a"><div class="ttname"><a href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">FlowUi::App::endFrame</a></div><div class="ttdeci">void endFrame()</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_ad256201c79c7e07675e12b5bd0d8c8aa"><div class="ttname"><a href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">FlowUi::App::drawFrame</a></div><div class="ttdeci">void drawFrame()</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md310"></a>
-### <b>beginFrame</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md311"></a>
-<span class="tt">void beginFrame()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">Full Doxygen reference</a>.</p>
+<h2><b>beginFrame</b></h2>
+<h3><span class="tt">void beginFrame()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -221,10 +199,9 @@ Public API</h1>
 <p>Begins one FlowUi frame. It polls input, prepares frame-local UI state, and sets up the layout/input snapshot used while building UI.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md312"></a>
-### <b>endFrame</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md313"></a>
-<span class="tt">void endFrame()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">Full Doxygen reference</a>.</p>
+<h2><b>endFrame</b></h2>
+<h3><span class="tt">void endFrame()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -232,10 +209,9 @@ Public API</h1>
 <p>Ends UI construction for the current frame. It finalizes Clay render commands and prepares frame-dependent resources before rendering.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">endFrame</a>();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md314"></a>
-### <b>drawFrame</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md315"></a>
-<span class="tt">void drawFrame()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">Full Doxygen reference</a>.</p>
+<h2><b>drawFrame</b></h2>
+<h3><span class="tt">void drawFrame()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -243,10 +219,9 @@ Public API</h1>
 <p>Submits and presents the frame produced by <span class="tt">endFrame()</span>. Call it once after UI construction has been finalized.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">drawFrame</a>();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md316"></a>
-### <b>fonts</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md317"></a>
-<span class="tt">FlowUi::FontManager&amp; fonts()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">Full Doxygen reference</a>.</p>
+<h2><b>fonts</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a>&amp; fonts()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt"><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a>&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -257,10 +232,9 @@ Public API</h1>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a1db6aceb22351a9a0c199e1faeb9405a"><div class="ttname"><a href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a">FlowUi::App::fonts</a></div><div class="ttdeci">FontManager &amp; fonts()</div><div class="ttdoc">Access the font manager.</div></div>
 <div class="ttc" id="agroup__flowui__font__manager_html_ga95598f991c84086ade49a9b22410496a"><div class="ttname"><a href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a></div><div class="ttdeci">uint32_t FontFamilyId</div><div class="ttdoc">Stable logical font family id returned by FlowUi::FontManager.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:18</div></div>
 <div class="ttc" id="astructFlowUi_1_1FontManager_html_a829f7e37438eef1eb8fa9981a8d511ec"><div class="ttname"><a href="structFlowUi_1_1FontManager.html#a829f7e37438eef1eb8fa9981a8d511ec">FlowUi::FontManager::getFamilyId</a></div><div class="ttdeci">FontFamilyId getFamilyId(std::string_view familyName) const</div><div class="ttdoc">Return a family id by name.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md318"></a>
-### <b>fonts</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md319"></a>
-<span class="tt">const FlowUi::FontManager&amp; fonts() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a">Full Doxygen reference</a>.</p>
+<h2><b>fonts</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a>&amp; fonts() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a>&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -268,10 +242,9 @@ Public API</h1>
 <p>Returns the immutable font manager owned by the app. Use this for read-only font lookup from const app contexts.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> body = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a">fonts</a>().<a class="code hl_function" href="structFlowUi_1_1FontManager.html#a829f7e37438eef1eb8fa9981a8d511ec">getFamilyId</a>(<span class="stringliteral">&quot;Body&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md320"></a>
-### <b>images</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md321"></a>
-<span class="tt">ImageManager&amp; images()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#abd633c521ed80977c1992cf3cccc0310">Full Doxygen reference</a>.</p>
+<h2><b>images</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">ImageManager&amp; images()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">ImageManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -281,10 +254,9 @@ Public API</h1>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5cf823f81759a819dc7fce58e75054f9"><div class="ttname"><a href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">FlowUi::App::images</a></div><div class="ttdeci">ImageManager &amp; images()</div><div class="ttdoc">Access the image manager.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a87c55cc08f33bb3fd8f83108aa15ea23"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">FlowUi::ImageManager::registerImage</a></div><div class="ttdeci">bool registerImage(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Load and register an image from disk under a caller-provided key.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md322"></a>
-### <b>images</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md323"></a>
-<span class="tt">const ImageManager&amp; images() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">Full Doxygen reference</a>.</p>
+<h2><b>images</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const ImageManager&amp; images() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const ImageManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -292,54 +264,53 @@ Public API</h1>
 <p>Returns the immutable image manager owned by the app. Use this when only checking or resolving already registered image keys.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md324"></a>
-### <b>icons</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md325"></a>
-<span class="tt">IconManager&amp; icons()</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a04135a9974e2ea4aa8563083ebe51d40">Full Doxygen reference</a>.</p>
+<h2><b>icons</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">IconManager&amp; icons()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">IconManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
 <p>Returns the mutable icon manager when icon support is compiled in. Use it to register SVG icons and request texture references for UI rendering.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md326"></a>
-### <b>icons</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md327"></a>
-<span class="tt">const IconManager&amp; icons() const</span></h3>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>().<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a7ef478693b7f8354db690c2ffc2e4cac"><div class="ttname"><a href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">FlowUi::App::icons</a></div><div class="ttdeci">IconManager &amp; icons()</div><div class="ttdoc">Access the icon manager.</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html_a3014f0a3c8ae23869d23c107c6f469eb"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">FlowUi::IconManager::registerFromFile</a></div><div class="ttdeci">bool registerFromFile(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Register an SVG document from a file path.</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">Full Doxygen reference</a>.</p>
+<h2><b>icons</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const IconManager&amp; icons() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const IconManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
 <p>Returns the immutable icon manager when icon support is compiled in. Use this for read-only icon lookup paths.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md328"></a>
-### <b>viewPorts</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md329"></a>
-<span class="tt">ViewPortManager&amp; viewPorts()</span></h3>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac">icons</a>().<a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a4aea0f22867850b6c6791ef76a827608">Full Doxygen reference</a>.</p>
+<h2><b>viewPorts</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">ViewPortManager&amp; viewPorts()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">ViewPortManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
 <p>Returns the mutable viewport manager when public Vulkan interop is enabled. Use it to create offscreen UI viewports and attach custom Vulkan render callbacks.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.viewPorts().create(<span class="stringliteral">&quot;scene-preview&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md330"></a>
-### <b>viewPorts</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md331"></a>
-<span class="tt">const ViewPortManager&amp; viewPorts() const</span></h3>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6f5b9b1adf89a9ea58bec5fbf3ba86c">create</a>(<span class="stringliteral">&quot;scene-preview&quot;</span>);</div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a704db5cbbabc33705f691362bfb275b8"><div class="ttname"><a href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">FlowUi::App::viewPorts</a></div><div class="ttdeci">ViewPortManager &amp; viewPorts()</div><div class="ttdoc">Access the viewport manager.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_af6f5b9b1adf89a9ea58bec5fbf3ba86c"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#af6f5b9b1adf89a9ea58bec5fbf3ba86c">FlowUi::ViewPortManager::create</a></div><div class="ttdeci">bool create(std::string_view key, const ViewPortCreateInfo &amp;createInfo={})</div><div class="ttdoc">Create a viewport by key.</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">Full Doxygen reference</a>.</p>
+<h2><b>viewPorts</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const ViewPortManager&amp; viewPorts() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const ViewPortManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
 <p>Returns the immutable viewport manager when public Vulkan interop is enabled. Use this for read-only viewport lookup and texture access.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.viewPorts().create(<span class="stringliteral">&quot;scene-preview&quot;</span>);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md332"></a>
-### <b>ui</b> <span class="tt">1/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md333"></a>
-<span class="tt">UiManager&amp; ui()</span></h3>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6f5b9b1adf89a9ea58bec5fbf3ba86c">create</a>(<span class="stringliteral">&quot;scene-preview&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a28bca3bac1b8cba55d79950ad56515b2">Full Doxygen reference</a>.</p>
+<h2><b>ui</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">UiManager&amp; ui()</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">UiManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -348,11 +319,10 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:59</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md334"></a>
-### <b>ui</b> <span class="tt">2/2</span></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md335"></a>
-<span class="tt">const UiManager&amp; ui() const</span></h3>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:63</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">Full Doxygen reference</a>.</p>
+<h2><b>ui</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">const UiManager&amp; ui() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const UiManager&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -360,10 +330,9 @@ Public API</h1>
 <p>Returns the immutable UI manager. Use it for read-only access to UI frame state and managers from const contexts.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md336"></a>
-### <b>setWindowTitle</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md337"></a>
-<span class="tt">void setWindowTitle(std::string_view title)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a4579cf4d39c726a5d2e625218bcfa059">Full Doxygen reference</a>.</p>
+<h2><b>setWindowTitle</b></h2>
+<h3><span class="tt">void setWindowTitle(std::string_view title)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">title</span> new native window title.</li>
@@ -372,10 +341,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a02f684a2f6f2e3595ea0a674c95f4397">setWindowTitle</a>(<span class="stringliteral">&quot;Project - Saved&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a02f684a2f6f2e3595ea0a674c95f4397"><div class="ttname"><a href="classFlowUi_1_1App.html#a02f684a2f6f2e3595ea0a674c95f4397">FlowUi::App::setWindowTitle</a></div><div class="ttdeci">void setWindowTitle(std::string_view title)</div><div class="ttdoc">Set the native window title.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md338"></a>
-### <b>windowSize</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md339"></a>
-<span class="tt">std::pair&lt;int, int&gt; windowSize() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a02f684a2f6f2e3595ea0a674c95f4397">Full Doxygen reference</a>.</p>
+<h2><b>windowSize</b></h2>
+<h3><span class="tt">std::pair&lt;int, int&gt; windowSize() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::pair&lt;int, int&gt;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -384,10 +352,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> [windowWidth, windowHeight] = app.<a class="code hl_function" href="classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228">windowSize</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_add8511c39a52e3d2bc9f5afedddf3228"><div class="ttname"><a href="classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228">FlowUi::App::windowSize</a></div><div class="ttdeci">std::pair&lt; int, int &gt; windowSize() const</div><div class="ttdoc">Return the window size in screen coordinates.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md340"></a>
-### <b>framebufferSize</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md341"></a>
-<span class="tt">std::pair&lt;int, int&gt; framebufferSize() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228">Full Doxygen reference</a>.</p>
+<h2><b>framebufferSize</b></h2>
+<h3><span class="tt">std::pair&lt;int, int&gt; framebufferSize() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::pair&lt;int, int&gt;</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -396,10 +363,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> [fbWidth, fbHeight] = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a304bb3c1528da2273dbb711d83fd6728">framebufferSize</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a304bb3c1528da2273dbb711d83fd6728"><div class="ttname"><a href="classFlowUi_1_1App.html#a304bb3c1528da2273dbb711d83fd6728">FlowUi::App::framebufferSize</a></div><div class="ttdeci">std::pair&lt; int, int &gt; framebufferSize() const</div><div class="ttdoc">Return the framebuffer size in pixels.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md342"></a>
-### <b>setWindowInputConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md343"></a>
-<span class="tt">void setWindowInputConfig(const WindowInputConfig&amp; config)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a304bb3c1528da2273dbb711d83fd6728">Full Doxygen reference</a>.</p>
+<h2><b>setWindowInputConfig</b></h2>
+<h3><span class="tt">void setWindowInputConfig(const WindowInputConfig&amp; config)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">config</span> low-level window input configuration.</li>
@@ -409,10 +375,9 @@ Public API</h1>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">setWindowInputConfig</a>(<a class="code hl_struct" href="structFlowUi_1_1WindowInputConfig.html">FlowUi::WindowInputConfig</a>{.cursorMode = FlowUi::CursorMode::Normal});</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_ac542187ec472fb6b9405fde9470ac098"><div class="ttname"><a href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">FlowUi::App::setWindowInputConfig</a></div><div class="ttdeci">void setWindowInputConfig(const WindowInputConfig &amp;config)</div><div class="ttdoc">Apply window input configuration.</div></div>
 <div class="ttc" id="astructFlowUi_1_1WindowInputConfig_html"><div class="ttname"><a href="structFlowUi_1_1WindowInputConfig.html">FlowUi::WindowInputConfig</a></div><div class="ttdoc">Configures low-level window input behavior.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:54</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md344"></a>
-### <b>windowInputConfig</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md345"></a>
-<span class="tt">WindowInputConfig windowInputConfig() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">Full Doxygen reference</a>.</p>
+<h2><b>windowInputConfig</b></h2>
+<h3><span class="tt">WindowInputConfig windowInputConfig() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">WindowInputConfig</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -421,10 +386,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1WindowInputConfig.html">FlowUi::WindowInputConfig</a> inputConfig = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757">windowInputConfig</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a9796415e95b720977162b8758e66f757"><div class="ttname"><a href="classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757">FlowUi::App::windowInputConfig</a></div><div class="ttdeci">WindowInputConfig windowInputConfig() const</div><div class="ttdoc">Return the current window input configuration.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md346"></a>
-### <b>nativeWindowHandle</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md347"></a>
-<span class="tt">void* nativeWindowHandle() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757">Full Doxygen reference</a>.</p>
+<h2><b>nativeWindowHandle</b></h2>
+<h3><span class="tt">void* nativeWindowHandle() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void*</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -433,10 +397,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span>* nativeWindow = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a336d18e6c4db2aee3e904ffed6364ffb">nativeWindowHandle</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a336d18e6c4db2aee3e904ffed6364ffb"><div class="ttname"><a href="classFlowUi_1_1App.html#a336d18e6c4db2aee3e904ffed6364ffb">FlowUi::App::nativeWindowHandle</a></div><div class="ttdeci">void * nativeWindowHandle() const</div><div class="ttdoc">Return the backend native window handle.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md348"></a>
-### <b>supportsRawMouseMotion</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md349"></a>
-<span class="tt">bool supportsRawMouseMotion() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a336d18e6c4db2aee3e904ffed6364ffb">Full Doxygen reference</a>.</p>
+<h2><b>supportsRawMouseMotion</b></h2>
+<h3><span class="tt">bool supportsRawMouseMotion() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">bool</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -445,10 +408,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2717e2f03db8d86a85cc4c420547899b">supportsRawMouseMotion</a>()) { app.<a class="code hl_function" href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">setWindowInputConfig</a>({.rawMouseMotion = <span class="keyword">true</span>}); }</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a2717e2f03db8d86a85cc4c420547899b"><div class="ttname"><a href="classFlowUi_1_1App.html#a2717e2f03db8d86a85cc4c420547899b">FlowUi::App::supportsRawMouseMotion</a></div><div class="ttdeci">bool supportsRawMouseMotion() const</div><div class="ttdoc">Return whether the window backend supports raw mouse motion.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md350"></a>
-### <b>setClipboardText</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md351"></a>
-<span class="tt">void setClipboardText(std::string_view text)</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a2717e2f03db8d86a85cc4c420547899b">Full Doxygen reference</a>.</p>
+<h2><b>setClipboardText</b></h2>
+<h3><span class="tt">void setClipboardText(std::string_view text)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">void</span></li>
 <li><b>Arguments:</b> <span class="tt">text</span> value to write to the system clipboard.</li>
@@ -457,10 +419,9 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#adf83dcd17ca6a6f93c8059af540035d0">setClipboardText</a>(<span class="stringliteral">&quot;Copied from FlowUi&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_adf83dcd17ca6a6f93c8059af540035d0"><div class="ttname"><a href="classFlowUi_1_1App.html#adf83dcd17ca6a6f93c8059af540035d0">FlowUi::App::setClipboardText</a></div><div class="ttdeci">void setClipboardText(std::string_view text)</div><div class="ttdoc">Set clipboard text through the window backend.</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md352"></a>
-### <b>clipboardText</b></h1>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md353"></a>
-<span class="tt">std::string clipboardText() const</span></h3>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#adf83dcd17ca6a6f93c8059af540035d0">Full Doxygen reference</a>.</p>
+<h2><b>clipboardText</b></h2>
+<h3><span class="tt">std::string clipboardText() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">std::string</span></li>
 <li><b>Arguments:</b> none.</li>
@@ -469,7 +430,8 @@ Public API</h1>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">std::string pastedText = app.<a class="code hl_function" href="classFlowUi_1_1App.html#ab68d7f17584659d9f70a05af9e0f9fee">clipboardText</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_ab68d7f17584659d9f70a05af9e0f9fee"><div class="ttname"><a href="classFlowUi_1_1App.html#ab68d7f17584659d9f70a05af9e0f9fee">FlowUi::App::clipboardText</a></div><div class="ttdeci">std::string clipboardText() const</div><div class="ttdoc">Read clipboard text through the window backend.</div></div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#ab68d7f17584659d9f70a05af9e0f9fee">Full Doxygen reference</a>. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
@@ -483,6 +445,7 @@ Public API</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_api_cheat_sheet.html">API Cheat Sheet</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

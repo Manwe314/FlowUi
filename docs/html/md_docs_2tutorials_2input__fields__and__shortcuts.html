@@ -106,10 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">Input Fields and Shortcuts </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md910"></a></p>
-<p>This tutorial follows one editor-style UI from text fields to scoped keyboard commands. The target is a small node board where each node has an editable title, can become the focused element, and can be copied or pasted as a whole FlowUi element instance through app-specific shortcut code.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md911"></a>
-Contents</h1>
+<div class="textblock"><p>This tutorial follows one editor-style UI from text fields to scoped keyboard commands. The target is a small node board where each node has an editable title, can become the focused element, and can be copied or pasted as a whole FlowUi element instance through app-specific shortcut code.</p>
+<h1>Contents</h1>
 <ul>
 <li>Chapter 1: The Example App<ul>
 <li>What We Are Building</li>
@@ -147,10 +145,8 @@ Contents</h1>
 <li>Chapter 6: Shortcut Lifetime</li>
 <li>Final Shape</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md912"></a>
-Chapter 1: The Example App</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md913"></a>
-What We Are Building</h2>
+<h1>Chapter 1: The Example App</h1>
+<h2>What We Are Building</h2>
 <p>Assume the app is a simple node board. Each node is a reusable Flow element with a title input and a body area.</p>
 <div class="fragment"><div class="line">+-----------------------+</div>
 <div class="line">| Editable node title   |</div>
@@ -167,8 +163,7 @@ What We Are Building</h2>
 <li>Press <span class="tt">Delete</span> to remove the focused node.</li>
 </ul>
 <p>This target uses both systems together: input fields own text editing, while shortcuts own app commands.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md914"></a>
-State Owned by the App</h2>
+<h2>State Owned by the App</h2>
 <p>The actual node data should live in the app model, not inside the input field manager.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>BoardNode {</div>
 <div class="line">    uint64_t <span class="keywordtype">id</span> = 0;</div>
@@ -184,18 +179,15 @@ State Owned by the App</h2>
 <div class="line">};</div>
 <div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
 </div><!-- fragment --><p><span class="tt">InputFieldManager</span> stores editable field text. The app model stores the real document data. The element bridges them by reading the field result and writing changed text back to the matching <span class="tt">BoardNode</span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md915"></a>
-Why Focus Matters</h2>
+<h2>Why Focus Matters</h2>
 <p>FlowUi has two useful focus concepts:</p>
 <ul>
 <li><b>Primary input focus</b> belongs to <span class="tt">InputFieldManager</span>. It means text input and caret operations target a field.</li>
 <li><b>Focused element</b> belongs to <span class="tt">ShortcutManager</span>. It means app-defined element shortcuts can target a Clay element id.</li>
 </ul>
 <p>They are separate on purpose. A title field may have text focus, while a node card may have shortcut focus. Shortcut scopes let those contexts coexist without every <span class="tt">Ctrl+C</span> meaning the same thing.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md916"></a>
-Chapter 2: Configure Input Editing</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md917"></a>
-InputManagerConfig</h2>
+<h1>Chapter 2: Configure Input Editing</h1>
+<h2>InputManagerConfig</h2>
 <p>Input visuals are configured before app creation.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#ab17aaaa138713cfdfc8fa82cd00ba348">ui</a>.<a class="code hl_variable" href="structFlowUi_1_1UiConfig.html#afa2bf6bb115420c70a9e3137ec570507">inputManager</a>.<a class="code hl_variable" href="structFlowUi_1_1InputManagerConfig.html#ad73a5bfe3556cb3eed227d2dafd2ce4e">caretWidthPx</a> = 2.0f;</div>
@@ -204,7 +196,7 @@ InputManagerConfig</h2>
 <div class="line">config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#ab17aaaa138713cfdfc8fa82cd00ba348">ui</a>.<a class="code hl_variable" href="structFlowUi_1_1UiConfig.html#afa2bf6bb115420c70a9e3137ec570507">inputManager</a>.<a class="code hl_variable" href="structFlowUi_1_1InputManagerConfig.html#a7f6b15e14cb64bb7c713eb185e4ef6da">highlightedTextColor</a> = <a class="code hl_function" href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#ffffffff&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:183</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
 <div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:401</div></div>
 <div class="ttc" id="astructFlowUi_1_1AppConfig_html_ab17aaaa138713cfdfc8fa82cd00ba348"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#ab17aaaa138713cfdfc8fa82cd00ba348">FlowUi::AppConfig::ui</a></div><div class="ttdeci">UiConfig ui</div><div class="ttdoc">Layout, text, and UI resource defaults.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:421</div></div>
@@ -214,8 +206,7 @@ InputManagerConfig</h2>
 <div class="ttc" id="astructFlowUi_1_1InputManagerConfig_html_ad73a5bfe3556cb3eed227d2dafd2ce4e"><div class="ttname"><a href="structFlowUi_1_1InputManagerConfig.html#ad73a5bfe3556cb3eed227d2dafd2ce4e">FlowUi::InputManagerConfig::caretWidthPx</a></div><div class="ttdeci">float caretWidthPx</div><div class="ttdoc">Caret width in pixels.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:174</div></div>
 <div class="ttc" id="astructFlowUi_1_1UiConfig_html_afa2bf6bb115420c70a9e3137ec570507"><div class="ttname"><a href="structFlowUi_1_1UiConfig.html#afa2bf6bb115420c70a9e3137ec570507">FlowUi::UiConfig::inputManager</a></div><div class="ttdeci">InputManagerConfig inputManager</div><div class="ttdoc">Input field caret and selection rendering configuration.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:278</div></div>
 </div><!-- fragment --><p>These settings affect caret and selection rendering. Field behavior is set per field with <span class="tt"><a class="el" href="structFlowUi_1_1FieldConfig.html" title="Behavior configuration for a requested input field.">FlowUi::FieldConfig</a></span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md918"></a>
-Caret Requests</h2>
+<h2>Caret Requests</h2>
 <p>Input elements use <span class="tt">requestCaret(fieldId, kind)</span> from interaction callbacks.</p>
 <div class="fragment"><div class="line">context.uiManager.inputFields().requestCaret(</div>
 <div class="line">    context.params.fieldId,</div>
@@ -231,10 +222,9 @@ Caret Requests</h2>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">inputFields</a>().<a class="code hl_function" href="classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446">requestCaret</a>(<span class="stringliteral">&quot;&quot;</span>, <a class="code hl_enumvalue" href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">FlowUi::CaretRequestKind::ClearAll</a>);</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html_aad13550088f959cf6d948173d8afa446"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446">FlowUi::InputFieldManager::requestCaret</a></div><div class="ttdeci">void requestCaret(std::string_view fieldId, CaretRequestKind kind)</div><div class="ttdoc">Request focus or caret changes for an input field.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a1a718742e52372ebd62f57980ef501ba"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">InputFieldManager &amp; inputFields()</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:264</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a1a718742e52372ebd62f57980ef501ba"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">InputFieldManager &amp; inputFields()</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:273</div></div>
 <div class="ttc" id="agroup__flowui__input__field__manager_html_ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995"><div class="ttname"><a href="group__flowui__input__field__manager.html#ggafeb7e7dce488c324629200446fdbf6c0a7aaf620fe818489b59d52585ff04d995">FlowUi::CaretRequestKind::ClearAll</a></div><div class="ttdeci">@ ClearAll</div><div class="ttdoc">Clear all carets and remove primary input focus.</div><div class="ttdef"><b>Definition</b> InputFieldManagerStructs.hpp:48</div></div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md919"></a>
-Cursor Requests</h2>
+</div><!-- fragment --><h2>Cursor Requests</h2>
 <p>Elements can request cursor shapes during callbacks.</p>
 <div class="fragment"><div class="line">context.uiManager.requestCursor(FlowUi::CursorType::IBeam, 20);</div>
 </div><!-- fragment --><p>Common cursor types:</p>
@@ -247,10 +237,8 @@ Cursor Requests</h2>
 <li><span class="tt">NotAllowed</span>, <span class="tt">Wait</span>, <span class="tt">Progress</span>, <span class="tt">Crosshair</span>, <span class="tt">Custom</span>: specialized states.</li>
 </ul>
 <p>The optional priority decides which request wins when multiple elements request cursors in one frame. Higher priority wins.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md920"></a>
-Chapter 3: Build the Editable Node Element</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md921"></a>
-Parameters and State</h2>
+<h1>Chapter 3: Build the Editable Node Element</h1>
+<h2>Parameters and State</h2>
 <p>The node element receives a pointer to app state and the node id it represents.</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>EditableNodeParams {</div>
 <div class="line">    BoardState* board = <span class="keyword">nullptr</span>;</div>
@@ -269,10 +257,9 @@ Parameters and State</h2>
 <div class="line">    EditableNodeState,</div>
 <div class="line">    void,</div>
 <div class="line">    FLOW_DEF_ID(<span class="stringliteral">&quot;tutorial_editable_node&quot;</span>)&gt;;</div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:302</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
 </div><!-- fragment --><p>The Flow element state only tracks field-change detection. The node title itself stays in <span class="tt">BoardState</span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md922"></a>
-Interaction Callbacks</h2>
+<h2>Interaction Callbacks</h2>
 <p>Hovering a node asks for a pointing-hand cursor. Pressing the node sets the shortcut-focused element.</p>
 <div class="fragment"><div class="line"><span class="keyword">inline</span> <span class="keyword">const</span> EditableNodeDefinition kEditableNode = {</div>
 <div class="line">    +[](EditableNodeDefinition::InteractionContext&amp; context) {</div>
@@ -291,8 +278,7 @@ Interaction Callbacks</h2>
 <div class="line">    <span class="keyword">nullptr</span>,</div>
 </div><!-- fragment --><p>The focused element marker is app-defined. FlowUi does not decide what a focused node means; the element does by calling <span class="tt">setFocusedElement()</span>.</p>
 <p>Because shortcut dispatch happens at the beginning of a frame, a focus set during UI construction is used by later frames.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md923"></a>
-Request the Input Field</h2>
+<h2>Request the Input Field</h2>
 <p>The build callback finds the app node, creates child ids, and requests an input field for the title.</p>
 <div class="fragment"><div class="line">+[](EditableNodeDefinition::BuildContext&amp; context) {</div>
 <div class="line">    <span class="keywordflow">if</span> (!context.params.board) {</div>
@@ -366,8 +352,7 @@ Request the Input Field</h2>
 <div class="line">        }</div>
 <div class="line">    },</div>
 <div class="line">};</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md924"></a>
-Remove or Reset a Field</h2>
+</div><!-- fragment --><h2>Remove or Reset a Field</h2>
 <p>Use <span class="tt">removeField()</span> when an app-side value should replace the current edited text or when a dynamic node is deleted.</p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> std::string fieldId = <span class="stringliteral">&quot;board/node-42/title-field&quot;</span>;</div>
 <div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">inputFields</a>().<a class="code hl_function" href="classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a">removeField</a>(fieldId);</div>
@@ -376,10 +361,8 @@ Remove or Reset a Field</h2>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">inputFields</a>().<a class="code hl_function" href="classFlowUi_1_1InputFieldManager.html#a7ac0604f2391bfe2ea5d16b008b68d18">clear</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html_a7ac0604f2391bfe2ea5d16b008b68d18"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html#a7ac0604f2391bfe2ea5d16b008b68d18">FlowUi::InputFieldManager::clear</a></div><div class="ttdeci">void clear()</div><div class="ttdoc">Clear all managed input field state.</div></div>
 </div><!-- fragment --><p>That removes all field text, focus, selections, key-repeat state, and pending input field render overrides.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md925"></a>
-Chapter 4: Register Shortcuts</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md926"></a>
-Shortcut Chords and Triggers</h2>
+<h1>Chapter 4: Register Shortcuts</h1>
+<h2>Shortcut Chords and Triggers</h2>
 <p>A shortcut chord is a key, modifiers, and trigger.</p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a> copyChord{</div>
 <div class="line">    .key = GLFW_KEY_C,</div>
@@ -401,13 +384,12 @@ Shortcut Chords and Triggers</h2>
 <div class="line">    0,</div>
 <div class="line">    [](<a class="code hl_struct" href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a>&amp;) { <span class="keywordflow">return</span> <span class="keyword">false</span>; });</div>
 <div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_a185118dced81d2cccdc61bbc5e74307f"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">FlowUi::ShortcutManager::registerShortcut</a></div><div class="ttdeci">ShortcutId registerShortcut(const ShortcutChord &amp;chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback)</div><div class="ttdoc">Register a shortcut and return its id.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a61893809f24d2017db5642a3a780065f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">ShortcutManager &amp; shortcuts()</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:286</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a61893809f24d2017db5642a3a780065f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">ShortcutManager &amp; shortcuts()</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:295</div></div>
 <div class="ttc" id="agroup__flowui__shortcut__manager_html_ga1797e2b57628fb0d605888569f1c1dc9"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a></div><div class="ttdeci">uint32_t ShortcutId</div><div class="ttdoc">Opaque shortcut registration id.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:111</div></div>
 <div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:33</div></div>
 <div class="ttc" id="astructFlowUi_1_1ShortcutContext_html"><div class="ttname"><a href="structFlowUi_1_1ShortcutContext.html">FlowUi::ShortcutContext</a></div><div class="ttdoc">Runtime data passed to shortcut callbacks.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:88</div></div>
 </div><!-- fragment --><p><span class="tt">0</span> means registration failed, usually because the callback was empty or the key was outside the supported keyboard range.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md927"></a>
-Focused Input Shortcuts</h2>
+<h2>Focused Input Shortcuts</h2>
 <p>Focused input shortcuts run only when an input field owns primary focus.</p>
 <div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> textCopy = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a>(</div>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a>{.key = GLFW_KEY_C, .ctrl = <span class="keyword">true</span>},</div>
@@ -431,8 +413,7 @@ Focused Input Shortcuts</h2>
 <div class="line">        <span class="keywordflow">return</span> context.ui.inputFields().insertTextAtPrimaryCaret(context.ui.clipboardText());</div>
 <div class="line">    });</div>
 </div><!-- fragment --><p>The text copy shortcut uses <span class="tt">getSelectedText()</span>. The text paste shortcut uses <span class="tt">insertTextAtPrimaryCaret()</span>, which replaces active selections and respects <span class="tt">FieldConfig::readOnly</span> and <span class="tt">maxBytes</span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md928"></a>
-Focused Element Shortcuts</h2>
+<h2>Focused Element Shortcuts</h2>
 <p>Focused element shortcuts run only when <span class="tt">ShortcutManager</span> has a non-zero focused Clay element id.</p>
 <div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> copyNode = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a>(</div>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a>{.key = GLFW_KEY_C, .ctrl = <span class="keyword">true</span>},</div>
@@ -474,8 +455,7 @@ Focused Element Shortcuts</h2>
 <div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">    });</div>
 </div><!-- fragment --><p>This is the pattern for copying and pasting a whole FlowUi element: copy the app model that drives that element, then draw a new element instance for the new model id.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md929"></a>
-Global Shortcuts</h2>
+<h2>Global Shortcuts</h2>
 <p>Global shortcuts are always eligible. They should usually avoid stealing commands from text editing.</p>
 <div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> deleteNode = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a>(</div>
 <div class="line">    <a class="code hl_struct" href="structFlowUi_1_1ShortcutChord.html">FlowUi::ShortcutChord</a>{.key = GLFW_KEY_DELETE},</div>
@@ -498,10 +478,8 @@ Global Shortcuts</h2>
 <div class="line">        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">    });</div>
 </div><!-- fragment --><p><span class="tt">hasPrimaryFieldFocus()</span> is the guard that keeps <span class="tt">Delete</span> from removing a node while the user is editing title text.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md930"></a>
-Chapter 5: How Shortcut Dispatch Resolves</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md931"></a>
-Scope Order</h2>
+<h1>Chapter 5: How Shortcut Dispatch Resolves</h1>
+<h2>Scope Order</h2>
 <p>Each frame, <span class="tt">ShortcutManager</span> compares current and previous input and dispatches matching chords.</p>
 <p>For a matching chord, callbacks are ordered by scope:</p>
 <ol type="1">
@@ -510,28 +488,24 @@ Scope Order</h2>
 <li><span class="tt">Global</span></li>
 </ol>
 <p>That means <span class="tt">Ctrl+C</span> first gives focused text fields a chance to copy selected text. If no input callback handles it, focused element callbacks can copy the selected node. If that also does not handle it, global callbacks can run.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md932"></a>
-Priority and Registration Order</h2>
+<h2>Priority and Registration Order</h2>
 <p>Inside the same scope, higher priority runs first.</p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a>(chord, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3">FlowUi::ShortcutScope::FocusedElement</a>, 100, highPriority);</div>
 <div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">registerShortcut</a>(chord, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3">FlowUi::ShortcutScope::FocusedElement</a>, 10, lowPriority);</div>
 </div><!-- fragment --><p>If scope and priority are the same, earlier registrations run first.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md933"></a>
-Handled Return Values</h2>
+<h2>Handled Return Values</h2>
 <p>A shortcut callback returns <span class="tt">true</span> when it handled the command.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 </div><!-- fragment --><p>Once a callback returns <span class="tt">true</span>, later callbacks for that same chord do not run. Returning <span class="tt">false</span> allows the next eligible callback to try.</p>
 <p>This is why the text copy shortcut returns <span class="tt">false</span> when no text is selected. It lets the focused node copy shortcut handle <span class="tt">Ctrl+C</span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md934"></a>
-Focused Element Copy and Paste</h2>
+<h2>Focused Element Copy and Paste</h2>
 <p>The focused-element copy/paste example works because the element sets focus:</p>
 <div class="fragment"><div class="line">context.uiManager.shortcuts().setFocusedElement(rootId);</div>
 <div class="line">context.params.board-&gt;nodeIdByFocusedClayId[rootId.id] = context.params.nodeId;</div>
 </div><!-- fragment --><p>The shortcut callback receives that same id:</p>
 <div class="fragment"><div class="line">context.focusedElementId</div>
 </div><!-- fragment --><p>The app then maps it back to a model id, copies the model object, and later pastes a new model object. FlowUi does not copy element state or clone UI nodes by itself. The right unit to copy is the app data that causes the element to be drawn.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md935"></a>
-Chapter 6: Shortcut Lifetime</h1>
+<h1>Chapter 6: Shortcut Lifetime</h1>
 <p>Use <span class="tt">unregisterShortcut()</span> when a feature or panel unloads.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> (copyNode != 0) {</div>
 <div class="line">    (void)app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e">unregisterShortcut</a>(copyNode);</div>
@@ -546,13 +520,12 @@ Chapter 6: Shortcut Lifetime</h1>
 <div class="line"><span class="keywordflow">if</span> (focused.id != 0u) {</div>
 <div class="line">    <span class="comment">// A FocusedElement shortcut can be eligible.</span></div>
 <div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_a2d2a678228d439ea9889a30b1a6c94b2"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">FlowUi::ShortcutManager::focusedElement</a></div><div class="ttdeci">Clay_ElementId focusedElement() const</div><div class="ttdoc">Return the currently focused Clay element id.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:168</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_a2d2a678228d439ea9889a30b1a6c94b2"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">FlowUi::ShortcutManager::focusedElement</a></div><div class="ttdeci">Clay_ElementId focusedElement() const</div><div class="ttdoc">Return the currently focused Clay element id.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:172</div></div>
 </div><!-- fragment --><p>Use <span class="tt">clear()</span> when reloading all shortcut bindings, switching documents, or tearing down the editor.</p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#af08e7e2bb696cec1bf476a3afda5d6b1">clear</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_af08e7e2bb696cec1bf476a3afda5d6b1"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html#af08e7e2bb696cec1bf476a3afda5d6b1">FlowUi::ShortcutManager::clear</a></div><div class="ttdeci">void clear()</div><div class="ttdoc">Remove all registered shortcuts.</div></div>
 </div><!-- fragment --><p>That removes every registration and clears focused-element state.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md936"></a>
-Final Shape</h1>
+<h1>Final Shape</h1>
 <p>The final setup function registers text shortcuts, element shortcuts, and global fallbacks:</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>BoardShortcuts {</div>
 <div class="line">    <a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> textCopy = 0;</div>
@@ -629,7 +602,7 @@ Final Shape</h1>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keyword">const</span> BoardNode&amp; node : board.nodes) {</div>
 <div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>()</div>
-<div class="line">            .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">createElement</a>(kEditableNode, <span class="stringliteral">&quot;board/node/&quot;</span> + std::to_string(node.id))</div>
+<div class="line">            .<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kEditableNode, <span class="stringliteral">&quot;board/node/&quot;</span> + std::to_string(node.id))</div>
 <div class="line">            .setParameters(EditableNodeParams{</div>
 <div class="line">                .board = &amp;board,</div>
 <div class="line">                .nodeId = node.id,</div>
@@ -645,7 +618,7 @@ Final Shape</h1>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5c6ee53de89f3dd55d43e4742905414a"><div class="ttname"><a href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">FlowUi::App::endFrame</a></div><div class="ttdeci">void endFrame()</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_ad256201c79c7e07675e12b5bd0d8c8aa"><div class="ttname"><a href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">FlowUi::App::drawFrame</a></div><div class="ttdeci">void drawFrame()</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a68b455b65c1d5b8d625e2992de8819f5"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a68b455b65c1d5b8d625e2992de8819f5">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID)</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:171</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_adbbbc7d049cee3b9e97242fc44585c2d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">FlowUi::UiManager::resolveFont</a></div><div class="ttdeci">FontId resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</div><div class="ttdoc">Resolve a concrete Clay font id for a family/style request.</div></div>
 </div><!-- fragment --><p>The core model is that input fields manage text focus and caret editing, while shortcuts manage app commands. <span class="tt">FocusedInput</span> lets text editing win first, <span class="tt">FocusedElement</span> lets the selected FlowUi element run app-specific behavior, and <span class="tt">Global</span> provides fallback commands when no local context handles the chord. </p>
 </div></div><!-- contents -->
@@ -662,6 +635,7 @@ Final Shape</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a href="flowui_tutorials.html">Tutorials</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>
