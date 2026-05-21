@@ -1,5 +1,5 @@
 1. Optimise Structs
-2. Add support for Dynamic font baking
+2. 
 3. Add HarfBuzz support for more scripts
 4. Add ComputeQFamily Optional grab
 5. IconManager might have issues with frames in flight at LRU policy
