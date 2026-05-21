@@ -656,6 +656,9 @@ struct ParsedInstanceTarget {
 	std::string elementId{};
 	std::string sourceFile{};
 	uint32_t sourceLine = 0u;
+	uint32_t sourceColumn = 0u;
+	std::string sourceFunction{};
+	uint64_t sourceLocationHash = 0u;
 	std::vector<ParsedChange> changes{};
 };
 
@@ -2225,6 +2228,9 @@ bool parseInputModel(const JsonValue& root, OutputModel& outModel, std::string& 
 		const JsonValue* elementIdValue = findObjectField(item, "elementId");
 		const JsonValue* sourceFileValue = findObjectField(item, "sourceFile");
 		const JsonValue* sourceLineValue = findObjectField(item, "sourceLine");
+		const JsonValue* sourceColumnValue = findObjectField(item, "sourceColumn");
+		const JsonValue* sourceFunctionValue = findObjectField(item, "sourceFunction");
+		const JsonValue* sourceLocationHashValue = findObjectField(item, "sourceLocationHash");
 		const JsonValue* changesValue = findObjectField(item, "changes");
 		if (!definitionIdValue || !definitionNameValue || !flowIdValue || !elementIdValue ||
 			!sourceFileValue || !sourceLineValue || !changesValue) {
@@ -2239,6 +2245,24 @@ bool parseInputModel(const JsonValue& root, OutputModel& outModel, std::string& 
 			!jsonUInt32(*sourceLineValue, target.sourceLine)) {
 			outError = "Invalid instance entry fields.";
 			return false;
+		}
+		if (sourceColumnValue != nullptr) {
+			if (!jsonUInt32(*sourceColumnValue, target.sourceColumn)) {
+				outError = "Invalid instance.sourceColumn.";
+				return false;
+			}
+		}
+		if (sourceFunctionValue != nullptr) {
+			if (!jsonString(*sourceFunctionValue, target.sourceFunction)) {
+				outError = "Invalid instance.sourceFunction.";
+				return false;
+			}
+		}
+		if (sourceLocationHashValue != nullptr) {
+			if (!jsonUInt64(*sourceLocationHashValue, target.sourceLocationHash)) {
+				outError = "Invalid instance.sourceLocationHash.";
+				return false;
+			}
 		}
 		if (changesValue->kind != JsonValue::Kind::Array) {
 			outError = "Instance changes is not an array.";
@@ -2332,6 +2356,8 @@ bool isCodePosition(const ScanState& state) {
 	return !(state.inString || state.inChar || state.inLineComment || state.inBlockComment);
 }
 
+bool isIdentifierChar(char c);
+
 std::size_t findMatchingBracket(const std::string& text, std::size_t openPos, char openChar, char closeChar) {
 	if (openPos >= text.size() || text[openPos] != openChar) {
 		return std::string::npos;
@@ -2369,16 +2395,30 @@ std::size_t findOutside(const std::string& text, std::string_view needle, std::s
 	return std::string::npos;
 }
 
-std::size_t findCharOutside(const std::string& text, char needle, std::size_t begin) {
-	if (begin >= text.size()) {
-		return std::string::npos;
-	}
-	ScanState state{};
-	for (std::size_t i = begin; i < text.size(); ++i) {
-		if (isCodePosition(state) && text[i] == needle) {
-			return i;
+std::size_t findMethodCallOutside(
+	const std::string& text,
+	std::string_view methodName,
+	std::size_t begin,
+	std::size_t endExclusive) {
+	std::size_t search = begin;
+	while (search < endExclusive) {
+		const std::size_t pos = findOutside(text, methodName, search, endExclusive);
+		if (pos == std::string::npos) {
+			return std::string::npos;
 		}
-		scanAdvance(state, text, i);
+		const std::size_t nameEnd = pos + methodName.size();
+		const bool validPrefix = methodName.front() == '.' || pos == 0u || !isIdentifierChar(text[pos - 1u]);
+		const bool validSuffix = nameEnd >= text.size() || !isIdentifierChar(text[nameEnd]);
+		if (validPrefix && validSuffix) {
+			std::size_t openParen = nameEnd;
+			while (openParen < endExclusive && std::isspace(static_cast<unsigned char>(text[openParen])) != 0) {
+				++openParen;
+			}
+			if (openParen < endExclusive && text[openParen] == '(') {
+				return pos;
+			}
+		}
+		search = pos + methodName.size();
 	}
 	return std::string::npos;
 }
@@ -2922,6 +2962,114 @@ struct PatchResult {
 	std::vector<UnresolvedEntry> unresolved{};
 };
 
+std::size_t distanceBetweenOffsets(std::size_t a, std::size_t b) {
+	return (a > b) ? (a - b) : (b - a);
+}
+
+std::size_t findCreateElementForTarget(
+	const std::string& content,
+	std::size_t lineStart,
+	std::size_t lineEnd,
+	uint32_t sourceColumn) {
+	constexpr std::string_view kCreateElement = ".createElement";
+
+	std::size_t bestPos = std::string::npos;
+	std::size_t bestScore = std::numeric_limits<std::size_t>::max();
+	const std::size_t columnOffset =
+		(sourceColumn == 0u) ? std::string::npos : lineStart + static_cast<std::size_t>(sourceColumn - 1u);
+
+	std::size_t search = lineStart;
+	while (search < lineEnd) {
+		const std::size_t pos = findMethodCallOutside(content, kCreateElement, search, lineEnd);
+		if (pos == std::string::npos) {
+			break;
+		}
+		if (sourceColumn == 0u) {
+			return pos;
+		}
+
+		const std::size_t dotScore = distanceBetweenOffsets(pos, columnOffset);
+		const std::size_t nameScore = distanceBetweenOffsets(pos + 1u, columnOffset);
+		const std::size_t score = std::min(dotScore, nameScore);
+		if (score < bestScore) {
+			bestScore = score;
+			bestPos = pos;
+		}
+		search = pos + kCreateElement.size();
+	}
+
+	return bestPos;
+}
+
+struct ChainCall {
+	enum class Kind : uint8_t {
+		SetParameters,
+		MergeParams,
+	};
+
+	Kind kind = Kind::SetParameters;
+	std::string_view name{};
+	std::size_t pos = std::string::npos;
+	std::size_t openParen = std::string::npos;
+	std::size_t closeParen = std::string::npos;
+};
+
+std::vector<ChainCall> findParameterMutationCalls(
+	const std::string& content,
+	std::size_t begin,
+	std::size_t endExclusive) {
+	static constexpr std::pair<std::string_view, ChainCall::Kind> kMethodNames[] = {
+		{ ".setParameters", ChainCall::Kind::SetParameters },
+		{ ".setParams", ChainCall::Kind::SetParameters },
+		{ ".mergeParameters", ChainCall::Kind::MergeParams },
+		{ ".mergeParams", ChainCall::Kind::MergeParams },
+	};
+
+	std::vector<ChainCall> calls{};
+	for (const auto& [name, kind] : kMethodNames) {
+		std::size_t search = begin;
+		while (search < endExclusive) {
+			const std::size_t pos = findMethodCallOutside(content, name, search, endExclusive);
+			if (pos == std::string::npos) {
+				break;
+			}
+			const std::size_t openParen = content.find('(', pos + name.size());
+			if (openParen == std::string::npos || openParen >= endExclusive) {
+				search = pos + name.size();
+				continue;
+			}
+			const std::size_t closeParen = findMatchingBracket(content, openParen, '(', ')');
+			if (closeParen == std::string::npos || closeParen > endExclusive) {
+				calls.push_back(ChainCall{
+					.kind = kind,
+					.name = name,
+					.pos = pos,
+					.openParen = openParen,
+					.closeParen = std::string::npos,
+				});
+				search = pos + name.size();
+				continue;
+			}
+			calls.push_back(ChainCall{
+				.kind = kind,
+				.name = name,
+				.pos = pos,
+				.openParen = openParen,
+				.closeParen = closeParen,
+			});
+			search = closeParen + 1u;
+		}
+	}
+
+	std::sort(
+		calls.begin(),
+		calls.end(),
+		[](const ChainCall& lhs, const ChainCall& rhs) {
+			return lhs.pos < rhs.pos;
+		});
+	return calls;
+}
+
 PatchResult patchDefinitionTarget(std::string& content, const ParsedDefinitionTarget& target) {
 	PatchResult result{};
 
@@ -3058,9 +3206,8 @@ PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget
 		return result;
 	}
 
-	const std::string_view lineText(content.data() + lineStart, lineEnd - lineStart);
-	const std::size_t createLocalPos = lineText.find(".createElement");
-	if (createLocalPos == std::string::npos) {
+	const std::size_t createPos = findCreateElementForTarget(content, lineStart, lineEnd, target.sourceColumn);
+	if (createPos == std::string::npos) {
 		for (const ParsedChange& change : target.changes) {
 			result.unresolved.push_back(UnresolvedEntry{
 				.scope = "instance",
@@ -3077,7 +3224,6 @@ PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget
 		return result;
 	}
 
-	const std::size_t createPos = lineStart + createLocalPos;
 	const std::size_t createNamePos = createPos + std::string(".createElement").size();
 	const std::size_t createOpenParen = content.find('(', createNamePos);
 	if (createOpenParen == std::string::npos) {
@@ -3115,14 +3261,10 @@ PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget
 	}
 
 	const std::size_t afterCreate = createCloseParen + 1u;
-	const std::size_t chainSemicolon = findCharOutside(content, ';', afterCreate);
+	const std::size_t chainSemicolon = findTopLevelCharInRange(content, ';', afterCreate, content.size());
 	const std::size_t searchEnd = (chainSemicolon == std::string::npos) ? content.size() : chainSemicolon;
 	const std::size_t drawPos = findOutside(content, ".draw", afterCreate, searchEnd);
-	const std::size_t setParametersPos = [&]() -> std::size_t {
-		const std::size_t first = findOutside(content, ".setParameters", afterCreate, searchEnd);
-		if (first != std::string::npos) return first;
-		return findOutside(content, ".setParams", afterCreate, searchEnd);
-	}();
+	const std::vector<ChainCall> parameterCalls = findParameterMutationCalls(content, afterCreate, searchEnd);
 
 	std::unordered_map<std::string, std::string> fieldValues{};
 	for (const ParsedChange& change : target.changes) {
@@ -3132,8 +3274,8 @@ PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget
 		return result;
 	}
 
-	// No setParameters call: insert one after createElement(...) call.
-	if (setParametersPos == std::string::npos) {
+	// No parameter mutation call: insert one after createElement(...) call.
+	if (parameterCalls.empty()) {
 		std::string indent = {};
 		if (drawPos != std::string::npos) {
 			indent = leadingWhitespaceAt(content, drawPos);
@@ -3148,7 +3290,53 @@ PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget
 		return result;
 	}
 
-	const std::size_t setNameEnd = content.find('(', setParametersPos);
+	const auto firstMerge = std::find_if(
+		parameterCalls.begin(),
+		parameterCalls.end(),
+		[](const ChainCall& call) {
+			return call.kind == ChainCall::Kind::MergeParams;
+		});
+	if (firstMerge != parameterCalls.end()) {
+		const ChainCall& lastCall = parameterCalls.back();
+		if (lastCall.closeParen == std::string::npos) {
+			for (const ParsedChange& change : target.changes) {
+				result.unresolved.push_back(UnresolvedEntry{
+					.scope = "instance",
+					.definitionId = target.definitionId,
+					.flowId = target.flowId,
+					.elementId = target.elementId,
+					.sourceFile = target.sourceFile,
+					.sourceLine = target.sourceLine,
+					.fieldHash = change.fieldHash,
+					.fieldName = change.fieldName,
+					.reason = "Unbalanced parentheses in parameter mutation call.",
+				});
+			}
+			return result;
+		}
+		std::string callIndent = leadingWhitespaceAt(content, lastCall.pos);
+		if (callIndent.empty()) {
+			callIndent = leadingWhitespaceAt(content, createPos);
+			callIndent += "\t";
+		}
+		const std::string snippet = buildMergeParamsBlock(callIndent, fieldValues, false);
+		replaceRange(content, lastCall.closeParen + 1u, lastCall.closeParen + 1u, snippet);
+		result.patched = true;
+		return result;
+	}
+
+	const ChainCall* setParametersCall = nullptr;
+	for (const ChainCall& call : parameterCalls) {
+		if (call.kind == ChainCall::Kind::SetParameters) {
+			setParametersCall = &call;
+			break;
+		}
+	}
+	if (setParametersCall == nullptr) {
+		return result;
+	}
+	const std::size_t setParametersPos = setParametersCall->pos;
+	const std::size_t setNameEnd = setParametersCall->openParen;
 	if (setNameEnd == std::string::npos) {
 		for (const ParsedChange& change : target.changes) {
 			result.unresolved.push_back(UnresolvedEntry{
@@ -3165,7 +3353,7 @@ PatchResult patchInstanceTarget(std::string& content, const ParsedInstanceTarget
 		}
 		return result;
 	}
-	const std::size_t setClose = findMatchingBracket(content, setNameEnd, '(', ')');
+	const std::size_t setClose = setParametersCall->closeParen;
 	if (setClose == std::string::npos) {
 		for (const ParsedChange& change : target.changes) {
 			result.unresolved.push_back(UnresolvedEntry{
@@ -3359,6 +3547,9 @@ std::string buildOutputJson(
 		appendIndent(3); out += "\"elementId\":"; appendString(in.elementId); out += ",\n";
 		appendIndent(3); out += "\"sourceFile\":"; appendString(in.sourceFile); out += ",\n";
 		appendIndent(3); out += "\"sourceLine\":" + std::to_string(in.sourceLine) + ",\n";
+		appendIndent(3); out += "\"sourceColumn\":" + std::to_string(in.sourceColumn) + ",\n";
+		appendIndent(3); out += "\"sourceFunction\":"; appendString(in.sourceFunction); out += ",\n";
+		appendIndent(3); out += "\"sourceLocationHash\":" + std::to_string(in.sourceLocationHash) + ",\n";
 		appendIndent(3); out += "\"changes\": [\n";
 		for (std::size_t j = 0; j < in.changes.size(); ++j) {
 			const ParsedChange& ch = in.changes[j];
@@ -3440,6 +3631,7 @@ int main(int argc, char** argv) {
 		FileTargetScope scope = FileTargetScope::Instance;
 		std::size_t index = 0u;
 		uint32_t sourceLine = 0u;
+		uint32_t sourceColumn = 0u;
 	};
 
 	std::unordered_map<std::string, std::vector<FileTargetRef>> targetIndexesByFile{};
@@ -3478,6 +3670,7 @@ int main(int argc, char** argv) {
 			.scope = FileTargetScope::Definition,
 			.index = i,
 			.sourceLine = target.sourceLine,
+			.sourceColumn = target.sourceColumn,
 		});
 	}
 
@@ -3508,6 +3701,7 @@ int main(int argc, char** argv) {
 			.scope = FileTargetScope::Instance,
 			.index = i,
 			.sourceLine = target.sourceLine,
+			.sourceColumn = target.sourceColumn,
 		});
 	}
 
@@ -3544,6 +3738,9 @@ int main(int argc, char** argv) {
 			[](const FileTargetRef& lhs, const FileTargetRef& rhs) {
 				if (lhs.sourceLine != rhs.sourceLine) {
 					return lhs.sourceLine > rhs.sourceLine;
+				}
+				if (lhs.sourceColumn != rhs.sourceColumn) {
+					return lhs.sourceColumn > rhs.sourceColumn;
 				}
 				return static_cast<uint8_t>(lhs.scope) < static_cast<uint8_t>(rhs.scope);
 			});

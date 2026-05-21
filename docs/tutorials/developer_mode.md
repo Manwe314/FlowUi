@@ -265,7 +265,7 @@ For source patching, definition exports currently map back to the registered par
 
 `UiManager::createElement()` captures source location in dev mode. The exported JSON includes that location for instance overrides, and struct registration includes source metadata for definition-level defaults.
 
-Keep element creation calls direct and stable while doing visual iteration. The V1 updater expects to find `.createElement` on the captured source line, then it searches the chained call for `.setParameters(...)` or `.setParams(...)`.
+Keep element creation calls direct and stable while doing visual iteration. The V1 updater expects to find `.createElement` on the captured source line, then it searches the chained call for `.setParameters(...)`, `.setParams(...)`, or `mergeParams(...)`.
 
 ```cpp
 app.ui()
