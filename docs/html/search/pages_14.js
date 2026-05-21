@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['later_0',['Look Up Family Ids Later',['../md_docs_2tutorials_2fonts__and__text.html#autotoc_md870',1,'']]],
+  ['layout_1',['Create the Project Layout',['../md_docs_2tutorials_2quick__start.html#autotoc_md941',1,'']]],
+  ['layout_20engine_2',['Text Layout Engine',['../md_docs_2internals_2text__layout__engine.html',1,'']]],
+  ['leftcodepoint_20uint32_5ft_20rightcodepoint_3',['leftCodepoint uint32_t rightCodepoint',['../md_docs_2api_2all__public__api.html#autotoc_md278',1,'&lt;span class=&quot;tt&quot;&gt;static uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint)&lt;/span&gt;'],['../md_docs_2api_2font__manager.html#autotoc_md521',1,'&lt;span class=&quot;tt&quot;&gt;static uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint)&lt;/span&gt;']]],
+  ['leftcodepoint_20uint32_5ft_20rightcodepoint_20const_4',['leftCodepoint uint32_t rightCodepoint const',['../md_docs_2api_2all__public__api.html#autotoc_md280',1,'&lt;span class=&quot;tt&quot;&gt;float kerningAdvance(uint32_t leftCodepoint, uint32_t rightCodepoint) const&lt;/span&gt;'],['../md_docs_2api_2font__manager.html#autotoc_md523',1,'&lt;span class=&quot;tt&quot;&gt;float kerningAdvance(uint32_t leftCodepoint, uint32_t rightCodepoint) const&lt;/span&gt;']]],
+  ['library_5',['Add FlowUi as an External Library',['../md_docs_2tutorials_2quick__start.html#autotoc_md942',1,'']]],
+  ['lifecycle_6',['Lifecycle',['../md_docs_2concepts_2mental__model.html#autotoc_md786',1,'Core Lifecycle'],['../md_docs_2concepts_2frame__lifecycle.html',1,'Frame Lifecycle'],['../md_docs_2tutorials_2quick__start.html#autotoc_md948',1,'Write the App Lifecycle']]],
+  ['lifecycle_20for_20viewports_7',['Chapter 6: Frame Lifecycle for Viewports',['../md_docs_2tutorials_2viewports__vulkan__interop.html#autotoc_md983',1,'']]],
+  ['lifetime_8',['Lifetime',['../md_docs_2tutorials_2input__fields__and__shortcuts.html#autotoc_md935',1,'Chapter 6: Shortcut Lifetime'],['../md_docs_2tutorials_2viewports__vulkan__interop.html#autotoc_md974',1,'Resource Lifetime']]],
+  ['list_20clay_5felementid_20id_9',['list Clay_ElementId id',['../md_docs_2api_2all__public__api.html#autotoc_md250',1,'&lt;span class=&quot;tt&quot;&gt;static bool contains(const std::vector&amp;lt;Clay_ElementId&amp;gt;&amp;amp; list, Clay_ElementId id)&lt;/span&gt;'],['../md_docs_2api_2elements.html#autotoc_md458',1,'&lt;span class=&quot;tt&quot;&gt;static bool contains(const std::vector&amp;lt;Clay_ElementId&amp;gt;&amp;amp; list, Clay_ElementId id)&lt;/span&gt;']]],
+  ['loading_20plan_10',['The Loading Plan',['../md_docs_2tutorials_2fonts__and__text.html#autotoc_md865',1,'']]],
+  ['localchildid_20const_11',['localChildId const',['../md_docs_2api_2all__public__api.html#autotoc_md261',1,'&lt;span class=&quot;tt&quot;&gt;std::string createChildElementId(std::string_view localChildId) const&lt;/span&gt;'],['../md_docs_2api_2all__public__api.html#autotoc_md264',1,'&lt;span class=&quot;tt&quot;&gt;std::string createChildElementId(std::string_view localChildId) const&lt;/span&gt;'],['../md_docs_2api_2elements.html#autotoc_md468',1,'&lt;span class=&quot;tt&quot;&gt;std::string createChildElementId(std::string_view localChildId) const&lt;/span&gt;'],['../md_docs_2api_2elements.html#autotoc_md470',1,'&lt;span class=&quot;tt&quot;&gt;std::string createChildElementId(std::string_view localChildId) const&lt;/span&gt;']]],
+  ['location_20matters_12',['Why Source Location Matters',['../md_docs_2tutorials_2developer__mode.html#autotoc_md850',1,'']]],
+  ['look_20at_20application_20hpp_13',['Final look at &lt;span class=&quot;tt&quot;&gt;application.hpp&lt;/span&gt;',['../md_docs_2tutorials_2quick__start.html#autotoc_md957',1,'']]],
+  ['look_20up_20family_20ids_20later_14',['Look Up Family Ids Later',['../md_docs_2tutorials_2fonts__and__text.html#autotoc_md870',1,'']]],
+  ['look_20up_20the_20viewport_15',['Create and Look Up the Viewport',['../md_docs_2tutorials_2viewports__vulkan__interop.html#autotoc_md969',1,'']]],
+  ['lookup_20and_20rasterization_16',['Cache Lookup and Rasterization',['../md_docs_2tutorials_2images__icons__textures.html#autotoc_md907',1,'']]],
+  ['loop_20example_17',['Minimal App Loop Example',['../index.html#autotoc_md801',1,'']]]
+];

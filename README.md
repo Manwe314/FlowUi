@@ -68,6 +68,15 @@ int main() {
 }
 ```
 
+### Start Using FlowUi
+
+Start from a tagged release of FlowUi rather than an arbitrary commit:
+
+- [Grab the latest release](https://github.com/manwe314/FlowUi/releases)
+- Check the [changelog](CHANGELOG.md) for notes about the release you are using.
+- Read the generated [Doxygen documentation](https://manwe314.github.io/FlowUi/).
+- Use the [docs README](docs/README.md) as the main documentation jumping point. It is also the Doxygen main page and the index for the markdown docs in the [`docs/`](docs/) folder.
+
 ### Build Options
 
 | Option | Default | Description |

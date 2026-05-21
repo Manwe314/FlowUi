@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['makeapplication_0',['makeApplication',['../md_docs_2api_2all__public__api.html#autotoc_md18',1,'### &lt;b&gt;makeApplication&lt;/b&gt;'],['../md_docs_2api_2app.html#autotoc_md298',1,'### &lt;b&gt;makeApplication&lt;/b&gt;']]],
+  ['makeapplication_20const_20appconfig_20cfg_1',['makeApplication const AppConfig cfg',['../md_docs_2api_2all__public__api.html#autotoc_md19',1,'&lt;span class=&quot;tt&quot;&gt;App makeApplication(const AppConfig&amp;amp; cfg)&lt;/span&gt;'],['../md_docs_2api_2app.html#autotoc_md299',1,'&lt;span class=&quot;tt&quot;&gt;App makeApplication(const AppConfig&amp;amp; cfg)&lt;/span&gt;']]],
+  ['management_2',['Texture Registry and Renderer-Side Management',['../md_docs_2concepts_2managers.html#autotoc_md780',1,'']]],
+  ['manager_20api_3',['Manager API',['../md_docs_2api_2font__manager.html',1,'Font Manager API'],['../md_docs_2api_2icon__manager.html',1,'Icon Manager API'],['../md_docs_2api_2image__manager.html',1,'Image Manager API'],['../md_docs_2api_2input__field__manager.html',1,'Input Field Manager API'],['../md_docs_2api_2shortcut__manager.html',1,'Shortcut Manager API'],['../md_docs_2api_2ui__manager.html',1,'UI Manager API'],['../md_docs_2api_2viewport__manager.html',1,'Viewport Manager API']]],
+  ['managers_4',['Managers',['../md_docs_2concepts_2managers.html',1,'']]],
+  ['managers_20and_20subsystems_5',['Managers and Subsystems',['../md_docs_2concepts_2mental__model.html#autotoc_md788',1,'']]],
+  ['managers_20exist_6',['Why Managers Exist',['../md_docs_2concepts_2managers.html#autotoc_md771',1,'']]],
+  ['managers_20work_20together_20during_20a_20frame_7',['How Managers Work Together During a Frame',['../md_docs_2concepts_2managers.html#autotoc_md781',1,'']]],
+  ['manual_20export_8',['Manual Export',['../md_docs_2tutorials_2developer__mode.html#autotoc_md853',1,'']]],
+  ['map_9',['Documentation Map',['../index.html#autotoc_md803',1,'']]],
+  ['markdown_20index_10',['API Markdown Index',['../index.html#autotoc_md806',1,'']]],
+  ['matters_11',['Matters',['../md_docs_2tutorials_2input__fields__and__shortcuts.html#autotoc_md915',1,'Why Focus Matters'],['../md_docs_2tutorials_2developer__mode.html#autotoc_md850',1,'Why Source Location Matters']]],
+  ['means_12',['What the JSON Means',['../md_docs_2tutorials_2developer__mode.html#autotoc_md854',1,'']]],
+  ['mental_20model_13',['Core Mental Model',['../md_docs_2concepts_2mental__model.html',1,'']]],
+  ['mergefn_14',['mergeFn',['../md_docs_2api_2all__public__api.html#autotoc_md239',1,'&lt;span class=&quot;tt&quot;&gt;template &amp;lt;typename MergeFn&amp;gt; ElementBuilder&amp;amp; mergeParams(MergeFn&amp;amp;&amp;amp; mergeFn)&lt;/span&gt;'],['../md_docs_2api_2elements.html#autotoc_md448',1,'&lt;span class=&quot;tt&quot;&gt;template &amp;lt;typename MergeFn&amp;gt; ElementBuilder&amp;amp; mergeParams(MergeFn&amp;amp;&amp;amp; mergeFn)&lt;/span&gt;']]],
+  ['mergefn_20mergefn_15',['MergeFn mergeFn',['../md_docs_2api_2all__public__api.html#autotoc_md239',1,'&lt;span class=&quot;tt&quot;&gt;template &amp;lt;typename MergeFn&amp;gt; ElementBuilder&amp;amp; mergeParams(MergeFn&amp;amp;&amp;amp; mergeFn)&lt;/span&gt;'],['../md_docs_2api_2elements.html#autotoc_md448',1,'&lt;span class=&quot;tt&quot;&gt;template &amp;lt;typename MergeFn&amp;gt; ElementBuilder&amp;amp; mergeParams(MergeFn&amp;amp;&amp;amp; mergeFn)&lt;/span&gt;']]],
+  ['mergeparams_16',['mergeParams',['../md_docs_2api_2all__public__api.html#autotoc_md238',1,'### &lt;b&gt;mergeParams&lt;/b&gt;'],['../md_docs_2api_2elements.html#autotoc_md447',1,'### &lt;b&gt;mergeParams&lt;/b&gt;'],['../md_docs_2tutorials_2custom__elements.html#autotoc_md828',1,'setParameters and mergeParams']]],
+  ['mergeparams_20mergefn_20mergefn_17',['mergeParams MergeFn mergeFn',['../md_docs_2api_2all__public__api.html#autotoc_md239',1,'&lt;span class=&quot;tt&quot;&gt;template &amp;lt;typename MergeFn&amp;gt; ElementBuilder&amp;amp; mergeParams(MergeFn&amp;amp;&amp;amp; mergeFn)&lt;/span&gt;'],['../md_docs_2api_2elements.html#autotoc_md448',1,'&lt;span class=&quot;tt&quot;&gt;template &amp;lt;typename MergeFn&amp;gt; ElementBuilder&amp;amp; mergeParams(MergeFn&amp;amp;&amp;amp; mergeFn)&lt;/span&gt;']]],
+  ['minimal_20app_20loop_20example_18',['Minimal App Loop Example',['../index.html#autotoc_md801',1,'']]],
+  ['missing_20styles_19',['Resolve Missing Styles',['../md_docs_2tutorials_2fonts__and__text.html#autotoc_md874',1,'']]],
+  ['missing_20weights_20',['Resolve Missing Weights',['../md_docs_2tutorials_2fonts__and__text.html#autotoc_md873',1,'']]],
+  ['mode_21',['Mode',['../md_docs_2tutorials_2developer__mode.html#autotoc_md836',1,'Chapter 2: Enable Developer Mode'],['../md_docs_2tutorials_2custom__elements.html#autotoc_md829',1,'Chapter 6: Register for Developer Mode'],['../md_docs_2tutorials_2developer__mode.html',1,'Developer Mode'],['../md_docs_2tutorials_2quick__start.html#autotoc_md956',1,'Write a Small Helper and Register to Developer Mode']]],
+  ['mode_20and_20dev_20tooling_22',['Developer Mode and Dev Tooling',['../md_docs_2concepts_2mental__model.html#autotoc_md789',1,'']]],
+  ['model_23',['Model',['../md_docs_2concepts_2mental__model.html',1,'Core Mental Model'],['../md_docs_2concepts_2managers.html#autotoc_md772',1,'Ownership Model'],['../md_docs_2tutorials_2images__icons__textures.html#autotoc_md885',1,'TextureRef Model']]],
+  ['msaa_24',['MSAA',['../md_docs_2api_2config.html#autotoc_md358',1,'### &lt;b&gt;MSAA&lt;/b&gt;'],['../md_docs_2api_2config.html#autotoc_md359',1,'&lt;span class=&quot;tt&quot;&gt;enum class MSAA&lt;/span&gt;']]]
+];
