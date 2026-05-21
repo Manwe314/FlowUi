@@ -275,7 +275,7 @@ static TexturedImagePlacement ResolveTexturedImagePlacement(
 static bool LayoutMsdfTextToGlyphs(
 	const Clay_TextRenderData& text,
 	const Clay_BoundingBox& bounds,
-	const FontManager* fontManager,
+	const FlowUi::FontManager* fontManager,
 	float pointsToPixelsScale,
 	std::vector<GlyphQuad>& outGlyphs,
 	uint32_t& outAtlasLayer,
@@ -403,7 +403,7 @@ static void EmitSolidBorder(
 
 static void EmitTextMsdf(
 	const Clay_RenderCommand& command,
-	const FontManager* fontManager,
+	const FlowUi::FontManager* fontManager,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -515,7 +515,7 @@ static void BuildInstancesAndRunsFromClay(
 	const Clay_RenderCommandArray& commands,
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
-	const FontManager* fontManager,
+	const FlowUi::FontManager* fontManager,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -1418,7 +1418,7 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 	}
 }
 
-void VulkanUiRenderer::setFontManager(const FontManager* manager) {
+void VulkanUiRenderer::setFontManager(const FlowUi::FontManager* manager) {
 	fontManager_ = manager;
 	boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
 }

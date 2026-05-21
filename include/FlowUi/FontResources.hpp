@@ -108,7 +108,7 @@ struct FontVariantData {
 /**
  * @brief Loaded font face and its baked variants.
  *
- * FontFaceData is returned by FontManager::getFontById() for applications that
+ * FontFaceData is returned by FlowUi::FontManager::getFontById() for applications that
  * need direct access to loaded font metrics or atlas placement data.
  */
 struct FontFaceData {
@@ -153,7 +153,7 @@ struct FontFaceData {
 /**
  * @brief Vulkan resources for the font atlas array.
  *
- * AtlasArrayResource is returned by FontManager::getAtlasResource() for
+ * AtlasArrayResource is returned by FlowUi::FontManager::getAtlasResource() for
  * renderer integrations that need to bind FlowUi's font atlas directly.
  */
 struct AtlasArrayResource {

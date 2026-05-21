@@ -24,11 +24,10 @@
 #include "devMode/devRuntime.hpp"
 #endif
 
-struct FontManager;
-
 namespace FlowUi {
 
 class App;
+struct FontManager;
 
 /** @addtogroup flowui_ui_manager
  * @{
@@ -383,9 +382,9 @@ public:
 	/**
 	 * @brief Resolve a concrete Clay font id for a family/style request.
 	 *
-	 * This forwards to FontManager when the App-owned font manager is connected
+	 * This forwards to FlowUi::FontManager when the App-owned font manager is connected
 	 * to UiManager. It is useful in element callbacks that receive UiManager but
-	 * not FontManager directly.
+	 * not FlowUi::FontManager directly.
 	 *
 	 * @param familyId Existing logical font family id.
 	 * @param weight Requested CSS-style font weight.
@@ -402,7 +401,7 @@ public:
 	/**
 	 * @brief Resolve a concrete Clay font id for a named family/style request.
 	 *
-	 * This forwards to FontManager when available and returns 0 when the family
+	 * This forwards to FlowUi::FontManager when available and returns 0 when the family
 	 * name cannot be resolved.
 	 *
 	 * @param familyName Existing logical font family name string.
@@ -432,7 +431,7 @@ private:
 	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
 	Clay_RenderCommandArray endFrame();
 	const detail::InputFieldFrameOverrides& inputFieldFrameOverrides() const { return inputFieldManager_.frameOverrides(); }
-	void setFontManager(const ::FontManager* fontManager);
+	void setFontManager(const FontManager* fontManager);
 	void setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor);
 	void setClipboardAccessors(
 		std::function<void(std::string_view)> setClipboardTextAccessor,
@@ -481,7 +480,7 @@ private:
 	CursorType cursor_ = CursorType::Arrow;
 	CursorType previousCursor_ = CursorType::Arrow;
 	uint8_t cursorPriority_ = 0;
-	const ::FontManager* fontManager_ = nullptr;
+	const FontManager* fontManager_ = nullptr;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
 
 };

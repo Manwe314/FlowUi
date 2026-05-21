@@ -12,9 +12,9 @@
 #include "FlowUi/PublicStructs.hpp"
 #include "clay.h"
 
-struct FontManager;
-
 namespace FlowUi {
+
+struct FontManager;
 
 /** @addtogroup flowui_app
  * @{

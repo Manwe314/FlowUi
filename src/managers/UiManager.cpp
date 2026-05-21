@@ -102,7 +102,7 @@ namespace FlowUi
 			this);
 	}
 
-		void UiManager::setFontManager(const ::FontManager* fontManager) {
+		void UiManager::setFontManager(const FontManager* fontManager) {
 			fontManager_ = fontManager;
 			inputFieldManager_.setFontManager(fontManager_, pointsToPixelsScale_);
 		}

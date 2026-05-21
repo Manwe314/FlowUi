@@ -43,7 +43,7 @@ struct TextLayoutResult {
 	float distanceRangePx = 2.0f;
 };
 
-inline const FlowUi::Font::FontFaceData* ResolveFontFace(const FontManager* fontManager, uint16_t fontId) {
+inline const FlowUi::Font::FontFaceData* ResolveFontFace(const FlowUi::FontManager* fontManager, uint16_t fontId) {
 	if (!fontManager) {
 		return nullptr;
 	}

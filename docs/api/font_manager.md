@@ -14,7 +14,7 @@ Stable concrete font id consumed by Clay text configuration. It identifies one l
 
 #### `using FontFamilyId = uint32_t`
 
-Stable logical font family id returned by FontManager. It identifies a group of concrete faces used for style resolution.
+Stable logical font family id returned by `FlowUi::FontManager`. It identifies a group of concrete faces used for style resolution.
 
 ## Enums
 
