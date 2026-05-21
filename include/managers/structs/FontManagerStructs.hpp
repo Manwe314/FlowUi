@@ -14,7 +14,7 @@ namespace FlowUi {
 /** @brief Stable concrete font id consumed by Clay text configuration. */
 using FontId = uint16_t;
 
-/** @brief Stable logical font family id returned by FontManager. */
+/** @brief Stable logical font family id returned by FlowUi::FontManager. */
 using FontFamilyId = uint32_t;
 
 /** @brief Font style requested when resolving a family face. */

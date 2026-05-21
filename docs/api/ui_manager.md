@@ -7,14 +7,14 @@
 
 #### `using FontId = uint16_t`
 
-Concrete font id consumed by Clay text configuration. UiManager can resolve this through the connected FontManager.
+Concrete font id consumed by Clay text configuration. UiManager can resolve this through the connected `FlowUi::FontManager`.
 
 ### **FontFamilyId**
 ---
 
 #### `using FontFamilyId = uint32_t`
 
-Logical font family id returned by FontManager. UiManager accepts this for font resolution.
+Logical font family id returned by `FlowUi::FontManager`. UiManager accepts this for font resolution.
 
 ## Enums
 

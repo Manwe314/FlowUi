@@ -188,9 +188,9 @@ app.drawFrame();
 ### **fonts** `1/2`
 ---
 
-#### `FontManager& fonts()`
+#### `FlowUi::FontManager& fonts()`
 
-- **Returns:** `FontManager&`
+- **Returns:** `FlowUi::FontManager&`
 - **Arguments:** none.
 
 Returns the mutable font manager owned by the app. Use it to create font families, add faces, resolve fonts, or inspect the atlas resource.
@@ -204,9 +204,9 @@ FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
 ### **fonts** `2/2`
 ---
 
-#### `const FontManager& fonts() const`
+#### `const FlowUi::FontManager& fonts() const`
 
-- **Returns:** `const FontManager&`
+- **Returns:** `const FlowUi::FontManager&`
 - **Arguments:** none.
 
 Returns the immutable font manager owned by the app. Use this for read-only font lookup from const app contexts.

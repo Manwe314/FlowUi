@@ -13,11 +13,10 @@
 #include "managers/structs/InputFieldManagerStructs.hpp"
 #include "managers/structs/InputStructs.hpp"
 
-struct FontManager;
-
 namespace FlowUi {
 
 class UiManager;
+struct FontManager;
 
 /** @addtogroup flowui_input_field_manager
  * @{
@@ -287,7 +286,7 @@ private:
 	};
 
 	void setConfig(const InputManagerConfig& config);
-	void setFontManager(const ::FontManager* fontManager, float pointsToPixelsScale);
+	void setFontManager(const FontManager* fontManager, float pointsToPixelsScale);
 	void beginFrame(const FrameInput& currentInput, const FrameInput& previousInput);
 	Clay_RenderCommandArray endFrame(const Clay_RenderCommandArray& renderCommands);
 	const detail::InputFieldFrameOverrides& frameOverrides() const { return frameOverrides_; }
@@ -329,7 +328,7 @@ private:
 	std::unordered_map<std::string, FieldState> fieldsById_{};
 	std::string primaryFieldId_{};
 	InputManagerConfig config_{};
-	const ::FontManager* fontManager_ = nullptr;
+	const FontManager* fontManager_ = nullptr;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
 	KeyRepeatState leftKeyRepeat_{};
 	KeyRepeatState rightKeyRepeat_{};

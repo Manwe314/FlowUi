@@ -17,7 +17,6 @@ struct VulkanContext;
 
 namespace FlowUi {
 class App;
-}
 
 /** @addtogroup flowui_font_manager
  * @{
@@ -26,7 +25,7 @@ class App;
 /**
  * @brief Loads font faces and owns the atlas used by FlowUi text rendering.
  *
- * FontManager registers concrete font faces, groups them into logical font
+ * FlowUi::FontManager registers concrete font faces, groups them into logical font
  * families, and resolves a requested family/weight/style into the concrete
  * FontId consumed by Clay text configuration. Applications normally access it
  * through App::fonts() after App initialization.
@@ -83,7 +82,7 @@ struct FontManager {
 	/**
 	 * @brief Number of atlas array layers added when the font atlas grows.
 	 *
-	 * When registered faces exceed the current capacity, FontManager creates a
+	 * When registered faces exceed the current capacity, FlowUi::FontManager creates a
 	 * larger atlas image and copies the already-uploaded layers into it. Capacity
 	 * grows in fixed steps of this many layers to avoid reallocating for every
 	 * additional face.
@@ -95,7 +94,7 @@ struct FontManager {
 	 *
 	 * The family name is used for string-based lookup and each face is loaded
 	 * immediately. If createInfo.name is empty, the family is named "Default".
-	 * Family ids are stable until FontManager is destroyed.
+	 * Family ids are stable until FlowUi::FontManager is destroyed.
 	 *
 	 * Face paths ending in .arfont load baked font assets. Paths to .ttf files
 	 * only work when FlowUi is built with runtime font baking enabled.
@@ -288,7 +287,7 @@ struct FontManager {
 	 * @brief Return the active Vulkan font atlas array resource.
 	 *
 	 * Render integrations use this to bind the atlas image view and sampler. The
-	 * returned reference is owned by FontManager and remains valid until the font
+	 * returned reference is owned by FlowUi::FontManager and remains valid until the font
 	 * manager is destroyed or reinitialized. Check bindingRevision to know when a
 	 * descriptor using the atlas should be refreshed.
 	 *
@@ -308,7 +307,7 @@ struct FontManager {
 	const FlowUi::Font::AtlasArrayResource& getAtlasResource() const { return atlas_; }
 
 private:
-	friend class FlowUi::App;
+	friend class App;
 
 	void init(VulkanContext& vk, uint32_t atlasSize);
 	void destroy(VulkanContext& vk);
@@ -343,3 +342,5 @@ private:
 };
 
 /** @} */
+
+} // namespace FlowUi

@@ -24,6 +24,8 @@
 
 namespace Font = FlowUi::Font;
 
+namespace FlowUi {
+
 namespace {
 
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
@@ -1233,3 +1235,5 @@ void FontManager::destroy(VulkanContext& vk) {
 	uploadCommandPool_ = VK_NULL_HANDLE;
 	vk_ = nullptr;
 }
+
+} // namespace FlowUi

@@ -69,7 +69,7 @@ void InputFieldManager::setConfig(const InputManagerConfig& config) {
 	config_ = config;
 }
 
-void InputFieldManager::setFontManager(const ::FontManager* fontManager, float pointsToPixelsScale) {
+void InputFieldManager::setFontManager(const FontManager* fontManager, float pointsToPixelsScale) {
 	fontManager_ = fontManager;
 	pointsToPixelsScale_ = std::max(pointsToPixelsScale, 1.0e-6f);
 }
