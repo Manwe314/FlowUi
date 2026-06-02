@@ -86,6 +86,26 @@ imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture("
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9).
 
+### **inputContentElement**
+
+
+#### `Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig& textConfig) const`
+
+- **Returns:** `Clay_ElementDeclaration`
+- **Arguments:** `textConfig` text configuration used by the input field text.
+
+Creates a stable inner content element declaration for input fields. The returned declaration grows horizontally and uses a fixed height based on the resolved font line height.
+
+**Example:**
+
+```cpp
+CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {
+    CLAY_TEXT(context.uiManager.toClayString(field.text), CLAY_TEXT_CONFIG(textConfig));
+}
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).
+
 ### **toClaySID**
 
 

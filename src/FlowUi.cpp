@@ -739,6 +739,12 @@ bool App::shouldClose() const {
 	return impl_->window->shouldClose();
 }
 
+void App::setShouldClose(int value) {
+	if (impl_ && impl_->window) {
+		impl_->window->setShouldClose(value);
+	}
+}
+
 void App::beginFrame() {
 	if (impl_) {
 		impl_->beginFrame();

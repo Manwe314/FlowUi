@@ -222,6 +222,23 @@ public:
 	 */
 	bool shouldClose() const;
 
+	/** @brief Set whether the window backend should request shutdown.
+	 *
+	 * Use this function to set or clear the window close flag.
+	 *
+	 * @param value Value passed to the GLFW built-in window backend. A value of 0 clears
+	 * the GLFW window close flag; a non-zero value sets the GLFW window close flag.
+	 * 
+	 * Example:
+	 * @code{.cpp}
+	 * while (!application.shouldClose()) {
+	 * 	if (error()) {
+	 * 		application.setShouldClose(1);
+	 * 	}
+	 * }
+	 */
+	void setShouldClose(int value);
+
 	/** @brief Begin a frame and prepare input/UI state.
 	 *
 	 * Polls the window backend and prepares per-frame UI resources and state.

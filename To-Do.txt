@@ -1,5 +1,5 @@
 1. Optimise Structs
-2. 
+2. expand and polish input field Manager
 3. Add HarfBuzz support for more scripts
 4. Add ComputeQFamily Optional grab
 5. IconManager might have issues with frames in flight at LRU policy
@@ -20,6 +20,8 @@
 20. debugg mesages
 21. add fixed extent option in viewPort CreateInfo for non ndynamic viewport sizing
 22. Inter font has some small artifacts text rendering need help.
+23. add select all text helper for input fields.
+
 
 For IconManager:
 	- Uploads are synchronous (vkQueueWaitIdle per raster upload), so heavy churn can stall frames.

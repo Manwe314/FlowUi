@@ -188,6 +188,12 @@ public:
 		return window ? glfwWindowShouldClose(window) == GLFW_TRUE : true;
 	}
 
+	void setShouldClose(int value) override {
+		if (window) {
+			glfwSetWindowShouldClose(window, value);
+		}
+	}
+
 	std::vector<const char*> requiredInstanceExtensions() const override {
 		uint32_t count = 0;
 		const char** extensions = glfwGetRequiredInstanceExtensions(&count);

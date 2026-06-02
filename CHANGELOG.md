@@ -81,6 +81,40 @@ library moves toward a stable release.
 
 - No dedicated security review has been completed for v0.9.1.
 
+## [0.9.2] - 2026-06-02
+
+
+### Added
+
+- Added `App::setShouldClose(int)` for setting or clearing the native window close flag.
+- Added `InputFieldManager::replaceText(std::string_view, std::string_view, bool)` for replacing managed input field text while optionally preserving caret state.
+- Added `UiManager::inputContentElement(const Clay_TextElementConfig&)` for creating stable inner input-field content layout declarations.
+
+### Changed
+
+- Updated input field caret fallback behavior so empty fields prefer text element bounds and preserve consistent caret height after text is deleted.
+- Updated public API documentation for the new App, input field manager, and UI manager APIs.
+
+### Deprecated
+
+- Nothing deprecated
+
+### Removed
+
+- Nothing removed.
+
+### Fixed
+
+- Fixed empty input field caret fallback alignment and height consistency for padded input layouts.
+
+### Known Limitations
+
+- Still same as v0.9.0
+
+### Security
+
+- No dedicated security review has been completed for v0.9.2.
+
 <!-- Release links -->
 
 

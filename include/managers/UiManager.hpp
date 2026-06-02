@@ -108,6 +108,32 @@ public:
 	TextureRef* storeTexture(const TextureRef& textureRef);
 
 	/**
+	 * @brief Create a stable inner input-field content element declaration.
+	 *
+	 * This helper returns a Clay element declaration intended for the inner
+	 * content node of an input field. The width grows to available space and the
+	 * height is fixed to the resolved font line height for textConfig. Use it
+	 * between the visual/padded outer input box and the Clay text element so an
+	 * empty field keeps a stable layout area for caret rendering.
+	 *
+	 * @param textConfig Clay text configuration that will be used for the field text.
+	 * @return Clay element declaration with grow width and fixed line-height height.
+	 *
+	 * @code{.cpp}
+	 * CLAY(outerId, outer) {
+	 *     CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {
+	 *         CLAY(textId, {}) {
+	 *             CLAY_TEXT(
+	 *                 context.uiManager.toClayString(field.text),
+	 *                 CLAY_TEXT_CONFIG(textConfig));
+	 *         }
+	 *     }
+	 * }
+	 * @endcode
+	 */
+	Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig& textConfig) const;
+
+	/**
 	 * @brief Convert a string id to a Clay string id.
 	 *
 	 * This is a convenience wrapper around CLAY_SID using UiManager frame string

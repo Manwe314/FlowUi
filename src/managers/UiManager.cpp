@@ -125,6 +125,28 @@ namespace FlowUi
 			return static_cast<bool>(setClipboardTextAccessor_) && static_cast<bool>(getClipboardTextAccessor_);
 		}
 
+		Clay_ElementDeclaration UiManager::inputContentElement(const Clay_TextElementConfig& textConfig) const {
+			float lineHeight = static_cast<float>(std::max<uint16_t>(1u, textConfig.fontSize)) * pointsToPixelsScale_;
+
+			const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, textConfig.fontId);
+			const FlowUi::Font::FontVariantData* variant = fontFace ? fontFace->defaultVariant() : nullptr;
+			if (variant && variant->emSize > 0.0f) {
+				const float emPixels = textConfig.fontSize > 0
+					? static_cast<float>(textConfig.fontSize) * pointsToPixelsScale_
+					: variant->fontSizePx;
+				if (emPixels > 0.0f) {
+					lineHeight = variant->lineHeight * (emPixels / variant->emSize);
+				}
+			}
+
+			Clay_ElementDeclaration declaration{};
+			declaration.layout.sizing = Clay_Sizing{
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_FIXED(std::max(1.0f, lineHeight)),
+			};
+			return declaration;
+		}
+
 		void UiManager::setClipboardAccessors(
 			std::function<void(std::string_view)> setClipboardTextAccessor,
 			std::function<std::string()> getClipboardTextAccessor) {

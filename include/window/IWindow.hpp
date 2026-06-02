@@ -14,6 +14,7 @@ struct IWindowBackend {
 
 	virtual void pollEvents() = 0;
 	virtual bool shouldClose() const = 0;
+	virtual void setShouldClose(int value) = 0;
 
 	virtual std::vector<const char*> requiredInstanceExtensions() const = 0;
 	virtual VkSurfaceKHR createSurface(VkInstance instance) = 0;
