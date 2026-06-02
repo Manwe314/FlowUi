@@ -546,6 +546,10 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			const Clay_TextRenderData& textData = command.renderData.text;
 			const Clay_StringSlice sourceSlice = textData.stringContents;
 			const int commandByteLength = std::max(0, sourceSlice.length);
+			if (command.boundingBox.height > 0.0f) {
+				field.fallbackMetrics.valid = true;
+				field.fallbackMetrics.height = command.boundingBox.height;
+			}
 
 			std::vector<SelectionRange> localSelections;
 			for (const SelectionRange& range : runtime.mergedSelections) {
@@ -657,10 +661,19 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				continue;
 			}
 
-			if (runtime.hasContentBounds) {
-				const float caretY = runtime.contentBounds.y - config_.caretHeightOverflowTopPx;
-				const float caretH = runtime.contentBounds.height + config_.caretHeightOverflowTopPx + config_.caretHeightOverflowBottomPx;
-				pushCaretRect(maxInsertionIndex, runtime.contentBounds.x, caretY, caretH);
+			const bool hasFallbackBounds = runtime.hasTextBounds || runtime.hasContentBounds;
+			if (hasFallbackBounds) {
+				const Clay_BoundingBox fallbackBounds =
+					runtime.hasTextBounds ? runtime.textBounds : runtime.contentBounds;
+				float fallbackHeight = fallbackBounds.height;
+				if (field.fallbackMetrics.valid && field.fallbackMetrics.height > 0.0f) {
+					fallbackHeight = field.fallbackMetrics.height;
+				} else if (fallbackHeight <= 0.0f && runtime.hasContentBounds) {
+					fallbackHeight = runtime.contentBounds.height;
+				}
+				const float caretY = fallbackBounds.y - config_.caretHeightOverflowTopPx;
+				const float caretH = fallbackHeight + config_.caretHeightOverflowTopPx + config_.caretHeightOverflowBottomPx;
+				pushCaretRect(maxInsertionIndex, fallbackBounds.x, caretY, caretH);
 			}
 		}
 	}
@@ -876,6 +889,41 @@ bool InputFieldManager::removeField(std::string_view fieldId) {
 	if (pointerDrag_.fieldId == key) {
 		pointerDrag_ = PointerDragState{};
 	}
+	return true;
+}
+
+bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret) {
+	if (fieldId.empty()) {
+		return false;
+	}
+
+	const std::string key(fieldId);
+	const auto it = fieldsById_.find(key);
+	if (it == fieldsById_.end() || it->second.text == text) {
+		return false;
+	}
+
+	FieldState& field = it->second;
+	field.text = std::string(text);
+	if (preserveCaret) {
+		clampCaretsToText(field);
+	} else {
+		field.carets.clear();
+		if (primaryFieldId_ == key) {
+			primaryFieldId_.clear();
+			for (const auto& [candidateId, candidate] : fieldsById_) {
+				if (!candidate.carets.empty()) {
+					primaryFieldId_ = candidateId;
+					break;
+				}
+			}
+		}
+		if (pointerDrag_.fieldId == key) {
+			pointerDrag_ = PointerDragState{};
+		}
+	}
+
+	markCaretBlinkReset();
 	return true;
 }
 

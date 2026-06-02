@@ -294,6 +294,24 @@ while (!app.shouldClose()) { app.beginFrame(); app.endFrame(); app.drawFrame(); 
 
 See: [Full Doxygen reference](classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913).
 
+### **setShouldClose**
+
+
+#### `void setShouldClose(int value)`
+
+- **Returns:** `void`
+- **Arguments:** `value` close flag value to pass to the window backend.
+
+Sets or clears the window close flag. With the GLFW backend, `0` clears the GLFW window close flag and a non-zero value sets the GLFW window close flag.
+
+**Example:**
+
+```cpp
+app.setShouldClose(1);
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1App.html).
+
 ### **beginFrame**
 
 
@@ -727,6 +745,26 @@ imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture("
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9).
+
+### **inputContentElement**
+
+
+#### `Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig& textConfig) const`
+
+- **Returns:** `Clay_ElementDeclaration`
+- **Arguments:** `textConfig` text configuration used by the input field text.
+
+Creates a stable inner content element declaration for input fields. The returned declaration grows horizontally and uses a fixed height based on the resolved font line height.
+
+**Example:**
+
+```cpp
+CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {
+    CLAY_TEXT(context.uiManager.toClayString(field.text), CLAY_TEXT_CONFIG(textConfig));
+}
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).
 
 ### **toClaySID**
 
@@ -1473,6 +1511,24 @@ const bool removed = app.ui().inputFields().removeField("settings/name");
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a).
+
+### **replaceText**
+
+
+#### `bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true)`
+
+- **Returns:** `bool`
+- **Arguments:** `fieldId` field state to update, `text` replacement text, `preserveCaret` whether to keep and clamp caret state.
+
+Replaces stored text for an existing field. By default, active carets and selections are preserved and clamped to the new text; pass `false` to clear active carets from that field.
+
+**Example:**
+
+```cpp
+const bool changed = app.ui().inputFields().replaceText("settings/name", externalName, false);
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html).
 
 ### **clear**
 

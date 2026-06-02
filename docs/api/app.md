@@ -149,6 +149,24 @@ while (!app.shouldClose()) { app.beginFrame(); app.endFrame(); app.drawFrame(); 
 
 See: [Full Doxygen reference](classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913).
 
+### **setShouldClose**
+
+
+#### `void setShouldClose(int value)`
+
+- **Returns:** `void`
+- **Arguments:** `value` close flag value to pass to the window backend.
+
+Sets or clears the window close flag. With the GLFW backend, `0` clears the GLFW window close flag and a non-zero value sets the GLFW window close flag.
+
+**Example:**
+
+```cpp
+app.setShouldClose(1);
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1App.html).
+
 ### **beginFrame**
 
 

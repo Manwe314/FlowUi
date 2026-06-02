@@ -95,6 +95,24 @@ const bool removed = app.ui().inputFields().removeField("settings/name");
 
 See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a).
 
+### **replaceText**
+
+
+#### `bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true)`
+
+- **Returns:** `bool`
+- **Arguments:** `fieldId` field state to update, `text` replacement text, `preserveCaret` whether to keep and clamp caret state.
+
+Replaces stored text for an existing field. By default, active carets and selections are preserved and clamped to the new text; pass `false` to clear active carets from that field.
+
+**Example:**
+
+```cpp
+const bool changed = app.ui().inputFields().replaceText("settings/name", externalName, false);
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html).
+
 ### **clear**
 
 
