@@ -17,6 +17,9 @@
 #include <vector>
 
 #include "internal/Vma.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/performanceDiagnostics.hpp"
+#endif
 
 namespace {
 
@@ -1554,7 +1557,12 @@ void VulkanUiRenderer::render(
 	VkImageView targetView,
 	uint32_t frameIndex,
 	float uiToFramebufferScaleX,
-	float uiToFramebufferScaleY)
+	float uiToFramebufferScaleY
+#if FLOW_UI_DEV_MODE
+	,
+	FlowUi::devMode::FrameDiagnostics* diagnostics
+#endif
+	)
 {
 	if (cmd == VK_NULL_HANDLE || targetView == VK_NULL_HANDLE) {
 		return;
@@ -1593,6 +1601,11 @@ void VulkanUiRenderer::render(
 	}
 	if (textureDescriptorsDirty || latestFontAtlasRevision != boundRevision) {
 		UpdateTextureDescriptorsForFrame(*this, vk.device, frameSlot);
+#if FLOW_UI_DEV_MODE
+		if (diagnostics) {
+			diagnostics->textureDescriptorsRebuilt = true;
+		}
+#endif
 		if (frameSlot < boundFontAtlasRevisionByFrame_.size()) {
 			boundFontAtlasRevisionByFrame_[frameSlot] = latestFontAtlasRevision;
 		}
@@ -1610,10 +1623,42 @@ void VulkanUiRenderer::render(
 		clampedScaleY,
 		instancesScratch_,
 		runsScratch_);
+#if FLOW_UI_DEV_MODE
+	if (diagnostics) {
+		uint32_t imageCommandCount = 0u;
+		for (int32_t i = 0; i < renderCommands.length; ++i) {
+			if (renderCommands.internalArray[i].commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE) {
+				++imageCommandCount;
+			}
+		}
+
+		uint32_t textGlyphCount = 0u;
+		for (const UiInstance& instance : instancesScratch_) {
+			if (instance.type == static_cast<uint32_t>(UiType::Msdf)) {
+				++textGlyphCount;
+			}
+		}
+
+		diagnostics->uiInstanceCount = static_cast<uint32_t>(instancesScratch_.size());
+		diagnostics->uiRunCount = static_cast<uint32_t>(runsScratch_.size());
+		diagnostics->textGlyphCount = textGlyphCount;
+		diagnostics->imageCommandCount = imageCommandCount;
+	}
+#endif
 	if (instancesScratch_.empty() || runsScratch_.empty()) {
 		return;
 	}
 
+#if FLOW_UI_DEV_MODE
+	if (diagnostics && frameSlot < instanceBuffersByFrame_.size()) {
+		const VkDeviceSize requiredBytes =
+			static_cast<VkDeviceSize>(instancesScratch_.size() * sizeof(UiInstance));
+		const AllocatedBuffer& activeInstanceBuffer = instanceBuffersByFrame_[frameSlot];
+		if (activeInstanceBuffer.buffer == VK_NULL_HANDLE || activeInstanceBuffer.size < requiredBytes) {
+			diagnostics->instanceBufferGrew = true;
+		}
+	}
+#endif
 	EnsureInstanceBufferCapacity(vk, *this, frameSlot, instancesScratch_.size());
 	const AllocatedBuffer& activeInstanceBuffer = instanceBuffersByFrame_[frameSlot];
 	UploadBytesToMappedBuffer(

@@ -22,6 +22,7 @@
 #include "managers/structs/InputStructs.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/devRuntime.hpp"
+#include "devMode/performanceDiagnostics.hpp"
 #endif
 
 namespace FlowUi {
@@ -354,6 +355,20 @@ public:
 	 * @return Immutable developer tooling configuration.
 	 */
 	const DevToolsConfig& devToolsConfig() const { return devToolsConfig_; }
+
+	/**
+	 * @brief Access developer-mode performance diagnostics.
+	 *
+	 * @return Mutable rolling performance diagnostics for the active UiManager.
+	 */
+	devMode::PerformanceDiagnostics& performanceDiagnostics() { return performanceDiagnostics_; }
+
+	/**
+	 * @brief Access developer-mode performance diagnostics.
+	 *
+	 * @return Immutable rolling performance diagnostics for the active UiManager.
+	 */
+	const devMode::PerformanceDiagnostics& performanceDiagnostics() const { return performanceDiagnostics_; }
 #endif
 
 	/**
@@ -504,6 +519,7 @@ private:
 	ShortcutManager shortcutManager_{};
 #if FLOW_UI_DEV_MODE
 	devMode::DevRuntime devRuntime_{};
+	devMode::PerformanceDiagnostics performanceDiagnostics_{};
 	DevToolsConfig devToolsConfig_{};
 	bool devPanelVisible_ = false;
 	bool devRootElementOpenThisFrame_ = false;

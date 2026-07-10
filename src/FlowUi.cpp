@@ -10,6 +10,7 @@
 #include "managers/UiManager.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/debugView.hpp"
+#include "devMode/performanceDiagnostics.hpp"
 #endif
 #include "internal/UiTextureRegistry.hpp"
 #include "internal/InputQueue.hpp"
@@ -492,6 +493,7 @@ struct App::Impl {
 
 	void beginFrame() {
 		const auto now = std::chrono::steady_clock::now();
+		const auto beginFrameStart = now;
 		double deltaTimeSeconds = 0.0;
 		if (hasPreviousBeginFrameTimestamp) {
 			deltaTimeSeconds = std::chrono::duration<double>(now - previousBeginFrameTimestamp).count();
@@ -499,6 +501,10 @@ struct App::Impl {
 		}
 		previousBeginFrameTimestamp = now;
 		hasPreviousBeginFrameTimestamp = true;
+
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().beginFrame(frames.currentFrame, deltaTimeSeconds);
+#endif
 
 		const uint32_t frameSlot =
 			frames.frames.empty() ? 0u : (frames.currentFrame % static_cast<uint32_t>(frames.frames.size()));
@@ -533,11 +539,29 @@ struct App::Impl {
 		frameInputForLayout.mouseY *= inverseClampedUiScale;
 		frameInputForLayout.scrollX *= inverseClampedUiScale * kBaseScrollSensitivity;
 		frameInputForLayout.scrollY *= inverseClampedUiScale * kBaseScrollSensitivity;
+		if (frameInputForLayout.shift && frameInputForLayout.scrollY != 0.0f) {
+			frameInputForLayout.scrollX += frameInputForLayout.scrollY;
+			frameInputForLayout.scrollY = 0.0f;
+		}
 		ui.beginFrame(frameSlot, frameInputForLayout, layoutWidth, layoutHeight);
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().beginFrameMs =
+			devMode::PerformanceDiagnostics::elapsedMs(beginFrameStart);
+#endif
 	}
 
 	void endFrame() {
+#if FLOW_UI_DEV_MODE
+		const auto endFrameStart = devMode::PerformanceDiagnostics::Clock::now();
+		const auto clayStart = endFrameStart;
+#endif
 		renderCommandsForCurrentFrame = ui.endFrame();
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().clayLayoutMs =
+			devMode::PerformanceDiagnostics::elapsedMs(clayStart);
+		ui.performanceDiagnostics().current().clayCommandCount = renderCommandsForCurrentFrame.length;
+		const auto prepStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		viewPortManager.prepareFrameTargets(
 			renderCommandsForCurrentFrame,
 			uiToFramebufferScaleX,
@@ -548,12 +572,21 @@ struct App::Impl {
 			uiToFramebufferScaleX,
 			uiToFramebufferScaleY);
 #endif
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().resourcePrepMs =
+			devMode::PerformanceDiagnostics::elapsedMs(prepStart);
+		ui.performanceDiagnostics().current().endFrameMs =
+			devMode::PerformanceDiagnostics::elapsedMs(endFrameStart);
+#endif
 	}
 
 	void drawFrame() {
 		if (frames.frames.empty() || swap.swapchain == VK_NULL_HANDLE || swap.views.empty()) {
 			return;
 		}
+#if FLOW_UI_DEV_MODE
+		const auto drawFrameStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		const VkExtent2D framebufferExtent = window ? window->framebufferExtent() : VkExtent2D{};
 		if (framebufferExtent.width != observedFramebufferExtent.width ||
 			framebufferExtent.height != observedFramebufferExtent.height) {
@@ -567,11 +600,21 @@ struct App::Impl {
 		}
 
 		FrameVk::Frame& frame = frames.getCurrentFrame();
+#if FLOW_UI_DEV_MODE
+		const auto fenceWaitStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		vkCheck(
 			vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
 			"Failed to wait for in-flight fence.");
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().fenceWaitMs =
+			devMode::PerformanceDiagnostics::elapsedMs(fenceWaitStart);
+#endif
 
 		uint32_t swapchainImageIndex = 0;
+#if FLOW_UI_DEV_MODE
+		const auto acquireStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		VkResult acquireResult = vkAcquireNextImageKHR(
 			vk.device,
 			swap.swapchain,
@@ -579,6 +622,10 @@ struct App::Impl {
 			frame.imageAvailable,
 			VK_NULL_HANDLE,
 			&swapchainImageIndex);
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().acquireMs =
+			devMode::PerformanceDiagnostics::elapsedMs(acquireStart);
+#endif
 
 		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
 			framebufferResized = true;
@@ -590,6 +637,9 @@ struct App::Impl {
 		}
 
 		const bool acquiredSuboptimalSwapchain = (acquireResult == VK_SUBOPTIMAL_KHR);
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().swappedSuboptimal = acquiredSuboptimalSwapchain;
+#endif
 		if (swapchainImageIndex >= swap.views.size() || swapchainImageIndex >= frames.imageInFlight.size() ||
 			swapchainImageIndex >= swapchainImageLayouts.size() ||
 			swapchainImageIndex >= frames.renderFinishedBySwapImage.size()) {
@@ -619,8 +669,18 @@ struct App::Impl {
 		swapchainImageLayouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 
 		viewPortManager.remapRenderCommandsForFrame(renderCommandsForCurrentFrame, frames.currentFrame);
+#if FLOW_UI_DEV_MODE
+		const auto viewportRecordStart = devMode::PerformanceDiagnostics::Clock::now();
+		viewPortManager.recordFramePasses(vk, frame.cmd, frames.currentFrame, &ui.performanceDiagnostics().current());
+		ui.performanceDiagnostics().current().viewportRecordMs =
+			devMode::PerformanceDiagnostics::elapsedMs(viewportRecordStart);
+#else
 		viewPortManager.recordFramePasses(vk, frame.cmd, frames.currentFrame);
+#endif
 
+#if FLOW_UI_DEV_MODE
+		const auto uiRecordStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		renderer.render(
 			vk,
 			frame.cmd,
@@ -630,7 +690,16 @@ struct App::Impl {
 			swap.views[swapchainImageIndex],
 			frames.currentFrame,
 			uiToFramebufferScaleX,
-			uiToFramebufferScaleY);
+			uiToFramebufferScaleY
+#if FLOW_UI_DEV_MODE
+			,
+			&ui.performanceDiagnostics().current()
+#endif
+			);
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().uiRecordMs =
+			devMode::PerformanceDiagnostics::elapsedMs(uiRecordStart);
+#endif
 
 		transitionSwapchainImageLayout(
 			frame.cmd,
@@ -654,9 +723,16 @@ struct App::Impl {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &presentWaitSemaphore;
 
+#if FLOW_UI_DEV_MODE
+		const auto submitStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		vkCheck(
 			vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
 			"Failed to submit UI command buffer.");
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().submitMs =
+			devMode::PerformanceDiagnostics::elapsedMs(submitStart);
+#endif
 
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -666,7 +742,14 @@ struct App::Impl {
 		presentInfo.pSwapchains = &swap.swapchain;
 		presentInfo.pImageIndices = &swapchainImageIndex;
 
+#if FLOW_UI_DEV_MODE
+		const auto presentStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 		VkResult presentResult = vkQueuePresentKHR(vk.presentQ, &presentInfo);
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().presentMs =
+			devMode::PerformanceDiagnostics::elapsedMs(presentStart);
+#endif
 
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR ||
 			acquiredSuboptimalSwapchain || framebufferResized) {
@@ -677,6 +760,11 @@ struct App::Impl {
 		}
 
 		frames.advance();
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().drawFrameMs =
+			devMode::PerformanceDiagnostics::elapsedMs(drawFrameStart);
+		ui.performanceDiagnostics().endCompletedFrame();
+#endif
 	}
 
 	bool recreateSwapchainIfNeeded() {
@@ -696,6 +784,9 @@ struct App::Impl {
 		renderer.onSwapchainFormatChanged(vk, swap.format); // only if changed
 		swapchainImageLayouts.assign(swap.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
 		framebufferResized = false;
+#if FLOW_UI_DEV_MODE
+		ui.performanceDiagnostics().current().swapchainRecreated = true;
+#endif
 		return true;
 	}
 

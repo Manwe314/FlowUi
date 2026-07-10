@@ -33,6 +33,12 @@ namespace detail {
 struct IUiTextureRegistry;
 } // namespace detail
 
+#if FLOW_UI_DEV_MODE
+namespace devMode {
+struct FrameDiagnostics;
+}
+#endif
+
 class App;
 
 /** @addtogroup flowui_viewport_manager
@@ -440,7 +446,15 @@ private:
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY);
 	void remapRenderCommandsForFrame(Clay_RenderCommandArray& renderCommands, uint32_t frameIndex);
-	void recordFramePasses(VulkanContext& vk, VkCommandBuffer primaryCommandBuffer, uint32_t frameIndex);
+	void recordFramePasses(
+		VulkanContext& vk,
+		VkCommandBuffer primaryCommandBuffer,
+		uint32_t frameIndex
+#if FLOW_UI_DEV_MODE
+		,
+		devMode::FrameDiagnostics* diagnostics = nullptr
+#endif
+		);
 	void destroy(VulkanContext& vk);
 
 	struct ViewPortImageResource {

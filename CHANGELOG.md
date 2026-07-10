@@ -89,6 +89,7 @@ library moves toward a stable release.
 - Added `App::setShouldClose(int)` for setting or clearing the native window close flag.
 - Added `InputFieldManager::replaceText(std::string_view, std::string_view, bool)` for replacing managed input field text while optionally preserving caret state.
 - Added `UiManager::inputContentElement(const Clay_TextElementConfig&)` for creating stable inner input-field content layout declarations.
+- Added `WindowConfig::decorated` for creating undecorated native windows through the GLFW backend.
 
 ### Changed
 

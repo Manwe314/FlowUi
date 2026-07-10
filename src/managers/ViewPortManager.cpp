@@ -11,6 +11,9 @@
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "internal/Vma.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devMode/performanceDiagnostics.hpp"
+#endif
 
 namespace {
 
@@ -441,7 +444,15 @@ void ViewPortManager::ensureRenderTargetSize(VulkanContext& vk, ViewPortRecord& 
 	}
 }
 
-void ViewPortManager::recordFramePasses(VulkanContext& vk, VkCommandBuffer primaryCommandBuffer, uint32_t frameIndex) {
+void ViewPortManager::recordFramePasses(
+	VulkanContext& vk,
+	VkCommandBuffer primaryCommandBuffer,
+	uint32_t frameIndex
+#if FLOW_UI_DEV_MODE
+	,
+	devMode::FrameDiagnostics* diagnostics
+#endif
+	) {
 	if (primaryCommandBuffer == VK_NULL_HANDLE || !vk_ || vk.device == VK_NULL_HANDLE) {
 		return;
 	}
@@ -456,6 +467,35 @@ void ViewPortManager::recordFramePasses(VulkanContext& vk, VkCommandBuffer prima
 		if (!record.referencedThisFrame) {
 			continue;
 		}
+#if FLOW_UI_DEV_MODE
+		const auto viewportRecordStart = devMode::PerformanceDiagnostics::Clock::now();
+		devMode::ViewPortFrameDiagnostics* viewportDiagnostics = nullptr;
+		if (diagnostics) {
+			auto& entry = diagnostics->viewports[record.viewport.key_];
+			entry.key = record.viewport.key_;
+			entry.width = record.desiredWidth;
+			entry.height = record.desiredHeight;
+			entry.hadCallback = static_cast<bool>(record.viewport.renderCallback_);
+			viewportDiagnostics = &entry;
+
+			diagnostics->referencedViewportCount += 1u;
+			diagnostics->viewportPixelArea +=
+				static_cast<uint64_t>(record.desiredWidth) *
+				static_cast<uint64_t>(record.desiredHeight);
+
+			bool viewportWillResize = false;
+			for (const ViewPortImageResource& image : record.imagesByFrame) {
+				if (image.width != record.desiredWidth || image.height != record.desiredHeight) {
+					viewportWillResize = true;
+					break;
+				}
+			}
+			if (viewportWillResize) {
+				entry.resized = true;
+				diagnostics->resizedViewportCount += 1u;
+			}
+		}
+#endif
 		if (record.frameCommands.empty() || frameSlot >= record.frameCommands.size()) {
 			throw std::runtime_error("ViewPortManager frame command resources are missing.");
 		}
@@ -505,7 +545,16 @@ void ViewPortManager::recordFramePasses(VulkanContext& vk, VkCommandBuffer prima
 				.key = record.viewport.key_,
 				.vulkan = &interop_,
 			};
+#if FLOW_UI_DEV_MODE
+			const auto callbackStart = devMode::PerformanceDiagnostics::Clock::now();
+#endif
 			record.viewport.renderCallback_(context);
+#if FLOW_UI_DEV_MODE
+			if (viewportDiagnostics) {
+				viewportDiagnostics->callbackCpuMs =
+					devMode::PerformanceDiagnostics::elapsedMs(callbackStart);
+			}
+#endif
 		}
 
 		vkCheck(vkEndCommandBuffer(frameResources.commandBuffer), "Failed to end viewport secondary command buffer.");
@@ -551,6 +600,12 @@ void ViewPortManager::recordFramePasses(VulkanContext& vk, VkCommandBuffer prima
 			image.layout,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		image.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+#if FLOW_UI_DEV_MODE
+		if (viewportDiagnostics) {
+			viewportDiagnostics->recordCpuMs =
+				devMode::PerformanceDiagnostics::elapsedMs(viewportRecordStart);
+		}
+#endif
 	}
 }
 
