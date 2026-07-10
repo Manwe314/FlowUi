@@ -6,6 +6,7 @@
 #include <clay.h>
 #include <vulkan/vulkan.h>
 
+#include "FlowUi/BuildConfig.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "internal/InputFieldRenderOverrides.hpp"
@@ -20,6 +21,11 @@ struct VmaAllocation_T;
 
 namespace FlowUi {
 struct FontManager;
+#if FLOW_UI_DEV_MODE
+namespace devMode {
+struct FrameDiagnostics;
+}
+#endif
 }
 
 struct RectF {
@@ -126,7 +132,12 @@ struct VulkanUiRenderer {
 		VkImageView targetView,
 		uint32_t frameIndex,
 		float uiToFramebufferScaleX,
-		float uiToFramebufferScaleY);
+		float uiToFramebufferScaleY
+#if FLOW_UI_DEV_MODE
+		,
+		FlowUi::devMode::FrameDiagnostics* diagnostics = nullptr
+#endif
+		);
 
 	std::vector<VkDescriptorImageInfo> uiTextureSlotInfos_;
 	std::vector<bool> textureDescriptorsDirtyByFrame_{};

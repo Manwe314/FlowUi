@@ -112,6 +112,9 @@ struct WindowConfig {
 	/** @brief Allow the user or window manager to resize the window. */
 	bool resizable = true;
 
+	/** @brief Create the window with native title bar and borders. */
+	bool decorated = true;
+
 	/** @brief Create the window in a maximized state when supported. */
 	bool maximized = false;
 

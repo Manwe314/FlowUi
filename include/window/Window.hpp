@@ -123,6 +123,7 @@ public:
 		: input(inputQueue) {
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, config.resizable ? GLFW_TRUE : GLFW_FALSE);
+		glfwWindowHint(GLFW_DECORATED, config.decorated ? GLFW_TRUE : GLFW_FALSE);
 		if (config.maximized) {
 			glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 		}
