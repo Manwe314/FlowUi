@@ -26,7 +26,7 @@ public:
 	void registerWindow(WindowId id, const WindowStorageDesc& desc) override;
 	void unregisterWindow(WindowId id, SubmissionSerial lastUse) override;
 	[[nodiscard]] FrameToken beginFrame(WindowId id, const FrameStorageDesc& desc) override;
-	void sealFrame(const FrameToken& frame) override;
+	[[nodiscard]] FrameReadLease sealFrame(const FrameToken& frame) override;
 	void cancelFrame(const FrameToken& frame) noexcept override;
 
 	[[nodiscard]] MemoryBlock allocatePersistent(
@@ -34,47 +34,74 @@ public:
 		size_t alignment,
 		MemoryClass memoryClass,
 		StringId debugName) override;
+	[[nodiscard]] MemoryBlock allocatePersistent(
+		size_t bytes,
+		size_t alignment,
+		const AllocationTag& tag) override;
 	void releasePersistent(MemoryBlock block) noexcept override;
 	[[nodiscard]] ArenaView frameArena(const FrameToken& frame, MemoryClass memoryClass) override;
 	[[nodiscard]] ArenaView workerArena(const FrameToken& frame, uint32_t workerIndex) override;
+	[[nodiscard]] BufferWriteView beginBufferWrite(
+		const FrameToken& frame,
+		BufferHandle buffer,
+		uint64_t destinationOffset,
+		uint64_t bytes,
+		BufferWriteMode mode = BufferWriteMode::Default) override;
+	void commitBufferWrite(
+		const FrameToken& frame,
+		const BufferWriteView& write,
+		uint64_t bytesWritten) override;
+	void writeBuffer(
+		const FrameToken& frame,
+		BufferHandle buffer,
+		uint64_t destinationOffset,
+		std::span<const std::byte> bytes) override;
 
 	[[nodiscard]] StringId intern(std::string_view value) override;
 	[[nodiscard]] std::string_view string(StringId id) const noexcept override;
 	[[nodiscard]] BlobHandle createBlob(std::span<const std::byte> bytes, StringId debugName) override;
 	[[nodiscard]] std::span<const std::byte> readBlob(BlobHandle handle) const noexcept override;
-	void releaseBlob(BlobHandle handle, SubmissionSerial lastUse) override;
+	void releaseBlob(BlobHandle handle, SubmissionSerial lastUse = 0) override;
 
 	[[nodiscard]] BufferHandle createBuffer(const BufferDesc& desc) override;
 	[[nodiscard]] ImageHandle createImage(const ImageDesc& desc) override;
 	[[nodiscard]] ImageViewHandle createImageView(ImageHandle image, const ImageViewDesc& desc) override;
 	[[nodiscard]] SamplerHandle acquireSampler(const SamplerDesc& desc) override;
-	void releaseBuffer(BufferHandle buffer, SubmissionSerial lastUse) override;
-	void releaseImage(ImageHandle image, SubmissionSerial lastUse) override;
-	void releaseImageView(ImageViewHandle view, SubmissionSerial lastUse) override;
-	void releaseSampler(SamplerHandle sampler, SubmissionSerial lastUse) override;
+	void releaseBuffer(BufferHandle buffer, SubmissionSerial lastUse = 0) override;
+	void releaseImage(ImageHandle image, SubmissionSerial lastUse = 0) override;
+	void releaseImageView(ImageViewHandle view, SubmissionSerial lastUse = 0) override;
+	void releaseSampler(SamplerHandle sampler, SubmissionSerial lastUse = 0) override;
 
 	[[nodiscard]] TextureHandle publishTexture(
 		ResourceKey key,
 		const TextureViewDesc& desc,
-		bool* inserted) override;
+		bool* inserted = nullptr) override;
 	[[nodiscard]] TextureHandle replaceTexture(ResourceKey key, const TextureViewDesc& desc) override;
-	bool removeTexture(ResourceKey key, SubmissionSerial lastUse) override;
+	bool removeTexture(ResourceKey key, SubmissionSerial lastUse = 0) override;
 	[[nodiscard]] TextureHandle findTexture(ResourceKey key) const noexcept override;
 	[[nodiscard]] TextureMetadata textureMetadata(TextureHandle texture) const noexcept override;
+	void setFallbackTexture(TextureHandle texture) override;
 
-	void prepareTextureBindings(const FrameToken& frame, std::span<const TextureHandle> textures) override;
+	[[nodiscard]] PreparedTextureBindings prepareTextureBindings(
+		const FrameToken& frame,
+		std::span<const TextureHandle> textures) override;
+	void acknowledgeTextureBindings(
+		const FrameToken& frame,
+		std::span<const DescriptorWriteRecord> appliedBindings) override;
+	void resetTextureBindings(WindowId id, uint32_t frameSlot) override;
 	[[nodiscard]] ResolvedTextureBinding resolveTexture(const FrameToken& frame, TextureHandle texture) override;
 	void trackUse(const FrameToken& frame, BufferHandle buffer) override;
 	void trackUse(const FrameToken& frame, ImageHandle image) override;
+	void trackUses(const FrameToken& frame, std::span<const ResourceUse> resources) override;
 	void invalidateWindowBindings(WindowId id, TextureHandle texture) override;
-	[[nodiscard]] StorageReadView readView(const FrameToken& frame) const override;
-	[[nodiscard]] WindowBindingView windowBindingView(const FrameToken& frame) const override;
+	[[nodiscard]] StorageReadView readView(const FrameReadLease& lease) const override;
+	[[nodiscard]] WindowBindingView windowBindingView(const FrameReadLease& lease) const override;
 	[[nodiscard]] WindowStorageSnapshot windowSnapshot(WindowId id) const override;
 
 	[[nodiscard]] UploadTicket enqueueUpload(const UploadRequest& request) override;
 	[[nodiscard]] ResourceState uploadState(UploadTicket ticket) const noexcept override;
 	void flushUploads() override;
-	[[nodiscard]] SubmissionToken noteSubmission(WindowId id, uint32_t frameSlot) override;
+	[[nodiscard]] SubmissionToken noteSubmission(const FrameReadLease& lease) override;
 	void noteCompleted(SubmissionToken submission) override;
 	[[nodiscard]] SubmissionSerial completedSerial() const noexcept override;
 
@@ -86,11 +113,43 @@ public:
 	[[nodiscard]] ResourceStats resourceStats(ResourceKind kind) const override;
 	[[nodiscard]] bool validateHandle(ResourceKind kind, uint32_t index, uint32_t generation) const noexcept override;
 	void setBudget(uint64_t cpuBytes, uint64_t gpuBytes) override;
+	[[nodiscard]] NativePublishResult<RendererLayoutHandle> publishRendererLayout(
+		const RendererLayoutKey& key,
+		const NativeRendererLayout& native,
+		StringId debugName = 0) override;
+	[[nodiscard]] RendererLayoutHandle acquireRendererLayout(const RendererLayoutKey& key) override;
+	[[nodiscard]] NativePublishResult<RendererPipelineBundleHandle> publishRendererPipelineBundle(
+		const RendererPipelineKey& key,
+		const NativeRendererPipelineBundle& native,
+		StringId debugName = 0) override;
+	[[nodiscard]] RendererPipelineBundleHandle acquireRendererPipelineBundle(
+		const RendererPipelineKey& key) override;
+	[[nodiscard]] WindowDescriptorBundleHandle adoptWindowDescriptorBundle(
+		const WindowDescriptorBundleDesc& desc,
+		const NativeWindowDescriptorBundle& native) override;
+	[[nodiscard]] NativeRendererLayout nativeRendererLayout(RendererLayoutHandle layout) const noexcept override;
+	[[nodiscard]] NativeRendererPipelineBundle nativeRendererPipelineBundle(
+		RendererPipelineBundleHandle bundle) const noexcept override;
+	[[nodiscard]] NativeWindowDescriptorView nativeWindowDescriptorBundle(
+		WindowDescriptorBundleHandle bundle) const noexcept override;
+	void releaseRendererLayout(RendererLayoutHandle layout, SubmissionSerial lastUse = 0) override;
+	void releaseRendererPipelineBundle(
+		RendererPipelineBundleHandle bundle,
+		SubmissionSerial lastUse = 0) override;
+	void releaseWindowDescriptorBundle(
+		WindowDescriptorBundleHandle bundle,
+		SubmissionSerial lastUse = 0) override;
 
 	[[nodiscard]] NativeBufferView nativeBuffer(BufferHandle buffer) const noexcept override;
 	[[nodiscard]] NativeImageView nativeImage(ImageHandle image) const noexcept override;
 
 private:
+	void commitBufferWriteInternal(
+		const FrameToken& frame,
+		const BufferWriteView& write,
+		uint64_t bytesWritten,
+		const std::byte* sourceData);
+
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 };

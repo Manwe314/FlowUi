@@ -8,6 +8,18 @@ option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generat
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(FLOWUI_BUILD_TESTS_DEFAULT ON)
+else()
+    set(FLOWUI_BUILD_TESTS_DEFAULT OFF)
+endif()
+option(FLOWUI_BUILD_TESTS "Build FlowUi unit and storage integration tests." ${FLOWUI_BUILD_TESTS_DEFAULT})
+option(
+    FLOWUI_REQUIRE_VULKAN_TEST_DEVICE
+    "Fail storage integration tests instead of skipping when no headless Vulkan device is available."
+    OFF
+)
+unset(FLOWUI_BUILD_TESTS_DEFAULT)
 set(FLOWUI_INCLUDE_ICON_MANAGER "${FLOWUI_INCLUDE_ICON_MANAGER}")
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
@@ -208,10 +220,14 @@ target_sources(flowui
         src/devMode/devJson.cpp
         src/devMode/devRuntime.cpp
         src/Ui/Vk_UiRenderer.cpp
+        src/Storagesystem/FlowStorageSystem.cpp
         src/window/Inputs.cpp
         src/Vulkan/Vk_Context.cpp
         src/Vulkan/Vk_Frames.cpp
         src/Vulkan/Vk_Swapchain.cpp
+        include/internal/StorageSystem/StorageTypes.hpp
+        include/internal/StorageSystem/IStorageSystem.hpp
+        include/internal/StorageSystem/FlowStorageSystem.hpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
@@ -287,6 +303,11 @@ target_compile_definitions(flowui
 )
 
 target_compile_features(flowui PUBLIC cxx_std_23)
+
+if(FLOWUI_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 if(FLOWUI_INSTALL)
     include(CMakePackageConfigHelpers)
