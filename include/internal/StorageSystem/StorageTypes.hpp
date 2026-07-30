@@ -1,13 +1,17 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <span>
 #include <string_view>
 #include <type_traits>
+
+#include "FlowUi/BuildConfig.hpp"
 
 namespace FlowUi::detail::storage {
 
@@ -35,6 +39,9 @@ enum class ResourceKind : uint8_t {
 	SvgDocument,
 	IconVariant,
 	ViewportTarget,
+	RendererLayout,
+	RendererPipelineBundle,
+	WindowDescriptorBundle,
 	Count,
 };
 
@@ -82,6 +89,7 @@ enum class AccessMode : uint8_t {
 enum class ResourceSharing : uint8_t {
 	AppShared = 0,
 	WindowLocal,
+	// Owned by one frames-in-flight slot and reusable across that slot's epochs.
 	FrameLocal,
 };
 
@@ -158,6 +166,12 @@ enum class StorageCapability : uint64_t {
 	SynchronousUploads = 1ull << 5u,
 	DeferredRetirement = 1ull << 6u,
 	VulkanInterop = 1ull << 7u,
+	DirectMappedWrites = 1ull << 8u,
+	HostScratchBufferWrites = 1ull << 9u,
+	BindingWriteBatches = 1ull << 10u,
+	FrameReadLeases = 1ull << 11u,
+	RendererResourceBundles = 1ull << 12u,
+	DevelopmentTelemetry = 1ull << 13u,
 };
 
 template <ResourceKind KindValue>
@@ -180,7 +194,7 @@ struct Handle {
 			.index = static_cast<uint32_t>(value),
 			.generation = static_cast<uint32_t>(value >> 32u),
 		};
-
+	}
 	auto operator<=>(const Handle&) const = default;
 };
 
@@ -195,6 +209,9 @@ using FontAtlasHandle = Handle<ResourceKind::FontAtlas>;
 using SvgDocumentHandle = Handle<ResourceKind::SvgDocument>;
 using IconVariantHandle = Handle<ResourceKind::IconVariant>;
 using ViewportHandle = Handle<ResourceKind::ViewportTarget>;
+using RendererLayoutHandle = Handle<ResourceKind::RendererLayout>;
+using RendererPipelineBundleHandle = Handle<ResourceKind::RendererPipelineBundle>;
+using WindowDescriptorBundleHandle = Handle<ResourceKind::WindowDescriptorBundle>;
 
 struct ResourceKey {
 	ResourceDomain domain = ResourceDomain::Internal;
@@ -229,20 +246,35 @@ struct MemoryBlock {
 	[[nodiscard]] explicit operator bool() const noexcept { return data != nullptr; }
 };
 
+#if FLOW_UI_DEV_MODE
+struct ArenaLeaseState {
+	std::atomic<bool> valid{true};
+};
+#endif
+
 struct ArenaView {
 	using AllocateFunction = void* (*)(void*, size_t, size_t);
 
 	void* context = nullptr;
 	AllocateFunction allocateFunction = nullptr;
 	FrameEpoch epoch = 0;
+#if FLOW_UI_DEV_MODE
+	std::shared_ptr<const ArenaLeaseState> validation{};
+#endif
 
 	[[nodiscard]] void* allocate(size_t bytes, size_t alignment = alignof(std::max_align_t)) const {
+#if FLOW_UI_DEV_MODE
+		if (!validation || !validation->valid.load(std::memory_order_acquire)) return nullptr;
+#endif
 		return allocateFunction ? allocateFunction(context, bytes, alignment) : nullptr;
 	}
 
 	template <typename T>
 	[[nodiscard]] std::span<T> allocateArray(size_t count) const {
 		if (count == 0) {
+			return {};
+		}
+		if (count > std::numeric_limits<size_t>::max() / sizeof(T)) {
 			return {};
 		}
 		void* memory = allocate(sizeof(T) * count, alignof(T));
@@ -259,6 +291,33 @@ struct FrameToken {
 	[[nodiscard]] explicit operator bool() const noexcept { return window != 0 && epoch != 0; }
 };
 
+#if FLOW_UI_DEV_MODE
+struct ReadLeaseState {
+	std::atomic<bool> valid{true};
+};
+#endif
+
+struct FrameReadLease {
+	FrameToken frame{};
+	uint64_t leaseId = 0;
+#if FLOW_UI_DEV_MODE
+	std::shared_ptr<const ReadLeaseState> validation{};
+#endif
+
+	[[nodiscard]] explicit operator bool() const noexcept {
+		return static_cast<bool>(frame) && leaseId != 0;
+	}
+
+	[[nodiscard]] bool valid() const noexcept {
+		if (!static_cast<bool>(*this)) return false;
+#if FLOW_UI_DEV_MODE
+		return validation && validation->valid.load(std::memory_order_acquire);
+#else
+		return true;
+#endif
+	}
+};
+
 struct UploadTicket {
 	UploadId value = 0;
 	[[nodiscard]] explicit operator bool() const noexcept { return value != 0; }
@@ -269,6 +328,12 @@ struct SubmissionToken {
 	SubmissionSerial serial = 0;
 	uint32_t frameSlot = 0;
 	[[nodiscard]] explicit operator bool() const noexcept { return serial != 0; }
+};
+
+enum class BufferWriteMode : uint8_t {
+	Default = 0,
+	DirectMapped,
+	HostScratchThenCopy,
 };
 
 struct StorageConfig {
@@ -287,11 +352,13 @@ struct StorageConfig {
 	uint32_t expectedImageViews = 384;
 	uint32_t expectedSamplers = 16;
 	uint32_t expectedTextureViews = 512;
+	uint32_t expectedRendererObjects = 32;
 	uint32_t expectedWindows = 2;
 	uint32_t expectedBindingsPerWindow = 512;
 	uint32_t framesInFlight = 2;
 	uint32_t expectedWorkerCount = 1;
 	float growthFactor = 1.5f;
+	BufferWriteMode defaultBufferWriteMode = BufferWriteMode::DirectMapped;
 	bool allowRuntimeGrowth = true;
 	bool detailedTracking = false;
 };
@@ -300,6 +367,7 @@ struct WindowStorageDesc {
 	uint32_t framesInFlight = 2;
 	uint32_t workerCount = 1;
 	uint32_t initialTextureBindings = 512;
+	uint32_t maxTextureBindings = 4096;
 	uint64_t transientBytesPerFrame = 1ull * 1024ull * 1024ull;
 	uint64_t transientBytesPerWorker = 1ull * 1024ull * 1024ull;
 	StringId debugName = 0;
@@ -319,6 +387,7 @@ struct BufferDesc {
 	bool persistentlyMapped = false;
 	bool evictable = false;
 	WindowId window = 0;
+	uint32_t frameSlot = InvalidFrameSlot;
 	StringId debugName = 0;
 };
 
@@ -336,6 +405,7 @@ struct ImageDesc {
 	AccessMode access = AccessMode::ReadOnly;
 	bool evictable = false;
 	WindowId window = 0;
+	uint32_t frameSlot = InvalidFrameSlot;
 	StringId debugName = 0;
 };
 
@@ -408,12 +478,42 @@ struct TextureMetadata {
 	uint32_t revision = 0;
 };
 
+struct BufferWriteView {
+	BufferHandle buffer{};
+	std::byte* data = nullptr;
+	uint64_t destinationOffset = 0;
+	uint64_t capacity = 0;
+	FrameEpoch epoch = 0;
+	uint64_t writeId = 0;
+	BufferWriteMode mode = BufferWriteMode::Default;
+
+	[[nodiscard]] explicit operator bool() const noexcept {
+		return static_cast<bool>(buffer) && data != nullptr && writeId != 0;
+	}
+};
+
 struct ResolvedTextureBinding {
 	uint32_t descriptorIndex = 0;
 	uint32_t bindingRevision = 0;
 	ResourceState state = ResourceState::Invalid;
 	uint64_t nativeImageView = 0;
 	uint64_t nativeSampler = 0;
+};
+
+struct DescriptorWriteRecord {
+	TextureHandle texture{};
+	uint32_t descriptorIndex = 0;
+	uint32_t bindingRevision = 0;
+	ResourceState state = ResourceState::Invalid;
+	uint8_t reserved[3]{};
+	uint64_t nativeImageView = 0;
+	uint64_t nativeSampler = 0;
+};
+
+struct PreparedTextureBindings {
+	std::span<const DescriptorWriteRecord> dirtyBindings{};
+	uint32_t requiredDescriptorCapacity = 1;
+	FrameEpoch epoch = 0;
 };
 
 struct TextureHotRecord {
@@ -459,8 +559,20 @@ struct StorageReadView {
 	std::span<const ImageViewHotRecord> imageViews{};
 	std::span<const SamplerHotRecord> samplers{};
 	FrameEpoch epoch = 0;
+#if FLOW_UI_DEV_MODE
+	std::shared_ptr<const ReadLeaseState> validation{};
+#endif
+
+	[[nodiscard]] bool valid() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return validation && validation->valid.load(std::memory_order_acquire);
+#else
+		return epoch != 0;
+#endif
+	}
 
 	[[nodiscard]] const TextureHotRecord* texture(TextureHandle handle) const noexcept {
+		if (!valid()) return nullptr;
 		if (!handle || handle.index >= textures.size()) {
 			return nullptr;
 		}
@@ -469,12 +581,14 @@ struct StorageReadView {
 	}
 
 	[[nodiscard]] const ImageViewHotRecord* imageView(ImageViewHandle handle) const noexcept {
+		if (!valid()) return nullptr;
 		if (!handle || handle.index >= imageViews.size()) return nullptr;
 		const ImageViewHotRecord& record = imageViews[handle.index];
 		return record.generation == handle.generation ? &record : nullptr;
 	}
 
 	[[nodiscard]] const SamplerHotRecord* sampler(SamplerHandle handle) const noexcept {
+		if (!valid()) return nullptr;
 		if (!handle || handle.index >= samplers.size()) return nullptr;
 		const SamplerHotRecord& record = samplers[handle.index];
 		return record.generation == handle.generation ? &record : nullptr;
@@ -484,8 +598,20 @@ struct StorageReadView {
 struct WindowBindingView {
 	std::span<const BindingHotRecord> bindingsByTextureIndex{};
 	FrameEpoch epoch = 0;
+#if FLOW_UI_DEV_MODE
+	std::shared_ptr<const ReadLeaseState> validation{};
+#endif
+
+	[[nodiscard]] bool valid() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return validation && validation->valid.load(std::memory_order_acquire);
+#else
+		return epoch != 0;
+#endif
+	}
 
 	[[nodiscard]] const BindingHotRecord* binding(TextureHandle handle) const noexcept {
+		if (!valid()) return nullptr;
 		if (!handle || handle.index >= bindingsByTextureIndex.size()) {
 			return nullptr;
 		}
@@ -550,6 +676,9 @@ enum class RetirementKind : uint8_t {
 	ImageView,
 	Sampler,
 	Texture,
+	RendererLayout,
+	RendererPipelineBundle,
+	WindowDescriptorBundle,
 };
 
 struct RetirementRequest {
@@ -561,7 +690,7 @@ struct RetirementRequest {
 struct NativeBufferView {
 	uint64_t nativeBuffer = 0;
 	uint64_t size = 0;
-	void* mapped = nullptr;
+	bool hostCoherent = false;
 };
 
 struct NativeImageView {
@@ -572,5 +701,91 @@ struct NativeImageView {
 	uint32_t height = 0;
 	uint32_t layers = 0;
 };
+
+struct RendererLayoutKey {
+	uint32_t textureDescriptorCapacity = 0;
+	uint32_t shaderInterfaceRevision = 0;
+	uint32_t pushConstantBytes = 0;
+	uint32_t descriptorFeatureFlags = 0;
+	auto operator<=>(const RendererLayoutKey&) const = default;
+};
+
+struct RendererLayoutKeyHash {
+	size_t operator()(const RendererLayoutKey& key) const noexcept {
+		uint64_t value = key.textureDescriptorCapacity;
+		value ^= static_cast<uint64_t>(key.shaderInterfaceRevision) << 16u;
+		value ^= static_cast<uint64_t>(key.pushConstantBytes) << 32u;
+		value ^= static_cast<uint64_t>(key.descriptorFeatureFlags) << 48u;
+		return static_cast<size_t>(value ^ (value >> 33u));
+	}
+};
+
+struct NativeRendererLayout {
+	uint64_t globalsSetLayout = 0;
+	uint64_t texturesSetLayout = 0;
+	uint64_t pipelineLayout = 0;
+};
+
+struct RendererPipelineKey {
+	RendererLayoutHandle layout{};
+	uint32_t nativeColorFormat = 0;
+	uint32_t sampleCount = 1;
+	uint32_t pipelineStateRevision = 0;
+	uint64_t shaderSetFingerprint = 0;
+	auto operator<=>(const RendererPipelineKey&) const = default;
+};
+
+struct RendererPipelineKeyHash {
+	size_t operator()(const RendererPipelineKey& key) const noexcept {
+		uint64_t value = key.layout.packed();
+		value ^= static_cast<uint64_t>(key.nativeColorFormat) << 7u;
+		value ^= static_cast<uint64_t>(key.sampleCount) << 23u;
+		value ^= static_cast<uint64_t>(key.pipelineStateRevision) << 39u;
+		value ^= key.shaderSetFingerprint + 0x9e3779b97f4a7c15ull + (value << 6u) + (value >> 2u);
+		return static_cast<size_t>(value ^ (value >> 32u));
+	}
+};
+
+struct NativeRendererPipelineBundle {
+	uint64_t pipelineLayout = 0;
+	std::array<uint64_t, 3> pipelines{};
+};
+
+struct WindowDescriptorBundleDesc {
+	WindowId window = 0;
+	RendererLayoutHandle layout{};
+	uint32_t framesInFlight = 0;
+	uint32_t descriptorCapacity = 0;
+	StringId debugName = 0;
+};
+
+struct NativeWindowDescriptorBundle {
+	uint64_t descriptorPool = 0;
+	std::span<const uint64_t> globalsSets{};
+	std::span<const uint64_t> textureSets{};
+};
+
+struct NativeWindowDescriptorView {
+	uint64_t descriptorPool = 0;
+	std::span<const uint64_t> globalsSets{};
+	std::span<const uint64_t> textureSets{};
+	uint32_t descriptorCapacity = 0;
+};
+
+template <typename HandleType>
+struct NativePublishResult {
+	HandleType handle{};
+	bool ownershipTransferred = false;
+};
+
+struct ResourceUse {
+	ResourceKind kind = ResourceKind::Invalid;
+	uint64_t packedHandle = 0;
+};
+
+template <ResourceKind Kind>
+[[nodiscard]] constexpr ResourceUse useOf(Handle<Kind> handle) noexcept {
+	return ResourceUse{Kind, handle.packed()};
+}
 
 } // namespace FlowUi::detail::storage
