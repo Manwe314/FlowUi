@@ -226,14 +226,17 @@ target_sources(flowui
         src/Vulkan/Vk_Frames.cpp
         src/Vulkan/Vk_Swapchain.cpp
         include/internal/StorageSystem/StorageTypes.hpp
-        include/internal/StorageSystem/IStorageSystem.hpp
-        include/internal/StorageSystem/FlowStorageSystem.hpp
+		include/internal/StorageSystem/IStorageSystem.hpp
+		include/internal/StorageSystem/FlowStorageSystem.hpp
+        include/internal/UiTexturePublisher.hpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/TextureHandle.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/WindowId.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputFieldRenderOverrides.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputQueue.hpp>

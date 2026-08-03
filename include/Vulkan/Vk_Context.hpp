@@ -11,7 +11,6 @@ struct VmaAllocator_T;
 struct VulkanContext {
 	VkInstance instance = VK_NULL_HANDLE;
 	VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
 
 	VkPhysicalDevice phys = VK_NULL_HANDLE;
 	VkDevice device = VK_NULL_HANDLE;
@@ -24,10 +23,11 @@ struct VulkanContext {
 
 	void createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts);
 
-	void createSurface(FlowUi::detail::IWindowBackend& window);
+	[[nodiscard]] VkSurfaceKHR createSurface(FlowUi::detail::IWindowBackend& window) const;
 
-	void pickPhysicalDevice(const FlowUi::AppConfig& config);
+	void pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfaceKHR mainSurface);
 	void createDevice(const FlowUi::AppConfig& config);
+	[[nodiscard]] bool supportsPresentation(VkSurfaceKHR surface) const noexcept;
 
 	void destroy();
 };

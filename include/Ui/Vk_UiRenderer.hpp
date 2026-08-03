@@ -1,23 +1,26 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <span>
+#include <type_traits>
 #include <vector>
 
 #include <clay.h>
 #include <vulkan/vulkan.h>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/WindowId.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "internal/InputFieldRenderOverrides.hpp"
+#include "internal/StorageSystem/IStorageSystem.hpp"
 
 enum class UiType : uint8_t {
 	Solid = 0,
 	Msdf = 1,
 	Textured = 2,
 };
-
-struct VmaAllocation_T;
 
 namespace FlowUi {
 struct FontManager;
@@ -69,18 +72,79 @@ struct UiRun {
 	uint32_t instanceCount = 0;
 };
 
-struct VulkanUiRenderer {
-	struct AllocatedBuffer {
-		VkBuffer buffer = VK_NULL_HANDLE;
-		VmaAllocation_T* allocation = nullptr;
-		void* mapped = nullptr;
-		VkDeviceSize size = 0;
-	};
+static_assert(std::is_trivially_copyable_v<UiInstance>);
+static_assert(sizeof(UiInstance) == 88);
+static_assert(alignof(UiInstance) == 4);
 
-	struct AllocatedImage {
-		VkImage image = VK_NULL_HANDLE;
-		VmaAllocation_T* allocation = nullptr;
-		VkImageView view = VK_NULL_HANDLE;
+struct SharedUiByteResources {
+	FlowUi::detail::storage::BufferHandle quadBuffer{};
+	FlowUi::detail::storage::ImageHandle placeholderFontImage{};
+	FlowUi::detail::storage::ImageViewHandle placeholderFontView{};
+	FlowUi::detail::storage::ImageHandle placeholderUiImage{};
+	FlowUi::detail::storage::ImageViewHandle placeholderUiView{};
+	FlowUi::detail::storage::SamplerHandle linearSampler{};
+
+	VkBuffer nativeQuadBuffer = VK_NULL_HANDLE;
+	VkImageView nativePlaceholderFontView = VK_NULL_HANDLE;
+	VkImageView nativePlaceholderUiView = VK_NULL_HANDLE;
+	VkSampler nativeLinearSampler = VK_NULL_HANDLE;
+};
+
+struct PreparedUiFrame {
+	std::span<const UiRun> runs{};
+	uint32_t instanceCount = 0;
+	FlowUi::detail::storage::FrameEpoch epoch = 0;
+};
+
+namespace FlowUi::detail {
+
+struct UiConversionCapacity {
+	size_t instances = 0;
+	size_t runs = 0;
+	size_t scissorDepth = 1;
+};
+
+struct UiConversionResult {
+	uint32_t instanceCount = 0;
+	uint32_t runCount = 0;
+	uint32_t textGlyphCount = 0;
+	uint32_t imageCommandCount = 0;
+};
+
+[[nodiscard]] UiConversionCapacity measureUiConversionCapacity(
+	const Clay_RenderCommandArray& commands,
+	const InputFieldFrameOverrides& overrides);
+[[nodiscard]] UiConversionResult buildUiInstancesDirect(
+	const Clay_RenderCommandArray& commands,
+	const InputFieldFrameOverrides& overrides,
+	VkExtent2D extent,
+	const FontManager* fontManager,
+	float pointsToPixelsScale,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
+	std::span<UiInstance> instances,
+	std::span<UiRun> runs,
+	std::span<RectF> scissorStack,
+	std::span<const FlowUi::detail::storage::BindingHotRecord> textureBindings = {});
+[[nodiscard]] uint64_t growUiInstanceCapacity(
+	uint64_t currentBytes,
+	uint64_t requiredBytes,
+	uint64_t initialBytes);
+
+} // namespace FlowUi::detail
+
+void initSharedUiByteResources(
+	FlowUi::detail::storage::IStorageSystem& storage,
+	SharedUiByteResources& resources);
+void destroySharedUiByteResources(
+	FlowUi::detail::storage::IStorageSystem& storage,
+	SharedUiByteResources& resources) noexcept;
+
+struct VulkanUiRenderer {
+	struct UiFrameResources {
+		FlowUi::detail::storage::BufferHandle instanceBuffer{};
+		FlowUi::detail::storage::NativeBufferView nativeBuffer{};
+		uint64_t capacityBytes = 0;
 	};
 
 	struct Pipelines {
@@ -98,15 +162,17 @@ struct VulkanUiRenderer {
 		std::vector<VkDescriptorSet> texturesSets{};
 	};
 
+	//Transitional: Phase 4 shares/adopts compatible immutable pipeline/layout
+	// bundles while descriptors remain AppWindow/frame-local.
 	Pipelines pipelines_{};
 	Descriptors descriptors_{};
 
-	std::vector<AllocatedBuffer> instanceBuffersByFrame_{};
-	AllocatedBuffer quadVertexBuffer_{};
-	AllocatedImage placeholderFontAtlas_{};
-	AllocatedImage placeholderUiTexture_{};
+	std::vector<UiFrameResources> frameResources_{};
+	const SharedUiByteResources* sharedByteResources_ = nullptr;
+	FlowUi::detail::storage::IStorageSystem* storage_ = nullptr;
+	FlowUi::WindowId windowId_ = FlowUi::InvalidWindowId;
+	uint64_t initialInstanceBytes_ = 1024u * 1024u;
 
-	VkSampler linearSampler_ = VK_NULL_HANDLE;
 	VkFormat targetFormat_ = VK_FORMAT_UNDEFINED;
 	uint32_t maxUiImageDescriptors_ = 256;
 	uint32_t frameResourceCount_ = 1u;
@@ -114,23 +180,30 @@ struct VulkanUiRenderer {
 	const FlowUi::FontManager* fontManager_ = nullptr;
 	std::vector<uint32_t> boundFontAtlasRevisionByFrame_{};
 
-	void init(const FlowUi::AppConfig& config, VulkanContext& vk, VkFormat swapFormat);
-	void setFontManager(const FlowUi::FontManager* manager);
-	void destroy(VulkanContext& vk);
-	void onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat);
-	uint32_t textureSlotCapacity() const;
-	void reserveTextureSlots(VulkanContext& vk, uint32_t minCapacity);
-	void setTextureSlotBinding(uint32_t slot, VkImageView view, VkSampler sampler);
-	void clearTextureSlotBinding(uint32_t slot);
-	void rebuildTextureDescriptors(VkDevice device);
-	void render(
+	void init(
+		const FlowUi::AppConfig& config,
 		VulkanContext& vk,
-		VkCommandBuffer cmd,
+		VkFormat swapFormat,
+		FlowUi::detail::storage::IStorageSystem& storage,
+		FlowUi::WindowId windowId,
+		const SharedUiByteResources& sharedResources,
+		uint64_t initialInstanceBytes,
+		uint32_t textureDescriptorCapacity);
+	void setFontManager(const FlowUi::FontManager* manager);
+	void destroy(VulkanContext& vk, FlowUi::detail::storage::IStorageSystem& storage);
+	void onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat);
+	void applyTextureBindings(
+		VkDevice device,
+		uint32_t frameSlot,
+		const FlowUi::detail::storage::PreparedTextureBindings& prepared);
+	[[nodiscard]] PreparedUiFrame prepareFrame(
+		VulkanContext& vk,
+		FlowUi::detail::storage::IStorageSystem& storage,
+		const FlowUi::detail::storage::FrameToken& frame,
+		const FlowUi::detail::storage::PreparedTextureBindings& textureBindings,
 		const Clay_RenderCommandArray& renderCommands,
 		const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 		VkExtent2D extent,
-		VkImageView targetView,
-		uint32_t frameIndex,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
@@ -138,9 +211,17 @@ struct VulkanUiRenderer {
 		FlowUi::devMode::FrameDiagnostics* diagnostics = nullptr
 #endif
 		);
+	void recordPreparedFrame(
+		VulkanContext& vk,
+		VkCommandBuffer cmd,
+		VkExtent2D extent,
+		VkImageView targetView,
+		uint32_t frameIndex,
+		const PreparedUiFrame& prepared
+#if FLOW_UI_DEV_MODE
+		,
+		FlowUi::devMode::FrameDiagnostics* diagnostics = nullptr
+#endif
+		);
 
-	std::vector<VkDescriptorImageInfo> uiTextureSlotInfos_;
-	std::vector<bool> textureDescriptorsDirtyByFrame_{};
-	std::vector<UiInstance> instancesScratch_;
-	std::vector<UiRun> runsScratch_;
 };

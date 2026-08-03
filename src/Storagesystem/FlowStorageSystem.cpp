@@ -38,7 +38,8 @@ constexpr uint64_t kCapabilityMask =
 	static_cast<uint64_t>(StorageCapability::HostScratchBufferWrites) |
 	static_cast<uint64_t>(StorageCapability::BindingWriteBatches) |
 	static_cast<uint64_t>(StorageCapability::FrameReadLeases) |
-	static_cast<uint64_t>(StorageCapability::RendererResourceBundles)
+	static_cast<uint64_t>(StorageCapability::RendererResourceBundles) |
+	static_cast<uint64_t>(StorageCapability::BorrowedNativeTextures)
 #if FLOW_UI_DEV_MODE
 	| static_cast<uint64_t>(StorageCapability::DevelopmentTelemetry)
 #endif
@@ -623,9 +624,11 @@ struct FlowStorageSystem::Impl {
 	struct TextureColdRecord {
 		ResourceKey key{};
 		TextureViewDesc desc{};
+		ExternalTextureDesc externalDesc{};
 		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
 		bool published = false;
+		bool external = false;
 	};
 
 	struct RendererLayoutRecord {
@@ -872,9 +875,24 @@ struct FlowStorageSystem::Impl {
 		return false;
 	}
 
+	[[nodiscard]] bool hasSealedFrames() const noexcept {
+		for (const auto& [_, window] : windows) {
+			for (const auto& frame : window->frames) {
+				if (frame->active && frame->sealed) return true;
+			}
+		}
+		return false;
+	}
+
 	void requireSharedMutationPhase() const {
 		if (hasActiveFrames()) {
 			storageError("shared resource mutation is allowed only before window frames begin or after they terminate");
+		}
+	}
+
+	void requireExternalTexturePublishPhase() const {
+		if (hasSealedFrames()) {
+			storageError("external texture publication is not allowed while a sealed frame is active");
 		}
 	}
 
@@ -957,12 +975,21 @@ struct FlowStorageSystem::Impl {
 	}
 
 	ImageHandle textureBackingImage(TextureHandle handle) const noexcept {
-		if (!usableTexture(handle)) return {};
+		if (!usableTexture(handle) || textureCold[handle.index].external) return {};
 		const ImageViewHandle view = textureCold[handle.index].desc.imageView;
 		return usableImageView(view) ? imageViews[view.index].image : ImageHandle{};
 	}
 
 	bool textureVisibleToFrame(TextureHandle handle, const FrameToken& frame) const noexcept {
+		if (!usableTexture(handle)) return false;
+		const TextureColdRecord& cold = textureCold[handle.index];
+		if (cold.external) {
+			return visibleToFrame(
+				cold.externalDesc.sharing,
+				cold.externalDesc.window,
+				cold.externalDesc.frameSlot,
+				frame);
+		}
 		return imageVisibleToFrame(textureBackingImage(handle), frame);
 	}
 
@@ -975,6 +1002,27 @@ struct FlowStorageSystem::Impl {
 			if (key.window != 0) storageError("app-shared texture must use root ResourceKey attribution");
 		} else if (key.window != imageDesc.window) {
 			storageError("texture ResourceKey window does not match its backing image owner");
+		}
+	}
+
+	void validateExternalTextureOwnership(ResourceKey key, const ExternalTextureDesc& desc) const {
+		if (desc.nativeImageView == 0 || desc.nativeSampler == 0) {
+			storageError("external texture publication requires non-null native handles");
+		}
+		if (desc.sharing == ResourceSharing::AppShared) {
+			if (key.window != 0 || desc.window != 0 || desc.frameSlot != InvalidFrameSlot) {
+				storageError("app-shared external texture must use root attribution");
+			}
+			return;
+		}
+		if (desc.window == 0 || key.window != desc.window) {
+			storageError("external texture key does not match its owning window");
+		}
+		if (desc.sharing == ResourceSharing::WindowLocal && desc.frameSlot != InvalidFrameSlot) {
+			storageError("window-local external texture cannot name a frame slot");
+		}
+		if (desc.sharing == ResourceSharing::FrameLocal && desc.frameSlot == InvalidFrameSlot) {
+			storageError("frame-local external texture requires a frame slot");
 		}
 	}
 
@@ -1141,7 +1189,7 @@ struct FlowStorageSystem::Impl {
 		const ResourceState imageState = images[image.index].state;
 		for (size_t textureIndex = 1; textureIndex < textureHot.size(); ++textureIndex) {
 			TextureHotRecord& hot = textureHot[textureIndex];
-			if (hot.state == ResourceState::Invalid || hot.imageViewIndex >= imageViews.size()) continue;
+			if (hot.external || hot.state == ResourceState::Invalid || hot.imageViewIndex >= imageViews.size()) continue;
 			const ImageViewRecord& view = imageViews[hot.imageViewIndex];
 			if (view.generation != hot.imageViewGeneration || view.image != image) continue;
 			if (hot.state != imageState) {
@@ -1188,7 +1236,8 @@ struct FlowStorageSystem::Impl {
 		return validSampler(handle) && samplers[handle.index].state != ResourceState::Retiring;
 	}
 	bool usableTexture(TextureHandle handle) const noexcept {
-		return validTexture(handle) && textureHot[handle.index].state != ResourceState::Retiring;
+		return validTexture(handle) && textureHot[handle.index].state != ResourceState::Retiring &&
+			(textureCold[handle.index].published || handle == fallbackTexture);
 	}
 	bool usableRendererLayout(RendererLayoutHandle handle) const noexcept {
 		return validRendererLayout(handle) && rendererLayouts[handle.index].state != ResourceState::Retiring;
@@ -1398,13 +1447,16 @@ struct FlowStorageSystem::Impl {
 			binding.state = hot.state;
 			binding.nativeImageView = fallbackBinding.nativeImageView;
 			binding.nativeSampler = fallbackBinding.nativeSampler;
-			if (hot.state == ResourceState::Ready && hot.imageViewIndex < imageViewHot.size()) {
+			if (hot.external && hot.state == ResourceState::Ready) {
+				binding.nativeImageView = hot.nativeImageView;
+				binding.nativeSampler = hot.nativeSampler;
+			} else if (hot.state == ResourceState::Ready && hot.imageViewIndex < imageViewHot.size()) {
 				const ImageViewHotRecord& view = imageViewHot[hot.imageViewIndex];
 				if (view.generation == hot.imageViewGeneration) binding.nativeImageView = view.nativeImageView;
-			}
-			if (hot.state == ResourceState::Ready && hot.samplerIndex < samplerHot.size()) {
+				if (hot.samplerIndex < samplerHot.size()) {
 				const SamplerHotRecord& sampler = samplerHot[hot.samplerIndex];
 				if (sampler.generation == hot.samplerGeneration) binding.nativeSampler = sampler.nativeSampler;
+				}
 			}
 		}
 
@@ -1589,11 +1641,14 @@ struct FlowStorageSystem::Impl {
 			TextureColdRecord& cold = textureCold[handle.index];
 			const ImageViewHandle view = cold.desc.imageView;
 			const SamplerHandle sampler = cold.desc.sampler;
+			const bool external = cold.external;
 			hot = TextureHotRecord{.generation = nextGeneration(hot.generation)};
 			cold = {};
 			freeTextures.push_back(handle.index);
-			releaseImageViewReference(view, request.retireAfter);
-			releaseSamplerReference(sampler, request.retireAfter);
+			if (!external) {
+				releaseImageViewReference(view, request.retireAfter);
+				releaseSamplerReference(sampler, request.retireAfter);
+			}
 			for (auto& [_, window] : windows) {
 				if (window->bindingsByTextureIndex.size() <= handle.index) continue;
 				BindingHotRecord& binding = window->bindingsByTextureIndex[handle.index];
@@ -2666,7 +2721,12 @@ TextureHandle FlowStorageSystem::publishTexture(ResourceKey key, const TextureVi
 	hot.state = impl_->validImage(backingImage) ? impl_->images[backingImage.index].state : ResourceState::Invalid;
 	hot.sourceWidth = desc.sourceWidth;
 	hot.sourceHeight = desc.sourceHeight;
-	impl_->textureCold[index] = Impl::TextureColdRecord{key, desc, 1u, 0, true};
+	impl_->textureCold[index] = Impl::TextureColdRecord{
+		.key = key,
+		.desc = desc,
+		.referenceCount = 1u,
+		.published = true,
+	};
 	const TextureHandle handle{index, hot.generation};
 	try {
 		if (!impl_->textureByKey.emplace(key, handle).second) {
@@ -2756,9 +2816,65 @@ TextureHandle FlowStorageSystem::replaceTexture(ResourceKey key, const TextureVi
 	return handle;
 }
 
+TextureHandle FlowStorageSystem::publishExternalTexture(
+	ResourceKey key,
+	const ExternalTextureDesc& desc,
+	bool* inserted) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	impl_->requireExternalTexturePublishPhase();
+	impl_->validateExternalTextureOwnership(key, desc);
+
+	auto found = impl_->textureByKey.find(key);
+	const bool isInsert = found == impl_->textureByKey.end();
+	if (!isInsert) impl_->reserveRetirements(1u);
+	const TextureHandle old = isInsert ? TextureHandle{} : found->second;
+
+	const uint32_t index = impl_->acquireTextureIndex();
+	TextureHotRecord& hot = impl_->textureHot[index];
+	const uint32_t generation = hot.generation == 0 ? 1u : hot.generation;
+	hot = TextureHotRecord{
+		.generation = generation,
+		.revision = 1u,
+		.state = ResourceState::Ready,
+		.external = true,
+		.sourceWidth = desc.sourceWidth,
+		.sourceHeight = desc.sourceHeight,
+		.nativeImageView = desc.nativeImageView,
+		.nativeSampler = desc.nativeSampler,
+	};
+	impl_->textureCold[index] = Impl::TextureColdRecord{
+		.key = key,
+		.externalDesc = desc,
+		.referenceCount = 1u,
+		.published = true,
+		.external = true,
+	};
+	const TextureHandle handle{index, generation};
+	if (isInsert) {
+		try {
+			if (!impl_->textureByKey.emplace(key, handle).second) {
+				storageError("external texture key publication collided with a stale entry");
+			}
+		} catch (...) {
+			hot = TextureHotRecord{.generation = generation};
+			impl_->textureCold[index] = {};
+			impl_->freeTextures.push_back(index);
+			throw;
+		}
+	} else {
+		found->second = handle;
+		Impl::TextureColdRecord& oldCold = impl_->textureCold[old.index];
+		oldCold.published = false;
+		impl_->releaseTextureReference(old, oldCold.lastUse);
+	}
+	if (inserted) *inserted = isInsert;
+	return handle;
+}
+
 bool FlowStorageSystem::removeTexture(ResourceKey key, SubmissionSerial lastUse) {
 	std::scoped_lock lock(impl_->mutex);
-	impl_->requireSharedMutationPhase();
+	impl_->requireExternalTexturePublishPhase();
 	const auto found = impl_->textureByKey.find(key);
 	if (found == impl_->textureByKey.end()) return false;
 	const TextureHandle handle = found->second;
@@ -2789,6 +2905,11 @@ TextureMetadata FlowStorageSystem::textureMetadata(TextureHandle texture) const 
 	return TextureMetadata{hot.state, hot.sourceWidth, hot.sourceHeight, hot.revision};
 }
 
+bool FlowStorageSystem::textureRetirementComplete(TextureHandle texture) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	return !impl_->validTexture(texture);
+}
+
 void FlowStorageSystem::setFallbackTexture(TextureHandle texture) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
@@ -2796,6 +2917,9 @@ void FlowStorageSystem::setFallbackTexture(TextureHandle texture) {
 	if (texture == impl_->fallbackTexture) return;
 	if (!impl_->usableTexture(texture) || impl_->textureHot[texture.index].state != ResourceState::Ready) {
 		storageError("fallback texture must be a ready, non-retiring texture");
+	}
+	if (impl_->textureCold[texture.index].external) {
+		storageError("the fallback texture must be storage-owned");
 	}
 	const ImageHandle fallbackImage = impl_->textureBackingImage(texture);
 	if (!fallbackImage || impl_->textureCold[texture.index].key.window != 0 ||
@@ -2864,6 +2988,33 @@ PreparedTextureBindings FlowStorageSystem::prepareTextureBindings(
 		maximumWrites * sizeof(DescriptorWriteRecord), alignof(DescriptorWriteRecord)));
 	if (maximumWrites > 0 && !writes) storageError("failed to allocate the descriptor write batch");
 
+	// Preflight the complete batch before resolve() assigns any descriptor index.
+	// This makes descriptor-capacity failure transactional.
+	uint32_t* seen = nullptr;
+	if (!impl_->textureHot.empty()) {
+		seen = static_cast<uint32_t*>(state.transient.allocate(
+			impl_->textureHot.size() * sizeof(uint32_t), alignof(uint32_t)));
+		if (!seen) storageError("failed to allocate texture binding preflight markers");
+		std::fill_n(seen, impl_->textureHot.size(), 0u);
+	}
+	uint32_t requiredNewBindings = 0;
+	for (TextureHandle texture : textures) {
+		if (!impl_->usableTexture(texture) || texture == impl_->fallbackTexture) continue;
+		if (!impl_->textureVisibleToFrame(texture, frame)) {
+			storageError("texture is not visible to the resolving window/frame scope");
+		}
+		if (seen[texture.index] != 0u) continue;
+		seen[texture.index] = texture.generation;
+		const bool alreadyAssigned = texture.index < window.bindingsByTextureIndex.size() &&
+			window.bindingsByTextureIndex[texture.index].descriptorIndex != 0;
+		if (!alreadyAssigned) ++requiredNewBindings;
+	}
+	const uint64_t reusable = window.freeDescriptorIndices.size();
+	const uint64_t unassigned = requiredNewBindings > reusable ? requiredNewBindings - reusable : 0u;
+	if (static_cast<uint64_t>(window.nextDescriptorIndex) + unassigned > window.desc.maxTextureBindings) {
+		storageError("window texture descriptor capacity was exhausted");
+	}
+
 	if (state.currentBindingBatch == std::numeric_limits<uint32_t>::max()) {
 		std::fill(state.preparedBindingBatches.begin(), state.preparedBindingBatches.end(), 0u);
 		state.currentBindingBatch = 1u;
@@ -2905,6 +3056,7 @@ PreparedTextureBindings FlowStorageSystem::prepareTextureBindings(
 	}
 	return PreparedTextureBindings{
 		.dirtyBindings = std::span<const DescriptorWriteRecord>(writes, writeCount),
+		.bindingsByTextureIndex = window.bindingsByTextureIndex,
 		.requiredDescriptorCapacity = std::max(1u, window.nextDescriptorIndex),
 		.epoch = frame.epoch,
 	};
@@ -3916,6 +4068,24 @@ NativeImageView FlowStorageSystem::nativeImage(ImageHandle handle) const noexcep
 		.width = record.desc.width,
 		.height = record.desc.height,
 		.layers = record.desc.layers,
+	};
+}
+
+NativeImageViewInfo FlowStorageSystem::nativeImageView(ImageViewHandle handle) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->usableImageView(handle)) return {};
+	const Impl::ImageViewRecord& record = impl_->imageViews[handle.index];
+	return NativeImageViewInfo{
+		.nativeImageView = nativeHandle(record.view),
+		.image = record.image,
+	};
+}
+
+NativeSamplerInfo FlowStorageSystem::nativeSampler(SamplerHandle handle) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->usableSampler(handle)) return {};
+	return NativeSamplerInfo{
+		.nativeSampler = nativeHandle(impl_->samplers[handle.index].sampler),
 	};
 }
 

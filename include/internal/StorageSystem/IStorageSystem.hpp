@@ -11,7 +11,7 @@ namespace FlowUi::detail::storage {
 
 class IStorageSystem {
 public:
-	static constexpr uint32_t CurrentInterfaceVersion = 2u;
+	static constexpr uint32_t CurrentInterfaceVersion = 4u;
 
 	virtual ~IStorageSystem() = default;
 
@@ -89,9 +89,18 @@ public:
 		const TextureViewDesc& desc,
 		bool* inserted = nullptr) = 0;
 	[[nodiscard]] virtual TextureHandle replaceTexture(ResourceKey key, const TextureViewDesc& desc) = 0;
+	//Transitional: borrowed native texture publication is removed after manager
+	// resource stores migrate to storage-owned image/view/sampler handles.
+	[[nodiscard]] virtual TextureHandle publishExternalTexture(
+		ResourceKey key,
+		const ExternalTextureDesc& desc,
+		bool* inserted = nullptr) = 0;
 	virtual bool removeTexture(ResourceKey key, SubmissionSerial lastUse = 0) = 0;
 	[[nodiscard]] virtual TextureHandle findTexture(ResourceKey key) const noexcept = 0;
 	[[nodiscard]] virtual TextureMetadata textureMetadata(TextureHandle texture) const noexcept = 0;
+	// True only after a removed/replaced generation has passed serial retirement
+	// and its table generation is no longer allocated.
+	[[nodiscard]] virtual bool textureRetirementComplete(TextureHandle texture) const noexcept = 0;
 	// The fallback is a root-shared strong reference and backs descriptor slot 0
 	// for invalid, queued, and failed textures in every registered window.
 	virtual void setFallbackTexture(TextureHandle texture) = 0;
@@ -176,6 +185,8 @@ public:
 	// only while the corresponding strong generation remains alive.
 	[[nodiscard]] virtual NativeBufferView nativeBuffer(BufferHandle buffer) const noexcept = 0;
 	[[nodiscard]] virtual NativeImageView nativeImage(ImageHandle image) const noexcept = 0;
+	[[nodiscard]] virtual NativeImageViewInfo nativeImageView(ImageViewHandle view) const noexcept = 0;
+	[[nodiscard]] virtual NativeSamplerInfo nativeSampler(SamplerHandle sampler) const noexcept = 0;
 };
 
 } // namespace FlowUi::detail::storage

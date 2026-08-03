@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include "Ui/Vk_UiRenderer.hpp"
 
 namespace {
 
@@ -31,6 +32,7 @@ using FlowUi::detail::storage::BufferUsage;
 using FlowUi::detail::storage::BufferWriteView;
 using FlowUi::detail::storage::BufferWriteMode;
 using FlowUi::detail::storage::DescriptorWriteRecord;
+using FlowUi::detail::storage::ExternalTextureDesc;
 using FlowUi::detail::storage::FlowStorageSystem;
 using FlowUi::detail::storage::FrameStorageDesc;
 using FlowUi::detail::storage::IStorageSystem;
@@ -38,6 +40,8 @@ using FlowUi::detail::storage::ImageDesc;
 using FlowUi::detail::storage::ImageHandle;
 using FlowUi::detail::storage::ImageUsage;
 using FlowUi::detail::storage::ImageViewDesc;
+using FlowUi::detail::storage::ImageViewHandle;
+using FlowUi::detail::storage::NativeImageViewInfo;
 using FlowUi::detail::storage::NativeRendererLayout;
 using FlowUi::detail::storage::NativeRendererPipelineBundle;
 using FlowUi::detail::storage::NativeWindowDescriptorBundle;
@@ -417,6 +421,7 @@ void testInitialization(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 void testPersistentStringsAndBlobs(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	storage.initialize(testConfig());
+	FLOWUI_CHECK(hasCapability(storage, StorageCapability::BorrowedNativeTextures));
 	storage.registerWindow(7u, windowDesc());
 
 	storage.setBudget(128u, 64u * 1024u * 1024u);
@@ -643,6 +648,66 @@ void testMappedWriteModes(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	storage.collect();
 	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::GpuBuffer, buffer.index, buffer.generation));
 	storage.unregisterWindow(31u, submission.serial);
+}
+
+void testNativeImageViewAndSamplerQueries(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+
+	ImageDesc imageDesc{};
+	imageDesc.format = PixelFormat::Rgba8Unorm;
+	imageDesc.usage = ImageUsage::Sampled;
+	imageDesc.memory = MemoryPreference::DeviceLocal;
+	const ImageHandle image = storage.createImage(imageDesc);
+	const ImageViewHandle view = storage.createImageView(image, ImageViewDesc{});
+	const SamplerHandle sampler = storage.acquireSampler(SamplerDesc{});
+
+	const NativeImageViewInfo nativeView = storage.nativeImageView(view);
+	FLOWUI_CHECK(nativeView.nativeImageView != 0);
+	FLOWUI_CHECK(nativeView.image == image);
+	FLOWUI_CHECK(storage.nativeSampler(sampler).nativeSampler != 0);
+
+	FLOWUI_CHECK(storage.nativeImageView(ImageViewHandle{view.index, view.generation + 1u}).nativeImageView == 0);
+	FLOWUI_CHECK(storage.nativeSampler(SamplerHandle{sampler.index, sampler.generation + 1u}).nativeSampler == 0);
+
+	storage.releaseImageView(view, 0);
+	storage.releaseSampler(sampler, 0);
+	FLOWUI_CHECK(storage.nativeImageView(view).nativeImageView == 0);
+	FLOWUI_CHECK(storage.nativeSampler(sampler).nativeSampler == 0);
+	storage.releaseImage(image, 0);
+	storage.collect();
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::ImageView, view.index, view.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::Sampler, sampler.index, sampler.generation));
+}
+
+void testSharedUiByteResourceLifecycle(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+	SharedUiByteResources resources{};
+	initSharedUiByteResources(storage, resources);
+
+	FLOWUI_CHECK(resources.quadBuffer);
+	FLOWUI_CHECK(resources.placeholderFontImage);
+	FLOWUI_CHECK(resources.placeholderFontView);
+	FLOWUI_CHECK(resources.placeholderUiImage);
+	FLOWUI_CHECK(resources.placeholderUiView);
+	FLOWUI_CHECK(resources.linearSampler);
+	FLOWUI_CHECK(resources.nativeQuadBuffer != VK_NULL_HANDLE);
+	FLOWUI_CHECK(resources.nativePlaceholderFontView != VK_NULL_HANDLE);
+	FLOWUI_CHECK(resources.nativePlaceholderUiView != VK_NULL_HANDLE);
+	FLOWUI_CHECK(resources.nativeLinearSampler != VK_NULL_HANDLE);
+
+	const BufferHandle quad = resources.quadBuffer;
+	const ImageHandle fontImage = resources.placeholderFontImage;
+	const ImageViewHandle fontView = resources.placeholderFontView;
+	const SamplerHandle sampler = resources.linearSampler;
+	destroySharedUiByteResources(storage, resources);
+	storage.collect();
+	FLOWUI_CHECK(!resources.quadBuffer);
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::GpuBuffer, quad.index, quad.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::GpuImage, fontImage.index, fontImage.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::ImageView, fontView.index, fontView.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::Sampler, sampler.index, sampler.generation));
 }
 
 BufferDesc trackedBufferDesc(FlowUi::detail::storage::WindowId window) {
@@ -873,9 +938,116 @@ void testTextureBindingProtocol(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FLOWUI_CHECK_THROWS(storage.resetTextureBindings(61u, 0));
 	const std::array overCapacity{capacityTexture};
 	FLOWUI_CHECK_THROWS(storage.prepareTextureBindings(nextFrame, overCapacity));
+	const auto preservedAfterFailure = storage.prepareTextureBindings(nextFrame, nextRequested);
+	FLOWUI_CHECK(preservedAfterFailure.binding(texture) != nullptr);
+	FLOWUI_CHECK(preservedAfterFailure.binding(texture)->descriptorIndex == 1u);
 	storage.cancelFrame(nextFrame);
 	storage.resetTextureBindings(61u, 0);
 	storage.unregisterWindow(61u, submission.serial);
+}
+
+void testExternalTextureBindingsAndRetirement(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+
+	ImageDesc imageDesc{};
+	imageDesc.width = 1;
+	imageDesc.height = 1;
+	imageDesc.format = PixelFormat::Rgba8Unorm;
+	imageDesc.usage = ImageUsage::Sampled;
+	imageDesc.memory = MemoryPreference::DeviceLocal;
+	const ImageHandle image = storage.createImage(imageDesc);
+	const ImageViewHandle view = storage.createImageView(image, ImageViewDesc{});
+	const SamplerHandle sampler = storage.acquireSampler(SamplerDesc{});
+	const TextureViewDesc managedDesc{.imageView = view, .sampler = sampler};
+	const TextureHandle fallback = storage.publishTexture(ResourceKey{
+		.domain = ResourceDomain::Internal,
+		.name = storage.intern("phase3 fallback"),
+	}, managedDesc);
+	storage.setFallbackTexture(fallback);
+
+	const NativeImageViewInfo nativeView = storage.nativeImageView(view);
+	const auto nativeSampler = storage.nativeSampler(sampler);
+	const ExternalTextureDesc externalDesc{
+		.nativeImageView = nativeView.nativeImageView,
+		.nativeSampler = nativeSampler.nativeSampler,
+		.sourceWidth = 32,
+		.sourceHeight = 24,
+	};
+	const ResourceKey seedKey{
+		.domain = ResourceDomain::Image,
+		.name = storage.intern("phase3 seed"),
+	};
+	const ResourceKey textureKey{
+		.domain = ResourceDomain::Image,
+		.name = storage.intern("phase3 shared"),
+	};
+	bool inserted = false;
+	const TextureHandle seed = storage.publishExternalTexture(seedKey, externalDesc, &inserted);
+	FLOWUI_CHECK(inserted);
+	const TextureHandle texture = storage.publishExternalTexture(textureKey, externalDesc, &inserted);
+	FLOWUI_CHECK(inserted);
+	FLOWUI_CHECK(storage.textureMetadata(texture).sourceWidth == 32);
+
+	WindowStorageDesc desc = windowDesc(1, 1);
+	desc.initialTextureBindings = 4;
+	desc.maxTextureBindings = 4;
+	storage.registerWindow(201u, desc);
+	storage.registerWindow(202u, desc);
+
+	const auto frameA = storage.beginFrame(201u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
+	const std::array requestedA{seed, texture};
+	const auto preparedA = storage.prepareTextureBindings(frameA, requestedA);
+	FLOWUI_CHECK(preparedA.binding(texture) != nullptr);
+	FLOWUI_CHECK(preparedA.binding(texture)->descriptorIndex == 2u);
+	storage.acknowledgeTextureBindings(frameA, preparedA.dirtyBindings);
+	const auto submissionA = storage.noteSubmission(storage.sealFrame(frameA));
+
+	const auto frameB = storage.beginFrame(202u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
+	const std::array requestedB{texture};
+	const auto preparedB = storage.prepareTextureBindings(frameB, requestedB);
+	FLOWUI_CHECK(preparedB.binding(texture) != nullptr);
+	FLOWUI_CHECK(preparedB.binding(texture)->descriptorIndex == 1u);
+	storage.acknowledgeTextureBindings(frameB, preparedB.dirtyBindings);
+	const auto submissionB = storage.noteSubmission(storage.sealFrame(frameB));
+
+	const TextureHandle replacement = storage.publishExternalTexture(textureKey, externalDesc, &inserted);
+	FLOWUI_CHECK(!inserted);
+	FLOWUI_CHECK(replacement != texture);
+	FLOWUI_CHECK(!storage.textureRetirementComplete(texture));
+	storage.collect();
+	FLOWUI_CHECK(!storage.textureRetirementComplete(texture));
+	storage.noteCompleted(submissionA);
+	storage.noteCompleted(submissionB);
+	storage.collect();
+	FLOWUI_CHECK(storage.textureRetirementComplete(texture));
+
+	const ResourceKey localKey{
+		.domain = ResourceDomain::Viewport,
+		.name = storage.intern("phase3 local"),
+		.window = 201u,
+	};
+	const TextureHandle local = storage.publishExternalTexture(localKey, ExternalTextureDesc{
+		.nativeImageView = nativeView.nativeImageView,
+		.nativeSampler = nativeSampler.nativeSampler,
+		.sharing = ResourceSharing::FrameLocal,
+		.window = 201u,
+		.frameSlot = 0,
+	});
+	const auto wrongWindow = storage.beginFrame(202u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 2});
+	const std::array wrongRequested{local};
+	FLOWUI_CHECK_THROWS(storage.prepareTextureBindings(wrongWindow, wrongRequested));
+	storage.cancelFrame(wrongWindow);
+
+	FLOWUI_CHECK(storage.removeTexture(localKey));
+	FLOWUI_CHECK(storage.removeTexture(textureKey));
+	FLOWUI_CHECK(storage.removeTexture(seedKey));
+	storage.collect();
+	storage.unregisterWindow(201u, submissionA.serial);
+	storage.unregisterWindow(202u, submissionB.serial);
+	storage.releaseImageView(view);
+	storage.releaseSampler(sampler);
+	storage.releaseImage(image);
 }
 
 void testWindowAndFrameLocality(FlowUi::test::HeadlessVulkanFixture& vulkan) {
@@ -1284,6 +1456,12 @@ int main() {
 		runner.run("frame arenas, leases, and completion gating", [&] { testFrameArenasAndCompletion(vulkan); });
 		runner.run("independent multi-window progress", [&] { testMultiWindowProgress(vulkan); });
 		runner.run("direct and host-scratch buffer writes", [&] { testMappedWriteModes(vulkan); });
+		runner.run("cold native image-view and sampler queries", [&] {
+			testNativeImageViewAndSamplerQueries(vulkan);
+		});
+		runner.run("shared UI byte resource upload and retirement", [&] {
+			testSharedUiByteResourceLifecycle(vulkan);
+		});
 		runner.run("frame-held resource lifetime and deduplication", [&] {
 			testFrameHeldResourceLifetimes(vulkan);
 		});
@@ -1291,6 +1469,9 @@ int main() {
 			testConcurrentNonOverlappingWrites(vulkan);
 		});
 		runner.run("fallback and descriptor binding protocol", [&] { testTextureBindingProtocol(vulkan); });
+		runner.run("external logical textures and per-window binding retirement", [&] {
+			testExternalTextureBindingsAndRetirement(vulkan);
+		});
 		runner.run("window and frame-slot resource locality", [&] { testWindowAndFrameLocality(vulkan); });
 		runner.run("typed renderer resource ownership", [&] { testRendererResourceOwnership(vulkan); });
 		runner.run("descriptor bundle replacement", [&] { testDescriptorBundleReplacement(vulkan); });

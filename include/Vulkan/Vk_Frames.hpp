@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "FlowUi/PublicStructs.hpp"
+#include "internal/StorageSystem/StorageTypes.hpp"
 #include "Vulkan/Vk_Context.hpp"
 
 
@@ -13,6 +14,7 @@ struct FrameVk {
 		VkCommandBuffer cmd = VK_NULL_HANDLE;
 		VkSemaphore imageAvailable = VK_NULL_HANDLE;
 		VkFence inFlight = VK_NULL_HANDLE;
+		FlowUi::detail::storage::SubmissionToken storageSubmission{};
 	};
 
 	std::vector<Frame> frames;
@@ -22,7 +24,7 @@ struct FrameVk {
 	std::vector<VkFence> imageInFlight;
 	std::vector<VkSemaphore> renderFinishedBySwapImage;
 
-	void create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t swapImageCount);
+	void create(uint32_t framesInFlight, VulkanContext& vk, size_t swapImageCount);
 	void destroy(VulkanContext& vk);
 
 	Frame& getCurrentFrame() { return frames[currentFrame]; }

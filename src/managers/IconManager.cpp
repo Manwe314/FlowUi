@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "internal/UiTextureRegistry.hpp"
+#include "internal/UiTexturePublisher.hpp"
 #include "internal/Vma.hpp"
 #include <plutosvg.h>
 
@@ -357,8 +357,8 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
 		throw std::runtime_error("IconManager cannot create atlas pages before Vulkan init.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("IconManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("IconManager texture publisher is not set.");
 	}
 	if (atlasSampler_ == VK_NULL_HANDLE || commandPool_ == VK_NULL_HANDLE) {
 		throw std::runtime_error("IconManager atlas resources are not initialized.");
@@ -412,7 +412,16 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 		transitionImageLayoutsToShaderRead(*vk_, commandPool_, page.image);
 
 		bool inserted = false;
-		page.slotId = registry_->registerOrReplaceSlot(*vk_, page.namespacedKey, page.view, atlasSampler_, inserted);
+		page.texture = texturePublisher_->publishExternal(
+			detail::storage::ResourceDomain::Icon,
+			page.namespacedKey,
+			detail::storage::ExternalTextureDesc{
+				.nativeImageView = reinterpret_cast<uintptr_t>(page.view),
+				.nativeSampler = reinterpret_cast<uintptr_t>(atlasSampler_),
+				.sourceWidth = static_cast<int32_t>(page.width),
+				.sourceHeight = static_cast<int32_t>(page.height),
+			},
+			inserted);
 		if (!inserted) {
 			throw std::runtime_error("IconManager atlas page namespaced key collision.");
 		}
@@ -433,8 +442,9 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 }
 
 void IconManager::destroyAtlasPage(AtlasPage& page) {
-	if (registry_ && !page.namespacedKey.empty()) {
-		const bool removed = registry_->removeSlot(page.namespacedKey);
+	if (texturePublisher_ && !page.namespacedKey.empty()) {
+		const bool removed = texturePublisher_->remove(
+			detail::storage::ResourceDomain::Icon, page.namespacedKey);
 		(void)removed;
 	}
 	if (vk_ && vk_->device != VK_NULL_HANDLE && page.view != VK_NULL_HANDLE) {
@@ -444,7 +454,7 @@ void IconManager::destroyAtlasPage(AtlasPage& page) {
 		vmaDestroyImage(vk_->allocator, page.image, page.allocation);
 	}
 
-	page.slotId = 0u;
+	page.texture = {};
 	page.image = VK_NULL_HANDLE;
 	page.allocation = nullptr;
 	page.view = VK_NULL_HANDLE;
@@ -595,10 +605,10 @@ void IconManager::recalcAtlasUvs(VariantEntry& variant, const AtlasPage& page) c
 	variant.uv1y = static_cast<float>(variant.contentRect.y + variant.contentRect.h) * invH;
 }
 
-const std::string* IconManager::findRequestedKeyByTextureId(uint32_t textureId) const
+const std::string* IconManager::findRequestedKeyByTextureHandle(TextureHandle texture) const
 {
-	const auto it = requestedKeyByTextureId_.find(textureId);
-	if (it == requestedKeyByTextureId_.end()) {
+	const auto it = requestedKeyByTexture_.find(texture.packed());
+	if (it == requestedKeyByTexture_.end()) {
 		return nullptr;
 	}
 	return &it->second;
@@ -884,7 +894,7 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	VariantEntry entry{};
 	entry.key = requestKey;
 	entry.pageIndex = allocation.pageIndex;
-	entry.slotId = page.slotId;
+	entry.texture = page.texture;
 	entry.paddedRect = allocation.paddedRect;
 	entry.contentRect = allocation.contentRect;
 	entry.sourceWidth = raster.width;
@@ -924,11 +934,11 @@ void IconManager::prepareFrameTextures(
 		}
 
 		auto* textureRef = reinterpret_cast<TextureRef*>(command.renderData.image.imageData);
-		if (!textureRef || textureRef->id == 0u) {
+		if (!textureRef || !textureRef->handle) {
 			continue;
 		}
 
-		const std::string* requestedKey = findRequestedKeyByTextureId(textureRef->id);
+		const std::string* requestedKey = findRequestedKeyByTextureHandle(textureRef->handle);
 		if (!requestedKey) {
 			continue;
 		}
@@ -944,7 +954,7 @@ void IconManager::prepareFrameTextures(
 			atlasPages_[variant.pageIndex].lastUsedFrame = frameCounter_;
 		}
 
-		textureRef->id = variant.slotId;
+		textureRef->handle = variant.texture;
 		textureRef->uv0x = variant.uv0x;
 		textureRef->uv0y = variant.uv0y;
 		textureRef->uv1x = variant.uv1x;
@@ -954,20 +964,20 @@ void IconManager::prepareFrameTextures(
 	}
 }
 
-void IconManager::setRegistry(detail::IUiTextureRegistry* registry) {
-	registry_ = registry;
+void IconManager::setTexturePublisher(detail::IUiTexturePublisher* publisher) {
+	texturePublisher_ = publisher;
 }
 
 void IconManager::init(VulkanContext& vk, const IconManagerConfig& config) {
-	detail::IUiTextureRegistry* const preservedRegistry = registry_;
+	detail::IUiTexturePublisher* const preservedPublisher = texturePublisher_;
 	destroy(vk);
-	registry_ = preservedRegistry;
+	texturePublisher_ = preservedPublisher;
 
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw std::runtime_error("IconManager init requires a valid Vulkan device + allocator.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("IconManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("IconManager texture publisher is not set.");
 	}
 	if (vk.graphicsQFamily == UINT32_MAX || vk.graphicsQ == VK_NULL_HANDLE) {
 		throw std::runtime_error("IconManager requires a valid graphics queue.");
@@ -1110,15 +1120,16 @@ bool IconManager::remove(std::string_view key)
 		return false;
 	}
 
-	const auto requestIdIt = requestTextureIdByKey_.find(keyString);
-	if (requestIdIt != requestTextureIdByKey_.end()) {
-		if (registry_) {
+	const auto requestIdIt = requestTextureByKey_.find(keyString);
+	if (requestIdIt != requestTextureByKey_.end()) {
+		if (texturePublisher_) {
 			const std::string namespacedKey = makeRequestNamespacedKey(key);
-			const bool removed = registry_->removeSlot(namespacedKey);
+			const bool removed = texturePublisher_->remove(
+				detail::storage::ResourceDomain::Icon, namespacedKey);
 			(void)removed;
 		}
-		requestedKeyByTextureId_.erase(requestIdIt->second);
-		requestTextureIdByKey_.erase(requestIdIt);
+		requestedKeyByTexture_.erase(requestIdIt->second.packed());
+		requestTextureByKey_.erase(requestIdIt);
 	}
 
 	for (auto variantIt = variantsByKeyAndSize_.begin(); variantIt != variantsByKeyAndSize_.end();) {
@@ -1148,8 +1159,8 @@ TextureRef IconManager::textureRef(std::string_view key) {
 	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
 		throw std::runtime_error("IconManager is not initialized.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("IconManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("IconManager texture publisher is not set.");
 	}
 	if (atlasPages_.empty() || atlasPages_.front().view == VK_NULL_HANDLE || atlasSampler_ == VK_NULL_HANDLE) {
 		throw std::runtime_error("IconManager atlas pages are not initialized.");
@@ -1164,25 +1175,21 @@ TextureRef IconManager::textureRef(std::string_view key) {
 		throw std::runtime_error("IconManager textureRef requested an unknown SVG key: " + keyString);
 	}
 
-	auto requestIdIt = requestTextureIdByKey_.find(keyString);
-	if (requestIdIt == requestTextureIdByKey_.end()) {
+	auto requestIdIt = requestTextureByKey_.find(keyString);
+	if (requestIdIt == requestTextureByKey_.end()) {
 		const std::string namespacedKey = makeRequestNamespacedKey(key);
 		bool inserted = false;
-		const uint32_t requestTextureId = registry_->registerOrReplaceSlot(
-			*vk_,
-			namespacedKey,
-			atlasPages_.front().view,
-			atlasSampler_,
-			inserted);
+		const TextureHandle requestTexture = texturePublisher_->publishFallbackAlias(
+			detail::storage::ResourceDomain::Icon, namespacedKey, inserted);
 		if (!inserted) {
 			throw std::runtime_error("IconManager request namespaced key collision.");
 		}
-		requestIdIt = requestTextureIdByKey_.emplace(keyString, requestTextureId).first;
-		requestedKeyByTextureId_.emplace(requestTextureId, keyString);
+		requestIdIt = requestTextureByKey_.emplace(keyString, requestTexture).first;
+		requestedKeyByTexture_.emplace(requestTexture.packed(), keyString);
 	}
 
 	TextureRef texture{};
-	texture.id = requestIdIt->second;
+	texture.handle = requestIdIt->second;
 	texture.sourceWidth = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicWidth)));
 	texture.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight)));
 	return texture;
@@ -1271,10 +1278,11 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 void IconManager::destroy(VulkanContext& vk) {
 	(void)vk;
 
-	if (registry_) {
-		for (const auto& [key, _] : requestTextureIdByKey_) {
+	if (texturePublisher_) {
+		for (const auto& [key, _] : requestTextureByKey_) {
 			const std::string namespacedKey = makeRequestNamespacedKey(key);
-			const bool removed = registry_->removeSlot(namespacedKey);
+			const bool removed = texturePublisher_->remove(
+				detail::storage::ResourceDomain::Icon, namespacedKey);
 			(void)removed;
 		}
 	}
@@ -1284,8 +1292,8 @@ void IconManager::destroy(VulkanContext& vk) {
 		record.document = nullptr;
 	}
 	documentsByKey_.clear();
-	requestTextureIdByKey_.clear();
-	requestedKeyByTextureId_.clear();
+	requestTextureByKey_.clear();
+	requestedKeyByTexture_.clear();
 	variantsByKeyAndSize_.clear();
 	destroyAtlasPages();
 
@@ -1300,7 +1308,7 @@ void IconManager::destroy(VulkanContext& vk) {
 	atlasSampler_ = VK_NULL_HANDLE;
 
 	vk_ = nullptr;
-	registry_ = nullptr;
+	texturePublisher_ = nullptr;
 	atlasSize_ = 0u;
 	atlasPadding_ = 1u;
 	sizeReuseTolerance_ = 8u;

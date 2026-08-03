@@ -12,10 +12,12 @@
 #include <type_traits>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/TextureHandle.hpp"
+#include "FlowUi/WindowId.hpp"
 
 namespace FlowUi::detail::storage {
 
-using WindowId = uint64_t;
+using WindowId = FlowUi::WindowId;
 using SubmissionSerial = uint64_t;
 using StringId = uint32_t;
 using AllocationId = uint32_t;
@@ -89,7 +91,6 @@ enum class AccessMode : uint8_t {
 enum class ResourceSharing : uint8_t {
 	AppShared = 0,
 	WindowLocal,
-	// Owned by one frames-in-flight slot and reusable across that slot's epochs.
 	FrameLocal,
 };
 
@@ -172,6 +173,7 @@ enum class StorageCapability : uint64_t {
 	FrameReadLeases = 1ull << 11u,
 	RendererResourceBundles = 1ull << 12u,
 	DevelopmentTelemetry = 1ull << 13u,
+	BorrowedNativeTextures = 1ull << 14u,
 };
 
 template <ResourceKind KindValue>
@@ -203,7 +205,7 @@ using BufferHandle = Handle<ResourceKind::GpuBuffer>;
 using ImageHandle = Handle<ResourceKind::GpuImage>;
 using ImageViewHandle = Handle<ResourceKind::ImageView>;
 using SamplerHandle = Handle<ResourceKind::Sampler>;
-using TextureHandle = Handle<ResourceKind::TextureView>;
+using TextureHandle = FlowUi::TextureHandle;
 using FontFaceHandle = Handle<ResourceKind::FontFace>;
 using FontAtlasHandle = Handle<ResourceKind::FontAtlas>;
 using SvgDocumentHandle = Handle<ResourceKind::SvgDocument>;
@@ -444,6 +446,18 @@ struct TextureViewDesc {
 	int32_t sourceHeight = 0;
 };
 
+//Transitional: borrowed native bindings are removed when managers create their
+// images, views, samplers, and uploads through the storage system.
+struct ExternalTextureDesc {
+	uint64_t nativeImageView = 0;
+	uint64_t nativeSampler = 0;
+	ResourceSharing sharing = ResourceSharing::AppShared;
+	WindowId window = 0;
+	uint32_t frameSlot = InvalidFrameSlot;
+	int32_t sourceWidth = 0;
+	int32_t sourceHeight = 0;
+};
+
 struct ImageRegion {
 	uint32_t x = 0;
 	uint32_t y = 0;
@@ -510,12 +524,6 @@ struct DescriptorWriteRecord {
 	uint64_t nativeSampler = 0;
 };
 
-struct PreparedTextureBindings {
-	std::span<const DescriptorWriteRecord> dirtyBindings{};
-	uint32_t requiredDescriptorCapacity = 1;
-	FrameEpoch epoch = 0;
-};
-
 struct TextureHotRecord {
 	uint32_t generation = 0;
 	uint32_t revision = 0;
@@ -524,9 +532,12 @@ struct TextureHotRecord {
 	uint32_t samplerIndex = 0;
 	uint32_t samplerGeneration = 0;
 	ResourceState state = ResourceState::Invalid;
-	uint8_t reserved[3]{};
+	bool external = false;
+	uint8_t reserved[2]{};
 	int32_t sourceWidth = 0;
 	int32_t sourceHeight = 0;
+	uint64_t nativeImageView = 0;
+	uint64_t nativeSampler = 0;
 };
 
 struct ImageViewHotRecord {
@@ -552,6 +563,19 @@ struct BindingHotRecord {
 	uint8_t reserved[3]{};
 	uint64_t nativeImageView = 0;
 	uint64_t nativeSampler = 0;
+};
+
+struct PreparedTextureBindings {
+	std::span<const DescriptorWriteRecord> dirtyBindings{};
+	std::span<const BindingHotRecord> bindingsByTextureIndex{};
+	uint32_t requiredDescriptorCapacity = 1;
+	FrameEpoch epoch = 0;
+
+	[[nodiscard]] const BindingHotRecord* binding(TextureHandle handle) const noexcept {
+		if (!handle || handle.index >= bindingsByTextureIndex.size()) return nullptr;
+		const BindingHotRecord& record = bindingsByTextureIndex[handle.index];
+		return record.textureGeneration == handle.generation ? &record : nullptr;
+	}
 };
 
 struct StorageReadView {
@@ -700,6 +724,15 @@ struct NativeImageView {
 	uint32_t width = 0;
 	uint32_t height = 0;
 	uint32_t layers = 0;
+};
+
+struct NativeImageViewInfo {
+	uint64_t nativeImageView = 0;
+	ImageHandle image{};
+};
+
+struct NativeSamplerInfo {
+	uint64_t nativeSampler = 0;
 };
 
 struct RendererLayoutKey {

@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "internal/UiTextureRegistry.hpp"
+#include "internal/UiTexturePublisher.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "internal/Vma.hpp"
@@ -44,7 +44,7 @@ VkExtent2D ViewPort::getSize() const {
 
 TextureRef ViewPort::textureRef() const {
 	TextureRef result{};
-	result.id = slotId_;
+	result.handle = texture_;
 	result.sourceWidth = width_;
 	result.sourceHeight = height_;
 	return result;
@@ -78,14 +78,17 @@ bool ViewPort::clearEveryFrame() const {
 	return clearEveryFrame_;
 }
 
-void ViewPortManager::setRegistry(detail::IUiTextureRegistry* registry) {
-	registry_ = registry;
+void ViewPortManager::setTexturePublisher(detail::IUiTexturePublisher* publisher, WindowId window) {
+	texturePublisher_ = publisher;
+	windowId_ = window;
 }
 
-void ViewPortManager::init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32_t framesInFlight) {
-	detail::IUiTextureRegistry* const preservedRegistry = registry_;
+void ViewPortManager::init(VulkanContext& vk, uint32_t framesInFlight) {
+	detail::IUiTexturePublisher* const preservedPublisher = texturePublisher_;
+	const WindowId preservedWindow = windowId_;
 	destroy(vk);
-	registry_ = preservedRegistry;
+	texturePublisher_ = preservedPublisher;
+	windowId_ = preservedWindow;
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw std::runtime_error("ViewPortManager init requires a valid Vulkan device + allocator.");
 	}
@@ -94,11 +97,11 @@ void ViewPortManager::init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32
 	}
 
 	vk_ = &vk;
-	renderer_ = &renderer;
 	framesInFlight_ = std::max<uint32_t>(1u, framesInFlight);
 	currentFrameIndex_ = 0u;
 	viewPortsByKey_.clear();
-	slotToOwner_.clear();
+	textureToOwner_.clear();
+	retiredImages_.clear();
 	missingTextureWarnings_.clear();
 
 	interop_ = ViewPortVulkanInterop{
@@ -133,8 +136,8 @@ bool ViewPortManager::create(std::string_view key, const ViewPortCreateInfo& cre
 	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr || sharedSampler_ == VK_NULL_HANDLE) {
 		throw std::runtime_error("ViewPortManager is not initialized.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("ViewPortManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("ViewPortManager texture publisher is not set.");
 	}
 	if (key.empty()) {
 		throw std::runtime_error("ViewPortManager key must not be empty.");
@@ -161,45 +164,53 @@ bool ViewPortManager::create(std::string_view key, const ViewPortCreateInfo& cre
 		record.frameCommands = createFrameCommandResources(*vk_);
 		record.imagesByFrame.reserve(framesInFlight_);
 		record.namespacedFrameKeys.reserve(framesInFlight_);
-		record.slotIds.reserve(framesInFlight_);
+		record.textures.reserve(framesInFlight_);
 
 		for (uint32_t frameSlot = 0; frameSlot < framesInFlight_; ++frameSlot) {
 			record.imagesByFrame.push_back(createRenderTargetImage(*vk_, 1u, 1u, record.viewport.colorFormat_));
 
 			const std::string namespacedKey = makeNamespacedKey(key, frameSlot);
 			bool inserted = false;
-			const uint32_t slotId = registry_->registerOrReplaceSlot(
-				*vk_,
+			const TextureHandle texture = texturePublisher_->publishExternal(
+				detail::storage::ResourceDomain::Viewport,
 				namespacedKey,
-				record.imagesByFrame.back().view,
-				sharedSampler_,
+				detail::storage::ExternalTextureDesc{
+					.nativeImageView = reinterpret_cast<uintptr_t>(record.imagesByFrame.back().view),
+					.nativeSampler = reinterpret_cast<uintptr_t>(sharedSampler_),
+					.sharing = detail::storage::ResourceSharing::FrameLocal,
+					.window = windowId_,
+					.frameSlot = frameSlot,
+					.sourceWidth = 1,
+					.sourceHeight = 1,
+				},
 				inserted);
 			if (!inserted) {
 				throw std::runtime_error("ViewPortManager internal namespaced key collision.");
 			}
 
 			record.namespacedFrameKeys.push_back(namespacedKey);
-			record.slotIds.push_back(slotId);
+			record.textures.push_back(texture);
 		}
 
-		if (record.slotIds.empty()) {
-			throw std::runtime_error("ViewPortManager failed to create per-frame viewport slot IDs.");
+		if (record.textures.empty()) {
+			throw std::runtime_error("ViewPortManager failed to create per-frame viewport textures.");
 		}
 
-		const uint32_t activeSlot = currentFrameIndex_ % static_cast<uint32_t>(record.slotIds.size());
-		record.viewport.slotId_ = record.slotIds[activeSlot];
+		const uint32_t activeSlot = currentFrameIndex_ % static_cast<uint32_t>(record.textures.size());
+		record.viewport.texture_ = record.textures[activeSlot];
 		record.viewport.width_ = static_cast<int32_t>(record.imagesByFrame[activeSlot].width);
 		record.viewport.height_ = static_cast<int32_t>(record.imagesByFrame[activeSlot].height);
 
 		ViewPortRecord& insertedRecord = viewPortsByKey_.emplace(keyString, std::move(record)).first->second;
-		for (uint32_t frameSlot = 0; frameSlot < insertedRecord.slotIds.size(); ++frameSlot) {
-			slotToOwner_[insertedRecord.slotIds[frameSlot]] = SlotOwner{ keyString, frameSlot };
+		for (uint32_t frameSlot = 0; frameSlot < insertedRecord.textures.size(); ++frameSlot) {
+			textureToOwner_[insertedRecord.textures[frameSlot].packed()] = TextureOwner{ keyString, frameSlot };
 		}
 		missingTextureWarnings_.erase(keyString);
 		return true;
 	} catch (...) {
 		for (const std::string& namespacedKey : record.namespacedFrameKeys) {
-			const bool removed = registry_->removeSlot(namespacedKey);
+			const bool removed = texturePublisher_->remove(
+				detail::storage::ResourceDomain::Viewport, namespacedKey, windowId_);
 			(void)removed;
 		}
 		destroyFrameCommandResources(*vk_, record.frameCommands);
@@ -212,8 +223,8 @@ bool ViewPortManager::remove(std::string_view key) {
 	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
 		throw std::runtime_error("ViewPortManager is not initialized.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("ViewPortManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("ViewPortManager texture publisher is not set.");
 	}
 
 	const std::string keyString(key);
@@ -224,11 +235,12 @@ bool ViewPortManager::remove(std::string_view key) {
 
 	vkCheck(vkDeviceWaitIdle(vk_->device), "Failed to wait idle while removing viewport.");
 	for (const std::string& namespacedKey : recordIt->second.namespacedFrameKeys) {
-		const bool removed = registry_->removeSlot(namespacedKey);
+		const bool removed = texturePublisher_->remove(
+			detail::storage::ResourceDomain::Viewport, namespacedKey, windowId_);
 		(void)removed;
 	}
-	for (uint32_t slotId : recordIt->second.slotIds) {
-		slotToOwner_.erase(slotId);
+	for (TextureHandle texture : recordIt->second.textures) {
+		textureToOwner_.erase(texture.packed());
 	}
 
 	destroyFrameCommandResources(*vk_, recordIt->second.frameCommands);
@@ -265,21 +277,21 @@ TextureRef ViewPortManager::getTexture(std::string_view key) const {
 	const auto it = viewPortsByKey_.find(keyString);
 	if (it == viewPortsByKey_.end()) {
 		if (missingTextureWarnings_.find(keyString) == missingTextureWarnings_.end()) {
-			std::fprintf(stderr, "[FlowUi] Warning: viewport key '%s' was not found, using fallback texture id 0.\n", keyString.c_str());
+			std::fprintf(stderr, "[FlowUi] Warning: viewport key '%s' was not found, using the fallback texture.\n", keyString.c_str());
 			missingTextureWarnings_.insert(keyString);
 		}
-		result.id = 0u;
+		result.handle = {};
 		return result;
 	}
 
 	const ViewPortRecord& record = it->second;
-	if (record.slotIds.empty() || record.imagesByFrame.empty()) {
-		result.id = 0u;
+	if (record.textures.empty() || record.imagesByFrame.empty()) {
+		result.handle = {};
 		return result;
 	}
 
-	const uint32_t frameSlot = currentFrameIndex_ % static_cast<uint32_t>(record.slotIds.size());
-	result.id = record.slotIds[frameSlot];
+	const uint32_t frameSlot = currentFrameIndex_ % static_cast<uint32_t>(record.textures.size());
+	result.handle = record.textures[frameSlot];
 	result.sourceWidth = static_cast<int32_t>(record.imagesByFrame[frameSlot].width);
 	result.sourceHeight = static_cast<int32_t>(record.imagesByFrame[frameSlot].height);
 	return result;
@@ -295,12 +307,21 @@ const ViewPortVulkanInterop& ViewPortManager::getVulkanInterop() const {
 void ViewPortManager::onFrameStart(VulkanContext& vk, uint32_t frameIndex) {
 	(void)vk;
 	currentFrameIndex_ = frameIndex % std::max<uint32_t>(1u, framesInFlight_);
+	for (auto it = retiredImages_.begin(); it != retiredImages_.end();) {
+		if (!texturePublisher_ || texturePublisher_->retired(it->texture)) {
+			textureToOwner_.erase(it->texture.packed());
+			destroyRenderTargetImage(vk, it->image);
+			it = retiredImages_.erase(it);
+		} else {
+			++it;
+		}
+	}
 	for (auto& [_, record] : viewPortsByKey_) {
-		if (record.slotIds.empty() || record.imagesByFrame.empty()) {
+		if (record.textures.empty() || record.imagesByFrame.empty()) {
 			continue;
 		}
-		const uint32_t frameSlot = currentFrameIndex_ % static_cast<uint32_t>(record.slotIds.size());
-		record.viewport.slotId_ = record.slotIds[frameSlot];
+		const uint32_t frameSlot = currentFrameIndex_ % static_cast<uint32_t>(record.textures.size());
+		record.viewport.texture_ = record.textures[frameSlot];
 		record.viewport.width_ = static_cast<int32_t>(record.imagesByFrame[frameSlot].width);
 		record.viewport.height_ = static_cast<int32_t>(record.imagesByFrame[frameSlot].height);
 	}
@@ -330,13 +351,13 @@ void ViewPortManager::prepareFrameTargets(
 		}
 
 		const auto* textureRef = reinterpret_cast<const TextureRef*>(command.renderData.image.imageData);
-		const uint32_t slotId = textureRef ? textureRef->id : 0u;
-		if (slotId == 0u) {
+		const TextureHandle texture = textureRef ? textureRef->handle : TextureHandle{};
+		if (!texture) {
 			continue;
 		}
 
-		const auto slotOwnerIt = slotToOwner_.find(slotId);
-		if (slotOwnerIt == slotToOwner_.end()) {
+		const auto slotOwnerIt = textureToOwner_.find(texture.packed());
+		if (slotOwnerIt == textureToOwner_.end()) {
 			continue;
 		}
 
@@ -356,6 +377,9 @@ void ViewPortManager::prepareFrameTargets(
 		record.desiredWidth = std::max(record.desiredWidth, desiredWidth);
 		record.desiredHeight = std::max(record.desiredHeight, desiredHeight);
 	}
+	for (auto& [_, record] : viewPortsByKey_) {
+		if (record.referencedThisFrame) ensureRenderTargetSize(*vk_, record);
+	}
 }
 
 void ViewPortManager::remapRenderCommandsForFrame(Clay_RenderCommandArray& renderCommands, uint32_t frameIndex) {
@@ -368,12 +392,12 @@ void ViewPortManager::remapRenderCommandsForFrame(Clay_RenderCommandArray& rende
 		}
 
 		auto* textureRef = reinterpret_cast<TextureRef*>(command.renderData.image.imageData);
-		if (!textureRef || textureRef->id == 0u) {
+		if (!textureRef || !textureRef->handle) {
 			continue;
 		}
 
-		const auto slotOwnerIt = slotToOwner_.find(textureRef->id);
-		if (slotOwnerIt == slotToOwner_.end()) {
+		const auto slotOwnerIt = textureToOwner_.find(textureRef->handle.packed());
+		if (slotOwnerIt == textureToOwner_.end()) {
 			continue;
 		}
 
@@ -383,14 +407,17 @@ void ViewPortManager::remapRenderCommandsForFrame(Clay_RenderCommandArray& rende
 		}
 
 		ViewPortRecord& record = recordIt->second;
-		if (record.slotIds.empty() || record.imagesByFrame.empty()) {
+		if (record.textures.empty() || record.imagesByFrame.empty()) {
 			continue;
 		}
 
-		const uint32_t resolvedSlot = frameSlot % static_cast<uint32_t>(record.slotIds.size());
-		textureRef->id = record.slotIds[resolvedSlot];
+		const uint32_t resolvedSlot = frameSlot % static_cast<uint32_t>(record.textures.size());
+		textureRef->handle = record.textures[resolvedSlot];
 		textureRef->sourceWidth = static_cast<int32_t>(record.imagesByFrame[resolvedSlot].width);
 		textureRef->sourceHeight = static_cast<int32_t>(record.imagesByFrame[resolvedSlot].height);
+	}
+	for (const RetiredViewPortImage& retired : retiredImages_) {
+		textureToOwner_.erase(retired.texture.packed());
 	}
 }
 
@@ -419,26 +446,37 @@ void ViewPortManager::ensureRenderTargetSize(VulkanContext& vk, ViewPortRecord& 
 		}
 
 		ViewPortImageResource resizedImage = createRenderTargetImage(vk, clampedWidth, clampedHeight, record.viewport.colorFormat_);
+		const TextureHandle previousTexture = record.textures[frameSlot];
 		try {
-			const bool updated = registry_ && registry_->updateSlotBinding(
+			bool inserted = false;
+			const TextureHandle replacement = texturePublisher_->publishExternal(
+				detail::storage::ResourceDomain::Viewport,
 				record.namespacedFrameKeys[frameSlot],
-				resizedImage.view,
-				sharedSampler_);
-			if (!updated) {
-				throw std::runtime_error("ViewPortManager failed to update texture slot binding after resize.");
-			}
+				detail::storage::ExternalTextureDesc{
+					.nativeImageView = reinterpret_cast<uintptr_t>(resizedImage.view),
+					.nativeSampler = reinterpret_cast<uintptr_t>(sharedSampler_),
+					.sharing = detail::storage::ResourceSharing::FrameLocal,
+					.window = windowId_,
+					.frameSlot = frameSlot,
+					.sourceWidth = static_cast<int32_t>(clampedWidth),
+					.sourceHeight = static_cast<int32_t>(clampedHeight),
+				},
+				inserted);
+			(void)inserted;
+			textureToOwner_[replacement.packed()] = TextureOwner{record.viewport.key_, frameSlot};
+			record.textures[frameSlot] = replacement;
 		} catch (...) {
 			destroyRenderTargetImage(vk, resizedImage);
 			throw;
 		}
 
-		destroyRenderTargetImage(vk, image);
+		retiredImages_.push_back(RetiredViewPortImage{std::move(image), previousTexture});
 		image = resizedImage;
 	}
 
-	if (!record.slotIds.empty() && !record.imagesByFrame.empty()) {
-		const uint32_t frameSlot = currentFrameIndex_ % static_cast<uint32_t>(record.slotIds.size());
-		record.viewport.slotId_ = record.slotIds[frameSlot];
+	if (!record.textures.empty() && !record.imagesByFrame.empty()) {
+		const uint32_t frameSlot = currentFrameIndex_ % static_cast<uint32_t>(record.textures.size());
+		record.viewport.texture_ = record.textures[frameSlot];
 		record.viewport.width_ = static_cast<int32_t>(record.imagesByFrame[frameSlot].width);
 		record.viewport.height_ = static_cast<int32_t>(record.imagesByFrame[frameSlot].height);
 	}
@@ -455,10 +493,6 @@ void ViewPortManager::recordFramePasses(
 	) {
 	if (primaryCommandBuffer == VK_NULL_HANDLE || !vk_ || vk.device == VK_NULL_HANDLE) {
 		return;
-	}
-
-	if (resizeRequired()) {
-		vkCheck(vkDeviceWaitIdle(vk.device), "Failed to wait idle while resizing viewport render targets.");
 	}
 
 	const uint32_t frameSlot = frameIndex % std::max<uint32_t>(1u, framesInFlight_);
@@ -502,12 +536,11 @@ void ViewPortManager::recordFramePasses(
 		if (record.imagesByFrame.empty() || frameSlot >= record.imagesByFrame.size()) {
 			throw std::runtime_error("ViewPortManager per-frame viewport images are missing.");
 		}
-		if (record.slotIds.empty() || frameSlot >= record.slotIds.size()) {
-			throw std::runtime_error("ViewPortManager per-frame viewport slot IDs are missing.");
+		if (record.textures.empty() || frameSlot >= record.textures.size()) {
+			throw std::runtime_error("ViewPortManager per-frame viewport textures are missing.");
 		}
 
-		ensureRenderTargetSize(vk, record);
-		record.viewport.slotId_ = record.slotIds[frameSlot];
+		record.viewport.texture_ = record.textures[frameSlot];
 
 		FrameCommandResources& frameResources = record.frameCommands[frameSlot];
 		ViewPortImageResource& image = record.imagesByFrame[frameSlot];
@@ -615,17 +648,22 @@ void ViewPortManager::destroy(VulkanContext& vk) {
 	}
 
 	for (auto& [_, record] : viewPortsByKey_) {
-		if (registry_) {
+		if (texturePublisher_) {
 			for (const std::string& namespacedKey : record.namespacedFrameKeys) {
-				const bool removed = registry_->removeSlot(namespacedKey);
+				const bool removed = texturePublisher_->remove(
+					detail::storage::ResourceDomain::Viewport, namespacedKey, windowId_);
 				(void)removed;
 			}
 		}
 		destroyFrameCommandResources(vk, record.frameCommands);
 		destroyRenderTargetImages(vk, record.imagesByFrame);
 	}
+	for (RetiredViewPortImage& retired : retiredImages_) {
+		destroyRenderTargetImage(vk, retired.image);
+	}
+	retiredImages_.clear();
 	viewPortsByKey_.clear();
-	slotToOwner_.clear();
+	textureToOwner_.clear();
 	missingTextureWarnings_.clear();
 
 	if (sharedSampler_ != VK_NULL_HANDLE && vk.device != VK_NULL_HANDLE) {
@@ -633,9 +671,9 @@ void ViewPortManager::destroy(VulkanContext& vk) {
 	}
 	sharedSampler_ = VK_NULL_HANDLE;
 
-	registry_ = nullptr;
+	texturePublisher_ = nullptr;
+	windowId_ = InvalidWindowId;
 	vk_ = nullptr;
-	renderer_ = nullptr;
 	framesInFlight_ = 1u;
 	currentFrameIndex_ = 0u;
 	interop_ = {};

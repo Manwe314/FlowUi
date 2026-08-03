@@ -46,7 +46,7 @@ Previous-frame interaction data returned by UiManager. Custom elements use it to
 
 #### `struct TextureRef`
 
-Texture handle copied into frame storage by storeTexture. It is used as Clay image data for images, icons, and viewports.
+Texture payload copied into frame storage by `imageData()`. Storage retains the logical GPU texture separately through submission.
 
 ## Public API
 
@@ -68,10 +68,10 @@ CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437).
 
-### **storeTexture**
+### **imageData**
 
 
-#### `TextureRef* storeTexture(const TextureRef& textureRef)`
+#### `TextureRef* imageData(TextureRef textureRef)`
 
 - **Returns:** `TextureRef*`
 - **Arguments:** `textureRef` texture reference to copy into frame storage.
@@ -81,7 +81,7 @@ Stores a texture reference in the current frame arena and returns a pointer suit
 **Example:**
 
 ```cpp
-imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture("logo"));
+imageConfig.imageData = context.uiManager.imageData(app.images().getTexture("logo"));
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9).

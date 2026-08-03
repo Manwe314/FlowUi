@@ -13,12 +13,12 @@ static void vkCheck(VkResult result, const char* message) {
 
 } // namespace
 
-void FrameVk::create(const FlowUi::AppConfig& config, VulkanContext& vk, size_t swapImageCount) {
+void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk, size_t swapImageCount) {
 	if (vk.device == VK_NULL_HANDLE) {
 		throw std::runtime_error("Vulkan device must be created before frame resources.");
 	}
 
-	uint32_t frameCount = std::max<uint32_t>(1u, config.vk.framesInFlight);
+	uint32_t frameCount = std::max<uint32_t>(1u, framesInFlight);
 	frames.resize(frameCount);
 	currentFrame = 0;
 

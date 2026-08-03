@@ -367,11 +367,16 @@ namespace FlowUi
 		return out;
 	}
 
-	TextureRef* UiManager::storeTexture(const TextureRef& textureRef)
+	TextureRef* UiManager::imageData(TextureRef textureRef)
 	{
 		char* dst = allocBytes(sizeof(TextureRef), alignof(TextureRef));
 		std::memcpy(dst, &textureRef, sizeof(TextureRef));
 		return reinterpret_cast<TextureRef*>(dst);
+	}
+
+	TextureRef* UiManager::storeTexture(const TextureRef& textureRef)
+	{
+		return imageData(textureRef);
 	}
 	
 	Clay_ElementId UiManager::toClaySID(std::string_view s) {
