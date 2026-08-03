@@ -15,6 +15,26 @@ set_tests_properties(flowui.storage.types PROPERTIES
     TIMEOUT 30
 )
 
+add_executable(flowui_ui_renderer_conversion_tests
+    UiRendererConversionTests.cpp
+)
+target_compile_features(flowui_ui_renderer_conversion_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_ui_renderer_conversion_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(flowui_ui_renderer_conversion_tests
+	PRIVATE
+		FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
+		FLOWUI_APP_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi.cpp"
+		FLOWUI_IMAGE_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ImageManager.cpp"
+		FLOWUI_ICON_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/IconManager.cpp"
+		FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ViewPortManager.cpp"
+)
+target_link_libraries(flowui_ui_renderer_conversion_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.ui.renderer_conversion COMMAND flowui_ui_renderer_conversion_tests)
+set_tests_properties(flowui.ui.renderer_conversion PROPERTIES
+    LABELS "flowui;ui;renderer;unit"
+    TIMEOUT 30
+)
+
 add_executable(flowui_storage_system_tests
     FlowStorageSystemTests.cpp
     HeadlessVulkanFixture.cpp

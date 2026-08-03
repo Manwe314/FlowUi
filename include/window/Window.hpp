@@ -168,8 +168,7 @@ public:
 		}
 	}
 
-	void pollEvents() override {
-		glfwPollEvents();
+	void refreshInputSnapshot() override {
 		if (!window || !input) {
 			return;
 		}
@@ -405,6 +404,10 @@ inline std::unique_ptr<IWindowBackend> makeDefaultWindowBackend(
 	FlowUi::detail::InputQueue* inputQueue)
 {
 	return std::make_unique<FlowUi::detail::GlfwWindowBackend>(config, inputQueue);
+}
+
+inline void pollWindowSystemEvents() {
+	glfwPollEvents();
 }
 
 } // namespace FlowUi::detail

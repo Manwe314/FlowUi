@@ -139,7 +139,7 @@ inline const DevBasicButtonDef kDevBasicButton = {
 			iconElement.layout = iconLayout;
 			iconElement.backgroundColor = context.params.iconTintColor;
 			iconElement.image = {
-				.imageData = context.uiManager.storeTexture(context.params.icon),
+				.imageData = context.uiManager.imageData(context.params.icon),
 			};
 		}
 

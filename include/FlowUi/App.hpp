@@ -205,6 +205,9 @@ public:
 	/** @brief Destroy the app and owned runtime resources. */
 	~App();
 
+	/** @brief Return the stable identity of the semantic main window. */
+	[[nodiscard]] WindowId mainWindowId() const noexcept;
+
 	/** @brief Query whether the window backend requested shutdown.
 	 *
 	 * Use this function to drive the app lifecycle loop.

@@ -16,11 +16,21 @@ struct Swapchain {
 	std::vector<VkImage> images;
 	std::vector<VkImageView> views;
 
-	void create(const FlowUi::AppConfig& config, VulkanContext& vk, VkExtent2D preferredExtent = {});
+	void create(
+		const FlowUi::WindowConfig& windowConfig,
+		const FlowUi::VulkanConfig& vulkanConfig,
+		VulkanContext& vk,
+		VkSurfaceKHR surface,
+		VkExtent2D preferredExtent = {});
 	void destroy(VulkanContext& vk);
 
-	void recreate(const FlowUi::AppConfig& config, VulkanContext& vk, VkExtent2D preferredExtent = {}) {
+	void recreate(
+		const FlowUi::WindowConfig& windowConfig,
+		const FlowUi::VulkanConfig& vulkanConfig,
+		VulkanContext& vk,
+		VkSurfaceKHR surface,
+		VkExtent2D preferredExtent = {}) {
 		destroy(vk);
-		create(config, vk, preferredExtent);
+		create(windowConfig, vulkanConfig, vk, surface, preferredExtent);
 	}
 };

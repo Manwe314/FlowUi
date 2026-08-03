@@ -24,13 +24,12 @@
 #include <vulkan/vulkan.h>
 
 struct VulkanContext;
-struct VulkanUiRenderer;
 struct VmaAllocation_T;
 
 namespace FlowUi {
 
 namespace detail {
-struct IUiTextureRegistry;
+struct IUiTexturePublisher;
 } // namespace detail
 
 #if FLOW_UI_DEV_MODE
@@ -123,7 +122,7 @@ public:
 	 *
 	 * @code{.cpp}
 	 * Clay_ImageElementConfig image{};
-	 * image.imageData = context.uiManager.storeTexture(viewport->textureRef());
+	 * image.imageData = context.uiManager.imageData(viewport->textureRef());
 	 * @endcode
 	 */
 	TextureRef textureRef() const;
@@ -263,7 +262,7 @@ private:
 	friend class ViewPortManager;
 
 	std::string key_{};
-	uint32_t slotId_ = 0u;
+	TextureHandle texture_{};
 	int32_t width_ = 0;
 	int32_t height_ = 0;
 	VkFormat colorFormat_ = VK_FORMAT_R8G8B8A8_UNORM;
@@ -395,7 +394,7 @@ public:
 	 *
 	 * @code{.cpp}
 	 * Clay_ImageElementConfig image{};
-	 * image.imageData = context.uiManager.storeTexture(
+	 * image.imageData = context.uiManager.imageData(
 	 *     app.viewPorts().getTexture("scene"));
 	 *
 	 * CLAY(context.uiManager.toClayEID("scene/preview"), {
@@ -438,8 +437,8 @@ public:
 private:
 	friend class App;
 
-	void setRegistry(detail::IUiTextureRegistry* registry);
-	void init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32_t framesInFlight);
+	void setTexturePublisher(detail::IUiTexturePublisher* publisher, WindowId window);
+	void init(VulkanContext& vk, uint32_t framesInFlight);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
 	void prepareFrameTargets(
 		const Clay_RenderCommandArray& renderCommands,
@@ -476,15 +475,19 @@ private:
 		std::vector<ViewPortImageResource> imagesByFrame{};
 		std::vector<FrameCommandResources> frameCommands{};
 		std::vector<std::string> namespacedFrameKeys{};
-		std::vector<uint32_t> slotIds{};
+		std::vector<TextureHandle> textures{};
 		uint32_t desiredWidth = 1u;
 		uint32_t desiredHeight = 1u;
 		bool referencedThisFrame = false;
 	};
 
-	struct SlotOwner {
+	struct TextureOwner {
 		std::string key{};
 		uint32_t frameSlot = 0u;
+	};
+	struct RetiredViewPortImage {
+		ViewPortImageResource image{};
+		TextureHandle texture{};
 	};
 
 	void resetFrameTracking();
@@ -503,9 +506,10 @@ private:
 	std::string makeNamespacedKey(std::string_view key, uint32_t frameSlot) const;
 
 private:
-	detail::IUiTextureRegistry* registry_ = nullptr;
+	//Transitional: borrowed native publication ends with manager storage migration.
+	detail::IUiTexturePublisher* texturePublisher_ = nullptr;
+	WindowId windowId_ = InvalidWindowId;
 	VulkanContext* vk_ = nullptr;
-	VulkanUiRenderer* renderer_ = nullptr;
 	uint32_t framesInFlight_ = 1u;
 	uint32_t currentFrameIndex_ = 0u;
 
@@ -513,7 +517,8 @@ private:
 	ViewPortVulkanInterop interop_{};
 
 	std::unordered_map<std::string, ViewPortRecord> viewPortsByKey_;
-	std::unordered_map<uint32_t, SlotOwner> slotToOwner_;
+	std::unordered_map<uint64_t, TextureOwner> textureToOwner_;
+	std::vector<RetiredViewPortImage> retiredImages_;
 	mutable std::unordered_set<std::string> missingTextureWarnings_;
 };
 

@@ -37,7 +37,7 @@ void* rejectAllocation(void* context, size_t, size_t) {
 void testHandlePacking() {
 	static_assert(sizeof(TextureHandle) == sizeof(uint64_t));
 	static_assert(std::is_trivially_copyable_v<TextureHandle>);
-	static_assert(TextureHandle::Kind == ResourceKind::TextureView);
+	static_assert(std::is_same_v<TextureHandle, FlowUi::TextureHandle>);
 
 	FLOWUI_CHECK(!TextureHandle{});
 	const TextureHandle handle{0xfedcba98u, 0x76543210u};
@@ -45,6 +45,13 @@ void testHandlePacking() {
 	FLOWUI_CHECK(handle.packed() == 0x76543210fedcba98ull);
 	FLOWUI_CHECK(TextureHandle::fromPacked(handle.packed()) == handle);
 	FLOWUI_CHECK(!TextureHandle::fromPacked(0));
+}
+
+void testWindowIdentity() {
+	static_assert(FlowUi::InvalidWindowId == 0u);
+	static_assert(FlowUi::MainWindowId == 1u);
+	static_assert(std::is_same_v<WindowId, FlowUi::WindowId>);
+	FLOWUI_CHECK(FlowUi::MainWindowId != FlowUi::InvalidWindowId);
 }
 
 void testFlagsAndKeys() {
@@ -171,6 +178,7 @@ void testFrameLease() {
 
 int main() {
 	FlowUi::test::Runner runner;
+	runner.run("canonical main window identity", testWindowIdentity);
 	runner.run("handle packing and generations", testHandlePacking);
 	runner.run("flag helpers and resource keys", testFlagsAndKeys);
 	runner.run("arena view allocation and overflow", testArenaView);

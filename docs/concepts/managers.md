@@ -76,10 +76,10 @@ ui.createElement(kButton, "toolbar/save")
 ```cpp
 Clay_String label = ui.toClayString(dynamicLabel);
 Clay_ElementId rootId = ui.toClayEID("settings/root");
-FlowUi::TextureRef* texture = ui.storeTexture(app.images().getTexture("avatar"));
+FlowUi::TextureRef* texture = ui.imageData(app.images().getTexture("avatar"));
 ```
 
-`UiManager` is frame-sensitive. Functions like `toClayString()` and `storeTexture()` use frame-local arena memory, so their returned pointers are only valid for the current frame. This is part of why `UiManager` is app-owned and integrated with `beginFrame()` and `endFrame()`.
+`UiManager` is frame-sensitive. Functions like `toClayString()` and `imageData()` use frame-local arena memory, so their returned pointers are only valid for the current frame. Storage independently retains each resolved logical GPU texture through submission.
 
 ## FlowUi::FontManager
 
@@ -222,11 +222,11 @@ The manager handles per-frame render target images, size tracking from UI image 
 
 This is the subsystem to use for scene previews, graph views, custom renderers, editor canvases, and other content that needs to be rendered separately and then composed into the Clay UI.
 
-## Texture Registry and Renderer-Side Management
+## Logical Textures and Renderer-Side Management
 
-The UI texture registry is internal, but it explains why image, icon, and viewport managers can all return the same `TextureRef` type.
+Image, icon, and viewport managers all return the same logical `TextureRef` type.
 
-Managers do not hand Clay raw Vulkan handles. Instead, they register image views and samplers into renderer texture slots. A `TextureRef` carries the slot id, UV coordinates, source size, fit mode, sampling mode, and tint behavior. During rendering, the UI renderer reads the texture ref from Clay image data and uses it to produce textured draw instances.
+Managers do not hand Clay raw Vulkan handles or renderer-local slots. A `TextureRef` carries a generational app-level handle, UV coordinates, source size, fit mode, sampling mode, and tint behavior. Before direct instance emission, storage resolves the handle to the current window/frame descriptor index.
 
 This lets different resource systems share one rendering path:
 

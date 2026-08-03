@@ -267,24 +267,22 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	}
 }
 
-void VulkanContext::createSurface(FlowUi::detail::IWindowBackend& window) {
+VkSurfaceKHR VulkanContext::createSurface(FlowUi::detail::IWindowBackend& window) const {
 	if (instance == VK_NULL_HANDLE) {
 		throw std::runtime_error("Vulkan instance must be created before surface.");
 	}
-	if (surface != VK_NULL_HANDLE) {
-		throw std::runtime_error("Vulkan surface already created.");
-	}
-	surface = window.createSurface(instance);
+	const VkSurfaceKHR surface = window.createSurface(instance);
 	if (surface == VK_NULL_HANDLE) {
 		throw std::runtime_error("Failed to create Vulkan surface.");
 	}
+	return surface;
 }
 
-void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config) {
+void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfaceKHR mainSurface) {
 	if (instance == VK_NULL_HANDLE) {
 		throw std::runtime_error("Vulkan instance must be created before picking a device.");
 	}
-	if (surface == VK_NULL_HANDLE) {
+	if (mainSurface == VK_NULL_HANDLE) {
 		throw std::runtime_error("Vulkan surface must be created before picking a device.");
 	}
 
@@ -314,12 +312,12 @@ void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config) {
 			continue;
 		}
 
-		QueueFamilyIndices indices = findQueueFamilies(device, surface);
+		QueueFamilyIndices indices = findQueueFamilies(device, mainSurface);
 		if (!indices.complete()) {
 			continue;
 		}
 
-		SwapchainSupport support = querySwapchainSupport(device, surface);
+		SwapchainSupport support = querySwapchainSupport(device, mainSurface);
 		if (support.formats.empty() || support.presentModes.empty()) {
 			continue;
 		}
@@ -360,6 +358,13 @@ void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config) {
 	phys = selected;
 	graphicsQFamily = selectedQueues.graphics;
 	presentQFamily = selectedQueues.present;
+}
+
+bool VulkanContext::supportsPresentation(VkSurfaceKHR surface) const noexcept {
+	if (phys == VK_NULL_HANDLE || surface == VK_NULL_HANDLE || presentQFamily == UINT32_MAX) return false;
+	VkBool32 supported = VK_FALSE;
+	return vkGetPhysicalDeviceSurfaceSupportKHR(phys, presentQFamily, surface, &supported) == VK_SUCCESS &&
+		supported == VK_TRUE;
 }
 
 void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
@@ -463,11 +468,6 @@ void VulkanContext::destroy() {
 		}
 		vkDestroyDevice(device, nullptr);
 		device = VK_NULL_HANDLE;
-	}
-
-	if (surface != VK_NULL_HANDLE && instance != VK_NULL_HANDLE) {
-		vkDestroySurfaceKHR(instance, surface, nullptr);
-		surface = VK_NULL_HANDLE;
 	}
 
 	if (debugMessenger != VK_NULL_HANDLE && instance != VK_NULL_HANDLE) {

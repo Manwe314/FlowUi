@@ -12,7 +12,6 @@
 
 struct VmaAllocation_T;
 struct VulkanContext;
-struct VulkanUiRenderer;
 struct VkImage_T;
 struct VkImageView_T;
 struct VkSampler_T;
@@ -26,7 +25,7 @@ using VkCommandPool = VkCommandPool_T*;
 namespace FlowUi {
 
 namespace detail {
-struct IUiTextureRegistry;
+struct IUiTexturePublisher;
 
 } // namespace detail
 
@@ -88,8 +87,8 @@ public:
 	/**
 	 * @brief Remove a registered image by key.
 	 *
-	 * Removing an image unregisters its texture slot and retires the GPU resource
-	 * after the current frame bucket is safe to clean up. TextureRef values
+	 * Removing an image retires its logical texture generation and GPU resource
+	 * after the exact last storage submission completes. TextureRef values
 	 * previously returned for the key should be treated as invalid after removal.
 	 *
 	 * @param key string image key to remove.
@@ -128,16 +127,16 @@ public:
 	/**
 	 * @brief Return the texture reference for a registered image key.
 	 *
-	 * The returned TextureRef contains the manager-owned texture slot id and
+	 * The returned TextureRef contains a generation-checked logical handle and
 	 * source image dimensions. If key is missing, this function returns the
-	 * fallback texture id 0 and logs one warning for that key.
+	 * an invalid handle and logs one warning for that key.
 	 *
 	 * Application code may adjust TextureRef fields such as fitMode and
-	 * tintEnabled before passing it to image drawing code. Manager-owned id and
+	 * tintEnabled before passing it to image drawing code. Manager-owned handle and
 	 * UV fields should be left unchanged.
 	 *
 	 * @param key string image key to resolve.
-	 * @return TextureRef for key, or a fallback TextureRef with id 0 when missing.
+	 * @return TextureRef for key, or an invalid fallback reference when missing.
 	 *
 	 * @code{.cpp}
 	 * FlowUi::TextureRef avatar = app.images().getTexture("profile/avatar");
@@ -152,8 +151,8 @@ public:
 private:
 	friend class App;
 
-	void setRegistry(detail::IUiTextureRegistry* registry);
-	void init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32_t framesInFlight);
+	void setTexturePublisher(detail::IUiTexturePublisher* publisher);
+	void init(VulkanContext& vk, uint32_t framesInFlight);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
 	void destroy(VulkanContext& vk);
 
@@ -166,27 +165,31 @@ private:
 
 	struct ImageRecord {
 		ImageResource resource{};
-		uint32_t slotId = 0;
+		TextureHandle texture{};
 		int32_t sourceWidth = 0;
 		int32_t sourceHeight = 0;
 		std::filesystem::path filePath{};
 	};
+	struct RetiredImageResource {
+		ImageResource resource{};
+		TextureHandle texture{};
+	};
 
 	ImageResource createImageResource(VulkanContext& vk, const uint8_t* rgbaPixels, uint32_t width, uint32_t height);
 	void destroyImageResource(VulkanContext& vk, ImageResource& resource);
-	void enqueueRetiredResource(ImageResource&& resource);
+	void enqueueRetiredResource(ImageResource&& resource, TextureHandle texture);
 	std::string makeNamespacedKey(std::string_view key) const;
 
-	detail::IUiTextureRegistry* registry_ = nullptr;
+	//Transitional: borrowed native publication ends with manager storage migration.
+	detail::IUiTexturePublisher* texturePublisher_ = nullptr;
 	VulkanContext* vk_ = nullptr;
-	VulkanUiRenderer* renderer_ = nullptr;
 	VkCommandPool uploadCommandPool_ = nullptr;
 	uint32_t framesInFlight_ = 1u;
 	uint32_t currentFrameIndex_ = 0u;
 
 	std::unordered_map<std::string, ImageRecord> imagesByKey_;
 	mutable std::unordered_set<std::string> missingTextureWarnings_;
-	std::vector<std::vector<ImageResource>> retiredResourcesByFrame_;
+	std::vector<RetiredImageResource> retiredResources_;
 };
 
 /** @} */

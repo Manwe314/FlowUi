@@ -8,6 +8,8 @@
 
 #include <clay.h>
 
+#include "FlowUi/TextureHandle.hpp"
+#include "FlowUi/WindowId.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
 
 namespace FlowUi {
@@ -403,7 +405,7 @@ struct DevToolsConfig {
  */
 struct AppConfig {
 	/**
-	 * @brief Native window creation and input defaults.
+	 * @brief Initial native-window configuration for the semantic main window.
 	 *
 	 * @see FlowUi::WindowConfig
 	 */
@@ -463,12 +465,12 @@ enum class TextureSamplingMode : uint8_t {
  *
  * Treat this as a manager-owned handle with optional render settings. After
  * obtaining a TextureRef, application code may adjust fitMode, samplingMode, and
- * tintEnabled. The id, UV coordinates, and source dimensions are populated by
+ * tintEnabled. The handle, UV coordinates, and source dimensions are populated by
  * FlowUi managers and should normally be left unchanged.
  */
 struct TextureRef {
-	/** @brief Manager-owned texture registry slot id; do not edit manually. */
-	uint32_t id = 0;
+	/** @brief Manager-owned logical texture handle; do not edit manually. */
+	TextureHandle handle{};
 
 	/** @brief Manager-owned left U coordinate; do not edit manually. */
 	float uv0x = 0.0f;

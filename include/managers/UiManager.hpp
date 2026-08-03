@@ -27,6 +27,8 @@
 
 namespace FlowUi {
 
+struct AppWindow;
+
 class App;
 struct FontManager;
 
@@ -103,9 +105,14 @@ public:
 	 *
 	 * @code{.cpp}
 	 * Clay_ImageElementConfig image{};
-	 * image.imageData = context.uiManager.storeTexture(textureRef);
+	 * image.imageData = context.uiManager.imageData(textureRef);
 	 * @endcode
 	 */
+	TextureRef* imageData(TextureRef textureRef);
+
+	//Transitional: raw Clay payload compatibility; use imageData(). A later
+	// by-value FlowUi image element removes this pointer-shaped bridge.
+	[[deprecated("Use imageData(TextureRef); this copies Clay payload bytes, not texture ownership.")]]
 	TextureRef* storeTexture(const TextureRef& textureRef);
 
 	/**
@@ -471,6 +478,7 @@ public:
 
 private:
 	friend class App;
+	friend struct AppWindow;
 	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 	friend class ElementBuilder;
 	friend void detail::pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);

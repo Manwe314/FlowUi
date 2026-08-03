@@ -8,15 +8,14 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <limits>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "internal/Vma.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/performanceDiagnostics.hpp"
 #endif
@@ -50,7 +49,6 @@ struct UiPushConstants {
 	uint32_t _pad = 0;
 };
 
-constexpr VkDeviceSize kInitialInstanceBufferBytes = 1024u * 1024u;
 constexpr uint32_t kDefaultMaxUiImageDescriptors = 256;
 
 constexpr const char* kUiSolidVertexShaderFile = "flowui_ui_solid.vert.spv";
@@ -59,6 +57,17 @@ constexpr const char* kUiTexturedVertexShaderFile = "flowui_ui_textured.vert.spv
 constexpr const char* kUiSolidFragmentShaderFile = "flowui_ui_solid.frag.spv";
 constexpr const char* kUiMsdfFragmentShaderFile = "flowui_ui_msdf.frag.spv";
 constexpr const char* kUiTexturedFragmentShaderFile = "flowui_ui_textured.frag.spv";
+
+namespace storage = FlowUi::detail::storage;
+
+template <typename NativeHandle>
+static NativeHandle NativeHandleFromBits(uint64_t value) noexcept {
+	if constexpr (std::is_pointer_v<NativeHandle>) {
+		return reinterpret_cast<NativeHandle>(static_cast<uintptr_t>(value));
+	} else {
+		return static_cast<NativeHandle>(value);
+	}
+}
 
 static void vkCheck(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
@@ -275,57 +284,68 @@ static TexturedImagePlacement ResolveTexturedImagePlacement(
 	return placement;
 }
 
-static bool LayoutMsdfTextToGlyphs(
-	const Clay_TextRenderData& text,
-	const Clay_BoundingBox& bounds,
-	const FlowUi::FontManager* fontManager,
-	float pointsToPixelsScale,
-	std::vector<GlyphQuad>& outGlyphs,
-	uint32_t& outAtlasLayer,
-	float& outDistanceRangePx)
-{
-	outGlyphs.clear();
-	outAtlasLayer = 0u;
-	outDistanceRangePx = 2.0f;
+template <typename T>
+struct BoundedWriter {
+	std::span<T> storage{};
+	size_t count = 0;
 
-	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager, text.fontId);
-	if (!fontFace) {
-		return false;
+	void push(const T& value) {
+		if (count >= storage.size()) throw std::runtime_error("UI conversion exceeded its checked upper bound.");
+		storage[count++] = value;
 	}
 
-	const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
-		FlowUi::detail::TextLayoutRequest{
-			.text = text.stringContents,
-			.fontFace = fontFace,
-			.pointsToPixelsScale = pointsToPixelsScale,
-			.fontSize = text.fontSize,
-			.letterSpacing = text.letterSpacing,
-			.lineOriginX = bounds.x,
-			.lineOriginY = bounds.y,
-			.emitGlyphQuads = true,
-		},
-		[&outGlyphs](const FlowUi::detail::TextLayoutGlyphQuad& glyph) {
-			outGlyphs.push_back(GlyphQuad{
-				glyph.x,
-				glyph.y,
-				glyph.w,
-				glyph.h,
-				glyph.u0,
-				glyph.v0,
-				glyph.u1,
-				glyph.v1,
-				glyph.byteStartOffset,
-				glyph.byteEndOffset,
-			});
-		});
+	[[nodiscard]] bool empty() const noexcept { return count == 0; }
+	[[nodiscard]] T& back() { return storage[count - 1u]; }
+	void pop() noexcept { if (count > 0) --count; }
+};
 
-	if (!layoutResult.success) {
-		return false;
+struct UiBuildUpperBound {
+	size_t instances = 0;
+	size_t runs = 0;
+	size_t scissorDepth = 1;
+};
+
+static size_t CheckedSizeAdd(size_t lhs, size_t rhs, const char* message) {
+	if (rhs > std::numeric_limits<size_t>::max() - lhs) throw std::runtime_error(message);
+	return lhs + rhs;
+}
+
+static UiBuildUpperBound ComputeBuildUpperBound(
+	const Clay_RenderCommandArray& commands,
+	const FlowUi::detail::InputFieldFrameOverrides& overrides) {
+	if (commands.capacity < 0 || commands.length < 0 || commands.length > commands.capacity ||
+		(commands.length > 0 && commands.internalArray == nullptr)) {
+		throw std::runtime_error("Clay returned an invalid render command array.");
 	}
 
-	outAtlasLayer = layoutResult.atlasLayer;
-	outDistanceRangePx = layoutResult.distanceRangePx;
-	return true;
+	UiBuildUpperBound result{};
+	result.instances = overrides.rects.size();
+	result.runs = overrides.rects.size();
+	result.scissorDepth = CheckedSizeAdd(
+		static_cast<size_t>(commands.length), 1u, "UI scissor upper bound overflow.");
+	for (int32_t i = 0; i < commands.length; ++i) {
+		const Clay_RenderCommand& command = commands.internalArray[i];
+		size_t commandInstances = 0;
+		switch (command.commandType) {
+			case CLAY_RENDER_COMMAND_TYPE_RECTANGLE:
+			case CLAY_RENDER_COMMAND_TYPE_BORDER:
+			case CLAY_RENDER_COMMAND_TYPE_IMAGE:
+				commandInstances = 1u;
+				break;
+			case CLAY_RENDER_COMMAND_TYPE_TEXT:
+				commandInstances = static_cast<size_t>(std::max(1, command.renderData.text.stringContents.length));
+				break;
+			default:
+				break;
+		}
+		result.instances = CheckedSizeAdd(result.instances, commandInstances, "UI instance upper bound overflow.");
+		if (commandInstances > 0) result.runs = CheckedSizeAdd(result.runs, 1u, "UI run upper bound overflow.");
+	}
+	if (result.instances > std::numeric_limits<uint32_t>::max() ||
+		result.runs > std::numeric_limits<uint32_t>::max()) {
+		throw std::runtime_error("UI output exceeds the renderer's 32-bit draw limits.");
+	}
+	return result;
 }
 
 static UiType PickType(const Clay_RenderCommand& command) {
@@ -347,7 +367,7 @@ static void EmitSolidRect(
 	const Clay_RenderCommand& command,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
-	std::vector<UiInstance>& instances) {
+	BoundedWriter<UiInstance>& instances) {
 	const RectF bounds = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
 	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
 	UiInstance inst{};
@@ -362,14 +382,14 @@ static void EmitSolidRect(
 	inst.r2 = command.renderData.rectangle.cornerRadius.bottomRight * radiusScale;
 	inst.r3 = command.renderData.rectangle.cornerRadius.bottomLeft * radiusScale;
 	inst.solidMode = 0u;
-	instances.push_back(inst);
+	instances.push(inst);
 }
 
 static void EmitSolidRectOverride(
 	const FlowUi::detail::InputFieldRectOverride& rectOverride,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
-	std::vector<UiInstance>& instances) {
+	BoundedWriter<UiInstance>& instances) {
 	Clay_RenderCommand command{};
 	command.commandType = CLAY_RENDER_COMMAND_TYPE_RECTANGLE;
 	command.boundingBox = rectOverride.boundingBox;
@@ -382,7 +402,7 @@ static void EmitSolidBorder(
 	const Clay_RenderCommand& command,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
-	std::vector<UiInstance>& instances) {
+	BoundedWriter<UiInstance>& instances) {
 	const RectF bounds = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
 	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
 	UiInstance inst{};
@@ -401,7 +421,7 @@ static void EmitSolidBorder(
 	inst.borderR = static_cast<float>(command.renderData.border.width.right) * uiToFramebufferScaleX;
 	inst.borderB = static_cast<float>(command.renderData.border.width.bottom) * uiToFramebufferScaleY;
 	inst.solidMode = 1u;
-	instances.push_back(inst);
+	instances.push(inst);
 }
 
 static void EmitTextMsdf(
@@ -411,50 +431,30 @@ static void EmitTextMsdf(
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
 	const FlowUi::detail::InputFieldTextColorOverride* textColorOverride,
-	std::vector<UiInstance>& instances)
+	BoundedWriter<UiInstance>& instances,
+	uint32_t& textGlyphCount)
 {
 	const Clay_BoundingBox& bounds = command.boundingBox;
 	const Clay_TextRenderData& textData = command.renderData.text;
-
-	std::vector<GlyphQuad> glyphs;
-	glyphs.reserve(static_cast<size_t>(std::max(1, textData.stringContents.length)));
-	uint32_t atlasLayer = 0u;
-	float distanceRangePx = 2.0f;
-	const bool hasLayout = LayoutMsdfTextToGlyphs(
-		textData,
-		bounds,
-		fontManager,
-		pointsToPixelsScale,
-		glyphs,
-		atlasLayer,
-		distanceRangePx);
-	if (!hasLayout) {
-		glyphs.push_back(GlyphQuad{
-			bounds.x,
-			bounds.y,
-			bounds.width,
-			bounds.height,
-			0.0f,
-			0.0f,
-			1.0f,
-			1.0f,
-			0,
-			std::max(0, textData.stringContents.length),
-		});
-	}
 
 	const uint32_t defaultColor = PackRGBA8(textData.textColor);
 	const bool hasTextColorOverride = textColorOverride && !textColorOverride->ranges.empty();
 	const uint32_t overrideColor = hasTextColorOverride
 		? PackRGBA8(textColorOverride->color)
 		: 0u;
-
-	for (const GlyphQuad& glyph : glyphs) {
+	size_t overrideCursor = 0u;
+	const auto emitGlyph = [&](const GlyphQuad& glyph, uint32_t atlasLayer, float distanceRangePx) {
 		uint32_t glyphColor = defaultColor;
 		if (hasTextColorOverride) {
 			const size_t glyphStart = static_cast<size_t>(std::max(0, glyph.byteStartOffset));
 			const size_t glyphEnd = static_cast<size_t>(std::max(glyph.byteStartOffset, glyph.byteEndOffset));
-			for (const FlowUi::detail::InputFieldTextColorRangeOverride& range : textColorOverride->ranges) {
+			while (overrideCursor < textColorOverride->ranges.size() &&
+				textColorOverride->ranges[overrideCursor].endByteOffset <= glyphStart) {
+				++overrideCursor;
+			}
+			for (size_t rangeIndex = overrideCursor; rangeIndex < textColorOverride->ranges.size(); ++rangeIndex) {
+				const FlowUi::detail::InputFieldTextColorRangeOverride& range = textColorOverride->ranges[rangeIndex];
+				if (range.startByteOffset >= glyphEnd) break;
 				if (ByteRangesIntersect(glyphStart, glyphEnd, range.startByteOffset, range.endByteOffset)) {
 					glyphColor = overrideColor;
 					break;
@@ -475,7 +475,43 @@ static void EmitTextMsdf(
 		inst.colorRGBA = glyphColor;
 		inst.atlasLayer = atlasLayer;
 		inst.r0 = distanceRangePx;
-		instances.push_back(inst);
+		instances.push(inst);
+		++textGlyphCount;
+	};
+
+	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager, textData.fontId);
+	uint32_t atlasLayer = fontFace ? fontFace->atlasLayer : 0u;
+	float distanceRangePx = 2.0f;
+	if (fontFace) {
+		if (const FlowUi::Font::FontVariantData* variant = fontFace->defaultVariant();
+			variant && variant->distanceRange > 0.0f) {
+			distanceRangePx = variant->distanceRange;
+		}
+	}
+	const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
+		FlowUi::detail::TextLayoutRequest{
+			.text = textData.stringContents,
+			.fontFace = fontFace,
+			.pointsToPixelsScale = pointsToPixelsScale,
+			.fontSize = textData.fontSize,
+			.letterSpacing = textData.letterSpacing,
+			.lineOriginX = bounds.x,
+			.lineOriginY = bounds.y,
+			.emitGlyphQuads = true,
+		},
+		[&](const FlowUi::detail::TextLayoutGlyphQuad& glyph) {
+			emitGlyph(GlyphQuad{
+				glyph.x, glyph.y, glyph.w, glyph.h,
+				glyph.u0, glyph.v0, glyph.u1, glyph.v1,
+				glyph.byteStartOffset, glyph.byteEndOffset,
+			}, atlasLayer, distanceRangePx);
+		});
+	if (!layoutResult.success) {
+		emitGlyph(GlyphQuad{
+			bounds.x, bounds.y, bounds.width, bounds.height,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			0, std::max(0, textData.stringContents.length),
+		}, 0u, 2.0f);
 	}
 }
 
@@ -483,13 +519,16 @@ static void EmitTexturedImage(
 	const Clay_RenderCommand& command,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
-	std::vector<UiInstance>& instances)
+	std::span<const storage::BindingHotRecord> textureBindings,
+	BoundedWriter<UiInstance>& instances)
 {
 	const RectF bounds = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
 	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
 	const FlowUi::TextureRef& textureRef = ResolveTextureRef(command);
 	const TexturedImagePlacement placement = ResolveTexturedImagePlacement(bounds, textureRef);
-	(void)textureRef.samplingMode; // Sampling mode is intentionally a no-op in textured pipeline V1.
+	//Transitional: a later sampler policy maps TextureSamplingMode to logical
+	// sampler variants or separate sampler indexing.
+	(void)textureRef.samplingMode;
 	if (placement.drawBounds.w <= 0.0f || placement.drawBounds.h <= 0.0f) {
 		return;
 	}
@@ -505,16 +544,28 @@ static void EmitTexturedImage(
 	inst.uv1x = placement.uv1x;
 	inst.uv1y = placement.uv1y;
 	inst.colorRGBA = PackRGBA8(command.renderData.image.backgroundColor);
-	inst.texIndex = textureRef.id;
+	const storage::BindingHotRecord* binding = nullptr;
+	if (textureRef.handle && textureRef.handle.index < textureBindings.size()) {
+		const storage::BindingHotRecord& candidate = textureBindings[textureRef.handle.index];
+		if (candidate.textureGeneration == textureRef.handle.generation) binding = &candidate;
+	}
+	inst.texIndex = binding ? binding->descriptorIndex : 0u;
 	inst.solidMode = textureRef.tintEnabled ? kTexturedFlagTintEnabled : 0u;
 	inst.r0 = command.renderData.image.cornerRadius.topLeft * radiusScale;
 	inst.r1 = command.renderData.image.cornerRadius.topRight * radiusScale;
 	inst.r2 = command.renderData.image.cornerRadius.bottomRight * radiusScale;
 	inst.r3 = command.renderData.image.cornerRadius.bottomLeft * radiusScale;
-	instances.push_back(inst);
+	instances.push(inst);
 }
 
-static void BuildInstancesAndRunsFromClay(
+struct UiBuildResult {
+	uint32_t instanceCount = 0;
+	uint32_t runCount = 0;
+	uint32_t textGlyphCount = 0;
+	uint32_t imageCommandCount = 0;
+};
+
+static UiBuildResult BuildInstancesAndRunsFromClay(
 	const Clay_RenderCommandArray& commands,
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
@@ -522,15 +573,19 @@ static void BuildInstancesAndRunsFromClay(
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
-	std::vector<UiInstance>& outInstances,
-	std::vector<UiRun>& outRuns)
+	std::span<const storage::BindingHotRecord> textureBindings,
+	std::span<UiInstance> instanceStorage,
+	std::span<UiRun> runStorage,
+	std::span<RectF> scissorStorage)
 {
-	outInstances.clear();
-	outRuns.clear();
+	BoundedWriter<UiInstance> outInstances{instanceStorage};
+	BoundedWriter<UiRun> outRuns{runStorage};
+	if (scissorStorage.empty()) throw std::runtime_error("UI scissor storage is empty.");
+	size_t scissorDepth = 1u;
+	UiBuildResult result{};
 
 	const RectF fullScissor{ 0.0f, 0.0f, static_cast<float>(extent.width), static_cast<float>(extent.height) };
-	std::vector<RectF> scissorStack;
-	scissorStack.push_back(fullScissor);
+	scissorStorage[0] = fullScissor;
 	RectF currentScissor = fullScissor;
 
 	bool runBarrier = false;
@@ -540,16 +595,16 @@ static void BuildInstancesAndRunsFromClay(
 			return;
 		}
 		UiRun& run = outRuns.back();
-		run.instanceCount = static_cast<uint32_t>(outInstances.size()) - run.firstInstance;
+		run.instanceCount = static_cast<uint32_t>(outInstances.count) - run.firstInstance;
 		if (run.instanceCount == 0) {
-			outRuns.pop_back();
+			outRuns.pop();
 		}
 	};
 
 	auto beginRunIfNeeded = [&](UiType type, const RectF& scissor) {
 		if (outRuns.empty() || runBarrier) {
 			closeActiveRun();
-			outRuns.emplace_back(UiRun{ type, scissor, static_cast<uint32_t>(outInstances.size()), 0u });
+			outRuns.push(UiRun{ type, scissor, static_cast<uint32_t>(outInstances.count), 0u });
 			runBarrier = false;
 			return;
 		}
@@ -557,7 +612,7 @@ static void BuildInstancesAndRunsFromClay(
 		const UiRun& current = outRuns.back();
 		if (current.type != type || !RectEqual(current.scissor, scissor)) {
 			closeActiveRun();
-			outRuns.emplace_back(UiRun{ type, scissor, static_cast<uint32_t>(outInstances.size()), 0u });
+			outRuns.push(UiRun{ type, scissor, static_cast<uint32_t>(outInstances.count), 0u });
 		}
 	};
 
@@ -603,16 +658,15 @@ static void BuildInstancesAndRunsFromClay(
 		}
 		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
 			const RectF clip = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
-			scissorStack.push_back(Intersect(scissorStack.back(), clip));
-			currentScissor = scissorStack.back();
+			if (scissorDepth >= scissorStorage.size()) throw std::runtime_error("UI scissor stack exceeded its upper bound.");
+			scissorStorage[scissorDepth] = Intersect(scissorStorage[scissorDepth - 1u], clip);
+			currentScissor = scissorStorage[scissorDepth++];
 			runBarrier = true;
 			continue;
 		}
 		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_END) {
-			if (scissorStack.size() > 1) {
-				scissorStack.pop_back();
-			}
-			currentScissor = scissorStack.back();
+			if (scissorDepth > 1u) --scissorDepth;
+			currentScissor = scissorStorage[scissorDepth - 1u];
 			runBarrier = true;
 			continue;
 		}
@@ -620,6 +674,12 @@ static void BuildInstancesAndRunsFromClay(
 			// Placeholder: custom command execution hook should run here in strict command order.
 			closeActiveRun();
 			runBarrier = true;
+			continue;
+		}
+		if (command.commandType != CLAY_RENDER_COMMAND_TYPE_RECTANGLE &&
+			command.commandType != CLAY_RENDER_COMMAND_TYPE_BORDER &&
+			command.commandType != CLAY_RENDER_COMMAND_TYPE_TEXT &&
+			command.commandType != CLAY_RENDER_COMMAND_TYPE_IMAGE) {
 			continue;
 		}
 
@@ -641,10 +701,13 @@ static void BuildInstancesAndRunsFromClay(
 					uiToFramebufferScaleX,
 					uiToFramebufferScaleY,
 					inputTextColorOverride,
-					outInstances);
+					outInstances,
+					result.textGlyphCount);
 				break;
 			case CLAY_RENDER_COMMAND_TYPE_IMAGE:
-				EmitTexturedImage(command, uiToFramebufferScaleX, uiToFramebufferScaleY, outInstances);
+				EmitTexturedImage(
+					command, uiToFramebufferScaleX, uiToFramebufferScaleY, textureBindings, outInstances);
+				++result.imageCommandCount;
 				break;
 			default:
 				break;
@@ -653,204 +716,9 @@ static void BuildInstancesAndRunsFromClay(
 
 	emitInputOverridesBefore(commands.length);
 	closeActiveRun();
-}
-
-static void DestroyBuffer(VulkanContext& vk, VulkanUiRenderer::AllocatedBuffer& buffer) {
-	if (buffer.buffer != VK_NULL_HANDLE) {
-		vmaDestroyBuffer(vk.allocator, buffer.buffer, buffer.allocation);
-	}
-	buffer.buffer = VK_NULL_HANDLE;
-	buffer.allocation = nullptr;
-	buffer.mapped = nullptr;
-	buffer.size = 0;
-}
-
-static void CreateMappedBuffer(
-	VulkanContext& vk,
-	VkDeviceSize size,
-	VkBufferUsageFlags usage,
-	VulkanUiRenderer::AllocatedBuffer& outBuffer) {
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = size;
-	bufferInfo.usage = usage;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	VmaAllocationCreateInfo allocationCreateInfo{};
-	allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-	allocationCreateInfo.flags =
-		VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-		VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-	VmaAllocationInfo allocationInfo{};
-	vkCheck(
-		vmaCreateBuffer(
-			vk.allocator,
-			&bufferInfo,
-			&allocationCreateInfo,
-			&outBuffer.buffer,
-			&outBuffer.allocation,
-			&allocationInfo),
-		"Failed to create mapped UI buffer.");
-
-	outBuffer.size = size;
-	outBuffer.mapped = allocationInfo.pMappedData;
-	if (!outBuffer.mapped) {
-		vkCheck(vmaMapMemory(vk.allocator, outBuffer.allocation, &outBuffer.mapped), "Failed to map UI buffer.");
-	}
-}
-
-static void UploadBytesToMappedBuffer(
-	VulkanContext& vk,
-	const VulkanUiRenderer::AllocatedBuffer& buffer,
-	const void* data,
-	VkDeviceSize size) {
-	if (size == 0) {
-		return;
-	}
-	if (buffer.buffer == VK_NULL_HANDLE || buffer.mapped == nullptr || size > buffer.size) {
-		throw std::runtime_error("UI upload buffer is invalid or too small.");
-	}
-	std::memcpy(buffer.mapped, data, static_cast<size_t>(size));
-	vkCheck(vmaFlushAllocation(vk.allocator, buffer.allocation, 0, size), "Failed to flush UI upload buffer.");
-}
-
-static void DestroyImage(VulkanContext& vk, VulkanUiRenderer::AllocatedImage& image) {
-	if (image.view != VK_NULL_HANDLE) {
-		vkDestroyImageView(vk.device, image.view, nullptr);
-		image.view = VK_NULL_HANDLE;
-	}
-	if (image.image != VK_NULL_HANDLE) {
-		vmaDestroyImage(vk.allocator, image.image, image.allocation);
-	}
-	image.image = VK_NULL_HANDLE;
-	image.allocation = nullptr;
-}
-
-static void TransitionImageToShaderRead(VulkanContext& vk, VkImage image, uint32_t layers) {
-	VkCommandPool commandPool = VK_NULL_HANDLE;
-	VkCommandPoolCreateInfo poolCreateInfo{};
-	poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolCreateInfo.queueFamilyIndex = vk.graphicsQFamily;
-	poolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-	vkCheck(vkCreateCommandPool(vk.device, &poolCreateInfo, nullptr, &commandPool), "Failed to create temp command pool.");
-
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = commandPool;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = 1;
-	vkCheck(vkAllocateCommandBuffers(vk.device, &allocInfo, &commandBuffer), "Failed to allocate temp command buffer.");
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	vkCheck(vkBeginCommandBuffer(commandBuffer, &beginInfo), "Failed to begin temp command buffer.");
-
-	VkImageMemoryBarrier barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.srcAccessMask = 0;
-	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = layers;
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		0,
-		nullptr,
-		0,
-		nullptr,
-		1,
-		&barrier);
-
-	vkCheck(vkEndCommandBuffer(commandBuffer), "Failed to end temp command buffer.");
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-	vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, VK_NULL_HANDLE), "Failed to submit temp command buffer.");
-	vkCheck(vkQueueWaitIdle(vk.graphicsQ), "Failed to wait for temp queue idle.");
-
-	vkDestroyCommandPool(vk.device, commandPool, nullptr);
-}
-
-static void CreatePlaceholderImage(
-	VulkanContext& vk,
-	uint32_t arrayLayers,
-	VkImageViewType viewType,
-	VulkanUiRenderer::AllocatedImage& outImage) {
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-	imageInfo.extent = { 1, 1, 1 };
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = arrayLayers;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	VmaAllocationCreateInfo allocationCreateInfo{};
-	allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-
-	vkCheck(
-		vmaCreateImage(
-			vk.allocator,
-			&imageInfo,
-			&allocationCreateInfo,
-			&outImage.image,
-			&outImage.allocation,
-			nullptr),
-		"Failed to create placeholder UI image.");
-
-	VkImageViewCreateInfo viewInfo{};
-	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewInfo.image = outImage.image;
-	viewInfo.viewType = viewType;
-	viewInfo.format = imageInfo.format;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = 1;
-	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = arrayLayers;
-	vkCheck(vkCreateImageView(vk.device, &viewInfo, nullptr, &outImage.view), "Failed to create placeholder UI image view.");
-
-	TransitionImageToShaderRead(vk, outImage.image, arrayLayers);
-}
-
-static void CreateLinearSampler(VulkanContext& vk, VkSampler& sampler) {
-	VkSamplerCreateInfo samplerInfo{};
-	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.mipLodBias = 0.0f;
-	samplerInfo.anisotropyEnable = VK_FALSE;
-	samplerInfo.maxAnisotropy = 1.0f;
-	samplerInfo.compareEnable = VK_FALSE;
-	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = 0.0f;
-	samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	vkCheck(vkCreateSampler(vk.device, &samplerInfo, nullptr, &sampler), "Failed to create UI sampler.");
+	result.instanceCount = static_cast<uint32_t>(outInstances.count);
+	result.runCount = static_cast<uint32_t>(outRuns.count);
+	return result;
 }
 
 static bool IsSrgbColorFormat(VkFormat format) {
@@ -1074,14 +942,6 @@ static void DestroyDescriptorObjects(VkDevice device, VulkanUiRenderer::Descript
 	}
 }
 
-static VkDescriptorImageInfo PlaceholderUiImageInfo(const VulkanUiRenderer& renderer) {
-	VkDescriptorImageInfo info{};
-	info.sampler = renderer.linearSampler_;
-	info.imageView = renderer.placeholderUiTexture_.view;
-	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	return info;
-}
-
 static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	if (renderer.maxUiImageDescriptors_ == 0u) {
 		throw std::runtime_error("UI texture descriptor capacity must be greater than zero.");
@@ -1185,21 +1045,21 @@ static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
 }
 
 static void UpdateInstanceBufferDescriptorForFrame(const VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
-	if (frameSlot >= renderer.descriptors_.globalsSets.size() || frameSlot >= renderer.instanceBuffersByFrame_.size()) {
+	if (frameSlot >= renderer.descriptors_.globalsSets.size() || frameSlot >= renderer.frameResources_.size()) {
 		return;
 	}
 	if (renderer.descriptors_.globalsSets[frameSlot] == VK_NULL_HANDLE) {
 		return;
 	}
-	const VulkanUiRenderer::AllocatedBuffer& instanceBuffer = renderer.instanceBuffersByFrame_[frameSlot];
-	if (instanceBuffer.buffer == VK_NULL_HANDLE) {
+	const VulkanUiRenderer::UiFrameResources& instanceBuffer = renderer.frameResources_[frameSlot];
+	if (instanceBuffer.nativeBuffer.nativeBuffer == 0) {
 		return;
 	}
 
 	VkDescriptorBufferInfo ssboInfo{};
-	ssboInfo.buffer = instanceBuffer.buffer;
+	ssboInfo.buffer = NativeHandleFromBits<VkBuffer>(instanceBuffer.nativeBuffer.nativeBuffer);
 	ssboInfo.offset = 0;
-	ssboInfo.range = instanceBuffer.size;
+	ssboInfo.range = instanceBuffer.capacityBytes;
 
 	VkWriteDescriptorSet write{};
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1212,7 +1072,7 @@ static void UpdateInstanceBufferDescriptorForFrame(const VulkanUiRenderer& rende
 	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 }
 
-static void UpdateTextureDescriptorsForFrame(VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
+static void UpdateFontDescriptorForFrame(VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
 	if (frameSlot >= renderer.descriptors_.texturesSets.size()) {
 		return;
 	}
@@ -1220,8 +1080,9 @@ static void UpdateTextureDescriptorsForFrame(VulkanUiRenderer& renderer, VkDevic
 		return;
 	}
 	VkDescriptorImageInfo fontAtlasInfo{};
-	fontAtlasInfo.sampler = renderer.linearSampler_;
-	fontAtlasInfo.imageView = renderer.placeholderFontAtlas_.view;
+	if (!renderer.sharedByteResources_) return;
+	fontAtlasInfo.sampler = renderer.sharedByteResources_->nativeLinearSampler;
+	fontAtlasInfo.imageView = renderer.sharedByteResources_->nativePlaceholderFontView;
 	fontAtlasInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	if (renderer.fontManager_) {
 		const FlowUi::Font::AtlasArrayResource& atlas = renderer.fontManager_->getAtlasResource();
@@ -1231,36 +1092,14 @@ static void UpdateTextureDescriptorsForFrame(VulkanUiRenderer& renderer, VkDevic
 		}
 	}
 
-	const VkDescriptorImageInfo uiImageTemplate = PlaceholderUiImageInfo(renderer);
-	if (renderer.uiTextureSlotInfos_.size() != renderer.maxUiImageDescriptors_) {
-		renderer.uiTextureSlotInfos_.assign(renderer.maxUiImageDescriptors_, uiImageTemplate);
-	}
-
-	std::array<VkWriteDescriptorSet, 2> writes{};
-	writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writes[0].dstSet = renderer.descriptors_.texturesSets[frameSlot];
-	writes[0].dstBinding = 0;
-	writes[0].descriptorCount = 1;
-	writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	writes[0].pImageInfo = &fontAtlasInfo;
-
-	writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writes[1].dstSet = renderer.descriptors_.texturesSets[frameSlot];
-	writes[1].dstBinding = 1;
-	writes[1].descriptorCount = renderer.maxUiImageDescriptors_;
-	writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	writes[1].pImageInfo = renderer.uiTextureSlotInfos_.data();
-
-	vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-	if (frameSlot < renderer.textureDescriptorsDirtyByFrame_.size()) {
-		renderer.textureDescriptorsDirtyByFrame_[frameSlot] = false;
-	}
-}
-
-static void UpdateTextureDescriptorsAllFrames(VulkanUiRenderer& renderer, VkDevice device) {
-	for (uint32_t frameSlot = 0u; frameSlot < renderer.frameResourceCount_; ++frameSlot) {
-		UpdateTextureDescriptorsForFrame(renderer, device, frameSlot);
-	}
+	VkWriteDescriptorSet write{};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = renderer.descriptors_.texturesSets[frameSlot];
+	write.dstBinding = 0;
+	write.descriptorCount = 1;
+	write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	write.pImageInfo = &fontAtlasInfo;
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 }
 
 static void RecreateDescriptorAndPipelineObjects(VulkanContext& vk, VulkanUiRenderer& renderer) {
@@ -1268,15 +1107,12 @@ static void RecreateDescriptorAndPipelineObjects(VulkanContext& vk, VulkanUiRend
 	DestroyDescriptorObjects(vk.device, renderer.descriptors_);
 	CreateDescriptorObjects(vk.device, renderer);
 	CreatePipelineObjects(vk.device, renderer);
-	if (renderer.textureDescriptorsDirtyByFrame_.size() != renderer.frameResourceCount_) {
-		renderer.textureDescriptorsDirtyByFrame_.assign(renderer.frameResourceCount_, true);
-	}
 	if (renderer.boundFontAtlasRevisionByFrame_.size() != renderer.frameResourceCount_) {
 		renderer.boundFontAtlasRevisionByFrame_.assign(renderer.frameResourceCount_, UINT32_MAX);
 	}
 	for (uint32_t frameSlot = 0u; frameSlot < renderer.frameResourceCount_; ++frameSlot) {
 		UpdateInstanceBufferDescriptorForFrame(renderer, vk.device, frameSlot);
-		UpdateTextureDescriptorsForFrame(renderer, vk.device, frameSlot);
+		UpdateFontDescriptorForFrame(renderer, vk.device, frameSlot);
 		renderer.boundFontAtlasRevisionByFrame_[frameSlot] = UINT32_MAX;
 	}
 }
@@ -1285,32 +1121,59 @@ static void EnsureInstanceBufferCapacity(
 	VulkanContext& vk,
 	VulkanUiRenderer& renderer,
 	uint32_t frameSlot,
-	size_t requiredInstances) {
-	if (requiredInstances == 0) {
-		return;
+	uint64_t requiredBytes) {
+	if (requiredBytes == 0) return;
+	if (!renderer.storage_ || renderer.windowId_ == FlowUi::InvalidWindowId) {
+		throw std::runtime_error("UI renderer storage ownership is not initialized.");
 	}
-	if (requiredInstances > (std::numeric_limits<VkDeviceSize>::max() / sizeof(UiInstance))) {
-		throw std::runtime_error("UI instance count exceeds addressable buffer size.");
-	}
-
-	if (frameSlot >= renderer.instanceBuffersByFrame_.size()) {
+	if (frameSlot >= renderer.frameResources_.size()) {
 		throw std::runtime_error("UI renderer frame slot index is out of bounds.");
 	}
 
-	VulkanUiRenderer::AllocatedBuffer& instanceBuffer = renderer.instanceBuffersByFrame_[frameSlot];
-	const VkDeviceSize requiredBytes = static_cast<VkDeviceSize>(requiredInstances) * sizeof(UiInstance);
-	if (instanceBuffer.buffer != VK_NULL_HANDLE && instanceBuffer.size >= requiredBytes) {
-		return;
-	}
+	VulkanUiRenderer::UiFrameResources& slot = renderer.frameResources_[frameSlot];
+	if (slot.instanceBuffer && slot.nativeBuffer.nativeBuffer != 0 && slot.capacityBytes >= requiredBytes) return;
 
-	VkDeviceSize newSize = instanceBuffer.size > 0 ? instanceBuffer.size : kInitialInstanceBufferBytes;
-	while (newSize < requiredBytes) {
-		newSize *= 2;
-	}
+	const uint64_t newSize = FlowUi::detail::growUiInstanceCapacity(
+		slot.capacityBytes, requiredBytes, renderer.initialInstanceBytes_);
 
-	DestroyBuffer(vk, instanceBuffer);
-	CreateMappedBuffer(vk, newSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, instanceBuffer);
-	UpdateInstanceBufferDescriptorForFrame(renderer, vk.device, frameSlot);
+	storage::BufferDesc desc{};
+	desc.size = newSize;
+	desc.usage = storage::BufferUsage::Storage;
+	desc.memory = storage::MemoryPreference::HostVisible;
+	desc.sharing = storage::ResourceSharing::FrameLocal;
+	desc.access = storage::AccessMode::CpuWrite;
+	desc.persistentlyMapped = true;
+	desc.window = renderer.windowId_;
+	desc.frameSlot = frameSlot;
+	desc.debugName = renderer.storage_->intern("FlowUi UI instance buffer");
+
+	storage::BufferHandle replacement = renderer.storage_->createBuffer(desc);
+	try {
+		const storage::NativeBufferView replacementNative = renderer.storage_->nativeBuffer(replacement);
+		if (replacementNative.nativeBuffer == 0 || replacementNative.size < newSize) {
+			throw std::runtime_error("Storage returned an invalid UI instance buffer generation.");
+		}
+
+		const storage::BufferHandle oldHandle = slot.instanceBuffer;
+		const storage::NativeBufferView oldNative = slot.nativeBuffer;
+		const uint64_t oldCapacity = slot.capacityBytes;
+		slot.instanceBuffer = replacement;
+		slot.nativeBuffer = replacementNative;
+		slot.capacityBytes = newSize;
+		try {
+			UpdateInstanceBufferDescriptorForFrame(renderer, vk.device, frameSlot);
+		} catch (...) {
+			slot.instanceBuffer = oldHandle;
+			slot.nativeBuffer = oldNative;
+			slot.capacityBytes = oldCapacity;
+			throw;
+		}
+		replacement = {};
+		if (oldHandle) renderer.storage_->releaseBuffer(oldHandle);
+	} catch (...) {
+		if (replacement) renderer.storage_->releaseBuffer(replacement);
+		throw;
+	}
 }
 
 static VkPipeline PipelineForType(const VulkanUiRenderer::Pipelines& pipelines_, UiType type) {
@@ -1354,7 +1217,183 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 
 } // namespace
 
-void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, VkFormat swapFormat) {
+FlowUi::detail::UiConversionCapacity FlowUi::detail::measureUiConversionCapacity(
+	const Clay_RenderCommandArray& commands,
+	const InputFieldFrameOverrides& overrides) {
+	const UiBuildUpperBound upper = ComputeBuildUpperBound(commands, overrides);
+	return UiConversionCapacity{
+		.instances = upper.instances,
+		.runs = upper.runs,
+		.scissorDepth = upper.scissorDepth,
+	};
+}
+
+FlowUi::detail::UiConversionResult FlowUi::detail::buildUiInstancesDirect(
+	const Clay_RenderCommandArray& commands,
+	const InputFieldFrameOverrides& overrides,
+	VkExtent2D extent,
+	const FontManager* fontManager,
+	float pointsToPixelsScale,
+	float uiToFramebufferScaleX,
+	float uiToFramebufferScaleY,
+	std::span<UiInstance> instances,
+	std::span<UiRun> runs,
+	std::span<RectF> scissorStack,
+	std::span<const storage::BindingHotRecord> textureBindings) {
+	const UiBuildResult built = BuildInstancesAndRunsFromClay(
+		commands,
+		overrides,
+		extent,
+		fontManager,
+		pointsToPixelsScale,
+		uiToFramebufferScaleX,
+		uiToFramebufferScaleY,
+		textureBindings,
+		instances,
+		runs,
+		scissorStack);
+	return UiConversionResult{
+		.instanceCount = built.instanceCount,
+		.runCount = built.runCount,
+		.textGlyphCount = built.textGlyphCount,
+		.imageCommandCount = built.imageCommandCount,
+	};
+}
+
+uint64_t FlowUi::detail::growUiInstanceCapacity(
+	uint64_t currentBytes,
+	uint64_t requiredBytes,
+	uint64_t initialBytes) {
+	if (requiredBytes == 0) return currentBytes;
+	uint64_t result = currentBytes > 0 ? currentBytes : std::max<uint64_t>(initialBytes, 1u);
+	while (result < requiredBytes) {
+		const uint64_t increment = std::max<uint64_t>(1u, result / 2u);
+		if (increment > std::numeric_limits<uint64_t>::max() - result) {
+			throw std::runtime_error("UI instance buffer capacity overflow.");
+		}
+		result += increment;
+	}
+	return result;
+}
+
+void destroySharedUiByteResources(
+	storage::IStorageSystem& storageSystem,
+	SharedUiByteResources& resources) noexcept {
+	try { if (resources.placeholderFontView) storageSystem.releaseImageView(resources.placeholderFontView); } catch (...) {}
+	try { if (resources.placeholderUiView) storageSystem.releaseImageView(resources.placeholderUiView); } catch (...) {}
+	try { if (resources.placeholderFontImage) storageSystem.releaseImage(resources.placeholderFontImage); } catch (...) {}
+	try { if (resources.placeholderUiImage) storageSystem.releaseImage(resources.placeholderUiImage); } catch (...) {}
+	try { if (resources.linearSampler) storageSystem.releaseSampler(resources.linearSampler); } catch (...) {}
+	try { if (resources.quadBuffer) storageSystem.releaseBuffer(resources.quadBuffer); } catch (...) {}
+	resources = {};
+}
+
+void initSharedUiByteResources(
+	storage::IStorageSystem& storageSystem,
+	SharedUiByteResources& resources) {
+	destroySharedUiByteResources(storageSystem, resources);
+	std::array<storage::BlobHandle, 3> uploadBlobs{};
+	try {
+		const std::array<UiQuadVertex, 4> quadVertices = {
+			UiQuadVertex{0.0f, 0.0f, 0.0f, 0.0f},
+			UiQuadVertex{1.0f, 0.0f, 1.0f, 0.0f},
+			UiQuadVertex{0.0f, 1.0f, 0.0f, 1.0f},
+			UiQuadVertex{1.0f, 1.0f, 1.0f, 1.0f},
+		};
+		storage::BufferDesc quadDesc{};
+		quadDesc.size = sizeof(quadVertices);
+		quadDesc.usage = storage::BufferUsage::Vertex | storage::BufferUsage::TransferDestination;
+		quadDesc.memory = storage::MemoryPreference::DeviceLocal;
+		quadDesc.debugName = storageSystem.intern("FlowUi shared UI quad");
+		resources.quadBuffer = storageSystem.createBuffer(quadDesc);
+
+		storage::ImageDesc fontImageDesc{};
+		fontImageDesc.format = storage::PixelFormat::Rgba8Unorm;
+		fontImageDesc.type = storage::ImageType::Image2DArray;
+		fontImageDesc.usage = storage::ImageUsage::Sampled | storage::ImageUsage::TransferDestination;
+		fontImageDesc.memory = storage::MemoryPreference::DeviceLocal;
+		fontImageDesc.debugName = storageSystem.intern("FlowUi placeholder font image");
+		resources.placeholderFontImage = storageSystem.createImage(fontImageDesc);
+		storage::ImageViewDesc fontViewDesc{};
+		fontViewDesc.type = storage::ImageType::Image2DArray;
+		fontViewDesc.debugName = storageSystem.intern("FlowUi placeholder font view");
+		resources.placeholderFontView = storageSystem.createImageView(resources.placeholderFontImage, fontViewDesc);
+
+		storage::ImageDesc uiImageDesc{};
+		uiImageDesc.format = storage::PixelFormat::Rgba8Unorm;
+		uiImageDesc.usage = storage::ImageUsage::Sampled | storage::ImageUsage::TransferDestination;
+		uiImageDesc.memory = storage::MemoryPreference::DeviceLocal;
+		uiImageDesc.debugName = storageSystem.intern("FlowUi placeholder UI image");
+		resources.placeholderUiImage = storageSystem.createImage(uiImageDesc);
+		storage::ImageViewDesc uiViewDesc{};
+		uiViewDesc.debugName = storageSystem.intern("FlowUi placeholder UI view");
+		resources.placeholderUiView = storageSystem.createImageView(resources.placeholderUiImage, uiViewDesc);
+
+		storage::SamplerDesc samplerDesc{};
+		samplerDesc.debugName = storageSystem.intern("FlowUi shared linear sampler");
+		resources.linearSampler = storageSystem.acquireSampler(samplerDesc);
+
+		uploadBlobs[0] = storageSystem.createBlob(
+			std::as_bytes(std::span<const UiQuadVertex>(quadVertices)),
+			storageSystem.intern("FlowUi quad upload"));
+		const std::array<std::byte, 4> transparentPixel{};
+		uploadBlobs[1] = storageSystem.createBlob(transparentPixel, storageSystem.intern("FlowUi font placeholder upload"));
+		uploadBlobs[2] = storageSystem.createBlob(transparentPixel, storageSystem.intern("FlowUi UI placeholder upload"));
+
+		(void)storageSystem.enqueueUpload(storage::UploadRequest{
+			.destination = storage::UploadDestination::Buffer,
+			.source = uploadBlobs[0],
+			.byteCount = sizeof(quadVertices),
+			.destinationBuffer = resources.quadBuffer,
+		});
+		(void)storageSystem.enqueueUpload(storage::UploadRequest{
+			.destination = storage::UploadDestination::Image,
+			.source = uploadBlobs[1],
+			.byteCount = transparentPixel.size(),
+			.destinationImage = resources.placeholderFontImage,
+		});
+		(void)storageSystem.enqueueUpload(storage::UploadRequest{
+			.destination = storage::UploadDestination::Image,
+			.source = uploadBlobs[2],
+			.byteCount = transparentPixel.size(),
+			.destinationImage = resources.placeholderUiImage,
+		});
+		storageSystem.flushUploads();
+		for (const storage::BlobHandle blob : uploadBlobs) storageSystem.releaseBlob(blob);
+		uploadBlobs = {};
+		storageSystem.collect();
+
+		const storage::NativeBufferView quadNative = storageSystem.nativeBuffer(resources.quadBuffer);
+		const storage::NativeImageViewInfo fontViewNative = storageSystem.nativeImageView(resources.placeholderFontView);
+		const storage::NativeImageViewInfo uiViewNative = storageSystem.nativeImageView(resources.placeholderUiView);
+		const storage::NativeSamplerInfo samplerNative = storageSystem.nativeSampler(resources.linearSampler);
+		if (quadNative.nativeBuffer == 0 || fontViewNative.nativeImageView == 0 ||
+			uiViewNative.nativeImageView == 0 || samplerNative.nativeSampler == 0) {
+			throw std::runtime_error("Storage returned invalid shared UI native resources.");
+		}
+		resources.nativeQuadBuffer = NativeHandleFromBits<VkBuffer>(quadNative.nativeBuffer);
+		resources.nativePlaceholderFontView = NativeHandleFromBits<VkImageView>(fontViewNative.nativeImageView);
+		resources.nativePlaceholderUiView = NativeHandleFromBits<VkImageView>(uiViewNative.nativeImageView);
+		resources.nativeLinearSampler = NativeHandleFromBits<VkSampler>(samplerNative.nativeSampler);
+	} catch (...) {
+		for (const storage::BlobHandle blob : uploadBlobs) {
+			try { if (blob) storageSystem.releaseBlob(blob); } catch (...) {}
+		}
+		destroySharedUiByteResources(storageSystem, resources);
+		try { storageSystem.collect(); } catch (...) {}
+		throw;
+	}
+}
+
+void VulkanUiRenderer::init(
+	const FlowUi::AppConfig& config,
+	VulkanContext& vk,
+	VkFormat swapFormat,
+	storage::IStorageSystem& storageSystem,
+	FlowUi::WindowId windowId,
+	const SharedUiByteResources& sharedResources,
+	uint64_t initialInstanceBytes,
+	uint32_t textureDescriptorCapacity) {
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw std::runtime_error("Vulkan device + allocator must be initialized before UI renderer init.");
 	}
@@ -1362,14 +1401,36 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 		throw std::runtime_error("Swapchain format must be valid before UI renderer init.");
 	}
 
-	destroy(vk);
+	destroy(vk, storageSystem);
 
 	try {
-		maxUiImageDescriptors_ = kDefaultMaxUiImageDescriptors;
+		storage_ = &storageSystem;
+		windowId_ = windowId;
+		sharedByteResources_ = &sharedResources;
+		initialInstanceBytes_ = std::max<uint64_t>(1u, initialInstanceBytes);
+		maxUiImageDescriptors_ = textureDescriptorCapacity;
+		if (maxUiImageDescriptors_ != kDefaultMaxUiImageDescriptors) {
+			throw std::runtime_error("UI texture descriptor capacity must match the shader capacity of 256.");
+		}
+		VkPhysicalDeviceDescriptorIndexingProperties indexingProperties{};
+		indexingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES;
+		VkPhysicalDeviceProperties2 properties{};
+		properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		properties.pNext = &indexingProperties;
+		vkGetPhysicalDeviceProperties2(vk.phys, &properties);
+		const uint32_t requiredSampledImages = maxUiImageDescriptors_ + 1u; // font atlas + UI array
+		const uint32_t supportedSampledImages = std::min({
+			properties.properties.limits.maxPerStageDescriptorSampledImages,
+			properties.properties.limits.maxDescriptorSetSampledImages,
+			indexingProperties.maxPerStageDescriptorUpdateAfterBindSampledImages,
+			indexingProperties.maxDescriptorSetUpdateAfterBindSampledImages,
+		});
+		if (requiredSampledImages > supportedSampledImages) {
+			throw std::runtime_error("Vulkan device cannot support the fixed 256-entry UI texture descriptor array.");
+		}
 		targetFormat_ = swapFormat;
 		frameResourceCount_ = std::max<uint32_t>(1u, config.vk.framesInFlight);
-		instanceBuffersByFrame_.assign(frameResourceCount_, AllocatedBuffer{});
-		textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
+		frameResources_.assign(frameResourceCount_, UiFrameResources{});
 		boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
 
 		const float configuredDpi = std::max(1.0f, config.ui.dpi);
@@ -1378,45 +1439,12 @@ void VulkanUiRenderer::init(const FlowUi::AppConfig& config, VulkanContext& vk, 
 			pointsToPixelsScale_ = configuredDpi / 72.0f;
 		}
 
-		CreateLinearSampler(vk, linearSampler_);
-
-		CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D_ARRAY, placeholderFontAtlas_);
-		CreatePlaceholderImage(vk, 1, VK_IMAGE_VIEW_TYPE_2D, placeholderUiTexture_);
-		uiTextureSlotInfos_.assign(maxUiImageDescriptors_, PlaceholderUiImageInfo(*this));
-		RecreateDescriptorAndPipelineObjects(vk, *this);
-
-		const std::array<UiQuadVertex, 4> quadVertices = {
-			UiQuadVertex{ 0.0f, 0.0f, 0.0f, 0.0f },
-			UiQuadVertex{ 1.0f, 0.0f, 1.0f, 0.0f },
-			UiQuadVertex{ 0.0f, 1.0f, 0.0f, 1.0f },
-			UiQuadVertex{ 1.0f, 1.0f, 1.0f, 1.0f },
-		};
-		CreateMappedBuffer(
-			vk,
-			static_cast<VkDeviceSize>(quadVertices.size() * sizeof(UiQuadVertex)),
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			quadVertexBuffer_);
-		UploadBytesToMappedBuffer(
-			vk,
-			quadVertexBuffer_,
-			quadVertices.data(),
-			static_cast<VkDeviceSize>(quadVertices.size() * sizeof(UiQuadVertex)));
-
 		for (uint32_t frameSlot = 0u; frameSlot < frameResourceCount_; ++frameSlot) {
-			CreateMappedBuffer(
-				vk,
-				kInitialInstanceBufferBytes,
-				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-				instanceBuffersByFrame_[frameSlot]);
-			UpdateInstanceBufferDescriptorForFrame(*this, vk.device, frameSlot);
+			EnsureInstanceBufferCapacity(vk, *this, frameSlot, initialInstanceBytes_);
 		}
-
-		instancesScratch_.clear();
-		runsScratch_.clear();
-		instancesScratch_.reserve(4096);
-		runsScratch_.reserve(256);
+		RecreateDescriptorAndPipelineObjects(vk, *this);
 	} catch (...) {
-		destroy(vk);
+		destroy(vk, storageSystem);
 		throw;
 	}
 }
@@ -1426,25 +1454,23 @@ void VulkanUiRenderer::setFontManager(const FlowUi::FontManager* manager) {
 	boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
 }
 
-void VulkanUiRenderer::destroy(VulkanContext& vk)
+void VulkanUiRenderer::destroy(VulkanContext& vk, storage::IStorageSystem& storageSystem)
 {
-	instancesScratch_.clear();
-	runsScratch_.clear();
-	uiTextureSlotInfos_.clear();
-	textureDescriptorsDirtyByFrame_.clear();
 	boundFontAtlasRevisionByFrame_.clear();
 	frameResourceCount_ = 1u;
 
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		pipelines_ = Pipelines{};
 		descriptors_ = Descriptors{};
-		instanceBuffersByFrame_.clear();
-		quadVertexBuffer_ = AllocatedBuffer{};
-		placeholderFontAtlas_ = AllocatedImage{};
-		placeholderUiTexture_ = AllocatedImage{};
-		linearSampler_ = VK_NULL_HANDLE;
+		for (UiFrameResources& frame : frameResources_) {
+			if (frame.instanceBuffer) storageSystem.releaseBuffer(frame.instanceBuffer);
+		}
+		frameResources_.clear();
 		targetFormat_ = VK_FORMAT_UNDEFINED;
 		fontManager_ = nullptr;
+		sharedByteResources_ = nullptr;
+		storage_ = nullptr;
+		windowId_ = FlowUi::InvalidWindowId;
 		pointsToPixelsScale_ = 96.0f / 72.0f;
 		return;
 	}
@@ -1452,21 +1478,16 @@ void VulkanUiRenderer::destroy(VulkanContext& vk)
 	DestroyPipelineObjects(vk.device, pipelines_);
 	DestroyDescriptorObjects(vk.device, descriptors_);
 
-	for (AllocatedBuffer& buffer : instanceBuffersByFrame_) {
-		DestroyBuffer(vk, buffer);
+	for (UiFrameResources& frame : frameResources_) {
+		if (frame.instanceBuffer) storageSystem.releaseBuffer(frame.instanceBuffer);
 	}
-	instanceBuffersByFrame_.clear();
-	DestroyBuffer(vk, quadVertexBuffer_);
-	DestroyImage(vk, placeholderFontAtlas_);
-	DestroyImage(vk, placeholderUiTexture_);
-
-	if (linearSampler_ != VK_NULL_HANDLE) {
-		vkDestroySampler(vk.device, linearSampler_, nullptr);
-		linearSampler_ = VK_NULL_HANDLE;
-	}
+	frameResources_.clear();
 
 	targetFormat_ = VK_FORMAT_UNDEFINED;
 	fontManager_ = nullptr;
+	sharedByteResources_ = nullptr;
+	storage_ = nullptr;
+	windowId_ = FlowUi::InvalidWindowId;
 	pointsToPixelsScale_ = 96.0f / 72.0f;
 }
 
@@ -1485,77 +1506,52 @@ void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newF
 	CreatePipelines(vk.device, pipelines_, targetFormat_);
 }
 
-uint32_t VulkanUiRenderer::textureSlotCapacity() const {
-	return maxUiImageDescriptors_;
-}
-
-void VulkanUiRenderer::reserveTextureSlots(VulkanContext& vk, uint32_t minCapacity) {
-	if (minCapacity <= maxUiImageDescriptors_) {
-		return;
+void VulkanUiRenderer::applyTextureBindings(
+	VkDevice device,
+	uint32_t frameSlot,
+	const storage::PreparedTextureBindings& prepared) {
+	if (frameSlot >= descriptors_.texturesSets.size() || prepared.epoch == 0) {
+		throw std::runtime_error("UI texture binding batch targets an invalid frame slot.");
 	}
-	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr || linearSampler_ == VK_NULL_HANDLE ||
-		placeholderUiTexture_.view == VK_NULL_HANDLE || targetFormat_ == VK_FORMAT_UNDEFINED) {
-		throw std::runtime_error("UI renderer is not initialized for texture slot growth.");
+	if (prepared.requiredDescriptorCapacity > maxUiImageDescriptors_ ||
+		prepared.dirtyBindings.size() > maxUiImageDescriptors_) {
+		throw std::runtime_error("UI texture binding batch exceeds the fixed descriptor capacity.");
 	}
-
-	uint32_t newCapacity = std::max<uint32_t>(2u, maxUiImageDescriptors_);
-	while (newCapacity < minCapacity) {
-		newCapacity *= 2u;
-	}
-
-	const VkDescriptorImageInfo placeholderInfo = PlaceholderUiImageInfo(*this);
-	std::vector<VkDescriptorImageInfo> oldSlotInfos = uiTextureSlotInfos_;
-	maxUiImageDescriptors_ = newCapacity;
-	uiTextureSlotInfos_.assign(maxUiImageDescriptors_, placeholderInfo);
-	if (!oldSlotInfos.empty()) {
-		const size_t preserved = std::min(oldSlotInfos.size(), uiTextureSlotInfos_.size());
-		for (size_t i = 0; i < preserved; ++i) {
-			uiTextureSlotInfos_[i] = oldSlotInfos[i];
+	std::array<VkDescriptorImageInfo, kDefaultMaxUiImageDescriptors> infos{};
+	std::array<VkWriteDescriptorSet, kDefaultMaxUiImageDescriptors> writes{};
+	for (size_t i = 0; i < prepared.dirtyBindings.size(); ++i) {
+		const storage::DescriptorWriteRecord& binding = prepared.dirtyBindings[i];
+		if (binding.descriptorIndex >= maxUiImageDescriptors_ ||
+			binding.nativeImageView == 0 || binding.nativeSampler == 0) {
+			throw std::runtime_error("Storage prepared an invalid UI texture descriptor write.");
 		}
+		infos[i] = VkDescriptorImageInfo{
+			.sampler = NativeHandleFromBits<VkSampler>(binding.nativeSampler),
+			.imageView = NativeHandleFromBits<VkImageView>(binding.nativeImageView),
+			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		};
+		writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writes[i].dstSet = descriptors_.texturesSets[frameSlot];
+		writes[i].dstBinding = 1;
+		writes[i].dstArrayElement = binding.descriptorIndex;
+		writes[i].descriptorCount = 1;
+		writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writes[i].pImageInfo = &infos[i];
 	}
-
-	RecreateDescriptorAndPipelineObjects(vk, *this);
-	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
-	boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
+	if (!prepared.dirtyBindings.empty()) {
+		vkUpdateDescriptorSets(
+			device, static_cast<uint32_t>(prepared.dirtyBindings.size()), writes.data(), 0, nullptr);
+	}
 }
 
-void VulkanUiRenderer::setTextureSlotBinding(uint32_t slot, VkImageView view, VkSampler sampler) {
-	if (slot >= uiTextureSlotInfos_.size()) {
-		throw std::runtime_error("UI texture slot index out of bounds.");
-	}
-	if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
-		throw std::runtime_error("UI texture slot binding requires valid image view + sampler.");
-	}
-
-	VkDescriptorImageInfo info{};
-	info.sampler = sampler;
-	info.imageView = view;
-	info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	uiTextureSlotInfos_[slot] = info;
-	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
-}
-
-void VulkanUiRenderer::clearTextureSlotBinding(uint32_t slot) {
-	if (slot >= uiTextureSlotInfos_.size()) {
-		throw std::runtime_error("UI texture slot index out of bounds.");
-	}
-	uiTextureSlotInfos_[slot] = PlaceholderUiImageInfo(*this);
-	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, true);
-}
-
-void VulkanUiRenderer::rebuildTextureDescriptors(VkDevice device) {
-	UpdateTextureDescriptorsAllFrames(*this, device);
-	textureDescriptorsDirtyByFrame_.assign(frameResourceCount_, false);
-}
-
-void VulkanUiRenderer::render(
+PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	VulkanContext& vk,
-	VkCommandBuffer cmd,
+	storage::IStorageSystem& storageSystem,
+	const storage::FrameToken& frame,
+	const storage::PreparedTextureBindings& textureBindings,
 	const Clay_RenderCommandArray& renderCommands,
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
-	VkImageView targetView,
-	uint32_t frameIndex,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
@@ -1564,43 +1560,32 @@ void VulkanUiRenderer::render(
 #endif
 	)
 {
-	if (cmd == VK_NULL_HANDLE || targetView == VK_NULL_HANDLE) {
-		return;
+	if (!frame || frame.window != windowId_ || &storageSystem != storage_) {
+		throw std::runtime_error("UI renderer received a frame from the wrong storage/window scope.");
 	}
-	if (pipelines_.layout == VK_NULL_HANDLE || pipelines_.solid == VK_NULL_HANDLE) {
-		return;
+	if (textureBindings.epoch != frame.epoch) {
+		throw std::runtime_error("UI renderer received a stale pre-seal texture binding snapshot.");
 	}
-	if (frameResourceCount_ == 0u || instanceBuffersByFrame_.empty() ||
-		descriptors_.globalsSets.empty() || descriptors_.texturesSets.empty()) {
-		return;
-	}
+	if (frameResourceCount_ == 0u || frameResources_.empty() ||
+		descriptors_.globalsSets.empty() || descriptors_.texturesSets.empty()) return {};
 
-	const uint32_t frameSlot = frameIndex % frameResourceCount_;
-	if (frameSlot >= instanceBuffersByFrame_.size() ||
+	const uint32_t frameSlot = frame.frameSlot;
+	if (frameSlot >= frameResources_.size() ||
 		frameSlot >= descriptors_.globalsSets.size() ||
 		frameSlot >= descriptors_.texturesSets.size()) {
-		return;
-	}
-
-	const AllocatedBuffer& instanceBuffer = instanceBuffersByFrame_[frameSlot];
-	if (instanceBuffer.buffer == VK_NULL_HANDLE) {
-		return;
+		throw std::runtime_error("UI renderer frame slot index is out of bounds.");
 	}
 
 	uint32_t latestFontAtlasRevision = 0u;
 	if (fontManager_) {
 		latestFontAtlasRevision = fontManager_->getAtlasResource().bindingRevision;
 	}
-	bool textureDescriptorsDirty = true;
-	if (frameSlot < textureDescriptorsDirtyByFrame_.size()) {
-		textureDescriptorsDirty = textureDescriptorsDirtyByFrame_[frameSlot];
-	}
 	uint32_t boundRevision = UINT32_MAX;
 	if (frameSlot < boundFontAtlasRevisionByFrame_.size()) {
 		boundRevision = boundFontAtlasRevisionByFrame_[frameSlot];
 	}
-	if (textureDescriptorsDirty || latestFontAtlasRevision != boundRevision) {
-		UpdateTextureDescriptorsForFrame(*this, vk.device, frameSlot);
+	if (latestFontAtlasRevision != boundRevision) {
+		UpdateFontDescriptorForFrame(*this, vk.device, frameSlot);
 #if FLOW_UI_DEV_MODE
 		if (diagnostics) {
 			diagnostics->textureDescriptorsRebuilt = true;
@@ -1611,9 +1596,43 @@ void VulkanUiRenderer::render(
 		}
 	}
 
+	const UiBuildUpperBound upperBound = ComputeBuildUpperBound(renderCommands, inputFieldOverrides);
+	if (upperBound.instances == 0 || upperBound.runs == 0) {
+#if FLOW_UI_DEV_MODE
+		if (diagnostics) {
+			diagnostics->uiInstanceCount = 0;
+			diagnostics->uiRunCount = 0;
+			diagnostics->textGlyphCount = 0;
+			diagnostics->imageCommandCount = 0;
+		}
+#endif
+		return PreparedUiFrame{.epoch = frame.epoch};
+	}
+	if (upperBound.instances > std::numeric_limits<uint64_t>::max() / sizeof(UiInstance)) {
+		throw std::runtime_error("UI instance byte-size overflow.");
+	}
+	const uint64_t requiredBytes = static_cast<uint64_t>(upperBound.instances) * sizeof(UiInstance);
+#if FLOW_UI_DEV_MODE
+	const uint64_t oldCapacity = frameResources_[frameSlot].capacityBytes;
+#endif
+	EnsureInstanceBufferCapacity(vk, *this, frameSlot, requiredBytes);
+
+	storage::ArenaView arena = storageSystem.frameArena(frame, storage::MemoryClass::FrameTransient);
+	std::span<UiRun> runs = arena.allocateArray<UiRun>(upperBound.runs);
+	std::span<RectF> scissorStack = arena.allocateArray<RectF>(upperBound.scissorDepth);
+	const storage::BufferWriteView write = storageSystem.beginBufferWrite(
+		frame,
+		frameResources_[frameSlot].instanceBuffer,
+		0,
+		requiredBytes,
+		storage::BufferWriteMode::DirectMapped);
+	std::span<UiInstance> instances{
+		reinterpret_cast<UiInstance*>(write.data),
+		upperBound.instances,
+	};
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
 	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
-	BuildInstancesAndRunsFromClay(
+	const UiBuildResult built = BuildInstancesAndRunsFromClay(
 		renderCommands,
 		inputFieldOverrides,
 		extent,
@@ -1621,51 +1640,71 @@ void VulkanUiRenderer::render(
 		pointsToPixelsScale_,
 		clampedScaleX,
 		clampedScaleY,
-		instancesScratch_,
-		runsScratch_);
+		textureBindings.bindingsByTextureIndex,
+		instances,
+		runs,
+		scissorStack);
+	storageSystem.commitBufferWrite(
+		frame,
+		write,
+		static_cast<uint64_t>(built.instanceCount) * sizeof(UiInstance));
+
+	if (built.instanceCount > 0 && built.runCount > 0) {
+		if (!sharedByteResources_) throw std::runtime_error("UI shared byte resources are unavailable.");
+		const std::array sharedUses{
+			storage::ResourceUse{storage::ResourceKind::GpuBuffer, sharedByteResources_->quadBuffer.packed()},
+			storage::ResourceUse{storage::ResourceKind::GpuImage, sharedByteResources_->placeholderFontImage.packed()},
+			storage::ResourceUse{storage::ResourceKind::ImageView, sharedByteResources_->placeholderFontView.packed()},
+			storage::ResourceUse{storage::ResourceKind::GpuImage, sharedByteResources_->placeholderUiImage.packed()},
+			storage::ResourceUse{storage::ResourceKind::ImageView, sharedByteResources_->placeholderUiView.packed()},
+			storage::ResourceUse{storage::ResourceKind::Sampler, sharedByteResources_->linearSampler.packed()},
+		};
+		storageSystem.trackUses(frame, sharedUses);
+	}
 #if FLOW_UI_DEV_MODE
 	if (diagnostics) {
-		uint32_t imageCommandCount = 0u;
-		for (int32_t i = 0; i < renderCommands.length; ++i) {
-			if (renderCommands.internalArray[i].commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE) {
-				++imageCommandCount;
-			}
-		}
-
-		uint32_t textGlyphCount = 0u;
-		for (const UiInstance& instance : instancesScratch_) {
-			if (instance.type == static_cast<uint32_t>(UiType::Msdf)) {
-				++textGlyphCount;
-			}
-		}
-
-		diagnostics->uiInstanceCount = static_cast<uint32_t>(instancesScratch_.size());
-		diagnostics->uiRunCount = static_cast<uint32_t>(runsScratch_.size());
-		diagnostics->textGlyphCount = textGlyphCount;
-		diagnostics->imageCommandCount = imageCommandCount;
+		diagnostics->uiInstanceCount = built.instanceCount;
+		diagnostics->uiRunCount = built.runCount;
+		diagnostics->textGlyphCount = built.textGlyphCount;
+		diagnostics->imageCommandCount = built.imageCommandCount;
+		diagnostics->instanceBufferGrew = frameResources_[frameSlot].capacityBytes > oldCapacity;
 	}
 #endif
-	if (instancesScratch_.empty() || runsScratch_.empty()) {
-		return;
-	}
+	return PreparedUiFrame{
+		.runs = runs.first(built.runCount),
+		.instanceCount = built.instanceCount,
+		.epoch = frame.epoch,
+	};
+}
 
+void VulkanUiRenderer::recordPreparedFrame(
+	VulkanContext& vk,
+	VkCommandBuffer cmd,
+	VkExtent2D extent,
+	VkImageView targetView,
+	uint32_t frameIndex,
+	const PreparedUiFrame& prepared
 #if FLOW_UI_DEV_MODE
-	if (diagnostics && frameSlot < instanceBuffersByFrame_.size()) {
-		const VkDeviceSize requiredBytes =
-			static_cast<VkDeviceSize>(instancesScratch_.size() * sizeof(UiInstance));
-		const AllocatedBuffer& activeInstanceBuffer = instanceBuffersByFrame_[frameSlot];
-		if (activeInstanceBuffer.buffer == VK_NULL_HANDLE || activeInstanceBuffer.size < requiredBytes) {
-			diagnostics->instanceBufferGrew = true;
-		}
-	}
+	,
+	FlowUi::devMode::FrameDiagnostics* diagnostics
 #endif
-	EnsureInstanceBufferCapacity(vk, *this, frameSlot, instancesScratch_.size());
-	const AllocatedBuffer& activeInstanceBuffer = instanceBuffersByFrame_[frameSlot];
-	UploadBytesToMappedBuffer(
-		vk,
-		activeInstanceBuffer,
-		instancesScratch_.data(),
-		static_cast<VkDeviceSize>(instancesScratch_.size() * sizeof(UiInstance)));
+	)
+{
+	(void)vk;
+	#if FLOW_UI_DEV_MODE
+	(void)diagnostics;
+	#endif
+	if (cmd == VK_NULL_HANDLE || targetView == VK_NULL_HANDLE || prepared.instanceCount == 0 ||
+		prepared.runs.empty() || prepared.epoch == 0) return;
+	if (pipelines_.layout == VK_NULL_HANDLE || pipelines_.solid == VK_NULL_HANDLE || !sharedByteResources_) return;
+	if (frameResourceCount_ == 0u || frameResources_.empty() ||
+		descriptors_.globalsSets.empty() || descriptors_.texturesSets.empty()) return;
+
+	const uint32_t frameSlot = frameIndex;
+	if (frameSlot >= frameResources_.size() || frameSlot >= descriptors_.globalsSets.size() ||
+		frameSlot >= descriptors_.texturesSets.size()) return;
+	if (frameResources_[frameSlot].nativeBuffer.nativeBuffer == 0 ||
+		sharedByteResources_->nativeQuadBuffer == VK_NULL_HANDLE) return;
 
 	VkRenderingAttachmentInfo colorAttachment{};
 	colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -1697,7 +1736,7 @@ void VulkanUiRenderer::render(
 	fullScissor.extent = extent;
 	vkCmdSetScissor(cmd, 0, 1, &fullScissor);
 
-	const VkBuffer vertexBuffer = quadVertexBuffer_.buffer;
+	const VkBuffer vertexBuffer = sharedByteResources_->nativeQuadBuffer;
 	const VkDeviceSize vertexOffset = 0;
 	vkCmdBindVertexBuffers(cmd, 0, 1, &vertexBuffer, &vertexOffset);
 
@@ -1707,7 +1746,7 @@ void VulkanUiRenderer::render(
 	};
 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines_.layout, 0, 2, sets, 0, nullptr);
 
-	for (const UiRun& run : runsScratch_) {
+	for (const UiRun& run : prepared.runs) {
 		FlushRun(cmd, *this, extent, run);
 	}
 

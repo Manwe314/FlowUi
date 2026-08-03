@@ -33,7 +33,7 @@ class App;
 struct IconManagerConfig;
 
 namespace detail {
-struct IUiTextureRegistry;
+struct IUiTexturePublisher;
 } // namespace detail
 
 /** @addtogroup flowui_icon_manager
@@ -186,7 +186,7 @@ struct IconManager {
 private:
 	friend class App;
 
-	void setRegistry(detail::IUiTextureRegistry* registry);
+	void setTexturePublisher(detail::IUiTexturePublisher* publisher);
 	void init(VulkanContext& vk, const IconManagerConfig& config);
 	void prepareFrameTextures(
 		Clay_RenderCommandArray& renderCommands,
@@ -257,7 +257,7 @@ private:
 	struct VariantEntry {
 		VariantKey key{};
 		uint32_t pageIndex = std::numeric_limits<uint32_t>::max();
-		uint32_t slotId = 0u;
+		TextureHandle texture{};
 		AtlasRect paddedRect{};
 		AtlasRect contentRect{};
 		float uv0x = 0.0f;
@@ -272,7 +272,7 @@ private:
 
 	struct AtlasPage {
 		std::string namespacedKey{};
-		uint32_t slotId = 0u;
+		TextureHandle texture{};
 		VkImage image = VK_NULL_HANDLE;
 		VmaAllocation_T* allocation = nullptr;
 		VkImageView view = VK_NULL_HANDLE;
@@ -319,10 +319,11 @@ private:
 		std::string_view nameKey,
 		uint32_t requestedWidth,
 		uint32_t requestedHeight);
-	const std::string* findRequestedKeyByTextureId(uint32_t textureId) const;
+	const std::string* findRequestedKeyByTextureHandle(TextureHandle texture) const;
 	std::string makeRequestNamespacedKey(std::string_view key) const;
 
-	detail::IUiTextureRegistry* registry_ = nullptr;
+	//Transitional: borrowed native publication ends with manager storage migration.
+	detail::IUiTexturePublisher* texturePublisher_ = nullptr;
 	VulkanContext* vk_ = nullptr;
 	VkSampler atlasSampler_ = VK_NULL_HANDLE;
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
@@ -332,8 +333,8 @@ private:
 	uint32_t maxAtlasPages_ = 10u;
 	uint32_t frameCounter_ = 0u;
 	std::unordered_map<std::string, DocumentRecord> documentsByKey_;
-	std::unordered_map<std::string, uint32_t> requestTextureIdByKey_;
-	std::unordered_map<uint32_t, std::string> requestedKeyByTextureId_;
+	std::unordered_map<std::string, TextureHandle> requestTextureByKey_;
+	std::unordered_map<uint64_t, std::string> requestedKeyByTexture_;
 	std::unordered_map<VariantKey, VariantEntry, VariantKeyHash> variantsByKeyAndSize_;
 	std::vector<AtlasPage> atlasPages_;
 };
@@ -344,7 +345,7 @@ class App;
 struct IconManagerConfig;
 
 namespace detail {
-struct IUiTextureRegistry;
+struct IUiTexturePublisher;
 } // namespace detail
 
 /** @addtogroup flowui_icon_manager
@@ -447,7 +448,7 @@ struct IconManager {
 private:
 	friend class App;
 
-	void setRegistry(detail::IUiTextureRegistry*) {}
+	void setTexturePublisher(detail::IUiTexturePublisher*) {}
 
 	void init(VulkanContext&, const IconManagerConfig&) {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");

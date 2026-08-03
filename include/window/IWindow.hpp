@@ -12,7 +12,7 @@ namespace FlowUi::detail {
 struct IWindowBackend {
 	virtual ~IWindowBackend() = default;
 
-	virtual void pollEvents() = 0;
+	virtual void refreshInputSnapshot() = 0;
 	virtual bool shouldClose() const = 0;
 	virtual void setShouldClose(int value) = 0;
 

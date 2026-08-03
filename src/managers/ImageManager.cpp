@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "internal/UiTextureRegistry.hpp"
+#include "internal/UiTexturePublisher.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "stb_image.h"
@@ -144,21 +144,20 @@ void destroyStagingBuffer(VulkanContext& vk, StagingBuffer& staging) {
 
 namespace FlowUi {
 
-void ImageManager::setRegistry(detail::IUiTextureRegistry* registry) {
-	registry_ = registry;
+void ImageManager::setTexturePublisher(detail::IUiTexturePublisher* publisher) {
+	texturePublisher_ = publisher;
 }
 
-void ImageManager::init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32_t framesInFlight) {
+void ImageManager::init(VulkanContext& vk, uint32_t framesInFlight) {
 	destroy(vk);
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw std::runtime_error("ImageManager init requires a valid Vulkan device + allocator.");
 	}
 
 	vk_ = &vk;
-	renderer_ = &renderer;
 	framesInFlight_ = std::max<uint32_t>(1u, framesInFlight);
 	currentFrameIndex_ = 0u;
-	retiredResourcesByFrame_.assign(framesInFlight_, {});
+	retiredResources_.clear();
 	imagesByKey_.clear();
 	missingTextureWarnings_.clear();
 
@@ -170,11 +169,11 @@ void ImageManager::init(VulkanContext& vk, VulkanUiRenderer& renderer, uint32_t 
 }
 
 bool ImageManager::registerImage(std::string_view key, std::string_view filePath) {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE || !renderer_) {
+	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
 		throw std::runtime_error("ImageManager is not initialized.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("ImageManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("ImageManager texture publisher is not set.");
 	}
 	if (key.empty()) {
 		throw std::runtime_error("ImageManager key must not be empty.");
@@ -205,19 +204,23 @@ bool ImageManager::registerImage(std::string_view key, std::string_view filePath
 		const std::string keyString(key);
 		const std::string namespacedKey = makeNamespacedKey(key);
 		bool inserted = false;
-		const uint32_t assignedSlot = registry_->registerOrReplaceSlot(
-			*vk_,
+		const TextureHandle texture = texturePublisher_->publishExternal(
+			detail::storage::ResourceDomain::Image,
 			namespacedKey,
-			uploadedResource.view,
-			uploadedResource.sampler,
+			detail::storage::ExternalTextureDesc{
+				.nativeImageView = reinterpret_cast<uintptr_t>(uploadedResource.view),
+				.nativeSampler = reinterpret_cast<uintptr_t>(uploadedResource.sampler),
+				.sourceWidth = width,
+				.sourceHeight = height,
+			},
 			inserted);
 
 		auto existing = imagesByKey_.find(keyString);
 		if (existing != imagesByKey_.end()) {
-			enqueueRetiredResource(std::move(existing->second.resource));
+			enqueueRetiredResource(std::move(existing->second.resource), existing->second.texture);
 			existing->second = ImageRecord{
 				.resource = std::move(uploadedResource),
-				.slotId = assignedSlot,
+				.texture = texture,
 				.sourceWidth = width,
 				.sourceHeight = height,
 				.filePath = path,
@@ -228,7 +231,7 @@ bool ImageManager::registerImage(std::string_view key, std::string_view filePath
 				keyString,
 				ImageRecord{
 					.resource = std::move(uploadedResource),
-					.slotId = assignedSlot,
+					.texture = texture,
 					.sourceWidth = width,
 					.sourceHeight = height,
 					.filePath = path,
@@ -249,8 +252,8 @@ bool ImageManager::removeImage(std::string_view key) {
 	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
 		throw std::runtime_error("ImageManager is not initialized.");
 	}
-	if (!registry_) {
-		throw std::runtime_error("ImageManager registry backend is not set.");
+	if (!texturePublisher_) {
+		throw std::runtime_error("ImageManager texture publisher is not set.");
 	}
 
 	const auto imageIt = imagesByKey_.find(std::string(key));
@@ -259,10 +262,11 @@ bool ImageManager::removeImage(std::string_view key) {
 	}
 
 	const std::string namespacedKey = makeNamespacedKey(key);
-	const bool removedFromRegistry = registry_->removeSlot(namespacedKey);
+	const bool removedFromRegistry = texturePublisher_->remove(
+		detail::storage::ResourceDomain::Image, namespacedKey);
 	(void)removedFromRegistry;
 
-	enqueueRetiredResource(std::move(imageIt->second.resource));
+	enqueueRetiredResource(std::move(imageIt->second.resource), imageIt->second.texture);
 	imagesByKey_.erase(imageIt);
 	return true;
 }
@@ -278,29 +282,29 @@ TextureRef ImageManager::getTexture(std::string_view key) const {
 	if (imageIt == imagesByKey_.end()) {
 		const std::string keyString(key);
 		if (missingTextureWarnings_.find(keyString) == missingTextureWarnings_.end()) {
-			std::fprintf(stderr, "[FlowUi] Warning: texture key '%s' was not found, using fallback texture id 0.\n", keyString.c_str());
+			std::fprintf(stderr, "[FlowUi] Warning: texture key '%s' was not found, using the fallback texture.\n", keyString.c_str());
 			missingTextureWarnings_.insert(keyString);
 		}
-		result.id = 0u;
+		result.handle = {};
 		return result;
 	}
 
-	result.id = imageIt->second.slotId;
+	result.handle = imageIt->second.texture;
 	result.sourceWidth = imageIt->second.sourceWidth;
 	result.sourceHeight = imageIt->second.sourceHeight;
 	return result;
 }
 
 void ImageManager::onFrameStart(VulkanContext& vk, uint32_t frameIndex) {
-	if (retiredResourcesByFrame_.empty()) {
-		return;
+	currentFrameIndex_ = frameIndex % std::max<uint32_t>(1u, framesInFlight_);
+	for (auto it = retiredResources_.begin(); it != retiredResources_.end();) {
+		if (!texturePublisher_ || texturePublisher_->retired(it->texture)) {
+			destroyImageResource(vk, it->resource);
+			it = retiredResources_.erase(it);
+		} else {
+			++it;
+		}
 	}
-	currentFrameIndex_ = frameIndex % static_cast<uint32_t>(retiredResourcesByFrame_.size());
-	std::vector<ImageResource>& bucket = retiredResourcesByFrame_[currentFrameIndex_];
-	for (ImageResource& resource : bucket) {
-		destroyImageResource(vk, resource);
-	}
-	bucket.clear();
 }
 
 void ImageManager::destroy(VulkanContext& vk) {
@@ -309,13 +313,10 @@ void ImageManager::destroy(VulkanContext& vk) {
 	}
 	imagesByKey_.clear();
 
-	for (std::vector<ImageResource>& bucket : retiredResourcesByFrame_) {
-		for (ImageResource& resource : bucket) {
-			destroyImageResource(vk, resource);
-		}
-		bucket.clear();
+	for (RetiredImageResource& retired : retiredResources_) {
+		destroyImageResource(vk, retired.resource);
 	}
-	retiredResourcesByFrame_.clear();
+	retiredResources_.clear();
 	missingTextureWarnings_.clear();
 
 	if (uploadCommandPool_ != VK_NULL_HANDLE && vk.device != VK_NULL_HANDLE) {
@@ -323,7 +324,6 @@ void ImageManager::destroy(VulkanContext& vk) {
 	}
 	uploadCommandPool_ = VK_NULL_HANDLE;
 	vk_ = nullptr;
-	renderer_ = nullptr;
 }
 
 ImageManager::ImageResource ImageManager::createImageResource(
@@ -469,16 +469,11 @@ void ImageManager::destroyImageResource(VulkanContext& vk, ImageResource& resour
 	resource.allocation = nullptr;
 }
 
-void ImageManager::enqueueRetiredResource(ImageResource&& resource) {
+void ImageManager::enqueueRetiredResource(ImageResource&& resource, TextureHandle texture) {
 	if (resource.image == VK_NULL_HANDLE && resource.view == VK_NULL_HANDLE && resource.sampler == VK_NULL_HANDLE) {
 		return;
 	}
-	if (retiredResourcesByFrame_.empty()) {
-		retiredResourcesByFrame_.resize(1);
-		currentFrameIndex_ = 0u;
-	}
-	const uint32_t bucketIndex = currentFrameIndex_ % static_cast<uint32_t>(retiredResourcesByFrame_.size());
-	retiredResourcesByFrame_[bucketIndex].push_back(std::move(resource));
+	retiredResources_.push_back(RetiredImageResource{std::move(resource), texture});
 }
 
 std::string ImageManager::makeNamespacedKey(std::string_view key) const {

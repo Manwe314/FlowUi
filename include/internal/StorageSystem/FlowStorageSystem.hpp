@@ -77,9 +77,14 @@ public:
 		const TextureViewDesc& desc,
 		bool* inserted = nullptr) override;
 	[[nodiscard]] TextureHandle replaceTexture(ResourceKey key, const TextureViewDesc& desc) override;
+	[[nodiscard]] TextureHandle publishExternalTexture(
+		ResourceKey key,
+		const ExternalTextureDesc& desc,
+		bool* inserted = nullptr) override;
 	bool removeTexture(ResourceKey key, SubmissionSerial lastUse = 0) override;
 	[[nodiscard]] TextureHandle findTexture(ResourceKey key) const noexcept override;
 	[[nodiscard]] TextureMetadata textureMetadata(TextureHandle texture) const noexcept override;
+	[[nodiscard]] bool textureRetirementComplete(TextureHandle texture) const noexcept override;
 	void setFallbackTexture(TextureHandle texture) override;
 
 	[[nodiscard]] PreparedTextureBindings prepareTextureBindings(
@@ -142,6 +147,8 @@ public:
 
 	[[nodiscard]] NativeBufferView nativeBuffer(BufferHandle buffer) const noexcept override;
 	[[nodiscard]] NativeImageView nativeImage(ImageHandle image) const noexcept override;
+	[[nodiscard]] NativeImageViewInfo nativeImageView(ImageViewHandle view) const noexcept override;
+	[[nodiscard]] NativeSamplerInfo nativeSampler(SamplerHandle sampler) const noexcept override;
 
 private:
 	void commitBufferWriteInternal(

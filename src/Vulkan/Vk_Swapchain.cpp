@@ -73,14 +73,14 @@ static VkPresentModeKHR choosePresentMode(
 
 static VkExtent2D chooseExtent(
 	const VkSurfaceCapabilitiesKHR& caps,
-	const FlowUi::AppConfig& config,
+	const FlowUi::WindowConfig& config,
 	VkExtent2D preferredExtent) {
 	if (caps.currentExtent.width != UINT32_MAX) {
 		return caps.currentExtent;
 	}
 
-	const uint32_t fallbackWidth = static_cast<uint32_t>(std::max(1, config.window.width));
-	const uint32_t fallbackHeight = static_cast<uint32_t>(std::max(1, config.window.height));
+	const uint32_t fallbackWidth = static_cast<uint32_t>(std::max(1, config.width));
+	const uint32_t fallbackHeight = static_cast<uint32_t>(std::max(1, config.height));
 	uint32_t width = preferredExtent.width > 0 ? preferredExtent.width : fallbackWidth;
 	uint32_t height = preferredExtent.height > 0 ? preferredExtent.height : fallbackHeight;
 
@@ -109,30 +109,35 @@ static VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(VkCompositeAlphaFlagsKHR
 
 } // namespace
 
-void Swapchain::create(const FlowUi::AppConfig& config, VulkanContext& vk, VkExtent2D preferredExtent) {
-	if (vk.device == VK_NULL_HANDLE || vk.phys == VK_NULL_HANDLE || vk.surface == VK_NULL_HANDLE) {
+void Swapchain::create(
+	const FlowUi::WindowConfig& windowConfig,
+	const FlowUi::VulkanConfig& vulkanConfig,
+	VulkanContext& vk,
+	VkSurfaceKHR surface,
+	VkExtent2D preferredExtent) {
+	if (vk.device == VK_NULL_HANDLE || vk.phys == VK_NULL_HANDLE || surface == VK_NULL_HANDLE) {
 		throw std::runtime_error("Swapchain creation requires valid Vulkan device, physical device, and surface.");
 	}
 
 	VkSurfaceCapabilitiesKHR caps{};
-	vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.phys, vk.surface, &caps),
+	vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.phys, surface, &caps),
 		"Failed to query surface capabilities.");
 
 	uint32_t formatCount = 0;
-	vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, vk.surface, &formatCount, nullptr),
+	vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, nullptr),
 		"Failed to query surface formats.");
 	std::vector<VkSurfaceFormatKHR> formats(formatCount);
 	if (formatCount > 0) {
-		vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, vk.surface, &formatCount, formats.data()),
+		vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, formats.data()),
 			"Failed to query surface formats.");
 	}
 
 	uint32_t presentCount = 0;
-	vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, vk.surface, &presentCount, nullptr),
+	vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentCount, nullptr),
 		"Failed to query present modes.");
 	std::vector<VkPresentModeKHR> presentModes(presentCount);
 	if (presentCount > 0) {
-		vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, vk.surface, &presentCount, presentModes.data()),
+		vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentCount, presentModes.data()),
 			"Failed to query present modes.");
 	}
 
@@ -140,12 +145,12 @@ void Swapchain::create(const FlowUi::AppConfig& config, VulkanContext& vk, VkExt
 		throw std::runtime_error("Surface does not support required formats or present modes.");
 	}
 
-	VkSurfaceFormatKHR chosenFormat = chooseSurfaceFormat(formats, config.vk.srgbBackbuffer);
-	VkPresentModeKHR presentMode = choosePresentMode(presentModes, config.vk.presentMode);
-	VkExtent2D chosenExtent = chooseExtent(caps, config, preferredExtent);
+	VkSurfaceFormatKHR chosenFormat = chooseSurfaceFormat(formats, vulkanConfig.srgbBackbuffer);
+	VkPresentModeKHR presentMode = choosePresentMode(presentModes, vulkanConfig.presentMode);
+	VkExtent2D chosenExtent = chooseExtent(caps, windowConfig, preferredExtent);
 
 	uint32_t imageCount = caps.minImageCount + 1;
-	uint32_t minDesired = std::max<uint32_t>(1u, config.vk.framesInFlight);
+	uint32_t minDesired = std::max<uint32_t>(1u, vulkanConfig.framesInFlight);
 	if (imageCount < minDesired) {
 		imageCount = minDesired;
 	}
@@ -158,7 +163,7 @@ void Swapchain::create(const FlowUi::AppConfig& config, VulkanContext& vk, VkExt
 
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = vk.surface;
+	createInfo.surface = surface;
 	createInfo.minImageCount = imageCount;
 	createInfo.imageFormat = chosenFormat.format;
 	createInfo.imageColorSpace = chosenFormat.colorSpace;
