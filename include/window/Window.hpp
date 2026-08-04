@@ -161,11 +161,24 @@ public:
 	}
 
 	~GlfwWindowBackend() override {
+		detachCallbacks();
 		destroyStandardCursors();
 		if (window) {
 			glfwDestroyWindow(window);
 			window = nullptr;
 		}
+	}
+
+	void detachCallbacks() noexcept override {
+		input = nullptr;
+		if (!window) return;
+		glfwSetWindowUserPointer(window, nullptr);
+		glfwSetCursorPosCallback(window, nullptr);
+		glfwSetMouseButtonCallback(window, nullptr);
+		glfwSetScrollCallback(window, nullptr);
+		glfwSetKeyCallback(window, nullptr);
+		glfwSetCharCallback(window, nullptr);
+		glfwSetWindowFocusCallback(window, nullptr);
 	}
 
 	void refreshInputSnapshot() override {

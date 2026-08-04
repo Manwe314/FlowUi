@@ -44,6 +44,15 @@ enum class ResourceKind : uint8_t {
 	RendererLayout,
 	RendererPipelineBundle,
 	WindowDescriptorBundle,
+	UiContext,
+	UiInteractionState,
+	ImageAsset,
+	FontFamily,
+	IconAtlasPage,
+	InputField,
+	ShortcutRegistration,
+	Viewport,
+	ManagerRoot,
 	Count,
 };
 
@@ -173,7 +182,8 @@ enum class StorageCapability : uint64_t {
 	FrameReadLeases = 1ull << 11u,
 	RendererResourceBundles = 1ull << 12u,
 	DevelopmentTelemetry = 1ull << 13u,
-	BorrowedNativeTextures = 1ull << 14u,
+	ManagerRecords = 1ull << 15u,
+	ManagerFrameSnapshots = 1ull << 16u,
 };
 
 template <ResourceKind KindValue>
@@ -215,6 +225,29 @@ using RendererLayoutHandle = Handle<ResourceKind::RendererLayout>;
 using RendererPipelineBundleHandle = Handle<ResourceKind::RendererPipelineBundle>;
 using WindowDescriptorBundleHandle = Handle<ResourceKind::WindowDescriptorBundle>;
 
+// Manager records are type-erased only at the storage boundary. Their payloads
+// are concrete C++ objects declared under internal/ManagerStorage and are kept
+// in non-relocating persistent allocations. The record's ResourceKind is stored
+// alongside this generic generational handle.
+struct ManagerRecordHandle {
+	uint32_t index = InvalidIndex;
+	uint32_t generation = InvalidGeneration;
+
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
+		return index != InvalidIndex && generation != InvalidGeneration;
+	}
+	[[nodiscard]] constexpr uint64_t packed() const noexcept {
+		return (static_cast<uint64_t>(generation) << 32u) | index;
+	}
+	[[nodiscard]] static constexpr ManagerRecordHandle fromPacked(uint64_t value) noexcept {
+		return ManagerRecordHandle{
+			.index = static_cast<uint32_t>(value),
+			.generation = static_cast<uint32_t>(value >> 32u),
+		};
+	}
+	auto operator<=>(const ManagerRecordHandle&) const = default;
+};
+
 struct ResourceKey {
 	ResourceDomain domain = ResourceDomain::Internal;
 	StringId name = 0;
@@ -228,6 +261,31 @@ struct ResourceKeyHash {
 		value ^= static_cast<uint64_t>(key.domain) << 32u;
 		value ^= key.window + 0x9e3779b97f4a7c15ull + (value << 6u) + (value >> 2u);
 		return static_cast<size_t>(value);
+	}
+};
+
+using ManagerRecordConstruct = void (*)(void* destination, void* userData);
+using ManagerRecordDestroy = void (*)(void* object) noexcept;
+
+struct ManagerRecordDesc {
+	ResourceKey key{};
+	ResourceKind kind = ResourceKind::ManagerRoot;
+	size_t bytes = 0;
+	size_t alignment = alignof(std::max_align_t);
+	StringId debugName = 0;
+	ManagerRecordConstruct construct = nullptr;
+	ManagerRecordDestroy destroy = nullptr;
+	void* userData = nullptr;
+};
+
+struct ManagerFrameView {
+	uint64_t sharedRevision = 0;
+	uint64_t windowRevision = 0;
+	WindowId window = 0;
+	FrameEpoch epoch = 0;
+
+	[[nodiscard]] explicit operator bool() const noexcept {
+		return window != 0 && epoch != 0;
 	}
 };
 
@@ -289,6 +347,8 @@ struct FrameToken {
 	uint32_t frameSlot = 0;
 	uint64_t frameNumber = 0;
 	FrameEpoch epoch = 0;
+	uint64_t managerSharedRevision = 0;
+	uint64_t managerWindowRevision = 0;
 
 	[[nodiscard]] explicit operator bool() const noexcept { return window != 0 && epoch != 0; }
 };
@@ -355,6 +415,7 @@ struct StorageConfig {
 	uint32_t expectedSamplers = 16;
 	uint32_t expectedTextureViews = 512;
 	uint32_t expectedRendererObjects = 32;
+	uint32_t expectedManagerRecords = 128;
 	uint32_t expectedWindows = 2;
 	uint32_t expectedBindingsPerWindow = 512;
 	uint32_t framesInFlight = 2;
@@ -446,18 +507,6 @@ struct TextureViewDesc {
 	int32_t sourceHeight = 0;
 };
 
-//Transitional: borrowed native bindings are removed when managers create their
-// images, views, samplers, and uploads through the storage system.
-struct ExternalTextureDesc {
-	uint64_t nativeImageView = 0;
-	uint64_t nativeSampler = 0;
-	ResourceSharing sharing = ResourceSharing::AppShared;
-	WindowId window = 0;
-	uint32_t frameSlot = InvalidFrameSlot;
-	int32_t sourceWidth = 0;
-	int32_t sourceHeight = 0;
-};
-
 struct ImageRegion {
 	uint32_t x = 0;
 	uint32_t y = 0;
@@ -532,12 +581,9 @@ struct TextureHotRecord {
 	uint32_t samplerIndex = 0;
 	uint32_t samplerGeneration = 0;
 	ResourceState state = ResourceState::Invalid;
-	bool external = false;
-	uint8_t reserved[2]{};
+	uint8_t reserved[3]{};
 	int32_t sourceWidth = 0;
 	int32_t sourceHeight = 0;
-	uint64_t nativeImageView = 0;
-	uint64_t nativeSampler = 0;
 };
 
 struct ImageViewHotRecord {

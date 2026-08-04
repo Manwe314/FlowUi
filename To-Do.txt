@@ -50,7 +50,12 @@ dev tool upgrades:
 	- complete "Apply" flow to immediately update codebase.
 
 
-
+things to remember to do after Ui Renderer integration:
+	- add a createWindow overloads with automatic config creation based on Appconfig And a version that can take a subset config set with tweaks.
+	- FlowUi.cpp (line 823)gathers unique image textures with a nested linear search. Its worst case is approximately commands × unique textures.
+	- FlowStorageSystem.cpp (line 2974) allocates and clears a marker array proportional to the entire logical texture table during binding preparation. With thousands of registered textures but only a few used by a window, that is avoidable work.
+	- Complete Review Of the Library Once more
+	- update the API documentation and CHANGELOG
 
 ~~~~ Legacy ~~~~
 

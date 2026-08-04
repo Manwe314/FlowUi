@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -109,12 +110,28 @@ static VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(VkCompositeAlphaFlagsKHR
 
 } // namespace
 
+Swapchain::Swapchain(Swapchain&& other) noexcept {
+	*this = std::move(other);
+}
+
+Swapchain& Swapchain::operator=(Swapchain&& other) noexcept {
+	if (this == &other) return *this;
+	std::swap(swapchain, other.swapchain);
+	std::swap(format, other.format);
+	std::swap(colorSpace, other.colorSpace);
+	std::swap(extent, other.extent);
+	images.swap(other.images);
+	views.swap(other.views);
+	return *this;
+}
+
 void Swapchain::create(
 	const FlowUi::WindowConfig& windowConfig,
 	const FlowUi::VulkanConfig& vulkanConfig,
 	VulkanContext& vk,
 	VkSurfaceKHR surface,
-	VkExtent2D preferredExtent) {
+	VkExtent2D preferredExtent,
+	VkSwapchainKHR oldSwapchain) {
 	if (vk.device == VK_NULL_HANDLE || vk.phys == VK_NULL_HANDLE || surface == VK_NULL_HANDLE) {
 		throw std::runtime_error("Swapchain creation requires valid Vulkan device, physical device, and surface.");
 	}
@@ -177,7 +194,7 @@ void Swapchain::create(
 	createInfo.compositeAlpha = chooseCompositeAlpha(caps.supportedCompositeAlpha);
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
+	createInfo.oldSwapchain = oldSwapchain;
 
 	vkCheck(vkCreateSwapchainKHR(vk.device, &createInfo, nullptr, &swapchain),
 		"Failed to create swapchain.");
@@ -245,4 +262,100 @@ void Swapchain::destroy(VulkanContext& vk) {
 	format = VK_FORMAT_UNDEFINED;
 	colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	extent = {};
+}
+
+SwapchainGeneration::SwapchainGeneration(SwapchainGeneration&& other) noexcept {
+	*this = std::move(other);
+}
+
+SwapchainGeneration& SwapchainGeneration::operator=(SwapchainGeneration&& other) noexcept {
+	if (this == &other) return *this;
+	swapchain = std::move(other.swapchain);
+	layouts.swap(other.layouts);
+	imageInFlight.swap(other.imageInFlight);
+	renderFinished.swap(other.renderFinished);
+	presentComplete.swap(other.presentComplete);
+	presentPending.swap(other.presentPending);
+	std::swap(lastPresentId, other.lastPresentId);
+	std::swap(lastGraphicsUse, other.lastGraphicsUse);
+	return *this;
+}
+
+void SwapchainGeneration::create(
+	const FlowUi::WindowConfig& windowConfig,
+	const FlowUi::VulkanConfig& vulkanConfig,
+	VulkanContext& vk,
+	VkSurfaceKHR surface,
+	VkExtent2D preferredExtent,
+	VkSwapchainKHR oldSwapchain) {
+	SwapchainGeneration candidate{};
+	try {
+		candidate.swapchain.create(
+			windowConfig, vulkanConfig, vk, surface, preferredExtent, oldSwapchain);
+		const size_t imageCount = candidate.swapchain.images.size();
+		candidate.layouts.assign(imageCount, VK_IMAGE_LAYOUT_UNDEFINED);
+		candidate.imageInFlight.assign(imageCount, VK_NULL_HANDLE);
+		candidate.renderFinished.assign(imageCount, VK_NULL_HANDLE);
+		candidate.presentComplete.assign(imageCount, VK_NULL_HANDLE);
+		candidate.presentPending.assign(imageCount, 0u);
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		for (VkSemaphore& semaphore : candidate.renderFinished) {
+			vkCheck(vkCreateSemaphore(vk.device, &semaphoreInfo, nullptr, &semaphore),
+				"Failed to create swapchain-generation render-finished semaphore.");
+		}
+		if (vk.wsiRetirementMode == WsiRetirementMode::PresentFence) {
+			VkFenceCreateInfo fenceInfo{};
+			fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+			for (VkFence& fence : candidate.presentComplete) {
+				vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &fence),
+					"Failed to create swapchain-generation present-complete fence.");
+			}
+		}
+	} catch (...) {
+		candidate.destroy(vk);
+		throw;
+	}
+	*this = std::move(candidate);
+}
+
+void SwapchainGeneration::waitForPresentCompletion(VulkanContext& vk) const {
+	if (swapchain.swapchain == VK_NULL_HANDLE) return;
+	if (vk.wsiRetirementMode == WsiRetirementMode::PresentFence) {
+		for (size_t i = 0; i < presentComplete.size(); ++i) {
+			if (i >= presentPending.size() || presentPending[i] == 0u) continue;
+			vkCheck(vkWaitForFences(vk.device, 1, &presentComplete[i], VK_TRUE, UINT64_MAX),
+				"Failed waiting for exact swapchain present fence completion.");
+		}
+		return;
+	}
+	if (lastPresentId == 0) return;
+	if (vk.wsiRetirementMode == WsiRetirementMode::PresentWait) {
+		vkCheck(vk.waitForPresent(swapchain.swapchain, lastPresentId, UINT64_MAX),
+			"Failed waiting for exact swapchain presentation completion.");
+		return;
+	}
+	throw std::runtime_error("Exact independent swapchain presentation completion is unavailable.");
+}
+
+void SwapchainGeneration::destroy(VulkanContext& vk) {
+	if (vk.device != VK_NULL_HANDLE) {
+		for (VkFence& fence : presentComplete) {
+			if (fence != VK_NULL_HANDLE) vkDestroyFence(vk.device, fence, nullptr);
+			fence = VK_NULL_HANDLE;
+		}
+		for (VkSemaphore& semaphore : renderFinished) {
+			if (semaphore != VK_NULL_HANDLE) vkDestroySemaphore(vk.device, semaphore, nullptr);
+			semaphore = VK_NULL_HANDLE;
+		}
+	}
+	presentComplete.clear();
+	presentPending.clear();
+	renderFinished.clear();
+	imageInFlight.clear();
+	layouts.clear();
+	lastPresentId = 0;
+	lastGraphicsUse = 0;
+	swapchain.destroy(vk);
 }

@@ -3,20 +3,30 @@
 #include <cstddef>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 #include <clay.h>
 
 #include "FlowUi/PublicStructs.hpp"
-#include "internal/InputFieldRenderOverrides.hpp"
+#include "FlowUi/ResourceKey.hpp"
+#include "FlowUi/WindowId.hpp"
 #include "managers/structs/InputFieldManagerStructs.hpp"
 #include "managers/structs/InputStructs.hpp"
 
 namespace FlowUi {
 
 class UiManager;
-struct FontManager;
+namespace detail { struct InputFieldFrameOverrides; }
+namespace detail::storage { class IStorageSystem; }
+namespace detail::manager_storage {
+struct InputCaretState;
+struct InputFieldState;
+struct InputSelectionRange;
+struct InputKeyRepeatState;
+struct InputPointerDragState;
+struct InputFieldManagerState;
+struct FontFrameView;
+}
 
 /** @addtogroup flowui_input_field_manager
  * @{
@@ -128,6 +138,7 @@ public:
 	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
 	FieldQueryResult requestField(const FieldRequest& request);
+	FieldQueryResult requestField(ResourceKey key, const FieldRequest& request);
 
 	/**
 	 * @brief Request focus or caret changes for an input field.
@@ -155,6 +166,7 @@ public:
 	 * @endcode
 	 */
 	void requestCaret(std::string_view fieldId, CaretRequestKind kind);
+	void requestCaret(ResourceKey key, CaretRequestKind kind);
 
 	/**
 	 * @brief Remove a managed field by id.
@@ -178,6 +190,7 @@ public:
 	 * @endcode
 	 */
 	bool removeField(std::string_view fieldId);
+	bool removeField(ResourceKey key);
 
 	/**
 	 * @brief Replace the managed text for an existing input field.
@@ -207,6 +220,7 @@ public:
 	 * @endcode
 	 */
 	bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true);
+	bool replaceText(ResourceKey key, std::string_view text, bool preserveCaret = true);
 
 	/**
 	 * @brief Clear all managed input field state.
@@ -289,47 +303,25 @@ public:
 private:
 	friend class UiManager;
 
-	struct CaretState {
-		size_t anchorByteOffset = 0u;
-		size_t headByteOffset = 0u;
-	};
+	using CaretState = detail::manager_storage::InputCaretState;
+	using FieldState = detail::manager_storage::InputFieldState;
+	using SelectionRange = detail::manager_storage::InputSelectionRange;
+	using KeyRepeatState = detail::manager_storage::InputKeyRepeatState;
+	using PointerDragState = detail::manager_storage::InputPointerDragState;
 
-	struct CaretFallbackMetrics {
-		bool valid = false;
-		float height = 0.0f;
-	};
-
-	struct FieldState {
-		std::string text{};
-		FieldConfig config{};
-		std::vector<CaretState> carets{};
-		Clay_ElementId textElementId{};
-		Clay_ElementId contentElementId{};
-		CaretFallbackMetrics fallbackMetrics{};
-		bool touchedThisFrame = false;
-	};
-
-	struct SelectionRange {
-		size_t start = 0u;
-		size_t end = 0u;
-	};
-
-	struct KeyRepeatState {
-		bool wasDown = false;
-		double repeatCountdownSeconds = 0.0;
-	};
-
-	struct PointerDragState {
-		bool active = false;
-		std::string fieldId{};
-		size_t anchorByteOffset = 0u;
-	};
-
+	void init(
+		detail::storage::IStorageSystem& storage,
+		WindowId window,
+		const InputManagerConfig& config,
+		float pointsToPixelsScale);
+	void destroy() noexcept;
 	void setConfig(const InputManagerConfig& config);
-	void setFontManager(const FontManager* fontManager, float pointsToPixelsScale);
+	void setFontFrameView(
+		const detail::manager_storage::FontFrameView& fontView,
+		float pointsToPixelsScale);
 	void beginFrame(const FrameInput& currentInput, const FrameInput& previousInput);
 	Clay_RenderCommandArray endFrame(const Clay_RenderCommandArray& renderCommands);
-	const detail::InputFieldFrameOverrides& frameOverrides() const { return frameOverrides_; }
+	const detail::InputFieldFrameOverrides& frameOverrides() const;
 
 	void applyKeyboardEdits();
 	void markCaretBlinkReset();
@@ -363,22 +355,10 @@ private:
 	std::vector<SelectionRange> mergedSelectionRanges(const FieldState& field) const;
 
 private:
-	FrameInput currentInput_{};
-	FrameInput previousInput_{};
-	std::unordered_map<std::string, FieldState> fieldsById_{};
-	std::string primaryFieldId_{};
-	InputManagerConfig config_{};
-	const FontManager* fontManager_ = nullptr;
-	float pointsToPixelsScale_ = 96.0f / 72.0f;
-	KeyRepeatState leftKeyRepeat_{};
-	KeyRepeatState rightKeyRepeat_{};
-	KeyRepeatState backspaceKeyRepeat_{};
-	KeyRepeatState deleteKeyRepeat_{};
-	PointerDragState pointerDrag_{};
-	double caretBlinkElapsedSeconds_ = 0.0;
-	bool caretBlinkResetPending_ = true;
-	bool emitCaretsThisFrame_ = true;
-	detail::InputFieldFrameOverrides frameOverrides_{};
+	detail::storage::IStorageSystem* storage_ = nullptr;
+	WindowId window_ = InvalidWindowId;
+	uint64_t stateHandle_ = 0;
+	detail::manager_storage::InputFieldManagerState* state_ = nullptr;
 };
 
 /** @} */

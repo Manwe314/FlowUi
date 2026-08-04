@@ -1,3 +1,4 @@
+#define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/App.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/BuildConfig.hpp"
@@ -12,9 +13,9 @@
 #include "devMode/debugView.hpp"
 #include "devMode/performanceDiagnostics.hpp"
 #endif
-#include "internal/UiTexturePublisher.hpp"
 #include "internal/InputQueue.hpp"
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include "internal/ManagerStorage/FontCatalogController.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "Vulkan/Vk_Context.hpp"
 #include "Vulkan/Vk_Frames.hpp"
@@ -30,6 +31,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
@@ -112,6 +114,21 @@ void transitionSwapchainImageLayout(
 		&imageBarrier);
 }
 
+void validateSecondarySurface(VulkanContext& vk, VkSurfaceKHR surface) {
+	VkSurfaceCapabilitiesKHR capabilities{};
+	vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.phys, surface, &capabilities),
+		"Failed to query secondary-window surface capabilities.");
+	uint32_t formatCount = 0;
+	vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, nullptr),
+		"Failed to query secondary-window surface formats.");
+	uint32_t presentModeCount = 0;
+	vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentModeCount, nullptr),
+		"Failed to query secondary-window present modes.");
+	if (formatCount == 0 || presentModeCount == 0) {
+		throw std::runtime_error("Secondary-window surface has no usable swapchain formats or present modes.");
+	}
+}
+
 } // namespace
 
 namespace FlowUi {
@@ -120,73 +137,6 @@ namespace storage = detail::storage;
 
 inline constexpr uint32_t kUiTextureDescriptorCapacity = 256u;
 
-//Transitional: manager-native texture publication is removed when manager GPU
-// stores migrate to storage-owned images, views, samplers, and uploads.
-class UiTexturePublisher final : public detail::IUiTexturePublisher {
-public:
-	void init(
-		storage::IStorageSystem& storageSystem,
-		storage::ImageViewHandle fallbackView,
-		storage::SamplerHandle fallbackSampler) {
-		storage_ = &storageSystem;
-		fallbackNativeImageView_ = storageSystem.nativeImageView(fallbackView).nativeImageView;
-		fallbackNativeSampler_ = storageSystem.nativeSampler(fallbackSampler).nativeSampler;
-	}
-
-	TextureHandle publishExternal(
-		storage::ResourceDomain domain,
-		std::string_view namespacedKey,
-		const storage::ExternalTextureDesc& desc,
-		bool& inserted) override {
-		return storage().publishExternalTexture(key(domain, namespacedKey, desc.window), desc, &inserted);
-	}
-
-	TextureHandle publishFallbackAlias(
-		storage::ResourceDomain domain,
-		std::string_view namespacedKey,
-		bool& inserted) override {
-		return storage().publishExternalTexture(
-			key(domain, namespacedKey, InvalidWindowId),
-			storage::ExternalTextureDesc{
-				.nativeImageView = fallbackNativeImageView_,
-				.nativeSampler = fallbackNativeSampler_,
-			},
-			&inserted);
-	}
-
-	bool remove(
-		storage::ResourceDomain domain,
-		std::string_view namespacedKey,
-		WindowId window) override {
-		return storage().removeTexture(key(domain, namespacedKey, window));
-	}
-
-	bool retired(TextureHandle handle) const noexcept override {
-		return !storage_ || storage_->textureRetirementComplete(handle);
-	}
-
-private:
-	storage::IStorageSystem& storage() const {
-		if (!storage_) throw std::runtime_error("UI texture publisher is not initialized.");
-		return *storage_;
-	}
-
-	storage::ResourceKey key(
-		storage::ResourceDomain domain,
-		std::string_view namespacedKey,
-		WindowId window) const {
-		return storage::ResourceKey{
-			.domain = domain,
-			.name = storage().intern(namespacedKey),
-			.window = window,
-		};
-	}
-
-	storage::IStorageSystem* storage_ = nullptr;
-	uint64_t fallbackNativeImageView_ = 0;
-	uint64_t fallbackNativeSampler_ = 0;
-};
-
 struct AppWindowConfig {
 	WindowConfig native{};
 	VulkanConfig vulkan{};
@@ -194,14 +144,18 @@ struct AppWindowConfig {
 	uint32_t uiTextureDescriptorCapacity = kUiTextureDescriptorCapacity;
 };
 
-AppWindowConfig makeMainWindowConfig(const AppConfig& config) {
+AppWindowConfig makeWindowConfig(const AppConfig& config, const WindowConfig& native) {
 	AppWindowConfig result{
-		.native = config.window,
+		.native = native,
 		.vulkan = config.vk,
 		.ui = config.ui,
 	};
 	result.vulkan.framesInFlight = std::max(1u, result.vulkan.framesInFlight);
 	return result;
+}
+
+AppWindowConfig makeMainWindowConfig(const AppConfig& config) {
+	return makeWindowConfig(config, config.window);
 }
 
 storage::StorageConfig makeStorageConfig(const AppConfig& config) {
@@ -213,9 +167,33 @@ storage::StorageConfig makeStorageConfig(const AppConfig& config) {
 	return result;
 }
 
+storage::WindowStorageDesc makeWindowStorageDesc(
+	storage::IStorageSystem& storageSystem,
+	const storage::StorageConfig& storageConfig,
+	const AppWindowConfig& config) {
+	return storage::WindowStorageDesc{
+		.framesInFlight = config.vulkan.framesInFlight,
+		.workerCount = storageConfig.expectedWorkerCount,
+		.initialTextureBindings = config.uiTextureDescriptorCapacity,
+		.maxTextureBindings = config.uiTextureDescriptorCapacity,
+		.transientBytesPerFrame = storageConfig.transientBytesPerFramePerWindow,
+		.transientBytesPerWorker = storageConfig.transientBytesPerWorker,
+		.debugName = storageSystem.intern(config.native.title),
+	};
+}
+
+AppConfig makeUiManagerConfig(const AppConfig& appDefaults, const AppWindowConfig& window) {
+	AppConfig result = appDefaults;
+	result.window = window.native;
+	result.vk = window.vulkan;
+	result.ui = window.ui;
+	return result;
+}
+
 struct AppWindow {
 	AppWindow(WindowId windowId, AppWindowConfig windowConfig, const AppConfig& appConfig)
-		: id(windowId), config(std::move(windowConfig)), ui(appConfig) {}
+		: id(windowId),
+		  config(std::move(windowConfig)) { (void)appConfig; }
 
 	WindowId id = InvalidWindowId;
 	AppWindowConfig config{};
@@ -225,7 +203,8 @@ struct AppWindow {
 	std::unique_ptr<detail::IWindowBackend> backend;
 	detail::InputQueue inputQueue;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	Swapchain swapchain;
+	SwapchainGeneration swapchain;
+	std::vector<SwapchainGeneration> retiredSwapchains;
 	FrameVk frames;
 
 	UiManager ui;
@@ -236,10 +215,11 @@ struct AppWindow {
 	FrameInput frameInput{};
 	Clay_RenderCommandArray renderCommands{};
 	PreparedUiFrame preparedUi{};
-	std::vector<VkImageLayout> swapchainImageLayouts;
 	storage::FrameToken storageFrame{};
 	storage::FrameReadLease storageReadLease{};
+	detail::manager_storage::FontFrameView fontFrameView{};
 	uint64_t frameNumber = 0;
+	storage::SubmissionSerial lastSubmissionSerial = 0;
 
 	std::chrono::steady_clock::time_point previousBeginFrameTimestamp{};
 	bool hasPreviousBeginFrameTimestamp = false;
@@ -247,35 +227,42 @@ struct AppWindow {
 	float uiToFramebufferScaleY = 1.0f;
 	bool framebufferResized = false;
 	VkExtent2D observedFramebufferExtent{};
+
+	enum class Phase : uint8_t { Idle, Building, Prepared, Closing };
+	Phase phase = Phase::Idle;
 };
 
-class StorageFrameCancellationGuard {
+class WindowFrameExitGuard {
 public:
-	StorageFrameCancellationGuard(storage::IStorageSystem& storageSystem, AppWindow& window)
-		: storage_(&storageSystem), window_(&window) {}
+	WindowFrameExitGuard(
+		storage::IStorageSystem& storageSystem,
+		AppWindow& window,
+		WindowId& activeWindow) noexcept
+		: storage_(&storageSystem), window_(&window), activeWindow_(&activeWindow) {}
 
-	~StorageFrameCancellationGuard() {
-		if (!armed_ || !window_->storageFrame) return;
-		storage_->cancelFrame(window_->storageFrame);
+	~WindowFrameExitGuard() {
+		if (window_->storageFrame) {
+			try { storage_->cancelFrame(window_->storageFrame); } catch (...) {}
+		}
 		window_->preparedUi = {};
 		window_->storageReadLease = {};
 		window_->storageFrame = {};
+		if (window_->phase != AppWindow::Phase::Closing) window_->phase = AppWindow::Phase::Idle;
+		if (*activeWindow_ == window_->id) *activeWindow_ = InvalidWindowId;
 	}
 
-	void dismiss() noexcept { armed_ = false; }
-
 private:
-	storage::IStorageSystem* storage_ = nullptr;
-	AppWindow* window_ = nullptr;
-	bool armed_ = true;
+	storage::IStorageSystem* storage_;
+	AppWindow* window_;
+	WindowId* activeWindow_;
 };
 
 struct App::Impl {
 	AppConfig config{};
 	VulkanContext vk;
 	std::unique_ptr<storage::IStorageSystem> storageSystem;
+	storage::StorageConfig storageConfig{};
 	SharedUiByteResources sharedUiByteResources;
-	UiTexturePublisher texturePublisher;
 
 	FontManager fonts;
 	ImageManager imageManager;
@@ -286,10 +273,13 @@ struct App::Impl {
 	std::unordered_map<WindowId, std::unique_ptr<AppWindow>> windows;
 	WindowId mainWindowId = MainWindowId;
 	WindowId nextWindowId = MainWindowId + 1;
+	WindowId activeWindowFrame = InvalidWindowId;
+	bool windowIdsExhausted = false;
 	bool fontsInitialized = false;
 	bool imagesInitialized = false;
 	bool iconsInitialized = false;
 	bool cleanedUp = false;
+	std::thread::id platformThread = std::this_thread::get_id();
 
 	explicit Impl(const AppConfig& initialConfig) : config(initialConfig) {}
 	~Impl() { cleanup(); }
@@ -297,7 +287,7 @@ struct App::Impl {
 	AppWindow& requireWindow(WindowId id) {
 		const auto found = windows.find(id);
 		if (id == InvalidWindowId || found == windows.end() || !found->second) {
-			throw std::runtime_error("FlowUi window id is invalid or no longer registered.");
+			throw std::invalid_argument("FlowUi window id is invalid or no longer registered.");
 		}
 		return *found->second;
 	}
@@ -305,7 +295,7 @@ struct App::Impl {
 	const AppWindow& requireWindow(WindowId id) const {
 		const auto found = windows.find(id);
 		if (id == InvalidWindowId || found == windows.end() || !found->second) {
-			throw std::runtime_error("FlowUi window id is invalid or no longer registered.");
+			throw std::invalid_argument("FlowUi window id is invalid or no longer registered.");
 		}
 		return *found->second;
 	}
@@ -394,19 +384,14 @@ struct App::Impl {
 		vk.createDevice(config);
 
 		storageSystem = std::make_unique<storage::FlowStorageSystem>(vk);
-		const storage::StorageConfig storageConfig = makeStorageConfig(config);
+		storageConfig = makeStorageConfig(config);
 		storageSystem->initialize(storageConfig);
 		mainPointer->storageSystem = storageSystem.get();
-		storage::WindowStorageDesc windowStorage{};
-		windowStorage.framesInFlight = mainPointer->config.vulkan.framesInFlight;
-		windowStorage.workerCount = storageConfig.expectedWorkerCount;
-		windowStorage.initialTextureBindings = mainPointer->config.uiTextureDescriptorCapacity;
-		windowStorage.maxTextureBindings = mainPointer->config.uiTextureDescriptorCapacity;
-		windowStorage.transientBytesPerFrame = storageConfig.transientBytesPerFramePerWindow;
-		windowStorage.transientBytesPerWorker = storageConfig.transientBytesPerWorker;
-		windowStorage.debugName = storageSystem->intern(mainPointer->config.native.title);
-		storageSystem->registerWindow(mainPointer->id, windowStorage);
+		storageSystem->registerWindow(
+			mainPointer->id, makeWindowStorageDesc(*storageSystem, storageConfig, mainPointer->config));
 		mainPointer->storageRegistered = true;
+		mainPointer->ui.initStorage(
+			*storageSystem, mainPointer->id, makeUiManagerConfig(config, mainPointer->config));
 		initSharedUiByteResources(*storageSystem, sharedUiByteResources);
 		const storage::TextureHandle fallbackTexture = storageSystem->publishTexture(
 			storage::ResourceKey{
@@ -421,10 +406,6 @@ struct App::Impl {
 				.sourceHeight = 1,
 			});
 		storageSystem->setFallbackTexture(fallbackTexture);
-		texturePublisher.init(
-			*storageSystem,
-			sharedUiByteResources.placeholderUiView,
-			sharedUiByteResources.linearSampler);
 
 		mainPointer->swapchain.create(
 			mainPointer->config.native,
@@ -432,42 +413,168 @@ struct App::Impl {
 			vk,
 			mainPointer->surface,
 			mainPointer->backend->framebufferExtent());
-		mainPointer->frames.create(
-			mainPointer->config.vulkan.framesInFlight, vk, mainPointer->swapchain.images.size());
-		mainPointer->swapchainImageLayouts.assign(
-			mainPointer->swapchain.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
+		mainPointer->frames.create(mainPointer->config.vulkan.framesInFlight, vk);
 		mainPointer->observedFramebufferExtent = mainPointer->backend->framebufferExtent();
 
 		mainPointer->renderer.init(
-			config,
+			mainPointer->config.vulkan,
+			mainPointer->config.ui,
 			vk,
-			mainPointer->swapchain.format,
+			mainPointer->swapchain.swapchain.format,
 			*storageSystem,
 			mainPointer->id,
 			sharedUiByteResources,
 			storageConfig.initialInstanceBytesPerFrame,
 			mainPointer->config.uiTextureDescriptorCapacity);
-		//Transitional: managers publish borrowed native resources until their VMA
-		// stores migrate to storage ownership.
-		imageManager.setTexturePublisher(&texturePublisher);
 		imagesInitialized = true;
-		imageManager.init(vk, mainPointer->config.vulkan.framesInFlight);
-		mainPointer->viewPorts.setTexturePublisher(&texturePublisher, mainPointer->id);
-		mainPointer->viewPorts.init(vk, mainPointer->config.vulkan.framesInFlight);
+		imageManager.init(*storageSystem);
+		mainPointer->viewPorts.init(
+			*storageSystem, vk, mainPointer->id, mainPointer->config.vulkan.framesInFlight);
 		fontsInitialized = true;
-		fonts.init(vk, config.ui.fontAtlasSize);
-		mainPointer->ui.setFontManager(&fonts);
-		mainPointer->renderer.setFontManager(&fonts);
+		fonts.init(*storageSystem, config.ui.fontAtlasSize);
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		icons.setTexturePublisher(&texturePublisher);
 		iconsInitialized = true;
-		icons.init(vk, config.iconManager);
+		icons.init(*storageSystem, config.iconManager);
 #endif
 		initializeDefaultFont();
 	}
 
-	void pollEvents() {
+	void requireQuiescent(const char* operation) const {
+		if (activeWindowFrame != InvalidWindowId) {
+			throw std::logic_error(std::string(operation) +
+				" requires the current window frame triplet to finish first.");
+		}
+	}
+
+	void requirePlatformThread(const char* operation) const {
+		if (std::this_thread::get_id() != platformThread) {
+			throw std::logic_error(std::string(operation) + " must run on the FlowUi platform thread.");
+		}
+	}
+
+	void attachBackendAccessors(AppWindow& window) {
+		AppWindow* const stable = &window;
+		window.ui.setClipboardAccessors(
+			[stable](std::string_view text) {
+				if (stable->backend) stable->backend->setClipboardText(text);
+			},
+			[stable]() -> std::string {
+				return stable->backend ? stable->backend->getClipboardText() : std::string{};
+			});
+		window.ui.setCursorAccessor([stable](CursorType cursorType) {
+			if (stable->backend) stable->backend->setCursorType(cursorType);
+		});
+	}
+
+	void destroyUnsubmittedWindow(AppWindow& window) noexcept {
+		if (window.backend) window.backend->detachCallbacks();
+		try { window.viewPorts.destroyDrained(vk); } catch (...) {}
+		if (storageSystem) {
+			try { window.renderer.destroy(vk, *storageSystem, window.lastSubmissionSerial); } catch (...) {}
+		}
+		window.frames.destroy(vk);
+		for (SwapchainGeneration& generation : window.retiredSwapchains) generation.destroy(vk);
+		window.retiredSwapchains.clear();
+		window.swapchain.destroy(vk);
+		window.ui.destroyStorage();
+		if (storageSystem && window.storageRegistered) {
+			try { storageSystem->unregisterWindow(window.id, window.lastSubmissionSerial); } catch (...) {}
+			window.storageRegistered = false;
+			try { storageSystem->collect(); } catch (...) {}
+		}
+		if (window.surface != VK_NULL_HANDLE && vk.instance != VK_NULL_HANDLE) {
+			vkDestroySurfaceKHR(vk.instance, window.surface, nullptr);
+			window.surface = VK_NULL_HANDLE;
+		}
+		window.backend.reset();
+	}
+
+	WindowId reserveWindowId() {
+		if (windowIdsExhausted) throw std::overflow_error("FlowUi WindowId space is exhausted.");
+		const WindowId id = nextWindowId;
+		if (id == InvalidWindowId || id == MainWindowId) {
+			throw std::overflow_error("FlowUi WindowId space is exhausted.");
+		}
+		if (id == std::numeric_limits<WindowId>::max()) {
+			windowIdsExhausted = true;
+		} else {
+			++nextWindowId;
+		}
+		return id;
+	}
+
+	WindowId createWindow(const WindowConfig& nativeConfig) {
+		requirePlatformThread("FlowUi::App::createWindow");
+		requireQuiescent("FlowUi::App::createWindow");
+		if (nativeConfig.width <= 0 || nativeConfig.height <= 0) {
+			throw std::invalid_argument("Secondary FlowUi windows require positive width and height.");
+		}
+		const WindowId id = reserveWindowId();
+		auto pending = std::make_unique<AppWindow>(id, makeWindowConfig(config, nativeConfig), config);
+		try {
+			pending->backend = detail::makeDefaultWindowBackend(pending->config.native, &pending->inputQueue);
+			pending->backend->setInputConfig(pending->config.native.input);
+			attachBackendAccessors(*pending);
+			pending->surface = vk.createSurface(*pending->backend);
+			if (!vk.supportsPresentation(pending->surface)) {
+				throw std::runtime_error(
+					"Selected Vulkan present queue family does not support the secondary-window surface.");
+			}
+			validateSecondarySurface(vk, pending->surface);
+			if (!vk.supportsExactPresentCompletion()) {
+				throw std::runtime_error(
+					"Independent secondary-window retirement requires VK_EXT_swapchain_maintenance1 "
+					"present fences or VK_KHR_present_id plus VK_KHR_present_wait.");
+			}
+
+			pending->storageSystem = storageSystem.get();
+			storageSystem->registerWindow(
+				id, makeWindowStorageDesc(*storageSystem, storageConfig, pending->config));
+			pending->storageRegistered = true;
+			pending->ui.initStorage(
+				*storageSystem, id, makeUiManagerConfig(config, pending->config));
+			pending->swapchain.create(
+				pending->config.native,
+				pending->config.vulkan,
+				vk,
+				pending->surface,
+				pending->backend->framebufferExtent());
+			pending->frames.create(pending->config.vulkan.framesInFlight, vk);
+			pending->observedFramebufferExtent = pending->backend->framebufferExtent();
+			pending->renderer.init(
+				pending->config.vulkan,
+				pending->config.ui,
+				vk,
+				pending->swapchain.swapchain.format,
+				*storageSystem,
+				id,
+				sharedUiByteResources,
+				storageConfig.initialInstanceBytesPerFrame,
+				pending->config.uiTextureDescriptorCapacity);
+			pending->viewPorts.init(*storageSystem, vk, id, pending->config.vulkan.framesInFlight);
+
+			auto [entry, inserted] = windows.try_emplace(id);
+			if (!inserted) throw std::runtime_error("FlowUi WindowId registry collision.");
+			entry->second = std::move(pending);
+			return id;
+		} catch (...) {
+			if (pending) destroyUnsubmittedWindow(*pending);
+			throw;
+		}
+	}
+
+	void pollEventsAndAdvanceSharedManagers() {
+		requirePlatformThread("FlowUi::App::pollEvents");
+		requireQuiescent("FlowUi::App::pollEvents");
 		detail::pollWindowSystemEvents();
+		if (storageSystem) storageSystem->collect();
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		if (iconsInitialized) icons.beginAppTick();
+#endif
+	}
+
+	void pollEvents() {
+		pollEventsAndAdvanceSharedManagers();
 	}
 
 	void cancelStorageFrame(AppWindow& window) noexcept {
@@ -475,6 +582,8 @@ struct App::Impl {
 		window.preparedUi = {};
 		window.storageReadLease = {};
 		window.storageFrame = {};
+		if (window.phase != AppWindow::Phase::Closing) window.phase = AppWindow::Phase::Idle;
+		if (activeWindowFrame == window.id) activeWindowFrame = InvalidWindowId;
 	}
 
 	void completeSubmission(FrameVk::Frame& frame) {
@@ -491,8 +600,35 @@ struct App::Impl {
 		storageSystem->collect();
 	}
 
+	void drainWindowGraphics(AppWindow& window) {
+		for (FrameVk::Frame& frame : window.frames.frames) {
+			vkCheck(vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
+				"Failed to drain a window frame fence.");
+			completeSubmission(frame);
+		}
+		if (storageSystem && !window.storageFrame) {
+			storageSystem->collect();
+		}
+	}
+
+	void collectRetiredSwapchains(AppWindow& window) {
+		for (SwapchainGeneration& generation : window.retiredSwapchains) {
+			generation.waitForPresentCompletion(vk);
+			generation.destroy(vk);
+		}
+		window.retiredSwapchains.clear();
+	}
+
 	void beginFrame(WindowId id) {
+		requirePlatformThread("FlowUi::App::beginFrame");
 		AppWindow& window = requireWindow(id);
+		if (window.phase != AppWindow::Phase::Idle) {
+			throw std::logic_error("FlowUi window beginFrame() requires the Idle lifecycle phase.");
+		}
+		if (activeWindowFrame != InvalidWindowId) {
+			throw std::logic_error(
+				"FlowUi Phase 4 permits only one begun window frame triplet at a time.");
+		}
 		if (!window.backend || window.frames.frames.empty()) {
 			throw std::runtime_error("FlowUi window is not ready to begin a frame.");
 		}
@@ -523,8 +659,6 @@ struct App::Impl {
 		storageSystem->collect();
 
 		const uint32_t frameSlot = window.frames.currentFrame;
-		//Transitional: shared managers still advance on the main window frame cadence.
-		imageManager.onFrameStart(vk, frameSlot);
 		window.viewPorts.onFrameStart(vk, frameSlot);
 
 		if (window.frameNumber == std::numeric_limits<uint64_t>::max()) {
@@ -535,7 +669,12 @@ struct App::Impl {
 			.frameSlot = frameSlot,
 			.frameNumber = nextFrameNumber,
 		});
+		window.fontFrameView = fonts.frameView(window.storageFrame);
 		window.frameNumber = nextFrameNumber;
+		//Transitional: Phase 5 replaces this app-thread frame gate with one
+		// ownership epoch/job per AppWindow and a shared-mutation publish barrier.
+		activeWindowFrame = window.id;
+		window.phase = AppWindow::Phase::Building;
 
 		try {
 			window.frameInput = window.inputQueue.drain(deltaTimeSeconds);
@@ -566,7 +705,8 @@ struct App::Impl {
 				layoutInput.scrollX += layoutInput.scrollY;
 				layoutInput.scrollY = 0.0f;
 			}
-			window.ui.beginFrame(frameSlot, layoutInput, layoutWidth, layoutHeight);
+			window.ui.beginFrame(
+				window.storageFrame, layoutInput, window.fontFrameView, layoutWidth, layoutHeight);
 #if FLOW_UI_DEV_MODE
 			window.ui.performanceDiagnostics().current().beginFrameMs =
 				devMode::PerformanceDiagnostics::elapsedMs(beginFrameStart);
@@ -578,8 +718,11 @@ struct App::Impl {
 	}
 
 	void endFrame(WindowId id) {
+		requirePlatformThread("FlowUi::App::endFrame");
 		AppWindow& window = requireWindow(id);
-		if (!window.storageFrame) throw std::runtime_error("FlowUi window has no active storage frame.");
+		if (activeWindowFrame != id || window.phase != AppWindow::Phase::Building || !window.storageFrame) {
+			throw std::logic_error("FlowUi window endFrame() requires its Building lifecycle phase.");
+		}
 		try {
 #if FLOW_UI_DEV_MODE
 			const auto endFrameStart = devMode::PerformanceDiagnostics::Clock::now();
@@ -595,12 +738,10 @@ struct App::Impl {
 			window.viewPorts.prepareFrameTargets(
 				window.renderCommands, window.uiToFramebufferScaleX, window.uiToFramebufferScaleY);
 #if FLOWUI_INCLUDE_ICON_MANAGER
-			//Transitional: icon texture preparation still uses the main window's legacy binding registry.
 			icons.prepareFrameTextures(
 				window.renderCommands, window.uiToFramebufferScaleX, window.uiToFramebufferScaleY);
 #endif
-			//Transitional: viewport and manager textures still carry renderer-local
-			// slots. Phase 3 resolves logical TextureHandles per AppWindow instead.
+			// Logical manager textures resolve through this window's storage bindings.
 			window.viewPorts.remapRenderCommandsForFrame(window.renderCommands, window.frames.currentFrame);
 			storage::ArenaView textureArena = storageSystem->frameArena(
 				window.storageFrame, storage::MemoryClass::FrameTransient);
@@ -634,7 +775,8 @@ struct App::Impl {
 				preparedBindings,
 				window.renderCommands,
 				window.ui.inputFieldFrameOverrides(),
-				window.swapchain.extent,
+				window.fontFrameView,
+				window.swapchain.swapchain.extent,
 				window.uiToFramebufferScaleX,
 				window.uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
@@ -648,6 +790,7 @@ struct App::Impl {
 				devMode::PerformanceDiagnostics::elapsedMs(endFrameStart);
 #endif
 			window.storageReadLease = storageSystem->sealFrame(window.storageFrame);
+			window.phase = AppWindow::Phase::Prepared;
 		} catch (...) {
 			cancelStorageFrame(window);
 			throw;
@@ -655,10 +798,14 @@ struct App::Impl {
 	}
 
 	void drawFrame(WindowId id) {
+		requirePlatformThread("FlowUi::App::drawFrame");
 		AppWindow& window = requireWindow(id);
-		StorageFrameCancellationGuard storageGuard(*storageSystem, window);
-		if (window.frames.frames.empty() || window.swapchain.swapchain == VK_NULL_HANDLE ||
-			window.swapchain.views.empty()) return;
+		if (activeWindowFrame != id || window.phase != AppWindow::Phase::Prepared) {
+			throw std::logic_error("FlowUi window drawFrame() requires its Prepared lifecycle phase.");
+		}
+		WindowFrameExitGuard frameExit(*storageSystem, window, activeWindowFrame);
+		if (window.frames.frames.empty() || window.swapchain.swapchain.swapchain == VK_NULL_HANDLE ||
+			window.swapchain.swapchain.views.empty()) return;
 		if (!window.storageReadLease) {
 			throw std::runtime_error("FlowUi window frame must be ended before it is drawn.");
 		}
@@ -675,7 +822,11 @@ struct App::Impl {
 			window.framebufferResized = true;
 			window.observedFramebufferExtent = framebufferExtent;
 		}
-		if (window.framebufferResized && !recreateSwapchainIfNeeded(window)) return;
+		if (window.framebufferResized) {
+			cancelStorageFrame(window);
+			(void)recreateSwapchainIfNeeded(window);
+			return;
+		}
 
 		FrameVk::Frame& frame = window.frames.getCurrentFrame();
 		uint32_t swapchainImageIndex = 0;
@@ -683,7 +834,7 @@ struct App::Impl {
 		const auto acquireStart = devMode::PerformanceDiagnostics::Clock::now();
 #endif
 		const VkResult acquireResult = vkAcquireNextImageKHR(
-			vk.device, window.swapchain.swapchain, UINT64_MAX, frame.imageAvailable,
+			vk.device, window.swapchain.swapchain.swapchain, UINT64_MAX, frame.imageAvailable,
 			VK_NULL_HANDLE, &swapchainImageIndex);
 #if FLOW_UI_DEV_MODE
 		window.ui.performanceDiagnostics().current().acquireMs =
@@ -691,7 +842,8 @@ struct App::Impl {
 #endif
 		if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
 			window.framebufferResized = true;
-			recreateSwapchainIfNeeded(window);
+			cancelStorageFrame(window);
+			(void)recreateSwapchainIfNeeded(window);
 			return;
 		}
 		if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
@@ -702,17 +854,17 @@ struct App::Impl {
 #if FLOW_UI_DEV_MODE
 		window.ui.performanceDiagnostics().current().swappedSuboptimal = acquiredSuboptimalSwapchain;
 #endif
-		if (swapchainImageIndex >= window.swapchain.views.size() ||
-			swapchainImageIndex >= window.frames.imageInFlight.size() ||
-			swapchainImageIndex >= window.swapchainImageLayouts.size() ||
-			swapchainImageIndex >= window.frames.renderFinishedBySwapImage.size()) {
+		if (swapchainImageIndex >= window.swapchain.swapchain.views.size() ||
+			swapchainImageIndex >= window.swapchain.imageInFlight.size() ||
+			swapchainImageIndex >= window.swapchain.layouts.size() ||
+			swapchainImageIndex >= window.swapchain.renderFinished.size()) {
 			throw std::runtime_error("Acquired swapchain image index is out of range.");
 		}
-		if (window.frames.imageInFlight[swapchainImageIndex] != VK_NULL_HANDLE) {
-			vkCheck(vkWaitForFences(vk.device, 1, &window.frames.imageInFlight[swapchainImageIndex],
+		if (window.swapchain.imageInFlight[swapchainImageIndex] != VK_NULL_HANDLE) {
+			vkCheck(vkWaitForFences(vk.device, 1, &window.swapchain.imageInFlight[swapchainImageIndex],
 				VK_TRUE, UINT64_MAX), "Failed waiting for previously submitted fence for swapchain image.");
 		}
-		window.frames.imageInFlight[swapchainImageIndex] = frame.inFlight;
+		window.swapchain.imageInFlight[swapchainImageIndex] = frame.inFlight;
 
 		vkCheck(vkResetCommandPool(vk.device, frame.pool, 0), "Failed to reset command pool.");
 		VkCommandBufferBeginInfo beginInfo{};
@@ -720,9 +872,9 @@ struct App::Impl {
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		vkCheck(vkBeginCommandBuffer(frame.cmd, &beginInfo), "Failed to begin command buffer.");
 
-		transitionSwapchainImageLayout(frame.cmd, window.swapchain.images[swapchainImageIndex],
-			window.swapchainImageLayouts[swapchainImageIndex], VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-		window.swapchainImageLayouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+		transitionSwapchainImageLayout(frame.cmd, window.swapchain.swapchain.images[swapchainImageIndex],
+			window.swapchain.layouts[swapchainImageIndex], VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+		window.swapchain.layouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 
 #if FLOW_UI_DEV_MODE
 		const auto viewportRecordStart = devMode::PerformanceDiagnostics::Clock::now();
@@ -737,8 +889,8 @@ struct App::Impl {
 			window.renderer.recordPreparedFrame(
 				vk,
 				frame.cmd,
-				window.swapchain.extent,
-				window.swapchain.views[swapchainImageIndex],
+				window.swapchain.swapchain.extent,
+				window.swapchain.swapchain.views[swapchainImageIndex],
 				window.frames.currentFrame,
 				window.preparedUi
 #if FLOW_UI_DEV_MODE
@@ -750,13 +902,13 @@ struct App::Impl {
 			devMode::PerformanceDiagnostics::elapsedMs(uiRecordStart);
 #endif
 
-		transitionSwapchainImageLayout(frame.cmd, window.swapchain.images[swapchainImageIndex],
-			window.swapchainImageLayouts[swapchainImageIndex], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-		window.swapchainImageLayouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		transitionSwapchainImageLayout(frame.cmd, window.swapchain.swapchain.images[swapchainImageIndex],
+			window.swapchain.layouts[swapchainImageIndex], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		window.swapchain.layouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		vkCheck(vkEndCommandBuffer(frame.cmd), "Failed to end command buffer.");
 
 		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		VkSemaphore presentWaitSemaphore = window.frames.renderFinishedBySwapImage[swapchainImageIndex];
+		VkSemaphore presentWaitSemaphore = window.swapchain.renderFinished[swapchainImageIndex];
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.waitSemaphoreCount = 1;
@@ -774,10 +926,12 @@ struct App::Impl {
 		vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
 			"Failed to submit UI command buffer.");
 			frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
+			window.lastSubmissionSerial = std::max(window.lastSubmissionSerial, frame.storageSubmission.serial);
+			window.swapchain.lastGraphicsUse = std::max(
+				window.swapchain.lastGraphicsUse, frame.storageSubmission.serial);
 			window.preparedUi = {};
 		window.storageReadLease = {};
 		window.storageFrame = {};
-		storageGuard.dismiss();
 #if FLOW_UI_DEV_MODE
 		window.ui.performanceDiagnostics().current().submitMs =
 			devMode::PerformanceDiagnostics::elapsedMs(submitStart);
@@ -788,12 +942,45 @@ struct App::Impl {
 		presentInfo.waitSemaphoreCount = 1;
 		presentInfo.pWaitSemaphores = &presentWaitSemaphore;
 		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = &window.swapchain.swapchain;
+		presentInfo.pSwapchains = &window.swapchain.swapchain.swapchain;
 		presentInfo.pImageIndices = &swapchainImageIndex;
+		VkSwapchainPresentFenceInfoEXT presentFenceInfo{};
+		VkPresentIdKHR presentIdInfo{};
+		uint64_t presentId = 0;
+		if (vk.wsiRetirementMode == WsiRetirementMode::PresentFence) {
+			VkFence& presentFence = window.swapchain.presentComplete[swapchainImageIndex];
+			if (window.swapchain.presentPending[swapchainImageIndex] != 0u) {
+				vkCheck(vkWaitForFences(vk.device, 1, &presentFence, VK_TRUE, UINT64_MAX),
+					"Failed waiting to reuse a swapchain present fence.");
+				window.swapchain.presentPending[swapchainImageIndex] = 0u;
+			}
+			vkCheck(vkResetFences(vk.device, 1, &presentFence),
+				"Failed to reset a swapchain present fence.");
+			presentFenceInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT;
+			presentFenceInfo.swapchainCount = 1;
+			presentFenceInfo.pFences = &presentFence;
+			presentInfo.pNext = &presentFenceInfo;
+		} else if (vk.wsiRetirementMode == WsiRetirementMode::PresentWait) {
+			if (window.swapchain.lastPresentId == std::numeric_limits<uint64_t>::max()) {
+				throw std::runtime_error("FlowUi swapchain present-id space is exhausted.");
+			}
+			presentId = window.swapchain.lastPresentId + 1u;
+			presentIdInfo.sType = VK_STRUCTURE_TYPE_PRESENT_ID_KHR;
+			presentIdInfo.swapchainCount = 1;
+			presentIdInfo.pPresentIds = &presentId;
+			presentInfo.pNext = &presentIdInfo;
+		}
 #if FLOW_UI_DEV_MODE
 		const auto presentStart = devMode::PerformanceDiagnostics::Clock::now();
 #endif
 		const VkResult presentResult = vkQueuePresentKHR(vk.presentQ, &presentInfo);
+		if (presentId != 0 && (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR)) {
+			window.swapchain.lastPresentId = presentId;
+		}
+		if (vk.wsiRetirementMode == WsiRetirementMode::PresentFence &&
+			(presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR)) {
+			window.swapchain.presentPending[swapchainImageIndex] = 1u;
+		}
 #if FLOW_UI_DEV_MODE
 		window.ui.performanceDiagnostics().current().presentMs =
 			devMode::PerformanceDiagnostics::elapsedMs(presentStart);
@@ -823,19 +1010,110 @@ struct App::Impl {
 			return false;
 		}
 
-		//Transitional: Phase 4 replaces this app-wide idle with per-window serial retirement.
-		vkCheck(vkDeviceWaitIdle(vk.device), "Failed to wait for device idle during swapchain recreation.");
-		completeAllSubmissionsAfterIdle();
-		window.swapchain.recreate(
-			window.config.native, window.config.vulkan, vk, window.surface, framebufferExtent);
-		window.frames.onSwapchainRecreated(vk, window.swapchain.images.size());
-		window.renderer.onSwapchainFormatChanged(vk, window.swapchain.format);
-		window.swapchainImageLayouts.assign(window.swapchain.images.size(), VK_IMAGE_LAYOUT_UNDEFINED);
+		if (!vk.supportsExactPresentCompletion()) {
+			if (windows.size() != 1u || window.id != mainWindowId) {
+				throw std::runtime_error(
+					"The legacy device-idle swapchain fallback is restricted to a main-only application.");
+			}
+			// Compatibility: exact present completion is unavailable and public
+			// secondary creation is disabled, so only the semantic main window can
+			// reach this device-idle resize fallback.
+			vkCheck(vkDeviceWaitIdle(vk.device),
+				"Failed to wait for device idle during main-only compatibility resize.");
+			completeAllSubmissionsAfterIdle();
+			SwapchainGeneration replacement{};
+			try {
+				replacement.create(
+					window.config.native,
+					window.config.vulkan,
+					vk,
+					window.surface,
+					framebufferExtent,
+					window.swapchain.swapchain.swapchain);
+			} catch (...) {
+				if (window.backend) window.backend->setShouldClose(1);
+				throw;
+			}
+			try {
+				window.renderer.onSwapchainFormatChanged(
+					vk, replacement.swapchain.format, window.lastSubmissionSerial);
+			} catch (...) {
+				replacement.destroy(vk);
+				if (window.backend) window.backend->setShouldClose(1);
+				throw;
+			}
+			window.swapchain.destroy(vk);
+			window.swapchain = std::move(replacement);
+		} else {
+			drainWindowGraphics(window);
+			SwapchainGeneration replacement{};
+			try {
+				replacement.create(
+					window.config.native,
+					window.config.vulkan,
+					vk,
+					window.surface,
+					framebufferExtent,
+					window.swapchain.swapchain.swapchain);
+			} catch (...) {
+				if (window.backend) window.backend->setShouldClose(1);
+				throw;
+			}
+			try {
+				window.renderer.onSwapchainFormatChanged(
+					vk, replacement.swapchain.format, window.lastSubmissionSerial);
+				window.retiredSwapchains.reserve(window.retiredSwapchains.size() + 1u);
+			} catch (...) {
+				replacement.destroy(vk);
+				if (window.backend) window.backend->setShouldClose(1);
+				throw;
+			}
+			window.retiredSwapchains.push_back(std::move(window.swapchain));
+			window.swapchain = std::move(replacement);
+			collectRetiredSwapchains(window);
+			if (!window.storageFrame) storageSystem->collect();
+		}
 		window.framebufferResized = false;
 #if FLOW_UI_DEV_MODE
 		window.ui.performanceDiagnostics().current().swapchainRecreated = true;
 #endif
 		return true;
+	}
+
+	void destroyWindow(WindowId id) {
+		requirePlatformThread("FlowUi::App::destroyWindow");
+		if (id == mainWindowId) {
+			throw std::invalid_argument("The semantic main FlowUi window cannot be destroyed explicitly.");
+		}
+		AppWindow& window = requireWindow(id);
+		if (activeWindowFrame != InvalidWindowId && activeWindowFrame != id) {
+			throw std::logic_error(
+				"Cannot destroy a window while another window owns the Phase 4 frame gate.");
+		}
+		if (activeWindowFrame == id) cancelStorageFrame(window);
+		window.phase = AppWindow::Phase::Closing;
+		if (window.backend) window.backend->detachCallbacks();
+
+		drainWindowGraphics(window);
+		collectRetiredSwapchains(window);
+		window.swapchain.waitForPresentCompletion(vk);
+		window.renderer.destroy(vk, *storageSystem, window.lastSubmissionSerial);
+		window.viewPorts.destroyDrained(vk);
+		window.frames.destroy(vk);
+		window.swapchain.destroy(vk);
+		window.ui.destroyStorage();
+		if (window.storageRegistered) {
+			storageSystem->unregisterWindow(id, window.lastSubmissionSerial);
+			window.storageRegistered = false;
+		}
+		storageSystem->collect();
+		if (window.surface != VK_NULL_HANDLE) {
+			vkDestroySurfaceKHR(vk.instance, window.surface, nullptr);
+			window.surface = VK_NULL_HANDLE;
+		}
+		window.backend.reset();
+		windows.erase(id);
+		activeWindowFrame = InvalidWindowId;
 	}
 
 	void cleanup() noexcept {
@@ -847,19 +1125,22 @@ struct App::Impl {
 			try { completeAllSubmissionsAfterIdle(); } catch (...) {}
 		}
 
-		if (imagesInitialized) imageManager.destroy(vk);
+		if (imagesInitialized) imageManager.destroy();
 #if FLOWUI_INCLUDE_ICON_MANAGER
-		if (iconsInitialized) icons.destroy(vk);
+		if (iconsInitialized) icons.destroy();
 #endif
-		if (fontsInitialized) fonts.destroy(vk);
+		if (fontsInitialized) fonts.destroy();
 
 		for (auto& [_, window] : windows) {
-			window->viewPorts.destroy(vk);
+			window->viewPorts.destroyDrained(vk);
 			if (storageSystem) {
-				try { window->renderer.destroy(vk, *storageSystem); } catch (...) {}
+				try { window->renderer.destroy(vk, *storageSystem, window->lastSubmissionSerial); } catch (...) {}
 			}
 			window->frames.destroy(vk);
+			for (SwapchainGeneration& generation : window->retiredSwapchains) generation.destroy(vk);
+			window->retiredSwapchains.clear();
 			window->swapchain.destroy(vk);
+			window->ui.destroyStorage();
 			if (storageSystem && window->storageRegistered) {
 				try { storageSystem->unregisterWindow(window->id, storageSystem->completedSerial()); } catch (...) {}
 				window->storageRegistered = false;
@@ -880,6 +1161,7 @@ struct App::Impl {
 			storageSystem.reset();
 		}
 		windows.clear();
+		activeWindowFrame = InvalidWindowId;
 		vk.destroy();
 	}
 };
@@ -896,23 +1178,57 @@ WindowId App::mainWindowId() const noexcept {
 	return impl_ ? impl_->mainWindowId : MainWindowId;
 }
 
+WindowId App::createWindow(const WindowConfig& config) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->createWindow(config);
+}
+
+void App::destroyWindow(WindowId id) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	impl_->destroyWindow(id);
+}
+
+bool App::hasWindow(WindowId id) const noexcept {
+	return impl_ && id != InvalidWindowId && impl_->windows.contains(id);
+}
+
+void App::pollEvents() {
+	if (impl_) impl_->pollEventsAndAdvanceSharedManagers();
+}
+
 bool App::shouldClose() const {
 	if (!impl_) return true;
-	const AppWindow& window = impl_->mainWindow();
+	return shouldClose(impl_->mainWindowId);
+}
+
+bool App::shouldClose(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	return !window.backend || window.backend->shouldClose();
 }
 
 void App::setShouldClose(int value) {
 	if (!impl_) return;
-	AppWindow& window = impl_->mainWindow();
+	setShouldClose(impl_->mainWindowId, value);
+}
+
+void App::setShouldClose(WindowId id, int value) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	AppWindow& window = impl_->requireWindow(id);
 	if (window.backend) window.backend->setShouldClose(value);
 }
 
 void App::beginFrame() {
 	if (impl_) {
-		impl_->pollEvents();
+		// Transitional: only the legacy no-argument wrapper polls implicitly.
+		impl_->pollEventsAndAdvanceSharedManagers();
 		impl_->beginFrame(impl_->mainWindowId);
 	}
+}
+
+void App::beginFrame(WindowId id) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	impl_->beginFrame(id);
 }
 
 void App::endFrame() {
@@ -921,10 +1237,20 @@ void App::endFrame() {
 	}
 }
 
+void App::endFrame(WindowId id) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	impl_->endFrame(id);
+}
+
 void App::drawFrame() {
 	if (impl_) {
 		impl_->drawFrame(impl_->mainWindowId);
 	}
+}
+
+void App::drawFrame(WindowId id) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	impl_->drawFrame(id);
 }
 
 FontManager& App::fonts() {
@@ -979,11 +1305,21 @@ ViewPortManager& App::viewPorts() {
 	return impl_->mainWindow().viewPorts;
 }
 
+ViewPortManager& App::viewPorts(WindowId id) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->requireWindow(id).viewPorts;
+}
+
 const ViewPortManager& App::viewPorts() const {
 	if (!impl_) {
 		throw std::runtime_error("FlowUi::App not initialized.");
 	}
 	return impl_->mainWindow().viewPorts;
+}
+
+const ViewPortManager& App::viewPorts(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->requireWindow(id).viewPorts;
 }
 #endif
 
@@ -994,6 +1330,11 @@ UiManager& App::ui() {
 	return impl_->mainWindow().ui;
 }
 
+UiManager& App::ui(WindowId id) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->requireWindow(id).ui;
+}
+
 const UiManager& App::ui() const {
 	if (!impl_) {
 		throw std::runtime_error("FlowUi::App not initialized.");
@@ -1001,53 +1342,98 @@ const UiManager& App::ui() const {
 	return impl_->mainWindow().ui;
 }
 
+const UiManager& App::ui(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->requireWindow(id).ui;
+}
+
 void App::setWindowTitle(std::string_view title) {
 	if (!impl_) return;
-	AppWindow& window = impl_->mainWindow();
+	setWindowTitle(impl_->mainWindowId, title);
+}
+
+void App::setWindowTitle(WindowId id, std::string_view title) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	AppWindow& window = impl_->requireWindow(id);
 	window.config.native.title.assign(title);
 	if (window.backend) window.backend->setTitle(title);
 }
 
 void* App::nativeWindowHandle() const {
 	if (!impl_) return nullptr;
-	const AppWindow& window = impl_->mainWindow();
+	return nativeWindowHandle(impl_->mainWindowId);
+}
+
+void* App::nativeWindowHandle(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend ? window.backend->nativeHandle() : nullptr;
 }
 
 void App::setWindowInputConfig(const WindowInputConfig& config) {
 	if (!impl_) return;
-	AppWindow& window = impl_->mainWindow();
+	setWindowInputConfig(impl_->mainWindowId, config);
+}
+
+void App::setWindowInputConfig(WindowId id, const WindowInputConfig& config) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	AppWindow& window = impl_->requireWindow(id);
 	window.config.native.input = config;
 	if (window.backend) window.backend->setInputConfig(config);
 }
 
 WindowInputConfig App::windowInputConfig() const {
 	if (!impl_) return {};
-	const AppWindow& window = impl_->mainWindow();
+	return windowInputConfig(impl_->mainWindowId);
+}
+
+WindowInputConfig App::windowInputConfig(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend ? window.backend->getInputConfig() : WindowInputConfig{};
 }
 
 bool App::supportsRawMouseMotion() const {
 	if (!impl_) return false;
-	const AppWindow& window = impl_->mainWindow();
+	return supportsRawMouseMotion(impl_->mainWindowId);
+}
+
+bool App::supportsRawMouseMotion(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend && window.backend->supportsRawMouseMotion();
 }
 
 void App::setClipboardText(std::string_view text) {
 	if (!impl_) return;
-	AppWindow& window = impl_->mainWindow();
+	setClipboardText(impl_->mainWindowId, text);
+}
+
+void App::setClipboardText(WindowId id, std::string_view text) {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	AppWindow& window = impl_->requireWindow(id);
 	if (window.backend) window.backend->setClipboardText(text);
 }
 
 std::string App::clipboardText() const {
 	if (!impl_) return {};
-	const AppWindow& window = impl_->mainWindow();
+	return clipboardText(impl_->mainWindowId);
+}
+
+std::string App::clipboardText(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend ? window.backend->getClipboardText() : std::string{};
 }
 
 std::pair<int, int> App::windowSize() const {
 	if (!impl_) return {0, 0};
-	const AppWindow& window = impl_->mainWindow();
+	return windowSize(impl_->mainWindowId);
+}
+
+std::pair<int, int> App::windowSize(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	if (!window.backend) return {0, 0};
 	const VkExtent2D extent = window.backend->windowExtent();
 	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};
@@ -1055,7 +1441,12 @@ std::pair<int, int> App::windowSize() const {
 
 std::pair<int, int> App::framebufferSize() const {
 	if (!impl_) return {0, 0};
-	const AppWindow& window = impl_->mainWindow();
+	return framebufferSize(impl_->mainWindowId);
+}
+
+std::pair<int, int> App::framebufferSize(WindowId id) const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	const AppWindow& window = impl_->requireWindow(id);
 	if (!window.backend) return {0, 0};
 	const VkExtent2D extent = window.backend->framebufferExtent();
 	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};

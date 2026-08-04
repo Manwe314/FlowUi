@@ -13,6 +13,7 @@ struct IWindowBackend {
 	virtual ~IWindowBackend() = default;
 
 	virtual void refreshInputSnapshot() = 0;
+	virtual void detachCallbacks() noexcept = 0;
 	virtual bool shouldClose() const = 0;
 	virtual void setShouldClose(int value) = 0;
 

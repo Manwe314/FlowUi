@@ -8,15 +8,13 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include <clay.h>
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/ResourceKey.hpp"
 #include "managers/structs/ViewPortManagerStructs.hpp"
 
 #if FLOWUI_PUBLIC_VULKAN_INTEROP || defined(FLOWUI_INTERNAL_VIEWPORT_MANAGER)
@@ -28,9 +26,11 @@ struct VmaAllocation_T;
 
 namespace FlowUi {
 
-namespace detail {
-struct IUiTexturePublisher;
-} // namespace detail
+namespace detail::storage { class IStorageSystem; struct FrameToken; }
+namespace detail::manager_storage {
+struct ViewportFacadeState; struct ViewportImageResource; struct ViewportFrameCommands;
+struct ViewportTargetGeneration; struct ViewportRecord; class ViewportStorageController;
+}
 
 #if FLOW_UI_DEV_MODE
 namespace devMode {
@@ -187,10 +187,10 @@ public:
 			throw std::runtime_error("ViewPort::setRenderCallback requires a non-null shared_ptr payload.");
 		}
 		using CallbackType = std::decay_t<Fn>;
-		renderCallback_ = [payload = std::move(userData), typedCallback = CallbackType(std::forward<Fn>(callback))](
+		setRenderCallback([payload = std::move(userData), typedCallback = CallbackType(std::forward<Fn>(callback))](
 			const ViewPortRenderContext& context) mutable {
 			typedCallback(context, *payload);
-		};
+		});
 	}
 
 	/**
@@ -260,15 +260,7 @@ public:
 
 private:
 	friend class ViewPortManager;
-
-	std::string key_{};
-	TextureHandle texture_{};
-	int32_t width_ = 0;
-	int32_t height_ = 0;
-	VkFormat colorFormat_ = VK_FORMAT_R8G8B8A8_UNORM;
-	std::array<float, 4> clearColor_ = { 0.0f, 0.0f, 0.0f, 0.0f };
-	bool clearEveryFrame_ = true;
-	RenderCallback renderCallback_{};
+	detail::manager_storage::ViewportFacadeState* state_ = nullptr;
 };
 
 /**
@@ -320,29 +312,27 @@ public:
 	 * @endcode
 	 */
 	bool create(std::string_view key, const ViewPortCreateInfo& createInfo = {});
+	bool create(ResourceKey key, const ViewPortCreateInfo& createInfo = {});
 
 	/**
 	 * @brief Remove a viewport by key.
 	 *
-	 * This removes texture slots and destroys all per-frame viewport resources.
-	 * The implementation waits for the Vulkan device to become idle before
-	 * releasing resources.
+	 * This removes texture slots and retires all per-frame viewport resources
+	 * after their exact logical texture uses complete.
 	 *
 	 * @param key Application-defined viewport key.
 	 * @retval true A viewport with key existed and was removed.
 	 * @retval false No viewport with key exists.
 	 *
-	 * @throws std::runtime_error if the manager is not initialized, the texture
-	 * registry is unavailable, or waiting for the device fails.
-	 *
-	 * @warning remove() can block because it waits for the Vulkan device to be
-	 * idle before destroying viewport resources.
+	 * @throws std::runtime_error if the manager or its storage scope is not
+	 * initialized.
 	 *
 	 * @code{.cpp}
 	 * (void)app.viewPorts().remove("scene");
 	 * @endcode
 	 */
 	bool remove(std::string_view key);
+	bool remove(ResourceKey key);
 
 	/**
 	 * @brief Return whether a viewport exists.
@@ -358,6 +348,7 @@ public:
 	 * @endcode
 	 */
 	bool contains(std::string_view key) const;
+	bool contains(ResourceKey key) const;
 
 	/**
 	 * @brief Return a mutable viewport by key.
@@ -372,6 +363,7 @@ public:
 	 * @endcode
 	 */
 	ViewPort* getViewPort(std::string_view key);
+	ViewPort* getViewPort(ResourceKey key);
 
 	/**
 	 * @brief Return an immutable viewport by key.
@@ -380,6 +372,7 @@ public:
 	 * @return Pointer to the viewport, or nullptr if missing.
 	 */
 	const ViewPort* getViewPort(std::string_view key) const;
+	const ViewPort* getViewPort(ResourceKey key) const;
 
 	/**
 	 * @brief Return the texture reference for a viewport key.
@@ -409,6 +402,7 @@ public:
 	 * @endcode
 	 */
 	TextureRef getTexture(std::string_view key) const;
+	TextureRef getTexture(ResourceKey key) const;
 
 	/**
 	 * @brief Return Vulkan interop handles for custom viewport rendering.
@@ -437,8 +431,7 @@ public:
 private:
 	friend class App;
 
-	void setTexturePublisher(detail::IUiTexturePublisher* publisher, WindowId window);
-	void init(VulkanContext& vk, uint32_t framesInFlight);
+	void init(detail::storage::IStorageSystem& storage, VulkanContext& vk, WindowId window, uint32_t framesInFlight);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
 	void prepareFrameTargets(
 		const Clay_RenderCommandArray& renderCommands,
@@ -454,72 +447,15 @@ private:
 		devMode::FrameDiagnostics* diagnostics = nullptr
 #endif
 		);
-	void destroy(VulkanContext& vk);
-
-	struct ViewPortImageResource {
-		VkImage image = VK_NULL_HANDLE;
-		VmaAllocation_T* allocation = nullptr;
-		VkImageView view = VK_NULL_HANDLE;
-		VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
-		uint32_t width = 0u;
-		uint32_t height = 0u;
-	};
-
-	struct FrameCommandResources {
-		VkCommandPool pool = VK_NULL_HANDLE;
-		VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	};
-
-	struct ViewPortRecord {
-		ViewPort viewport{};
-		std::vector<ViewPortImageResource> imagesByFrame{};
-		std::vector<FrameCommandResources> frameCommands{};
-		std::vector<std::string> namespacedFrameKeys{};
-		std::vector<TextureHandle> textures{};
-		uint32_t desiredWidth = 1u;
-		uint32_t desiredHeight = 1u;
-		bool referencedThisFrame = false;
-	};
-
-	struct TextureOwner {
-		std::string key{};
-		uint32_t frameSlot = 0u;
-	};
-	struct RetiredViewPortImage {
-		ViewPortImageResource image{};
-		TextureHandle texture{};
-	};
+	// The owning AppWindow must be drained before this teardown is called.
+	void destroyDrained(VulkanContext& vk);
 
 	void resetFrameTracking();
 	bool resizeRequired() const;
-	void ensureRenderTargetSize(VulkanContext& vk, ViewPortRecord& record);
-	std::vector<FrameCommandResources> createFrameCommandResources(VulkanContext& vk) const;
-	void destroyFrameCommandResources(VulkanContext& vk, std::vector<FrameCommandResources>& frameResources) const;
-	ViewPortImageResource createRenderTargetImage(VulkanContext& vk, uint32_t width, uint32_t height, VkFormat format) const;
-	void destroyRenderTargetImages(VulkanContext& vk, std::vector<ViewPortImageResource>& images) const;
-	void destroyRenderTargetImage(VulkanContext& vk, ViewPortImageResource& image) const;
-	void transitionImageLayout(
-		VkCommandBuffer commandBuffer,
-		VkImage image,
-		VkImageLayout oldLayout,
-		VkImageLayout newLayout) const;
-	std::string makeNamespacedKey(std::string_view key, uint32_t frameSlot) const;
-
-private:
-	//Transitional: borrowed native publication ends with manager storage migration.
-	detail::IUiTexturePublisher* texturePublisher_ = nullptr;
+	detail::storage::IStorageSystem* storage_ = nullptr;
 	WindowId windowId_ = InvalidWindowId;
-	VulkanContext* vk_ = nullptr;
-	uint32_t framesInFlight_ = 1u;
-	uint32_t currentFrameIndex_ = 0u;
-
-	VkSampler sharedSampler_ = VK_NULL_HANDLE;
-	ViewPortVulkanInterop interop_{};
-
-	std::unordered_map<std::string, ViewPortRecord> viewPortsByKey_;
-	std::unordered_map<uint64_t, TextureOwner> textureToOwner_;
-	std::vector<RetiredViewPortImage> retiredImages_;
-	mutable std::unordered_set<std::string> missingTextureWarnings_;
+	uint64_t controllerHandle_ = 0;
+	detail::manager_storage::ViewportStorageController* controller_ = nullptr;
 };
 
 /** @} */

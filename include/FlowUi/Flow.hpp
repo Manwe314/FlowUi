@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlowUi/App.hpp"
+#include "FlowUi/ResourceKey.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
 #include "managers/InputFieldManager.hpp"

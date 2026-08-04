@@ -17,14 +17,19 @@
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
 #endif
 
-#include "Vulkan/Vk_Context.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include "internal/Vma.hpp"
+#include "internal/ManagerStorage/FontCatalogController.hpp"
+#include "internal/ManagerStorage/ManagerStateAccess.hpp"
+#include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 
 namespace Font = FlowUi::Font;
 
 namespace FlowUi {
+
+namespace manager_storage = detail::manager_storage;
+namespace key_storage = detail::managerStorage;
+namespace storage = detail::storage;
 
 namespace {
 
@@ -42,17 +47,6 @@ struct DecodedAtlasImage {
 	std::vector<uint8_t> rgbaPixels;
 };
 
-struct StagingBuffer {
-	VkBuffer buffer = VK_NULL_HANDLE;
-	VmaAllocation allocation = nullptr;
-};
-
-void vkCheck(VkResult result, const char* message) {
-	if (result != VK_SUCCESS) {
-		throw std::runtime_error(message);
-	}
-}
-
 template <typename T>
 const T* listData(const artery_font::StdList<T>& list) {
 	return static_cast<const T*>(list);
@@ -60,13 +54,11 @@ const T* listData(const artery_font::StdList<T>& list) {
 
 std::string toStdString(const artery_font::StdString& input) {
 	const char* value = static_cast<const char*>(input);
-	return value ? std::string(value) : std::string();
+	return value ? std::string(value) : std::string{};
 }
 
 std::string toLowerAscii(std::string text) {
-	for (char& c : text) {
-		c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-	}
+	for (char& c : text) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 	return text;
 }
 
@@ -76,421 +68,6 @@ bool isArfontPath(const std::filesystem::path& path) {
 
 bool supportsImageEncoding(artery_font::ImageEncoding encoding) {
 	return encoding == artery_font::IMAGE_PNG || encoding == artery_font::IMAGE_RAW_BINARY;
-}
-
-uint32_t nextLayerCapacity(uint32_t current, uint32_t required) {
-	uint32_t capacity = std::max(current, FontManager::kInitialAtlasLayerCapacity);
-	while (capacity < required) {
-		if (capacity > std::numeric_limits<uint32_t>::max() - FontManager::kAtlasLayerGrowthStep) {
-			throw std::runtime_error("Font atlas layer capacity overflow.");
-		}
-		capacity += FontManager::kAtlasLayerGrowthStep;
-	}
-	return capacity;
-}
-
-VkCommandBuffer beginOneTimeCommands(VulkanContext& vk, VkCommandPool commandPool) {
-	VkCommandBufferAllocateInfo allocateInfo{};
-	allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocateInfo.commandPool = commandPool;
-	allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocateInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	vkCheck(
-		vkAllocateCommandBuffers(vk.device, &allocateInfo, &commandBuffer),
-		"Failed to allocate font manager command buffer.");
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	vkCheck(vkBeginCommandBuffer(commandBuffer, &beginInfo), "Failed to begin font manager command buffer.");
-	return commandBuffer;
-}
-
-void endOneTimeCommands(VulkanContext& vk, VkCommandPool commandPool, VkCommandBuffer commandBuffer) {
-	vkCheck(vkEndCommandBuffer(commandBuffer), "Failed to end font manager command buffer.");
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, VK_NULL_HANDLE), "Failed to submit font manager command buffer.");
-	vkCheck(vkQueueWaitIdle(vk.graphicsQ), "Failed to wait for graphics queue during font upload.");
-
-	vkFreeCommandBuffers(vk.device, commandPool, 1, &commandBuffer);
-}
-
-void cmdTransitionImageLayout(
-	VkCommandBuffer commandBuffer,
-	VkImage image,
-	VkImageLayout oldLayout,
-	VkImageLayout newLayout,
-	VkAccessFlags srcAccessMask,
-	VkAccessFlags dstAccessMask,
-	VkPipelineStageFlags srcStageMask,
-	VkPipelineStageFlags dstStageMask,
-	uint32_t baseLayer,
-	uint32_t layerCount) {
-	VkImageMemoryBarrier barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = oldLayout;
-	barrier.newLayout = newLayout;
-	barrier.srcAccessMask = srcAccessMask;
-	barrier.dstAccessMask = dstAccessMask;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = baseLayer;
-	barrier.subresourceRange.layerCount = layerCount;
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		srcStageMask,
-		dstStageMask,
-		0,
-		0,
-		nullptr,
-		0,
-		nullptr,
-		1,
-		&barrier);
-}
-
-void destroyAtlasImageStorage(VulkanContext& vk, Font::AtlasArrayResource& atlas) {
-	if (atlas.view != VK_NULL_HANDLE) {
-		vkDestroyImageView(vk.device, atlas.view, nullptr);
-		atlas.view = VK_NULL_HANDLE;
-	}
-	if (atlas.image != VK_NULL_HANDLE) {
-		vmaDestroyImage(vk.allocator, atlas.image, atlas.allocation);
-		atlas.image = VK_NULL_HANDLE;
-		atlas.allocation = nullptr;
-	}
-}
-
-void createAtlasImageStorage(
-	VulkanContext& vk,
-	uint32_t width,
-	uint32_t height,
-	uint32_t layers,
-	VkImage& outImage,
-	VmaAllocation& outAllocation,
-	VkImageView& outView) {
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-	imageInfo.extent = { width, height, 1 };
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = layers;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	VmaAllocationCreateInfo allocationInfo{};
-	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-
-	vkCheck(
-		vmaCreateImage(vk.allocator, &imageInfo, &allocationInfo, &outImage, &outAllocation, nullptr),
-		"Failed to create font atlas image array.");
-
-	VkImageViewCreateInfo viewInfo{};
-	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewInfo.image = outImage;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-	viewInfo.format = imageInfo.format;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = 1;
-	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = layers;
-	vkCheck(vkCreateImageView(vk.device, &viewInfo, nullptr, &outView), "Failed to create font atlas image view.");
-}
-
-void createLinearSampler(VulkanContext& vk, VkSampler& outSampler) {
-	VkSamplerCreateInfo samplerInfo{};
-	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = 0.0f;
-	samplerInfo.maxAnisotropy = 1.0f;
-	samplerInfo.anisotropyEnable = VK_FALSE;
-	samplerInfo.compareEnable = VK_FALSE;
-	samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	vkCheck(vkCreateSampler(vk.device, &samplerInfo, nullptr, &outSampler), "Failed to create font atlas sampler.");
-}
-
-void transitionImageToShaderRead(VulkanContext& vk, VkCommandPool commandPool, VkImage image, uint32_t layerCount) {
-	VkCommandBuffer commandBuffer = beginOneTimeCommands(vk, commandPool);
-	cmdTransitionImageLayout(
-		commandBuffer,
-		image,
-		VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		0,
-		VK_ACCESS_SHADER_READ_BIT,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		layerCount);
-	endOneTimeCommands(vk, commandPool, commandBuffer);
-}
-
-void growAtlasStorage(
-	VulkanContext& vk,
-	VkCommandPool commandPool,
-	Font::AtlasArrayResource& atlas,
-	uint32_t newCapacity) {
-	VkImage newImage = VK_NULL_HANDLE;
-	VmaAllocation newAllocation = nullptr;
-	VkImageView newView = VK_NULL_HANDLE;
-	createAtlasImageStorage(vk, atlas.width, atlas.height, newCapacity, newImage, newAllocation, newView);
-
-	VkCommandBuffer commandBuffer = beginOneTimeCommands(vk, commandPool);
-	cmdTransitionImageLayout(
-		commandBuffer,
-		newImage,
-		VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		0,
-		VK_ACCESS_TRANSFER_WRITE_BIT,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0,
-		newCapacity);
-
-	if (atlas.layersUsed > 0) {
-		cmdTransitionImageLayout(
-			commandBuffer,
-			atlas.image,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_ACCESS_SHADER_READ_BIT,
-			VK_ACCESS_TRANSFER_READ_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0,
-			atlas.layersUsed);
-
-		std::vector<VkImageCopy> regions;
-		regions.reserve(atlas.layersUsed);
-		for (uint32_t layer = 0; layer < atlas.layersUsed; ++layer) {
-			VkImageCopy region{};
-			region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.srcSubresource.mipLevel = 0;
-			region.srcSubresource.baseArrayLayer = layer;
-			region.srcSubresource.layerCount = 1;
-			region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.dstSubresource.mipLevel = 0;
-			region.dstSubresource.baseArrayLayer = layer;
-			region.dstSubresource.layerCount = 1;
-			region.extent = { atlas.width, atlas.height, 1 };
-			regions.push_back(region);
-		}
-
-		vkCmdCopyImage(
-			commandBuffer,
-			atlas.image,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			newImage,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			static_cast<uint32_t>(regions.size()),
-			regions.data());
-
-		cmdTransitionImageLayout(
-			commandBuffer,
-			atlas.image,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_READ_BIT,
-			VK_ACCESS_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0,
-			atlas.layersUsed);
-	}
-
-	cmdTransitionImageLayout(
-		commandBuffer,
-		newImage,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_ACCESS_TRANSFER_WRITE_BIT,
-		VK_ACCESS_SHADER_READ_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0,
-		newCapacity);
-	endOneTimeCommands(vk, commandPool, commandBuffer);
-
-	destroyAtlasImageStorage(vk, atlas);
-	atlas.image = newImage;
-	atlas.allocation = newAllocation;
-	atlas.view = newView;
-	atlas.layersCapacity = newCapacity;
-	atlas.bindingRevision += 1;
-}
-
-void ensureAtlasStorageCapacity(
-	VulkanContext& vk,
-	VkCommandPool commandPool,
-	Font::AtlasArrayResource& atlas,
-	uint32_t width,
-	uint32_t height,
-	uint32_t requiredLayers) {
-	if (requiredLayers == 0) {
-		return;
-	}
-
-	if (atlas.image == VK_NULL_HANDLE) {
-		const uint32_t initialCapacity = nextLayerCapacity(
-			std::max(atlas.layersCapacity, FontManager::kInitialAtlasLayerCapacity),
-			requiredLayers);
-
-		if (atlas.sampler == VK_NULL_HANDLE) {
-			createLinearSampler(vk, atlas.sampler);
-		}
-
-		VmaAllocation allocation = nullptr;
-		createAtlasImageStorage(vk, width, height, initialCapacity, atlas.image, allocation, atlas.view);
-		atlas.allocation = allocation;
-		atlas.width = width;
-		atlas.height = height;
-		atlas.layersCapacity = initialCapacity;
-		transitionImageToShaderRead(vk, commandPool, atlas.image, atlas.layersCapacity);
-		atlas.bindingRevision += 1;
-		return;
-	}
-
-	if (atlas.width != width || atlas.height != height) {
-		throw std::runtime_error("All registered .arfont files must use the same atlas dimensions.");
-	}
-
-	if (requiredLayers <= atlas.layersCapacity) {
-		return;
-	}
-
-	const uint32_t expandedCapacity = nextLayerCapacity(atlas.layersCapacity, requiredLayers);
-	growAtlasStorage(vk, commandPool, atlas, expandedCapacity);
-}
-
-StagingBuffer createStagingBuffer(VulkanContext& vk, const uint8_t* bytes, size_t byteCount) {
-	StagingBuffer staging{};
-
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = static_cast<VkDeviceSize>(byteCount);
-	bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	VmaAllocationCreateInfo allocationInfo{};
-	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-	allocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-	VmaAllocationInfo createdAllocationInfo{};
-	vkCheck(
-		vmaCreateBuffer(
-			vk.allocator,
-			&bufferInfo,
-			&allocationInfo,
-			&staging.buffer,
-			&staging.allocation,
-			&createdAllocationInfo),
-		"Failed to create font upload staging buffer.");
-
-	if (!createdAllocationInfo.pMappedData) {
-		vmaDestroyBuffer(vk.allocator, staging.buffer, staging.allocation);
-		throw std::runtime_error("Failed to map font upload staging buffer.");
-	}
-
-	std::memcpy(createdAllocationInfo.pMappedData, bytes, byteCount);
-	vkCheck(vmaFlushAllocation(vk.allocator, staging.allocation, 0, byteCount), "Failed to flush font upload staging buffer.");
-	return staging;
-}
-
-void destroyStagingBuffer(VulkanContext& vk, StagingBuffer& staging) {
-	if (staging.buffer != VK_NULL_HANDLE) {
-		vmaDestroyBuffer(vk.allocator, staging.buffer, staging.allocation);
-		staging.buffer = VK_NULL_HANDLE;
-		staging.allocation = nullptr;
-	}
-}
-
-void uploadLayerPixels(
-	VulkanContext& vk,
-	VkCommandPool commandPool,
-	Font::AtlasArrayResource& atlas,
-	uint32_t layer,
-	const std::vector<uint8_t>& rgbaPixels) {
-	const size_t expectedBytes = static_cast<size_t>(atlas.width) * static_cast<size_t>(atlas.height) * 4u;
-	if (rgbaPixels.size() != expectedBytes) {
-		throw std::runtime_error("Decoded .arfont image size does not match atlas dimensions.");
-	}
-
-	StagingBuffer staging = createStagingBuffer(vk, rgbaPixels.data(), rgbaPixels.size());
-	try {
-		VkCommandBuffer commandBuffer = beginOneTimeCommands(vk, commandPool);
-		cmdTransitionImageLayout(
-			commandBuffer,
-			atlas.image,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VK_ACCESS_SHADER_READ_BIT,
-			VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			layer,
-			1);
-
-		VkBufferImageCopy copyRegion{};
-		copyRegion.bufferOffset = 0;
-		copyRegion.bufferRowLength = 0;
-		copyRegion.bufferImageHeight = 0;
-		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyRegion.imageSubresource.mipLevel = 0;
-		copyRegion.imageSubresource.baseArrayLayer = layer;
-		copyRegion.imageSubresource.layerCount = 1;
-		copyRegion.imageExtent = { atlas.width, atlas.height, 1 };
-
-		vkCmdCopyBufferToImage(
-			commandBuffer,
-			staging.buffer,
-			atlas.image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1,
-			&copyRegion);
-
-		cmdTransitionImageLayout(
-			commandBuffer,
-			atlas.image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_ACCESS_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			layer,
-			1);
-		endOneTimeCommands(vk, commandPool, commandBuffer);
-	} catch (...) {
-		destroyStagingBuffer(vk, staging);
-		throw;
-	}
-
-	destroyStagingBuffer(vk, staging);
 }
 
 int pickAtlasImageIndex(const artery_font::StdArteryFont<float>& font) {
@@ -681,62 +258,95 @@ std::string makeUniqueFontName(
 
 } // namespace
 
-void FontManager::init(VulkanContext& vk, uint32_t atlasSize) {
-	destroy(vk);
-	vk_ = &vk;
-	atlasSizeHint_ = atlasSize;
-	atlas_.layersCapacity = kInitialAtlasLayerCapacity;
-
-	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
-		throw std::runtime_error("FontManager init requires a valid Vulkan device + allocator.");
+void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSize) {
+	destroy();
+	const storage::StringId name = storageSystem.intern("flowui.font.catalog");
+	const storage::ResourceKey key{storage::ResourceDomain::Font, name, InvalidWindowId};
+	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::FontCatalogController>(
+		storageSystem, key, storage::ResourceKind::FontFamily, name,
+		std::ref(storageSystem), atlasSize);
+	storage_ = &storageSystem;
+	controllerHandle_ = handle.packed();
+	controller_ = manager_storage::state<manager_storage::FontCatalogController>(
+		storage_, handle, storage::ResourceKind::FontFamily);
+	if (!controller_) {
+		destroy();
+		throw std::runtime_error("Font catalog storage publication failed.");
 	}
-	if (atlasSizeHint_ == 0) {
-		throw std::runtime_error("FontManager init requires a non-zero font atlas size.");
-	}
-
-	VkCommandPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	poolInfo.queueFamilyIndex = vk.graphicsQFamily;
-	vkCheck(vkCreateCommandPool(vk.device, &poolInfo, nullptr, &uploadCommandPool_), "Failed to create font upload command pool.");
 }
 
 FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
+	if (!controller_ || !storage_) throw std::runtime_error("FontManager is not initialized.");
 	std::string familyName = createInfo.name.empty() ? std::string("Default") : createInfo.name;
-	if (familyIdByName_.find(familyName) != familyIdByName_.end()) {
+	if (controller_->familyIdByName.find(familyName) != controller_->familyIdByName.end()) {
 		throw std::runtime_error("Font family already exists: " + familyName);
 	}
 
-	const FontFamilyId familyId = static_cast<FontFamilyId>(families_.size());
-	FontFamilyData family{};
+	const size_t oldFontCount = controller_->fonts.size();
+	const size_t oldLayerCount = controller_->atlasLayerPixels.size();
+	const FontId oldNextFontId = controller_->nextFontId;
+	const FontFamilyId familyId = static_cast<FontFamilyId>(controller_->families.size());
+	controller_->familyIdByName.reserve(controller_->familyIdByName.size() + 1u);
+	manager_storage::FontFamilyRecord family{};
 	family.id = familyId;
 	family.name = std::move(familyName);
-	families_.push_back(std::move(family));
-	familyIdByName_[families_.back().name] = familyId;
-
-	for (const FontFaceCreateInfo& faceInfo : createInfo.faces) {
-		addFamilyFace(familyId, faceInfo);
+	family.faces.reserve(createInfo.faces.size());
+	controller_->families.push_back(std::move(family));
+	try {
+		controller_->familyIdByName.emplace(controller_->families.back().name, familyId);
+		controller_->familyTransaction = true;
+		for (const FontFaceCreateInfo& faceInfo : createInfo.faces) addFamilyFace(familyId, faceInfo);
+		controller_->familyTransaction = false;
+	} catch (...) {
+		controller_->familyTransaction = false;
+		for (size_t index = oldFontCount; index < controller_->fonts.size(); ++index) {
+			controller_->fontIndexById.erase(controller_->fonts[index].id);
+			controller_->fontIdByName.erase(controller_->fonts[index].name);
+		}
+		controller_->fonts.resize(oldFontCount);
+		controller_->nextFontId = oldNextFontId;
+		controller_->atlasLayerPixels.resize(oldLayerCount);
+		controller_->borrowedAtlas.layersUsed = static_cast<uint32_t>(oldLayerCount);
+		controller_->familyIdByName.erase(controller_->families.back().name);
+		controller_->families.pop_back();
+		throw;
 	}
-
+	storage_->noteManagerMutation(InvalidWindowId);
 	return familyId;
 }
 
+FontManager::FontFamilyId FontManager::createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+	FontFamilyCreateInfo normalizedInfo = createInfo;
+	normalizedInfo.name = std::string(storage_->string(normalized.name));
+	return createFamily(normalizedInfo);
+}
+
 FontManager::FontFamilyId FontManager::getFamilyId(std::string_view familyName) const {
-	const auto it = familyIdByName_.find(std::string(familyName));
-	return (it != familyIdByName_.end()) ? it->second : std::numeric_limits<FontFamilyId>::max();
+	const auto it = controller_->familyIdByName.find(std::string(familyName));
+	return (it != controller_->familyIdByName.end()) ? it->second : std::numeric_limits<FontFamilyId>::max();
+}
+
+FontManager::FontFamilyId FontManager::getFamilyId(ResourceKey key) const {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+	return getFamilyId(storage_->string(normalized.name));
 }
 
 FontManager::FontId FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) {
-	if (familyId >= families_.size()) {
+	if (familyId >= controller_->families.size()) {
 		throw std::runtime_error("Font family id does not exist.");
 	}
 
+	controller_->families[familyId].faces.reserve(controller_->families[familyId].faces.size() + 1u);
 	const FontId fontId = loadFontFace(createInfo);
-	families_[familyId].faces.push_back(FontFamilyFace{
+	controller_->families[familyId].faces.push_back(manager_storage::FontFamilyFaceRecord{
 		.fontId = fontId,
 		.weight = createInfo.weight,
 		.style = createInfo.style,
 	});
+	if (!controller_->familyTransaction) storage_->noteManagerMutation(InvalidWindowId);
 	return fontId;
 }
 
@@ -748,16 +358,22 @@ FontManager::FontId FontManager::addFamilyFace(std::string_view familyName, cons
 	return addFamilyFace(familyId, createInfo);
 }
 
+FontManager::FontId FontManager::addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+	return addFamilyFace(storage_->string(normalized.name), createInfo);
+}
+
 FontManager::FontId FontManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
-	if (familyId >= families_.size()) {
+	if (familyId >= controller_->families.size()) {
 		return 0;
 	}
 
-	const FontFamilyData& family = families_[familyId];
-	const FontFamilyFace* bestFace = nullptr;
+	const manager_storage::FontFamilyRecord& family = controller_->families[familyId];
+	const manager_storage::FontFamilyFaceRecord* bestFace = nullptr;
 	uint32_t bestDistance = std::numeric_limits<uint32_t>::max();
 
-	for (const FontFamilyFace& face : family.faces) {
+	for (const manager_storage::FontFamilyFaceRecord& face : family.faces) {
 		if (face.style != style) {
 			continue;
 		}
@@ -782,6 +398,12 @@ FontManager::FontId FontManager::resolveFont(std::string_view familyName, uint32
 	return (familyId != std::numeric_limits<FontFamilyId>::max()) ? resolveFont(familyId, weight, style) : 0;
 }
 
+FontManager::FontId FontManager::resolveFont(ResourceKey key, uint32_t weight, FontStyle style) const {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+	return resolveFont(storage_->string(normalized.name), weight, style);
+}
+
 FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createInfo) {
 	if (createInfo.path.empty()) {
 		throw std::runtime_error("Font face path must not be empty.");
@@ -798,7 +420,7 @@ FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createIn
 
 FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 	(void)px;
-	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
+	if (!controller_) {
 		throw std::runtime_error("FontManager is not initialized.");
 	}
 	const std::filesystem::path fontPath(path);
@@ -822,10 +444,7 @@ FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 
 FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& createInfo) {
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
-	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
-		throw std::runtime_error("[Flow Ui]: FontManager is not initialized.");
-	}
-	if (uploadCommandPool_ == VK_NULL_HANDLE) {
+	if (!controller_) {
 		throw std::runtime_error("[Flow Ui]: FontManager is not initialized.");
 	}
 	if (createInfo.path.empty()) {
@@ -837,7 +456,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	if (!std::filesystem::is_regular_file(createInfo.path)) {
 		throw std::runtime_error("[Flow Ui]: Font file does not exist: " + createInfo.path.string());
 	}
-	if (atlasSizeHint_ == 0 || atlasSizeHint_ > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+	if (controller_->atlasSizeHint == 0 || controller_->atlasSizeHint > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
 		throw std::runtime_error("[Flow Ui]: Runtime font atlas page size is invalid.");
 	}
 
@@ -893,8 +512,8 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, kDefaultRuntimeFontAngleThreshold, glyphSeed);
 	}
 
-	const uint32_t pageWidth = atlasSizeHint_;
-	const uint32_t pageHeight = atlasSizeHint_;
+	const uint32_t pageWidth = controller_->atlasSizeHint;
+	const uint32_t pageHeight = controller_->atlasSizeHint;
 	msdf_atlas::TightAtlasPacker packer;
 	packer.setDimensions(static_cast<int>(pageWidth), static_cast<int>(pageHeight));
 	packer.setSpacing(2);
@@ -942,17 +561,13 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 			rowBytes);
 	}
 
-	VulkanContext& vk = *vk_;
-	ensureAtlasStorageCapacity(vk, uploadCommandPool_, atlas_, pageWidth, pageHeight, atlas_.layersUsed + 1u);
-	const uint32_t assignedLayer = atlas_.layersUsed;
-	uploadLayerPixels(vk, uploadCommandPool_, atlas_, assignedLayer, pagePixels);
-	atlas_.layersUsed += 1u;
+	const uint32_t assignedLayer = static_cast<uint32_t>(controller_->atlasLayerPixels.size());
 
 	Font::FontFaceData fontFace{};
-	if (nextFontId_ == std::numeric_limits<FontId>::max()) {
+	if (controller_->nextFontId == std::numeric_limits<FontId>::max()) {
 		throw std::runtime_error("FlowUi font id limit exceeded.");
 	}
-	fontFace.id = nextFontId_++;
+	fontFace.id = controller_->nextFontId;
 	fontFace.sourcePath = createInfo.path;
 	fontFace.atlasLayer = assignedLayer;
 	fontFace.atlasWidth = pageWidth;
@@ -1033,14 +648,30 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		variant.fallbackGlyphIndex = 0;
 	}
 
-	fontFace.name = makeUniqueFontName(variant.name, fontIdByName_);
+	fontFace.name = makeUniqueFontName(variant.name, controller_->fontIdByName);
 	fontFace.variants.push_back(std::move(variant));
 
-	const size_t newIndex = fonts_.size();
-	fonts_.push_back(std::move(fontFace));
-	fontIndexById_[fonts_.back().id] = newIndex;
-	fontIdByName_[fonts_.back().name] = fonts_.back().id;
-	return fonts_.back().id;
+	const size_t newIndex = controller_->fonts.size();
+	const FontId committedId = fontFace.id;
+	const std::string committedName = fontFace.name;
+	controller_->fontIndexById.reserve(controller_->fontIndexById.size() + 1u);
+	controller_->fontIdByName.reserve(controller_->fontIdByName.size() + 1u);
+	controller_->fontIndexById.emplace(committedId, newIndex);
+	try {
+		controller_->fontIdByName.emplace(committedName, committedId);
+		controller_->uploadLayerTransactional(assignedLayer, pagePixels);
+		controller_->fonts.push_back(std::move(fontFace));
+		++controller_->nextFontId;
+	} catch (...) {
+		controller_->fontIdByName.erase(committedName);
+		controller_->fontIndexById.erase(committedId);
+		if (controller_->atlasLayerPixels.size() > assignedLayer) {
+			controller_->atlasLayerPixels.resize(assignedLayer);
+			controller_->borrowedAtlas.layersUsed = assignedLayer;
+		}
+		throw;
+	}
+	return controller_->fonts.back().id;
 #else
 	(void)createInfo;
 	throw std::runtime_error("Runtime font baking is not enabled.");
@@ -1048,12 +679,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 }
 
 FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
-		throw std::runtime_error("FontManager is not initialized.");
-	}
-	VulkanContext& vk = *vk_;
-
-	if (uploadCommandPool_ == VK_NULL_HANDLE) {
+	if (!controller_) {
 		throw std::runtime_error("FontManager is not initialized.");
 	}
 
@@ -1084,8 +710,8 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 
 	const auto* images = listData(arteryFont.images);
 	const DecodedAtlasImage decodedImage = decodeImageToRgba8(images[imageIndex]);
-	const uint32_t pageWidth = atlasSizeHint_;
-	const uint32_t pageHeight = atlasSizeHint_;
+	const uint32_t pageWidth = controller_->atlasSizeHint;
+	const uint32_t pageHeight = controller_->atlasSizeHint;
 	std::vector<uint8_t> pagePixels = copyAtlasIntoPage(decodedImage, pageWidth, pageHeight, path);
 
 	if (decodedImage.width != pageWidth || decodedImage.height != pageHeight) {
@@ -1098,17 +724,14 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 			pageHeight);
 	}
 
-	ensureAtlasStorageCapacity(vk, uploadCommandPool_, atlas_, pageWidth, pageHeight, atlas_.layersUsed + 1u);
-	const uint32_t assignedLayer = atlas_.layersUsed;
-	uploadLayerPixels(vk, uploadCommandPool_, atlas_, assignedLayer, pagePixels);
-	atlas_.layersUsed += 1u;
+	const uint32_t assignedLayer = static_cast<uint32_t>(controller_->atlasLayerPixels.size());
 
 	const auto* variants = listData(arteryFont.variants);
 	Font::FontFaceData fontFace{};
-	if (nextFontId_ == std::numeric_limits<FontId>::max()) {
+	if (controller_->nextFontId == std::numeric_limits<FontId>::max()) {
 		throw std::runtime_error("FlowUi font id limit exceeded.");
 	}
-	fontFace.id = nextFontId_++;
+	fontFace.id = controller_->nextFontId;
 	fontFace.sourcePath = path;
 	fontFace.atlasLayer = assignedLayer;
 	fontFace.atlasWidth = pageWidth;
@@ -1193,47 +816,79 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	} else {
 		preferredName = path.stem().string();
 	}
-	fontFace.name = makeUniqueFontName(preferredName, fontIdByName_);
+	fontFace.name = makeUniqueFontName(preferredName, controller_->fontIdByName);
 
-	const size_t newIndex = fonts_.size();
-	fonts_.push_back(std::move(fontFace));
-	fontIndexById_[fonts_.back().id] = newIndex;
-	fontIdByName_[fonts_.back().name] = fonts_.back().id;
-	return fonts_.back().id;
+	const size_t newIndex = controller_->fonts.size();
+	const FontId committedId = fontFace.id;
+	const std::string committedName = fontFace.name;
+	controller_->fontIndexById.reserve(controller_->fontIndexById.size() + 1u);
+	controller_->fontIdByName.reserve(controller_->fontIdByName.size() + 1u);
+	controller_->fontIndexById.emplace(committedId, newIndex);
+	try {
+		controller_->fontIdByName.emplace(committedName, committedId);
+		controller_->uploadLayerTransactional(assignedLayer, pagePixels);
+		controller_->fonts.push_back(std::move(fontFace));
+		++controller_->nextFontId;
+	} catch (...) {
+		controller_->fontIdByName.erase(committedName);
+		controller_->fontIndexById.erase(committedId);
+		if (controller_->atlasLayerPixels.size() > assignedLayer) {
+			controller_->atlasLayerPixels.resize(assignedLayer);
+			controller_->borrowedAtlas.layersUsed = assignedLayer;
+		}
+		throw;
+	}
+	return controller_->fonts.back().id;
 }
 
 const Font::FontFaceData* FontManager::getFontById(FontId fontId) const {
-	const auto it = fontIndexById_.find(fontId);
-	if (it == fontIndexById_.end()) {
+	const auto it = controller_->fontIndexById.find(fontId);
+	if (it == controller_->fontIndexById.end()) {
 		return nullptr;
 	}
 	const size_t index = it->second;
-	return (index < fonts_.size()) ? &fonts_[index] : nullptr;
+	return (index < controller_->fonts.size()) ? &controller_->fonts[index] : nullptr;
 }
 
-void FontManager::destroy(VulkanContext& vk) {
-	familyIdByName_.clear();
-	families_.clear();
-	fontIdByName_.clear();
-	fontIndexById_.clear();
-	fonts_.clear();
-	nextFontId_ = 0;
-	atlasSizeHint_ = 0;
+const Font::AtlasArrayResource& FontManager::getAtlasResource() const {
+	if (!controller_) throw std::logic_error("FontManager is not initialized.");
+	return controller_->borrowedAtlas;
+}
 
-	if (vk.device != VK_NULL_HANDLE) {
-		destroyAtlasImageStorage(vk, atlas_);
-		if (atlas_.sampler != VK_NULL_HANDLE) {
-			vkDestroySampler(vk.device, atlas_.sampler, nullptr);
-		}
-		if (uploadCommandPool_ != VK_NULL_HANDLE) {
-			vkDestroyCommandPool(vk.device, uploadCommandPool_, nullptr);
+manager_storage::FontFrameView FontManager::frameView(const storage::FrameToken& frame) const {
+	if (!controller_ || !storage_) throw std::logic_error("FontManager is not initialized.");
+	std::array<storage::ResourceUse, 3> uses{};
+	size_t count = 0;
+	if (controller_->atlasImage) uses[count++] = storage::useOf(controller_->atlasImage);
+	if (controller_->atlasView) uses[count++] = storage::useOf(controller_->atlasView);
+	if (controller_->atlasSampler) uses[count++] = storage::useOf(controller_->atlasSampler);
+	if (count > 0) storage_->trackUses(frame, std::span(uses).first(count));
+	return manager_storage::FontFrameView{
+		.families = &controller_->families,
+		.fonts = &controller_->fonts,
+		.familyCount = controller_->families.size(),
+		.fontCount = controller_->fonts.size(),
+		.atlas = controller_->borrowedAtlas,
+		.atlasImage = controller_->atlasImage,
+		.atlasView = controller_->atlasView,
+		.atlasSampler = controller_->atlasSampler,
+		.publicationRevision = frame.managerSharedRevision,
+	};
+}
+
+void FontManager::destroy() noexcept {
+	if (storage_) {
+		try {
+			const storage::StringId name = storage_->intern("flowui.font.catalog");
+			(void)storage_->removeManagerRecord(
+				storage::ResourceKey{storage::ResourceDomain::Font, name, InvalidWindowId},
+				storage::ResourceKind::FontFamily);
+		} catch (...) {
 		}
 	}
-
-	atlas_ = Font::AtlasArrayResource{};
-	atlas_.layersCapacity = kInitialAtlasLayerCapacity;
-	uploadCommandPool_ = VK_NULL_HANDLE;
-	vk_ = nullptr;
+	controller_ = nullptr;
+	controllerHandle_ = 0;
+	storage_ = nullptr;
 }
 
 } // namespace FlowUi

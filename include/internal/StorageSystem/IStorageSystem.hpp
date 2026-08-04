@@ -11,7 +11,7 @@ namespace FlowUi::detail::storage {
 
 class IStorageSystem {
 public:
-	static constexpr uint32_t CurrentInterfaceVersion = 4u;
+	static constexpr uint32_t CurrentInterfaceVersion = 5u;
 
 	virtual ~IStorageSystem() = default;
 
@@ -69,6 +69,30 @@ public:
 	[[nodiscard]] virtual StringId intern(std::string_view value) = 0;
 	// Interned strings remain stable until shutdown.
 	[[nodiscard]] virtual std::string_view string(StringId id) const noexcept = 0;
+	// Returns true only for the first mark of (key, diagnosticCode). Manager
+	// facades use this for allocation-free warn-once behavior without private maps.
+	virtual bool markDiagnosticOnce(ResourceKey key, uint32_t diagnosticCode) = 0;
+	virtual void clearDiagnosticMark(ResourceKey key, uint32_t diagnosticCode) = 0;
+
+	// Destructor-aware, non-relocating CPU records used by manager facades. A
+	// record is invisible until construction succeeds and keyed publication
+	// commits. Destruction runs synchronously on the app thread in this phase.
+	[[nodiscard]] virtual ManagerRecordHandle createManagerRecord(const ManagerRecordDesc& desc) = 0;
+	[[nodiscard]] virtual ManagerRecordHandle findManagerRecord(
+		ResourceKey key, ResourceKind kind) const noexcept = 0;
+	[[nodiscard]] virtual void* managerRecordData(
+		ManagerRecordHandle handle, ResourceKind kind) noexcept = 0;
+	[[nodiscard]] virtual const void* managerRecordData(
+		ManagerRecordHandle handle, ResourceKind kind) const noexcept = 0;
+	virtual bool removeManagerRecord(ResourceKey key, ResourceKind kind) = 0;
+	virtual void releaseWindowManagerRecords(WindowId window) noexcept = 0;
+	virtual void noteManagerMutation(WindowId window) = 0;
+	[[nodiscard]] virtual ManagerFrameView managerFrameView(const FrameToken& frame) const noexcept = 0;
+	[[nodiscard]] virtual uint64_t managerSharedRevision() const noexcept = 0;
+	[[nodiscard]] virtual uint64_t managerWindowRevision(WindowId window) const noexcept = 0;
+	// Test-only deterministic fault injection. Zero disables injection; N fails
+	// the Nth subsequent manager transaction checkpoint.
+	virtual void setManagerFailureCountdown(uint32_t checkpoints) noexcept = 0;
 	[[nodiscard]] virtual BlobHandle createBlob(std::span<const std::byte> bytes, StringId debugName) = 0;
 	// The returned blob span is borrowed while the caller's strong handle remains
 	// alive; release/collect must not race readers of the span.
@@ -88,13 +112,9 @@ public:
 		ResourceKey key,
 		const TextureViewDesc& desc,
 		bool* inserted = nullptr) = 0;
+	[[nodiscard]] virtual TextureHandle createAnonymousTexture(const TextureViewDesc& desc) = 0;
+	virtual void releaseAnonymousTexture(TextureHandle texture, SubmissionSerial lastUse = 0) = 0;
 	[[nodiscard]] virtual TextureHandle replaceTexture(ResourceKey key, const TextureViewDesc& desc) = 0;
-	//Transitional: borrowed native texture publication is removed after manager
-	// resource stores migrate to storage-owned image/view/sampler handles.
-	[[nodiscard]] virtual TextureHandle publishExternalTexture(
-		ResourceKey key,
-		const ExternalTextureDesc& desc,
-		bool* inserted = nullptr) = 0;
 	virtual bool removeTexture(ResourceKey key, SubmissionSerial lastUse = 0) = 0;
 	[[nodiscard]] virtual TextureHandle findTexture(ResourceKey key) const noexcept = 0;
 	[[nodiscard]] virtual TextureMetadata textureMetadata(TextureHandle texture) const noexcept = 0;

@@ -35,6 +35,49 @@ set_tests_properties(flowui.ui.renderer_conversion PROPERTIES
     TIMEOUT 30
 )
 
+add_executable(flowui_phase4_api_tests Phase4ApiTests.cpp)
+target_compile_features(flowui_phase4_api_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_phase4_api_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(flowui_phase4_api_tests PRIVATE
+	FLOWUI_APP_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi.cpp"
+	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ViewPortManager.cpp"
+	FLOWUI_SWAPCHAIN_SOURCE="${PROJECT_SOURCE_DIR}/src/Vulkan/Vk_Swapchain.cpp"
+	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
+)
+target_link_libraries(flowui_phase4_api_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.phase4.api COMMAND flowui_phase4_api_tests)
+set_tests_properties(flowui.phase4.api PROPERTIES LABELS "flowui;phase4;unit" TIMEOUT 30)
+
+add_executable(flowui_phase5_manager_storage_tests Phase5ManagerStorageTests.cpp)
+target_compile_features(flowui_phase5_manager_storage_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_phase5_manager_storage_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(flowui_phase5_manager_storage_tests PRIVATE
+	FLOWUI_IMAGE_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ImageManager.cpp"
+	FLOWUI_ICON_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/IconManager.cpp"
+	FLOWUI_FONT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/FontManager.cpp"
+	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ViewPortManager.cpp"
+	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
+	FLOWUI_STORAGE_INTERFACE_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/StorageSystem/IStorageSystem.hpp"
+	FLOWUI_STORAGE_TYPES_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/StorageSystem/StorageTypes.hpp"
+)
+target_link_libraries(flowui_phase5_manager_storage_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.phase5.manager_storage COMMAND flowui_phase5_manager_storage_tests)
+set_tests_properties(flowui.phase5.manager_storage PROPERTIES
+	LABELS "flowui;phase5;managers;storage;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_phase4_window_tests Phase4WindowTests.cpp)
+target_compile_features(flowui_phase4_window_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_phase4_window_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_phase4_window_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.phase4.two_window COMMAND flowui_phase4_window_tests)
+set_tests_properties(flowui.phase4.two_window PROPERTIES
+	LABELS "flowui;phase4;integration;vulkan;window"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
 add_executable(flowui_storage_system_tests
     FlowStorageSystemTests.cpp
     HeadlessVulkanFixture.cpp

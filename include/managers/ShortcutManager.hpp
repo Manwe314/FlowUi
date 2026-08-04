@@ -1,16 +1,16 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
-#include <vector>
-
 #include <clay.h>
 
+#include "FlowUi/WindowId.hpp"
 #include "managers/structs/ShortcutManagerStructs.hpp"
 
 namespace FlowUi {
 
 class UiManager;
+namespace detail::storage { class IStorageSystem; }
+namespace detail::manager_storage { struct ShortcutManagerState; }
 
 /** @addtogroup flowui_shortcut_manager
  * @{
@@ -169,40 +169,22 @@ public:
 	 * }
 	 * @endcode
 	 */
-	Clay_ElementId focusedElement() const { return focusedElementId_; }
+	Clay_ElementId focusedElement() const;
 
 private:
 	friend class UiManager;
 
+	void init(detail::storage::IStorageSystem& storage, WindowId window);
+	void destroy() noexcept;
 	/** @brief Dispatch shortcuts for the current frame. */
 	void beginFrame(UiManager& ui, const FrameInput& currentInput, const FrameInput& previousInput);
 
-	struct ShortcutExecutable {
-		ShortcutScope scope = ShortcutScope::Global;
-		int32_t priority = 0;
-		ShortcutId id = 0u;
-		uint64_t registrationOrder = 0u;
-		ShortcutCallback callback{};
-	};
+	detail::manager_storage::ShortcutManagerState& state();
+	const detail::manager_storage::ShortcutManagerState& state() const;
 
-	using ShortcutBucket = std::vector<ShortcutExecutable>;
-
-	static uint8_t modsMaskFromChord(const ShortcutChord& chord);
-	static uint8_t modsMaskFromInput(const FrameInput& input);
-	static bool keyDown(const FrameInput& input, int key);
-	static uint32_t packChord(int key, uint8_t modsMask, ShortcutTrigger trigger);
-	static int unpackKey(uint32_t packedChord);
-	static bool executableOrderLess(const ShortcutExecutable& a, const ShortcutExecutable& b);
-
-	bool dispatchPackedChord(ShortcutContext& context, UiManager& ui, uint32_t packedChord) const;
-	bool scopeIsActive(const ShortcutExecutable& executable, const ShortcutContext& context, UiManager& ui) const;
-
-	std::unordered_map<uint32_t, ShortcutBucket> chordBuckets_{};
-	std::unordered_map<ShortcutId, uint32_t> shortcutIdToChord_{};
-	std::unordered_map<int, uint32_t> registeredKeyRefCount_{};
-	uint64_t nextShortcutId_ = 1u;
-	uint64_t nextRegistrationOrder_ = 1u;
-	Clay_ElementId focusedElementId_{};
+	detail::storage::IStorageSystem* storage_ = nullptr;
+	WindowId window_ = InvalidWindowId;
+	uint64_t stateHandle_ = 0;
 };
 
 /** @} */

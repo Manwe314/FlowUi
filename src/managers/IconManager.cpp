@@ -7,18 +7,31 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
-#include "internal/UiTexturePublisher.hpp"
-#include "internal/Vma.hpp"
+#include "internal/ManagerStorage/IconCacheController.hpp"
+#include "internal/ManagerStorage/ManagerStateAccess.hpp"
+#include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include <plutosvg.h>
 
 namespace FlowUi {
 
+namespace manager_storage = detail::manager_storage;
+namespace key_storage = detail::managerStorage;
+namespace storage = detail::storage;
+
 namespace {
+
+storage::ResourceKey iconKey(storage::IStorageSystem& storageSystem, ResourceKey key) {
+	return key_storage::normalizeResourceKey(
+		storageSystem, key, ResourceDomain::Icon,
+		key_storage::ResourceScope::AppShared);
+}
 
 void convertArgbPremultipliedToRgbaStraight(
 	uint8_t* data,
@@ -62,254 +75,7 @@ void convertArgbPremultipliedToRgbaStraight(
 	}
 }
 
-void vkCheck(VkResult result, const char* message) {
-	if (result != VK_SUCCESS) {
-		throw std::runtime_error(message);
-	}
-}
-
-struct StagingBuffer {
-	VkBuffer buffer = VK_NULL_HANDLE;
-	VmaAllocation allocation = nullptr;
-};
-
-VkCommandBuffer beginOneTimeCommands(VulkanContext& vk, VkCommandPool commandPool) {
-	VkCommandBufferAllocateInfo allocateInfo{};
-	allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocateInfo.commandPool = commandPool;
-	allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocateInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	vkCheck(
-		vkAllocateCommandBuffers(vk.device, &allocateInfo, &commandBuffer),
-		"IconManager failed to allocate command buffer.");
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	vkCheck(vkBeginCommandBuffer(commandBuffer, &beginInfo), "IconManager failed to begin command buffer.");
-	return commandBuffer;
-}
-
-void endOneTimeCommands(VulkanContext& vk, VkCommandPool commandPool, VkCommandBuffer commandBuffer) {
-	vkCheck(vkEndCommandBuffer(commandBuffer), "IconManager failed to end command buffer.");
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1u;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkCheck(vkQueueSubmit(vk.graphicsQ, 1u, &submitInfo, VK_NULL_HANDLE), "IconManager failed to submit command buffer.");
-	vkCheck(vkQueueWaitIdle(vk.graphicsQ), "IconManager failed to wait for queue idle.");
-
-	vkFreeCommandBuffers(vk.device, commandPool, 1u, &commandBuffer);
-}
-
-void cmdTransitionImageLayout(
-	VkCommandBuffer commandBuffer,
-	VkImage image,
-	VkImageLayout oldLayout,
-	VkImageLayout newLayout,
-	VkAccessFlags srcAccessMask,
-	VkAccessFlags dstAccessMask,
-	VkPipelineStageFlags srcStageMask,
-	VkPipelineStageFlags dstStageMask) {
-	VkImageMemoryBarrier barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = oldLayout;
-	barrier.newLayout = newLayout;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0u;
-	barrier.subresourceRange.levelCount = 1u;
-	barrier.subresourceRange.baseArrayLayer = 0u;
-	barrier.subresourceRange.layerCount = 1u;
-	barrier.srcAccessMask = srcAccessMask;
-	barrier.dstAccessMask = dstAccessMask;
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		srcStageMask,
-		dstStageMask,
-		0u,
-		0u,
-		nullptr,
-		0u,
-		nullptr,
-		1u,
-		&barrier);
-}
-
-StagingBuffer createStagingBuffer(VulkanContext& vk, const uint8_t* data, size_t byteCount) {
-	StagingBuffer staging{};
-
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = byteCount;
-	bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	VmaAllocationCreateInfo allocationInfo{};
-	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-	allocationInfo.flags =
-		VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-		VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-	VmaAllocationInfo mappedInfo{};
-	vkCheck(
-		vmaCreateBuffer(
-			vk.allocator,
-			&bufferInfo,
-			&allocationInfo,
-			&staging.buffer,
-			&staging.allocation,
-			&mappedInfo),
-		"IconManager failed to create staging buffer.");
-
-	if (!mappedInfo.pMappedData) {
-		vmaDestroyBuffer(vk.allocator, staging.buffer, staging.allocation);
-		throw std::runtime_error("IconManager failed to map staging buffer.");
-	}
-
-	std::memcpy(mappedInfo.pMappedData, data, byteCount);
-	vkCheck(vmaFlushAllocation(vk.allocator, staging.allocation, 0, byteCount), "IconManager failed to flush staging buffer.");
-	return staging;
-}
-
-void destroyStagingBuffer(VulkanContext& vk, StagingBuffer& staging) {
-	if (staging.buffer != VK_NULL_HANDLE) {
-		vmaDestroyBuffer(vk.allocator, staging.buffer, staging.allocation);
-	}
-	staging.buffer = VK_NULL_HANDLE;
-	staging.allocation = nullptr;
-}
-
-void transitionImageLayoutsToShaderRead(
-	VulkanContext& vk,
-	VkCommandPool commandPool,
-	VkImage image) {
-	if (vk.device == VK_NULL_HANDLE || commandPool == VK_NULL_HANDLE || image == VK_NULL_HANDLE) {
-		return;
-	}
-
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = commandPool;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	vkCheck(vkAllocateCommandBuffers(vk.device, &allocInfo, &commandBuffer), "IconManager failed to allocate command buffer.");
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	vkCheck(vkBeginCommandBuffer(commandBuffer, &beginInfo), "IconManager failed to begin command buffer.");
-
-	VkImageMemoryBarrier toTransferDst{};
-	toTransferDst.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	toTransferDst.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	toTransferDst.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	toTransferDst.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	toTransferDst.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	toTransferDst.image = image;
-	toTransferDst.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	toTransferDst.subresourceRange.baseMipLevel = 0;
-	toTransferDst.subresourceRange.levelCount = 1;
-	toTransferDst.subresourceRange.baseArrayLayer = 0;
-	toTransferDst.subresourceRange.layerCount = 1;
-	toTransferDst.srcAccessMask = 0u;
-	toTransferDst.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0u,
-		0u,
-		nullptr,
-		0u,
-		nullptr,
-		1u,
-		&toTransferDst);
-
-	const VkClearColorValue zeroColor = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-	VkImageSubresourceRange clearRange{};
-	clearRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	clearRange.baseMipLevel = 0;
-	clearRange.levelCount = 1;
-	clearRange.baseArrayLayer = 0;
-	clearRange.layerCount = 1;
-	vkCmdClearColorImage(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &zeroColor, 1u, &clearRange);
-
-	VkImageMemoryBarrier toShaderRead{};
-	toShaderRead.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	toShaderRead.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	toShaderRead.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	toShaderRead.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	toShaderRead.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	toShaderRead.image = image;
-	toShaderRead.subresourceRange = clearRange;
-	toShaderRead.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	toShaderRead.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0u,
-		0u,
-		nullptr,
-		0u,
-		nullptr,
-		1u,
-		&toShaderRead);
-
-	vkCheck(vkEndCommandBuffer(commandBuffer), "IconManager failed to end command buffer.");
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1u;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkCheck(vkQueueSubmit(vk.graphicsQ, 1u, &submitInfo, VK_NULL_HANDLE), "IconManager failed to submit command buffer.");
-	vkCheck(vkQueueWaitIdle(vk.graphicsQ), "IconManager failed to wait for queue idle.");
-
-	vkFreeCommandBuffers(vk.device, commandPool, 1u, &commandBuffer);
-}
-
 } // namespace
-
-IconManager::SurfaceOwner& IconManager::SurfaceOwner::operator=(SurfaceOwner&& other) noexcept {
-	if (this == &other) {
-		return *this;
-	}
-	if (surface) {
-		plutovg_surface_destroy(surface);
-	}
-	surface = other.surface;
-	other.surface = nullptr;
-	return *this;
-}
-
-IconManager::SurfaceOwner::~SurfaceOwner() {
-	if (surface) {
-		plutovg_surface_destroy(surface);
-		surface = nullptr;
-	}
-}
-
-std::size_t IconManager::VariantKeyHash::operator()(const VariantKey& key) const noexcept {
-	std::size_t seed = std::hash<std::string>{}(key.nameKey);
-	const std::size_t wHash = std::hash<uint32_t>{}(key.requestedWidth);
-	const std::size_t hHash = std::hash<uint32_t>{}(key.requestedHeight);
-	seed ^= (wHash + 0x9e3779b97f4a7c15ull + (seed << 6u) + (seed >> 2u));
-	seed ^= (hHash + 0x9e3779b97f4a7c15ull + (seed << 6u) + (seed >> 2u));
-	return seed;
-}
 
 uint32_t IconManager::frameAge(uint32_t currentFrame, uint32_t lastUsedFrame) {
 	// Unsigned subtraction is wrap-safe in modulo-2^32 arithmetic.
@@ -327,16 +93,16 @@ IconManager::VariantKey IconManager::makeVariantKey(std::string_view key, uint32
 }
 
 void IconManager::advanceFrameCounter() {
-	++frameCounter_;
-	if (frameCounter_ != 0u) {
+	++controller_->frameCounter;
+	if (controller_->frameCounter != 0u) {
 		return;
 	}
 
 	// Overflow policy: renormalize timestamps to maintain stable ordering semantics.
-	for (auto& [_, variant] : variantsByKeyAndSize_) {
+	for (auto& [_, variant] : controller_->variantsByKeyAndSize) {
 		variant.lastUsedFrame = 0u;
 	}
-	for (AtlasPage& page : atlasPages_) {
+	for (AtlasPage& page : controller_->atlasPages) {
 		page.lastUsedFrame = 0u;
 	}
 }
@@ -347,27 +113,21 @@ void IconManager::touchVariant(VariantEntry& variant, uint32_t frameIndex) {
 }
 
 void IconManager::resetVariantFrameMarks() {
-	for (auto& [_, variant] : variantsByKeyAndSize_) {
+	for (auto& [_, variant] : controller_->variantsByKeyAndSize) {
 		variant.referencedThisFrame = false;
 	}
 }
 
 IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
-		throw std::runtime_error("IconManager cannot create atlas pages before Vulkan init.");
-	}
-	if (!texturePublisher_) {
-		throw std::runtime_error("IconManager texture publisher is not set.");
-	}
-	if (atlasSampler_ == VK_NULL_HANDLE || commandPool_ == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager atlas resources are not initialized.");
+	(void)pageIndex;
+	if (!storage_ || !controller_ || !controller_->atlasSampler) {
+		throw std::runtime_error("IconManager storage is not initialized.");
 	}
 
 	AtlasPage page{};
-	page.namespacedKey = "svg/page/" + std::to_string(pageIndex);
-	page.width = std::max<uint32_t>(1u, atlasSize_);
-	page.height = std::max<uint32_t>(1u, atlasSize_);
+	page.width = std::max<uint32_t>(1u, controller_->atlasSize);
+	page.height = std::max<uint32_t>(1u, controller_->atlasSize);
 	page.freeRects.emplace_back(AtlasRect{
 		.x = 0u,
 		.y = 0u,
@@ -375,66 +135,34 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 		.h = page.height,
 	});
 	page.usedArea = 0u;
-	page.lastUsedFrame = frameCounter_;
+	page.lastUsedFrame = controller_->frameCounter;
 
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent = { page.width, page.height, 1u };
-	imageInfo.mipLevels = 1u;
-	imageInfo.arrayLayers = 1u;
-	imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	VmaAllocationCreateInfo allocationInfo{};
-	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-	vkCheck(
-		vmaCreateImage(vk_->allocator, &imageInfo, &allocationInfo, &page.image, &page.allocation, nullptr),
-		"IconManager failed to create atlas image.");
-
+	storage::BlobHandle zeroBlob{};
 	try {
-		VkImageViewCreateInfo viewInfo{};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = page.image;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = imageInfo.format;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		viewInfo.subresourceRange.baseMipLevel = 0u;
-		viewInfo.subresourceRange.levelCount = 1u;
-		viewInfo.subresourceRange.baseArrayLayer = 0u;
-		viewInfo.subresourceRange.layerCount = 1u;
-		vkCheck(vkCreateImageView(vk_->device, &viewInfo, nullptr, &page.view), "IconManager failed to create atlas image view.");
-
-		transitionImageLayoutsToShaderRead(*vk_, commandPool_, page.image);
-
-		bool inserted = false;
-		page.texture = texturePublisher_->publishExternal(
-			detail::storage::ResourceDomain::Icon,
-			page.namespacedKey,
-			detail::storage::ExternalTextureDesc{
-				.nativeImageView = reinterpret_cast<uintptr_t>(page.view),
-				.nativeSampler = reinterpret_cast<uintptr_t>(atlasSampler_),
-				.sourceWidth = static_cast<int32_t>(page.width),
-				.sourceHeight = static_cast<int32_t>(page.height),
-			},
-			inserted);
-		if (!inserted) {
-			throw std::runtime_error("IconManager atlas page namespaced key collision.");
-		}
+		const storage::StringId name = storage_->intern("flowui.icon.atlas.page");
+		page.image = storage_->createImage(storage::ImageDesc{
+			.width = page.width, .height = page.height,
+			.format = storage::PixelFormat::Rgba8Srgb,
+			.usage = storage::ImageUsage::Sampled | storage::ImageUsage::TransferDestination,
+			.sharing = storage::ResourceSharing::AppShared, .debugName = name,
+		});
+		page.view = storage_->createImageView(page.image, storage::ImageViewDesc{
+			.format = storage::PixelFormat::Rgba8Srgb, .debugName = name,
+		});
+		std::vector<std::byte> zeroes(static_cast<size_t>(page.width) * page.height * 4u, std::byte{0});
+		zeroBlob = storage_->createBlob(zeroes, name);
+		(void)storage_->enqueueUpload(storage::UploadRequest{
+			.destination = storage::UploadDestination::Image, .source = zeroBlob,
+			.byteCount = zeroes.size(), .destinationImage = page.image,
+			.imageRegion = storage::ImageRegion{.width = page.width, .height = page.height},
+			.releaseSourceWhenComplete = true,
+		});
+		storage_->flushUploads();
+		zeroBlob = {};
 	} catch (...) {
-		if (page.view != VK_NULL_HANDLE) {
-			vkDestroyImageView(vk_->device, page.view, nullptr);
-			page.view = VK_NULL_HANDLE;
-		}
-		if (page.image != VK_NULL_HANDLE) {
-			vmaDestroyImage(vk_->allocator, page.image, page.allocation);
-			page.image = VK_NULL_HANDLE;
-			page.allocation = nullptr;
-		}
+		if (zeroBlob) storage_->releaseBlob(zeroBlob);
+		if (page.view) storage_->releaseImageView(page.view);
+		if (page.image) storage_->releaseImage(page.image);
 		throw;
 	}
 
@@ -442,35 +170,22 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 }
 
 void IconManager::destroyAtlasPage(AtlasPage& page) {
-	if (texturePublisher_ && !page.namespacedKey.empty()) {
-		const bool removed = texturePublisher_->remove(
-			detail::storage::ResourceDomain::Icon, page.namespacedKey);
-		(void)removed;
-	}
-	if (vk_ && vk_->device != VK_NULL_HANDLE && page.view != VK_NULL_HANDLE) {
-		vkDestroyImageView(vk_->device, page.view, nullptr);
-	}
-	if (vk_ && vk_->allocator != nullptr && page.image != VK_NULL_HANDLE) {
-		vmaDestroyImage(vk_->allocator, page.image, page.allocation);
-	}
-
-	page.texture = {};
-	page.image = VK_NULL_HANDLE;
-	page.allocation = nullptr;
-	page.view = VK_NULL_HANDLE;
+	if (storage_ && page.view) storage_->releaseImageView(page.view);
+	if (storage_ && page.image) storage_->releaseImage(page.image);
+	page.image = {};
+	page.view = {};
 	page.width = 0u;
 	page.height = 0u;
 	page.usedArea = 0u;
 	page.lastUsedFrame = 0u;
-	page.namespacedKey.clear();
 	page.freeRects.clear();
 }
 
 void IconManager::destroyAtlasPages() {
-	for (AtlasPage& page : atlasPages_) {
+	for (AtlasPage& page : controller_->atlasPages) {
 		destroyAtlasPage(page);
 	}
-	atlasPages_.clear();
+	controller_->atlasPages.clear();
 }
 
 bool IconManager::tryAllocateInPage(
@@ -607,28 +322,21 @@ void IconManager::recalcAtlasUvs(VariantEntry& variant, const AtlasPage& page) c
 
 const std::string* IconManager::findRequestedKeyByTextureHandle(TextureHandle texture) const
 {
-	const auto it = requestedKeyByTexture_.find(texture.packed());
-	if (it == requestedKeyByTexture_.end()) {
+	const auto it = controller_->requestedKeyByTexture.find(texture.packed());
+	if (it == controller_->requestedKeyByTexture.end()) {
 		return nullptr;
 	}
 	return &it->second;
-}
-
-std::string IconManager::makeRequestNamespacedKey(std::string_view key) const {
-	return "svg/request/" + std::string(key);
 }
 
 void IconManager::uploadRasterToAtlasPage(
 	const AtlasPage& page,
 	const TransientRasterResult& raster,
 	const AtlasRect& contentRect) {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE || vk_->allocator == nullptr) {
+	if (!storage_) {
 		throw std::runtime_error("IconManager is not initialized.");
 	}
-	if (commandPool_ == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager command pool is not initialized.");
-	}
-	if (page.image == VK_NULL_HANDLE) {
+	if (!page.image) {
 		throw std::runtime_error("IconManager atlas page image is invalid.");
 	}
 	if (!raster.rgbaPixels || raster.width == 0u || raster.height == 0u || raster.strideBytes < raster.width * 4u) {
@@ -641,71 +349,31 @@ void IconManager::uploadRasterToAtlasPage(
 		throw std::runtime_error("IconManager atlas upload is out of bounds.");
 	}
 
-	const size_t uploadBytes = static_cast<size_t>(raster.strideBytes) * static_cast<size_t>(raster.height);
-	StagingBuffer staging = createStagingBuffer(*vk_, raster.rgbaPixels, uploadBytes);
-
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	const size_t tightRowBytes = static_cast<size_t>(raster.width) * 4u;
+	std::vector<std::byte> tight(tightRowBytes * raster.height);
+	for (uint32_t row = 0; row < raster.height; ++row) {
+		std::memcpy(tight.data() + row * tightRowBytes,
+			raster.rgbaPixels + static_cast<size_t>(row) * raster.strideBytes, tightRowBytes);
+	}
+	storage::BlobHandle blob{};
 	try {
-		commandBuffer = beginOneTimeCommands(*vk_, commandPool_);
-
-		cmdTransitionImageLayout(
-			commandBuffer,
-			page.image,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VK_ACCESS_SHADER_READ_BIT,
-			VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT);
-
-		VkBufferImageCopy copyRegion{};
-		copyRegion.bufferOffset = 0u;
-		copyRegion.bufferRowLength = raster.strideBytes / 4u;
-		copyRegion.bufferImageHeight = 0u;
-		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		copyRegion.imageSubresource.mipLevel = 0u;
-		copyRegion.imageSubresource.baseArrayLayer = 0u;
-		copyRegion.imageSubresource.layerCount = 1u;
-		copyRegion.imageOffset = {
-			static_cast<int32_t>(contentRect.x),
-			static_cast<int32_t>(contentRect.y),
-			0,
-		};
-		copyRegion.imageExtent = {
-			raster.width,
-			raster.height,
-			1u,
-		};
-
-		vkCmdCopyBufferToImage(
-			commandBuffer,
-			staging.buffer,
-			page.image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1u,
-			&copyRegion);
-
-		cmdTransitionImageLayout(
-			commandBuffer,
-			page.image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_ACCESS_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-
-		endOneTimeCommands(*vk_, commandPool_, commandBuffer);
-		commandBuffer = VK_NULL_HANDLE;
+		const storage::StringId name = storage_->intern("flowui.icon.atlas.region");
+		blob = storage_->createBlob(tight, name);
+		(void)storage_->enqueueUpload(storage::UploadRequest{
+			.destination = storage::UploadDestination::Image, .source = blob,
+			.byteCount = tight.size(), .destinationImage = page.image,
+			.imageRegion = storage::ImageRegion{
+				.x = contentRect.x, .y = contentRect.y,
+				.width = raster.width, .height = raster.height,
+			},
+			.releaseSourceWhenComplete = true,
+		});
+		storage_->flushUploads();
+		blob = {};
 	} catch (...) {
-		if (commandBuffer != VK_NULL_HANDLE) {
-			vkFreeCommandBuffers(vk_->device, commandPool_, 1u, &commandBuffer);
-		}
-		destroyStagingBuffer(*vk_, staging);
+		if (blob) storage_->releaseBlob(blob);
 		throw;
 	}
-
-	destroyStagingBuffer(*vk_, staging);
 }
 
 bool IconManager::tryAllocateAtlasRegion(
@@ -715,18 +383,18 @@ bool IconManager::tryAllocateAtlasRegion(
 	outAllocation = AtlasAllocation{};
 
 	auto tryAcrossPages = [&](bool mergeFirst) -> bool {
-		for (uint32_t pageIndex = 0u; pageIndex < atlasPages_.size(); ++pageIndex) {
-			AtlasPage& page = atlasPages_[pageIndex];
+		for (uint32_t pageIndex = 0u; pageIndex < controller_->atlasPages.size(); ++pageIndex) {
+			AtlasPage& page = controller_->atlasPages[pageIndex];
 			if (mergeFirst && page.freeRects.size() > 1u) {
 				mergeFreeRects(page);
 			}
 
 			AtlasAllocation candidate{};
-			if (!tryAllocateInPage(page, contentWidth, contentHeight, atlasPadding_, candidate)) {
+			if (!tryAllocateInPage(page, contentWidth, contentHeight, controller_->atlasPadding, candidate)) {
 				continue;
 			}
 			candidate.pageIndex = pageIndex;
-			page.lastUsedFrame = frameCounter_;
+			page.lastUsedFrame = controller_->frameCounter;
 			outAllocation = candidate;
 			return true;
 		}
@@ -740,19 +408,19 @@ bool IconManager::tryAllocateAtlasRegion(
 		return true;
 	}
 
-	if (atlasPages_.size() < maxAtlasPages_) {
-		const uint32_t newPageIndex = static_cast<uint32_t>(atlasPages_.size());
-		atlasPages_.push_back(createAtlasPage(newPageIndex));
+	if (controller_->atlasPages.size() < controller_->maxAtlasPages) {
+		const uint32_t newPageIndex = static_cast<uint32_t>(controller_->atlasPages.size());
+		controller_->atlasPages.push_back(createAtlasPage(newPageIndex));
 		AtlasAllocation candidate{};
-		if (tryAllocateInPage(atlasPages_.back(), contentWidth, contentHeight, atlasPadding_, candidate)) {
+		if (tryAllocateInPage(controller_->atlasPages.back(), contentWidth, contentHeight, controller_->atlasPadding, candidate)) {
 			candidate.pageIndex = newPageIndex;
-			atlasPages_.back().lastUsedFrame = frameCounter_;
+			controller_->atlasPages.back().lastUsedFrame = controller_->frameCounter;
 			outAllocation = candidate;
 			return true;
 		}
 	}
 
-	if (atlasPages_.empty()) {
+	if (controller_->atlasPages.empty()) {
 		return false;
 	}
 
@@ -769,30 +437,30 @@ bool IconManager::tryAllocateAtlasRegion(
 }
 
 bool IconManager::evictLeastRecentlyUsedVariant() {
-	auto victimIt = variantsByKeyAndSize_.end();
+	auto victimIt = controller_->variantsByKeyAndSize.end();
 	uint32_t bestAge = 0u;
 
-	for (auto it = variantsByKeyAndSize_.begin(); it != variantsByKeyAndSize_.end(); ++it) {
+	for (auto it = controller_->variantsByKeyAndSize.begin(); it != controller_->variantsByKeyAndSize.end(); ++it) {
 		const VariantEntry& candidate = it->second;
 		if (candidate.referencedThisFrame) {
 			continue;
 		}
-		const uint32_t age = frameAge(frameCounter_, candidate.lastUsedFrame);
-		if (victimIt == variantsByKeyAndSize_.end() || age > bestAge) {
+		const uint32_t age = frameAge(controller_->frameCounter, candidate.lastUsedFrame);
+		if (victimIt == controller_->variantsByKeyAndSize.end() || age > bestAge) {
 			victimIt = it;
 			bestAge = age;
 		}
 	}
 
-	if (victimIt == variantsByKeyAndSize_.end()) {
+	if (victimIt == controller_->variantsByKeyAndSize.end()) {
 		return false;
 	}
 
 	const VariantEntry victim = victimIt->second;
-	if (victim.pageIndex < atlasPages_.size()) {
-		releasePageRegion(atlasPages_[victim.pageIndex], victim.paddedRect);
-	}
-	variantsByKeyAndSize_.erase(victimIt);
+	storage_->releaseAnonymousTexture(victim.texture);
+	controller_->retiredRegions.push_back({victim.texture, victim.pageIndex, victim.paddedRect});
+	controller_->variantsByKeyAndSize.erase(victimIt);
+	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
 }
 
@@ -800,7 +468,7 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 	std::string_view nameKey,
 	uint32_t requestedWidth,
 	uint32_t requestedHeight) {
-	const uint32_t maxSizeGap = std::max<uint32_t>(1u, sizeReuseTolerance_);
+	const uint32_t maxSizeGap = std::max<uint32_t>(1u, controller_->sizeReuseTolerance);
 
 	VariantEntry* bestAbove = nullptr;
 	uint64_t bestAboveGap = std::numeric_limits<uint64_t>::max();
@@ -810,7 +478,7 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 	uint64_t bestLowerGap = std::numeric_limits<uint64_t>::max();
 	uint64_t bestLowerArea = 0u;
 
-	for (auto& [_, variant] : variantsByKeyAndSize_) {
+	for (auto& [_, variant] : controller_->variantsByKeyAndSize) {
 		if (variant.key.nameKey != nameKey) {
 			continue;
 		}
@@ -884,31 +552,44 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	if (!tryAllocateAtlasRegion(raster.width, raster.height, allocation)) {
 		throw std::runtime_error("IconManager atlas is full and no evictable entries are available.");
 	}
-	if (allocation.pageIndex >= atlasPages_.size()) {
+	if (allocation.pageIndex >= controller_->atlasPages.size()) {
 		throw std::runtime_error("IconManager produced an invalid atlas allocation.");
 	}
 
-	AtlasPage& page = atlasPages_[allocation.pageIndex];
+	AtlasPage& page = controller_->atlasPages[allocation.pageIndex];
 	uploadRasterToAtlasPage(page, raster, allocation.contentRect);
 
 	VariantEntry entry{};
 	entry.key = requestKey;
 	entry.pageIndex = allocation.pageIndex;
-	entry.texture = page.texture;
 	entry.paddedRect = allocation.paddedRect;
 	entry.contentRect = allocation.contentRect;
 	entry.sourceWidth = raster.width;
 	entry.sourceHeight = raster.height;
-	entry.lastUsedFrame = frameCounter_;
+	entry.lastUsedFrame = controller_->frameCounter;
 	entry.referencedThisFrame = true;
 	recalcAtlasUvs(entry, page);
+	try {
+		entry.texture = storage_->createAnonymousTexture(storage::TextureViewDesc{
+			.imageView = page.view, .sampler = controller_->atlasSampler,
+			.uv0x = entry.uv0x, .uv0y = entry.uv0y, .uv1x = entry.uv1x, .uv1y = entry.uv1y,
+			.sourceWidth = static_cast<int32_t>(entry.sourceWidth),
+			.sourceHeight = static_cast<int32_t>(entry.sourceHeight),
+		});
+	} catch (...) {
+		releasePageRegion(page, allocation.paddedRect);
+		throw;
+	}
 
-	auto [it, inserted] = variantsByKeyAndSize_.emplace(entry.key, std::move(entry));
+	auto [it, inserted] = controller_->variantsByKeyAndSize.emplace(entry.key, std::move(entry));
 	if (!inserted) {
+		storage_->releaseAnonymousTexture(entry.texture);
+		releasePageRegion(page, allocation.paddedRect);
 		return it->second;
 	}
 
-	page.lastUsedFrame = frameCounter_;
+	page.lastUsedFrame = controller_->frameCounter;
+	storage_->noteManagerMutation(InvalidWindowId);
 	return it->second;
 }
 
@@ -917,12 +598,9 @@ void IconManager::prepareFrameTextures(
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY)
 {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
+	if (!storage_ || !controller_) {
 		throw std::runtime_error("IconManager is not initialized.");
 	}
-
-	advanceFrameCounter();
-	resetVariantFrameMarks();
 
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
 	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
@@ -949,9 +627,9 @@ void IconManager::prepareFrameTextures(
 		const uint32_t requestedHeight = std::max<uint32_t>(1u, static_cast<uint32_t>(std::ceil(scaledHeight)));
 
 		VariantEntry& variant = ensureVariantForRequest(*requestedKey, requestedWidth, requestedHeight);
-		touchVariant(variant, frameCounter_);
-		if (variant.pageIndex < atlasPages_.size()) {
-			atlasPages_[variant.pageIndex].lastUsedFrame = frameCounter_;
+		touchVariant(variant, controller_->frameCounter);
+		if (variant.pageIndex < controller_->atlasPages.size()) {
+			controller_->atlasPages[variant.pageIndex].lastUsedFrame = controller_->frameCounter;
 		}
 
 		textureRef->handle = variant.texture;
@@ -964,66 +642,54 @@ void IconManager::prepareFrameTextures(
 	}
 }
 
-void IconManager::setTexturePublisher(detail::IUiTexturePublisher* publisher) {
-	texturePublisher_ = publisher;
+void IconManager::beginAppTick() {
+	if (!storage_ || !controller_) return;
+	for (auto it = controller_->retiredRegions.begin(); it != controller_->retiredRegions.end();) {
+		if (!storage_->textureRetirementComplete(it->texture)) {
+			++it;
+			continue;
+		}
+		if (it->pageIndex < controller_->atlasPages.size()) {
+			AtlasPage& page = controller_->atlasPages[it->pageIndex];
+			releasePageRegion(page, it->paddedRect);
+			mergeFreeRects(page);
+		}
+		it = controller_->retiredRegions.erase(it);
+	}
+	advanceFrameCounter();
+	resetVariantFrameMarks();
 }
 
-void IconManager::init(VulkanContext& vk, const IconManagerConfig& config) {
-	detail::IUiTexturePublisher* const preservedPublisher = texturePublisher_;
-	destroy(vk);
-	texturePublisher_ = preservedPublisher;
-
-	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
-		throw std::runtime_error("IconManager init requires a valid Vulkan device + allocator.");
+void IconManager::init(storage::IStorageSystem& storageSystem, const IconManagerConfig& config) {
+	destroy();
+	const storage::StringId name = storageSystem.intern("flowui.icon.cache");
+	const storage::ResourceKey key{storage::ResourceDomain::Icon, name, InvalidWindowId};
+	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::IconCacheController>(
+		storageSystem, key, storage::ResourceKind::IconVariant, name,
+		std::ref(storageSystem), std::cref(config));
+	storage_ = &storageSystem;
+	controllerHandle_ = handle.packed();
+	controller_ = manager_storage::state<manager_storage::IconCacheController>(
+		storage_, handle, storage::ResourceKind::IconVariant);
+	if (!controller_) {
+		destroy();
+		throw std::runtime_error("IconManager cache storage publication failed.");
 	}
-	if (!texturePublisher_) {
-		throw std::runtime_error("IconManager texture publisher is not set.");
+	try {
+		controller_->atlasPages.push_back(createAtlasPage(0u));
+	} catch (...) {
+		destroy();
+		throw;
 	}
-	if (vk.graphicsQFamily == UINT32_MAX || vk.graphicsQ == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager requires a valid graphics queue.");
-	}
-
-	vk_ = &vk;
-	atlasSize_ = std::max<uint32_t>(1u, config.atlasSize);
-	atlasPadding_ = config.atlasPadding;
-	sizeReuseTolerance_ = std::max<uint32_t>(1u, config.sizeBucketStep);
-	maxAtlasPages_ = std::max<uint32_t>(1u, config.maxAtlasPages);
-	frameCounter_ = 0u;
-
-	VkSamplerCreateInfo samplerInfo{};
-	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = 0.0f;
-	samplerInfo.maxAnisotropy = 1.0f;
-	samplerInfo.anisotropyEnable = VK_FALSE;
-	samplerInfo.compareEnable = VK_FALSE;
-	samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	vkCheck(vkCreateSampler(vk.device, &samplerInfo, nullptr, &atlasSampler_), "IconManager failed to create atlas sampler.");
-
-	VkCommandPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	poolInfo.queueFamilyIndex = vk.graphicsQFamily;
-	vkCheck(vkCreateCommandPool(vk.device, &poolInfo, nullptr, &commandPool_), "IconManager failed to create command pool.");
-
-	// Seed first page + descriptor slot so shader-facing IDs are available immediately.
-	atlasPages_.push_back(createAtlasPage(0u));
 }
 
 bool IconManager::registerSvg(std::string_view key, std::string_view svgSource) {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager is not initialized.");
-	}
-	if (key.empty()) {
-		throw std::runtime_error("IconManager key must not be empty.");
-	}
+	return registerSvg(ResourceKey{.name = key}, svgSource);
+}
+
+bool IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
+	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
+	const storage::ResourceKey normalized = iconKey(*storage_, key);
 	if (svgSource.empty()) {
 		throw std::runtime_error("IconManager SVG source must not be empty.");
 	}
@@ -1031,8 +697,8 @@ bool IconManager::registerSvg(std::string_view key, std::string_view svgSource) 
 		throw std::runtime_error("IconManager SVG source is too large.");
 	}
 
-	const std::string keyString(key);
-	if (documentsByKey_.find(keyString) != documentsByKey_.end()) {
+	const std::string keyString(key.name);
+	if (controller_->documentsByKey.find(keyString) != controller_->documentsByKey.end()) {
 		return false;
 	}
 
@@ -1056,136 +722,128 @@ bool IconManager::registerSvg(std::string_view key, std::string_view svgSource) 
 		throw std::runtime_error("IconManager failed to parse SVG source.");
 	}
 
+	storage::BlobHandle source{};
+	try {
+		source = storage_->createBlob(
+			std::as_bytes(std::span(svgSource.data(), svgSource.size())), normalized.name);
+	} catch (...) {
+		plutosvg_document_destroy(document);
+		throw;
+	}
+
 	DocumentRecord record{};
+	record.source = source;
 	record.document = document;
 	record.intrinsicWidth = std::max(0.0f, plutosvg_document_get_width(document));
 	record.intrinsicHeight = std::max(0.0f, plutosvg_document_get_height(document));
 
-	auto [it, inserted] = documentsByKey_.emplace(keyString, record);
+	auto [it, inserted] = controller_->documentsByKey.emplace(keyString, record);
 	if (!inserted) {
 		plutosvg_document_destroy(document);
+		storage_->releaseBlob(source);
 		return false;
 	}
-
+	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
 }
 
 bool IconManager::registerFromFile(std::string_view key, std::string_view filePath) {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager is not initialized.");
-	}
-	if (key.empty()) {
-		throw std::runtime_error("IconManager key must not be empty.");
-	}
+	return registerFromFile(ResourceKey{.name = key}, filePath);
+}
 
-	const std::string keyString(key);
-	if (documentsByKey_.find(keyString) != documentsByKey_.end()) {
-		return false;
-	}
+bool IconManager::registerFromFile(ResourceKey key, std::string_view filePath) {
+	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
+	(void)iconKey(*storage_, key);
 
 	const std::filesystem::path path(filePath);
 	if (!std::filesystem::is_regular_file(path)) {
 		throw std::runtime_error("SVG file does not exist: " + path.string());
 	}
 
-	const std::string pathString = path.string();
-	plutosvg_document_t* document = plutosvg_document_load_from_file(pathString.c_str(), -1.0f, -1.0f);
-	if (!document) {
-		throw std::runtime_error("IconManager failed to parse SVG file: " + pathString);
-	}
-
-	DocumentRecord record{};
-	record.document = document;
-	record.intrinsicWidth = std::max(0.0f, plutosvg_document_get_width(document));
-	record.intrinsicHeight = std::max(0.0f, plutosvg_document_get_height(document));
-
-	auto [it, inserted] = documentsByKey_.emplace(keyString, record);
-	if (!inserted) {
-		plutosvg_document_destroy(document);
-		return false;
-	}
-
-	return true;
+	std::ifstream stream(path, std::ios::binary);
+	if (!stream) throw std::runtime_error("Could not open SVG file: " + path.string());
+	const std::string source((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+	if (!stream.eof() && stream.fail()) throw std::runtime_error("Could not read SVG file: " + path.string());
+	return registerSvg(key, source);
 }
 
-bool IconManager::remove(std::string_view key)
-{
-	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager is not initialized.");
-	}
+bool IconManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
 
-	const std::string keyString(key);
-	auto it = documentsByKey_.find(keyString);
-	if (it == documentsByKey_.end()) {
+bool IconManager::remove(ResourceKey key) {
+	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
+	const storage::ResourceKey normalized = iconKey(*storage_, key);
+	const std::string keyString(key.name);
+	auto it = controller_->documentsByKey.find(keyString);
+	if (it == controller_->documentsByKey.end()) {
 		return false;
 	}
 
-	const auto requestIdIt = requestTextureByKey_.find(keyString);
-	if (requestIdIt != requestTextureByKey_.end()) {
-		if (texturePublisher_) {
-			const std::string namespacedKey = makeRequestNamespacedKey(key);
-			const bool removed = texturePublisher_->remove(
-				detail::storage::ResourceDomain::Icon, namespacedKey);
-			(void)removed;
-		}
-		requestedKeyByTexture_.erase(requestIdIt->second.packed());
-		requestTextureByKey_.erase(requestIdIt);
+	const auto requestIdIt = controller_->requestTextureByKey.find(keyString);
+	if (requestIdIt != controller_->requestTextureByKey.end()) {
+		(void)storage_->removeTexture(normalized);
+		controller_->requestedKeyByTexture.erase(requestIdIt->second.packed());
+		controller_->requestTextureByKey.erase(requestIdIt);
 	}
 
-	for (auto variantIt = variantsByKeyAndSize_.begin(); variantIt != variantsByKeyAndSize_.end();) {
+	for (auto variantIt = controller_->variantsByKeyAndSize.begin(); variantIt != controller_->variantsByKeyAndSize.end();) {
 		VariantEntry& variant = variantIt->second;
 		if (variant.key.nameKey != keyString) {
 			++variantIt;
 			continue;
 		}
 
-		if (variant.pageIndex < atlasPages_.size()) {
-			releasePageRegion(atlasPages_[variant.pageIndex], variant.paddedRect);
-		}
-
-		variantIt = variantsByKeyAndSize_.erase(variantIt);
+		storage_->releaseAnonymousTexture(variant.texture);
+		controller_->retiredRegions.push_back({variant.texture, variant.pageIndex, variant.paddedRect});
+		variantIt = controller_->variantsByKeyAndSize.erase(variantIt);
 	}
 
 	plutosvg_document_destroy(it->second.document);
-	documentsByKey_.erase(it);
+	storage_->releaseBlob(it->second.source);
+	controller_->documentsByKey.erase(it);
+	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
 }
 
 bool IconManager::contains(std::string_view key) const {
-	return documentsByKey_.find(std::string(key)) != documentsByKey_.end();
+	return contains(ResourceKey{.name = key});
 }
 
-TextureRef IconManager::textureRef(std::string_view key) {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
-		throw std::runtime_error("IconManager is not initialized.");
-	}
-	if (!texturePublisher_) {
-		throw std::runtime_error("IconManager texture publisher is not set.");
-	}
-	if (atlasPages_.empty() || atlasPages_.front().view == VK_NULL_HANDLE || atlasSampler_ == VK_NULL_HANDLE) {
+bool IconManager::contains(ResourceKey key) const {
+	if (!storage_ || !controller_) return false;
+	(void)iconKey(*storage_, key);
+	return controller_->documentsByKey.find(std::string(key.name)) != controller_->documentsByKey.end();
+}
+
+TextureRef IconManager::textureRef(std::string_view key) { return textureRef(ResourceKey{.name = key}); }
+
+TextureRef IconManager::textureRef(ResourceKey key) {
+	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
+	const storage::ResourceKey normalized = iconKey(*storage_, key);
+	if (controller_->atlasPages.empty() || !controller_->atlasPages.front().view || !controller_->atlasSampler) {
 		throw std::runtime_error("IconManager atlas pages are not initialized.");
 	}
-	if (key.empty()) {
-		throw std::runtime_error("IconManager key must not be empty.");
-	}
 
-	const std::string keyString(key);
-	const auto documentIt = documentsByKey_.find(keyString);
-	if (documentIt == documentsByKey_.end()) {
+	const std::string keyString(key.name);
+	const auto documentIt = controller_->documentsByKey.find(keyString);
+	if (documentIt == controller_->documentsByKey.end()) {
 		throw std::runtime_error("IconManager textureRef requested an unknown SVG key: " + keyString);
 	}
 
-	auto requestIdIt = requestTextureByKey_.find(keyString);
-	if (requestIdIt == requestTextureByKey_.end()) {
-		const std::string namespacedKey = makeRequestNamespacedKey(key);
+	auto requestIdIt = controller_->requestTextureByKey.find(keyString);
+	if (requestIdIt == controller_->requestTextureByKey.end()) {
 		bool inserted = false;
-		const TextureHandle requestTexture = texturePublisher_->publishFallbackAlias(
-			detail::storage::ResourceDomain::Icon, namespacedKey, inserted);
+		const AtlasPage& page = controller_->atlasPages.front();
+		const TextureHandle requestTexture = storage_->publishTexture(normalized, storage::TextureViewDesc{
+			.imageView = page.view, .sampler = controller_->atlasSampler,
+			.sourceWidth = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicWidth))),
+			.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight))),
+		}, &inserted);
 		if (!inserted) {
 			throw std::runtime_error("IconManager request namespaced key collision.");
 		}
-		requestIdIt = requestTextureByKey_.emplace(keyString, requestTexture).first;
-		requestedKeyByTexture_.emplace(requestTexture.packed(), keyString);
+		requestIdIt = controller_->requestTextureByKey.emplace(keyString, requestTexture).first;
+		controller_->requestedKeyByTexture.emplace(requestTexture.packed(), keyString);
+		storage_->noteManagerMutation(InvalidWindowId);
 	}
 
 	TextureRef texture{};
@@ -1197,15 +855,15 @@ TextureRef IconManager::textureRef(std::string_view key) {
 
 IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const
 {
-	if (!vk_ || vk_->device == VK_NULL_HANDLE) {
+	if (!storage_ || !controller_) {
 		throw std::runtime_error("IconManager is not initialized.");
 	}
 	if (key.empty()) {
 		throw std::runtime_error("IconManager raster key must not be empty.");
 	}
 
-	const auto recordIt = documentsByKey_.find(std::string(key));
-	if (recordIt == documentsByKey_.end() || !recordIt->second.document) {
+	const auto recordIt = controller_->documentsByKey.find(std::string(key));
+	if (recordIt == controller_->documentsByKey.end() || !recordIt->second.document) {
 		throw std::runtime_error("IconManager raster request references an unknown SVG key.");
 	}
 
@@ -1275,45 +933,18 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 	return result;
 }
 
-void IconManager::destroy(VulkanContext& vk) {
-	(void)vk;
-
-	if (texturePublisher_) {
-		for (const auto& [key, _] : requestTextureByKey_) {
-			const std::string namespacedKey = makeRequestNamespacedKey(key);
-			const bool removed = texturePublisher_->remove(
-				detail::storage::ResourceDomain::Icon, namespacedKey);
-			(void)removed;
-		}
+void IconManager::destroy() noexcept {
+	if (storage_) {
+		try {
+			const storage::StringId name = storage_->intern("flowui.icon.cache");
+			(void)storage_->removeManagerRecord(
+				storage::ResourceKey{storage::ResourceDomain::Icon, name, InvalidWindowId},
+				storage::ResourceKind::IconVariant);
+		} catch (...) {}
 	}
-
-	for (auto& [_, record] : documentsByKey_) {
-		plutosvg_document_destroy(record.document);
-		record.document = nullptr;
-	}
-	documentsByKey_.clear();
-	requestTextureByKey_.clear();
-	requestedKeyByTexture_.clear();
-	variantsByKeyAndSize_.clear();
-	destroyAtlasPages();
-
-	if (vk_ && vk_->device != VK_NULL_HANDLE && commandPool_ != VK_NULL_HANDLE) {
-		vkDestroyCommandPool(vk_->device, commandPool_, nullptr);
-	}
-	commandPool_ = VK_NULL_HANDLE;
-
-	if (vk_ && vk_->device != VK_NULL_HANDLE && atlasSampler_ != VK_NULL_HANDLE) {
-		vkDestroySampler(vk_->device, atlasSampler_, nullptr);
-	}
-	atlasSampler_ = VK_NULL_HANDLE;
-
-	vk_ = nullptr;
-	texturePublisher_ = nullptr;
-	atlasSize_ = 0u;
-	atlasPadding_ = 1u;
-	sizeReuseTolerance_ = 8u;
-	maxAtlasPages_ = 10u;
-	frameCounter_ = 0u;
+	controller_ = nullptr;
+	controllerHandle_ = 0;
+	storage_ = nullptr;
 }
 
 } // namespace FlowUi

@@ -10,6 +10,7 @@
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/ResourceKey.hpp"
 #include "clay.h"
 
 namespace FlowUi {
@@ -207,6 +208,14 @@ public:
 
 	/** @brief Return the stable identity of the semantic main window. */
 	[[nodiscard]] WindowId mainWindowId() const noexcept;
+	/** @brief Create and fully initialize an explicit secondary window. */
+	[[nodiscard]] WindowId createWindow(const WindowConfig& config);
+	/** @brief Destroy a secondary window after draining only its GPU work. */
+	void destroyWindow(WindowId id);
+	/** @brief Return whether an identity currently names a published window. */
+	[[nodiscard]] bool hasWindow(WindowId id) const noexcept;
+	/** @brief Poll global events and advance app-shared maintenance once. */
+	void pollEvents();
 
 	/** @brief Query whether the window backend requested shutdown.
 	 *
@@ -224,6 +233,7 @@ public:
 	 * @retval false The window has not requested shutdown.
 	 */
 	bool shouldClose() const;
+	[[nodiscard]] bool shouldClose(WindowId id) const;
 
 	/** @brief Set whether the window backend should request shutdown.
 	 *
@@ -241,6 +251,7 @@ public:
 	 * }
 	 */
 	void setShouldClose(int value);
+	void setShouldClose(WindowId id, int value);
 
 	/** @brief Begin a frame and prepare input/UI state.
 	 *
@@ -263,6 +274,8 @@ public:
 	 * @see @ref md_docs_2tutorials_2quick__start "Quick Start"
 	 */
 	void beginFrame();
+	/** @brief Begin one window frame without polling global platform events. */
+	void beginFrame(WindowId id);
 	/** @brief End UI construction and produce render commands.
 	 *
 	 * Completes UI construction, produces render commands for this frame, and
@@ -280,6 +293,7 @@ public:
 	 * @note This function should be called exactly once per frame.
 	 */
 	void endFrame();
+	void endFrame(WindowId id);
 	/** @brief Submit the current frame for rendering and presentation.
 	 *
 	 * Takes the render commands output by endFrame(), builds GPU draw runs,
@@ -296,6 +310,7 @@ public:
 	 * @note This function should be called exactly once per frame.
 	 */
 	void drawFrame();
+	void drawFrame(WindowId id);
 
 	/** @brief Access the font manager.
 	 *
@@ -390,6 +405,7 @@ public:
 	 * @see @ref flowui_viewport_manager "ViewPort Manager"
 	 */
 	ViewPortManager& viewPorts();
+	ViewPortManager& viewPorts(WindowId id);
 	/** @brief Access the viewport manager.
 	 *
 	 * Example:
@@ -404,6 +420,7 @@ public:
 	 * @see @ref flowui_viewport_manager "ViewPort Manager"
 	 */
 	const ViewPortManager& viewPorts() const;
+	const ViewPortManager& viewPorts(WindowId id) const;
 #endif
 
 	/** @brief Access the UI manager.
@@ -418,6 +435,7 @@ public:
 	 * @see @ref flowui_ui_manager "UI Manager"
 	 */
 	UiManager& ui();
+	UiManager& ui(WindowId id);
 	/** @brief Access the UI manager.
 	 *
 	 * Example:
@@ -430,6 +448,7 @@ public:
 	 * @see @ref flowui_ui_manager "UI Manager"
 	 */
 	const UiManager& ui() const;
+	const UiManager& ui(WindowId id) const;
 
 	/** @brief Set the native window title.
 	 *
@@ -441,16 +460,19 @@ public:
 	 * @see @ref flowui_config "Config Structs"
 	 */
 	void setWindowTitle(std::string_view title);
+	void setWindowTitle(WindowId id, std::string_view title);
 	/** @brief Return the window size in screen coordinates.
 	 *
 	 * @return std::pair<int, int> in the form (width, height).
 	 */
 	std::pair<int,int> windowSize() const;
+	[[nodiscard]] std::pair<int,int> windowSize(WindowId id) const;
 	/** @brief Return the framebuffer size in pixels.
 	 *
 	 * @return std::pair<int, int> in the form (width, height).
 	 */
 	std::pair<int,int> framebufferSize() const;
+	[[nodiscard]] std::pair<int,int> framebufferSize(WindowId id) const;
 	/** @brief Apply window input configuration.
 	 *
 	 * The initial window input configuration is set from FlowUi::WindowConfig by default.
@@ -462,6 +484,7 @@ public:
 	 * @see @ref flowui_config "Config Structs"
 	 */
 	void setWindowInputConfig(const WindowInputConfig& config);
+	void setWindowInputConfig(WindowId id, const WindowInputConfig& config);
 	/** @brief Return the current window input configuration.
 	 *
 	 * @return WindowInputConfig currently active on the window backend.
@@ -470,6 +493,7 @@ public:
 	 * @see @ref flowui_config "Config Structs"
 	 */
 	WindowInputConfig windowInputConfig() const;
+	[[nodiscard]] WindowInputConfig windowInputConfig(WindowId id) const;
 	/** @brief Return the backend native window handle.
 	 *
 	 * @return Native backend window handle, or nullptr if unavailable.
@@ -477,23 +501,27 @@ public:
 	 * @note The concrete handle type depends on the active window backend.
 	 */
 	void* nativeWindowHandle() const;
+	[[nodiscard]] void* nativeWindowHandle(WindowId id) const;
 	/** @brief Return whether the window backend supports raw mouse motion.
 	 *
 	 * @retval false The window handle is not created or does not support raw mouse motion.
 	 * @retval true The window handle supports raw mouse motion.
 	 */
 	bool supportsRawMouseMotion() const;
+	[[nodiscard]] bool supportsRawMouseMotion(WindowId id) const;
 	/** @brief Set clipboard text through the window backend.
 	 *
 	 * @param text String view for the text to set in the system clipboard.
 	 *
 	 */
 	void setClipboardText(std::string_view text);
+	void setClipboardText(WindowId id, std::string_view text);
 	/** @brief Read clipboard text through the window backend.
 	 *
 	 * @return std::string containing the current clipboard text.
 	 */
 	std::string clipboardText() const;
+	[[nodiscard]] std::string clipboardText(WindowId id) const;
 
 private:
 	struct Impl;

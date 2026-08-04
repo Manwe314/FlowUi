@@ -14,6 +14,7 @@
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/ResourceKey.hpp"
 #include "internal/FlowUiElementBridge.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
@@ -31,6 +32,8 @@ struct AppWindow;
 
 class App;
 struct FontManager;
+namespace detail::storage { class IStorageSystem; struct FrameToken; }
+namespace detail::manager_storage { struct UiManagerState; struct FontFrameView; }
 
 /** @addtogroup flowui_ui_manager
  * @{
@@ -87,6 +90,7 @@ public:
 	 * @endcode
 	 */
 	Clay_String toClayString(std::string_view s);
+	Clay_String toClayString(ResourceKey key);
 
 	/**
 	 * @brief Store a texture reference for use by Clay image render data.
@@ -159,6 +163,7 @@ public:
 	 * @endcode
 	 */
 	Clay_ElementId toClaySID(std::string_view s);
+	Clay_ElementId toClaySID(ResourceKey key);
 
 	/**
 	 * @brief Convert an element id string to a Clay element id.
@@ -179,6 +184,7 @@ public:
 	 * @endcode
 	 */
 	Clay_ElementId toClayEID(std::string_view s);
+	Clay_ElementId toClayEID(ResourceKey key);
 
 	/**
 	 * @brief Create a builder for a typed FlowUi element instance.
@@ -229,6 +235,23 @@ public:
 		);
 	}
 
+	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
+	ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(
+		const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition,
+		ResourceKey elementKey
+#if FLOW_UI_DEV_MODE
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
+#endif
+		) {
+		return createElement(
+			elementDefinition,
+			normalizeUiResourceName(elementKey)
+#if FLOW_UI_DEV_MODE
+			, sourceLocation
+#endif
+		);
+	}
+
 	/**
 	 * @brief Close the current element opened by ElementBuilder::construct().
 	 *
@@ -261,7 +284,7 @@ public:
 	 * }
 	 * @endcode
 	 */
-    const InteractionSnapshot& getPreviousFramesInteraction() const { return previousInteractionSnapshot_; }
+    const InteractionSnapshot& getPreviousFramesInteraction() const;
 
 	/**
 	 * @brief Return input for the current layout frame.
@@ -275,7 +298,7 @@ public:
 	 * const float mouseX = input.mouseX;
 	 * @endcode
 	 */
-	const FrameInput& getCurrentFrameInput() const { return frameInputForCurrentLayout_; }
+	const FrameInput& getCurrentFrameInput() const;
 
 	/**
 	 * @brief Return input for the previous layout frame.
@@ -291,7 +314,7 @@ public:
 	 *     !context.uiManager.getPreviousFrameInput().mouseDown[0];
 	 * @endcode
 	 */
-	const FrameInput& getPreviousFrameInput() const { return previousFrameInputForCurrentLayout_; }
+	const FrameInput& getPreviousFrameInput() const;
 
 	/**
 	 * @brief Access the input field manager.
@@ -340,42 +363,42 @@ public:
 	 *
 	 * @return Mutable dev-mode runtime for the active UiManager.
 	 */
-	devMode::DevRuntime& devRuntime() { return devRuntime_; }
+	devMode::DevRuntime& devRuntime();
 
 	/**
 	 * @brief Access the developer runtime.
 	 *
 	 * @return Immutable dev-mode runtime for the active UiManager.
 	 */
-	const devMode::DevRuntime& devRuntime() const { return devRuntime_; }
+	const devMode::DevRuntime& devRuntime() const;
 
 	/**
 	 * @brief Access developer tooling config.
 	 *
 	 * @return Mutable developer tooling configuration.
 	 */
-	DevToolsConfig& devToolsConfig() { return devToolsConfig_; }
+	DevToolsConfig& devToolsConfig();
 
 	/**
 	 * @brief Access developer tooling config.
 	 *
 	 * @return Immutable developer tooling configuration.
 	 */
-	const DevToolsConfig& devToolsConfig() const { return devToolsConfig_; }
+	const DevToolsConfig& devToolsConfig() const;
 
 	/**
 	 * @brief Access developer-mode performance diagnostics.
 	 *
 	 * @return Mutable rolling performance diagnostics for the active UiManager.
 	 */
-	devMode::PerformanceDiagnostics& performanceDiagnostics() { return performanceDiagnostics_; }
+	devMode::PerformanceDiagnostics& performanceDiagnostics();
 
 	/**
 	 * @brief Access developer-mode performance diagnostics.
 	 *
 	 * @return Immutable rolling performance diagnostics for the active UiManager.
 	 */
-	const devMode::PerformanceDiagnostics& performanceDiagnostics() const { return performanceDiagnostics_; }
+	const devMode::PerformanceDiagnostics& performanceDiagnostics() const;
 #endif
 
 	/**
@@ -483,64 +506,40 @@ private:
 	friend class ElementBuilder;
 	friend void detail::pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
 
-	UiManager(const AppConfig& appConfig);
+	UiManager() = default;
+	void initStorage(detail::storage::IStorageSystem& storage, WindowId window, const AppConfig& config);
+	void destroyStorage() noexcept;
 
-	void initStringArenas(const AppConfig& cfg);
-	void beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight);
+	void beginFrame(
+		const detail::storage::FrameToken& frame,
+		const FrameInput& frameInput,
+		const detail::manager_storage::FontFrameView& fontView,
+		float screenWidth,
+		float screenHeight);
 	Clay_RenderCommandArray endFrame();
 	const detail::InputFieldFrameOverrides& inputFieldFrameOverrides() const { return inputFieldManager_.frameOverrides(); }
-	void setFontManager(const FontManager* fontManager);
 	void setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor);
 	void setClipboardAccessors(
 		std::function<void(std::string_view)> setClipboardTextAccessor,
 		std::function<std::string()> getClipboardTextAccessor);
-	void setCurrentInteractionSnapshot(InteractionSnapshot snapshot);
 	void advanceFrameInteractionSnapshots();
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
 	void pushConstructedElement(Clay_ElementId elementId);
 
-	struct Arena {
-		std::unique_ptr<char[]> mem;
-		size_t capacity = 0;
-		size_t offset = 0;
-	};
-	
 	char* allocBytes(size_t nBytes, size_t align = alignof(std::max_align_t));
+	std::string_view normalizeUiResourceName(ResourceKey key) const;
 
 private:
 	
-	std::vector<Arena> arenas_;
-	uint32_t arenasCount_ = 0;
-	uint32_t curArena_ = 0;
-
-	std::unique_ptr<char[]> clayArenaMemory_;
-	Clay_Arena clayArena_{};
-	Clay_Context* clayContext_ = nullptr;
-	FrameInput frameInputForCurrentLayout_{};
-	FrameInput previousFrameInputForCurrentLayout_{};
-	bool wasPrimaryPointerDownLastFrame_ = false;
-
-	InteractionSnapshot previousInteractionSnapshot_;
-	InteractionSnapshot currentInteractionSnapshot_;
-	std::vector<Clay_ElementId> constructedElementStack_;
 	InputFieldManager inputFieldManager_{};
 	ShortcutManager shortcutManager_{};
-#if FLOW_UI_DEV_MODE
-	devMode::DevRuntime devRuntime_{};
-	devMode::PerformanceDiagnostics performanceDiagnostics_{};
-	DevToolsConfig devToolsConfig_{};
-	bool devPanelVisible_ = false;
-	bool devRootElementOpenThisFrame_ = false;
-	ShortcutId devPanelToggleShortcutId_ = 0u;
-#endif
 	std::function<void(std::string_view)> setClipboardTextAccessor_{};
 	std::function<std::string()> getClipboardTextAccessor_{};
 	std::function<void(CursorType)> setCursorTypeAccessor_{};
-	CursorType cursor_ = CursorType::Arrow;
-	CursorType previousCursor_ = CursorType::Arrow;
-	uint8_t cursorPriority_ = 0;
-	const FontManager* fontManager_ = nullptr;
-	float pointsToPixelsScale_ = 96.0f / 72.0f;
+	detail::storage::IStorageSystem* storage_ = nullptr;
+	WindowId window_ = InvalidWindowId;
+	uint64_t stateHandle_ = 0;
+	detail::manager_storage::UiManagerState* state_ = nullptr;
 
 };
 
