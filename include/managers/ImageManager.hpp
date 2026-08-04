@@ -1,31 +1,14 @@
 #pragma once
 
-#include <cstdint>
-#include <filesystem>
-#include <string>
 #include <string_view>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include "FlowUi/PublicStructs.hpp"
-
-struct VmaAllocation_T;
-struct VulkanContext;
-struct VkImage_T;
-struct VkImageView_T;
-struct VkSampler_T;
-struct VkCommandPool_T;
-
-using VkImage = VkImage_T*;
-using VkImageView = VkImageView_T*;
-using VkSampler = VkSampler_T*;
-using VkCommandPool = VkCommandPool_T*;
+#include "FlowUi/ResourceKey.hpp"
 
 namespace FlowUi {
 
 namespace detail {
-struct IUiTexturePublisher;
+namespace storage { class IStorageSystem; }
 
 } // namespace detail
 
@@ -82,7 +65,10 @@ public:
 	 * (void)inserted;
 	 * @endcode
 	 */
-	bool registerImage(std::string_view key, std::string_view filePath);
+	bool registerImage(ResourceKey key, std::string_view filePath);
+	bool registerImage(std::string_view key, std::string_view filePath) {
+		return registerImage(ResourceKey{.name = key}, filePath);
+	}
 
 	/**
 	 * @brief Remove a registered image by key.
@@ -104,7 +90,8 @@ public:
 	 * }
 	 * @endcode
 	 */
-	bool removeImage(std::string_view key);
+	bool removeImage(ResourceKey key);
+	bool removeImage(std::string_view key) { return removeImage(ResourceKey{.name = key}); }
 
 	/**
 	 * @brief Return whether an image key is registered.
@@ -122,7 +109,8 @@ public:
 	 * }
 	 * @endcode
 	 */
-	bool contains(std::string_view key) const;
+	bool contains(ResourceKey key) const;
+	bool contains(std::string_view key) const { return contains(ResourceKey{.name = key}); }
 
 	/**
 	 * @brief Return the texture reference for a registered image key.
@@ -146,50 +134,16 @@ public:
 	 *
 	 * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
 	 */
-	TextureRef getTexture(std::string_view key) const;
+	TextureRef getTexture(ResourceKey key) const;
+	TextureRef getTexture(std::string_view key) const { return getTexture(ResourceKey{.name = key}); }
 
 private:
 	friend class App;
 
-	void setTexturePublisher(detail::IUiTexturePublisher* publisher);
-	void init(VulkanContext& vk, uint32_t framesInFlight);
-	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
-	void destroy(VulkanContext& vk);
+	void init(detail::storage::IStorageSystem& storageSystem);
+	void destroy() noexcept;
 
-	struct ImageResource {
-		VkImage image = nullptr;
-		VmaAllocation_T* allocation = nullptr;
-		VkImageView view = nullptr;
-		VkSampler sampler = nullptr;
-	};
-
-	struct ImageRecord {
-		ImageResource resource{};
-		TextureHandle texture{};
-		int32_t sourceWidth = 0;
-		int32_t sourceHeight = 0;
-		std::filesystem::path filePath{};
-	};
-	struct RetiredImageResource {
-		ImageResource resource{};
-		TextureHandle texture{};
-	};
-
-	ImageResource createImageResource(VulkanContext& vk, const uint8_t* rgbaPixels, uint32_t width, uint32_t height);
-	void destroyImageResource(VulkanContext& vk, ImageResource& resource);
-	void enqueueRetiredResource(ImageResource&& resource, TextureHandle texture);
-	std::string makeNamespacedKey(std::string_view key) const;
-
-	//Transitional: borrowed native publication ends with manager storage migration.
-	detail::IUiTexturePublisher* texturePublisher_ = nullptr;
-	VulkanContext* vk_ = nullptr;
-	VkCommandPool uploadCommandPool_ = nullptr;
-	uint32_t framesInFlight_ = 1u;
-	uint32_t currentFrameIndex_ = 0u;
-
-	std::unordered_map<std::string, ImageRecord> imagesByKey_;
-	mutable std::unordered_set<std::string> missingTextureWarnings_;
-	std::vector<RetiredImageResource> retiredResources_;
+	detail::storage::IStorageSystem* storage_ = nullptr;
 };
 
 /** @} */

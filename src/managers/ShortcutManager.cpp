@@ -1,7 +1,13 @@
 #include "managers/ShortcutManager.hpp"
 
 #include <algorithm>
+#include <limits>
+#include <stdexcept>
+#include <utility>
+#include <array>
 
+#include "internal/ManagerStorage/ManagerStateAccess.hpp"
+#include "internal/ManagerStorage/ShortcutManagerState.hpp"
 #include "managers/UiManager.hpp"
 
 namespace {
@@ -11,244 +17,220 @@ constexpr uint8_t kModShift = 1u << 1u;
 constexpr uint8_t kModAlt = 1u << 2u;
 constexpr uint8_t kModSuper = 1u << 3u;
 
-} // namespace
-
-namespace FlowUi {
-
-ShortcutId ShortcutManager::registerShortcut(
-	const ShortcutChord& chord,
-	ShortcutScope scope,
-	int32_t priority,
-	ShortcutCallback callback) {
-	if (!callback) {
-		return 0u;
-	}
-	if (chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) {
-		return 0u;
-	}
-
-	const ShortcutId id = nextShortcutId_++;
-	const uint32_t packedChord = packChord(chord.key, modsMaskFromChord(chord), chord.trigger);
-
-	ShortcutExecutable executable{};
-	executable.scope = scope;
-	executable.priority = priority;
-	executable.id = id;
-	executable.registrationOrder = nextRegistrationOrder_++;
-	executable.callback = std::move(callback);
-
-	ShortcutBucket& bucket = chordBuckets_[packedChord];
-	bucket.push_back(std::move(executable));
-	std::stable_sort(bucket.begin(), bucket.end(), executableOrderLess);
-
-	shortcutIdToChord_[id] = packedChord;
-	registeredKeyRefCount_[chord.key] += 1u;
-	return id;
-}
-
-bool ShortcutManager::unregisterShortcut(ShortcutId id) {
-	const auto chordIt = shortcutIdToChord_.find(id);
-	if (chordIt == shortcutIdToChord_.end()) {
-		return false;
-	}
-
-	const uint32_t packedChord = chordIt->second;
-	const auto bucketIt = chordBuckets_.find(packedChord);
-	if (bucketIt == chordBuckets_.end()) {
-		shortcutIdToChord_.erase(chordIt);
-		return false;
-	}
-
-	ShortcutBucket& bucket = bucketIt->second;
-	const size_t oldSize = bucket.size();
-	bucket.erase(
-		std::remove_if(
-			bucket.begin(),
-			bucket.end(),
-			[id](const ShortcutExecutable& executable) {
-				return executable.id == id;
-			}),
-		bucket.end());
-	const bool removed = bucket.size() != oldSize;
-
-	shortcutIdToChord_.erase(chordIt);
-	if (removed) {
-		const int key = unpackKey(packedChord);
-		auto keyRefIt = registeredKeyRefCount_.find(key);
-		if (keyRefIt != registeredKeyRefCount_.end()) {
-			if (keyRefIt->second <= 1u) {
-				registeredKeyRefCount_.erase(keyRefIt);
-			} else {
-				keyRefIt->second -= 1u;
-			}
-		}
-	}
-	if (bucket.empty()) {
-		chordBuckets_.erase(bucketIt);
-	}
-	return removed;
-}
-
-void ShortcutManager::clear() {
-	chordBuckets_.clear();
-	shortcutIdToChord_.clear();
-	registeredKeyRefCount_.clear();
-	nextShortcutId_ = 1u;
-	nextRegistrationOrder_ = 1u;
-	focusedElementId_ = Clay_ElementId{};
-}
-
-void ShortcutManager::setFocusedElement(Clay_ElementId elementId) {
-	focusedElementId_ = elementId;
-}
-
-void ShortcutManager::clearFocusedElement() {
-	focusedElementId_ = Clay_ElementId{};
-}
-
-void ShortcutManager::beginFrame(UiManager& ui, const FrameInput& currentInput, const FrameInput& previousInput) {
-	if (registeredKeyRefCount_.empty()) {
-		return;
-	}
-
-	ShortcutContext context{
-		.ui = ui,
-		.currentInput = currentInput,
-		.previousInput = previousInput,
-		.focusedElementId = focusedElementId_,
-	};
-
-	const uint8_t currentModsMask = modsMaskFromInput(currentInput);
-	const uint8_t previousModsMask = modsMaskFromInput(previousInput);
-
-	// Snapshot keys so callbacks can safely add/remove shortcuts.
-	std::vector<int> keysToProcess;
-	keysToProcess.reserve(registeredKeyRefCount_.size());
-	for (const auto& [key, _] : registeredKeyRefCount_) {
-		keysToProcess.push_back(key);
-	}
-
-	for (int key : keysToProcess) {
-		if (registeredKeyRefCount_.find(key) == registeredKeyRefCount_.end()) {
-			continue;
-		}
-
-		const bool isDown = keyDown(currentInput, key);
-		const bool wasDown = keyDown(previousInput, key);
-		if (isDown && !wasDown) {
-			(void)dispatchPackedChord(context, ui, packChord(key, currentModsMask, ShortcutTrigger::Press));
-			continue;
-		}
-		if (!isDown && wasDown) {
-			(void)dispatchPackedChord(context, ui, packChord(key, previousModsMask, ShortcutTrigger::Release));
-			continue;
-		}
-		if (isDown) {
-			(void)dispatchPackedChord(context, ui, packChord(key, currentModsMask, ShortcutTrigger::Down));
-		}
-	}
-}
-
-uint8_t ShortcutManager::modsMaskFromChord(const ShortcutChord& chord) {
+uint8_t modsMaskFromChord(const FlowUi::ShortcutChord& chord) {
 	uint8_t mask = 0u;
-	if (chord.ctrl) {
-		mask |= kModCtrl;
-	}
-	if (chord.shift) {
-		mask |= kModShift;
-	}
-	if (chord.alt) {
-		mask |= kModAlt;
-	}
-	if (chord.super) {
-		mask |= kModSuper;
-	}
+	if (chord.ctrl) mask |= kModCtrl;
+	if (chord.shift) mask |= kModShift;
+	if (chord.alt) mask |= kModAlt;
+	if (chord.super) mask |= kModSuper;
 	return mask;
 }
 
-uint8_t ShortcutManager::modsMaskFromInput(const FrameInput& input) {
+uint8_t modsMaskFromInput(const FlowUi::FrameInput& input) {
 	uint8_t mask = 0u;
-	if (input.ctrl) {
-		mask |= kModCtrl;
-	}
-	if (input.shift) {
-		mask |= kModShift;
-	}
-	if (input.alt) {
-		mask |= kModAlt;
-	}
-	if (input.super) {
-		mask |= kModSuper;
-	}
+	if (input.ctrl) mask |= kModCtrl;
+	if (input.shift) mask |= kModShift;
+	if (input.alt) mask |= kModAlt;
+	if (input.super) mask |= kModSuper;
 	return mask;
 }
 
-bool ShortcutManager::keyDown(const FrameInput& input, int key) {
-	if (key < 0 || key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) {
-		return false;
-	}
-	return input.keyDown[static_cast<size_t>(key)];
+bool keyDown(const FlowUi::FrameInput& input, int key) {
+	return key >= 0 && key < static_cast<int>(FlowUi::FrameInput::kKeyboardKeyCount) &&
+		input.keyDown[static_cast<size_t>(key)];
 }
 
-uint32_t ShortcutManager::packChord(int key, uint8_t modsMask, ShortcutTrigger trigger) {
+uint32_t packChord(int key, uint8_t modsMask, FlowUi::ShortcutTrigger trigger) {
 	const uint32_t keyBits = static_cast<uint32_t>(std::max(0, key)) & 0x3FFu;
 	const uint32_t modBits = static_cast<uint32_t>(modsMask & 0x0Fu) << 10u;
 	const uint32_t triggerBits = (static_cast<uint32_t>(trigger) & 0x03u) << 14u;
 	return keyBits | modBits | triggerBits;
 }
 
-int ShortcutManager::unpackKey(uint32_t packedChord) {
-	return static_cast<int>(packedChord & 0x3FFu);
+int unpackKey(uint32_t packedChord) { return static_cast<int>(packedChord & 0x3FFu); }
+
+bool executableOrderLess(
+	const FlowUi::detail::manager_storage::ShortcutRegistration& a,
+	const FlowUi::detail::manager_storage::ShortcutRegistration& b) {
+	if (a->scope != b->scope) return static_cast<uint8_t>(a->scope) < static_cast<uint8_t>(b->scope);
+	if (a->priority != b->priority) return a->priority > b->priority;
+	return a->registrationOrder < b->registrationOrder;
 }
 
-bool ShortcutManager::executableOrderLess(const ShortcutExecutable& a, const ShortcutExecutable& b) {
-	if (a.scope != b.scope) {
-		return static_cast<uint8_t>(a.scope) < static_cast<uint8_t>(b.scope);
-	}
-	if (a.priority != b.priority) {
-		return a.priority > b.priority;
-	}
-	return a.registrationOrder < b.registrationOrder;
-}
-
-bool ShortcutManager::dispatchPackedChord(ShortcutContext& context, UiManager& ui, uint32_t packedChord) const {
-	const auto it = chordBuckets_.find(packedChord);
-	if (it == chordBuckets_.end()) {
-		return false;
-	}
-
-	// Snapshot bucket so callback-side registrations don't invalidate iteration.
-	const ShortcutBucket bucketSnapshot = it->second;
-	for (const ShortcutExecutable& executable : bucketSnapshot) {
-		if (shortcutIdToChord_.find(executable.id) == shortcutIdToChord_.end()) {
-			continue;
-		}
-		if (!scopeIsActive(executable, context, ui)) {
-			continue;
-		}
-		if (!executable.callback) {
-			continue;
-		}
-		if (executable.callback(context)) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool ShortcutManager::scopeIsActive(
-	const ShortcutExecutable& executable,
-	const ShortcutContext& context,
-	UiManager& ui) const {
+bool scopeIsActive(
+	const FlowUi::detail::manager_storage::ShortcutRegistrationRecord& executable,
+	const FlowUi::ShortcutContext& context,
+	FlowUi::UiManager& ui) {
 	switch (executable.scope) {
-	case ShortcutScope::FocusedInput:
-		return ui.inputFields().hasPrimaryFieldFocus();
-	case ShortcutScope::FocusedElement:
-		return context.focusedElementId.id != 0u;
-	case ShortcutScope::Global:
-		return true;
-	default:
-		return false;
+	case FlowUi::ShortcutScope::FocusedInput: return ui.inputFields().hasPrimaryFieldFocus();
+	case FlowUi::ShortcutScope::FocusedElement: return context.focusedElementId.id != 0u;
+	case FlowUi::ShortcutScope::Global: return true;
+	default: return false;
+	}
+}
+
+} // namespace
+
+namespace FlowUi {
+
+namespace manager_storage = detail::manager_storage;
+namespace storage = detail::storage;
+
+void ShortcutManager::init(storage::IStorageSystem& storageSystem, WindowId window) {
+	if (storage_) throw std::logic_error("ShortcutManager is already initialized.");
+	const storage::StringId name = storageSystem.intern("flowui.shortcut.root");
+	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
+	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::ShortcutManagerState>(
+		storageSystem, key, storage::ResourceKind::ShortcutRegistration, name);
+	storage_ = &storageSystem;
+	window_ = window;
+	stateHandle_ = handle.packed();
+}
+
+void ShortcutManager::destroy() noexcept {
+	if (!storage_) return;
+	try {
+		const storage::StringId name = storage_->intern("flowui.shortcut.root");
+		(void)storage_->removeManagerRecord(
+			storage::ResourceKey{storage::ResourceDomain::Input, name, window_},
+			storage::ResourceKind::ShortcutRegistration);
+	} catch (...) {
+	}
+	storage_ = nullptr;
+	window_ = InvalidWindowId;
+	stateHandle_ = 0;
+}
+
+manager_storage::ShortcutManagerState& ShortcutManager::state() {
+	auto* result = manager_storage::state<manager_storage::ShortcutManagerState>(
+		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
+		storage::ResourceKind::ShortcutRegistration);
+	if (!result) throw std::logic_error("ShortcutManager is not attached to a live window storage scope.");
+	return *result;
+}
+
+const manager_storage::ShortcutManagerState& ShortcutManager::state() const {
+	const auto* result = manager_storage::state<manager_storage::ShortcutManagerState>(
+		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
+		storage::ResourceKind::ShortcutRegistration);
+	if (!result) throw std::logic_error("ShortcutManager is not attached to a live window storage scope.");
+	return *result;
+}
+
+ShortcutId ShortcutManager::registerShortcut(
+	const ShortcutChord& chord,
+	ShortcutScope scope,
+	int32_t priority,
+	ShortcutCallback callback) {
+	if (!callback || chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) return 0u;
+	auto& current = state();
+	if (current.nextShortcutId == 0 || current.nextShortcutId > std::numeric_limits<ShortcutId>::max()) return 0u;
+
+	// Registration is a cold mutation. Build a complete candidate root so an
+	// allocation failure cannot partially publish indices or consume an id.
+	manager_storage::ShortcutManagerState candidate = current;
+	const ShortcutId id = static_cast<ShortcutId>(candidate.nextShortcutId);
+	const uint32_t packed = packChord(chord.key, modsMaskFromChord(chord), chord.trigger);
+	auto registration = std::make_shared<manager_storage::ShortcutRegistrationRecord>();
+	registration->scope = scope;
+	registration->priority = priority;
+	registration->id = id;
+	registration->registrationOrder = candidate.nextRegistrationOrder;
+	registration->packedChord = packed;
+	registration->callback = std::move(callback);
+	manager_storage::ShortcutBucket bucket;
+	if (const auto existing = candidate.chordBuckets.find(packed); existing != candidate.chordBuckets.end()) {
+		bucket = *existing->second;
+	}
+	bucket.push_back(registration);
+	std::stable_sort(bucket.begin(), bucket.end(), executableOrderLess);
+	candidate.chordBuckets[packed] = std::make_shared<const manager_storage::ShortcutBucket>(std::move(bucket));
+	candidate.registrationsById.emplace(id, std::move(registration));
+	candidate.registeredKeyRefCount[chord.key] += 1u;
+	++candidate.nextShortcutId;
+	++candidate.nextRegistrationOrder;
+	current = std::move(candidate);
+	storage_->noteManagerMutation(window_);
+	return id;
+}
+
+bool ShortcutManager::unregisterShortcut(ShortcutId id) {
+	auto& current = state();
+	const auto registrationIt = current.registrationsById.find(id);
+	if (registrationIt == current.registrationsById.end()) return false;
+	const auto registration = registrationIt->second;
+	registration->tombstoned = true; // visible immediately to an active dispatch snapshot
+	const uint32_t packed = registration->packedChord;
+	const int key = unpackKey(packed);
+	current.registrationsById.erase(registrationIt);
+	if (const auto bucketIt = current.chordBuckets.find(packed); bucketIt != current.chordBuckets.end()) {
+		manager_storage::ShortcutBucket bucket = *bucketIt->second;
+		std::erase_if(bucket, [id](const auto& item) { return item->id == id; });
+		if (bucket.empty()) current.chordBuckets.erase(bucketIt);
+		else bucketIt->second = std::make_shared<const manager_storage::ShortcutBucket>(std::move(bucket));
+	}
+	if (const auto keyIt = current.registeredKeyRefCount.find(key); keyIt != current.registeredKeyRefCount.end()) {
+		if (keyIt->second <= 1u) current.registeredKeyRefCount.erase(keyIt);
+		else --keyIt->second;
+	}
+	storage_->noteManagerMutation(window_);
+	return true;
+}
+
+void ShortcutManager::clear() {
+	auto& current = state();
+	if (current.registrationsById.empty() && current.focusedElementId.id == 0u) return;
+	for (auto& [_, registration] : current.registrationsById) registration->tombstoned = true;
+	current.chordBuckets.clear();
+	current.registrationsById.clear();
+	current.registeredKeyRefCount.clear();
+	// IDs and registration order are intentionally monotonic for the complete
+	// window lifetime; clear must not create ABA aliases with an old snapshot.
+	current.focusedElementId = {};
+	storage_->noteManagerMutation(window_);
+}
+
+void ShortcutManager::setFocusedElement(Clay_ElementId elementId) {
+	auto& current = state();
+	if (current.focusedElementId.id == elementId.id) return;
+	current.focusedElementId = elementId;
+	storage_->noteManagerMutation(window_);
+}
+
+void ShortcutManager::clearFocusedElement() { setFocusedElement({}); }
+
+Clay_ElementId ShortcutManager::focusedElement() const { return state().focusedElementId; }
+
+void ShortcutManager::beginFrame(UiManager& ui, const FrameInput& currentInput, const FrameInput& previousInput) {
+	auto& current = state();
+	if (current.registeredKeyRefCount.empty()) return;
+	ShortcutContext context{ui, currentInput, previousInput, current.focusedElementId};
+	const uint8_t currentMods = modsMaskFromInput(currentInput);
+	const uint8_t previousMods = modsMaskFromInput(previousInput);
+	std::array<int, FrameInput::kKeyboardKeyCount> keys{};
+	size_t keyCount = 0;
+	for (const auto& [key, _] : current.registeredKeyRefCount) keys[keyCount++] = key;
+
+	for (size_t keyIndex = 0; keyIndex < keyCount; ++keyIndex) {
+		const int key = keys[keyIndex];
+		if (!current.registeredKeyRefCount.contains(key)) continue;
+		const bool down = keyDown(currentInput, key);
+		const bool wasDown = keyDown(previousInput, key);
+		uint32_t packed = 0;
+		if (down && !wasDown) packed = packChord(key, currentMods, ShortcutTrigger::Press);
+		else if (!down && wasDown) packed = packChord(key, previousMods, ShortcutTrigger::Release);
+		else if (down) packed = packChord(key, currentMods, ShortcutTrigger::Down);
+		else continue;
+
+		const auto bucketIt = current.chordBuckets.find(packed);
+		if (bucketIt == current.chordBuckets.end()) continue;
+		const manager_storage::PublishedShortcutBucket snapshot = bucketIt->second;
+		for (const auto& executable : *snapshot) {
+			if (!executable || executable->tombstoned ||
+				!current.registrationsById.contains(executable->id) ||
+				!scopeIsActive(*executable, context, ui) || !executable->callback) continue;
+			if (executable->callback(context)) break;
+		}
 	}
 }
 

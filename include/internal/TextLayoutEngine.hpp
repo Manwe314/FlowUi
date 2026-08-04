@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "clay.h"
-#include "managers/FontManager.hpp"
+#include "internal/ManagerStorage/FontCatalogController.hpp"
 
 namespace FlowUi::detail {
 
@@ -43,15 +43,12 @@ struct TextLayoutResult {
 	float distanceRangePx = 2.0f;
 };
 
-inline const FlowUi::Font::FontFaceData* ResolveFontFace(const FlowUi::FontManager* fontManager, uint16_t fontId) {
-	if (!fontManager) {
-		return nullptr;
-	}
-
-	const FlowUi::Font::FontFaceData* face = fontManager->getFontById(static_cast<int>(fontId));
-	if (!face) {
-		face = fontManager->getFontById(0);
-	}
+inline const FlowUi::Font::FontFaceData* ResolveFontFace(
+	const manager_storage::FontFrameView* fontView,
+	uint16_t fontId) {
+	if (!fontView) return nullptr;
+	const FlowUi::Font::FontFaceData* face = fontView->font(static_cast<FontId>(fontId));
+	if (!face) face = fontView->font(0);
 	return face;
 }
 

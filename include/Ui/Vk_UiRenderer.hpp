@@ -14,6 +14,7 @@
 #include "Vulkan/Vk_Context.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "internal/InputFieldRenderOverrides.hpp"
+#include "internal/ManagerStorage/FontCatalogController.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
 
 enum class UiType : uint8_t {
@@ -23,7 +24,6 @@ enum class UiType : uint8_t {
 };
 
 namespace FlowUi {
-struct FontManager;
 #if FLOW_UI_DEV_MODE
 namespace devMode {
 struct FrameDiagnostics;
@@ -118,7 +118,7 @@ struct UiConversionResult {
 	const Clay_RenderCommandArray& commands,
 	const InputFieldFrameOverrides& overrides,
 	VkExtent2D extent,
-	const FontManager* fontManager,
+	const manager_storage::FontFrameView* fontView,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -162,8 +162,14 @@ struct VulkanUiRenderer {
 		std::vector<VkDescriptorSet> texturesSets{};
 	};
 
-	//Transitional: Phase 4 shares/adopts compatible immutable pipeline/layout
-	// bundles while descriptors remain AppWindow/frame-local.
+	FlowUi::detail::storage::RendererLayoutHandle layoutHandle_{};
+	FlowUi::detail::storage::RendererPipelineBundleHandle pipelineBundleHandle_{};
+	FlowUi::detail::storage::WindowDescriptorBundleHandle descriptorBundleHandle_{};
+	FlowUi::detail::storage::NativeRendererLayout nativeLayout_{};
+	FlowUi::detail::storage::NativeRendererPipelineBundle nativePipelineBundle_{};
+	FlowUi::detail::storage::NativeWindowDescriptorView nativeDescriptors_{};
+
+	// Cached native views remain valid while the strong storage handles above live.
 	Pipelines pipelines_{};
 	Descriptors descriptors_{};
 
@@ -177,11 +183,11 @@ struct VulkanUiRenderer {
 	uint32_t maxUiImageDescriptors_ = 256;
 	uint32_t frameResourceCount_ = 1u;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
-	const FlowUi::FontManager* fontManager_ = nullptr;
 	std::vector<uint32_t> boundFontAtlasRevisionByFrame_{};
 
 	void init(
-		const FlowUi::AppConfig& config,
+		const FlowUi::VulkanConfig& vulkanConfig,
+		const FlowUi::UiConfig& uiConfig,
 		VulkanContext& vk,
 		VkFormat swapFormat,
 		FlowUi::detail::storage::IStorageSystem& storage,
@@ -189,9 +195,14 @@ struct VulkanUiRenderer {
 		const SharedUiByteResources& sharedResources,
 		uint64_t initialInstanceBytes,
 		uint32_t textureDescriptorCapacity);
-	void setFontManager(const FlowUi::FontManager* manager);
-	void destroy(VulkanContext& vk, FlowUi::detail::storage::IStorageSystem& storage);
-	void onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat);
+	void destroy(
+		VulkanContext& vk,
+		FlowUi::detail::storage::IStorageSystem& storage,
+		FlowUi::detail::storage::SubmissionSerial lastUse = 0);
+	void onSwapchainFormatChanged(
+		VulkanContext& vk,
+		VkFormat newFormat,
+		FlowUi::detail::storage::SubmissionSerial lastUse = 0);
 	void applyTextureBindings(
 		VkDevice device,
 		uint32_t frameSlot,
@@ -203,6 +214,7 @@ struct VulkanUiRenderer {
 		const FlowUi::detail::storage::PreparedTextureBindings& textureBindings,
 		const Clay_RenderCommandArray& renderCommands,
 		const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
+		const FlowUi::detail::manager_storage::FontFrameView& fontView,
 		VkExtent2D extent,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY

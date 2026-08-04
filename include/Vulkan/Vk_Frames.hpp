@@ -20,15 +20,9 @@ struct FrameVk {
 	std::vector<Frame> frames;
 	uint32_t currentFrame = 0;
 
-	// track swapchain images (size = swap.images.size())
-	std::vector<VkFence> imageInFlight;
-	std::vector<VkSemaphore> renderFinishedBySwapImage;
-
-	void create(uint32_t framesInFlight, VulkanContext& vk, size_t swapImageCount);
+	void create(uint32_t framesInFlight, VulkanContext& vk);
 	void destroy(VulkanContext& vk);
 
 	Frame& getCurrentFrame() { return frames[currentFrame]; }
 	void advance() { currentFrame = (currentFrame + 1) % (uint32_t)frames.size(); }
-
-	void onSwapchainRecreated(VulkanContext& vk, size_t newSwapImageCount);
 };

@@ -8,7 +8,9 @@
 #include <GLFW/glfw3.h>
 
 #include "internal/TextLayoutEngine.hpp"
-#include "managers/FontManager.hpp"
+#include "internal/ManagerStorage/InputFieldManagerState.hpp"
+#include "internal/ManagerStorage/ManagerStateAccess.hpp"
+#include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 
 namespace {
 
@@ -65,46 +67,96 @@ bool appendUtf8Codepoint(std::string& out, char32_t codepoint) {
 
 namespace FlowUi {
 
-void InputFieldManager::setConfig(const InputManagerConfig& config) {
-	config_ = config;
+namespace manager_storage = detail::manager_storage;
+namespace key_storage = detail::managerStorage;
+namespace storage = detail::storage;
+
+void InputFieldManager::init(
+	storage::IStorageSystem& storageSystem,
+	WindowId window,
+	const InputManagerConfig& config,
+	float pointsToPixelsScale) {
+	if (storage_) throw std::logic_error("InputFieldManager is already initialized.");
+	const storage::StringId name = storageSystem.intern("flowui.input.root");
+	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
+	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::InputFieldManagerState>(
+		storageSystem, key, storage::ResourceKind::InputField, name);
+	storage_ = &storageSystem;
+	window_ = window;
+	stateHandle_ = handle.packed();
+	state_ = manager_storage::state<manager_storage::InputFieldManagerState>(
+		storage_, handle, storage::ResourceKind::InputField);
+	if (!state_) {
+		destroy();
+		throw std::runtime_error("InputFieldManager storage record publication failed.");
+	}
+	state_->config = config;
+	state_->pointsToPixelsScale = std::max(pointsToPixelsScale, 1.0e-6f);
 }
 
-void InputFieldManager::setFontManager(const FontManager* fontManager, float pointsToPixelsScale) {
-	fontManager_ = fontManager;
-	pointsToPixelsScale_ = std::max(pointsToPixelsScale, 1.0e-6f);
+void InputFieldManager::destroy() noexcept {
+	if (storage_) {
+		try {
+			const storage::StringId name = storage_->intern("flowui.input.root");
+			(void)storage_->removeManagerRecord(
+				storage::ResourceKey{storage::ResourceDomain::Input, name, window_},
+				storage::ResourceKind::InputField);
+		} catch (...) {
+		}
+	}
+	state_ = nullptr;
+	stateHandle_ = 0;
+	window_ = InvalidWindowId;
+	storage_ = nullptr;
+}
+
+const detail::InputFieldFrameOverrides& InputFieldManager::frameOverrides() const {
+	if (!state_) throw std::logic_error("InputFieldManager is not attached to window storage.");
+	return state_->frameOverrides;
+}
+
+void InputFieldManager::setConfig(const InputManagerConfig& config) {
+	state_->config = config;
+}
+
+void InputFieldManager::setFontFrameView(
+	const manager_storage::FontFrameView& fontView,
+	float pointsToPixelsScale) {
+	state_->fontView = fontView;
+	state_->pointsToPixelsScale = std::max(pointsToPixelsScale, 1.0e-6f);
 }
 
 void InputFieldManager::markCaretBlinkReset() {
-	caretBlinkResetPending_ = true;
-	emitCaretsThisFrame_ = true;
+	state_->caretBlinkResetPending = true;
+	state_->emitCaretsThisFrame = true;
 }
 
 void InputFieldManager::updateCaretBlinkVisibility(bool hasAnyActiveCaret) {
 	if (!hasAnyActiveCaret) {
-		caretBlinkElapsedSeconds_ = 0.0;
-		caretBlinkResetPending_ = false;
-		emitCaretsThisFrame_ = true;
+		state_->caretBlinkElapsedSeconds = 0.0;
+		state_->caretBlinkResetPending = false;
+		state_->emitCaretsThisFrame = true;
 		return;
 	}
 
-	if (caretBlinkResetPending_) {
-		caretBlinkElapsedSeconds_ = 0.0;
-		caretBlinkResetPending_ = false;
-		emitCaretsThisFrame_ = true;
+	if (state_->caretBlinkResetPending) {
+		state_->caretBlinkElapsedSeconds = 0.0;
+		state_->caretBlinkResetPending = false;
+		state_->emitCaretsThisFrame = true;
 		return;
 	}
 
-	const double dt = std::max(0.0, currentInput_.dt);
-	caretBlinkElapsedSeconds_ += dt;
+	const double dt = std::max(0.0, state_->currentInput.dt);
+	state_->caretBlinkElapsedSeconds += dt;
 
 	const double period = std::max(kCaretBlinkPeriodSeconds, 1.0e-6);
 	const double visibleDuration = std::clamp(kCaretBlinkVisibleSeconds, 0.0, period);
-	const double phase = std::fmod(caretBlinkElapsedSeconds_, period);
-	emitCaretsThisFrame_ = phase < visibleDuration;
+	const double phase = std::fmod(state_->caretBlinkElapsedSeconds, period);
+	state_->emitCaretsThisFrame = phase < visibleDuration;
 }
 
 bool InputFieldManager::shouldTriggerActionWithRepeat(int key, KeyRepeatState& state) {
-	const bool isDown = keyDown(currentInput_, key);
+	const bool isDown = keyDown(state_->currentInput, key);
 	if (!isDown) {
 		state.wasDown = false;
 		state.repeatCountdownSeconds = 0.0;
@@ -117,7 +169,7 @@ bool InputFieldManager::shouldTriggerActionWithRepeat(int key, KeyRepeatState& s
 		return true;
 	}
 
-	const double dt = std::max(0.0, currentInput_.dt);
+	const double dt = std::max(0.0, state_->currentInput.dt);
 	state.repeatCountdownSeconds -= dt;
 	if (state.repeatCountdownSeconds > 0.0) {
 		return false;
@@ -131,40 +183,49 @@ bool InputFieldManager::shouldTriggerActionWithRepeat(int key, KeyRepeatState& s
 }
 
 void InputFieldManager::beginFrame(const FrameInput& currentInput, const FrameInput& previousInput) {
-	previousInput_ = previousInput;
-	currentInput_ = currentInput;
-
-	for (auto& [_, field] : fieldsById_) {
-		field.touchedThisFrame = false;
+	state_->previousInput = previousInput;
+	state_->currentInput = currentInput;
+	if (state_->currentTouchEpoch == std::numeric_limits<uint64_t>::max()) {
+		for (auto& [_, field] : state_->fieldsById) field.lastTouchedEpoch = 0;
+		state_->currentTouchEpoch = 1;
+	} else {
+		++state_->currentTouchEpoch;
 	}
 
 	applyKeyboardEdits();
+	state_->dirty = true;
 }
 
 Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArray& renderCommands) {
-	frameOverrides_.rects.clear();
-	frameOverrides_.textColorOverrides.clear();
+	const auto publishMutation = [this] {
+		if (!state_->dirty) return;
+		storage_->noteManagerMutation(window_);
+		state_->dirty = false;
+	};
+	state_->frameOverrides.rects.clear();
+	state_->frameOverrides.textColorOverrides.clear();
 
-	const bool isPrimaryPointerDown = currentInput_.mouseDown[0];
-	const bool wasPrimaryPointerDown = previousInput_.mouseDown[0];
+	const bool isPrimaryPointerDown = state_->currentInput.mouseDown[0];
+	const bool wasPrimaryPointerDown = state_->previousInput.mouseDown[0];
 	const bool pointerPressed = isPrimaryPointerDown && !wasPrimaryPointerDown;
 	const bool pointerReleased = !isPrimaryPointerDown && wasPrimaryPointerDown;
 	if (pointerReleased) {
-		pointerDrag_ = PointerDragState{};
+		state_->pointerDrag = PointerDragState{};
 	}
 
-	if (!primaryFieldId_.empty()) {
-		const auto primaryIt = fieldsById_.find(primaryFieldId_);
-		if (primaryIt == fieldsById_.end() || !primaryIt->second.touchedThisFrame) {
-			for (auto& [_, field] : fieldsById_) {
+	if (!state_->primaryFieldId.empty()) {
+		const auto primaryIt = state_->fieldsById.find(state_->primaryFieldId);
+		if (primaryIt == state_->fieldsById.end() ||
+			primaryIt->second.lastTouchedEpoch != state_->currentTouchEpoch) {
+			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
-			primaryFieldId_.clear();
+			state_->primaryFieldId.clear();
 		}
 	}
 
-	for (auto& [_, field] : fieldsById_) {
-		if (!field.touchedThisFrame) {
+	for (auto& [_, field] : state_->fieldsById) {
+		if (field.lastTouchedEpoch != state_->currentTouchEpoch) {
 			continue;
 		}
 		clampCaretsToText(field);
@@ -194,9 +255,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	};
 
 	std::vector<RuntimeFieldState> runtimes;
-	runtimes.reserve(fieldsById_.size());
-	for (auto& [fieldId, field] : fieldsById_) {
-		if (!field.touchedThisFrame) {
+	runtimes.reserve(state_->fieldsById.size());
+	for (auto& [fieldId, field] : state_->fieldsById) {
+		if (field.lastTouchedEpoch != state_->currentTouchEpoch) {
 			continue;
 		}
 
@@ -234,14 +295,15 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 
 	if (runtimes.empty()) {
 		if (pointerPressed) {
-			for (auto& [_, field] : fieldsById_) {
+			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
-			primaryFieldId_.clear();
-			pointerDrag_ = PointerDragState{};
+			state_->primaryFieldId.clear();
+			state_->pointerDrag = PointerDragState{};
 		}
 		updateCaretBlinkVisibility(false);
-		return renderCommands;
+			publishMutation();
+			return renderCommands;
 	}
 
 	if (renderCommands.length > 0 && renderCommands.internalArray) {
@@ -395,7 +457,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				hasHitBounds = true;
 			}
 
-			if (!hasHitBounds || !boundsContainsPoint(hitBounds, currentInput_.mouseX, currentInput_.mouseY)) {
+			if (!hasHitBounds || !boundsContainsPoint(hitBounds, state_->currentInput.mouseX, state_->currentInput.mouseY)) {
 				continue;
 			}
 
@@ -409,34 +471,34 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 
 		if (!targetRuntime || !targetRuntime->field) {
-			for (auto& [_, field] : fieldsById_) {
+			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
-			primaryFieldId_.clear();
-			pointerDrag_ = PointerDragState{};
+			state_->primaryFieldId.clear();
+			state_->pointerDrag = PointerDragState{};
 		} else {
 			FieldState& field = *targetRuntime->field;
-			const size_t hitOffset = resolvePointerOffsetInRuntime(*targetRuntime, currentInput_.mouseX, currentInput_.mouseY);
-			for (auto& [_, candidate] : fieldsById_) {
+			const size_t hitOffset = resolvePointerOffsetInRuntime(*targetRuntime, state_->currentInput.mouseX, state_->currentInput.mouseY);
+			for (auto& [_, candidate] : state_->fieldsById) {
 				candidate.carets.clear();
 			}
 			field.carets = { CaretState{hitOffset, hitOffset} };
-			primaryFieldId_ = targetRuntime->fieldId;
-			pointerDrag_.active = true;
-			pointerDrag_.fieldId = targetRuntime->fieldId;
-			pointerDrag_.anchorByteOffset = hitOffset;
+			state_->primaryFieldId = targetRuntime->fieldId;
+			state_->pointerDrag.active = true;
+			state_->pointerDrag.fieldId = targetRuntime->fieldId;
+			state_->pointerDrag.anchorByteOffset = hitOffset;
 			markCaretBlinkReset();
 		}
 	}
 
-	if (isPrimaryPointerDown && pointerDrag_.active) {
-		RuntimeFieldState* dragRuntime = findRuntimeByFieldId(pointerDrag_.fieldId);
+	if (isPrimaryPointerDown && state_->pointerDrag.active) {
+		RuntimeFieldState* dragRuntime = findRuntimeByFieldId(state_->pointerDrag.fieldId);
 		if (!dragRuntime || !dragRuntime->field) {
-			pointerDrag_ = PointerDragState{};
+			state_->pointerDrag = PointerDragState{};
 		} else {
 			FieldState& dragField = *dragRuntime->field;
-			const size_t clampedAnchor = clampUtf8Boundary(dragField.text, pointerDrag_.anchorByteOffset);
-			const size_t hitOffset = resolvePointerOffsetInRuntime(*dragRuntime, currentInput_.mouseX, currentInput_.mouseY);
+			const size_t clampedAnchor = clampUtf8Boundary(dragField.text, state_->pointerDrag.anchorByteOffset);
+			const size_t hitOffset = resolvePointerOffsetInRuntime(*dragRuntime, state_->currentInput.mouseX, state_->currentInput.mouseY);
 			if (dragField.carets.empty()) {
 				dragField.carets.push_back(CaretState{clampedAnchor, hitOffset});
 				markCaretBlinkReset();
@@ -451,7 +513,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 					dragField.carets.resize(1u);
 				}
 			}
-			primaryFieldId_ = pointerDrag_.fieldId;
+			state_->primaryFieldId = state_->pointerDrag.fieldId;
 			clampCaretsToText(dragField);
 		}
 	}
@@ -473,11 +535,12 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 
 	updateCaretBlinkVisibility(hasAnyVisibleCaret);
 	if (!needsOverrides) {
+		publishMutation();
 		return renderCommands;
 	}
 
-	frameOverrides_.rects.reserve(64u);
-	frameOverrides_.textColorOverrides.reserve(32u);
+	state_->frameOverrides.rects.reserve(64u);
+	state_->frameOverrides.textColorOverrides.reserve(32u);
 	const int32_t maxInsertionIndex = std::max<int32_t>(0, renderCommands.length);
 
 	auto pushRectOverride = [&](int32_t insertBeforeCommandIndex, float x, float y, float w, float h, const Clay_Color& color) {
@@ -493,7 +556,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			.height = h,
 		};
 		rectOverride.color = color;
-		frameOverrides_.rects.push_back(rectOverride);
+		state_->frameOverrides.rects.push_back(rectOverride);
 	};
 
 	auto pushCaretRect = [&](int32_t insertBeforeCommandIndex, float caretX, float y, float h) {
@@ -501,9 +564,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			insertBeforeCommandIndex,
 			caretX,
 			y,
-			std::max(0.0f, config_.caretWidthPx),
+			std::max(0.0f, state_->config.caretWidthPx),
 			h,
-			config_.caretColor);
+			state_->config.caretColor);
 	};
 
 	auto pushTextColorOverride = [&](int32_t commandIndex, const std::vector<SelectionRange>& localSelections, int commandByteLength) {
@@ -513,7 +576,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 
 		detail::InputFieldTextColorOverride textOverride{};
 		textOverride.commandIndex = std::clamp(commandIndex, 0, std::max(0, renderCommands.length - 1));
-		textOverride.color = config_.highlightedTextColor;
+		textOverride.color = state_->config.highlightedTextColor;
 		textOverride.ranges.reserve(localSelections.size());
 
 		for (const SelectionRange& localSelection : localSelections) {
@@ -532,7 +595,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			return;
 		}
 
-		frameOverrides_.textColorOverrides.push_back(std::move(textOverride));
+		state_->frameOverrides.textColorOverrides.push_back(std::move(textOverride));
 	};
 
 	for (RuntimeFieldState& runtime : runtimes) {
@@ -583,7 +646,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 					command.boundingBox.y,
 					selectionWidth,
 					command.boundingBox.height,
-					config_.highlightBoxColor);
+					state_->config.highlightBoxColor);
 			};
 
 			if (!localSelections.empty() && commandByteLength > 0) {
@@ -598,9 +661,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				}
 			}
 
-			if (emitCaretsThisFrame_ && !field.config.readOnly) {
-				const float caretY = command.boundingBox.y - config_.caretHeightOverflowTopPx;
-				const float caretH = command.boundingBox.height + config_.caretHeightOverflowTopPx + config_.caretHeightOverflowBottomPx;
+			if (state_->emitCaretsThisFrame && !field.config.readOnly) {
+				const float caretY = command.boundingBox.y - state_->config.caretHeightOverflowTopPx;
+				const float caretH = command.boundingBox.height + state_->config.caretHeightOverflowTopPx + state_->config.caretHeightOverflowBottomPx;
 				for (size_t caretIndex = 0; caretIndex < field.carets.size(); ++caretIndex) {
 					if (caretIndex >= runtime.caretDrawn.size() || runtime.caretDrawn[caretIndex]) {
 						continue;
@@ -624,19 +687,20 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 	}
 
-	if (!emitCaretsThisFrame_) {
+	if (!state_->emitCaretsThisFrame) {
 		std::stable_sort(
-			frameOverrides_.rects.begin(),
-			frameOverrides_.rects.end(),
+			state_->frameOverrides.rects.begin(),
+			state_->frameOverrides.rects.end(),
 			[](const detail::InputFieldRectOverride& a, const detail::InputFieldRectOverride& b) {
 				return a.insertBeforeCommandIndex < b.insertBeforeCommandIndex;
 			});
 		std::stable_sort(
-			frameOverrides_.textColorOverrides.begin(),
-			frameOverrides_.textColorOverrides.end(),
+			state_->frameOverrides.textColorOverrides.begin(),
+			state_->frameOverrides.textColorOverrides.end(),
 			[](const detail::InputFieldTextColorOverride& a, const detail::InputFieldTextColorOverride& b) {
 				return a.commandIndex < b.commandIndex;
 			});
+		publishMutation();
 		return renderCommands;
 	}
 
@@ -655,8 +719,8 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				const Clay_RenderCommand& referenceCommand = runtime.lastTextCommand;
 				const Clay_TextRenderData& textData = referenceCommand.renderData.text;
 				const float textWidth = measureTextSlice(textData.stringContents, textData);
-				const float caretY = referenceCommand.boundingBox.y - config_.caretHeightOverflowTopPx;
-				const float caretH = referenceCommand.boundingBox.height + config_.caretHeightOverflowTopPx + config_.caretHeightOverflowBottomPx;
+				const float caretY = referenceCommand.boundingBox.y - state_->config.caretHeightOverflowTopPx;
+				const float caretH = referenceCommand.boundingBox.height + state_->config.caretHeightOverflowTopPx + state_->config.caretHeightOverflowBottomPx;
 				pushCaretRect(runtime.lastTextCommandIndex + 1, referenceCommand.boundingBox.x + textWidth, caretY, caretH);
 				continue;
 			}
@@ -671,27 +735,37 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				} else if (fallbackHeight <= 0.0f && runtime.hasContentBounds) {
 					fallbackHeight = runtime.contentBounds.height;
 				}
-				const float caretY = fallbackBounds.y - config_.caretHeightOverflowTopPx;
-				const float caretH = fallbackHeight + config_.caretHeightOverflowTopPx + config_.caretHeightOverflowBottomPx;
+				const float caretY = fallbackBounds.y - state_->config.caretHeightOverflowTopPx;
+				const float caretH = fallbackHeight + state_->config.caretHeightOverflowTopPx + state_->config.caretHeightOverflowBottomPx;
 				pushCaretRect(maxInsertionIndex, fallbackBounds.x, caretY, caretH);
 			}
 		}
 	}
 
 	std::stable_sort(
-		frameOverrides_.rects.begin(),
-		frameOverrides_.rects.end(),
+		state_->frameOverrides.rects.begin(),
+		state_->frameOverrides.rects.end(),
 		[](const detail::InputFieldRectOverride& a, const detail::InputFieldRectOverride& b) {
 			return a.insertBeforeCommandIndex < b.insertBeforeCommandIndex;
 		});
 	std::stable_sort(
-		frameOverrides_.textColorOverrides.begin(),
-		frameOverrides_.textColorOverrides.end(),
+		state_->frameOverrides.textColorOverrides.begin(),
+		state_->frameOverrides.textColorOverrides.end(),
 		[](const detail::InputFieldTextColorOverride& a, const detail::InputFieldTextColorOverride& b) {
 			return a.commandIndex < b.commandIndex;
 		});
 
+	publishMutation();
 	return renderCommands;
+}
+
+FieldQueryResult InputFieldManager::requestField(ResourceKey key, const FieldRequest& request) {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::InputField,
+		key_storage::ResourceScope::WindowLocal, window_);
+	FieldRequest normalizedRequest = request;
+	normalizedRequest.fieldId = storage_->string(normalized.name);
+	return requestField(normalizedRequest);
 }
 
 FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
@@ -700,7 +774,7 @@ FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
 	}
 
 	const std::string key(request.fieldId);
-	auto [it, inserted] = fieldsById_.try_emplace(key);
+	auto [it, inserted] = state_->fieldsById.try_emplace(key);
 	FieldState& field = it->second;
 	if (inserted) {
 		field.text = std::string(request.initialText);
@@ -708,12 +782,12 @@ FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
 	field.config = request.config;
 	field.textElementId = request.textElementId;
 	field.contentElementId = request.contentElementId;
-	field.touchedThisFrame = true;
+	field.lastTouchedEpoch = state_->currentTouchEpoch;
 	clampCaretsToText(field);
 
 	FieldQueryResult result{};
 	result.text = field.text;
-	result.hasPrimaryCaret = !field.carets.empty() && primaryFieldId_ == key;
+	result.hasPrimaryCaret = !field.carets.empty() && state_->primaryFieldId == key;
 	for (const CaretState& caret : field.carets) {
 		if (caretHasSelection(caret)) {
 			result.hasSelection = true;
@@ -723,23 +797,30 @@ FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
 	return result;
 }
 
+void InputFieldManager::requestCaret(ResourceKey key, CaretRequestKind kind) {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::InputField,
+		key_storage::ResourceScope::WindowLocal, window_);
+	requestCaret(storage_->string(normalized.name), kind);
+}
+
 bool InputFieldManager::hasPrimaryFieldFocus() const {
-	if (primaryFieldId_.empty()) {
+	if (state_->primaryFieldId.empty()) {
 		return false;
 	}
-	const auto it = fieldsById_.find(primaryFieldId_);
-	if (it == fieldsById_.end()) {
+	const auto it = state_->fieldsById.find(state_->primaryFieldId);
+	if (it == state_->fieldsById.end()) {
 		return false;
 	}
 	return !it->second.carets.empty();
 }
 
 std::string_view InputFieldManager::getSelectedText() const {
-	if (primaryFieldId_.empty()) {
+	if (state_->primaryFieldId.empty()) {
 		return {};
 	}
-	const auto it = fieldsById_.find(primaryFieldId_);
-	if (it == fieldsById_.end()) {
+	const auto it = state_->fieldsById.find(state_->primaryFieldId);
+	if (it == state_->fieldsById.end()) {
 		return {};
 	}
 
@@ -768,12 +849,12 @@ std::string_view InputFieldManager::getSelectedText() const {
 }
 
 bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
-	if (utf8Text.empty() || primaryFieldId_.empty()) {
+	if (utf8Text.empty() || state_->primaryFieldId.empty()) {
 		return false;
 	}
 
-	const auto it = fieldsById_.find(primaryFieldId_);
-	if (it == fieldsById_.end()) {
+	const auto it = state_->fieldsById.find(state_->primaryFieldId);
+	if (it == state_->fieldsById.end()) {
 		return false;
 	}
 
@@ -806,11 +887,11 @@ bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
 
 void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind kind) {
 	if (kind == CaretRequestKind::ClearAll) {
-		for (auto& [_, field] : fieldsById_) {
+		for (auto& [_, field] : state_->fieldsById) {
 			field.carets.clear();
 		}
-		primaryFieldId_.clear();
-		pointerDrag_ = PointerDragState{};
+		state_->primaryFieldId.clear();
+		state_->pointerDrag = PointerDragState{};
 		markCaretBlinkReset();
 		return;
 	}
@@ -820,18 +901,18 @@ void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind 
 	}
 
 	const std::string key(fieldId);
-	auto& field = fieldsById_[key];
+	auto& field = state_->fieldsById[key];
 	clampCaretsToText(field);
 
 	if (kind == CaretRequestKind::SetPrimary) {
-		const bool primaryWasSameField = (primaryFieldId_ == key);
+		const bool primaryWasSameField = (state_->primaryFieldId == key);
 		const bool hadExistingCaret = !field.carets.empty();
 		CaretState preservedCaret{};
 		if (hadExistingCaret) {
 			preservedCaret = field.carets.front();
 		}
 
-		for (auto& [_, entry] : fieldsById_) {
+		for (auto& [_, entry] : state_->fieldsById) {
 			entry.carets.clear();
 		}
 		if (hadExistingCaret) {
@@ -840,11 +921,11 @@ void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind 
 			const size_t offset = field.text.size();
 			field.carets = { CaretState{offset, offset} };
 		}
-		primaryFieldId_ = key;
+		state_->primaryFieldId = key;
 
 		// Preserve ongoing pointer drag when SetPrimary targets the same field.
-		if (pointerDrag_.active && pointerDrag_.fieldId != key) {
-			pointerDrag_ = PointerDragState{};
+		if (state_->pointerDrag.active && state_->pointerDrag.fieldId != key) {
+			state_->pointerDrag = PointerDragState{};
 		}
 
 		if (!primaryWasSameField || !hadExistingCaret) {
@@ -858,10 +939,10 @@ void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind 
 		offset = field.carets.back().headByteOffset;
 	}
 	field.carets.push_back(CaretState{offset, offset});
-	if (primaryFieldId_.empty()) {
-		primaryFieldId_ = key;
+	if (state_->primaryFieldId.empty()) {
+		state_->primaryFieldId = key;
 	}
-	pointerDrag_ = PointerDragState{};
+	state_->pointerDrag = PointerDragState{};
 	markCaretBlinkReset();
 }
 
@@ -871,25 +952,32 @@ bool InputFieldManager::removeField(std::string_view fieldId) {
 	}
 
 	const std::string key(fieldId);
-	const auto it = fieldsById_.find(key);
-	if (it == fieldsById_.end()) {
+	const auto it = state_->fieldsById.find(key);
+	if (it == state_->fieldsById.end()) {
 		return false;
 	}
-	fieldsById_.erase(it);
+	state_->fieldsById.erase(it);
 
-	if (primaryFieldId_ == key) {
-		primaryFieldId_.clear();
-		for (const auto& [candidateId, field] : fieldsById_) {
+	if (state_->primaryFieldId == key) {
+		state_->primaryFieldId.clear();
+		for (const auto& [candidateId, field] : state_->fieldsById) {
 			if (!field.carets.empty()) {
-				primaryFieldId_ = candidateId;
+				state_->primaryFieldId = candidateId;
 				break;
 			}
 		}
 	}
-	if (pointerDrag_.fieldId == key) {
-		pointerDrag_ = PointerDragState{};
+	if (state_->pointerDrag.fieldId == key) {
+		state_->pointerDrag = PointerDragState{};
 	}
 	return true;
+}
+
+bool InputFieldManager::removeField(ResourceKey key) {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::InputField,
+		key_storage::ResourceScope::WindowLocal, window_);
+	return removeField(storage_->string(normalized.name));
 }
 
 bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret) {
@@ -898,8 +986,8 @@ bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view t
 	}
 
 	const std::string key(fieldId);
-	const auto it = fieldsById_.find(key);
-	if (it == fieldsById_.end() || it->second.text == text) {
+	const auto it = state_->fieldsById.find(key);
+	if (it == state_->fieldsById.end() || it->second.text == text) {
 		return false;
 	}
 
@@ -909,17 +997,17 @@ bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view t
 		clampCaretsToText(field);
 	} else {
 		field.carets.clear();
-		if (primaryFieldId_ == key) {
-			primaryFieldId_.clear();
-			for (const auto& [candidateId, candidate] : fieldsById_) {
+		if (state_->primaryFieldId == key) {
+			state_->primaryFieldId.clear();
+			for (const auto& [candidateId, candidate] : state_->fieldsById) {
 				if (!candidate.carets.empty()) {
-					primaryFieldId_ = candidateId;
+					state_->primaryFieldId = candidateId;
 					break;
 				}
 			}
 		}
-		if (pointerDrag_.fieldId == key) {
-			pointerDrag_ = PointerDragState{};
+		if (state_->pointerDrag.fieldId == key) {
+			state_->pointerDrag = PointerDragState{};
 		}
 	}
 
@@ -927,26 +1015,33 @@ bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view t
 	return true;
 }
 
+bool InputFieldManager::replaceText(ResourceKey key, std::string_view text, bool preserveCaret) {
+	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+		*storage_, key, ResourceDomain::InputField,
+		key_storage::ResourceScope::WindowLocal, window_);
+	return replaceText(storage_->string(normalized.name), text, preserveCaret);
+}
+
 void InputFieldManager::clear() {
-	fieldsById_.clear();
-	primaryFieldId_.clear();
-	previousInput_ = FrameInput{};
-	currentInput_ = FrameInput{};
-	leftKeyRepeat_ = KeyRepeatState{};
-	rightKeyRepeat_ = KeyRepeatState{};
-	backspaceKeyRepeat_ = KeyRepeatState{};
-	deleteKeyRepeat_ = KeyRepeatState{};
-	pointerDrag_ = PointerDragState{};
-	caretBlinkElapsedSeconds_ = 0.0;
-	caretBlinkResetPending_ = true;
-	emitCaretsThisFrame_ = true;
-	frameOverrides_.rects.clear();
-	frameOverrides_.textColorOverrides.clear();
+	state_->fieldsById.clear();
+	state_->primaryFieldId.clear();
+	state_->previousInput = FrameInput{};
+	state_->currentInput = FrameInput{};
+	state_->leftKeyRepeat = KeyRepeatState{};
+	state_->rightKeyRepeat = KeyRepeatState{};
+	state_->backspaceKeyRepeat = KeyRepeatState{};
+	state_->deleteKeyRepeat = KeyRepeatState{};
+	state_->pointerDrag = PointerDragState{};
+	state_->caretBlinkElapsedSeconds = 0.0;
+	state_->caretBlinkResetPending = true;
+	state_->emitCaretsThisFrame = true;
+	state_->frameOverrides.rects.clear();
+	state_->frameOverrides.textColorOverrides.clear();
 }
 
 void InputFieldManager::applyKeyboardEdits() {
 	bool hasAnyCarets = false;
-	for (const auto& [_, field] : fieldsById_) {
+	for (const auto& [_, field] : state_->fieldsById) {
 		if (!field.carets.empty()) {
 			hasAnyCarets = true;
 			break;
@@ -958,21 +1053,21 @@ void InputFieldManager::applyKeyboardEdits() {
 	bool backspacePressed = false;
 	bool deletePressed = false;
 	if (hasAnyCarets) {
-		leftPressed = shouldTriggerActionWithRepeat(GLFW_KEY_LEFT, leftKeyRepeat_);
-		rightPressed = shouldTriggerActionWithRepeat(GLFW_KEY_RIGHT, rightKeyRepeat_);
-		backspacePressed = shouldTriggerActionWithRepeat(GLFW_KEY_BACKSPACE, backspaceKeyRepeat_);
-		deletePressed = shouldTriggerActionWithRepeat(GLFW_KEY_DELETE, deleteKeyRepeat_);
+		leftPressed = shouldTriggerActionWithRepeat(GLFW_KEY_LEFT, state_->leftKeyRepeat);
+		rightPressed = shouldTriggerActionWithRepeat(GLFW_KEY_RIGHT, state_->rightKeyRepeat);
+		backspacePressed = shouldTriggerActionWithRepeat(GLFW_KEY_BACKSPACE, state_->backspaceKeyRepeat);
+		deletePressed = shouldTriggerActionWithRepeat(GLFW_KEY_DELETE, state_->deleteKeyRepeat);
 	} else {
-		leftKeyRepeat_ = KeyRepeatState{};
-		rightKeyRepeat_ = KeyRepeatState{};
-		backspaceKeyRepeat_ = KeyRepeatState{};
-		deleteKeyRepeat_ = KeyRepeatState{};
+		state_->leftKeyRepeat = KeyRepeatState{};
+		state_->rightKeyRepeat = KeyRepeatState{};
+		state_->backspaceKeyRepeat = KeyRepeatState{};
+		state_->deleteKeyRepeat = KeyRepeatState{};
 	}
 
-	const bool selecting = currentInput_.shift;
+	const bool selecting = state_->currentInput.shift;
 	bool shouldResetCaretBlink = false;
 
-	for (auto& [_, field] : fieldsById_) {
+	for (auto& [_, field] : state_->fieldsById) {
 		if (field.carets.empty()) {
 			continue;
 		}
@@ -1002,7 +1097,7 @@ void InputFieldManager::applyKeyboardEdits() {
 			shouldResetCaretBlink = true;
 		}
 
-		const std::string textInput = encodeTextInput(currentInput_, field.config.allowNewline);
+		const std::string textInput = encodeTextInput(state_->currentInput, field.config.allowNewline);
 		if (!textInput.empty()) {
 			applyTextInsertion(field, textInput);
 			shouldResetCaretBlink = true;
@@ -1269,9 +1364,9 @@ float InputFieldManager::measureTextSlice(const Clay_StringSlice& text, const Cl
 		return 0.0f;
 	}
 
-	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, textData.fontId);
+	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(&state_->fontView, textData.fontId);
 	if (!fontFace) {
-		const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, textData.fontSize)) * pointsToPixelsScale_;
+		const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, textData.fontSize)) * state_->pointsToPixelsScale;
 		return static_cast<float>(text.length) * fallbackEmPixels * 0.5f;
 	}
 
@@ -1279,7 +1374,7 @@ float InputFieldManager::measureTextSlice(const Clay_StringSlice& text, const Cl
 		FlowUi::detail::TextLayoutRequest{
 			.text = text,
 			.fontFace = fontFace,
-			.pointsToPixelsScale = pointsToPixelsScale_,
+			.pointsToPixelsScale = state_->pointsToPixelsScale,
 			.fontSize = textData.fontSize,
 			.letterSpacing = textData.letterSpacing,
 			.lineOriginX = 0.0f,

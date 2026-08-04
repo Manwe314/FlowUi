@@ -39,7 +39,8 @@ constexpr uint64_t kCapabilityMask =
 	static_cast<uint64_t>(StorageCapability::BindingWriteBatches) |
 	static_cast<uint64_t>(StorageCapability::FrameReadLeases) |
 	static_cast<uint64_t>(StorageCapability::RendererResourceBundles) |
-	static_cast<uint64_t>(StorageCapability::BorrowedNativeTextures)
+	static_cast<uint64_t>(StorageCapability::ManagerRecords) |
+	static_cast<uint64_t>(StorageCapability::ManagerFrameSnapshots)
 #if FLOW_UI_DEV_MODE
 	| static_cast<uint64_t>(StorageCapability::DevelopmentTelemetry)
 #endif
@@ -562,6 +563,18 @@ struct UsedResource {
 } // namespace
 
 struct FlowStorageSystem::Impl {
+	struct DiagnosticKey {
+		ResourceKey resource{};
+		uint32_t code = 0;
+		auto operator<=>(const DiagnosticKey&) const = default;
+	};
+	struct DiagnosticKeyHash {
+		size_t operator()(const DiagnosticKey& key) const noexcept {
+			return ResourceKeyHash{}(key.resource) ^
+				(static_cast<size_t>(key.code) + 0x9e3779b9u +
+				 (ResourceKeyHash{}(key.resource) << 6u) + (ResourceKeyHash{}(key.resource) >> 2u));
+		}
+	};
 	explicit Impl(VulkanContext& context) : vk(context) {}
 
 	struct BlobRecord {
@@ -624,11 +637,18 @@ struct FlowStorageSystem::Impl {
 	struct TextureColdRecord {
 		ResourceKey key{};
 		TextureViewDesc desc{};
-		ExternalTextureDesc externalDesc{};
 		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
 		bool published = false;
-		bool external = false;
+	};
+
+	struct ManagerRecord {
+		uint32_t generation = 0;
+		ResourceState state = ResourceState::Invalid;
+		ResourceKey key{};
+		ResourceKind kind = ResourceKind::Invalid;
+		MemoryBlock memory{};
+		ManagerRecordDestroy destroy = nullptr;
 	};
 
 	struct RendererLayoutRecord {
@@ -737,6 +757,7 @@ struct FlowStorageSystem::Impl {
 		WindowDescriptorBundleHandle activeDescriptorBundle{};
 		bool closing = false;
 		SubmissionSerial retireAfter = 0;
+		uint64_t managerRevision = 1;
 	};
 
 	VulkanContext& vk;
@@ -754,6 +775,12 @@ struct FlowStorageSystem::Impl {
 	PersistentPool stringPool;
 	std::vector<std::string_view> strings{std::string_view{}};
 	std::unordered_map<std::string_view, StringId, StringViewHash, StringViewEqual> stringIds;
+	std::unordered_set<DiagnosticKey, DiagnosticKeyHash> diagnosticMarks;
+	std::vector<ManagerRecord> managerRecords{ManagerRecord{}};
+	std::vector<uint32_t> freeManagerRecords;
+	std::unordered_map<ResourceKey, ManagerRecordHandle, ResourceKeyHash> managerRecordByKey;
+	uint64_t sharedManagerRevision = 1;
+	uint32_t managerFailureCountdown = 0;
 
 	std::vector<BlobRecord> blobs{BlobRecord{}};
 	std::vector<uint32_t> freeBlobs;
@@ -814,6 +841,49 @@ struct FlowStorageSystem::Impl {
 		freeIndices.reserve(freeIndices.size() + 1u);
 		records.emplace_back();
 		return static_cast<uint32_t>(records.size() - 1u);
+	}
+
+	void managerCheckpoint() {
+		if (managerFailureCountdown == 0) return;
+		--managerFailureCountdown;
+		if (managerFailureCountdown == 0) storageError("injected manager transaction failure");
+	}
+
+	[[nodiscard]] bool usableManagerRecord(
+		ManagerRecordHandle handle, ResourceKind kind) const noexcept {
+		return handle && handle.index < managerRecords.size() &&
+			managerRecords[handle.index].generation == handle.generation &&
+			managerRecords[handle.index].state == ResourceState::Ready &&
+			managerRecords[handle.index].kind == kind;
+	}
+
+	void incrementManagerRevision(WindowId window) {
+		uint64_t* revision = &sharedManagerRevision;
+		if (window != 0) revision = &requireWindow(window).managerRevision;
+		if (*revision == std::numeric_limits<uint64_t>::max()) {
+			storageError("manager publication revision space exhausted");
+		}
+		++*revision;
+	}
+
+	void destroyManagerRecord(uint32_t index) noexcept {
+		if (index == 0 || index >= managerRecords.size()) return;
+		ManagerRecord& record = managerRecords[index];
+		if (record.state == ResourceState::Invalid) return;
+		const uint32_t generation = nextGeneration(record.generation);
+		if (record.destroy && record.memory.data) record.destroy(record.memory.data);
+		persistentPool.release(record.memory);
+		record = ManagerRecord{.generation = generation};
+		freeManagerRecords.push_back(index);
+	}
+
+	void destroyAllManagerRecords() noexcept {
+		for (uint32_t index = 1; index < managerRecords.size(); ++index) {
+			destroyManagerRecord(index);
+		}
+		managerRecordByKey.clear();
+		managerRecords.assign(1u, ManagerRecord{});
+		freeManagerRecords.clear();
 	}
 
 	uint32_t acquireImageViewIndex() {
@@ -885,14 +955,8 @@ struct FlowStorageSystem::Impl {
 	}
 
 	void requireSharedMutationPhase() const {
-		if (hasActiveFrames()) {
-			storageError("shared resource mutation is allowed only before window frames begin or after they terminate");
-		}
-	}
-
-	void requireExternalTexturePublishPhase() const {
 		if (hasSealedFrames()) {
-			storageError("external texture publication is not allowed while a sealed frame is active");
+			storageError("shared resource mutation is not allowed while a sealed frame snapshot is active");
 		}
 	}
 
@@ -975,21 +1039,13 @@ struct FlowStorageSystem::Impl {
 	}
 
 	ImageHandle textureBackingImage(TextureHandle handle) const noexcept {
-		if (!usableTexture(handle) || textureCold[handle.index].external) return {};
+		if (!usableTexture(handle)) return {};
 		const ImageViewHandle view = textureCold[handle.index].desc.imageView;
 		return usableImageView(view) ? imageViews[view.index].image : ImageHandle{};
 	}
 
 	bool textureVisibleToFrame(TextureHandle handle, const FrameToken& frame) const noexcept {
 		if (!usableTexture(handle)) return false;
-		const TextureColdRecord& cold = textureCold[handle.index];
-		if (cold.external) {
-			return visibleToFrame(
-				cold.externalDesc.sharing,
-				cold.externalDesc.window,
-				cold.externalDesc.frameSlot,
-				frame);
-		}
 		return imageVisibleToFrame(textureBackingImage(handle), frame);
 	}
 
@@ -1002,27 +1058,6 @@ struct FlowStorageSystem::Impl {
 			if (key.window != 0) storageError("app-shared texture must use root ResourceKey attribution");
 		} else if (key.window != imageDesc.window) {
 			storageError("texture ResourceKey window does not match its backing image owner");
-		}
-	}
-
-	void validateExternalTextureOwnership(ResourceKey key, const ExternalTextureDesc& desc) const {
-		if (desc.nativeImageView == 0 || desc.nativeSampler == 0) {
-			storageError("external texture publication requires non-null native handles");
-		}
-		if (desc.sharing == ResourceSharing::AppShared) {
-			if (key.window != 0 || desc.window != 0 || desc.frameSlot != InvalidFrameSlot) {
-				storageError("app-shared external texture must use root attribution");
-			}
-			return;
-		}
-		if (desc.window == 0 || key.window != desc.window) {
-			storageError("external texture key does not match its owning window");
-		}
-		if (desc.sharing == ResourceSharing::WindowLocal && desc.frameSlot != InvalidFrameSlot) {
-			storageError("window-local external texture cannot name a frame slot");
-		}
-		if (desc.sharing == ResourceSharing::FrameLocal && desc.frameSlot == InvalidFrameSlot) {
-			storageError("frame-local external texture requires a frame slot");
 		}
 	}
 
@@ -1189,7 +1224,7 @@ struct FlowStorageSystem::Impl {
 		const ResourceState imageState = images[image.index].state;
 		for (size_t textureIndex = 1; textureIndex < textureHot.size(); ++textureIndex) {
 			TextureHotRecord& hot = textureHot[textureIndex];
-			if (hot.external || hot.state == ResourceState::Invalid || hot.imageViewIndex >= imageViews.size()) continue;
+			if (hot.state == ResourceState::Invalid || hot.imageViewIndex >= imageViews.size()) continue;
 			const ImageViewRecord& view = imageViews[hot.imageViewIndex];
 			if (view.generation != hot.imageViewGeneration || view.image != image) continue;
 			if (hot.state != imageState) {
@@ -1447,10 +1482,7 @@ struct FlowStorageSystem::Impl {
 			binding.state = hot.state;
 			binding.nativeImageView = fallbackBinding.nativeImageView;
 			binding.nativeSampler = fallbackBinding.nativeSampler;
-			if (hot.external && hot.state == ResourceState::Ready) {
-				binding.nativeImageView = hot.nativeImageView;
-				binding.nativeSampler = hot.nativeSampler;
-			} else if (hot.state == ResourceState::Ready && hot.imageViewIndex < imageViewHot.size()) {
+				if (hot.state == ResourceState::Ready && hot.imageViewIndex < imageViewHot.size()) {
 				const ImageViewHotRecord& view = imageViewHot[hot.imageViewIndex];
 				if (view.generation == hot.imageViewGeneration) binding.nativeImageView = view.nativeImageView;
 				if (hot.samplerIndex < samplerHot.size()) {
@@ -1641,14 +1673,11 @@ struct FlowStorageSystem::Impl {
 			TextureColdRecord& cold = textureCold[handle.index];
 			const ImageViewHandle view = cold.desc.imageView;
 			const SamplerHandle sampler = cold.desc.sampler;
-			const bool external = cold.external;
-			hot = TextureHotRecord{.generation = nextGeneration(hot.generation)};
+				hot = TextureHotRecord{.generation = nextGeneration(hot.generation)};
 			cold = {};
 			freeTextures.push_back(handle.index);
-			if (!external) {
 				releaseImageViewReference(view, request.retireAfter);
 				releaseSamplerReference(sampler, request.retireAfter);
-			}
 			for (auto& [_, window] : windows) {
 				if (window->bindingsByTextureIndex.size() <= handle.index) continue;
 				BindingHotRecord& binding = window->bindingsByTextureIndex[handle.index];
@@ -1824,6 +1853,8 @@ void FlowStorageSystem::initialize(const StorageConfig& config) {
 	impl_->rendererLayouts.reserve(static_cast<size_t>(config.expectedRendererObjects) + 1u);
 	impl_->rendererPipelineBundles.reserve(static_cast<size_t>(config.expectedRendererObjects) + 1u);
 	impl_->windowDescriptorBundles.reserve(static_cast<size_t>(config.expectedRendererObjects) + 1u);
+	impl_->managerRecords.reserve(static_cast<size_t>(config.expectedManagerRecords) + 1u);
+	impl_->managerRecordByKey.reserve(config.expectedManagerRecords);
 	impl_->retirements.reserve(
 		static_cast<size_t>(config.expectedBlobs) + config.expectedBuffers + config.expectedImages +
 		config.expectedImageViews + config.expectedSamplers + config.expectedTextureViews +
@@ -1866,6 +1897,7 @@ void FlowStorageSystem::shutdown() noexcept {
 			Impl::invalidateArena(*frame);
 		}
 	}
+	impl_->destroyAllManagerRecords();
 	impl_->immediateDestroyAll();
 	impl_->uploads.clear();
 	impl_->uploadStates.clear();
@@ -1880,6 +1912,12 @@ void FlowStorageSystem::shutdown() noexcept {
 	impl_->stringPool.clear();
 	impl_->strings.assign(1u, std::string_view{});
 	impl_->stringIds.clear();
+	impl_->diagnosticMarks.clear();
+	impl_->managerRecordByKey.clear();
+	impl_->managerRecords.assign(1u, Impl::ManagerRecord{});
+	impl_->freeManagerRecords.clear();
+	impl_->sharedManagerRevision = 1;
+	impl_->managerFailureCountdown = 0;
 	impl_->blobs.assign(1u, Impl::BlobRecord{});
 	impl_->freeBlobs.clear();
 	impl_->buffers.assign(1u, Impl::BufferRecord{});
@@ -2066,7 +2104,14 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 #if FLOW_UI_DEV_MODE
 	frame.arenaValidation = std::move(arenaValidation);
 #endif
-	return FrameToken{id, desc.frameSlot, desc.frameNumber, frame.epoch};
+	return FrameToken{
+		.window = id,
+		.frameSlot = desc.frameSlot,
+		.frameNumber = desc.frameNumber,
+		.epoch = frame.epoch,
+		.managerSharedRevision = impl_->sharedManagerRevision,
+		.managerWindowRevision = window.managerRevision,
+	};
 }
 
 FrameReadLease FlowStorageSystem::sealFrame(const FrameToken& frame) {
@@ -2090,6 +2135,8 @@ FrameReadLease FlowStorageSystem::sealFrame(const FrameToken& frame) {
 	state.sealed = true;
 	state.leaseId = impl_->nextReadLeaseId++;
 	FrameReadLease lease{.frame = frame, .leaseId = state.leaseId};
+	lease.frame.managerSharedRevision = impl_->sharedManagerRevision;
+	lease.frame.managerWindowRevision = window.managerRevision;
 #if FLOW_UI_DEV_MODE
 	state.leaseValidation = std::move(leaseValidation);
 	lease.validation = state.leaseValidation;
@@ -2394,6 +2441,171 @@ StringId FlowStorageSystem::intern(std::string_view value) {
 std::string_view FlowStorageSystem::string(StringId id) const noexcept {
 	std::scoped_lock lock(impl_->mutex);
 	return id < impl_->strings.size() ? impl_->strings[id] : std::string_view{};
+}
+
+bool FlowStorageSystem::markDiagnosticOnce(ResourceKey key, uint32_t diagnosticCode) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	return impl_->diagnosticMarks.emplace(Impl::DiagnosticKey{key, diagnosticCode}).second;
+}
+
+void FlowStorageSystem::clearDiagnosticMark(ResourceKey key, uint32_t diagnosticCode) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->diagnosticMarks.erase(Impl::DiagnosticKey{key, diagnosticCode});
+}
+
+ManagerRecordHandle FlowStorageSystem::createManagerRecord(const ManagerRecordDesc& desc) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	if (desc.key.name == 0) storageError("manager record key must have a non-empty interned name");
+	if (desc.bytes == 0 || desc.construct == nullptr || desc.destroy == nullptr) {
+		storageError("manager record requires storage size, construction, and destruction callbacks");
+	}
+	if (desc.kind == ResourceKind::Invalid || desc.kind == ResourceKind::Count) {
+		storageError("manager record resource kind is invalid");
+	}
+	(void)alignUp(0, desc.alignment);
+	if (desc.key.window == 0) impl_->requireSharedMutationPhase();
+	else (void)impl_->requireWindow(desc.key.window);
+	if (impl_->managerRecordByKey.contains(desc.key)) {
+		storageError("manager record key is already published");
+	}
+
+	impl_->managerCheckpoint();
+	const uint32_t index = Impl::acquireIndex(impl_->managerRecords, impl_->freeManagerRecords);
+	Impl::ManagerRecord& record = impl_->managerRecords[index];
+	const uint32_t generation = record.generation == 0 ? 1u : record.generation;
+	MemoryBlock memory{};
+	bool constructed = false;
+	bool published = false;
+	try {
+		impl_->managerCheckpoint();
+		impl_->requireCpuBudget(desc.bytes);
+		memory = impl_->persistentPool.allocate(desc.bytes, desc.alignment,
+			AllocationTag{
+				.memoryClass = desc.key.window == 0 ? MemoryClass::ResourceMetadata : MemoryClass::WindowPersistent,
+				.resourceKind = desc.kind,
+				.window = desc.key.window,
+				.frameSlot = InvalidFrameSlot,
+				.debugName = desc.debugName,
+			});
+		impl_->managerCheckpoint();
+		desc.construct(memory.data, desc.userData);
+		constructed = true;
+		impl_->managerCheckpoint();
+		record = Impl::ManagerRecord{
+			.generation = generation,
+			.state = ResourceState::Ready,
+			.key = desc.key,
+			.kind = desc.kind,
+			.memory = memory,
+			.destroy = desc.destroy,
+		};
+		const ManagerRecordHandle handle{index, generation};
+		impl_->managerRecordByKey.emplace(desc.key, handle);
+		published = true;
+		impl_->incrementManagerRevision(desc.key.window);
+		return handle;
+	} catch (...) {
+		if (published) impl_->managerRecordByKey.erase(desc.key);
+		if (constructed) desc.destroy(memory.data);
+		if (memory) impl_->persistentPool.release(memory);
+		record = Impl::ManagerRecord{.generation = generation};
+		impl_->freeManagerRecords.push_back(index);
+		throw;
+	}
+}
+
+ManagerRecordHandle FlowStorageSystem::findManagerRecord(
+	ResourceKey key, ResourceKind kind) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	const auto it = impl_->managerRecordByKey.find(key);
+	if (it == impl_->managerRecordByKey.end() || !impl_->usableManagerRecord(it->second, kind)) return {};
+	return it->second;
+}
+
+void* FlowStorageSystem::managerRecordData(
+	ManagerRecordHandle handle, ResourceKind kind) noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	return impl_->usableManagerRecord(handle, kind)
+		? impl_->managerRecords[handle.index].memory.data
+		: nullptr;
+}
+
+const void* FlowStorageSystem::managerRecordData(
+	ManagerRecordHandle handle, ResourceKind kind) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	return impl_->usableManagerRecord(handle, kind)
+		? impl_->managerRecords[handle.index].memory.data
+		: nullptr;
+}
+
+bool FlowStorageSystem::removeManagerRecord(ResourceKey key, ResourceKind kind) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	const auto it = impl_->managerRecordByKey.find(key);
+	if (it == impl_->managerRecordByKey.end() || !impl_->usableManagerRecord(it->second, kind)) return false;
+	if (key.window == 0) impl_->requireSharedMutationPhase();
+	else (void)impl_->requireWindow(key.window);
+	impl_->incrementManagerRevision(key.window);
+	const uint32_t index = it->second.index;
+	impl_->managerRecordByKey.erase(it);
+	impl_->destroyManagerRecord(index);
+	return true;
+}
+
+void FlowStorageSystem::releaseWindowManagerRecords(WindowId window) noexcept {
+	if (window == 0) return;
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		for (auto it = impl_->managerRecordByKey.begin(); it != impl_->managerRecordByKey.end();) {
+			if (it->first.window != window) {
+				++it;
+				continue;
+			}
+			const uint32_t index = it->second.index;
+			it = impl_->managerRecordByKey.erase(it);
+			impl_->destroyManagerRecord(index);
+		}
+	} catch (...) {
+	}
+}
+
+void FlowStorageSystem::noteManagerMutation(WindowId window) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	if (window == 0) impl_->requireSharedMutationPhase();
+	impl_->incrementManagerRevision(window);
+}
+
+ManagerFrameView FlowStorageSystem::managerFrameView(const FrameToken& frame) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	const auto windowIt = impl_->windows.find(frame.window);
+	if (windowIt == impl_->windows.end() || frame.frameSlot >= windowIt->second->frames.size()) return {};
+	const Impl::FrameState& state = *windowIt->second->frames[frame.frameSlot];
+	if (!state.active || state.epoch != frame.epoch) return {};
+	return ManagerFrameView{
+		.sharedRevision = frame.managerSharedRevision,
+		.windowRevision = frame.managerWindowRevision,
+		.window = frame.window,
+		.epoch = frame.epoch,
+	};
+}
+
+uint64_t FlowStorageSystem::managerSharedRevision() const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	return impl_->sharedManagerRevision;
+}
+
+uint64_t FlowStorageSystem::managerWindowRevision(WindowId window) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	const auto it = impl_->windows.find(window);
+	return it == impl_->windows.end() ? 0 : it->second->managerRevision;
+}
+
+void FlowStorageSystem::setManagerFailureCountdown(uint32_t checkpoints) noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->managerFailureCountdown = checkpoints;
 }
 
 BlobHandle FlowStorageSystem::createBlob(std::span<const std::byte> bytes, StringId debugName) {
@@ -2744,6 +2956,57 @@ TextureHandle FlowStorageSystem::publishTexture(ResourceKey key, const TextureVi
 	return handle;
 }
 
+TextureHandle FlowStorageSystem::createAnonymousTexture(const TextureViewDesc& desc) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	impl_->requireSharedMutationPhase();
+	if (!impl_->usableImageView(desc.imageView) || !impl_->usableSampler(desc.sampler)) {
+		storageError("anonymous texture creation requires valid image-view and sampler handles");
+	}
+	const ImageHandle backingImage = impl_->imageViews[desc.imageView.index].image;
+	const ImageDesc& imageDesc = impl_->images[backingImage.index].desc;
+	impl_->validateTextureOwnership(
+		ResourceKey{.domain = ResourceDomain::Internal, .window = imageDesc.window}, desc);
+	const uint32_t index = impl_->acquireTextureIndex();
+	TextureHotRecord& hot = impl_->textureHot[index];
+	const uint32_t generation = hot.generation == 0 ? 1u : hot.generation;
+	try {
+		impl_->retainImageView(desc.imageView);
+		try { impl_->retainSampler(desc.sampler); }
+		catch (...) { impl_->releaseImageViewReference(desc.imageView, 0); throw; }
+	} catch (...) {
+		impl_->freeTextures.push_back(index);
+		throw;
+	}
+	hot = TextureHotRecord{
+		.generation = generation,
+		.revision = 1,
+		.imageViewIndex = desc.imageView.index,
+		.imageViewGeneration = desc.imageView.generation,
+		.samplerIndex = desc.sampler.index,
+		.samplerGeneration = desc.sampler.generation,
+		.state = impl_->images[backingImage.index].state,
+		.sourceWidth = desc.sourceWidth,
+		.sourceHeight = desc.sourceHeight,
+	};
+	impl_->textureCold[index] = Impl::TextureColdRecord{
+		.desc = desc,
+		.referenceCount = 1,
+		.published = true,
+	};
+	return TextureHandle{index, generation};
+}
+
+void FlowStorageSystem::releaseAnonymousTexture(TextureHandle texture, SubmissionSerial lastUse) {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->validTexture(texture)) return;
+	Impl::TextureColdRecord& cold = impl_->textureCold[texture.index];
+	if (cold.key.name != 0) storageError("keyed textures must be removed through removeTexture");
+	impl_->reserveRetirements(1u);
+	cold.published = false;
+	impl_->releaseTextureReference(texture, std::max(lastUse, cold.lastUse));
+}
+
 TextureHandle FlowStorageSystem::replaceTexture(ResourceKey key, const TextureViewDesc& desc) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
@@ -2816,65 +3079,9 @@ TextureHandle FlowStorageSystem::replaceTexture(ResourceKey key, const TextureVi
 	return handle;
 }
 
-TextureHandle FlowStorageSystem::publishExternalTexture(
-	ResourceKey key,
-	const ExternalTextureDesc& desc,
-	bool* inserted) {
-	std::scoped_lock lock(impl_->mutex);
-	impl_->requireInitialized();
-	impl_->requireExternalTexturePublishPhase();
-	impl_->validateExternalTextureOwnership(key, desc);
-
-	auto found = impl_->textureByKey.find(key);
-	const bool isInsert = found == impl_->textureByKey.end();
-	if (!isInsert) impl_->reserveRetirements(1u);
-	const TextureHandle old = isInsert ? TextureHandle{} : found->second;
-
-	const uint32_t index = impl_->acquireTextureIndex();
-	TextureHotRecord& hot = impl_->textureHot[index];
-	const uint32_t generation = hot.generation == 0 ? 1u : hot.generation;
-	hot = TextureHotRecord{
-		.generation = generation,
-		.revision = 1u,
-		.state = ResourceState::Ready,
-		.external = true,
-		.sourceWidth = desc.sourceWidth,
-		.sourceHeight = desc.sourceHeight,
-		.nativeImageView = desc.nativeImageView,
-		.nativeSampler = desc.nativeSampler,
-	};
-	impl_->textureCold[index] = Impl::TextureColdRecord{
-		.key = key,
-		.externalDesc = desc,
-		.referenceCount = 1u,
-		.published = true,
-		.external = true,
-	};
-	const TextureHandle handle{index, generation};
-	if (isInsert) {
-		try {
-			if (!impl_->textureByKey.emplace(key, handle).second) {
-				storageError("external texture key publication collided with a stale entry");
-			}
-		} catch (...) {
-			hot = TextureHotRecord{.generation = generation};
-			impl_->textureCold[index] = {};
-			impl_->freeTextures.push_back(index);
-			throw;
-		}
-	} else {
-		found->second = handle;
-		Impl::TextureColdRecord& oldCold = impl_->textureCold[old.index];
-		oldCold.published = false;
-		impl_->releaseTextureReference(old, oldCold.lastUse);
-	}
-	if (inserted) *inserted = isInsert;
-	return handle;
-}
-
 bool FlowStorageSystem::removeTexture(ResourceKey key, SubmissionSerial lastUse) {
 	std::scoped_lock lock(impl_->mutex);
-	impl_->requireExternalTexturePublishPhase();
+	impl_->requireSharedMutationPhase();
 	const auto found = impl_->textureByKey.find(key);
 	if (found == impl_->textureByKey.end()) return false;
 	const TextureHandle handle = found->second;
@@ -2917,9 +3124,6 @@ void FlowStorageSystem::setFallbackTexture(TextureHandle texture) {
 	if (texture == impl_->fallbackTexture) return;
 	if (!impl_->usableTexture(texture) || impl_->textureHot[texture.index].state != ResourceState::Ready) {
 		storageError("fallback texture must be a ready, non-retiring texture");
-	}
-	if (impl_->textureCold[texture.index].external) {
-		storageError("the fallback texture must be storage-owned");
 	}
 	const ImageHandle fallbackImage = impl_->textureBackingImage(texture);
 	if (!fallbackImage || impl_->textureCold[texture.index].key.window != 0 ||
@@ -3780,6 +3984,26 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 		for (size_t i = 1; i < impl_->windowDescriptorBundles.size(); ++i)
 			add(impl_->windowDescriptorBundles[i].state, 0);
 		break;
+	case ResourceKind::UiContext:
+	case ResourceKind::UiInteractionState:
+	case ResourceKind::ImageAsset:
+	case ResourceKind::FontFamily:
+	case ResourceKind::FontFace:
+	case ResourceKind::FontAtlas:
+	case ResourceKind::SvgDocument:
+	case ResourceKind::IconAtlasPage:
+	case ResourceKind::IconVariant:
+	case ResourceKind::InputField:
+	case ResourceKind::ShortcutRegistration:
+	case ResourceKind::Viewport:
+	case ResourceKind::ViewportTarget:
+	case ResourceKind::ManagerRoot:
+		result.slots = static_cast<uint32_t>(impl_->managerRecords.size() - 1u);
+		for (size_t i = 1; i < impl_->managerRecords.size(); ++i) {
+			const Impl::ManagerRecord& record = impl_->managerRecords[i];
+			if (record.kind == kind) add(record.state, record.memory.size);
+		}
+		break;
 	default: break;
 	}
 	return result;
@@ -3801,6 +4025,21 @@ bool FlowStorageSystem::validateHandle(ResourceKind kind, uint32_t index, uint32
 	case ResourceKind::RendererLayout: return impl_->usableRendererLayout({index, generation});
 	case ResourceKind::RendererPipelineBundle: return impl_->usableRendererPipelineBundle({index, generation});
 	case ResourceKind::WindowDescriptorBundle: return impl_->usableWindowDescriptorBundle({index, generation});
+	case ResourceKind::UiContext:
+	case ResourceKind::UiInteractionState:
+	case ResourceKind::ImageAsset:
+	case ResourceKind::FontFamily:
+	case ResourceKind::FontFace:
+	case ResourceKind::FontAtlas:
+	case ResourceKind::SvgDocument:
+	case ResourceKind::IconAtlasPage:
+	case ResourceKind::IconVariant:
+	case ResourceKind::InputField:
+	case ResourceKind::ShortcutRegistration:
+	case ResourceKind::Viewport:
+	case ResourceKind::ViewportTarget:
+	case ResourceKind::ManagerRoot:
+		return impl_->usableManagerRecord({index, generation}, kind);
 	default: return false;
 	}
 }

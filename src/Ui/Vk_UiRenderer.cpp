@@ -1,5 +1,4 @@
 #include "Ui/Vk_UiRenderer.hpp"
-#include "managers/FontManager.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "internal/TextLayoutEngine.hpp"
 
@@ -68,6 +67,24 @@ static NativeHandle NativeHandleFromBits(uint64_t value) noexcept {
 		return static_cast<NativeHandle>(value);
 	}
 }
+
+template <typename NativeHandle>
+static uint64_t NativeHandleBits(NativeHandle value) noexcept {
+	if constexpr (std::is_pointer_v<NativeHandle>) {
+		return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(value));
+	} else {
+		return static_cast<uint64_t>(value);
+	}
+}
+
+constexpr storage::RendererLayoutKey kUiRendererLayoutKey{
+	.textureDescriptorCapacity = kDefaultMaxUiImageDescriptors,
+	.shaderInterfaceRevision = 1u,
+	.pushConstantBytes = sizeof(UiPushConstants),
+	.descriptorFeatureFlags = 0x3u,
+};
+constexpr uint32_t kUiPipelineStateRevision = 1u;
+constexpr uint64_t kUiShaderSetFingerprint = 0x464c4f5755490003ull;
 
 static void vkCheck(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
@@ -426,7 +443,7 @@ static void EmitSolidBorder(
 
 static void EmitTextMsdf(
 	const Clay_RenderCommand& command,
-	const FlowUi::FontManager* fontManager,
+	const FlowUi::detail::manager_storage::FontFrameView* fontView,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -479,7 +496,7 @@ static void EmitTextMsdf(
 		++textGlyphCount;
 	};
 
-	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager, textData.fontId);
+	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontView, textData.fontId);
 	uint32_t atlasLayer = fontFace ? fontFace->atlasLayer : 0u;
 	float distanceRangePx = 2.0f;
 	if (fontFace) {
@@ -569,7 +586,7 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 	const Clay_RenderCommandArray& commands,
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
-	const FlowUi::FontManager* fontManager,
+	const FlowUi::detail::manager_storage::FontFrameView* fontView,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -696,7 +713,7 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 			case CLAY_RENDER_COMMAND_TYPE_TEXT:
 				EmitTextMsdf(
 					command,
-					fontManager,
+					fontView,
 					pointsToPixelsScale,
 					uiToFramebufferScaleX,
 					uiToFramebufferScaleY,
@@ -942,12 +959,10 @@ static void DestroyDescriptorObjects(VkDevice device, VulkanUiRenderer::Descript
 	}
 }
 
-static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
+static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	if (renderer.maxUiImageDescriptors_ == 0u) {
 		throw std::runtime_error("UI texture descriptor capacity must be greater than zero.");
 	}
-	renderer.frameResourceCount_ = std::max<uint32_t>(1u, renderer.frameResourceCount_);
-
 	VkDescriptorSetLayoutBinding globalsBinding{};
 	globalsBinding.binding = 0;
 	globalsBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -988,6 +1003,30 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	set1Info.pBindings = textureBindings.data();
 	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors_.set1), "Failed to create UI set1 layout.");
 
+	const std::array<VkDescriptorSetLayout, 2> setLayouts = {
+		renderer.descriptors_.set0,
+		renderer.descriptors_.set1,
+	};
+	VkPushConstantRange pushRange{};
+	pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	pushRange.offset = 0;
+	pushRange.size = sizeof(UiPushConstants);
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+	pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+	pipelineLayoutInfo.pushConstantRangeCount = 1;
+	pipelineLayoutInfo.pPushConstantRanges = &pushRange;
+	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines_.layout),
+		"Failed to create UI pipeline layout.");
+}
+
+static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
+	if (renderer.descriptors_.set0 == VK_NULL_HANDLE || renderer.descriptors_.set1 == VK_NULL_HANDLE) {
+		throw std::runtime_error("Shared UI descriptor layouts are unavailable.");
+	}
+	renderer.frameResourceCount_ = std::max<uint32_t>(1u, renderer.frameResourceCount_);
+
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	poolSizes[0].descriptorCount = renderer.frameResourceCount_;
@@ -1027,20 +1066,9 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 }
 
 static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
-	const std::array<VkDescriptorSetLayout, 2> setLayouts = { renderer.descriptors_.set0, renderer.descriptors_.set1 };
-	VkPushConstantRange pushRange{};
-	pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-	pushRange.offset = 0;
-	pushRange.size = sizeof(UiPushConstants);
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-	pipelineLayoutInfo.pSetLayouts = setLayouts.data();
-	pipelineLayoutInfo.pushConstantRangeCount = 1;
-	pipelineLayoutInfo.pPushConstantRanges = &pushRange;
-	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines_.layout), "Failed to create UI pipeline layout.");
-
+	if (renderer.pipelines_.layout == VK_NULL_HANDLE) {
+		throw std::runtime_error("Shared UI pipeline layout is unavailable.");
+	}
 	CreatePipelines(device, renderer.pipelines_, renderer.targetFormat_);
 }
 
@@ -1072,7 +1100,11 @@ static void UpdateInstanceBufferDescriptorForFrame(const VulkanUiRenderer& rende
 	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 }
 
-static void UpdateFontDescriptorForFrame(VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
+static void UpdateFontDescriptorForFrame(
+	VulkanUiRenderer& renderer,
+	VkDevice device,
+	uint32_t frameSlot,
+	const FlowUi::detail::manager_storage::FontFrameView* fontView) {
 	if (frameSlot >= renderer.descriptors_.texturesSets.size()) {
 		return;
 	}
@@ -1084,8 +1116,8 @@ static void UpdateFontDescriptorForFrame(VulkanUiRenderer& renderer, VkDevice de
 	fontAtlasInfo.sampler = renderer.sharedByteResources_->nativeLinearSampler;
 	fontAtlasInfo.imageView = renderer.sharedByteResources_->nativePlaceholderFontView;
 	fontAtlasInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	if (renderer.fontManager_) {
-		const FlowUi::Font::AtlasArrayResource& atlas = renderer.fontManager_->getAtlasResource();
+	if (fontView) {
+		const FlowUi::Font::AtlasArrayResource& atlas = fontView->atlas;
 		if (atlas.view != VK_NULL_HANDLE && atlas.sampler != VK_NULL_HANDLE && atlas.layersUsed > 0u) {
 			fontAtlasInfo.sampler = atlas.sampler;
 			fontAtlasInfo.imageView = atlas.view;
@@ -1102,17 +1134,13 @@ static void UpdateFontDescriptorForFrame(VulkanUiRenderer& renderer, VkDevice de
 	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 }
 
-static void RecreateDescriptorAndPipelineObjects(VulkanContext& vk, VulkanUiRenderer& renderer) {
-	DestroyPipelineObjects(vk.device, renderer.pipelines_);
-	DestroyDescriptorObjects(vk.device, renderer.descriptors_);
-	CreateDescriptorObjects(vk.device, renderer);
-	CreatePipelineObjects(vk.device, renderer);
+static void InitializeDescriptorBindings(VulkanContext& vk, VulkanUiRenderer& renderer) {
 	if (renderer.boundFontAtlasRevisionByFrame_.size() != renderer.frameResourceCount_) {
 		renderer.boundFontAtlasRevisionByFrame_.assign(renderer.frameResourceCount_, UINT32_MAX);
 	}
 	for (uint32_t frameSlot = 0u; frameSlot < renderer.frameResourceCount_; ++frameSlot) {
 		UpdateInstanceBufferDescriptorForFrame(renderer, vk.device, frameSlot);
-		UpdateFontDescriptorForFrame(renderer, vk.device, frameSlot);
+		UpdateFontDescriptorForFrame(renderer, vk.device, frameSlot, nullptr);
 		renderer.boundFontAtlasRevisionByFrame_[frameSlot] = UINT32_MAX;
 	}
 }
@@ -1232,7 +1260,7 @@ FlowUi::detail::UiConversionResult FlowUi::detail::buildUiInstancesDirect(
 	const Clay_RenderCommandArray& commands,
 	const InputFieldFrameOverrides& overrides,
 	VkExtent2D extent,
-	const FontManager* fontManager,
+	const manager_storage::FontFrameView* fontView,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -1244,7 +1272,7 @@ FlowUi::detail::UiConversionResult FlowUi::detail::buildUiInstancesDirect(
 		commands,
 		overrides,
 		extent,
-		fontManager,
+		fontView,
 		pointsToPixelsScale,
 		uiToFramebufferScaleX,
 		uiToFramebufferScaleY,
@@ -1386,7 +1414,8 @@ void initSharedUiByteResources(
 }
 
 void VulkanUiRenderer::init(
-	const FlowUi::AppConfig& config,
+	const FlowUi::VulkanConfig& vulkanConfig,
+	const FlowUi::UiConfig& uiConfig,
 	VulkanContext& vk,
 	VkFormat swapFormat,
 	storage::IStorageSystem& storageSystem,
@@ -1429,12 +1458,12 @@ void VulkanUiRenderer::init(
 			throw std::runtime_error("Vulkan device cannot support the fixed 256-entry UI texture descriptor array.");
 		}
 		targetFormat_ = swapFormat;
-		frameResourceCount_ = std::max<uint32_t>(1u, config.vk.framesInFlight);
+		frameResourceCount_ = std::max<uint32_t>(1u, vulkanConfig.framesInFlight);
 		frameResources_.assign(frameResourceCount_, UiFrameResources{});
 		boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
 
-		const float configuredDpi = std::max(1.0f, config.ui.dpi);
-		pointsToPixelsScale_ = std::max(0.0f, config.ui.fontScale) * (configuredDpi / 72.0f);
+		const float configuredDpi = std::max(1.0f, uiConfig.dpi);
+		pointsToPixelsScale_ = std::max(0.0f, uiConfig.fontScale) * (configuredDpi / 72.0f);
 		if (pointsToPixelsScale_ <= 0.0f) {
 			pointsToPixelsScale_ = configuredDpi / 72.0f;
 		}
@@ -1442,41 +1471,167 @@ void VulkanUiRenderer::init(
 		for (uint32_t frameSlot = 0u; frameSlot < frameResourceCount_; ++frameSlot) {
 			EnsureInstanceBufferCapacity(vk, *this, frameSlot, initialInstanceBytes_);
 		}
-		RecreateDescriptorAndPipelineObjects(vk, *this);
+
+		storage::RendererLayoutHandle acquiredLayout = storageSystem.acquireRendererLayout(kUiRendererLayoutKey);
+		if (!acquiredLayout) {
+			try {
+				CreateLayoutObjects(vk.device, *this);
+			} catch (...) {
+				DestroyPipelineObjects(vk.device, pipelines_);
+				DestroyDescriptorObjects(vk.device, descriptors_);
+				throw;
+			}
+			const storage::NativeRendererLayout candidate{
+				.globalsSetLayout = NativeHandleBits(descriptors_.set0),
+				.texturesSetLayout = NativeHandleBits(descriptors_.set1),
+				.pipelineLayout = NativeHandleBits(pipelines_.layout),
+			};
+			try {
+				const auto published = storageSystem.publishRendererLayout(
+					kUiRendererLayoutKey, candidate, storageSystem.intern("FlowUi UI renderer layout"));
+				acquiredLayout = published.handle;
+				if (published.ownershipTransferred) {
+					descriptors_.set0 = VK_NULL_HANDLE;
+					descriptors_.set1 = VK_NULL_HANDLE;
+					pipelines_.layout = VK_NULL_HANDLE;
+				} else {
+					DestroyPipelineObjects(vk.device, pipelines_);
+					DestroyDescriptorObjects(vk.device, descriptors_);
+				}
+			} catch (...) {
+				DestroyPipelineObjects(vk.device, pipelines_);
+				DestroyDescriptorObjects(vk.device, descriptors_);
+				throw;
+			}
+		}
+		layoutHandle_ = acquiredLayout;
+		nativeLayout_ = storageSystem.nativeRendererLayout(layoutHandle_);
+		if (nativeLayout_.globalsSetLayout == 0 || nativeLayout_.texturesSetLayout == 0 ||
+			nativeLayout_.pipelineLayout == 0) {
+			throw std::runtime_error("Storage returned an invalid shared UI renderer layout.");
+		}
+		descriptors_.set0 = NativeHandleFromBits<VkDescriptorSetLayout>(nativeLayout_.globalsSetLayout);
+		descriptors_.set1 = NativeHandleFromBits<VkDescriptorSetLayout>(nativeLayout_.texturesSetLayout);
+		pipelines_.layout = NativeHandleFromBits<VkPipelineLayout>(nativeLayout_.pipelineLayout);
+
+		const storage::RendererPipelineKey pipelineKey{
+			.layout = layoutHandle_,
+			.nativeColorFormat = static_cast<uint32_t>(targetFormat_),
+			.sampleCount = 1u,
+			.pipelineStateRevision = kUiPipelineStateRevision,
+			.shaderSetFingerprint = kUiShaderSetFingerprint,
+		};
+		storage::RendererPipelineBundleHandle acquiredPipeline =
+			storageSystem.acquireRendererPipelineBundle(pipelineKey);
+		if (!acquiredPipeline) {
+			try {
+				CreatePipelineObjects(vk.device, *this);
+			} catch (...) {
+				DestroyPipelines(vk.device, pipelines_);
+				throw;
+			}
+			const storage::NativeRendererPipelineBundle candidate{
+				.pipelineLayout = nativeLayout_.pipelineLayout,
+				.pipelines = {
+					NativeHandleBits(pipelines_.solid),
+					NativeHandleBits(pipelines_.msdf),
+					NativeHandleBits(pipelines_.textured),
+				},
+			};
+			try {
+				const auto published = storageSystem.publishRendererPipelineBundle(
+					pipelineKey, candidate, storageSystem.intern("FlowUi UI renderer pipelines"));
+				acquiredPipeline = published.handle;
+				if (published.ownershipTransferred) {
+					pipelines_.solid = VK_NULL_HANDLE;
+					pipelines_.msdf = VK_NULL_HANDLE;
+					pipelines_.textured = VK_NULL_HANDLE;
+				} else {
+					DestroyPipelines(vk.device, pipelines_);
+				}
+			} catch (...) {
+				DestroyPipelines(vk.device, pipelines_);
+				throw;
+			}
+		}
+		pipelineBundleHandle_ = acquiredPipeline;
+		nativePipelineBundle_ = storageSystem.nativeRendererPipelineBundle(pipelineBundleHandle_);
+		pipelines_.solid = NativeHandleFromBits<VkPipeline>(nativePipelineBundle_.pipelines[0]);
+		pipelines_.msdf = NativeHandleFromBits<VkPipeline>(nativePipelineBundle_.pipelines[1]);
+		pipelines_.textured = NativeHandleFromBits<VkPipeline>(nativePipelineBundle_.pipelines[2]);
+
+		try {
+			CreateDescriptorObjects(vk.device, *this);
+		} catch (...) {
+			if (descriptors_.pool != VK_NULL_HANDLE) {
+				vkDestroyDescriptorPool(vk.device, descriptors_.pool, nullptr);
+				descriptors_.pool = VK_NULL_HANDLE;
+			}
+			throw;
+		}
+		std::vector<uint64_t> globalBits(frameResourceCount_);
+		std::vector<uint64_t> textureBits(frameResourceCount_);
+		for (uint32_t i = 0; i < frameResourceCount_; ++i) {
+			globalBits[i] = NativeHandleBits(descriptors_.globalsSets[i]);
+			textureBits[i] = NativeHandleBits(descriptors_.texturesSets[i]);
+		}
+		try {
+			descriptorBundleHandle_ = storageSystem.adoptWindowDescriptorBundle(
+				storage::WindowDescriptorBundleDesc{
+					.window = windowId_,
+					.layout = layoutHandle_,
+					.framesInFlight = frameResourceCount_,
+					.descriptorCapacity = maxUiImageDescriptors_,
+					.debugName = storageSystem.intern("FlowUi window UI descriptors"),
+				},
+				storage::NativeWindowDescriptorBundle{
+					.descriptorPool = NativeHandleBits(descriptors_.pool),
+					.globalsSets = globalBits,
+					.textureSets = textureBits,
+				});
+			descriptors_.pool = VK_NULL_HANDLE;
+		} catch (...) {
+			if (descriptors_.pool != VK_NULL_HANDLE) {
+				vkDestroyDescriptorPool(vk.device, descriptors_.pool, nullptr);
+				descriptors_.pool = VK_NULL_HANDLE;
+			}
+			throw;
+		}
+		nativeDescriptors_ = storageSystem.nativeWindowDescriptorBundle(descriptorBundleHandle_);
+		descriptors_.pool = NativeHandleFromBits<VkDescriptorPool>(nativeDescriptors_.descriptorPool);
+		descriptors_.globalsSets.assign(frameResourceCount_, VK_NULL_HANDLE);
+		descriptors_.texturesSets.assign(frameResourceCount_, VK_NULL_HANDLE);
+		for (uint32_t i = 0; i < frameResourceCount_; ++i) {
+			descriptors_.globalsSets[i] = NativeHandleFromBits<VkDescriptorSet>(nativeDescriptors_.globalsSets[i]);
+			descriptors_.texturesSets[i] = NativeHandleFromBits<VkDescriptorSet>(nativeDescriptors_.textureSets[i]);
+		}
+		InitializeDescriptorBindings(vk, *this);
 	} catch (...) {
 		destroy(vk, storageSystem);
 		throw;
 	}
 }
 
-void VulkanUiRenderer::setFontManager(const FlowUi::FontManager* manager) {
-	fontManager_ = manager;
-	boundFontAtlasRevisionByFrame_.assign(frameResourceCount_, UINT32_MAX);
-}
-
-void VulkanUiRenderer::destroy(VulkanContext& vk, storage::IStorageSystem& storageSystem)
+void VulkanUiRenderer::destroy(
+	VulkanContext& vk,
+	storage::IStorageSystem& storageSystem,
+	storage::SubmissionSerial lastUse)
 {
 	boundFontAtlasRevisionByFrame_.clear();
 	frameResourceCount_ = 1u;
 
-	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
-		pipelines_ = Pipelines{};
-		descriptors_ = Descriptors{};
-		for (UiFrameResources& frame : frameResources_) {
-			if (frame.instanceBuffer) storageSystem.releaseBuffer(frame.instanceBuffer);
-		}
-		frameResources_.clear();
-		targetFormat_ = VK_FORMAT_UNDEFINED;
-		fontManager_ = nullptr;
-		sharedByteResources_ = nullptr;
-		storage_ = nullptr;
-		windowId_ = FlowUi::InvalidWindowId;
-		pointsToPixelsScale_ = 96.0f / 72.0f;
-		return;
-	}
-
-	DestroyPipelineObjects(vk.device, pipelines_);
-	DestroyDescriptorObjects(vk.device, descriptors_);
+	(void)vk;
+	if (descriptorBundleHandle_) storageSystem.releaseWindowDescriptorBundle(descriptorBundleHandle_, lastUse);
+	if (pipelineBundleHandle_) storageSystem.releaseRendererPipelineBundle(pipelineBundleHandle_, lastUse);
+	if (layoutHandle_) storageSystem.releaseRendererLayout(layoutHandle_, lastUse);
+	descriptorBundleHandle_ = {};
+	pipelineBundleHandle_ = {};
+	layoutHandle_ = {};
+	nativeDescriptors_ = {};
+	nativePipelineBundle_ = {};
+	nativeLayout_ = {};
+	pipelines_ = Pipelines{};
+	descriptors_ = Descriptors{};
 
 	for (UiFrameResources& frame : frameResources_) {
 		if (frame.instanceBuffer) storageSystem.releaseBuffer(frame.instanceBuffer);
@@ -1484,14 +1639,16 @@ void VulkanUiRenderer::destroy(VulkanContext& vk, storage::IStorageSystem& stora
 	frameResources_.clear();
 
 	targetFormat_ = VK_FORMAT_UNDEFINED;
-	fontManager_ = nullptr;
 	sharedByteResources_ = nullptr;
 	storage_ = nullptr;
 	windowId_ = FlowUi::InvalidWindowId;
 	pointsToPixelsScale_ = 96.0f / 72.0f;
 }
 
-void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newFormat)
+void VulkanUiRenderer::onSwapchainFormatChanged(
+	VulkanContext& vk,
+	VkFormat newFormat,
+	storage::SubmissionSerial lastUse)
 {
 	if (vk.device == VK_NULL_HANDLE || newFormat == VK_FORMAT_UNDEFINED) {
 		return;
@@ -1501,9 +1658,58 @@ void VulkanUiRenderer::onSwapchainFormatChanged(VulkanContext& vk, VkFormat newF
 		return;
 	}
 
-	DestroyPipelines(vk.device, pipelines_);
+	if (!storage_ || !layoutHandle_) throw std::runtime_error("UI renderer storage layout is unavailable.");
+	const storage::RendererPipelineKey key{
+		.layout = layoutHandle_,
+		.nativeColorFormat = static_cast<uint32_t>(newFormat),
+		.sampleCount = 1u,
+		.pipelineStateRevision = kUiPipelineStateRevision,
+		.shaderSetFingerprint = kUiShaderSetFingerprint,
+	};
+	storage::RendererPipelineBundleHandle replacement = storage_->acquireRendererPipelineBundle(key);
+	if (!replacement) {
+		Pipelines candidate{};
+		candidate.layout = pipelines_.layout;
+		try {
+			CreatePipelines(vk.device, candidate, newFormat);
+		} catch (...) {
+			DestroyPipelines(vk.device, candidate);
+			throw;
+		}
+		try {
+			const auto published = storage_->publishRendererPipelineBundle(
+				key,
+				storage::NativeRendererPipelineBundle{
+					.pipelineLayout = nativeLayout_.pipelineLayout,
+					.pipelines = {
+						NativeHandleBits(candidate.solid),
+						NativeHandleBits(candidate.msdf),
+						NativeHandleBits(candidate.textured),
+					},
+				},
+				storage_->intern("FlowUi UI renderer pipelines"));
+			replacement = published.handle;
+			if (!published.ownershipTransferred) DestroyPipelines(vk.device, candidate);
+		} catch (...) {
+			DestroyPipelines(vk.device, candidate);
+			throw;
+		}
+	}
+	const storage::NativeRendererPipelineBundle replacementNative =
+		storage_->nativeRendererPipelineBundle(replacement);
+	if (std::any_of(replacementNative.pipelines.begin(), replacementNative.pipelines.end(),
+		[](uint64_t handle) { return handle == 0; })) {
+		storage_->releaseRendererPipelineBundle(replacement, lastUse);
+		throw std::runtime_error("Storage returned an invalid replacement UI pipeline bundle.");
+	}
+	const storage::RendererPipelineBundleHandle previous = pipelineBundleHandle_;
+	pipelineBundleHandle_ = replacement;
+	nativePipelineBundle_ = replacementNative;
 	targetFormat_ = newFormat;
-	CreatePipelines(vk.device, pipelines_, targetFormat_);
+	pipelines_.solid = NativeHandleFromBits<VkPipeline>(replacementNative.pipelines[0]);
+	pipelines_.msdf = NativeHandleFromBits<VkPipeline>(replacementNative.pipelines[1]);
+	pipelines_.textured = NativeHandleFromBits<VkPipeline>(replacementNative.pipelines[2]);
+	if (previous) storage_->releaseRendererPipelineBundle(previous, lastUse);
 }
 
 void VulkanUiRenderer::applyTextureBindings(
@@ -1551,6 +1757,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	const storage::PreparedTextureBindings& textureBindings,
 	const Clay_RenderCommandArray& renderCommands,
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
+	const FlowUi::detail::manager_storage::FontFrameView& fontView,
 	VkExtent2D extent,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY
@@ -1575,17 +1782,23 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		frameSlot >= descriptors_.texturesSets.size()) {
 		throw std::runtime_error("UI renderer frame slot index is out of bounds.");
 	}
-
-	uint32_t latestFontAtlasRevision = 0u;
-	if (fontManager_) {
-		latestFontAtlasRevision = fontManager_->getAtlasResource().bindingRevision;
+	if (!layoutHandle_ || !pipelineBundleHandle_ || !descriptorBundleHandle_) {
+		throw std::runtime_error("UI renderer storage generations are unavailable.");
 	}
+	const std::array rendererUses{
+		storage::useOf(layoutHandle_),
+		storage::useOf(pipelineBundleHandle_),
+		storage::useOf(descriptorBundleHandle_),
+	};
+	storageSystem.trackUses(frame, rendererUses);
+
+	const uint32_t latestFontAtlasRevision = fontView.atlas.bindingRevision;
 	uint32_t boundRevision = UINT32_MAX;
 	if (frameSlot < boundFontAtlasRevisionByFrame_.size()) {
 		boundRevision = boundFontAtlasRevisionByFrame_[frameSlot];
 	}
 	if (latestFontAtlasRevision != boundRevision) {
-		UpdateFontDescriptorForFrame(*this, vk.device, frameSlot);
+		UpdateFontDescriptorForFrame(*this, vk.device, frameSlot, &fontView);
 #if FLOW_UI_DEV_MODE
 		if (diagnostics) {
 			diagnostics->textureDescriptorsRebuilt = true;
@@ -1636,7 +1849,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		renderCommands,
 		inputFieldOverrides,
 		extent,
-		fontManager_,
+		&fontView,
 		pointsToPixelsScale_,
 		clampedScaleX,
 		clampedScaleY,

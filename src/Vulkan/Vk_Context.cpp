@@ -395,6 +395,10 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	}
 
 	std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const bool hasSwapchainMaintenance1 =
+		deviceHasExtension(phys, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+	const bool hasPresentId = deviceHasExtension(phys, VK_KHR_PRESENT_ID_EXTENSION_NAME);
+	const bool hasPresentWait = deviceHasExtension(phys, VK_KHR_PRESENT_WAIT_EXTENSION_NAME);
 #ifdef VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 	if (deviceHasExtension(phys, VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME)) {
 		deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
@@ -407,10 +411,39 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	supported13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 	supported13.pNext = &supported12;
 
+	VkPhysicalDevicePresentIdFeaturesKHR supportedPresentId{};
+	supportedPresentId.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR;
+	VkPhysicalDevicePresentWaitFeaturesKHR supportedPresentWait{};
+	supportedPresentWait.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR;
+	VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT supportedMaintenance1{};
+	supportedMaintenance1.sType =
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT;
+	if (hasSwapchainMaintenance1) {
+		supported12.pNext = &supportedMaintenance1;
+	}
+	if (hasPresentId && hasPresentWait) {
+		if (hasSwapchainMaintenance1) {
+			supportedMaintenance1.pNext = &supportedPresentId;
+		} else {
+			supported12.pNext = &supportedPresentId;
+		}
+		supportedPresentId.pNext = &supportedPresentWait;
+	}
+
 	VkPhysicalDeviceFeatures2 features2{};
 	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features2.pNext = &supported13;
 	vkGetPhysicalDeviceFeatures2(phys, &features2);
+	const bool enableMaintenance1 = hasSwapchainMaintenance1 &&
+		supportedMaintenance1.swapchainMaintenance1 == VK_TRUE;
+	const bool enablePresentWait = !enableMaintenance1 && hasPresentId && hasPresentWait &&
+		supportedPresentId.presentId == VK_TRUE && supportedPresentWait.presentWait == VK_TRUE;
+	if (enableMaintenance1) {
+		deviceExtensions.push_back(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+	} else if (enablePresentWait) {
+		deviceExtensions.push_back(VK_KHR_PRESENT_ID_EXTENSION_NAME);
+		deviceExtensions.push_back(VK_KHR_PRESENT_WAIT_EXTENSION_NAME);
+	}
 
 	VkPhysicalDeviceVulkan12Features enabled12{};
 	enabled12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
@@ -433,6 +466,22 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	enabled13.pNext = &enabled12;
 	enabled13.dynamicRendering = supported13.dynamicRendering ? VK_TRUE : VK_FALSE;
 	enabled13.synchronization2 = supported13.synchronization2 ? VK_TRUE : VK_FALSE;
+	VkPhysicalDevicePresentIdFeaturesKHR enabledPresentId{};
+	enabledPresentId.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR;
+	enabledPresentId.presentId = enablePresentWait ? VK_TRUE : VK_FALSE;
+	VkPhysicalDevicePresentWaitFeaturesKHR enabledPresentWait{};
+	enabledPresentWait.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR;
+	enabledPresentWait.presentWait = enablePresentWait ? VK_TRUE : VK_FALSE;
+	VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT enabledMaintenance1{};
+	enabledMaintenance1.sType =
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT;
+	enabledMaintenance1.swapchainMaintenance1 = enableMaintenance1 ? VK_TRUE : VK_FALSE;
+	if (enableMaintenance1) {
+		enabled12.pNext = &enabledMaintenance1;
+	} else if (enablePresentWait) {
+		enabled12.pNext = &enabledPresentId;
+		enabledPresentId.pNext = &enabledPresentWait;
+	}
 
 	if (!enabled13.dynamicRendering) {
 		throw std::runtime_error("Selected device does not support dynamic rendering.");
@@ -451,6 +500,13 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 
 	vkGetDeviceQueue(device, graphicsQFamily, 0, &graphicsQ);
 	vkGetDeviceQueue(device, presentQFamily, 0, &presentQ);
+	if (enableMaintenance1) {
+		wsiRetirementMode = WsiRetirementMode::PresentFence;
+	} else if (enablePresentWait) {
+		waitForPresentKHR = reinterpret_cast<PFN_vkWaitForPresentKHR>(
+			vkGetDeviceProcAddr(device, "vkWaitForPresentKHR"));
+		if (waitForPresentKHR) wsiRetirementMode = WsiRetirementMode::PresentWait;
+	}
 
 	VmaAllocatorCreateInfo allocatorInfo{};
 	allocatorInfo.instance = instance;
@@ -458,6 +514,17 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	allocatorInfo.device = device;
 	allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator), "Failed to create VMA allocator.");
+}
+
+VkResult VulkanContext::waitForPresent(
+	VkSwapchainKHR swapchain,
+	uint64_t presentId,
+	uint64_t timeout) const noexcept {
+	if (wsiRetirementMode != WsiRetirementMode::PresentWait || !waitForPresentKHR ||
+		swapchain == VK_NULL_HANDLE || presentId == 0) {
+		return VK_ERROR_FEATURE_NOT_PRESENT;
+	}
+	return waitForPresentKHR(device, swapchain, presentId, timeout);
 }
 
 void VulkanContext::destroy() {
@@ -485,4 +552,6 @@ void VulkanContext::destroy() {
 	presentQFamily = UINT32_MAX;
 	graphicsQ = VK_NULL_HANDLE;
 	presentQ = VK_NULL_HANDLE;
+	wsiRetirementMode = WsiRetirementMode::LegacyDeviceIdle;
+	waitForPresentKHR = nullptr;
 }

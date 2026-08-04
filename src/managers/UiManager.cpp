@@ -8,6 +8,9 @@
 #include "devMode/registry.hpp"
 #endif
 #include "managers/FontManager.hpp"
+#include "internal/ManagerStorage/ManagerStateAccess.hpp"
+#include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
+#include "internal/ManagerStorage/UiManagerState.hpp"
 #include "internal/TextLayoutEngine.hpp"
 
 namespace {
@@ -33,64 +36,77 @@ FlowUi::ShortcutTrigger toShortcutTrigger(FlowUi::DevShortcutTrigger trigger) {
 
 namespace FlowUi
 {
-	
-	UiManager::UiManager(const FlowUi::AppConfig& appConfig)
-	{
-		initStringArenas(appConfig);
 
+	namespace manager_storage = detail::manager_storage;
+	namespace key_storage = detail::managerStorage;
+	namespace storage = detail::storage;
+
+	manager_storage::UiManagerState::UiManagerState(
+		storage::IStorageSystem& storageSystem,
+		WindowId window,
+		const AppConfig& appConfig)
+		: storage(&storageSystem) {
 		const size_t minimumClayArenaCapacityBytes = static_cast<size_t>(Clay_MinMemorySize());
 		const size_t configuredClayArenaCapacityBytes = appConfig.ui.clayArenaCapacityBytes;
 		const size_t clayArenaCapacityBytes = (configuredClayArenaCapacityBytes == 0)
 			? minimumClayArenaCapacityBytes
 			: std::max(configuredClayArenaCapacityBytes, minimumClayArenaCapacityBytes);
 
-		clayArenaMemory_ = std::make_unique<char[]>(clayArenaCapacityBytes);
-		clayArena_ = Clay_CreateArenaWithCapacityAndMemory(clayArenaCapacityBytes, clayArenaMemory_.get());
+		const storage::StringId name = storageSystem.intern("flowui.ui.clay");
+		clayMemory = storageSystem.allocatePersistent(
+			clayArenaCapacityBytes,
+			alignof(std::max_align_t),
+			storage::AllocationTag{
+				.memoryClass = storage::MemoryClass::WindowPersistent,
+				.resourceKind = storage::ResourceKind::UiContext,
+				.window = window,
+				.frameSlot = storage::InvalidFrameSlot,
+				.debugName = name,
+			});
+		clayArena = Clay_CreateArenaWithCapacityAndMemory(clayArenaCapacityBytes, clayMemory.data);
 
 		const float initialScreenWidth = static_cast<float>(std::max(1, appConfig.window.width));
 		const float initialScreenHeight = static_cast<float>(std::max(1, appConfig.window.height));
 		const Clay_Dimensions initialLayoutDimensions{initialScreenWidth, initialScreenHeight};
 
-		clayContext_ = Clay_Initialize(clayArena_, initialLayoutDimensions, Clay_ErrorHandler{});
-		if (!clayContext_)
-		{
+		clayContext = Clay_Initialize(clayArena, initialLayoutDimensions, Clay_ErrorHandler{});
+		if (!clayContext) {
+			storageSystem.releasePersistent(clayMemory);
+			clayMemory = {};
 			throw std::runtime_error("FlowUi: Clay_Initialize failed. Increase ui.clayArenaCapacityBytes.");
 		}
 
 		const float configuredDpi = std::max(1.0f, appConfig.ui.dpi);
-		pointsToPixelsScale_ = std::max(0.0f, appConfig.ui.fontScale) * (configuredDpi / kPointsPerInch);
-		if (pointsToPixelsScale_ <= 0.0f) {
-			pointsToPixelsScale_ = configuredDpi / kPointsPerInch;
+		pointsToPixelsScale = std::max(0.0f, appConfig.ui.fontScale) * (configuredDpi / kPointsPerInch);
+		if (pointsToPixelsScale <= 0.0f) {
+			pointsToPixelsScale = configuredDpi / kPointsPerInch;
 		}
-		inputFieldManager_.setConfig(appConfig.ui.inputManager);
-		inputFieldManager_.setFontManager(nullptr, pointsToPixelsScale_);
+		inputManagerConfig = appConfig.ui.inputManager;
 #if FLOW_UI_DEV_MODE
-		devToolsConfig_ = appConfig.dev;
-		devPanelVisible_ = devToolsConfig_.enabled && devToolsConfig_.panelOpenByDefault;
-		if (devToolsConfig_.enabled && devToolsConfig_.useShortcutManagerForPanelToggle) {
-			const ShortcutChord toggleChord{
-				.key = devToolsConfig_.panelToggleChord.key,
-				.ctrl = devToolsConfig_.panelToggleChord.ctrl,
-				.shift = devToolsConfig_.panelToggleChord.shift,
-				.alt = devToolsConfig_.panelToggleChord.alt,
-				.super = devToolsConfig_.panelToggleChord.super,
-				.trigger = toShortcutTrigger(devToolsConfig_.panelToggleChord.trigger),
-			};
-			devPanelToggleShortcutId_ = shortcutManager_.registerShortcut(
-				toggleChord,
-				ShortcutScope::Global,
-				1000,
-				[this](ShortcutContext&) {
-					if (!devToolsConfig_.enabled) {
-						return false;
-					}
-					devPanelVisible_ = !devPanelVisible_;
-					return true;
-				});
-		}
+		devToolsConfig = appConfig.dev;
+		devPanelVisible = devToolsConfig.enabled && devToolsConfig.panelOpenByDefault;
 #endif
+	}
 
-		Clay_SetCurrentContext(clayContext_);
+	manager_storage::UiManagerState::~UiManagerState() noexcept {
+		if (storage && clayMemory) storage->releasePersistent(clayMemory);
+	}
+
+	void UiManager::initStorage(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config) {
+		if (storage_) throw std::logic_error("UiManager is already initialized.");
+		const storage::StringId name = storageSystem.intern("flowui.ui.root");
+		const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
+		const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::UiManagerState>(
+			storageSystem, key, storage::ResourceKind::UiContext, name,
+			std::ref(storageSystem), window, config);
+		storage_ = &storageSystem;
+		window_ = window;
+		stateHandle_ = handle.packed();
+		state_ = manager_storage::state<manager_storage::UiManagerState>(
+			storage_, handle, storage::ResourceKind::UiContext);
+		if (!state_) throw std::runtime_error("UiManager storage record publication failed.");
+
+		Clay_SetCurrentContext(state_->clayContext);
 		Clay_SetMeasureTextFunction(
 			+[](Clay_StringSlice text, Clay_TextElementConfig* config, void* userData) -> Clay_Dimensions {
 				const auto* uiManager = static_cast<const UiManager*>(userData);
@@ -100,12 +116,58 @@ namespace FlowUi
 				return uiManager->measureText(text, config);
 			},
 			this);
+		try {
+			inputFieldManager_.init(
+				storageSystem, window, state_->inputManagerConfig,
+				state_->pointsToPixelsScale);
+		} catch (...) {
+			destroyStorage();
+			throw;
+		}
+		try {
+			shortcutManager_.init(storageSystem, window);
+		} catch (...) {
+			destroyStorage();
+			throw;
+		}
+#if FLOW_UI_DEV_MODE
+		if (state_->devToolsConfig.enabled && state_->devToolsConfig.useShortcutManagerForPanelToggle) {
+			const ShortcutChord toggleChord{
+				.key = state_->devToolsConfig.panelToggleChord.key,
+				.ctrl = state_->devToolsConfig.panelToggleChord.ctrl,
+				.shift = state_->devToolsConfig.panelToggleChord.shift,
+				.alt = state_->devToolsConfig.panelToggleChord.alt,
+				.super = state_->devToolsConfig.panelToggleChord.super,
+				.trigger = toShortcutTrigger(state_->devToolsConfig.panelToggleChord.trigger),
+			};
+			state_->devPanelToggleShortcutId = shortcutManager_.registerShortcut(
+				toggleChord, ShortcutScope::Global, 1000,
+				[this](ShortcutContext&) {
+					if (!state_->devToolsConfig.enabled) return false;
+					state_->devPanelVisible = !state_->devPanelVisible;
+					return true;
+				});
+		}
+#endif
 	}
 
-		void UiManager::setFontManager(const FontManager* fontManager) {
-			fontManager_ = fontManager;
-			inputFieldManager_.setFontManager(fontManager_, pointsToPixelsScale_);
+	void UiManager::destroyStorage() noexcept {
+		shortcutManager_.destroy();
+		inputFieldManager_.destroy();
+		if (storage_) {
+			try {
+				const storage::StringId name = storage_->intern("flowui.ui.root");
+				(void)storage_->removeManagerRecord(
+					storage::ResourceKey{storage::ResourceDomain::Layout, name, window_},
+					storage::ResourceKind::UiContext);
+			} catch (...) {
+			}
 		}
+		state_ = nullptr;
+		stateHandle_ = 0;
+		window_ = InvalidWindowId;
+		storage_ = nullptr;
+	}
 
 		void UiManager::setClipboardText(std::string_view text) const {
 			if (!setClipboardTextAccessor_) {
@@ -126,13 +188,13 @@ namespace FlowUi
 		}
 
 		Clay_ElementDeclaration UiManager::inputContentElement(const Clay_TextElementConfig& textConfig) const {
-			float lineHeight = static_cast<float>(std::max<uint16_t>(1u, textConfig.fontSize)) * pointsToPixelsScale_;
+			float lineHeight = static_cast<float>(std::max<uint16_t>(1u, textConfig.fontSize)) * state_->pointsToPixelsScale;
 
-			const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, textConfig.fontId);
+			const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(&state_->fontView, textConfig.fontId);
 			const FlowUi::Font::FontVariantData* variant = fontFace ? fontFace->defaultVariant() : nullptr;
 			if (variant && variant->emSize > 0.0f) {
 				const float emPixels = textConfig.fontSize > 0
-					? static_cast<float>(textConfig.fontSize) * pointsToPixelsScale_
+					? static_cast<float>(textConfig.fontSize) * state_->pointsToPixelsScale
 					: variant->fontSizePx;
 				if (emPixels > 0.0f) {
 					lineHeight = variant->lineHeight * (emPixels / variant->emSize);
@@ -159,19 +221,19 @@ namespace FlowUi
 		}
 
 		void UiManager::requestCursor(CursorType cursorType, uint8_t priority) {
-			if (priority < cursorPriority_) {
+			if (priority < state_->cursorPriority) {
 				return;
 			}
-			cursor_ = cursorType;
-			cursorPriority_ = priority;
+			state_->cursor = cursorType;
+			state_->cursorPriority = priority;
 		}
 
 		FontId UiManager::resolveFont(FontFamilyId familyId, uint32_t weight, FontStyle style) const {
-			return fontManager_ ? fontManager_->resolveFont(familyId, weight, style) : 0;
+			return state_->fontView.resolve(familyId, weight, style);
 		}
 
 		FontId UiManager::resolveFont(std::string_view familyName, uint32_t weight, FontStyle style) const {
-			return fontManager_ ? fontManager_->resolveFont(familyName, weight, style) : 0;
+			return state_->fontView.resolve(familyName, weight, style);
 		}
 
 		Clay_Dimensions UiManager::measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
@@ -179,9 +241,9 @@ namespace FlowUi
 				return Clay_Dimensions{ 0.0f, 0.0f };
 			}
 
-		const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontManager_, config->fontId);
+		const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(&state_->fontView, config->fontId);
 		if (!fontFace) {
-			const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, config->fontSize)) * pointsToPixelsScale_;
+			const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, config->fontSize)) * state_->pointsToPixelsScale;
 			return Clay_Dimensions{
 				static_cast<float>(text.length) * fallbackEmPixels * 0.5f,
 				fallbackEmPixels,
@@ -192,7 +254,7 @@ namespace FlowUi
 			FlowUi::detail::TextLayoutRequest{
 				.text = text,
 				.fontFace = fontFace,
-				.pointsToPixelsScale = pointsToPixelsScale_,
+				.pointsToPixelsScale = state_->pointsToPixelsScale,
 				.fontSize = config->fontSize,
 				.letterSpacing = config->letterSpacing,
 				.lineOriginX = 0.0f,
@@ -208,41 +270,33 @@ namespace FlowUi
 		return Clay_Dimensions{ layoutResult.measuredWidth, layoutResult.lineHeight };
 	}
 
-	void UiManager::initStringArenas(const FlowUi::AppConfig& cfg)
+	void UiManager::beginFrame(
+		const storage::FrameToken& frame,
+		const FrameInput& frameInput,
+		const manager_storage::FontFrameView& fontView,
+		float screenWidth,
+		float screenHeight)
 	{
-		arenasCount_ = (cfg.vk.framesInFlight == 0) ? 1 : cfg.vk.framesInFlight;
-		arenas_.resize(arenasCount_);
-		
-		for (auto& arena : arenas_)
-		{
-			arena.capacity = cfg.ui.stringArenaSize;
-			arena.mem = std::unique_ptr<char[]>(new char[arena.capacity]);
-			arena.offset = 0;
-		}
-		curArena_ = 0;
-	}
-	
-	void UiManager::beginFrame(uint32_t frameIndex, const FrameInput& frameInput, float screenWidth, float screenHeight)
-	{
-		if (arenas_.empty()) {
-			throw std::runtime_error("FlowUi: UiManager string arenas are not initialized.");
-		}
-		if (!clayContext_) {
+		if (!state_->clayContext) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
 		}
-
-		curArena_ = (arenasCount_ == 0) ? 0 : (frameIndex % arenasCount_);
-		arenas_[curArena_].offset = 0;
+		state_->activeFrame = frame;
+		state_->frameArena = storage_->frameArena(frame, storage::MemoryClass::FrameTransient);
+		state_->fontView = fontView;
+		inputFieldManager_.setFontFrameView(fontView, state_->pointsToPixelsScale);
+		if (!state_->frameArena.context) {
+			throw std::runtime_error("FlowUi: window frame arena is unavailable.");
+		}
 
 		advanceFrameInteractionSnapshots();
-		previousFrameInputForCurrentLayout_ = frameInputForCurrentLayout_;
-		frameInputForCurrentLayout_ = frameInput;
-		inputFieldManager_.beginFrame(frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
-		shortcutManager_.beginFrame(*this, frameInputForCurrentLayout_, previousFrameInputForCurrentLayout_);
-		cursor_ = CursorType::Arrow;
-		cursorPriority_ = 0;
+		state_->previousFrameInputForCurrentLayout = state_->frameInputForCurrentLayout;
+		state_->frameInputForCurrentLayout = frameInput;
+		inputFieldManager_.beginFrame(state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		shortcutManager_.beginFrame(*this, state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		state_->cursor = CursorType::Arrow;
+		state_->cursorPriority = 0;
 
-		Clay_SetCurrentContext(clayContext_);
+		Clay_SetCurrentContext(state_->clayContext);
 
 		const float clampedScreenWidth = std::max(1.0f, screenWidth);
 		const float clampedScreenHeight = std::max(1.0f, screenHeight);
@@ -254,14 +308,14 @@ namespace FlowUi
 			false,
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 			static_cast<float>(frameInput.dt));
-		constructedElementStack_.clear();
+		state_->constructedElementStack.clear();
 #if FLOW_UI_DEV_MODE
-		devRuntime_.beginFrame();
-		devRootElementOpenThisFrame_ = false;
+		state_->devRuntime.beginFrame();
+		state_->devRootElementOpenThisFrame = false;
 #endif
 		Clay_BeginLayout();
 #if FLOW_UI_DEV_MODE
-		if (devToolsConfig_.enabled && devPanelVisible_) {
+		if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
 			Clay_ElementDeclaration devRoot{};
 			const Clay_ElementId devRootId = toClaySID("_Flow_Dev_root_");
 			devRoot.layout.sizing.width = CLAY_SIZING_GROW(0);
@@ -269,24 +323,24 @@ namespace FlowUi
 			devRoot.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			Clay__OpenElementWithId(devRootId);
 			Clay__ConfigureOpenElement(devRoot);
-			devRootElementOpenThisFrame_ = true;
+			state_->devRootElementOpenThisFrame = true;
 		}
 #endif
 	}
 
 	Clay_RenderCommandArray UiManager::endFrame()
 	{
-		if (!clayContext_) {
+		if (!state_->clayContext) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
 		}
 
-		Clay_SetCurrentContext(clayContext_);
+		Clay_SetCurrentContext(state_->clayContext);
 		int32_t autoClosedConstructedElements = 0;
-		while (!constructedElementStack_.empty()) {
+		while (!state_->constructedElementStack.empty()) {
 			Clay__CloseElement();
-			constructedElementStack_.pop_back();
+			state_->constructedElementStack.pop_back();
 #if FLOW_UI_DEV_MODE
-			(void)devRuntime_.endCapturedElement();
+			(void)state_->devRuntime.endCapturedElement();
 #endif
 			++autoClosedConstructedElements;
 		}
@@ -297,60 +351,55 @@ namespace FlowUi
 				autoClosedConstructedElements);
 		}
 #if FLOW_UI_DEV_MODE
-		if (devRootElementOpenThisFrame_) {
-			if (devToolsConfig_.enabled && devPanelVisible_) {
+		if (state_->devRootElementOpenThisFrame) {
+			if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
 				devMode::drawDebugView(*this);
 			}
 			Clay__CloseElement();
-			devRootElementOpenThisFrame_ = false;
+			state_->devRootElementOpenThisFrame = false;
 		}
 #endif
-		Clay_RenderCommandArray renderCommands = Clay_EndLayout(static_cast<float>(frameInputForCurrentLayout_.dt));
+		Clay_RenderCommandArray renderCommands = Clay_EndLayout(static_cast<float>(state_->frameInputForCurrentLayout.dt));
 
-		InteractionSnapshot interactionSnapshot;
+		InteractionSnapshot& interactionSnapshot = state_->currentInteractionSnapshot;
 		Clay_ElementIdArray hoveredIds = Clay_GetPointerOverIds();
 		interactionSnapshot.hoveredElementIds.reserve(static_cast<size_t>(hoveredIds.length));
 		for (int32_t i = 0; i < hoveredIds.length; ++i) {
 			interactionSnapshot.hoveredElementIds.push_back(hoveredIds.internalArray[i]);
 		}
 
-		const bool isPrimaryPointerDown = frameInputForCurrentLayout_.mouseDown[0];
-		if (isPrimaryPointerDown && !wasPrimaryPointerDownLastFrame_) {
+		const bool isPrimaryPointerDown = state_->frameInputForCurrentLayout.mouseDown[0];
+		if (isPrimaryPointerDown && !state_->wasPrimaryPointerDownLastFrame) {
 			interactionSnapshot.pressedElementIds = interactionSnapshot.hoveredElementIds;
-		} else if (isPrimaryPointerDown && wasPrimaryPointerDownLastFrame_) {
+		} else if (isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
 			interactionSnapshot.heldElementIds = interactionSnapshot.hoveredElementIds;
-		} else if (!isPrimaryPointerDown && wasPrimaryPointerDownLastFrame_) {
+		} else if (!isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
 			interactionSnapshot.releasedElementIds = interactionSnapshot.hoveredElementIds;
 		}
-		wasPrimaryPointerDownLastFrame_ = isPrimaryPointerDown;
+		state_->wasPrimaryPointerDownLastFrame = isPrimaryPointerDown;
 
 		renderCommands = inputFieldManager_.endFrame(renderCommands);
-		setCurrentInteractionSnapshot(std::move(interactionSnapshot));
-		if (cursor_ != previousCursor_) {
+		storage_->noteManagerMutation(window_);
+		if (state_->cursor != state_->previousCursor) {
 			if (setCursorTypeAccessor_) {
-				setCursorTypeAccessor_(cursor_);
+				setCursorTypeAccessor_(state_->cursor);
 			}
-			previousCursor_ = cursor_;
+			state_->previousCursor = state_->cursor;
 		}
 #if FLOW_UI_DEV_MODE
-		devRuntime_.endFrame();
+		state_->devRuntime.endFrame();
 #endif
 		return renderCommands;
 	}
 	
 	char* UiManager::allocBytes(size_t nBytes, size_t align)
 	{
-		Arena& arena = arenas_[curArena_];
-		
-		size_t off = arena.offset;
-		size_t aligned = (off + (align - 1)) & ~(align - 1);
-		
-		if (aligned + nBytes > arena.capacity)
-		throw std::runtime_error("FlowUi string arena overflow: increase bytesPerArena");
-		
-		char* ptr = arena.mem.get() + aligned;
-		arena.offset = aligned + nBytes;
-		return ptr;
+		if (!state_ || !state_->activeFrame) {
+			throw std::logic_error("FlowUi frame storage is not active.");
+		}
+		void* memory = state_->frameArena.allocate(nBytes, align);
+		if (!memory) throw std::runtime_error("FlowUi window frame arena allocation failed.");
+		return static_cast<char*>(memory);
 	}
 	
 	Clay_String UiManager::toClayString(std::string_view s)
@@ -365,6 +414,17 @@ namespace FlowUi
 		out.length = (int)len;
 		out.chars = dst;
 		return out;
+	}
+
+	std::string_view UiManager::normalizeUiResourceName(ResourceKey key) const {
+		const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
+			*storage_, key, ResourceDomain::Ui,
+			key_storage::ResourceScope::WindowLocal, window_);
+		return storage_->string(normalized.name);
+	}
+
+	Clay_String UiManager::toClayString(ResourceKey key) {
+		return toClayString(normalizeUiResourceName(key));
 	}
 
 	TextureRef* UiManager::imageData(TextureRef textureRef)
@@ -382,10 +442,41 @@ namespace FlowUi
 	Clay_ElementId UiManager::toClaySID(std::string_view s) {
 		return CLAY_SID(toClayString(s));
 	}
+
+	Clay_ElementId UiManager::toClaySID(ResourceKey key) {
+		return toClaySID(normalizeUiResourceName(key));
+	}
 	
 	Clay_ElementId UiManager::toClayEID(std::string_view s) {
 		return Clay_GetElementId(toClayString(s));
 	}
+
+	Clay_ElementId UiManager::toClayEID(ResourceKey key) {
+		return toClayEID(normalizeUiResourceName(key));
+	}
+
+	const InteractionSnapshot& UiManager::getPreviousFramesInteraction() const {
+		return state_->previousInteractionSnapshot;
+	}
+
+	const FrameInput& UiManager::getCurrentFrameInput() const {
+		return state_->frameInputForCurrentLayout;
+	}
+
+	const FrameInput& UiManager::getPreviousFrameInput() const {
+		return state_->previousFrameInputForCurrentLayout;
+	}
+
+#if FLOW_UI_DEV_MODE
+	devMode::DevRuntime& UiManager::devRuntime() { return state_->devRuntime; }
+	const devMode::DevRuntime& UiManager::devRuntime() const { return state_->devRuntime; }
+	DevToolsConfig& UiManager::devToolsConfig() { return state_->devToolsConfig; }
+	const DevToolsConfig& UiManager::devToolsConfig() const { return state_->devToolsConfig; }
+	devMode::PerformanceDiagnostics& UiManager::performanceDiagnostics() { return state_->performanceDiagnostics; }
+	const devMode::PerformanceDiagnostics& UiManager::performanceDiagnostics() const {
+		return state_->performanceDiagnostics;
+	}
+#endif
 
 
 
@@ -478,32 +569,31 @@ namespace devMode::elementCapture {
 #endif
 
 	void UiManager::drawConstructed() {
-		if (!clayContext_) {
+		if (!state_->clayContext) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
 		}
-		if (constructedElementStack_.empty()) {
+		if (state_->constructedElementStack.empty()) {
 			throw std::runtime_error("FlowUi: drawConstructed called without a matching construct call.");
 		}
 
-		Clay_SetCurrentContext(clayContext_);
+		Clay_SetCurrentContext(state_->clayContext);
 		Clay__CloseElement();
-		constructedElementStack_.pop_back();
+		state_->constructedElementStack.pop_back();
 #if FLOW_UI_DEV_MODE
-		(void)devRuntime_.endCapturedElement();
+		(void)state_->devRuntime.endCapturedElement();
 #endif
 	}
 
 	void UiManager::pushConstructedElement(Clay_ElementId elementId) {
-		constructedElementStack_.push_back(elementId);
-	}
-
-	void UiManager::setCurrentInteractionSnapshot(InteractionSnapshot snapshot) {
-	    currentInteractionSnapshot_ = std::move(snapshot);
+		state_->constructedElementStack.push_back(elementId);
 	}
 
 	void UiManager::advanceFrameInteractionSnapshots() {
-	    previousInteractionSnapshot_ = std::move(currentInteractionSnapshot_);
-	    currentInteractionSnapshot_ = InteractionSnapshot{};
+		std::swap(state_->previousInteractionSnapshot, state_->currentInteractionSnapshot);
+		state_->currentInteractionSnapshot.hoveredElementIds.clear();
+		state_->currentInteractionSnapshot.pressedElementIds.clear();
+		state_->currentInteractionSnapshot.heldElementIds.clear();
+		state_->currentInteractionSnapshot.releasedElementIds.clear();
 	}
 
 

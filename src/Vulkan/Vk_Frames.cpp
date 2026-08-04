@@ -13,7 +13,7 @@ static void vkCheck(VkResult result, const char* message) {
 
 } // namespace
 
-void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk, size_t swapImageCount) {
+void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk) {
 	if (vk.device == VK_NULL_HANDLE) {
 		throw std::runtime_error("Vulkan device must be created before frame resources.");
 	}
@@ -21,9 +21,6 @@ void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk, size_t swapImag
 	uint32_t frameCount = std::max<uint32_t>(1u, framesInFlight);
 	frames.resize(frameCount);
 	currentFrame = 0;
-
-	imageInFlight.assign(swapImageCount, VK_NULL_HANDLE);
-	renderFinishedBySwapImage.assign(swapImageCount, VK_NULL_HANDLE);
 
 	for (auto& frame : frames) {
 		VkCommandPoolCreateInfo poolInfo{};
@@ -53,19 +50,11 @@ void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk, size_t swapImag
 			"Failed to create in-flight fence.");
 	}
 
-	VkSemaphoreCreateInfo semInfo{};
-	semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
-		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &semaphore),
-			"Failed to create per-swapchain-image render finished semaphore.");
-	}
 }
 
 void FrameVk::destroy(VulkanContext& vk) {
 	if (vk.device == VK_NULL_HANDLE) {
 		frames.clear();
-		imageInFlight.clear();
-		renderFinishedBySwapImage.clear();
 		currentFrame = 0;
 		return;
 	}
@@ -85,39 +74,6 @@ void FrameVk::destroy(VulkanContext& vk) {
 			frame.cmd = VK_NULL_HANDLE;
 		}
 	}
-	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
-		if (semaphore != VK_NULL_HANDLE) {
-			vkDestroySemaphore(vk.device, semaphore, nullptr);
-			semaphore = VK_NULL_HANDLE;
-		}
-	}
-
 	frames.clear();
-	imageInFlight.clear();
-	renderFinishedBySwapImage.clear();
 	currentFrame = 0;
-}
-
-void FrameVk::onSwapchainRecreated(VulkanContext& vk, size_t newSwapImageCount) {
-	imageInFlight.assign(newSwapImageCount, VK_NULL_HANDLE);
-
-	if (vk.device == VK_NULL_HANDLE) {
-		renderFinishedBySwapImage.assign(newSwapImageCount, VK_NULL_HANDLE);
-		return;
-	}
-
-	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
-		if (semaphore != VK_NULL_HANDLE) {
-			vkDestroySemaphore(vk.device, semaphore, nullptr);
-			semaphore = VK_NULL_HANDLE;
-		}
-	}
-
-	renderFinishedBySwapImage.assign(newSwapImageCount, VK_NULL_HANDLE);
-	VkSemaphoreCreateInfo semInfo{};
-	semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	for (VkSemaphore& semaphore : renderFinishedBySwapImage) {
-		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &semaphore),
-			"Failed to recreate per-swapchain-image render finished semaphore.");
-	}
 }

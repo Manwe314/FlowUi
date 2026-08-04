@@ -2,21 +2,20 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <filesystem>
 #include <string>
 #include <string_view>
-#include <unordered_map>
-#include <vector>
-
-#include <vulkan/vulkan.h>
 
 #include "FlowUi/FontResources.hpp"
+#include "FlowUi/ResourceKey.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
-
-struct VulkanContext;
 
 namespace FlowUi {
 class App;
+namespace detail::storage { class IStorageSystem; struct FrameToken; }
+namespace detail::manager_storage {
+class FontCatalogController;
+struct FontFrameView;
+}
 
 /** @addtogroup flowui_font_manager
  * @{
@@ -80,7 +79,7 @@ struct FontManager {
 	 * one layer, this value is the number of faces the initial atlas allocation
 	 * can hold before storage has to grow.
 	 */
-	static constexpr uint32_t kInitialAtlasLayerCapacity = 32;
+	static constexpr uint32_t kInitialAtlasLayerCapacity = 4;
 
 	/**
 	 * @brief Number of atlas array layers added when the font atlas grows.
@@ -90,7 +89,7 @@ struct FontManager {
 	 * grows in fixed steps of this many layers to avoid reallocating for every
 	 * additional face.
 	 */
-	static constexpr uint32_t kAtlasLayerGrowthStep = 32;
+	static constexpr uint32_t kAtlasLayerGrowthStep = 4;
 
 	/**
 	 * @brief Create a logical font family and register its initial faces.
@@ -127,6 +126,7 @@ struct FontManager {
 	 * @see @ref md_docs_2tutorials_2fonts__and__text "Fonts and Text"
 	 */
 	FontFamilyId createFamily(const FontFamilyCreateInfo& createInfo);
+	FontFamilyId createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo);
 
 	/**
 	 * @brief Return a family id by name.
@@ -147,6 +147,7 @@ struct FontManager {
 	 * @endcode
 	 */
 	FontFamilyId getFamilyId(std::string_view familyName) const;
+	FontFamilyId getFamilyId(ResourceKey key) const;
 
 	/**
 	 * @brief Add a concrete face to an existing family.
@@ -210,6 +211,7 @@ struct FontManager {
 	 * @endcode
 	 */
 	FontId addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo);
+	FontId addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo);
 
 	/**
 	 * @brief Resolve a concrete Clay font id for a family, weight, and style.
@@ -264,6 +266,7 @@ struct FontManager {
 	 * @endcode
 	 */
 	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
+	FontId resolveFont(ResourceKey key, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
 
 	/**
 	 * @brief Return loaded font data by concrete font id.
@@ -309,41 +312,24 @@ struct FontManager {
 	 * }
 	 * @endcode
 	 */
-	const FlowUi::Font::AtlasArrayResource& getAtlasResource() const { return atlas_; }
+	const FlowUi::Font::AtlasArrayResource& getAtlasResource() const;
 
 private:
 	friend class App;
 
-	void init(VulkanContext& vk, uint32_t atlasSize);
-	void destroy(VulkanContext& vk);
-
-	struct FontFamilyFace {
-		FontId fontId = 0;
-		uint32_t weight = 400;
-		FontStyle style = FontStyle::Normal;
-	};
-
-	struct FontFamilyData {
-		FontFamilyId id = 0;
-		std::string name;
-		std::vector<FontFamilyFace> faces;
-	};
+	void init(detail::storage::IStorageSystem& storage, uint32_t atlasSize);
+	void destroy() noexcept;
+	[[nodiscard]] detail::manager_storage::FontFrameView frameView(
+		const detail::storage::FrameToken& frame) const;
 
 	FontId loadFontFace(const FontFaceCreateInfo& createInfo);
 	FontId loadFont(std::string_view path, float px);
 	FontId registerBakedFont(std::string_view arfontPath, std::string_view requestedName = {});
 	FontId registerRuntimeFont(const FontFaceCreateInfo& createInfo);
 
-	VulkanContext* vk_ = nullptr;
-	FlowUi::Font::AtlasArrayResource atlas_{};
-	VkCommandPool uploadCommandPool_ = VK_NULL_HANDLE;
-	uint32_t atlasSizeHint_ = 0;
-	FontId nextFontId_ = 0;
-	std::vector<FontFamilyData> families_;
-	std::unordered_map<std::string, FontFamilyId> familyIdByName_;
-	std::vector<FlowUi::Font::FontFaceData> fonts_;
-	std::unordered_map<FontId, size_t> fontIndexById_;
-	std::unordered_map<std::string, FontId> fontIdByName_;
+	detail::storage::IStorageSystem* storage_ = nullptr;
+	uint64_t controllerHandle_ = 0;
+	detail::manager_storage::FontCatalogController* controller_ = nullptr;
 };
 
 /** @} */

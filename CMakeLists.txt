@@ -210,6 +210,8 @@ target_sources(flowui
         src/clay.cpp
         src/FlowUi.cpp
         src/managers/FontManager.cpp
+        src/managers/FontCatalogController.cpp
+        src/managers/ViewportStorageController.cpp
         src/managers/ImageManager.cpp
         src/managers/InputFieldManager.cpp
         src/managers/ShortcutManager.cpp
@@ -228,18 +230,26 @@ target_sources(flowui
         include/internal/StorageSystem/StorageTypes.hpp
 		include/internal/StorageSystem/IStorageSystem.hpp
 		include/internal/StorageSystem/FlowStorageSystem.hpp
-        include/internal/UiTexturePublisher.hpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ResourceKey.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/TextureHandle.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/WindowId.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputFieldRenderOverrides.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputQueue.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ResourceKeyNormalization.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ManagerStateAccess.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ShortcutManagerState.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/InputFieldManagerState.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/UiManagerState.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/FontCatalogController.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/IconCacheController.hpp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ViewportStorageController.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/elementDevCapture.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/debugView.hpp>
@@ -263,7 +273,7 @@ target_sources(flowui
 )
 
 if(FLOWUI_INCLUDE_ICON_MANAGER)
-    target_sources(flowui PRIVATE src/managers/IconManager.cpp)
+    target_sources(flowui PRIVATE src/managers/IconManager.cpp src/managers/IconCacheController.cpp)
 endif()
 
 target_include_directories(flowui

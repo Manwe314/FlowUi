@@ -2,39 +2,32 @@
 
 #include <cstdint>
 #include <cstddef>
-#include <limits>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <unordered_map>
-#include <vector>
 
 #include <clay.h>
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
-#include "Vulkan/Vk_Context.hpp"
+#include "FlowUi/ResourceKey.hpp"
 
 struct plutosvg_document;
 using plutosvg_document_t = plutosvg_document;
 struct plutovg_surface;
 using plutovg_surface_t = plutovg_surface;
-struct VmaAllocation_T;
-struct VkCommandPool_T;
-struct VkSampler_T;
-
-using VkCommandPool = VkCommandPool_T*;
-using VkSampler = VkSampler_T*;
-
 namespace FlowUi {
 
 #if FLOWUI_INCLUDE_ICON_MANAGER
 class App;
 struct IconManagerConfig;
 
-namespace detail {
-struct IUiTexturePublisher;
-} // namespace detail
+namespace detail::storage { class IStorageSystem; }
+namespace detail::manager_storage {
+struct IconDocumentRecord; struct IconSurfaceOwner; struct IconTransientRasterResult;
+struct IconAtlasRect; struct IconAtlasAllocation; struct IconVariantKey; struct IconVariantKeyHash;
+struct IconVariantEntry; struct IconAtlasPage; struct IconRetiredRegion; class IconCacheController;
+}
 
 /** @addtogroup flowui_icon_manager
  * @{
@@ -89,6 +82,7 @@ struct IconManager {
 	 * @endcode
 	 */
 	bool registerSvg(std::string_view key, std::string_view svgSource);
+	bool registerSvg(ResourceKey key, std::string_view svgSource);
 
 	/**
 	 * @brief Register an SVG document from a file path.
@@ -114,6 +108,7 @@ struct IconManager {
 	 * @endcode
 	 */
 	bool registerFromFile(std::string_view key, std::string_view filePath);
+	bool registerFromFile(ResourceKey key, std::string_view filePath);
 
 	/**
 	 * @brief Remove a registered SVG document by key.
@@ -135,6 +130,7 @@ struct IconManager {
 	 * @endcode
 	 */
 	bool remove(std::string_view key);
+	bool remove(ResourceKey key);
 
 	/**
 	 * @brief Return whether an SVG key is registered.
@@ -153,6 +149,7 @@ struct IconManager {
 	 * @endcode
 	 */
 	bool contains(std::string_view key) const;
+	bool contains(ResourceKey key) const;
 
 	/**
 	 * @brief Return a texture request reference for a registered icon key.
@@ -182,106 +179,27 @@ struct IconManager {
 	 * @see @ref md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
 	 */
 	TextureRef textureRef(std::string_view key);
+	TextureRef textureRef(ResourceKey key);
 
 private:
 	friend class App;
 
-	void setTexturePublisher(detail::IUiTexturePublisher* publisher);
-	void init(VulkanContext& vk, const IconManagerConfig& config);
+	void init(detail::storage::IStorageSystem& storage, const IconManagerConfig& config);
+	void beginAppTick();
 	void prepareFrameTextures(
 		Clay_RenderCommandArray& renderCommands,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY);
-	void destroy(VulkanContext& vk);
+	void destroy() noexcept;
 
-	struct DocumentRecord {
-		plutosvg_document_t* document = nullptr;
-		float intrinsicWidth = 0.0f;
-		float intrinsicHeight = 0.0f;
-	};
-
-	struct SurfaceOwner {
-		plutovg_surface_t* surface = nullptr;
-
-		SurfaceOwner() = default;
-		explicit SurfaceOwner(plutovg_surface_t* value) : surface(value) {}
-		SurfaceOwner(const SurfaceOwner&) = delete;
-		SurfaceOwner& operator=(const SurfaceOwner&) = delete;
-		SurfaceOwner(SurfaceOwner&& other) noexcept : surface(other.surface) {
-			other.surface = nullptr;
-		}
-		SurfaceOwner& operator=(SurfaceOwner&& other) noexcept;
-		~SurfaceOwner();
-	};
-
-	struct TransientRasterResult {
-		SurfaceOwner owner{};
-		const uint8_t* rgbaPixels = nullptr;
-		uint32_t width = 0u;
-		uint32_t height = 0u;
-		uint32_t strideBytes = 0u;
-		uint32_t requestedWidth = 0u;
-		uint32_t requestedHeight = 0u;
-	};
-
-	struct AtlasRect {
-		uint32_t x = 0u;
-		uint32_t y = 0u;
-		uint32_t w = 0u;
-		uint32_t h = 0u;
-	};
-
-	struct AtlasAllocation {
-		uint32_t pageIndex = std::numeric_limits<uint32_t>::max();
-		AtlasRect paddedRect{};
-		AtlasRect contentRect{};
-	};
-
-	struct VariantKey {
-		std::string nameKey{};
-		uint32_t requestedWidth = 0u;
-		uint32_t requestedHeight = 0u;
-
-		bool operator==(const VariantKey& other) const noexcept {
-			return
-				requestedWidth == other.requestedWidth &&
-				requestedHeight == other.requestedHeight &&
-				nameKey == other.nameKey;
-		}
-	};
-
-	struct VariantKeyHash {
-		std::size_t operator()(const VariantKey& key) const noexcept;
-	};
-
-	struct VariantEntry {
-		VariantKey key{};
-		uint32_t pageIndex = std::numeric_limits<uint32_t>::max();
-		TextureHandle texture{};
-		AtlasRect paddedRect{};
-		AtlasRect contentRect{};
-		float uv0x = 0.0f;
-		float uv0y = 0.0f;
-		float uv1x = 1.0f;
-		float uv1y = 1.0f;
-		uint32_t sourceWidth = 0u;
-		uint32_t sourceHeight = 0u;
-		uint32_t lastUsedFrame = 0u;
-		bool referencedThisFrame = false;
-	};
-
-	struct AtlasPage {
-		std::string namespacedKey{};
-		TextureHandle texture{};
-		VkImage image = VK_NULL_HANDLE;
-		VmaAllocation_T* allocation = nullptr;
-		VkImageView view = VK_NULL_HANDLE;
-		uint32_t width = 0u;
-		uint32_t height = 0u;
-		uint64_t usedArea = 0u;
-		uint32_t lastUsedFrame = 0u;
-		std::vector<AtlasRect> freeRects{};
-	};
+	using DocumentRecord = detail::manager_storage::IconDocumentRecord;
+	using SurfaceOwner = detail::manager_storage::IconSurfaceOwner;
+	using TransientRasterResult = detail::manager_storage::IconTransientRasterResult;
+	using AtlasRect = detail::manager_storage::IconAtlasRect;
+	using AtlasAllocation = detail::manager_storage::IconAtlasAllocation;
+	using VariantKey = detail::manager_storage::IconVariantKey;
+	using VariantEntry = detail::manager_storage::IconVariantEntry;
+	using AtlasPage = detail::manager_storage::IconAtlasPage;
 
 	TransientRasterResult rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const;
 	VariantKey makeVariantKey(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const;
@@ -320,23 +238,9 @@ private:
 		uint32_t requestedWidth,
 		uint32_t requestedHeight);
 	const std::string* findRequestedKeyByTextureHandle(TextureHandle texture) const;
-	std::string makeRequestNamespacedKey(std::string_view key) const;
-
-	//Transitional: borrowed native publication ends with manager storage migration.
-	detail::IUiTexturePublisher* texturePublisher_ = nullptr;
-	VulkanContext* vk_ = nullptr;
-	VkSampler atlasSampler_ = VK_NULL_HANDLE;
-	VkCommandPool commandPool_ = VK_NULL_HANDLE;
-	uint32_t atlasSize_ = 0u;
-	uint32_t atlasPadding_ = 1u;
-	uint32_t sizeReuseTolerance_ = 8u;
-	uint32_t maxAtlasPages_ = 10u;
-	uint32_t frameCounter_ = 0u;
-	std::unordered_map<std::string, DocumentRecord> documentsByKey_;
-	std::unordered_map<std::string, TextureHandle> requestTextureByKey_;
-	std::unordered_map<uint64_t, std::string> requestedKeyByTexture_;
-	std::unordered_map<VariantKey, VariantEntry, VariantKeyHash> variantsByKeyAndSize_;
-	std::vector<AtlasPage> atlasPages_;
+	detail::storage::IStorageSystem* storage_ = nullptr;
+	uint64_t controllerHandle_ = 0;
+	detail::manager_storage::IconCacheController* controller_ = nullptr;
 };
 
 /** @} */
@@ -344,9 +248,7 @@ private:
 class App;
 struct IconManagerConfig;
 
-namespace detail {
-struct IUiTexturePublisher;
-} // namespace detail
+namespace detail::storage { class IStorageSystem; }
 
 /** @addtogroup flowui_icon_manager
  * @{
@@ -377,6 +279,9 @@ struct IconManager {
 		(void)svgSource;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
+	bool registerSvg(ResourceKey key, std::string_view svgSource) {
+		return registerSvg(key.name, svgSource);
+	}
 
 	/**
 	 * @brief Throws because icon support is disabled.
@@ -395,6 +300,9 @@ struct IconManager {
 		(void)filePath;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
+	bool registerFromFile(ResourceKey key, std::string_view filePath) {
+		return registerFromFile(key.name, filePath);
+	}
 
 	/**
 	 * @brief Throws because icon support is disabled.
@@ -411,6 +319,7 @@ struct IconManager {
 		(void)key;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
+	bool remove(ResourceKey key) { return remove(key.name); }
 
 	/**
 	 * @brief Throws because icon support is disabled.
@@ -428,6 +337,7 @@ struct IconManager {
 		(void)key;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
+	bool contains(ResourceKey key) const { return contains(key.name); }
 
 	/**
 	 * @brief Throws because icon support is disabled.
@@ -444,19 +354,20 @@ struct IconManager {
 		(void)key;
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
+	TextureRef textureRef(ResourceKey key) { return textureRef(key.name); }
 
 private:
 	friend class App;
 
-	void setTexturePublisher(detail::IUiTexturePublisher*) {}
-
-	void init(VulkanContext&, const IconManagerConfig&) {
+	void init(detail::storage::IStorageSystem&, const IconManagerConfig&) {
 		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
 	}
 
+	void beginAppTick() {}
+
 	void prepareFrameTextures(Clay_RenderCommandArray&, float, float) {}
 
-	void destroy(VulkanContext&) {}
+	void destroy() noexcept {}
 };
 
 /** @} */

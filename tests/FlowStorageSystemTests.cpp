@@ -32,7 +32,6 @@ using FlowUi::detail::storage::BufferUsage;
 using FlowUi::detail::storage::BufferWriteView;
 using FlowUi::detail::storage::BufferWriteMode;
 using FlowUi::detail::storage::DescriptorWriteRecord;
-using FlowUi::detail::storage::ExternalTextureDesc;
 using FlowUi::detail::storage::FlowStorageSystem;
 using FlowUi::detail::storage::FrameStorageDesc;
 using FlowUi::detail::storage::IStorageSystem;
@@ -47,6 +46,8 @@ using FlowUi::detail::storage::NativeRendererPipelineBundle;
 using FlowUi::detail::storage::NativeWindowDescriptorBundle;
 using FlowUi::detail::storage::MemoryClass;
 using FlowUi::detail::storage::MemoryPreference;
+using FlowUi::detail::storage::ManagerRecordDesc;
+using FlowUi::detail::storage::ManagerRecordHandle;
 using FlowUi::detail::storage::PixelFormat;
 using FlowUi::detail::storage::RendererLayoutHandle;
 using FlowUi::detail::storage::RendererLayoutKey;
@@ -67,6 +68,29 @@ using FlowUi::detail::storage::TextureViewDesc;
 using FlowUi::detail::storage::WindowDescriptorBundleDesc;
 using FlowUi::detail::storage::WindowDescriptorBundleHandle;
 using FlowUi::detail::storage::WindowStorageDesc;
+
+struct ManagerRecordTestState {
+	int value = 0;
+	int* destroyed = nullptr;
+	~ManagerRecordTestState() { if (destroyed) ++*destroyed; }
+};
+
+struct ManagerRecordTestArgs { int value = 0; int* destroyed = nullptr; };
+
+ManagerRecordDesc managerRecordDesc(ResourceKey key, ManagerRecordTestArgs& args) {
+	return ManagerRecordDesc{
+		.key = key,
+		.kind = ResourceKind::ManagerRoot,
+		.bytes = sizeof(ManagerRecordTestState),
+		.alignment = alignof(ManagerRecordTestState),
+		.construct = +[](void* destination, void* userData) {
+			const auto& values = *static_cast<ManagerRecordTestArgs*>(userData);
+			::new (destination) ManagerRecordTestState{values.value, values.destroyed};
+		},
+		.destroy = +[](void* object) noexcept { static_cast<ManagerRecordTestState*>(object)->~ManagerRecordTestState(); },
+		.userData = &args,
+	};
+}
 
 template <typename Handle>
 uint64_t nativeBits(Handle handle) noexcept {
@@ -421,7 +445,8 @@ void testInitialization(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 void testPersistentStringsAndBlobs(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	storage.initialize(testConfig());
-	FLOWUI_CHECK(hasCapability(storage, StorageCapability::BorrowedNativeTextures));
+	FLOWUI_CHECK(hasCapability(storage, StorageCapability::ManagerRecords));
+	FLOWUI_CHECK(hasCapability(storage, StorageCapability::ManagerFrameSnapshots));
 	storage.registerWindow(7u, windowDesc());
 
 	storage.setBudget(128u, 64u * 1024u * 1024u);
@@ -946,111 +971,7 @@ void testTextureBindingProtocol(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	storage.unregisterWindow(61u, submission.serial);
 }
 
-void testExternalTextureBindingsAndRetirement(FlowUi::test::HeadlessVulkanFixture& vulkan) {
-	FlowStorageSystem storage(vulkan.context());
-	storage.initialize(testConfig());
-
-	ImageDesc imageDesc{};
-	imageDesc.width = 1;
-	imageDesc.height = 1;
-	imageDesc.format = PixelFormat::Rgba8Unorm;
-	imageDesc.usage = ImageUsage::Sampled;
-	imageDesc.memory = MemoryPreference::DeviceLocal;
-	const ImageHandle image = storage.createImage(imageDesc);
-	const ImageViewHandle view = storage.createImageView(image, ImageViewDesc{});
-	const SamplerHandle sampler = storage.acquireSampler(SamplerDesc{});
-	const TextureViewDesc managedDesc{.imageView = view, .sampler = sampler};
-	const TextureHandle fallback = storage.publishTexture(ResourceKey{
-		.domain = ResourceDomain::Internal,
-		.name = storage.intern("phase3 fallback"),
-	}, managedDesc);
-	storage.setFallbackTexture(fallback);
-
-	const NativeImageViewInfo nativeView = storage.nativeImageView(view);
-	const auto nativeSampler = storage.nativeSampler(sampler);
-	const ExternalTextureDesc externalDesc{
-		.nativeImageView = nativeView.nativeImageView,
-		.nativeSampler = nativeSampler.nativeSampler,
-		.sourceWidth = 32,
-		.sourceHeight = 24,
-	};
-	const ResourceKey seedKey{
-		.domain = ResourceDomain::Image,
-		.name = storage.intern("phase3 seed"),
-	};
-	const ResourceKey textureKey{
-		.domain = ResourceDomain::Image,
-		.name = storage.intern("phase3 shared"),
-	};
-	bool inserted = false;
-	const TextureHandle seed = storage.publishExternalTexture(seedKey, externalDesc, &inserted);
-	FLOWUI_CHECK(inserted);
-	const TextureHandle texture = storage.publishExternalTexture(textureKey, externalDesc, &inserted);
-	FLOWUI_CHECK(inserted);
-	FLOWUI_CHECK(storage.textureMetadata(texture).sourceWidth == 32);
-
-	WindowStorageDesc desc = windowDesc(1, 1);
-	desc.initialTextureBindings = 4;
-	desc.maxTextureBindings = 4;
-	storage.registerWindow(201u, desc);
-	storage.registerWindow(202u, desc);
-
-	const auto frameA = storage.beginFrame(201u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
-	const std::array requestedA{seed, texture};
-	const auto preparedA = storage.prepareTextureBindings(frameA, requestedA);
-	FLOWUI_CHECK(preparedA.binding(texture) != nullptr);
-	FLOWUI_CHECK(preparedA.binding(texture)->descriptorIndex == 2u);
-	storage.acknowledgeTextureBindings(frameA, preparedA.dirtyBindings);
-	const auto submissionA = storage.noteSubmission(storage.sealFrame(frameA));
-
-	const auto frameB = storage.beginFrame(202u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
-	const std::array requestedB{texture};
-	const auto preparedB = storage.prepareTextureBindings(frameB, requestedB);
-	FLOWUI_CHECK(preparedB.binding(texture) != nullptr);
-	FLOWUI_CHECK(preparedB.binding(texture)->descriptorIndex == 1u);
-	storage.acknowledgeTextureBindings(frameB, preparedB.dirtyBindings);
-	const auto submissionB = storage.noteSubmission(storage.sealFrame(frameB));
-
-	const TextureHandle replacement = storage.publishExternalTexture(textureKey, externalDesc, &inserted);
-	FLOWUI_CHECK(!inserted);
-	FLOWUI_CHECK(replacement != texture);
-	FLOWUI_CHECK(!storage.textureRetirementComplete(texture));
-	storage.collect();
-	FLOWUI_CHECK(!storage.textureRetirementComplete(texture));
-	storage.noteCompleted(submissionA);
-	storage.noteCompleted(submissionB);
-	storage.collect();
-	FLOWUI_CHECK(storage.textureRetirementComplete(texture));
-
-	const ResourceKey localKey{
-		.domain = ResourceDomain::Viewport,
-		.name = storage.intern("phase3 local"),
-		.window = 201u,
-	};
-	const TextureHandle local = storage.publishExternalTexture(localKey, ExternalTextureDesc{
-		.nativeImageView = nativeView.nativeImageView,
-		.nativeSampler = nativeSampler.nativeSampler,
-		.sharing = ResourceSharing::FrameLocal,
-		.window = 201u,
-		.frameSlot = 0,
-	});
-	const auto wrongWindow = storage.beginFrame(202u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 2});
-	const std::array wrongRequested{local};
-	FLOWUI_CHECK_THROWS(storage.prepareTextureBindings(wrongWindow, wrongRequested));
-	storage.cancelFrame(wrongWindow);
-
-	FLOWUI_CHECK(storage.removeTexture(localKey));
-	FLOWUI_CHECK(storage.removeTexture(textureKey));
-	FLOWUI_CHECK(storage.removeTexture(seedKey));
-	storage.collect();
-	storage.unregisterWindow(201u, submissionA.serial);
-	storage.unregisterWindow(202u, submissionB.serial);
-	storage.releaseImageView(view);
-	storage.releaseSampler(sampler);
-	storage.releaseImage(image);
-}
-
-void testWindowAndFrameLocality(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+ void testWindowAndFrameLocality(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	storage.initialize(testConfig());
 	storage.registerWindow(81u, windowDesc(2, 1));
@@ -1402,6 +1323,95 @@ void testDescriptorBundleReplacement(FlowUi::test::HeadlessVulkanFixture& vulkan
 	storage.unregisterWindow(91u, replacementSubmission.serial);
 }
 
+void testManagerRecordsAndFailureRollback(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+	storage.registerWindow(301u, windowDesc(1, 1));
+	int destroyed = 0;
+	ManagerRecordTestArgs sharedArgs{17, &destroyed};
+	const ResourceKey sharedKey{
+		.domain = ResourceDomain::Internal,
+		.name = storage.intern("phase5 shared manager record"),
+	};
+	const uint64_t initialRevision = storage.managerSharedRevision();
+	for (uint32_t checkpoint = 1; checkpoint <= 4; ++checkpoint) {
+		storage.setManagerFailureCountdown(checkpoint);
+		FLOWUI_CHECK_THROWS(storage.createManagerRecord(managerRecordDesc(sharedKey, sharedArgs)));
+		FLOWUI_CHECK(!storage.findManagerRecord(sharedKey, ResourceKind::ManagerRoot));
+		FLOWUI_CHECK(storage.managerSharedRevision() == initialRevision);
+	}
+	FLOWUI_CHECK(destroyed == 1); // the final injected failure occurs after construction
+
+	storage.setManagerFailureCountdown(0);
+	const ManagerRecordHandle shared = storage.createManagerRecord(managerRecordDesc(sharedKey, sharedArgs));
+	FLOWUI_CHECK(shared);
+	auto* sharedState = static_cast<ManagerRecordTestState*>(
+		storage.managerRecordData(shared, ResourceKind::ManagerRoot));
+	FLOWUI_CHECK(sharedState != nullptr && sharedState->value == 17);
+	FLOWUI_CHECK(storage.managerSharedRevision() > initialRevision);
+
+	const auto frame = storage.beginFrame(301u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
+	const auto managerView = storage.managerFrameView(frame);
+	FLOWUI_CHECK(managerView.sharedRevision == frame.managerSharedRevision);
+	storage.cancelFrame(frame);
+	storage.noteManagerMutation(301u);
+	FLOWUI_CHECK(storage.managerWindowRevision(301u) > managerView.windowRevision);
+
+	ManagerRecordTestArgs localArgs{29, &destroyed};
+	const ResourceKey localKey{
+		.domain = ResourceDomain::Viewport,
+		.name = storage.intern("phase5 local manager record"),
+		.window = 301u,
+	};
+	const ManagerRecordHandle local = storage.createManagerRecord(managerRecordDesc(localKey, localArgs));
+	FLOWUI_CHECK(local);
+	storage.releaseWindowManagerRecords(301u);
+	FLOWUI_CHECK(!storage.managerRecordData(local, ResourceKind::ManagerRoot));
+	FLOWUI_CHECK(destroyed == 2);
+	FLOWUI_CHECK(storage.removeManagerRecord(sharedKey, ResourceKind::ManagerRoot));
+	FLOWUI_CHECK(destroyed == 3);
+	storage.unregisterWindow(301u, 0);
+}
+
+void testAnonymousTextureExactRetirement(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+	ImageDesc imageDesc{};
+	imageDesc.usage = ImageUsage::Sampled;
+	imageDesc.format = PixelFormat::Rgba8Unorm;
+	const ImageHandle image = storage.createImage(imageDesc);
+	const ImageViewHandle view = storage.createImageView(image, ImageViewDesc{});
+	const SamplerHandle sampler = storage.acquireSampler(SamplerDesc{});
+	const ResourceKey fallbackKey{
+		.domain = ResourceDomain::Internal,
+		.name = storage.intern("phase5 fallback"),
+	};
+	const TextureHandle fallback = storage.publishTexture(
+		fallbackKey, TextureViewDesc{.imageView = view, .sampler = sampler});
+	storage.setFallbackTexture(fallback);
+	const TextureHandle anonymous = storage.createAnonymousTexture(TextureViewDesc{
+		.imageView = view, .sampler = sampler, .sourceWidth = 11, .sourceHeight = 7,
+	});
+	FLOWUI_CHECK(storage.textureMetadata(anonymous).sourceWidth == 11);
+
+	storage.registerWindow(302u, windowDesc(1, 1));
+	const auto frame = storage.beginFrame(302u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
+	const std::array requested{anonymous};
+	const auto prepared = storage.prepareTextureBindings(frame, requested);
+	storage.acknowledgeTextureBindings(frame, prepared.dirtyBindings);
+	const auto submission = storage.noteSubmission(storage.sealFrame(frame));
+	storage.releaseAnonymousTexture(anonymous);
+	storage.collect();
+	FLOWUI_CHECK(!storage.textureRetirementComplete(anonymous));
+	storage.noteCompleted(submission);
+	storage.collect();
+	FLOWUI_CHECK(storage.textureRetirementComplete(anonymous));
+	storage.unregisterWindow(302u, submission.serial);
+	storage.releaseImageView(view);
+	storage.releaseSampler(sampler);
+	storage.releaseImage(image);
+}
+
 void testTelemetryConfiguration(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	storage.initialize(testConfig());
@@ -1469,12 +1479,15 @@ int main() {
 			testConcurrentNonOverlappingWrites(vulkan);
 		});
 		runner.run("fallback and descriptor binding protocol", [&] { testTextureBindingProtocol(vulkan); });
-		runner.run("external logical textures and per-window binding retirement", [&] {
-			testExternalTextureBindingsAndRetirement(vulkan);
-		});
 		runner.run("window and frame-slot resource locality", [&] { testWindowAndFrameLocality(vulkan); });
 		runner.run("typed renderer resource ownership", [&] { testRendererResourceOwnership(vulkan); });
 		runner.run("descriptor bundle replacement", [&] { testDescriptorBundleReplacement(vulkan); });
+		runner.run("manager records, revisions, destruction, and failure rollback", [&] {
+			testManagerRecordsAndFailureRollback(vulkan);
+		});
+		runner.run("anonymous logical texture exact retirement", [&] {
+			testAnonymousTextureExactRetirement(vulkan);
+		});
 		runner.run("development and production telemetry contract", [&] { testTelemetryConfiguration(vulkan); });
 		return runner.finish();
 	} catch (const FlowUi::test::VulkanUnavailable& error) {

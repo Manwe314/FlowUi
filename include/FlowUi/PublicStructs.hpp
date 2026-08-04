@@ -90,10 +90,12 @@ struct WindowInputConfig {
 };
 
 /**
- * @brief Describes the native window created for the app.
+ * @brief Describes a native application window.
  *
  * Width, height, title, and input settings also provide the initial runtime
- * defaults used by FlowUi managers.
+ * defaults used by FlowUi managers. AppConfig::window configures the semantic
+ * main window. Explicit secondary windows inherit the application's Vulkan and
+ * UI configuration and supply only this native-window configuration.
  */
 struct WindowConfig {
 	/** @brief Initial window width in screen coordinates.

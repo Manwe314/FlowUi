@@ -59,6 +59,22 @@ public:
 
 	[[nodiscard]] StringId intern(std::string_view value) override;
 	[[nodiscard]] std::string_view string(StringId id) const noexcept override;
+	bool markDiagnosticOnce(ResourceKey key, uint32_t diagnosticCode) override;
+	void clearDiagnosticMark(ResourceKey key, uint32_t diagnosticCode) override;
+	[[nodiscard]] ManagerRecordHandle createManagerRecord(const ManagerRecordDesc& desc) override;
+	[[nodiscard]] ManagerRecordHandle findManagerRecord(
+		ResourceKey key, ResourceKind kind) const noexcept override;
+	[[nodiscard]] void* managerRecordData(
+		ManagerRecordHandle handle, ResourceKind kind) noexcept override;
+	[[nodiscard]] const void* managerRecordData(
+		ManagerRecordHandle handle, ResourceKind kind) const noexcept override;
+	bool removeManagerRecord(ResourceKey key, ResourceKind kind) override;
+	void releaseWindowManagerRecords(WindowId window) noexcept override;
+	void noteManagerMutation(WindowId window) override;
+	[[nodiscard]] ManagerFrameView managerFrameView(const FrameToken& frame) const noexcept override;
+	[[nodiscard]] uint64_t managerSharedRevision() const noexcept override;
+	[[nodiscard]] uint64_t managerWindowRevision(WindowId window) const noexcept override;
+	void setManagerFailureCountdown(uint32_t checkpoints) noexcept override;
 	[[nodiscard]] BlobHandle createBlob(std::span<const std::byte> bytes, StringId debugName) override;
 	[[nodiscard]] std::span<const std::byte> readBlob(BlobHandle handle) const noexcept override;
 	void releaseBlob(BlobHandle handle, SubmissionSerial lastUse = 0) override;
@@ -76,11 +92,9 @@ public:
 		ResourceKey key,
 		const TextureViewDesc& desc,
 		bool* inserted = nullptr) override;
+	[[nodiscard]] TextureHandle createAnonymousTexture(const TextureViewDesc& desc) override;
+	void releaseAnonymousTexture(TextureHandle texture, SubmissionSerial lastUse = 0) override;
 	[[nodiscard]] TextureHandle replaceTexture(ResourceKey key, const TextureViewDesc& desc) override;
-	[[nodiscard]] TextureHandle publishExternalTexture(
-		ResourceKey key,
-		const ExternalTextureDesc& desc,
-		bool* inserted = nullptr) override;
 	bool removeTexture(ResourceKey key, SubmissionSerial lastUse = 0) override;
 	[[nodiscard]] TextureHandle findTexture(ResourceKey key) const noexcept override;
 	[[nodiscard]] TextureMetadata textureMetadata(TextureHandle texture) const noexcept override;
