@@ -741,7 +741,6 @@ struct App::Impl {
 			icons.prepareFrameTextures(
 				window.renderCommands, window.uiToFramebufferScaleX, window.uiToFramebufferScaleY);
 #endif
-			// Logical manager textures resolve through this window's storage bindings.
 			window.viewPorts.remapRenderCommandsForFrame(window.renderCommands, window.frames.currentFrame);
 			storage::ArenaView textureArena = storageSystem->frameArena(
 				window.storageFrame, storage::MemoryClass::FrameTransient);
@@ -925,11 +924,10 @@ struct App::Impl {
 #endif
 		vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
 			"Failed to submit UI command buffer.");
-			frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
-			window.lastSubmissionSerial = std::max(window.lastSubmissionSerial, frame.storageSubmission.serial);
-			window.swapchain.lastGraphicsUse = std::max(
-				window.swapchain.lastGraphicsUse, frame.storageSubmission.serial);
-			window.preparedUi = {};
+		frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
+		window.lastSubmissionSerial = std::max(window.lastSubmissionSerial, frame.storageSubmission.serial);
+		window.swapchain.lastGraphicsUse = std::max(window.swapchain.lastGraphicsUse, frame.storageSubmission.serial);
+		window.preparedUi = {};
 		window.storageReadLease = {};
 		window.storageFrame = {};
 #if FLOW_UI_DEV_MODE
@@ -1015,9 +1013,6 @@ struct App::Impl {
 				throw std::runtime_error(
 					"The legacy device-idle swapchain fallback is restricted to a main-only application.");
 			}
-			// Compatibility: exact present completion is unavailable and public
-			// secondary creation is disabled, so only the semantic main window can
-			// reach this device-idle resize fallback.
 			vkCheck(vkDeviceWaitIdle(vk.device),
 				"Failed to wait for device idle during main-only compatibility resize.");
 			completeAllSubmissionsAfterIdle();
