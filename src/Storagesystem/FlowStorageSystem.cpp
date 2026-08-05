@@ -404,8 +404,6 @@ public:
 				const size_t prefix = alignedOffset - block.offset;
 				if (prefix > block.size || bytes > block.size - prefix) continue;
 
-				// Reserve every metadata slot that this allocation and all future
-				// releases can need while allocation is still allowed to throw.
 				slab.free.reserve(slab.free.size() + slab.activeAllocations + 2u);
 				if (nextId_ == 0 || allocations_.contains(nextId_)) {
 					storageError("persistent allocation id space exhausted");
@@ -454,8 +452,6 @@ public:
 			block.tag.frameSlot == allocation.tag.frameSlot &&
 			block.tag.debugName == allocation.tag.debugName;
 		if (block.data != expectedData || block.size != allocation.size || !matchingTag) return;
-		// allocate() reserves one release slot per active allocation, so this
-		// push cannot allocate inside the noexcept release path.
 		slab.free.push_back({allocation.offset, allocation.size});
 		if (slab.activeAllocations > 0) --slab.activeAllocations;
 		merge(slab.free);
@@ -836,8 +832,6 @@ struct FlowStorageSystem::Impl {
 			return index;
 		}
 		if (records.size() >= std::numeric_limits<uint32_t>::max()) storageError("resource handle table exhausted");
-		// Reserve the rollback slot before growing the record table. Creation
-		// failure can then return the index without a second allocation failure.
 		freeIndices.reserve(freeIndices.size() + 1u);
 		records.emplace_back();
 		return static_cast<uint32_t>(records.size() - 1u);
@@ -2016,8 +2010,6 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 		frame->usedRendererLayoutEpochs.resize(expectedSlots(impl_->config.expectedRendererObjects));
 		frame->usedRendererPipelineEpochs.resize(expectedSlots(impl_->config.expectedRendererObjects));
 		frame->usedDescriptorBundleEpochs.resize(expectedSlots(impl_->config.expectedRendererObjects));
-		// These arrays are indexed by descriptor slot. Reserve the hard window
-		// bound once so dirty-batch preparation cannot reallocate in a hot frame.
 		frame->appliedBindingRevisions.reserve(window->desc.maxTextureBindings);
 		frame->preparedBindingBatches.reserve(window->desc.maxTextureBindings);
 		for (uint32_t worker = 0; worker < window->desc.workerCount; ++worker) {
@@ -2120,8 +2112,6 @@ FrameReadLease FlowStorageSystem::sealFrame(const FrameToken& frame) {
 	if (!state.pendingBufferWrites.empty()) storageError("all buffer writes must be committed before sealing a frame");
 	const Impl::WindowState& window = impl_->requireWindow(frame.window);
 	if (window.activeDescriptorBundle) {
-		// The active per-window descriptor generation is an implicit dependency of
-		// every submitted frame. Explicit trackUses calls remain harmlessly deduped.
 		impl_->addUse(state, ResourceKind::WindowDescriptorBundle,
 			window.activeDescriptorBundle.packed());
 	}
@@ -2361,8 +2351,6 @@ void FlowStorageSystem::commitBufferWriteInternal(
 		if (currentWrite != state.pendingBufferWrites.end()) currentWrite->committing = false;
 		--state.activeBufferCommits;
 		impl_->bufferCommitCondition.notify_all();
-		// The pending write keeps its own reference, so releasing this temporary
-		// commit pin cannot be the operation that queues retirement.
 		impl_->releaseBufferReference(pending.buffer, 0);
 		throw;
 	}
@@ -2386,8 +2374,6 @@ void FlowStorageSystem::commitBufferWriteInternal(
 		throw;
 	}
 	state.pendingBufferWrites.erase(currentWrite);
-	// Drop the pending-write reference and then the temporary commit pin. The
-	// generation-safe frame-use reference remains alive through submission.
 	impl_->releaseBufferReference(pending.buffer, 0);
 	impl_->releaseBufferReference(pending.buffer, 0);
 	--state.activeBufferCommits;
@@ -2400,9 +2386,6 @@ void FlowStorageSystem::writeBuffer(
 	uint64_t destinationOffset,
 	std::span<const std::byte> bytes) {
 	if (bytes.empty()) return;
-	// The caller's span is already host scratch. Use a direct lease and let the
-	// common commit path pin the allocation while performing exactly one unlocked
-	// copy, regardless of the producer default selected in StorageConfig.
 	BufferWriteView write = beginBufferWrite(
 		frame, buffer, destinationOffset, bytes.size(), BufferWriteMode::DirectMapped);
 	commitBufferWriteInternal(frame, write, bytes.size(), bytes.data());
@@ -3192,8 +3175,6 @@ PreparedTextureBindings FlowStorageSystem::prepareTextureBindings(
 		maximumWrites * sizeof(DescriptorWriteRecord), alignof(DescriptorWriteRecord)));
 	if (maximumWrites > 0 && !writes) storageError("failed to allocate the descriptor write batch");
 
-	// Preflight the complete batch before resolve() assigns any descriptor index.
-	// This makes descriptor-capacity failure transactional.
 	uint32_t* seen = nullptr;
 	if (!impl_->textureHot.empty()) {
 		seen = static_cast<uint32_t*>(state.transient.allocate(
@@ -3707,8 +3688,6 @@ SubmissionToken FlowStorageSystem::noteSubmission(const FrameReadLease& lease) {
 		impl_->nextSubmissionSerial == std::numeric_limits<SubmissionSerial>::max()) {
 		storageError("submission serial space exhausted");
 	}
-	// Make the remaining submission transition failure-free: each retained use
-	// can enqueue at most one retirement when its frame reference is released.
 	impl_->reserveRetirements(frame.used.size());
 	const SubmissionSerial serial = impl_->nextSubmissionSerial++;
 	for (const UsedResource& used : frame.used) {
@@ -3747,8 +3726,6 @@ void FlowStorageSystem::noteCompleted(SubmissionToken submission) {
 			++impl_->completedWatermark;
 		}
 	} else {
-		// Allocation is needed only for a real completion gap. Insert before
-		// clearing the frame slot so allocation failure leaves the token retryable.
 		impl_->completedOutOfOrder.insert(submission.serial);
 		frame.inFlightSerial = 0;
 	}

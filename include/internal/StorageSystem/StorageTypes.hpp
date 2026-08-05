@@ -225,10 +225,6 @@ using RendererLayoutHandle = Handle<ResourceKind::RendererLayout>;
 using RendererPipelineBundleHandle = Handle<ResourceKind::RendererPipelineBundle>;
 using WindowDescriptorBundleHandle = Handle<ResourceKind::WindowDescriptorBundle>;
 
-// Manager records are type-erased only at the storage boundary. Their payloads
-// are concrete C++ objects declared under internal/ManagerStorage and are kept
-// in non-relocating persistent allocations. The record's ResourceKind is stored
-// alongside this generic generational handle.
 struct ManagerRecordHandle {
 	uint32_t index = InvalidIndex;
 	uint32_t generation = InvalidGeneration;
