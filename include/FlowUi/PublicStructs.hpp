@@ -159,7 +159,7 @@ struct VulkanConfig {
 	/**
 	 * @brief Requested multisample anti-aliasing level.
 	 *
-	 * @note Disabled in v0.9.0; this value is retained for future renderer support.
+	 * @note Reserved. The current renderer uses one sample regardless of this value.
 	 */
 	MSAA msaa = MSAA::x1;
 
@@ -393,8 +393,8 @@ struct DevToolsConfig {
 	/**
 	 * @brief Request automatic saving of developer changes.
 	 *
-	 * @note No-op in v0.9.0; developer data is only written by explicit export
-	 * paths.
+	 * @note Reserved. Developer data is currently written only by explicit export
+	 * paths, so this value has no effect.
 	 */
 	bool autoSave = true;
 };
@@ -495,9 +495,8 @@ struct TextureRef {
 	/**
 	 * @brief Requested texture filtering mode.
 	 *
-	 * Application code may set this for future renderer support.
-	 *
-	 * @note Stored in v0.9.0 but not applied by the textured renderer yet.
+	 * @note Reserved. The current textured renderer does not apply this per-reference
+	 * value; filtering comes from the sampler owned by the logical texture.
 	 *
 	 * @see FlowUi::TextureSamplingMode
 	 */

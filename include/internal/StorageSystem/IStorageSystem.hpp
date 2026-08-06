@@ -16,7 +16,6 @@ public:
 	virtual ~IStorageSystem() = default;
 
 	virtual void initialize(const StorageConfig& config) = 0;
-	// All callers must be quiescent before shutdown; repeated shutdown is safe.
 	virtual void shutdown() noexcept = 0;
 	[[nodiscard]] virtual uint32_t interfaceVersion() const noexcept = 0;
 	[[nodiscard]] virtual uint64_t capabilities() const noexcept = 0;
@@ -24,9 +23,6 @@ public:
 	virtual void registerWindow(WindowId id, const WindowStorageDesc& desc) = 0;
 	virtual void unregisterWindow(WindowId id, SubmissionSerial lastUse) = 0;
 	[[nodiscard]] virtual FrameToken beginFrame(WindowId id, const FrameStorageDesc& desc) = 0;
-	// Sealing freezes arena allocation and binding mutation, automatically tracks
-	// the window's active descriptor generation, and creates the lease consumed
-	// exactly once by noteSubmission(), or invalidated by cancelFrame().
 	[[nodiscard]] virtual FrameReadLease sealFrame(const FrameToken& frame) = 0;
 	virtual void cancelFrame(const FrameToken& frame) noexcept = 0;
 
@@ -49,17 +45,10 @@ public:
 		uint64_t destinationOffset,
 		uint64_t bytes,
 		BufferWriteMode mode = BufferWriteMode::Default) = 0;
-	// A write view is exclusively owned by one producer until commit returns.
-	// Its frame must not be cancelled concurrently; shutdown requires all callers
-	// to be quiescent. Different non-overlapping writes may be produced in parallel.
-	// Commit copies a HostScratchThenCopy lease at most once, flushes only when
-	// the allocation is non-coherent, and adds one generation-safe frame use.
 	virtual void commitBufferWrite(
 		const FrameToken& frame,
 		const BufferWriteView& write,
 		uint64_t bytesWritten) = 0;
-	// A prebuilt span is copied directly into the mapped allocation exactly once;
-	// defaultBufferWriteMode controls producer leases, not this convenience path.
 	virtual void writeBuffer(
 		const FrameToken& frame,
 		BufferHandle buffer,
@@ -67,16 +56,10 @@ public:
 		std::span<const std::byte> bytes) = 0;
 
 	[[nodiscard]] virtual StringId intern(std::string_view value) = 0;
-	// Interned strings remain stable until shutdown.
 	[[nodiscard]] virtual std::string_view string(StringId id) const noexcept = 0;
-	// Returns true only for the first mark of (key, diagnosticCode). Manager
-	// facades use this for allocation-free warn-once behavior without private maps.
 	virtual bool markDiagnosticOnce(ResourceKey key, uint32_t diagnosticCode) = 0;
 	virtual void clearDiagnosticMark(ResourceKey key, uint32_t diagnosticCode) = 0;
 
-	// Destructor-aware, non-relocating CPU records used by manager facades. A
-	// record is invisible until construction succeeds and keyed publication
-	// commits. Destruction runs synchronously on the app thread in this phase.
 	[[nodiscard]] virtual ManagerRecordHandle createManagerRecord(const ManagerRecordDesc& desc) = 0;
 	[[nodiscard]] virtual ManagerRecordHandle findManagerRecord(
 		ResourceKey key, ResourceKind kind) const noexcept = 0;
@@ -90,12 +73,8 @@ public:
 	[[nodiscard]] virtual ManagerFrameView managerFrameView(const FrameToken& frame) const noexcept = 0;
 	[[nodiscard]] virtual uint64_t managerSharedRevision() const noexcept = 0;
 	[[nodiscard]] virtual uint64_t managerWindowRevision(WindowId window) const noexcept = 0;
-	// Test-only deterministic fault injection. Zero disables injection; N fails
-	// the Nth subsequent manager transaction checkpoint.
 	virtual void setManagerFailureCountdown(uint32_t checkpoints) noexcept = 0;
 	[[nodiscard]] virtual BlobHandle createBlob(std::span<const std::byte> bytes, StringId debugName) = 0;
-	// The returned blob span is borrowed while the caller's strong handle remains
-	// alive; release/collect must not race readers of the span.
 	[[nodiscard]] virtual std::span<const std::byte> readBlob(BlobHandle handle) const noexcept = 0;
 	virtual void releaseBlob(BlobHandle handle, SubmissionSerial lastUse = 0) = 0;
 
@@ -118,11 +97,7 @@ public:
 	virtual bool removeTexture(ResourceKey key, SubmissionSerial lastUse = 0) = 0;
 	[[nodiscard]] virtual TextureHandle findTexture(ResourceKey key) const noexcept = 0;
 	[[nodiscard]] virtual TextureMetadata textureMetadata(TextureHandle texture) const noexcept = 0;
-	// True only after a removed/replaced generation has passed serial retirement
-	// and its table generation is no longer allocated.
 	[[nodiscard]] virtual bool textureRetirementComplete(TextureHandle texture) const noexcept = 0;
-	// The fallback is a root-shared strong reference and backs descriptor slot 0
-	// for invalid, queued, and failed textures in every registered window.
 	virtual void setFallbackTexture(TextureHandle texture) = 0;
 
 	[[nodiscard]] virtual PreparedTextureBindings prepareTextureBindings(
@@ -166,12 +141,6 @@ public:
 		const RendererLayoutKey& key,
 		const NativeRendererLayout& native,
 		StringId debugName = 0) = 0;
-	// All published Vulkan handles must have been created from this storage
-	// instance's VkDevice using null allocation callbacks. acquire* returns a new
-	// strong reference without constructing duplicate native objects. A new layout
-	// publication transfers its three native handles. A new pipeline publication
-	// transfers only pipelines[]; pipelineLayout is a borrowed identity check owned
-	// by key.layout. No caller-owned handle transfers on a duplicate or exception.
 	[[nodiscard]] virtual RendererLayoutHandle acquireRendererLayout(const RendererLayoutKey& key) = 0;
 	[[nodiscard]] virtual NativePublishResult<RendererPipelineBundleHandle> publishRendererPipelineBundle(
 		const RendererPipelineKey& key,
@@ -182,12 +151,6 @@ public:
 	[[nodiscard]] virtual WindowDescriptorBundleHandle adoptWindowDescriptorBundle(
 		const WindowDescriptorBundleDesc& desc,
 		const NativeWindowDescriptorBundle& native) = 0;
-	// Successful descriptor adoption always transfers pool ownership, copies the
-	// set spans, and retires the window's previous active bundle. The returned
-	// handle identifies that window-owned reference; release explicitly deactivates
-	// it. An exception transfers nothing.
-	// Native values are cold-path immutable views. Cache their values while the
-	// corresponding strong handle is alive; do not query storage in draw loops.
 	[[nodiscard]] virtual NativeRendererLayout nativeRendererLayout(RendererLayoutHandle layout) const noexcept = 0;
 	[[nodiscard]] virtual NativeRendererPipelineBundle nativeRendererPipelineBundle(
 		RendererPipelineBundleHandle bundle) const noexcept = 0;
@@ -201,8 +164,6 @@ public:
 		WindowDescriptorBundleHandle bundle,
 		SubmissionSerial lastUse = 0) = 0;
 
-	// Native values are borrowed identities, never ownership transfers. Cache them
-	// only while the corresponding strong generation remains alive.
 	[[nodiscard]] virtual NativeBufferView nativeBuffer(BufferHandle buffer) const noexcept = 0;
 	[[nodiscard]] virtual NativeImageView nativeImage(ImageHandle image) const noexcept = 0;
 	[[nodiscard]] virtual NativeImageViewInfo nativeImageView(ImageViewHandle view) const noexcept = 0;

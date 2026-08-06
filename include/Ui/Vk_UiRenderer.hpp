@@ -169,7 +169,6 @@ struct VulkanUiRenderer {
 	FlowUi::detail::storage::NativeRendererPipelineBundle nativePipelineBundle_{};
 	FlowUi::detail::storage::NativeWindowDescriptorView nativeDescriptors_{};
 
-	// Cached native views remain valid while the strong storage handles above live.
 	Pipelines pipelines_{};
 	Descriptors descriptors_{};
 

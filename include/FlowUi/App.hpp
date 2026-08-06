@@ -206,15 +206,55 @@ public:
 	/** @brief Destroy the app and owned runtime resources. */
 	~App();
 
-	/** @brief Return the stable identity of the semantic main window. */
+	/** @brief Return the stable identity of the semantic main window.
+	 *
+	 * No-argument window and frame functions operate on this window.
+	 *
+	 * @return Stable main-window identity.
+	 */
 	[[nodiscard]] WindowId mainWindowId() const noexcept;
-	/** @brief Create and fully initialize an explicit secondary window. */
+	/** @brief Create and fully initialize a secondary window.
+	 *
+	 * The new window uses the app's Vulkan and UI configuration together with
+	 * the supplied native-window configuration.
+	 *
+	 * @param config Native-window configuration for the new window.
+	 * @return Stable identity of the created window.
+	 * @throws std::logic_error if another window frame triplet is active.
+	 * @throws std::runtime_error if the window or its rendering resources cannot
+	 * be created on the selected device.
+	 */
 	[[nodiscard]] WindowId createWindow(const WindowConfig& config);
-	/** @brief Destroy a secondary window after draining only its GPU work. */
+	/** @brief Destroy a secondary window after draining its outstanding work.
+	 *
+	 * The semantic main window cannot be explicitly destroyed.
+	 *
+	 * @param id Secondary-window identity returned by createWindow().
+	 * @throws std::invalid_argument if id is the main window or does not identify
+	 * a registered window.
+	 * @throws std::logic_error if another window frame triplet is active.
+	 */
 	void destroyWindow(WindowId id);
-	/** @brief Return whether an identity currently names a published window. */
+	/** @brief Return whether an identity currently names a registered window.
+	 *
+	 * @param id Window identity to query.
+	 * @retval true id identifies a current window.
+	 * @retval false id is invalid, unknown, or was destroyed.
+	 */
 	[[nodiscard]] bool hasWindow(WindowId id) const noexcept;
-	/** @brief Poll global events and advance app-shared maintenance once. */
+	/** @brief Poll global platform events and advance app-shared maintenance.
+	 *
+	 * Multi-window applications should call this once per outer application-loop
+	 * iteration before beginning explicit window frames. The function is global,
+	 * not associated with one WindowId, and cannot run while a window frame
+	 * triplet is active.
+	 *
+	 * Single-main-window applications normally do not call this directly because
+	 * the no-argument beginFrame() overload performs the same polling first.
+	 *
+	 * @throws std::logic_error if a window frame triplet is active or the call is
+	 * made from outside the app's platform thread.
+	 */
 	void pollEvents();
 
 	/** @brief Query whether the window backend requested shutdown.
@@ -233,14 +273,18 @@ public:
 	 * @retval false The window has not requested shutdown.
 	 */
 	bool shouldClose() const;
+	/** @brief Query whether a specific window requested shutdown.
+	 *
+	 * @param id Registered window identity.
+	 * @retval true The window requested shutdown.
+	 * @retval false The window has not requested shutdown.
+	 */
 	[[nodiscard]] bool shouldClose(WindowId id) const;
 
 	/** @brief Set whether the window backend should request shutdown.
 	 *
-	 * Use this function to set or clear the window close flag.
-	 *
-	 * @param value Value passed to the GLFW built-in window backend. A value of 0 clears
-	 * the GLFW window close flag; a non-zero value sets the GLFW window close flag.
+	 * The `value` argument is passed to the GLFW built-in window backend. Zero
+	 * clears the window close flag; a non-zero value sets it.
 	 * 
 	 * Example:
 	 * @code{.cpp}
@@ -251,30 +295,48 @@ public:
 	 * }
 	 */
 	void setShouldClose(int value);
+	/** @brief Set or clear a specific window's shutdown request.
+	 *
+	 * @param id Registered window identity.
+	 * @param value Zero clears the request; a non-zero value sets it.
+	 */
 	void setShouldClose(WindowId id, int value);
 
-	/** @brief Begin a frame and prepare input/UI state.
+	/** @brief Poll events and begin a frame for the semantic main window.
 	 *
-	 * Polls the window backend and prepares per-frame UI resources and state.
-	 * This function updates the frame input snapshot, refreshes frame-dependent
-	 * state, and initializes the UI system using the current window dimensions and
-	 * UI scale configuration.
+	 * This convenience overload first performs the same global event polling and
+	 * app-shared maintenance as pollEvents(), then begins the window returned by
+	 * mainWindowId(). It preserves the classic single-window frame loop without a
+	 * separate polling call.
 	 *
 	 * Example:
 	 * @code{.cpp}
-	 * application.beginFrame();
-	 * buildUi(application);
-	 * application.endFrame();
+	 * while (!application.shouldClose()) {
+	 * 	application.beginFrame();
+	 * 	buildUi(application.ui());
+	 * 	application.endFrame();
+	 * 	application.drawFrame();
+	 * }
 	 * @endcode
 	 *
 	 * @pre The FlowUi::App instance is initialized and its window/UI systems are valid.
 	 * @post The current frame is active and input/UI state is ready for frame logic/building.
-	 * @note This function should be called exactly once per frame.
+	 * @note Do not also call pollEvents() in the same loop iteration unless a
+	 * second global event-pump pass is intentional.
 	 * @see @ref md_docs_2concepts_2frame__lifecycle "Frame Lifecycle"
 	 * @see @ref md_docs_2tutorials_2quick__start "Quick Start"
 	 */
 	void beginFrame();
-	/** @brief Begin one window frame without polling global platform events. */
+	/** @brief Begin one explicit window frame without polling global events.
+	 *
+	 * Use this overload after one pollEvents() call when driving multiple windows;
+	 * `id` must identify a registered window.
+	 * A window's beginFrame(id), endFrame(id), and drawFrame(id) triplet must finish
+	 * before another window frame is begun.
+	 *
+	 * @pre pollEvents() was called at the cadence required by the application.
+	 * @post The selected window's UI manager is ready for frame construction.
+	 */
 	void beginFrame(WindowId id);
 	/** @brief End UI construction and produce render commands.
 	 *
@@ -293,6 +355,10 @@ public:
 	 * @note This function should be called exactly once per frame.
 	 */
 	void endFrame();
+	/** @brief End UI construction for a specific active window frame.
+	 *
+	 * @param id Window identity passed to the matching beginFrame(id).
+	 */
 	void endFrame(WindowId id);
 	/** @brief Submit the current frame for rendering and presentation.
 	 *
@@ -310,6 +376,11 @@ public:
 	 * @note This function should be called exactly once per frame.
 	 */
 	void drawFrame();
+	/** @brief Submit and present a specific prepared window frame.
+	 *
+	 * @param id Window identity passed to the matching beginFrame(id) and
+	 * endFrame(id).
+	 */
 	void drawFrame(WindowId id);
 
 	/** @brief Access the font manager.
@@ -405,6 +476,11 @@ public:
 	 * @see @ref flowui_viewport_manager "ViewPort Manager"
 	 */
 	ViewPortManager& viewPorts();
+	/** @brief Access the viewport manager owned by a specific window.
+	 *
+	 * @param id Registered window identity.
+	 * @return Mutable viewport manager for that window.
+	 */
 	ViewPortManager& viewPorts(WindowId id);
 	/** @brief Access the viewport manager.
 	 *
@@ -420,6 +496,11 @@ public:
 	 * @see @ref flowui_viewport_manager "ViewPort Manager"
 	 */
 	const ViewPortManager& viewPorts() const;
+	/** @brief Access the immutable viewport manager owned by a specific window.
+	 *
+	 * @param id Registered window identity.
+	 * @return Immutable viewport manager for that window.
+	 */
 	const ViewPortManager& viewPorts(WindowId id) const;
 #endif
 
@@ -435,6 +516,11 @@ public:
 	 * @see @ref flowui_ui_manager "UI Manager"
 	 */
 	UiManager& ui();
+	/** @brief Access the UI manager owned by a specific window.
+	 *
+	 * @param id Registered window identity.
+	 * @return Mutable UI manager for that window.
+	 */
 	UiManager& ui(WindowId id);
 	/** @brief Access the UI manager.
 	 *
@@ -448,6 +534,11 @@ public:
 	 * @see @ref flowui_ui_manager "UI Manager"
 	 */
 	const UiManager& ui() const;
+	/** @brief Access the immutable UI manager owned by a specific window.
+	 *
+	 * @param id Registered window identity.
+	 * @return Immutable UI manager for that window.
+	 */
 	const UiManager& ui(WindowId id) const;
 
 	/** @brief Set the native window title.
@@ -460,18 +551,33 @@ public:
 	 * @see @ref flowui_config "Config Structs"
 	 */
 	void setWindowTitle(std::string_view title);
+	/** @brief Set the native title of a specific window.
+	 *
+	 * @param id Registered window identity.
+	 * @param title New native-window title.
+	 */
 	void setWindowTitle(WindowId id, std::string_view title);
 	/** @brief Return the window size in screen coordinates.
 	 *
 	 * @return std::pair<int, int> in the form (width, height).
 	 */
 	std::pair<int,int> windowSize() const;
+	/** @brief Return a specific window's size in screen coordinates.
+	 *
+	 * @param id Registered window identity.
+	 * @return Pair in the form (width, height).
+	 */
 	[[nodiscard]] std::pair<int,int> windowSize(WindowId id) const;
 	/** @brief Return the framebuffer size in pixels.
 	 *
 	 * @return std::pair<int, int> in the form (width, height).
 	 */
 	std::pair<int,int> framebufferSize() const;
+	/** @brief Return a specific window's framebuffer size in pixels.
+	 *
+	 * @param id Registered window identity.
+	 * @return Pair in the form (width, height).
+	 */
 	[[nodiscard]] std::pair<int,int> framebufferSize(WindowId id) const;
 	/** @brief Apply window input configuration.
 	 *
@@ -484,6 +590,11 @@ public:
 	 * @see @ref flowui_config "Config Structs"
 	 */
 	void setWindowInputConfig(const WindowInputConfig& config);
+	/** @brief Apply input configuration to a specific window.
+	 *
+	 * @param id Registered window identity.
+	 * @param config Input configuration to apply.
+	 */
 	void setWindowInputConfig(WindowId id, const WindowInputConfig& config);
 	/** @brief Return the current window input configuration.
 	 *
@@ -493,6 +604,11 @@ public:
 	 * @see @ref flowui_config "Config Structs"
 	 */
 	WindowInputConfig windowInputConfig() const;
+	/** @brief Return a specific window's current input configuration.
+	 *
+	 * @param id Registered window identity.
+	 * @return Active input configuration for that window.
+	 */
 	[[nodiscard]] WindowInputConfig windowInputConfig(WindowId id) const;
 	/** @brief Return the backend native window handle.
 	 *
@@ -501,6 +617,11 @@ public:
 	 * @note The concrete handle type depends on the active window backend.
 	 */
 	void* nativeWindowHandle() const;
+	/** @brief Return a specific window's backend-native handle.
+	 *
+	 * @param id Registered window identity.
+	 * @return Backend-native handle, or nullptr if unavailable.
+	 */
 	[[nodiscard]] void* nativeWindowHandle(WindowId id) const;
 	/** @brief Return whether the window backend supports raw mouse motion.
 	 *
@@ -508,6 +629,10 @@ public:
 	 * @retval true The window handle supports raw mouse motion.
 	 */
 	bool supportsRawMouseMotion() const;
+	/** @brief Return whether a specific window supports raw mouse motion.
+	 *
+	 * @param id Registered window identity.
+	 */
 	[[nodiscard]] bool supportsRawMouseMotion(WindowId id) const;
 	/** @brief Set clipboard text through the window backend.
 	 *
@@ -515,12 +640,22 @@ public:
 	 *
 	 */
 	void setClipboardText(std::string_view text);
+	/** @brief Set clipboard text through a specific window backend.
+	 *
+	 * @param id Registered window identity.
+	 * @param text Text to place in the system clipboard.
+	 */
 	void setClipboardText(WindowId id, std::string_view text);
 	/** @brief Read clipboard text through the window backend.
 	 *
 	 * @return std::string containing the current clipboard text.
 	 */
 	std::string clipboardText() const;
+	/** @brief Read clipboard text through a specific window backend.
+	 *
+	 * @param id Registered window identity.
+	 * @return Current clipboard text.
+	 */
 	[[nodiscard]] std::string clipboardText(WindowId id) const;
 
 private:

@@ -41,7 +41,6 @@ void testLifecycleAndIdleRegressions() {
 	const std::string swapchain = readSource(FLOWUI_SWAPCHAIN_SOURCE);
 	const std::string renderer = readSource(FLOWUI_UI_RENDERER_SOURCE);
 
-	FLOWUI_CHECK(app.find("Phase 5 replaces this app-thread frame gate") != std::string::npos);
 	FLOWUI_CHECK(app.find("createElementWindow") == std::string::npos);
 	FLOWUI_CHECK(app.find("frameSecondaryWindows") == std::string::npos);
 	FLOWUI_CHECK(app.find("oldSwapchain") == std::string::npos); // old handle is encapsulated by Swapchain

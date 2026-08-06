@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Added explicit multi-window creation, destruction, lookup, frame lifecycle,
+  UI/viewport access, close-state, size, input, clipboard, and native-handle APIs
+  based on stable `WindowId` values.
+- Added `App::pollEvents()` for one app-global event and maintenance pass in
+  explicit multi-window loops.
+- Added centralized storage ownership for CPU/GPU resources, generational
+  handles, frame-scoped arenas, descriptor binding revisions, and deferred
+  destruction after submission completion.
+
+### Changed
+
+- Defined the no-argument `App::beginFrame()` as the convenience path that polls
+  global events and app-shared maintenance before beginning the semantic main
+  window. The `beginFrame(WindowId)` overload begins only the selected window and
+  does not poll.
+- Multi-window rendering now uses one complete
+  `beginFrame(id)` → `endFrame(id)` → `drawFrame(id)` triplet at a time after a
+  shared `pollEvents()` call.
+- Compatible windows share renderer layouts, pipelines, uploaded textures, and
+  immutable renderer resources while retaining independent swapchain,
+  frame-slot, descriptor, and UI state.
+- UI instance buffers, descriptor sets, and transient frame memory are reused
+  across frames and grow only when their retained capacity is insufficient.
+- Updated public API documentation to define main-window convenience behavior
+  and explicit multi-window polling/lifecycle requirements.
+
+### Known Limitations
+
+- `beginFrame(WindowId)` currently waits for the selected window's next frame
+  slot; there is no non-blocking `tryBeginFrame` scheduler yet.
+- Only one window frame triplet may be active at a time.
+- Upload flushing remains synchronous, and renderer/backend performance tuning
+  is deferred until reporting and representative application diagnostics improve.
+
 ## [0.9.0] - 2026-05-21
 
 This is the first public pre-release of FlowUi. It establishes the initial

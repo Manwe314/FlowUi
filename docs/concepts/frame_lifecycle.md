@@ -11,9 +11,9 @@ App::shouldClose()
     asks the window backend if the app should stop
 
 App::beginFrame()
+    polls global platform events and app-shared maintenance
     selects the active frame slot
     reclaims frame-safe resources
-    polls native window/input events
     drains input into FrameInput
     scales input into layout space
     starts UiManager and Clay layout
@@ -78,13 +78,48 @@ while (!app.shouldClose()) {
 }
 ```
 
+This no-argument loop is the primary convenience path for a single-window app
+or an app organized around the semantic main window. `beginFrame()` performs one
+global event poll before beginning the main-window frame, so no separate
+`pollEvents()` call is required.
+
+A multi-window loop uses the explicit overloads instead:
+
+```cpp
+while (running) {
+    app.pollEvents();
+
+    for (FlowUi::WindowId window : windowsToDraw) {
+        app.beginFrame(window);
+        buildUi(app.ui(window));
+        app.endFrame(window);
+        app.drawFrame(window);
+    }
+}
+```
+
+`pollEvents()` is app-global and should normally run once per outer loop.
+`beginFrame(WindowId)` deliberately does not poll, which prevents a multi-window
+app from pumping the same global event queue once per rendered window. Only one
+window frame triplet may be active at a time, so finish or cancel one window's
+`beginFrame(id)` → `endFrame(id)` → `drawFrame(id)` sequence before beginning
+another.
+
 `App::shouldClose()` forwards into the internal window backend. If the app is not initialized, or the backend is gone, it returns `true`. In a normal running app, the backend answers from native window state: close button, OS window events, or whatever the backend considers a close request.
 
-The window backend also participates later in the frame. During `beginFrame()` it is polled for events. Its input queue receives mouse, keyboard, scroll, text input, window size, framebuffer size, cursor, and clipboard-related events. The close check is therefore the simplest public view of a larger responsibility: FlowUi keeps platform-specific window behavior behind `App`, but uses that backend every frame to feed input and presentation state into the rest of the runtime.
+The no-argument `beginFrame()` polls the global backend before starting the main
+window. Explicit multi-window loops perform that work through `pollEvents()`.
+Window input queues receive mouse, keyboard, scroll, text input, window size,
+framebuffer size, cursor, and clipboard-related events, then the selected window
+drains its queued input when its frame begins.
 
 ## Begin Frame
 
-`beginFrame()` starts by measuring delta time from the previous `beginFrame()` call. This value becomes `FrameInput::dt`, which is used by systems such as input field caret blinking, key repeat, scroll updates, and any custom element code that reads current frame input.
+After its optional convenience polling, `beginFrame()` starts the main window in
+the same way as `beginFrame(mainWindowId())`. The explicit overload starts only
+the selected window. Each window measures delta time from its own previous begin
+call; this becomes `FrameInput::dt` for systems such as input field caret
+blinking, key repeat, scroll updates, and custom element code.
 
 Next, the runtime resolves the current frame slot:
 
@@ -94,7 +129,10 @@ frameSlot = frames.currentFrame % frames.frames.size()
 
 That slot is passed to frame-aware managers. The texture registry reclaims descriptor slots that were retired in the same bucket during an earlier frame. The image manager starts its frame and can retire image resources safely. The viewport manager starts its frame and resets or advances per-frame viewport tracking.
 
-After frame-slot maintenance, FlowUi polls native events through the window backend and drains the input queue into `frameInputForCurrentFrame`. This is still window/input-space data. FlowUi then computes layout-space values using `AppConfig::ui.uiScale`, the current logical window extent, and the current framebuffer extent.
+FlowUi drains the selected window's queued input into its current frame snapshot.
+This is still window/input-space data. FlowUi then computes layout-space values
+using `AppConfig::ui.uiScale`, the current logical window extent, and the current
+framebuffer extent.
 
 This produces two important scale relationships:
 
@@ -214,6 +252,10 @@ buildUi(app);
 app.endFrame();
 app.drawFrame();
 ```
+
+That no-argument sequence polls automatically and targets the main window. For
+explicit windows, call `pollEvents()` once and pass the same `WindowId` to the
+three lifecycle methods for each complete triplet.
 
 Build UI only between `beginFrame()` and `endFrame()`. That is when Clay layout is open and frame-local string/texture arena storage is valid.
 

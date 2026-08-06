@@ -7,10 +7,10 @@
 7. dev updater tool ordering incorectly
 8. Optimise GPU side
 9. gradient support at Clay or Flow level
-10. upgrade texture ref management with automatic frame persistence saving?
-11. multi window management 
-12. Update FlowUi Arena naming and handling
-13. Revisit how TextureRef's get stored for frames. 
+10.
+11.
+12.
+13. add tryBeginFrame for cases where users have multiple windows and one is considerably larger
 14. come back to enforcing PIMPL
 15. updater tool bug with not detecting mergeParameters
 16. add config for Drag scrolling
@@ -56,6 +56,28 @@ things to remember to do after Ui Renderer integration:
 	- FlowStorageSystem.cpp (line 2974) allocates and clears a marker array proportional to the entire logical texture table during binding preparation. With thousands of registered textures but only a few used by a window, that is avoidable work.
 	- Complete Review Of the Library Once more
 	- update the API documentation and CHANGELOG
+
+
+Upgrades to 1.0
+	- upgrade element system and UiManager (themes, named slots and more)
+	- upgrade multi window API (conviniance functions, better function shapes)
+	- upgrade dev Tools (beter telematry, better visuals, useful tools for edits and much more)
+	- upgrade to configurable multithreading and optimize
+	- complete many tasks noted above
+
+steps: 
+	- Perform one final public-header consistency sweep.
+	  In particular, decide the fate of deprecated storeTexture(),
+	  reserved msaa, autoSave, and per-reference sampling fields; normalize [[nodiscard]],
+	  naming, const overloads, and exception behavior.
+	- Design Ui Themes and Named Slots for recursive construction
+	- adding windows from UI  building code and API for creating windows with just a single flow element.
+	- move some configuration struct of Storage system into PublicHeaders
+
+
+
+
+
 
 ~~~~ Legacy ~~~~
 
