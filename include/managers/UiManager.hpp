@@ -114,8 +114,6 @@ public:
 	 */
 	TextureRef* imageData(TextureRef textureRef);
 
-	//Transitional: raw Clay payload compatibility; use imageData(). A later
-	// by-value FlowUi image element removes this pointer-shaped bridge.
 	[[deprecated("Use imageData(TextureRef); this copies Clay payload bytes, not texture ownership.")]]
 	TextureRef* storeTexture(const TextureRef& textureRef);
 

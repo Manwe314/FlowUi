@@ -543,8 +543,6 @@ static void EmitTexturedImage(
 	const float radiusScale = UniformScale(uiToFramebufferScaleX, uiToFramebufferScaleY);
 	const FlowUi::TextureRef& textureRef = ResolveTextureRef(command);
 	const TexturedImagePlacement placement = ResolveTexturedImagePlacement(bounds, textureRef);
-	//Transitional: a later sampler policy maps TextureSamplingMode to logical
-	// sampler variants or separate sampler indexing.
 	(void)textureRef.samplingMode;
 	if (placement.drawBounds.w <= 0.0f || placement.drawBounds.h <= 0.0f) {
 		return;

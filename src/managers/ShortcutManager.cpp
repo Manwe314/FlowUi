@@ -126,8 +126,6 @@ ShortcutId ShortcutManager::registerShortcut(
 	auto& current = state();
 	if (current.nextShortcutId == 0 || current.nextShortcutId > std::numeric_limits<ShortcutId>::max()) return 0u;
 
-	// Registration is a cold mutation. Build a complete candidate root so an
-	// allocation failure cannot partially publish indices or consume an id.
 	manager_storage::ShortcutManagerState candidate = current;
 	const ShortcutId id = static_cast<ShortcutId>(candidate.nextShortcutId);
 	const uint32_t packed = packChord(chord.key, modsMaskFromChord(chord), chord.trigger);
@@ -159,7 +157,7 @@ bool ShortcutManager::unregisterShortcut(ShortcutId id) {
 	const auto registrationIt = current.registrationsById.find(id);
 	if (registrationIt == current.registrationsById.end()) return false;
 	const auto registration = registrationIt->second;
-	registration->tombstoned = true; // visible immediately to an active dispatch snapshot
+	registration->tombstoned = true;
 	const uint32_t packed = registration->packedChord;
 	const int key = unpackKey(packed);
 	current.registrationsById.erase(registrationIt);
@@ -184,8 +182,6 @@ void ShortcutManager::clear() {
 	current.chordBuckets.clear();
 	current.registrationsById.clear();
 	current.registeredKeyRefCount.clear();
-	// IDs and registration order are intentionally monotonic for the complete
-	// window lifetime; clear must not create ABA aliases with an old snapshot.
 	current.focusedElementId = {};
 	storage_->noteManagerMutation(window_);
 }

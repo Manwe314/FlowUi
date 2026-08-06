@@ -627,7 +627,7 @@ struct App::Impl {
 		}
 		if (activeWindowFrame != InvalidWindowId) {
 			throw std::logic_error(
-				"FlowUi Phase 4 permits only one begun window frame triplet at a time.");
+				"FlowUi permits only one active window frame triplet at a time.");
 		}
 		if (!window.backend || window.frames.frames.empty()) {
 			throw std::runtime_error("FlowUi window is not ready to begin a frame.");
@@ -671,8 +671,6 @@ struct App::Impl {
 		});
 		window.fontFrameView = fonts.frameView(window.storageFrame);
 		window.frameNumber = nextFrameNumber;
-		//Transitional: Phase 5 replaces this app-thread frame gate with one
-		// ownership epoch/job per AppWindow and a shared-mutation publish barrier.
 		activeWindowFrame = window.id;
 		window.phase = AppWindow::Phase::Building;
 
@@ -1083,7 +1081,7 @@ struct App::Impl {
 		AppWindow& window = requireWindow(id);
 		if (activeWindowFrame != InvalidWindowId && activeWindowFrame != id) {
 			throw std::logic_error(
-				"Cannot destroy a window while another window owns the Phase 4 frame gate.");
+				"Cannot destroy a window while another window frame triplet is active.");
 		}
 		if (activeWindowFrame == id) cancelStorageFrame(window);
 		window.phase = AppWindow::Phase::Closing;
@@ -1215,7 +1213,6 @@ void App::setShouldClose(WindowId id, int value) {
 
 void App::beginFrame() {
 	if (impl_) {
-		// Transitional: only the legacy no-argument wrapper polls implicitly.
 		impl_->pollEventsAndAdvanceSharedManagers();
 		impl_->beginFrame(impl_->mainWindowId);
 	}
