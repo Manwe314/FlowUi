@@ -3975,6 +3975,7 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 	case ResourceKind::Viewport:
 	case ResourceKind::ViewportTarget:
 	case ResourceKind::ManagerRoot:
+	case ResourceKind::UiTheme:
 		result.slots = static_cast<uint32_t>(impl_->managerRecords.size() - 1u);
 		for (size_t i = 1; i < impl_->managerRecords.size(); ++i) {
 			const Impl::ManagerRecord& record = impl_->managerRecords[i];
@@ -4016,6 +4017,7 @@ bool FlowStorageSystem::validateHandle(ResourceKind kind, uint32_t index, uint32
 	case ResourceKind::Viewport:
 	case ResourceKind::ViewportTarget:
 	case ResourceKind::ManagerRoot:
+	case ResourceKind::UiTheme:
 		return impl_->usableManagerRecord({index, generation}, kind);
 	default: return false;
 	}

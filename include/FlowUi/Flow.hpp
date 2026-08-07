@@ -4,6 +4,7 @@
 #include "FlowUi/ResourceKey.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
+#include "managers/ThemeManager.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"

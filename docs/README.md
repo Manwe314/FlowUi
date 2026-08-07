@@ -177,6 +177,7 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - [Configuration API](api/config.md)
 - [Element API](api/elements.md)
 - [UI Manager API](api/ui_manager.md)
+- [Theme Manager API](api/theme_manager.md)
 - [Font Manager API](api/font_manager.md)
 - [Image Manager API](api/image_manager.md)
 - [Icon Manager API](api/icon_manager.md)
@@ -190,6 +191,7 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - @ref flowui_config "Configuration structs and public value types"
 - @ref flowui_element_system "Typed element system"
 - @ref flowui_ui_manager "UI manager"
+- @ref flowui_theme_manager "Theme manager"
 - @ref flowui_font_manager "Font manager"
 - @ref flowui_image_manager "Image manager"
 - @ref flowui_icon_manager "Icon manager"

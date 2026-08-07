@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ui_20manager_0',['UI Manager',['../group__flowui__ui__manager.html',1,'']]]
+  ['theme_20manager_0',['Theme Manager',['../group__flowui__theme__manager.html',1,'']]]
 ];

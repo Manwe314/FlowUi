@@ -10,5 +10,6 @@ var topics =
     [ "Shortcut Manager", "group__flowui__shortcut__manager.html", "group__flowui__shortcut__manager" ],
     [ "UI Manager", "group__flowui__ui__manager.html", "group__flowui__ui__manager" ],
     [ "ViewPort Manager", "group__flowui__viewport__manager.html", "group__flowui__viewport__manager" ],
+    [ "Theme Manager", "group__flowui__theme__manager.html", "group__flowui__theme__manager" ],
     [ "Flowui_font_resources", "group__flowui__font__resources.html", "group__flowui__font__resources" ]
 ];

@@ -215,6 +215,8 @@ target_sources(flowui
         src/managers/ImageManager.cpp
         src/managers/InputFieldManager.cpp
         src/managers/ShortcutManager.cpp
+        src/managers/ThemeManager.cpp
+        src/managers/ThemeStorageController.cpp
         src/managers/ViewPortManager.cpp
         src/managers/FlowUiElementSystem.cpp
         src/managers/UiManager.cpp

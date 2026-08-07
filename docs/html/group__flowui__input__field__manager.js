@@ -6,6 +6,7 @@ var group__flowui__input__field__manager =
       [ "hasPrimaryFieldFocus", "classFlowUi_1_1InputFieldManager.html#a4f494c501874c594a05a8e28f8e9954f", null ],
       [ "insertTextAtPrimaryCaret", "classFlowUi_1_1InputFieldManager.html#a109309cb439eaa40a24f8ada6409da8e", null ],
       [ "removeField", "classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a", null ],
+      [ "replaceText", "classFlowUi_1_1InputFieldManager.html#a1d9b2fccea5c0aea69284666c5c985a6", null ],
       [ "requestCaret", "classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446", null ],
       [ "requestField", "classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787", null ]
     ] ],

@@ -54,8 +54,9 @@ things to remember to do after Ui Renderer integration:
 	- add a createWindow overloads with automatic config creation based on Appconfig And a version that can take a subset config set with tweaks.
 	- FlowUi.cpp (line 823)gathers unique image textures with a nested linear search. Its worst case is approximately commands × unique textures.
 	- FlowStorageSystem.cpp (line 2974) allocates and clears a marker array proportional to the entire logical texture table during binding preparation. With thousands of registered textures but only a few used by a window, that is avoidable work.
-	- Complete Review Of the Library Once more
-	- update the API documentation and CHANGELOG
+	- BeginBufferWrite does triple nested loop of overlapping buffer writes. keeping a running range could turn this to O(1)
+	- Full Handle Table Iteration on Image State Refresh causes a big itteration over textureHot record.
+
 
 
 Upgrades to 1.0
@@ -66,16 +67,12 @@ Upgrades to 1.0
 	- complete many tasks noted above
 
 steps: 
-	- Perform one final public-header consistency sweep.
-	  In particular, decide the fate of deprecated storeTexture(),
+	- decide the fate of deprecated storeTexture(),
 	  reserved msaa, autoSave, and per-reference sampling fields; normalize [[nodiscard]],
 	  naming, const overloads, and exception behavior.
 	- Design Ui Themes and Named Slots for recursive construction
 	- adding windows from UI  building code and API for creating windows with just a single flow element.
 	- move some configuration struct of Storage system into PublicHeaders
-
-
-
 
 
 

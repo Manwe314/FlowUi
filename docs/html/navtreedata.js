@@ -46,8 +46,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "classFlowUi_1_1App.html",
-"md_docs_2tutorials_2images__icons__textures.html",
-"structFlowUi_1_1VulkanConfig.html#adaae2433c5725ae3d81b120326eb42a6"
+"group__flowui__shortcut__manager.html",
+"structFlowUi_1_1IconManagerConfig.html#ae9d3fd532b06411bae834887b29d7608"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

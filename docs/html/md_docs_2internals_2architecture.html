@@ -106,7 +106,49 @@ $(function() {
   <div class="headertitle"><div class="title">Architecture </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Currently under construction. Coming in future versions. </p>
+<div class="textblock"><p>FlowUi 0.10.0 is organized into distinct layer boundaries:</p>
+<div class="fragment"><div class="line">+-------------------------------------------------------------------+</div>
+<div class="line">|                        Application Layer                          |</div>
+<div class="line">|                   FlowUi::App / Window Loops                      |</div>
+<div class="line">+-------------------------------------------------------------------+</div>
+<div class="line">|                         Manager Layer                             |</div>
+<div class="line">|  ThemeManager | UiManager | FontManager | ImageManager | Icons    |</div>
+<div class="line">+-------------------------------------------------------------------+</div>
+<div class="line">|                      Clay Layout Engine                           |</div>
+<div class="line">|         Immediate-Mode Element System &amp; Command Generation        |</div>
+<div class="line">+-------------------------------------------------------------------+</div>
+<div class="line">|                   Storage System (FlowStorageSystem)              |</div>
+<div class="line">| Generational Handles | Manager Records | Multi-Window Arenas      |</div>
+<div class="line">+-------------------------------------------------------------------+</div>
+<div class="line">|                     Vulkan Render Backend                         |</div>
+<div class="line">|   Vk_Context | Vk_Frames | Vk_Swapchain | Vk_UiRenderer           |</div>
+<div class="line">+-------------------------------------------------------------------+</div>
+</div><!-- fragment --><h1>Subsystems</h1>
+<ol type="1">
+<li><b>Application Lifecycle &amp; Window Backend</b><ul>
+<li>Managed by <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a></span> and GLFW native window wrapper <span class="tt">AppWindow</span>.</li>
+<li>Supports multi-window creation (<span class="tt">createWindow</span>), frame iteration (<span class="tt">beginFrame</span>, <span class="tt">endFrame</span>, <span class="tt">drawFrame</span>), and global event polling (<span class="tt">pollEvents()</span>).</li>
+</ul>
+</li>
+<li><b>Storage System (<span class="tt">IStorageSystem</span> / <span class="tt">FlowStorageSystem</span>)</b><ul>
+<li>Centralized memory subsystem managing persistent CPU/GPU memory pools, frame-scoped transient arenas, generational handles (<span class="tt">TextureHandle</span>, <span class="tt">BufferHandle</span>, <span class="tt">BlobHandle</span>), descriptor set revisions, and manager record storage (<span class="tt">ResourceKind::UiTheme</span>, <span class="tt">ResourceKind::UiFont</span>, <span class="tt">ResourceKind::UiImage</span>, <span class="tt">ResourceKind::UiIcon</span>).</li>
+<li>Supports deferred retirement linked to GPU submission serials (<span class="tt">SubmissionSerial</span>).</li>
+</ul>
+</li>
+<li><b>Manager Layer</b><ul>
+<li><b><span class="tt">ThemeManager</span></b>: Manages registrable C++ theme structs, multi-variant mappings, active variant dispatch, and atomic frame-boundary staged mutations.</li>
+<li><b><span class="tt">UiManager</span></b>: Frame authoring surface owning Clay context, string/texture arenas, interaction/input snapshots, font resolution, caret management, and element builders.</li>
+<li><b><span class="tt">FontManager</span></b>: Manages font families, MSDF font atlas baking, and <span class="tt">FontId</span> resolution.</li>
+<li><b><span class="tt">ImageManager</span> / <span class="tt">IconManager</span></b>: Asset texture loading, SVG rasterization, and <span class="tt">TextureRef</span> lookup.</li>
+<li><b><span class="tt">ShortcutManager</span> / <span class="tt">InputFieldManager</span></b>: Input chord matching and text field state tracking.</li>
+<li><b><span class="tt">ViewPortManager</span></b>: Offscreen render target management and custom Vulkan rendering callbacks.</li>
+</ul>
+</li>
+<li><b>Vulkan Renderer (<span class="tt">Vk_UiRenderer</span>)</b><ul>
+<li>Multi-window batching engine converting Clay output commands into Vulkan draw calls using pipeline variants for solid, textured, and MSDF font elements. </li>
+</ul>
+</li>
+</ol>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

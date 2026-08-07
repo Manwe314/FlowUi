@@ -15,7 +15,7 @@ var searchData=
   ['enabled_12',['enabled',['../structFlowUi_1_1DevToolsConfig.html#a1f8cc8ccd021852cf71ab170e65dbbe6',1,'FlowUi::DevToolsConfig']]],
   ['enabledebugutils_13',['enableDebugUtils',['../structFlowUi_1_1VulkanConfig.html#a2113a59485755cf238d536f5eedb4c76',1,'FlowUi::VulkanConfig']]],
   ['enablevalidation_14',['enableValidation',['../structFlowUi_1_1VulkanConfig.html#af08c2cb657d48a6d7c3aae1e01fcc3df',1,'FlowUi::VulkanConfig']]],
-  ['endframe_15',['endFrame',['../classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a',1,'FlowUi::App']]],
+  ['endframe_15',['endFrame',['../classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a',1,'FlowUi::App::endFrame()'],['../classFlowUi_1_1App.html#a6148d4d5efc9c365b58720ea00482ed6',1,'FlowUi::App::endFrame(WindowId id)']]],
   ['engine_16',['Text Layout Engine',['../md_docs_2internals_2text__layout__engine.html',1,'flowui_internal_details']]],
   ['erasestate_17',['eraseState',['../structFlowUi_1_1ElementDefinition.html#a86a3273921a616d575a46a3538b88382',1,'FlowUi::ElementDefinition']]],
   ['excludeinternaldevelementsfromcapture_18',['excludeInternalDevElementsFromCapture',['../structFlowUi_1_1DevToolsConfig.html#abf5116e3fd086822934666c430a56274',1,'FlowUi::DevToolsConfig']]],

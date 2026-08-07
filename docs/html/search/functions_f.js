@@ -1,11 +1,16 @@
 var searchData=
 [
-  ['textureref_0',['textureRef',['../structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48',1,'FlowUi::IconManager::textureRef()'],['../classFlowUi_1_1ViewPort.html#a16a189477b7c50b6d0415441f3dd72f1',1,'FlowUi::ViewPort::textureRef()']]],
-  ['toclayeid_1',['toClayEID',['../classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0',1,'FlowUi::UiManager']]],
-  ['toclaysid_2',['toClaySID',['../classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29',1,'FlowUi::UiManager']]],
-  ['toclaystring_3',['toClayString',['../classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437',1,'FlowUi::UiManager']]],
-  ['toflowdefinitionid_4',['toFlowDefinitionId',['../group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9',1,'FlowUi::toFlowDefinitionId(std::string_view definitionName) noexcept'],['../group__flowui__app.html#gad4ef9ba85d5584740ebdaba96078d2a6',1,'FlowUi::toFlowDefinitionId(const char(&amp;definitionName)[N]) noexcept']]],
-  ['toflowid_5',['toFlowId',['../group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8',1,'FlowUi::toFlowId(std::string_view elementName) noexcept'],['../group__flowui__app.html#ga49ddb3f056407bc53580f77d61664c2a',1,'FlowUi::toFlowId(const char(&amp;elementName)[N]) noexcept']]],
-  ['trygetstate_6',['tryGetState',['../structFlowUi_1_1ElementDefinition.html#a8245c51a90d1d7e66df56670be390b05',1,'FlowUi::ElementDefinition']]],
-  ['trygetstateconst_7',['tryGetStateConst',['../structFlowUi_1_1ElementDefinition.html#a1d8bacf80f61458c0b24b2b49b7d897d',1,'FlowUi::ElementDefinition']]]
+  ['registerfromfile_0',['registerFromFile',['../structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb',1,'FlowUi::IconManager']]],
+  ['registerimage_1',['registerImage',['../classFlowUi_1_1ImageManager.html#ac28bde695aee3b52c21596ef5ee45ba6',1,'FlowUi::ImageManager']]],
+  ['registershortcut_2',['registerShortcut',['../classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f',1,'FlowUi::ShortcutManager']]],
+  ['registersvg_3',['registerSvg',['../structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c',1,'FlowUi::IconManager']]],
+  ['registertheme_4',['registerTheme',['../classFlowUi_1_1ThemeManager.html#aa3ed1de140d5ae8ecfcc37484177e245',1,'FlowUi::ThemeManager::registerTheme(std::string_view variantName, T themeData, bool makeActive=true)'],['../classFlowUi_1_1ThemeManager.html#a9006c386c7c6cf79e18f9936439629eb',1,'FlowUi::ThemeManager::registerTheme(T themeData, bool makeActive=true)']]],
+  ['remove_5',['remove',['../structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29',1,'FlowUi::IconManager::remove()'],['../classFlowUi_1_1ViewPortManager.html#a393b43dacaeb66f2ebd66be2d15329c0',1,'FlowUi::ViewPortManager::remove()']]],
+  ['removefield_6',['removeField',['../classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a',1,'FlowUi::InputFieldManager']]],
+  ['removeimage_7',['removeImage',['../classFlowUi_1_1ImageManager.html#a5ba0d445fd5bc2cb47aa59dbebb0f47a',1,'FlowUi::ImageManager']]],
+  ['replacetext_8',['replaceText',['../classFlowUi_1_1InputFieldManager.html#a1d9b2fccea5c0aea69284666c5c985a6',1,'FlowUi::InputFieldManager']]],
+  ['requestcaret_9',['requestCaret',['../classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446',1,'FlowUi::InputFieldManager']]],
+  ['requestcursor_10',['requestCursor',['../classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498',1,'FlowUi::UiManager']]],
+  ['requestfield_11',['requestField',['../classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787',1,'FlowUi::InputFieldManager']]],
+  ['resolvefont_12',['resolveFont',['../structFlowUi_1_1FontManager.html#a39c0eeaed6002691f954b1bcc6eadd83',1,'FlowUi::FontManager::resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const'],['../structFlowUi_1_1FontManager.html#a32e8291f5b08bc0d46d0884b8b4bad12',1,'FlowUi::FontManager::resolveFont(std::string_view familyName, uint32_t weight=400, FontStyle style=FontStyle::Normal) const'],['../classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d',1,'FlowUi::UiManager::resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const'],['../classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b',1,'FlowUi::UiManager::resolveFont(std::string_view familyName, uint32_t weight=400, FontStyle style=FontStyle::Normal) const']]]
 ];

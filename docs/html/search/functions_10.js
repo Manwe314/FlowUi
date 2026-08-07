@@ -1,5 +1,16 @@
 var searchData=
 [
-  ['ui_0',['ui',['../classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc',1,'FlowUi::App::ui()'],['../classFlowUi_1_1App.html#a4579cf4d39c726a5d2e625218bcfa059',1,'FlowUi::App::ui() const']]],
-  ['unregistershortcut_1',['unregisterShortcut',['../classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e',1,'FlowUi::ShortcutManager']]]
+  ['setactivevariant_0',['setActiveVariant',['../classFlowUi_1_1ThemeManager.html#a106ab2342573fe5b02811372060e2d93',1,'FlowUi::ThemeManager']]],
+  ['setclearcolor_1',['setClearColor',['../classFlowUi_1_1ViewPort.html#a5041209fac6a58554ebe927bc70d194d',1,'FlowUi::ViewPort']]],
+  ['setcleareveryframe_2',['setClearEveryFrame',['../classFlowUi_1_1ViewPort.html#a39b1ba8923020766f15ee701575aa0ca',1,'FlowUi::ViewPort']]],
+  ['setclipboardtext_3',['setClipboardText',['../classFlowUi_1_1App.html#adf83dcd17ca6a6f93c8059af540035d0',1,'FlowUi::App::setClipboardText(std::string_view text)'],['../classFlowUi_1_1App.html#af5194116c7d6cdd576e91f182dc1d060',1,'FlowUi::App::setClipboardText(WindowId id, std::string_view text)'],['../classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a',1,'FlowUi::UiManager::setClipboardText()']]],
+  ['setdevinternalcapture_4',['setDevInternalCapture',['../classFlowUi_1_1ElementBuilder.html#ab2a74747085369a4b157d804c85f9699',1,'FlowUi::ElementBuilder']]],
+  ['setfocusedelement_5',['setFocusedElement',['../classFlowUi_1_1ShortcutManager.html#a8a496694eeaf4fdf03166ecf9c273212',1,'FlowUi::ShortcutManager']]],
+  ['setparameters_6',['setParameters',['../classFlowUi_1_1ElementBuilder.html#a55159e63934e32a22bd30889b5639a99',1,'FlowUi::ElementBuilder::setParameters(const ParametersType &amp;parameters)'],['../classFlowUi_1_1ElementBuilder.html#a711158a45396b9b1a83522eaa051f26e',1,'FlowUi::ElementBuilder::setParameters(ParametersType &amp;&amp;parameters)']]],
+  ['setrendercallback_7',['setRenderCallback',['../classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f',1,'FlowUi::ViewPort::setRenderCallback(RenderCallback callback)'],['../classFlowUi_1_1ViewPort.html#a8ac28ba477958a85dff2a9af682d1431',1,'FlowUi::ViewPort::setRenderCallback(std::shared_ptr&lt; T &gt; userData, Fn &amp;&amp;callback)']]],
+  ['setwindowinputconfig_8',['setWindowInputConfig',['../classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098',1,'FlowUi::App::setWindowInputConfig(const WindowInputConfig &amp;config)'],['../classFlowUi_1_1App.html#ac9d5768822461d1a9f5fb83bb743fb80',1,'FlowUi::App::setWindowInputConfig(WindowId id, const WindowInputConfig &amp;config)']]],
+  ['setwindowtitle_9',['setWindowTitle',['../classFlowUi_1_1App.html#a02f684a2f6f2e3595ea0a674c95f4397',1,'FlowUi::App::setWindowTitle(std::string_view title)'],['../classFlowUi_1_1App.html#af906fee2625819e6d8867c8c28cfe81b',1,'FlowUi::App::setWindowTitle(WindowId id, std::string_view title)']]],
+  ['shortcuts_10',['shortcuts',['../classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f',1,'FlowUi::UiManager::shortcuts()'],['../classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc',1,'FlowUi::UiManager::shortcuts() const']]],
+  ['shouldclose_11',['shouldClose',['../classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913',1,'FlowUi::App::shouldClose() const'],['../classFlowUi_1_1App.html#a428faf1ab71c31b792fc69a0c28507bc',1,'FlowUi::App::shouldClose(WindowId id) const']]],
+  ['supportsrawmousemotion_12',['supportsRawMouseMotion',['../classFlowUi_1_1App.html#a2717e2f03db8d86a85cc4c420547899b',1,'FlowUi::App::supportsRawMouseMotion() const'],['../classFlowUi_1_1App.html#a3568c1a9473ef9e9f759d84b926ac473',1,'FlowUi::App::supportsRawMouseMotion(WindowId id) const']]]
 ];

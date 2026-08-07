@@ -1,9 +1,5 @@
 var searchData=
 [
-  ['viewport_0',['ViewPort',['../classFlowUi_1_1ViewPort.html',1,'FlowUi']]],
-  ['viewportcreateinfo_1',['ViewPortCreateInfo',['../structFlowUi_1_1ViewPortCreateInfo.html',1,'FlowUi']]],
-  ['viewportmanager_2',['ViewPortManager',['../classFlowUi_1_1ViewPortManager.html',1,'FlowUi']]],
-  ['viewportrendercontext_3',['ViewPortRenderContext',['../structFlowUi_1_1ViewPortRenderContext.html',1,'FlowUi']]],
-  ['viewportvulkaninterop_4',['ViewPortVulkanInterop',['../structFlowUi_1_1ViewPortVulkanInterop.html',1,'FlowUi']]],
-  ['vulkanconfig_5',['VulkanConfig',['../structFlowUi_1_1VulkanConfig.html',1,'FlowUi']]]
+  ['uiconfig_0',['UiConfig',['../structFlowUi_1_1UiConfig.html',1,'FlowUi']]],
+  ['uimanager_1',['UiManager',['../classFlowUi_1_1UiManager.html',1,'FlowUi']]]
 ];

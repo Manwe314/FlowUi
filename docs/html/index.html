@@ -118,78 +118,11 @@ $(function() {
 <p>FlowUi also offers more than that minimal layer. With multiple managers, a custom element system, and developer tooling built around those systems, FlowUi aims to make low-level desktop application development faster to start and easier to iterate on.</p>
 <h1>How to Start Using FlowUi</h1>
 <p>For a full guided setup, start with the <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start tutorial</a>. For a shorter bootstrap, the usual project shape is:</p>
-<div class="fragment"><div class="line">MyApp/</div>
-<div class="line">├── CMakeLists.txt</div>
-<div class="line">├── external/</div>
-<div class="line">│   └── FlowUi/</div>
-<div class="line">├── include/</div>
-<div class="line">└── src/</div>
-</div><!-- fragment --><p>Clone FlowUi into <span class="tt">external/FlowUi</span> with its submodules:</p>
-<div class="fragment"><div class="line">git clone --recursive &lt;flowui-repository-url&gt; external/FlowUi</div>
-</div><!-- fragment --><p>Add FlowUi to your root <span class="tt">CMakeLists.txt</span> and link the app target:</p>
-<div class="fragment"><div class="line">cmake_minimum_required(VERSION 3.20)</div>
-<div class="line"> </div>
-<div class="line">project(MyApp LANGUAGES CXX)</div>
-<div class="line"> </div>
-<div class="line">set(CMAKE_CXX_STANDARD 23)</div>
-<div class="line">set(CMAKE_CXX_STANDARD_REQUIRED ON)</div>
-<div class="line">set(CMAKE_CXX_EXTENSIONS OFF)</div>
-<div class="line"> </div>
-<div class="line"># Optional, but useful while building custom elements and UI.</div>
-<div class="line">set(FLOW_UI_DEV_MODE ON CACHE BOOL &quot;&quot; FORCE)</div>
-<div class="line"> </div>
-<div class="line">add_subdirectory(external/FlowUi)</div>
-<div class="line"> </div>
-<div class="line">add_executable(my_app</div>
-<div class="line">    src/main.cpp</div>
-<div class="line">)</div>
-<div class="line"> </div>
-<div class="line">target_include_directories(my_app</div>
-<div class="line">    PRIVATE</div>
-<div class="line">        ${CMAKE_CURRENT_SOURCE_DIR}/include</div>
-<div class="line">)</div>
-<div class="line"> </div>
-<div class="line">target_link_libraries(my_app</div>
-<div class="line">    PRIVATE</div>
-<div class="line">        FlowUi::FlowUi</div>
-<div class="line">)</div>
-</div><!-- fragment --><p>Then configure and build:</p>
-<div class="fragment"><div class="line">cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug</div>
-<div class="line">cmake --build build --parallel</div>
-</div><!-- fragment --><p>Your first source file can include the combined FlowUi header and create the application:</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;FlowUi/Flow.hpp&gt;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="keywordtype">int</span> main() {</div>
-<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
-<div class="line">    config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000">window</a>.<a class="code hl_variable" href="structFlowUi_1_1WindowConfig.html#a7b66165f48aee47c4680c11454196892">title</a> = <span class="stringliteral">&quot;My FlowUi App&quot;</span>;</div>
-<div class="line">    config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000">window</a>.<a class="code hl_variable" href="structFlowUi_1_1WindowConfig.html#ad67749033ec49f5d39776149fb4d37ee">width</a> = 1280;</div>
-<div class="line">    config.<a class="code hl_variable" href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000">window</a>.<a class="code hl_variable" href="structFlowUi_1_1WindowConfig.html#add143cbfcadd4db14d2d76ad409ea37d">height</a> = 720;</div>
-<div class="line"> </div>
-<div class="line">    <a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="line"> </div>
-<div class="line">    <span class="keywordflow">while</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">shouldClose</a>()) {</div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>();</div>
-<div class="line"> </div>
-<div class="line">        <span class="comment">// Build UI here.</span></div>
-<div class="line"> </div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">endFrame</a>();</div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">drawFrame</a>();</div>
-<div class="line">    }</div>
-<div class="line"> </div>
-<div class="line">    <span class="keywordflow">return</span> 0;</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a2a1be3d0f458e4fdd5392dcdfe4555f1"><div class="ttname"><a href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">FlowUi::App::beginFrame</a></div><div class="ttdeci">void beginFrame()</div><div class="ttdoc">Begin a frame and prepare input/UI state.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a5c6ee53de89f3dd55d43e4742905414a"><div class="ttname"><a href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">FlowUi::App::endFrame</a></div><div class="ttdeci">void endFrame()</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_ad256201c79c7e07675e12b5bd0d8c8aa"><div class="ttname"><a href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">FlowUi::App::drawFrame</a></div><div class="ttdeci">void drawFrame()</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
-<div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:401</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html_a172fe9b539d98ff43a4d23a0b737a000"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000">FlowUi::AppConfig::window</a></div><div class="ttdeci">WindowConfig window</div><div class="ttdoc">Native window creation and input defaults.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:407</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_a7b66165f48aee47c4680c11454196892"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#a7b66165f48aee47c4680c11454196892">FlowUi::WindowConfig::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Initial native window title.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:110</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_ad67749033ec49f5d39776149fb4d37ee"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#ad67749033ec49f5d39776149fb4d37ee">FlowUi::WindowConfig::width</a></div><div class="ttdeci">int width</div><div class="ttdoc">Initial window width in screen coordinates.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:101</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowConfig_html_add143cbfcadd4db14d2d76ad409ea37d"><div class="ttname"><a href="structFlowUi_1_1WindowConfig.html#add143cbfcadd4db14d2d76ad409ea37d">FlowUi::WindowConfig::height</a></div><div class="ttdeci">int height</div><div class="ttdoc">Initial window height in screen coordinates.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:107</div></div>
-</div><!-- fragment --><p>If this is your first FlowUi project, the <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start tutorial</a> continues from this loop into a custom element example.</p>
+<div class="fragment"></div><!-- fragment --><p>Clone FlowUi into <span class="tt">external/FlowUi</span> with its submodules:</p>
+<div class="fragment"></div><!-- fragment --><p>Add FlowUi to your root <span class="tt">CMakeLists.txt</span> and link the app target:</p>
+<div class="fragment"></div><!-- fragment --><p>Then configure and build:</p>
+<div class="fragment"></div><!-- fragment --><p>Your first source file can include the combined FlowUi header and create the application:</p>
+<div class="fragment"></div><!-- fragment --><p>If this is your first FlowUi project, the <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start tutorial</a> continues from this loop into a custom element example.</p>
 <h1>Build Options</h1>
 <p>These options are set before <span class="tt">add_subdirectory(external/FlowUi)</span>.</p>
 <table class="markdownTable">
@@ -213,28 +146,7 @@ $(function() {
 <p><span class="tt">FLOWUI_GLFW_PROVIDER=auto</span> uses the vendored GLFW submodule when it is present, otherwise it falls back to a system <span class="tt">glfw3</span> package.</p>
 <p>FlowUi requires Vulkan. During configuration it looks for <span class="tt">glslc</span> first and falls back to <span class="tt">glslangValidator</span> for shader compilation.</p>
 <h1>Minimal App Loop Example</h1>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;FlowUi/Flow.hpp&gt;</span></div>
-<div class="line"><span class="preprocessor">#include &quot;backgroundElement.hpp&quot;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="keywordtype">int</span> main() {</div>
-<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a> config{};</div>
-<div class="line">    <a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="line"> </div>
-<div class="line">    <span class="keywordflow">while</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">shouldClose</a>()) {</div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>();</div>
-<div class="line"> </div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kBackground, <span class="stringliteral">&quot;background&quot;</span>)</div>
-<div class="line">            .setParameters({.color = <a class="code hl_function" href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#09f1deff&quot;</span>)})</div>
-<div class="line">            .draw();</div>
-<div class="line"> </div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">endFrame</a>();</div>
-<div class="line">        app.<a class="code hl_function" href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">drawFrame</a>();</div>
-<div class="line">    }</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
-<div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
-</div><!-- fragment --><h1>Core FlowUi Concepts</h1>
+<div class="fragment"></div><!-- fragment --><h1>Core FlowUi Concepts</h1>
 <p>FlowUi is intended to keep the core application loop explicit while making UI code reusable and inspectable.</p>
 <ul>
 <li><b>Clay owns layout.</b> FlowUi builds on Clay's immediate-mode layout model and converts Clay output into Vulkan draw work.</li>
@@ -271,6 +183,7 @@ $(function() {
 <li><a class="el" href="md_docs_2api_2config.html" title="Configuration API">Configuration API</a></li>
 <li><a class="el" href="md_docs_2api_2elements.html" title="Element API">Element API</a></li>
 <li><a class="el" href="md_docs_2api_2ui__manager.html" title="UI Manager API">UI Manager API</a></li>
+<li><a class="el" href="md_docs_2api_2theme__manager.html" title="Theme Manager API">Theme Manager API</a></li>
 <li><a class="el" href="md_docs_2api_2font__manager.html" title="Font Manager API">Font Manager API</a></li>
 <li><a class="el" href="md_docs_2api_2image__manager.html" title="Image Manager API">Image Manager API</a></li>
 <li><a class="el" href="md_docs_2api_2icon__manager.html" title="Icon Manager API">Icon Manager API</a></li>
@@ -284,6 +197,7 @@ $(function() {
 <li><a class="el" href="group__flowui__config.html" title="Config Structs">Configuration structs and public value types</a></li>
 <li><a class="el" href="group__flowui__element__system.html" title="Element System">Typed element system</a></li>
 <li><a class="el" href="group__flowui__ui__manager.html" title="UI Manager">UI manager</a></li>
+<li><a class="el" href="group__flowui__theme__manager.html" title="Theme Manager">Theme manager</a></li>
 <li><a class="el" href="group__flowui__font__manager.html" title="Font Manager">Font manager</a></li>
 <li><a class="el" href="group__flowui__image__manager.html" title="Image Manager">Image manager</a></li>
 <li><a class="el" href="group__flowui__icon__manager.html" title="Icon Manager">Icon manager</a></li>

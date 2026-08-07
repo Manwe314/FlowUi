@@ -113,9 +113,9 @@ $(function() {
 <div class="line">    asks the window backend if the app should stop</div>
 <div class="line"> </div>
 <div class="line">App::beginFrame()</div>
+<div class="line">    polls global platform events and app-shared maintenance</div>
 <div class="line">    selects the active frame slot</div>
 <div class="line">    reclaims frame-safe resources</div>
-<div class="line">    polls native window/input events</div>
 <div class="line">    drains input into FrameInput</div>
 <div class="line">    scales input into layout space</div>
 <div class="line">    starts UiManager and Clay layout</div>
@@ -164,14 +164,27 @@ $(function() {
 <div class="line">    app.endFrame();</div>
 <div class="line">    app.drawFrame();</div>
 <div class="line">}</div>
-</div><!-- fragment --><p><span class="tt">App::shouldClose()</span> forwards into the internal window backend. If the app is not initialized, or the backend is gone, it returns <span class="tt">true</span>. In a normal running app, the backend answers from native window state: close button, OS window events, or whatever the backend considers a close request.</p>
-<p>The window backend also participates later in the frame. During <span class="tt">beginFrame()</span> it is polled for events. Its input queue receives mouse, keyboard, scroll, text input, window size, framebuffer size, cursor, and clipboard-related events. The close check is therefore the simplest public view of a larger responsibility: FlowUi keeps platform-specific window behavior behind <span class="tt">App</span>, but uses that backend every frame to feed input and presentation state into the rest of the runtime.</p>
+</div><!-- fragment --><p>This no-argument loop is the primary convenience path for a single-window app or an app organized around the semantic main window. <span class="tt">beginFrame()</span> performs one global event poll before beginning the main-window frame, so no separate <span class="tt">pollEvents()</span> call is required.</p>
+<p>A multi-window loop uses the explicit overloads instead:</p>
+<div class="fragment"><div class="line"><span class="keywordflow">while</span> (running) {</div>
+<div class="line">    app.pollEvents();</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordflow">for</span> (FlowUi::WindowId window : windowsToDraw) {</div>
+<div class="line">        app.beginFrame(window);</div>
+<div class="line">        buildUi(app.ui(window));</div>
+<div class="line">        app.endFrame(window);</div>
+<div class="line">        app.drawFrame(window);</div>
+<div class="line">    }</div>
+<div class="line">}</div>
+</div><!-- fragment --><p><span class="tt">pollEvents()</span> is app-global and should normally run once per outer loop. <span class="tt">beginFrame(WindowId)</span> deliberately does not poll, which prevents a multi-window app from pumping the same global event queue once per rendered window. Only one window frame triplet may be active at a time, so finish or cancel one window's <span class="tt">beginFrame(id)</span> → <span class="tt">endFrame(id)</span> → <span class="tt">drawFrame(id)</span> sequence before beginning another.</p>
+<p><span class="tt">App::shouldClose()</span> forwards into the internal window backend. If the app is not initialized, or the backend is gone, it returns <span class="tt">true</span>. In a normal running app, the backend answers from native window state: close button, OS window events, or whatever the backend considers a close request.</p>
+<p>The no-argument <span class="tt">beginFrame()</span> polls the global backend before starting the main window. Explicit multi-window loops perform that work through <span class="tt">pollEvents()</span>. Window input queues receive mouse, keyboard, scroll, text input, window size, framebuffer size, cursor, and clipboard-related events, then the selected window drains its queued input when its frame begins.</p>
 <h1>Begin Frame</h1>
-<p><span class="tt">beginFrame()</span> starts by measuring delta time from the previous <span class="tt">beginFrame()</span> call. This value becomes <span class="tt">FrameInput::dt</span>, which is used by systems such as input field caret blinking, key repeat, scroll updates, and any custom element code that reads current frame input.</p>
+<p>After its optional convenience polling, <span class="tt">beginFrame()</span> starts the main window in the same way as <span class="tt">beginFrame(mainWindowId())</span>. The explicit overload starts only the selected window. Each window measures delta time from its own previous begin call; this becomes <span class="tt">FrameInput::dt</span> for systems such as input field caret blinking, key repeat, scroll updates, and custom element code.</p>
 <p>Next, the runtime resolves the current frame slot:</p>
 <div class="fragment"><div class="line">frameSlot = frames.currentFrame % frames.frames.size()</div>
 </div><!-- fragment --><p>That slot is passed to frame-aware managers. The texture registry reclaims descriptor slots that were retired in the same bucket during an earlier frame. The image manager starts its frame and can retire image resources safely. The viewport manager starts its frame and resets or advances per-frame viewport tracking.</p>
-<p>After frame-slot maintenance, FlowUi polls native events through the window backend and drains the input queue into <span class="tt">frameInputForCurrentFrame</span>. This is still window/input-space data. FlowUi then computes layout-space values using <span class="tt">AppConfig::ui.uiScale</span>, the current logical window extent, and the current framebuffer extent.</p>
+<p>FlowUi drains the selected window's queued input into its current frame snapshot. This is still window/input-space data. FlowUi then computes layout-space values using <span class="tt">AppConfig::ui.uiScale</span>, the current logical window extent, and the current framebuffer extent.</p>
 <p>This produces two important scale relationships:</p>
 <ul>
 <li>Input is divided by <span class="tt">uiScale</span> before Clay sees it.</li>
@@ -198,11 +211,11 @@ $(function() {
 <div class="line">ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kToolbarButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
 <div class="line">    .setParameters(ToolbarButtonParams{.icon = icon, .label = <span class="stringliteral">&quot;Save&quot;</span>, .fontId = labelFont})</div>
 <div class="line">    .draw();</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:63</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:71</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:220</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_adbbbc7d049cee3b9e97242fc44585c2d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">FlowUi::UiManager::resolveFont</a></div><div class="ttdeci">FontId resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</div><div class="ttdoc">Resolve a concrete Clay font id for a family/style request.</div></div>
 <div class="ttc" id="agroup__flowui__font__manager_html_ga45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdoc">Stable concrete font id consumed by Clay text configuration.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:15</div></div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:473</div></div>
 </div><!-- fragment --><p>The element builder turns this into a structured callback sequence. It converts the element id string into a Flow id and Clay root id, checks previous-frame interaction for event callbacks, optionally runs logic, applies dev-mode parameter overrides when enabled, and then calls either <span class="tt">buildElement</span> or <span class="tt">constructElement</span>.</p>
 <p>Inside the element callback, user-authored code emits Clay nodes. The callback may also ask managers for subsystem state:</p>
 <ul>
@@ -256,7 +269,8 @@ $(function() {
 <div class="line">buildUi(app);</div>
 <div class="line">app.endFrame();</div>
 <div class="line">app.drawFrame();</div>
-</div><!-- fragment --><p>Build UI only between <span class="tt">beginFrame()</span> and <span class="tt">endFrame()</span>. That is when Clay layout is open and frame-local string/texture arena storage is valid.</p>
+</div><!-- fragment --><p>That no-argument sequence polls automatically and targets the main window. For explicit windows, call <span class="tt">pollEvents()</span> once and pass the same <span class="tt">WindowId</span> to the three lifecycle methods for each complete triplet.</p>
+<p>Build UI only between <span class="tt">beginFrame()</span> and <span class="tt">endFrame()</span>. That is when Clay layout is open and frame-local string/texture arena storage is valid.</p>
 <p>Treat <span class="tt">endFrame()</span> as the point where UI construction is done. After it returns, FlowUi has a render command array and managers have prepared frame-dependent command data.</p>
 <p>Treat <span class="tt">drawFrame()</span> as a consuming operation. It uses the render commands prepared by <span class="tt">endFrame()</span>, records Vulkan work, submits, presents, and advances the frame slot.</p>
 <p>Do not store pointers returned from <span class="tt">UiManager::toClayString()</span> or <span class="tt">UiManager::storeTexture()</span> beyond the frame. They are backed by frame-local arena storage.</p>
