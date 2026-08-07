@@ -134,16 +134,24 @@ using&#160;</td><td class="memItemRight"><b>FontFamilyCreateInfo</b> = <a class=
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2fd6b73942b1e8ffbccd4420de098b3f" id="r_a2fd6b73942b1e8ffbccd4420de098b3f"><td class="memItemLeft"><a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2fd6b73942b1e8ffbccd4420de098b3f">createFamily</a> (const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;createInfo)</td></tr>
 <tr class="memdesc:a2fd6b73942b1e8ffbccd4420de098b3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a logical font family and register its initial faces.  <br /></td></tr>
+<tr class="memitem:a7ddf610102e61dc47dc86a8df83b99e2" id="r_a7ddf610102e61dc47dc86a8df83b99e2"><td class="memItemLeft"><a id="a7ddf610102e61dc47dc86a8df83b99e2" name="a7ddf610102e61dc47dc86a8df83b99e2"></a>
+<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a>&#160;</td><td class="memItemRight"><b>createFamily</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="#a61a06f1d8f5d6804ad9226bbf71bc8e2">FontFamilyCreateInfo</a> &amp;createInfo)</td></tr>
 <tr class="memitem:a829f7e37438eef1eb8fa9981a8d511ec" id="r_a829f7e37438eef1eb8fa9981a8d511ec"><td class="memItemLeft"><a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a829f7e37438eef1eb8fa9981a8d511ec">getFamilyId</a> (std::string_view familyName) const</td></tr>
 <tr class="memdesc:a829f7e37438eef1eb8fa9981a8d511ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a family id by name.  <br /></td></tr>
+<tr class="memitem:a93ba1072f5fadd3636dc114aea316eea" id="r_a93ba1072f5fadd3636dc114aea316eea"><td class="memItemLeft"><a id="a93ba1072f5fadd3636dc114aea316eea" name="a93ba1072f5fadd3636dc114aea316eea"></a>
+<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a>&#160;</td><td class="memItemRight"><b>getFamilyId</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
 <tr class="memitem:aaa09f54aa73849bba861457941bf1f19" id="r_aaa09f54aa73849bba861457941bf1f19"><td class="memItemLeft"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#aaa09f54aa73849bba861457941bf1f19">addFamilyFace</a> (<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> familyId, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo)</td></tr>
 <tr class="memdesc:aaa09f54aa73849bba861457941bf1f19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a concrete face to an existing family.  <br /></td></tr>
 <tr class="memitem:a5e530f7fa3bcb6b0c4da4987fc804a62" id="r_a5e530f7fa3bcb6b0c4da4987fc804a62"><td class="memItemLeft"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5e530f7fa3bcb6b0c4da4987fc804a62">addFamilyFace</a> (std::string_view familyName, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo)</td></tr>
 <tr class="memdesc:a5e530f7fa3bcb6b0c4da4987fc804a62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a concrete face to a named family.  <br /></td></tr>
+<tr class="memitem:a1d22e57ed74119a5c22b0a3e7cdd658d" id="r_a1d22e57ed74119a5c22b0a3e7cdd658d"><td class="memItemLeft"><a id="a1d22e57ed74119a5c22b0a3e7cdd658d" name="a1d22e57ed74119a5c22b0a3e7cdd658d"></a>
+<a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><b>addFamilyFace</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="#a781e4f05097ef02aaa08ca7b448915be">FontFaceCreateInfo</a> &amp;createInfo)</td></tr>
 <tr class="memitem:a39c0eeaed6002691f954b1bcc6eadd83" id="r_a39c0eeaed6002691f954b1bcc6eadd83"><td class="memItemLeft"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a39c0eeaed6002691f954b1bcc6eadd83">resolveFont</a> (<a class="el" href="#a4fe0d70aba49ed33ab3a962a844a2ce1">FontFamilyId</a> familyId, uint32_t weight=400, <a class="el" href="group__flowui__font__manager.html#gaf7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=FontStyle::Normal) const</td></tr>
 <tr class="memdesc:a39c0eeaed6002691f954b1bcc6eadd83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a concrete Clay font id for a family, weight, and style.  <br /></td></tr>
 <tr class="memitem:a32e8291f5b08bc0d46d0884b8b4bad12" id="r_a32e8291f5b08bc0d46d0884b8b4bad12"><td class="memItemLeft"><a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><a class="el" href="#a32e8291f5b08bc0d46d0884b8b4bad12">resolveFont</a> (std::string_view familyName, uint32_t weight=400, <a class="el" href="group__flowui__font__manager.html#gaf7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=FontStyle::Normal) const</td></tr>
 <tr class="memdesc:a32e8291f5b08bc0d46d0884b8b4bad12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a concrete Clay font id for a named family, weight, and style.  <br /></td></tr>
+<tr class="memitem:a8d77b86cc74a73b50d2e94e963ef85c8" id="r_a8d77b86cc74a73b50d2e94e963ef85c8"><td class="memItemLeft"><a id="a8d77b86cc74a73b50d2e94e963ef85c8" name="a8d77b86cc74a73b50d2e94e963ef85c8"></a>
+<a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a>&#160;</td><td class="memItemRight"><b>resolveFont</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, uint32_t weight=400, <a class="el" href="group__flowui__font__manager.html#gaf7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style=FontStyle::Normal) const</td></tr>
 <tr class="memitem:ad67d18ee896d36b0cd0b4567cf79c311" id="r_ad67d18ee896d36b0cd0b4567cf79c311"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a> *&#160;</td><td class="memItemRight"><a class="el" href="#ad67d18ee896d36b0cd0b4567cf79c311">getFontById</a> (<a class="el" href="#a1af0e6d63b7adffafe2c898815737f56">FontId</a> fontId) const</td></tr>
 <tr class="memdesc:ad67d18ee896d36b0cd0b4567cf79c311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return loaded font data by concrete font id.  <br /></td></tr>
 <tr class="memitem:a20dada10a04d85cfb7b46f95c952085e" id="r_a20dada10a04d85cfb7b46f95c952085e"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a20dada10a04d85cfb7b46f95c952085e">getAtlasResource</a> () const</td></tr>
@@ -151,9 +159,9 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-attribs" class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:a084d2dcef0e054934ec89cc9e1ef3cbf" id="r_a084d2dcef0e054934ec89cc9e1ef3cbf"><td class="memItemLeft">static constexpr uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a084d2dcef0e054934ec89cc9e1ef3cbf">kInitialAtlasLayerCapacity</a> = 32</td></tr>
+<tr class="memitem:a084d2dcef0e054934ec89cc9e1ef3cbf" id="r_a084d2dcef0e054934ec89cc9e1ef3cbf"><td class="memItemLeft">static constexpr uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a084d2dcef0e054934ec89cc9e1ef3cbf">kInitialAtlasLayerCapacity</a> = 4</td></tr>
 <tr class="memdesc:a084d2dcef0e054934ec89cc9e1ef3cbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of font atlas array layers allocated for the first atlas image.  <br /></td></tr>
-<tr class="memitem:ad90022b983223e1fcdfe28c94ff0c711" id="r_ad90022b983223e1fcdfe28c94ff0c711"><td class="memItemLeft">static constexpr uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ad90022b983223e1fcdfe28c94ff0c711">kAtlasLayerGrowthStep</a> = 32</td></tr>
+<tr class="memitem:ad90022b983223e1fcdfe28c94ff0c711" id="r_ad90022b983223e1fcdfe28c94ff0c711"><td class="memItemLeft">static constexpr uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#ad90022b983223e1fcdfe28c94ff0c711">kAtlasLayerGrowthStep</a> = 4</td></tr>
 <tr class="memdesc:ad90022b983223e1fcdfe28c94ff0c711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of atlas array layers added when the font atlas grows.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
@@ -165,27 +173,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <div class="textblock"><p>Loads font faces and owns the atlas used by FlowUi text rendering. </p>
 <p><a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> registers concrete font faces, groups them into logical font families, and resolves a requested family/weight/style into the concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> consumed by Clay text configuration. Applications normally access it through <a class="el" href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a" title="Access the font manager.">App::fonts()</a> after <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> initialization.</p>
 <p>Loaded faces are uploaded into a Vulkan 2D array atlas. Each face occupies one array layer, so the atlas can grow by allocating more layers without changing the page width or height configured by <a class="el" href="structFlowUi_1_1UiConfig.html#a19b1e622e654aa327337dd27489020b9" title="Width and height in pixels of each font atlas page.">UiConfig::fontAtlasSize</a>.</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app(config);</div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> bodyFamily = app.fonts().createFamily({</div>
-<div class="line">    .name = <span class="stringliteral">&quot;Body&quot;</span>,</div>
-<div class="line">    .faces = {</div>
-<div class="line">        <a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a>{</div>
-<div class="line">            .path = <span class="stringliteral">&quot;assets/fonts/Inter-Regular.arfont&quot;</span>,</div>
-<div class="line">            .pixelSize = 18.0f,</div>
-<div class="line">            .weight = 400,</div>
-<div class="line">            .style = FlowUi::FontStyle::Normal,</div>
-<div class="line">        },</div>
-<div class="line">    },</div>
-<div class="line">});</div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> bodyFont =</div>
-<div class="line">    app.fonts().resolveFont(bodyFamily, 400, FlowUi::FontStyle::Normal);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
-<div class="ttc" id="agroup__flowui__font__manager_html_ga45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdoc">Stable concrete font id consumed by Clay text configuration.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:15</div></div>
-<div class="ttc" id="agroup__flowui__font__manager_html_ga95598f991c84086ade49a9b22410496a"><div class="ttname"><a href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a></div><div class="ttdeci">uint32_t FontFamilyId</div><div class="ttdoc">Stable logical font family id returned by FlowUi::FontManager.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:18</div></div>
-<div class="ttc" id="astructFlowUi_1_1FontFaceCreateInfo_html"><div class="ttname"><a href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a></div><div class="ttdoc">Describes a single concrete font face to register in a font family.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:32</div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2fonts__and__text.html" title="Fonts and Text">Fonts and Text</a> </dd>
+<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2fonts__and__text.html" title="Fonts and Text">Fonts and Text</a> </dd>
 <dd>
 <a class="el" href="md_docs_2concepts_2managers.html" title="Managers">Managers</a> </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
@@ -225,16 +213,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> bodyFamily = app.fonts().getFamilyId(<span class="stringliteral">&quot;Body&quot;</span>);</div>
-<div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> italicFont = app.fonts().addFamilyFace(</div>
-<div class="line">    bodyFamily,</div>
-<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a>{</div>
-<div class="line">        .path = <span class="stringliteral">&quot;assets/fonts/Inter-Italic.arfont&quot;</span>,</div>
-<div class="line">        .pixelSize = 18.0f,</div>
-<div class="line">        .weight = 400,</div>
-<div class="line">        .style = FlowUi::FontStyle::Italic,</div>
-<div class="line">    });</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a5e530f7fa3bcb6b0c4da4987fc804a62" name="a5e530f7fa3bcb6b0c4da4987fc804a62"></a>
@@ -273,15 +252,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> boldFont = app.fonts().addFamilyFace(</div>
-<div class="line">    <span class="stringliteral">&quot;Body&quot;</span>,</div>
-<div class="line">    <a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a>{</div>
-<div class="line">        .path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>,</div>
-<div class="line">        .pixelSize = 18.0f,</div>
-<div class="line">        .weight = 700,</div>
-<div class="line">        .style = FlowUi::FontStyle::Normal,</div>
-<div class="line">    });</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a2fd6b73942b1e8ffbccd4420de098b3f" name="a2fd6b73942b1e8ffbccd4420de098b3f"></a>
@@ -316,18 +287,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>For now Font Family with the name "Default" will be created at init time so its best not to keep createInfo.name empty</dd></dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> titleFamily = app.fonts().createFamily({</div>
-<div class="line">    .name = <span class="stringliteral">&quot;Title&quot;</span>,</div>
-<div class="line">    .faces = {</div>
-<div class="line">        <a class="code hl_struct" href="structFlowUi_1_1FontFaceCreateInfo.html">FlowUi::FontFaceCreateInfo</a>{</div>
-<div class="line">            .path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>,</div>
-<div class="line">            .pixelSize = 24.0f,</div>
-<div class="line">            .weight = 700,</div>
-<div class="line">            .style = FlowUi::FontStyle::Normal,</div>
-<div class="line">        },</div>
-<div class="line">    },</div>
-<div class="line">});</div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2fonts__and__text.html" title="Fonts and Text">Fonts and Text</a> </dd></dl>
+<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2fonts__and__text.html" title="Fonts and Text">Fonts and Text</a> </dd></dl>
 
 </div>
 </div>
@@ -336,9 +296,6 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a> &amp; FlowUi::FontManager::getAtlasResource </td>
@@ -347,27 +304,12 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Return the active Vulkan font atlas array resource. </p>
 <p>Render integrations use this to bind the atlas image view and sampler. The returned reference is owned by <a class="el" href="structFlowUi_1_1FontManager.html" title="Loads font faces and owns the atlas used by FlowUi text rendering.">FlowUi::FontManager</a> and remains valid until the font manager is destroyed or reinitialized. Check bindingRevision to know when a descriptor using the atlas should be refreshed.</p>
 <dl class="section return"><dt>Returns</dt><dd>Font atlas image, allocation, image view, sampler, dimensions, layer counts, and binding revision.</dd></dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a>&amp; atlas = app.fonts().getAtlasResource();</div>
-<div class="line"><span class="keywordflow">if</span> (atlas.<a class="code hl_variable" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html#a53e6e87eb15c2b20a60c43dce05464f7">view</a> != VK_NULL_HANDLE &amp;&amp; atlas.<a class="code hl_variable" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html#af998adbcc3b30134597ed71f55f75bdb">sampler</a> != VK_NULL_HANDLE) {</div>
-<div class="line">    VkDescriptorImageInfo imageInfo{};</div>
-<div class="line">    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;</div>
-<div class="line">    imageInfo.imageView = atlas.<a class="code hl_variable" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html#a53e6e87eb15c2b20a60c43dce05464f7">view</a>;</div>
-<div class="line">    imageInfo.sampler = atlas.<a class="code hl_variable" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html#af998adbcc3b30134597ed71f55f75bdb">sampler</a>;</div>
-<div class="line">}</div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a></div><div class="ttdoc">Vulkan resources for the font atlas array.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:159</div></div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html_a53e6e87eb15c2b20a60c43dce05464f7"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html#a53e6e87eb15c2b20a60c43dce05464f7">FlowUi::Font::AtlasArrayResource::view</a></div><div class="ttdeci">VkImageView view</div><div class="ttdoc">Vulkan image view handle.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:165</div></div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html_af998adbcc3b30134597ed71f55f75bdb"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html#af998adbcc3b30134597ed71f55f75bdb">FlowUi::Font::AtlasArrayResource::sampler</a></div><div class="ttdeci">VkSampler sampler</div><div class="ttdoc">Vulkan sampler handle.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:167</div></div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a829f7e37438eef1eb8fa9981a8d511ec" name="a829f7e37438eef1eb8fa9981a8d511ec"></a>
@@ -394,12 +336,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Matching family id, or UINT32_MAX when no family has that name.</dd></dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> bodyFamily = app.fonts().getFamilyId(<span class="stringliteral">&quot;Body&quot;</span>);</div>
-<div class="line"><span class="keywordflow">if</span> (bodyFamily != std::numeric_limits&lt;FlowUi::FontFamilyId&gt;::max()) {</div>
-<div class="line">    <span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> bodyFont = app.fonts().resolveFont(bodyFamily);</div>
-<div class="line">    (void)bodyFont;</div>
-<div class="line">}</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="ad67d18ee896d36b0cd0b4567cf79c311" name="ad67d18ee896d36b0cd0b4567cf79c311"></a>
@@ -426,16 +363,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to loaded face data, or nullptr if fontId is unknown.</dd></dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> bodyFont = app.fonts().resolveFont(<span class="stringliteral">&quot;Body&quot;</span>);</div>
-<div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a>* face = app.fonts().getFontById(bodyFont)) {</div>
-<div class="line">    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1FontVariantData.html">FlowUi::Font::FontVariantData</a>* variant = face-&gt;defaultVariant();</div>
-<div class="line">    <span class="keyword">const</span> uint32_t atlasLayer = face-&gt;atlasLayer;</div>
-<div class="line">    (void)variant;</div>
-<div class="line">    (void)atlasLayer;</div>
-<div class="line">}</div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1FontFaceData_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a></div><div class="ttdoc">Loaded font face and its baked variants.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:114</div></div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1FontVariantData_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontVariantData.html">FlowUi::Font::FontVariantData</a></div><div class="ttdoc">One baked variant of a font face.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:60</div></div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a39c0eeaed6002691f954b1bcc6eadd83" name="a39c0eeaed6002691f954b1bcc6eadd83"></a>
@@ -474,12 +402,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> for Clay text, or 0 if the family is invalid or empty.</dd></dl>
-<div class="fragment"><div class="line">Clay_TextElementConfig titleText{};</div>
-<div class="line">titleText.fontId = app.fonts().resolveFont(</div>
-<div class="line">    titleFamily,</div>
-<div class="line">    700,</div>
-<div class="line">    FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a32e8291f5b08bc0d46d0884b8b4bad12" name="a32e8291f5b08bc0d46d0884b8b4bad12"></a>
@@ -518,12 +441,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Concrete <a class="el" href="#a1af0e6d63b7adffafe2c898815737f56" title="Convenience alias for FlowUi::FontId.">FontId</a> for Clay text, or 0 if the family is missing or empty.</dd></dl>
-<div class="fragment"><div class="line">Clay_TextElementConfig labelText{};</div>
-<div class="line">labelText.fontId = app.fonts().resolveFont(</div>
-<div class="line">    <span class="stringliteral">&quot;Body&quot;</span>,</div>
-<div class="line">    400,</div>
-<div class="line">    FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
@@ -537,7 +455,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t FlowUi::FontManager::kAtlasLayerGrowthStep = 32</td>
+          <td class="memname">uint32_t FlowUi::FontManager::kAtlasLayerGrowthStep = 4</td>
         </tr>
       </table>
   </td>
@@ -562,7 +480,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t FlowUi::FontManager::kInitialAtlasLayerCapacity = 32</td>
+          <td class="memname">uint32_t FlowUi::FontManager::kInitialAtlasLayerCapacity = 4</td>
         </tr>
       </table>
   </td>

@@ -114,9 +114,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a4a130972b38a2bfa1e2f7cabcc93cb72" id="r_a4a130972b38a2bfa1e2f7cabcc93cb72"><td class="memItemLeft"><a id="a4a130972b38a2bfa1e2f7cabcc93cb72" name="a4a130972b38a2bfa1e2f7cabcc93cb72"></a>
-uint32_t&#160;</td><td class="memItemRight"><b>id</b> = 0</td></tr>
-<tr class="memdesc:a4a130972b38a2bfa1e2f7cabcc93cb72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager-owned texture registry slot id; do not edit manually. <br /></td></tr>
+<tr class="memitem:afa9bd316197d0e297f1455843dcef0b2" id="r_afa9bd316197d0e297f1455843dcef0b2"><td class="memItemLeft"><a id="afa9bd316197d0e297f1455843dcef0b2" name="afa9bd316197d0e297f1455843dcef0b2"></a>
+<a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a>&#160;</td><td class="memItemRight"><b>handle</b> {}</td></tr>
+<tr class="memdesc:afa9bd316197d0e297f1455843dcef0b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager-owned logical texture handle; do not edit manually. <br /></td></tr>
 <tr class="memitem:a0fd2e9a966502077ffcaf7bc79ba82fb" id="r_a0fd2e9a966502077ffcaf7bc79ba82fb"><td class="memItemLeft"><a id="a0fd2e9a966502077ffcaf7bc79ba82fb" name="a0fd2e9a966502077ffcaf7bc79ba82fb"></a>
 float&#160;</td><td class="memItemRight"><b>uv0x</b> = 0.0f</td></tr>
 <tr class="memdesc:a0fd2e9a966502077ffcaf7bc79ba82fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager-owned left U coordinate; do not edit manually. <br /></td></tr>
@@ -144,7 +144,7 @@ int32_t&#160;</td><td class="memItemRight"><b>sourceHeight</b> = 0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Renderer texture reference returned by image, icon, and viewport managers. </p>
-<p>Treat this as a manager-owned handle with optional render settings. After obtaining a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>, application code may adjust fitMode, samplingMode, and tintEnabled. The id, UV coordinates, and source dimensions are populated by FlowUi managers and should normally be left unchanged. </p>
+<p>Treat this as a manager-owned handle with optional render settings. After obtaining a <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a>, application code may adjust fitMode, samplingMode, and tintEnabled. The handle, UV coordinates, and source dimensions are populated by FlowUi managers and should normally be left unchanged. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a6eaac4b006ded5cf41011800cce39c7c" name="a6eaac4b006ded5cf41011800cce39c7c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6eaac4b006ded5cf41011800cce39c7c">&#9670;&#160;</a></span>fitMode</h2>
@@ -177,8 +177,7 @@ int32_t&#160;</td><td class="memItemRight"><b>sourceHeight</b> = 0</td></tr>
 </div><div class="memdoc">
 
 <p>Requested texture filtering mode. </p>
-<p>Application code may set this for future renderer support.</p>
-<dl class="section note"><dt>Note</dt><dd>Stored in v0.9.0 but not applied by the textured renderer yet.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Reserved. The current textured renderer does not apply this per-reference value; filtering comes from the sampler owned by the logical texture.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__flowui__config.html#ga45632b801edaf6ba2ce69d7892e23ec9" title="Texture sampling mode.">FlowUi::TextureSamplingMode</a> </dd></dl>
 
 </div>

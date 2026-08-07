@@ -18,6 +18,7 @@
 #include "internal/FlowUiElementBridge.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
+#include "managers/ThemeManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
 #include "managers/structs/InputStructs.hpp"
@@ -31,6 +32,7 @@ namespace FlowUi {
 struct AppWindow;
 
 class App;
+struct FlowUiTheme;
 struct FontManager;
 namespace detail::storage { class IStorageSystem; struct FrameToken; }
 namespace detail::manager_storage { struct UiManagerState; struct FontFrameView; }
@@ -497,6 +499,38 @@ public:
 	 */
 	FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const;
 
+	/**
+	 * @brief Access the active variant for theme type T.
+	 *
+	 * @tparam T Theme struct type.
+	 * @return Const reference to active theme instance of type T.
+	 * @throws std::runtime_error if ThemeManager is not connected or theme is unregistered.
+	 */
+	template <typename T>
+	[[nodiscard]] const T& theme() const {
+		return appThemes().template getActiveTheme<T>();
+	}
+
+	/**
+	 * @brief Access a specific named variant for theme type T.
+	 *
+	 * @tparam T Theme struct type.
+	 * @param variantName Name of the theme variant.
+	 * @return Const reference to named theme instance of type T.
+	 * @throws std::runtime_error if ThemeManager is not connected or variant is unregistered.
+	 */
+	template <typename T>
+	[[nodiscard]] const T& theme(std::string_view variantName) const {
+		return appThemes().template getTheme<T>(variantName);
+	}
+
+	/**
+	 * @brief Convenience shortcut for active built-in FlowUiTheme.
+	 *
+	 * @return Const reference to active FlowUiTheme.
+	 */
+	[[nodiscard]] const FlowUiTheme& flowTheme() const;
+
 private:
 	friend class App;
 	friend struct AppWindow;
@@ -507,6 +541,8 @@ private:
 	UiManager() = default;
 	void initStorage(detail::storage::IStorageSystem& storage, WindowId window, const AppConfig& config);
 	void destroyStorage() noexcept;
+	void setThemeManager(const ThemeManager* themeManager) noexcept { themeManager_ = themeManager; }
+	const ThemeManager& appThemes() const;
 
 	void beginFrame(
 		const detail::storage::FrameToken& frame,
@@ -535,6 +571,7 @@ private:
 	std::function<std::string()> getClipboardTextAccessor_{};
 	std::function<void(CursorType)> setCursorTypeAccessor_{};
 	detail::storage::IStorageSystem* storage_ = nullptr;
+	const ThemeManager* themeManager_ = nullptr;
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	detail::manager_storage::UiManagerState* state_ = nullptr;

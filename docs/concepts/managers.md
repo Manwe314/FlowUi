@@ -222,6 +222,30 @@ The manager handles per-frame render target images, size tracking from UI image 
 
 This is the subsystem to use for scene previews, graph views, custom renderers, editor canvases, and other content that needs to be rendered separately and then composed into the Clay UI.
 
+## FlowUi::ThemeManager
+
+`ThemeManager` owns registrable theme structs, theme variant mapping, active variant dispatch, and atomic staged theme mutations.
+
+Typical usage:
+
+```cpp
+app.themes().registerTheme<AppTheme>("dark", darkTheme, true);
+app.themes().registerTheme<AppTheme>("light", lightTheme, false);
+
+// In UI element code:
+const auto& theme = context.uiManager.theme<AppTheme>();
+```
+
+Staged theme mutations take effect at frame boundaries (`app.pollEvents()` / `beginFrame()`):
+
+```cpp
+app.themes().updateActiveTheme<AppTheme>([](AppTheme& t) {
+    t.brandAccent = Flow_Color("#ff0055ff");
+});
+```
+
+`ThemeManager` integrates persistent storage (`FlowStorageSystem`) with lock-free reading, allowing immediate-mode elements to query design tokens safely and efficiently.
+
 ## Logical Textures and Renderer-Side Management
 
 Image, icon, and viewport managers all return the same logical `TextureRef` type.

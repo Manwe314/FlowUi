@@ -116,14 +116,24 @@ $(function() {
 Public Member Functions</h2></td></tr>
 <tr class="memitem:af03e06a033403fd88d04412b6d11395c" id="r_af03e06a033403fd88d04412b6d11395c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af03e06a033403fd88d04412b6d11395c">registerSvg</a> (std::string_view key, std::string_view svgSource)</td></tr>
 <tr class="memdesc:af03e06a033403fd88d04412b6d11395c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an SVG document from source text.  <br /></td></tr>
+<tr class="memitem:a8463d8802945201fc45e6e533cf8a8a1" id="r_a8463d8802945201fc45e6e533cf8a8a1"><td class="memItemLeft"><a id="a8463d8802945201fc45e6e533cf8a8a1" name="a8463d8802945201fc45e6e533cf8a8a1"></a>
+bool&#160;</td><td class="memItemRight"><b>registerSvg</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view svgSource)</td></tr>
 <tr class="memitem:a3014f0a3c8ae23869d23c107c6f469eb" id="r_a3014f0a3c8ae23869d23c107c6f469eb"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a> (std::string_view key, std::string_view filePath)</td></tr>
 <tr class="memdesc:a3014f0a3c8ae23869d23c107c6f469eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an SVG document from a file path.  <br /></td></tr>
+<tr class="memitem:adac672d9c0ac462395bfc1cd127a3856" id="r_adac672d9c0ac462395bfc1cd127a3856"><td class="memItemLeft"><a id="adac672d9c0ac462395bfc1cd127a3856" name="adac672d9c0ac462395bfc1cd127a3856"></a>
+bool&#160;</td><td class="memItemRight"><b>registerFromFile</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath)</td></tr>
 <tr class="memitem:a152fda978ab8ce39d2b33ab74cf7df29" id="r_a152fda978ab8ce39d2b33ab74cf7df29"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a152fda978ab8ce39d2b33ab74cf7df29">remove</a> (std::string_view key)</td></tr>
 <tr class="memdesc:a152fda978ab8ce39d2b33ab74cf7df29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a registered SVG document by key.  <br /></td></tr>
+<tr class="memitem:a6bfd3b53b8b6d869d2d2f5524064d8a0" id="r_a6bfd3b53b8b6d869d2d2f5524064d8a0"><td class="memItemLeft"><a id="a6bfd3b53b8b6d869d2d2f5524064d8a0" name="a6bfd3b53b8b6d869d2d2f5524064d8a0"></a>
+bool&#160;</td><td class="memItemRight"><b>remove</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
 <tr class="memitem:aacefdec239a3b1fcd8aadae4eec05516" id="r_aacefdec239a3b1fcd8aadae4eec05516"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aacefdec239a3b1fcd8aadae4eec05516">contains</a> (std::string_view key) const</td></tr>
 <tr class="memdesc:aacefdec239a3b1fcd8aadae4eec05516"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether an SVG key is registered.  <br /></td></tr>
+<tr class="memitem:aeac28f294981ae55b4c83667897fa8ee" id="r_aeac28f294981ae55b4c83667897fa8ee"><td class="memItemLeft"><a id="aeac28f294981ae55b4c83667897fa8ee" name="aeac28f294981ae55b4c83667897fa8ee"></a>
+bool&#160;</td><td class="memItemRight"><b>contains</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
 <tr class="memitem:a0de1a60d027cd3b9985f73aebf128f48" id="r_a0de1a60d027cd3b9985f73aebf128f48"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a> (std::string_view key)</td></tr>
 <tr class="memdesc:a0de1a60d027cd3b9985f73aebf128f48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a texture request reference for a registered icon key.  <br /></td></tr>
+<tr class="memitem:aa24c9f599e3337be1fc5f4e106d47de3" id="r_aa24c9f599e3337be1fc5f4e106d47de3"><td class="memItemLeft"><a id="aa24c9f599e3337be1fc5f4e106d47de3" name="aa24c9f599e3337be1fc5f4e106d47de3"></a>
+<a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><b>textureRef</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -133,18 +143,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Registers SVG icons and resolves them to atlas-backed texture references. </p>
 <p><a class="el" href="structFlowUi_1_1IconManager.html" title="Registers SVG icons and resolves them to atlas-backed texture references.">IconManager</a> is available only when FlowUi is built with FLOWUI_INCLUDE_ICON_MANAGER enabled. When enabled, it stores parsed SVG documents by application-defined keys and returns <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> request handles that FlowUi resolves into cached atlas variants at the size required by the current frame.</p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a>&amp; icons = app.icons();</div>
-<div class="line">(void)icons.<a class="code hl_function" href="#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> saveIcon = icons.<a class="code hl_function" href="#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
-<div class="line">saveIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
-<div class="ttc" id="agroup__flowui__config_html_ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484"><div class="ttname"><a href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a></div><div class="ttdeci">@ Contain</div><div class="ttdoc">Fit the whole texture inside the target rectangle without cropping.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:443</div></div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">Registers SVG icons and resolves them to atlas-backed texture references.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:63</div></div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_a0de1a60d027cd3b9985f73aebf128f48"><div class="ttname"><a href="#a0de1a60d027cd3b9985f73aebf128f48">FlowUi::IconManager::textureRef</a></div><div class="ttdeci">TextureRef textureRef(std::string_view key)</div><div class="ttdoc">Return a texture request reference for a registered icon key.</div></div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html_a3014f0a3c8ae23869d23c107c6f469eb"><div class="ttname"><a href="#a3014f0a3c8ae23869d23c107c6f469eb">FlowUi::IconManager::registerFromFile</a></div><div class="ttdeci">bool registerFromFile(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Register an SVG document from a file path.</div></div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html_a6eaac4b006ded5cf41011800cce39c7c"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">FlowUi::TextureRef::fitMode</a></div><div class="ttdeci">TextureFitMode fitMode</div><div class="ttdoc">Texture fit behavior inside the target rectangle.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:486</div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd>
+<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd>
 <dd>
 <a class="el" href="md_docs_2concepts_2managers.html" title="Managers">Managers</a> </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
@@ -178,10 +177,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.icons().contains(<span class="stringliteral">&quot;toolbar/save&quot;</span>)) {</div>
-<div class="line">    (void)app.icons().registerFromFile(<span class="stringliteral">&quot;toolbar/save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-<div class="line">}</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a3014f0a3c8ae23869d23c107c6f469eb" name="a3014f0a3c8ae23869d23c107c6f469eb"></a>
@@ -225,11 +221,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> inserted = app.icons().registerFromFile(</div>
-<div class="line">    <span class="stringliteral">&quot;toolbar/open&quot;</span>,</div>
-<div class="line">    <span class="stringliteral">&quot;assets/icons/open.svg&quot;</span>);</div>
-<div class="line">(void)inserted;</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="af03e06a033403fd88d04412b6d11395c" name="af03e06a033403fd88d04412b6d11395c"></a>
@@ -273,15 +265,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keyword">constexpr</span> std::string_view kCheckSvg = R<span class="stringliteral">&quot;(</span></div>
-<div class="line"><span class="stringliteral">&lt;svg viewBox=&quot;0 0 16 16&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;</span></div>
-<div class="line"><span class="stringliteral">    &lt;path d=&quot;M6.2 11.3 2.9 8l1.2-1.2 2.1 2.1 5.7-5.7L13.1 4z&quot;/&gt;</span></div>
-<div class="line"><span class="stringliteral">&lt;/svg&gt;</span></div>
-<div class="line"><span class="stringliteral">)&quot;;</span></div>
-<div class="line"><span class="stringliteral"></span> </div>
-<div class="line"><span class="stringliteral"></span><span class="keyword">const</span> <span class="keywordtype">bool</span> inserted = app.icons().registerSvg(<span class="stringliteral">&quot;status/check&quot;</span>, kCheckSvg);</div>
-<div class="line">(void)inserted;</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a152fda978ab8ce39d2b33ab74cf7df29" name="a152fda978ab8ce39d2b33ab74cf7df29"></a>
@@ -320,10 +304,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (app.icons().remove(<span class="stringliteral">&quot;toolbar/open&quot;</span>)) {</div>
-<div class="line">    <span class="comment">// The icon can be registered again under the same key.</span></div>
-<div class="line">}</div>
-</div><!-- fragment --> 
+<div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <a id="a0de1a60d027cd3b9985f73aebf128f48" name="a0de1a60d027cd3b9985f73aebf128f48"></a>
@@ -357,11 +338,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> deleteIcon = app.icons().textureRef(<span class="stringliteral">&quot;toolbar/delete&quot;</span>);</div>
-<div class="line">deleteIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a6eaac4b006ded5cf41011800cce39c7c">fitMode</a> = <a class="code hl_enumvalue" href="group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca0e75eff17752bae4ab31af7ad9b45484">FlowUi::TextureFitMode::Contain</a>;</div>
-<div class="line">deleteIcon.<a class="code hl_variable" href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">tintEnabled</a> = <span class="keyword">true</span>;</div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html_a532a39c57e8c9a6a19e8253e11f93649"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html#a532a39c57e8c9a6a19e8253e11f93649">FlowUi::TextureRef::tintEnabled</a></div><div class="ttdeci">bool tintEnabled</div><div class="ttdoc">Enable multiplication by the image command color while rendering.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:504</div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd></dl>
+<div class="fragment"></div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2tutorials_2images__icons__textures.html" title="Images, Icons, and Texture References">Images, Icons, and Texture References</a> </dd></dl>
 
 </div>
 </div>

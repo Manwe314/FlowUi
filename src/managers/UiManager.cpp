@@ -8,6 +8,7 @@
 #include "devMode/registry.hpp"
 #endif
 #include "managers/FontManager.hpp"
+#include "managers/ThemeManager.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include "internal/ManagerStorage/UiManagerState.hpp"
@@ -596,5 +597,15 @@ namespace devMode::elementCapture {
 		state_->currentInteractionSnapshot.releasedElementIds.clear();
 	}
 
+	const ThemeManager& UiManager::appThemes() const {
+		if (!themeManager_) {
+			throw std::runtime_error("UiManager: ThemeManager is not connected.");
+		}
+		return *themeManager_;
+	}
+
+	const FlowUiTheme& UiManager::flowTheme() const {
+		return theme<FlowUiTheme>();
+	}
 
 } // namespace FlowUi

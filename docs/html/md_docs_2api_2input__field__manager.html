@@ -156,6 +156,16 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.ui().inputFields().removeField(<span class="stringliteral">&quot;settings/name&quot;</span>);</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a">Full Doxygen reference</a>.</p>
+<h2><b>replaceText</b></h2>
+<h3><span class="tt">bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span> field state to update, <span class="tt">text</span> replacement text, <span class="tt">preserveCaret</span> whether to keep and clamp caret state.</li>
+</ul>
+<p>Replaces stored text for an existing field. By default, active carets and selections are preserved and clamped to the new text; pass <span class="tt">false</span> to clear active carets from that field.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> changed = app.ui().inputFields().replaceText(<span class="stringliteral">&quot;settings/name&quot;</span>, externalName, <span class="keyword">false</span>);</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html">Full Doxygen reference</a>.</p>
 <h2><b>clear</b></h2>
 <h3><span class="tt">void clear()</span></h3>
 <ul>

@@ -4,6 +4,7 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
+#include "managers/ThemeManager.hpp"
 #if FLOWUI_INCLUDE_ICON_MANAGER
 #include "managers/IconManager.hpp"
 #endif
@@ -266,6 +267,7 @@ struct App::Impl {
 
 	FontManager fonts;
 	ImageManager imageManager;
+	ThemeManager themeManager;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager icons;
 #endif
@@ -386,12 +388,15 @@ struct App::Impl {
 		storageSystem = std::make_unique<storage::FlowStorageSystem>(vk);
 		storageConfig = makeStorageConfig(config);
 		storageSystem->initialize(storageConfig);
+		themeManager.init(*storageSystem);
+		themeManager.registerTheme<FlowUiTheme>("default", FlowUiTheme::dark(), true);
 		mainPointer->storageSystem = storageSystem.get();
 		storageSystem->registerWindow(
 			mainPointer->id, makeWindowStorageDesc(*storageSystem, storageConfig, mainPointer->config));
 		mainPointer->storageRegistered = true;
 		mainPointer->ui.initStorage(
 			*storageSystem, mainPointer->id, makeUiManagerConfig(config, mainPointer->config));
+		mainPointer->ui.setThemeManager(&themeManager);
 		initSharedUiByteResources(*storageSystem, sharedUiByteResources);
 		const storage::TextureHandle fallbackTexture = storageSystem->publishTexture(
 			storage::ResourceKey{
@@ -533,6 +538,7 @@ struct App::Impl {
 			pending->storageRegistered = true;
 			pending->ui.initStorage(
 				*storageSystem, id, makeUiManagerConfig(config, pending->config));
+			pending->ui.setThemeManager(&themeManager);
 			pending->swapchain.create(
 				pending->config.native,
 				pending->config.vulkan,
@@ -567,6 +573,7 @@ struct App::Impl {
 		requirePlatformThread("FlowUi::App::pollEvents");
 		requireQuiescent("FlowUi::App::pollEvents");
 		detail::pollWindowSystemEvents();
+		themeManager.applyStagedMutations();
 		if (storageSystem) storageSystem->collect();
 #if FLOWUI_INCLUDE_ICON_MANAGER
 		if (iconsInitialized) icons.beginAppTick();
@@ -1271,6 +1278,20 @@ const ImageManager& App::images() const {
 		throw std::runtime_error("FlowUi::App not initialized.");
 	}
 	return impl_->imageManager;
+}
+
+ThemeManager& App::themes() {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->themeManager;
+}
+
+const ThemeManager& App::themes() const {
+	if (!impl_) {
+		throw std::runtime_error("FlowUi::App not initialized.");
+	}
+	return impl_->themeManager;
 }
 
 #if FLOWUI_INCLUDE_ICON_MANAGER

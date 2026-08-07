@@ -126,7 +126,7 @@ $(function() {
 <p>Previous-frame interaction data returned by UiManager. Custom elements use it to query hover, press, hold, and release state.</p>
 <h2><b>TextureRef</b></h2>
 <h3><span class="tt">struct TextureRef</span></h3>
-<p>Texture handle copied into frame storage by storeTexture. It is used as Clay image data for images, icons, and viewports.</p>
+<p>Texture payload copied into frame storage by <span class="tt">imageData()</span>. Storage retains the logical GPU texture separately through submission.</p>
 <h1>Public API</h1>
 <h2><b>toClayString</b></h2>
 <h3><span class="tt">Clay_String toClayString(std::string_view s)</span></h3>
@@ -138,16 +138,28 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(textConfig));</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">Full Doxygen reference</a>.</p>
-<h2><b>storeTexture</b></h2>
-<h3><span class="tt">TextureRef* storeTexture(const TextureRef&amp; textureRef)</span></h3>
+<h2><b>imageData</b></h2>
+<h3><span class="tt">TextureRef* imageData(TextureRef textureRef)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">TextureRef*</span></li>
 <li><b>Arguments:</b> <span class="tt">textureRef</span> texture reference to copy into frame storage.</li>
 </ul>
 <p>Stores a texture reference in the current frame arena and returns a pointer suitable for <span class="tt">Clay_ImageElementConfig::imageData</span>. Use this instead of taking the address of a temporary or local <span class="tt">TextureRef</span>.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">imageConfig.imageData = context.uiManager.storeTexture(app.images().getTexture(<span class="stringliteral">&quot;logo&quot;</span>));</div>
+<div class="fragment"><div class="line">imageConfig.imageData = context.uiManager.imageData(app.images().getTexture(<span class="stringliteral">&quot;logo&quot;</span>));</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9">Full Doxygen reference</a>.</p>
+<h2><b>inputContentElement</b></h2>
+<h3><span class="tt">Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig&amp; textConfig) const</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Clay_ElementDeclaration</span></li>
+<li><b>Arguments:</b> <span class="tt">textConfig</span> text configuration used by the input field text.</li>
+</ul>
+<p>Creates a stable inner content element declaration for input fields. The returned declaration grows horizontally and uses a fixed height based on the resolved font line height.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {</div>
+<div class="line">    CLAY_TEXT(context.uiManager.toClayString(field.text), CLAY_TEXT_CONFIG(textConfig));</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
 <h2><b>toClaySID</b></h2>
 <h3><span class="tt">Clay_ElementId toClaySID(std::string_view s)</span></h3>
 <ul>
@@ -178,6 +190,38 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).draw();</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">Full Doxygen reference</a>.</p>
+<h2><b>theme</b> <span class="tt">1/2</span></h2>
+<h3><span class="tt">template &lt;typename T&gt; const T&amp; theme() const</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">const T&amp;</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Queries the active variant for theme struct type <span class="tt">T</span>. Use this inside custom element <span class="tt">buildElement</span> or <span class="tt">constructElement</span> callbacks to retrieve design tokens.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; appTheme = context.uiManager.theme&lt;AppTheme&gt;();</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
+<h2><b>theme</b> <span class="tt">2/2</span></h2>
+<h3><span class="tt">template &lt;typename T&gt; const T&amp; theme(std::string_view variantName) const</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">const T&amp;</span></li>
+<li><b>Arguments:</b> <span class="tt">variantName</span> registered variant name.</li>
+</ul>
+<p>Queries a specific named variant for theme struct type <span class="tt">T</span>.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; lightTheme = context.uiManager.theme&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
+<h2><b>flowTheme</b> / <b>uiTheme</b></h2>
+<h3><span class="tt">const FlowUiTheme&amp; flowTheme() const</span></h3>
+<h3><span class="tt">const FlowUiTheme&amp; uiTheme() const</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">const FlowUiTheme&amp;</span></li>
+<li><b>Arguments:</b> none.</li>
+</ul>
+<p>Convenience shortcut returning the active built-in <span class="tt">FlowUiTheme</span> design system tokens (colors, font sizes, spacing, corner radii).</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; uiTheme = context.uiManager.uiTheme();</div>
+<div class="line">root.backgroundColor = uiTheme.surface;</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
 <h2><b>drawConstructed</b></h2>
 <h3><span class="tt">void drawConstructed()</span></h3>
 <ul>

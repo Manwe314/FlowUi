@@ -293,6 +293,42 @@ app.images().registerImage("logo", "assets/logo.png");
 
 See: [Full Doxygen reference](classFlowUi_1_1App.html#a04135a9974e2ea4aa8563083ebe51d40).
 
+### **themes** `1/2`
+
+
+#### `ThemeManager& themes()`
+
+- **Returns:** `ThemeManager&`
+- **Arguments:** none.
+
+Returns the mutable theme manager owned by the app. Use it to register theme structs, switch active variants, and queue staged frame-boundary theme mutations.
+
+**Example:**
+
+```cpp
+app.themes().registerTheme<AppTheme>("default", AppTheme{});
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1App.html).
+
+### **themes** `2/2`
+
+
+#### `const ThemeManager& themes() const`
+
+- **Returns:** `const ThemeManager&`
+- **Arguments:** none.
+
+Returns the immutable theme manager owned by the app. Use this for read-only theme queries from const app contexts.
+
+**Example:**
+
+```cpp
+const auto& currentTheme = app.themes().getActiveTheme<AppTheme>();
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1App.html).
+
 ### **icons** `1/2`
 
 

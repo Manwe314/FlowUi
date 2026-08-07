@@ -12,36 +12,16 @@
 
 #include "FlowUi/BuildConfig.hpp"
 #include "devMode/devRuntime.hpp"
+#include "internal/TypeOperations.hpp"
 
 namespace FlowUi::devMode {
 
 template <typename Owner, typename Member>
 struct FieldInfo;
 
-template <typename T>
-constexpr std::string_view typeToken() {
-#if defined(__clang__) || defined(__GNUC__)
-	return __PRETTY_FUNCTION__;
-#elif defined(_MSC_VER)
-	return __FUNCSIG__;
-#else
-	return "FlowUi::devMode::typeToken<unknown>()";
-#endif
-}
-
-constexpr uint64_t hashString64(std::string_view text) {
-	uint64_t hash = 14695981039346656037ull;
-	for (const char c : text) {
-		hash ^= static_cast<uint64_t>(static_cast<unsigned char>(c));
-		hash *= 1099511628211ull;
-	}
-	return (hash == 0ull) ? 1ull : hash;
-}
-
-template <typename T>
-constexpr uint64_t typeHash() {
-	return hashString64(typeToken<T>());
-}
+using FlowUi::detail::typeToken;
+using FlowUi::detail::hashString64;
+using FlowUi::detail::typeHash;
 
 struct DevStructSourceMetadata {
 	std::string sourceFile{};

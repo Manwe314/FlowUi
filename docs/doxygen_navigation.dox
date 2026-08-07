@@ -8,6 +8,7 @@
 - \subpage md_docs_2api_2config "Configuration"
 - \subpage md_docs_2api_2elements "Elements"
 - \subpage md_docs_2api_2ui__manager "UI Manager"
+- \subpage md_docs_2api_2theme__manager "Theme Manager"
 - \subpage md_docs_2api_2font__manager "Font Manager"
 - \subpage md_docs_2api_2image__manager "Image Manager"
 - \subpage md_docs_2api_2icon__manager "Icon Manager"

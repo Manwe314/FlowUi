@@ -53,6 +53,7 @@ enum class ResourceKind : uint8_t {
 	ShortcutRegistration,
 	Viewport,
 	ManagerRoot,
+	UiTheme,
 	Count,
 };
 
@@ -224,6 +225,31 @@ using ViewportHandle = Handle<ResourceKind::ViewportTarget>;
 using RendererLayoutHandle = Handle<ResourceKind::RendererLayout>;
 using RendererPipelineBundleHandle = Handle<ResourceKind::RendererPipelineBundle>;
 using WindowDescriptorBundleHandle = Handle<ResourceKind::WindowDescriptorBundle>;
+using ThemeVariantHandle = Handle<ResourceKind::UiTheme>;
+
+struct ThemeRecordHeader {
+	uint64_t typeHash = 0;
+	StringId typeNameId = 0;
+	StringId variantNameId = 0;
+	size_t dataSize = 0;
+	size_t alignment = 0;
+	uint64_t revision = 1;
+
+	void (*copyConstruct)(void* dest, const void* src) = nullptr;
+	void (*destroy)(void* object) noexcept = nullptr;
+
+	[[nodiscard]] void* payload() noexcept {
+		const uintptr_t headerAddress = reinterpret_cast<uintptr_t>(this);
+		const uintptr_t payloadAddress = (headerAddress + sizeof(ThemeRecordHeader) + (alignment - 1)) & ~(alignment - 1);
+		return reinterpret_cast<void*>(payloadAddress);
+	}
+
+	[[nodiscard]] const void* payload() const noexcept {
+		const uintptr_t headerAddress = reinterpret_cast<uintptr_t>(this);
+		const uintptr_t payloadAddress = (headerAddress + sizeof(ThemeRecordHeader) + (alignment - 1)) & ~(alignment - 1);
+		return reinterpret_cast<const void*>(payloadAddress);
+	}
+};
 
 struct ManagerRecordHandle {
 	uint32_t index = InvalidIndex;

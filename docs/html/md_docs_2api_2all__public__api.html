@@ -117,8 +117,8 @@ $(function() {
 <p>Hashes a runtime string into a stable FlowUi element id. Use this when looking up or managing state for an element instance outside the builder path.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> saveButtonId = <a class="code hl_function" href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga0bedfbab552fbf49a5a1d31ed8abe9f8"><div class="ttname"><a href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a></div><div class="ttdeci">constexpr FlowElementId toFlowId(std::string_view elementName) noexcept</div><div class="ttdoc">Hash an element name into a FlowUi element id.</div><div class="ttdef"><b>Definition</b> App.hpp:69</div></div>
-<div class="ttc" id="agroup__flowui__app_html_ga4b108885c4ed16c331241f6a02d70a93"><div class="ttname"><a href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a></div><div class="ttdeci">uint64_t FlowElementId</div><div class="ttdoc">ID type for element instances.</div><div class="ttdef"><b>Definition</b> App.hpp:29</div></div>
+<div class="ttc" id="agroup__flowui__app_html_ga0bedfbab552fbf49a5a1d31ed8abe9f8"><div class="ttname"><a href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a></div><div class="ttdeci">constexpr FlowElementId toFlowId(std::string_view elementName) noexcept</div><div class="ttdoc">Hash an element name into a FlowUi element id.</div><div class="ttdef"><b>Definition</b> App.hpp:70</div></div>
+<div class="ttc" id="agroup__flowui__app_html_ga4b108885c4ed16c331241f6a02d70a93"><div class="ttname"><a href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a></div><div class="ttdeci">uint64_t FlowElementId</div><div class="ttdoc">ID type for element instances.</div><div class="ttdef"><b>Definition</b> App.hpp:30</div></div>
 </div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga49ddb3f056407bc53580f77d61664c2a">Full Doxygen reference</a>.</p>
 <h2><b>toFlowId</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">template &lt;std::size_t N&gt; constexpr FlowElementId toFlowId(const char (&amp;elementName)[N]) noexcept</span></h3>
@@ -139,8 +139,8 @@ $(function() {
 <p>Hashes a runtime string into a stable FlowUi element definition id. This is the function behind definition ids used by <span class="tt">ElementDefinition</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b89fed28a3ee56a6e7ae71a1aef9569">FlowUi::FlowDefinitionId</a> buttonDefinitionId = <a class="code hl_function" href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">FlowUi::toFlowDefinitionId</a>(<span class="stringliteral">&quot;button&quot;</span>);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga4b89fed28a3ee56a6e7ae71a1aef9569"><div class="ttname"><a href="group__flowui__app.html#ga4b89fed28a3ee56a6e7ae71a1aef9569">FlowUi::FlowDefinitionId</a></div><div class="ttdeci">uint64_t FlowDefinitionId</div><div class="ttdoc">ID type for element definitions.</div><div class="ttdef"><b>Definition</b> App.hpp:37</div></div>
-<div class="ttc" id="agroup__flowui__app_html_gadd3c481eff5accc8b1891802844a95a9"><div class="ttname"><a href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">FlowUi::toFlowDefinitionId</a></div><div class="ttdeci">constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept</div><div class="ttdoc">Hash a definition name into a FlowUi definition id.</div><div class="ttdef"><b>Definition</b> App.hpp:88</div></div>
+<div class="ttc" id="agroup__flowui__app_html_ga4b89fed28a3ee56a6e7ae71a1aef9569"><div class="ttname"><a href="group__flowui__app.html#ga4b89fed28a3ee56a6e7ae71a1aef9569">FlowUi::FlowDefinitionId</a></div><div class="ttdeci">uint64_t FlowDefinitionId</div><div class="ttdoc">ID type for element definitions.</div><div class="ttdef"><b>Definition</b> App.hpp:38</div></div>
+<div class="ttc" id="agroup__flowui__app_html_gadd3c481eff5accc8b1891802844a95a9"><div class="ttname"><a href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">FlowUi::toFlowDefinitionId</a></div><div class="ttdeci">constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept</div><div class="ttdoc">Hash a definition name into a FlowUi definition id.</div><div class="ttdef"><b>Definition</b> App.hpp:89</div></div>
 </div><!-- fragment --><p>See: <a href="group__flowui__app.html#gad4ef9ba85d5584740ebdaba96078d2a6">Full Doxygen reference</a>.</p>
 <h2><b>toFlowDefinitionId</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">template &lt;std::size_t N&gt; constexpr FlowDefinitionId toFlowDefinitionId(const char (&amp;definitionName)[N]) noexcept</span></h3>
@@ -161,7 +161,7 @@ $(function() {
 <p>Creates a stable child-style id by mixing an existing Flow id with an index. This is useful for repeated UI rows or generated children where a string id would be awkward.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> rowId = <a class="code hl_function" href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a>(<span class="stringliteral">&quot;asset-list/row&quot;</span>, rowIndex);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga02a4d740ce7ac4121c6ba24f0b0bcd52"><div class="ttname"><a href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a></div><div class="ttdeci">constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept</div><div class="ttdoc">Create a stable child/index id from a root and numeric index.</div><div class="ttdef"><b>Definition</b> App.hpp:108</div></div>
+<div class="ttc" id="agroup__flowui__app_html_ga02a4d740ce7ac4121c6ba24f0b0bcd52"><div class="ttname"><a href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a></div><div class="ttdeci">constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept</div><div class="ttdoc">Create a stable child/index id from a root and numeric index.</div><div class="ttdef"><b>Definition</b> App.hpp:109</div></div>
 </div><!-- fragment --><p>See: <a href="group__flowui__app.html#gab3403318b43d5e0e47a7b32d0dddb12b">Full Doxygen reference</a>.</p>
 <h2><b>createIndexedFlowId</b> <span class="tt">2/3</span></h2>
 <h3><span class="tt">constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept</span></h3>
@@ -192,7 +192,7 @@ $(function() {
 <p>Converts a hex RGBA string into a Clay color. The input must include the leading <span class="tt">#</span> and eight hex digits; invalid input throws <span class="tt">std::invalid_argument</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">Clay_Color panelColor = <a class="code hl_function" href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#20242cff&quot;</span>);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:146</div></div>
+<div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:147</div></div>
 </div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">Full Doxygen reference</a>.</p>
 <h2><b>makeApplication</b></h2>
 <h3><span class="tt">App makeApplication(const AppConfig&amp; cfg)</span></h3>
@@ -203,7 +203,7 @@ $(function() {
 <p>Creates and initializes a running FlowUi application. Use this instead of manually constructing <span class="tt">App</span>; it wires the window, managers, renderer, and configuration together.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a> app = <a class="code hl_function" href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a>(config);</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:191</div></div>
 <div class="ttc" id="agroup__flowui__app_html_ga8afb464a3691ca644406ac41ff5281d2"><div class="ttname"><a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">FlowUi::makeApplication</a></div><div class="ttdeci">App makeApplication(const AppConfig &amp;cfg)</div><div class="ttdoc">Create a running FlowUi application from configuration.</div></div>
 </div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2">Full Doxygen reference</a>.</p>
 <h2><b>operator|</b></h2>
@@ -279,11 +279,21 @@ $(function() {
 <p>Reports whether the window backend has requested shutdown. Use this as the condition for the main application loop.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordflow">while</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">shouldClose</a>()) { app.<a class="code hl_function" href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a>(); app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">endFrame</a>(); app.<a class="code hl_function" href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">drawFrame</a>(); }</div>
-<div class="ttc" id="aclassFlowUi_1_1App_html_a2a1be3d0f458e4fdd5392dcdfe4555f1"><div class="ttname"><a href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">FlowUi::App::beginFrame</a></div><div class="ttdeci">void beginFrame()</div><div class="ttdoc">Begin a frame and prepare input/UI state.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html_a2a1be3d0f458e4fdd5392dcdfe4555f1"><div class="ttname"><a href="classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1">FlowUi::App::beginFrame</a></div><div class="ttdeci">void beginFrame()</div><div class="ttdoc">Set whether the window backend should request shutdown.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5c6ee53de89f3dd55d43e4742905414a"><div class="ttname"><a href="classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a">FlowUi::App::endFrame</a></div><div class="ttdeci">void endFrame()</div><div class="ttdoc">End UI construction and produce render commands.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a9d853f690168da16dc71e453c9616913"><div class="ttname"><a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">FlowUi::App::shouldClose</a></div><div class="ttdeci">bool shouldClose() const</div><div class="ttdoc">Query whether the window backend requested shutdown.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_ad256201c79c7e07675e12b5bd0d8c8aa"><div class="ttname"><a href="classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa">FlowUi::App::drawFrame</a></div><div class="ttdeci">void drawFrame()</div><div class="ttdoc">Submit the current frame for rendering and presentation.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913">Full Doxygen reference</a>.</p>
+<h2><b>setShouldClose</b></h2>
+<h3><span class="tt">void setShouldClose(int value)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Arguments:</b> <span class="tt">value</span> close flag value to pass to the window backend.</li>
+</ul>
+<p>Sets or clears the window close flag. With the GLFW backend, <span class="tt">0</span> clears the GLFW window close flag and a non-zero value sets the GLFW window close flag.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">app.setShouldClose(1);</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html">Full Doxygen reference</a>.</p>
 <h2><b>beginFrame</b></h2>
 <h3><span class="tt">void beginFrame()</span></h3>
 <ul>
@@ -345,9 +355,9 @@ $(function() {
 </ul>
 <p>Returns the mutable image manager owned by the app. Use it to register image files and resolve texture references for UI image drawing.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#ac28bde695aee3b52c21596ef5ee45ba6">registerImage</a>(<span class="stringliteral">&quot;logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a5cf823f81759a819dc7fce58e75054f9"><div class="ttname"><a href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">FlowUi::App::images</a></div><div class="ttdeci">ImageManager &amp; images()</div><div class="ttdoc">Access the image manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a87c55cc08f33bb3fd8f83108aa15ea23"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">FlowUi::ImageManager::registerImage</a></div><div class="ttdeci">bool registerImage(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Load and register an image from disk under a caller-provided key.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_ac28bde695aee3b52c21596ef5ee45ba6"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#ac28bde695aee3b52c21596ef5ee45ba6">FlowUi::ImageManager::registerImage</a></div><div class="ttdeci">bool registerImage(ResourceKey key, std::string_view filePath)</div><div class="ttdoc">Load and register an image from disk under a caller-provided key.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">Full Doxygen reference</a>.</p>
 <h2><b>images</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">const ImageManager&amp; images() const</span></h3>
@@ -357,7 +367,7 @@ $(function() {
 </ul>
 <p>Returns the immutable image manager owned by the app. Use this when only checking or resolving already registered image keys.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#ac28bde695aee3b52c21596ef5ee45ba6">registerImage</a>(<span class="stringliteral">&quot;logo&quot;</span>, <span class="stringliteral">&quot;assets/logo.png&quot;</span>);</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a04135a9974e2ea4aa8563083ebe51d40">Full Doxygen reference</a>.</p>
 <h2><b>icons</b> <span class="tt">1/2</span></h2>
 <h3><span class="tt">IconManager&amp; icons()</span></h3>
@@ -413,7 +423,7 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_a788f5bbe3b0d496a41a71494a5f485bc"><div class="ttname"><a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">FlowUi::App::ui</a></div><div class="ttdeci">UiManager &amp; ui()</div><div class="ttdoc">Access the UI manager.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:63</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:71</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">Full Doxygen reference</a>.</p>
 <h2><b>ui</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">const UiManager&amp; ui() const</span></h3>
@@ -468,7 +478,7 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">setWindowInputConfig</a>(<a class="code hl_struct" href="structFlowUi_1_1WindowInputConfig.html">FlowUi::WindowInputConfig</a>{.cursorMode = FlowUi::CursorMode::Normal});</div>
 <div class="ttc" id="aclassFlowUi_1_1App_html_ac542187ec472fb6b9405fde9470ac098"><div class="ttname"><a href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">FlowUi::App::setWindowInputConfig</a></div><div class="ttdeci">void setWindowInputConfig(const WindowInputConfig &amp;config)</div><div class="ttdoc">Apply window input configuration.</div></div>
-<div class="ttc" id="astructFlowUi_1_1WindowInputConfig_html"><div class="ttname"><a href="structFlowUi_1_1WindowInputConfig.html">FlowUi::WindowInputConfig</a></div><div class="ttdoc">Configures low-level window input behavior.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:54</div></div>
+<div class="ttc" id="astructFlowUi_1_1WindowInputConfig_html"><div class="ttname"><a href="structFlowUi_1_1WindowInputConfig.html">FlowUi::WindowInputConfig</a></div><div class="ttdoc">Configures low-level window input behavior.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:56</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098">Full Doxygen reference</a>.</p>
 <h2><b>windowInputConfig</b></h2>
 <h3><span class="tt">WindowInputConfig windowInputConfig() const</span></h3>
@@ -544,9 +554,21 @@ $(function() {
 </ul>
 <p>Stores a texture reference in the current frame arena and returns a pointer suitable for <span class="tt">Clay_ImageElementConfig::imageData</span>. Use this instead of taking the address of a temporary or local <span class="tt">TextureRef</span>.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">imageConfig.imageData = context.uiManager.storeTexture(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;logo&quot;</span>));</div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a8db367968a237f11a7157d194a3720bc"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">FlowUi::ImageManager::getTexture</a></div><div class="ttdeci">TextureRef getTexture(std::string_view key) const</div><div class="ttdoc">Return the texture reference for a registered image key.</div></div>
+<div class="fragment"><div class="line">imageConfig.imageData = context.uiManager.storeTexture(app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a090629fbd73ee907ba693a64fb46cbce">getTexture</a>(<span class="stringliteral">&quot;logo&quot;</span>));</div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a090629fbd73ee907ba693a64fb46cbce"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a090629fbd73ee907ba693a64fb46cbce">FlowUi::ImageManager::getTexture</a></div><div class="ttdeci">TextureRef getTexture(ResourceKey key) const</div><div class="ttdoc">Return the texture reference for a registered image key.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#ad796d47d74be0f2b856012a8d48305a9">Full Doxygen reference</a>.</p>
+<h2><b>inputContentElement</b></h2>
+<h3><span class="tt">Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig&amp; textConfig) const</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">Clay_ElementDeclaration</span></li>
+<li><b>Arguments:</b> <span class="tt">textConfig</span> text configuration used by the input field text.</li>
+</ul>
+<p>Creates a stable inner content element declaration for input fields. The returned declaration grows horizontally and uses a fixed height based on the resolved font line height.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line">CLAY(contentId, context.uiManager.inputContentElement(textConfig)) {</div>
+<div class="line">    CLAY_TEXT(context.uiManager.toClayString(field.text), CLAY_TEXT_CONFIG(textConfig));</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
 <h2><b>toClaySID</b></h2>
 <h3><span class="tt">Clay_ElementId toClaySID(std::string_view s)</span></h3>
 <ul>
@@ -577,7 +599,7 @@ $(function() {
 <p>Creates a builder for one typed FlowUi element invocation. Chain parameter setup and finish with <span class="tt">draw()</span> or <span class="tt">construct()</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).draw();</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:180</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:220</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">Full Doxygen reference</a>.</p>
 <h2><b>drawConstructed</b></h2>
 <h3><span class="tt">void drawConstructed()</span></h3>
@@ -599,7 +621,7 @@ $(function() {
 <p>Returns the previous completed frame's interaction snapshot. Use it for stable hover, press, hold, and release queries while building the current frame.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> wasPressed = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">getPreviousFramesInteraction</a>().<a class="code hl_function" href="structFlowUi_1_1InteractionSnapshot.html#a389ad759f1f175955c065a5fe6a88b5b">isPressed</a>(buttonId);</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a428e81a65fec2e616b90be54b58744c4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">FlowUi::UiManager::getPreviousFramesInteraction</a></div><div class="ttdeci">const InteractionSnapshot &amp; getPreviousFramesInteraction() const</div><div class="ttdoc">Return the previous completed frame&#39;s interaction snapshot.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:230</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a428e81a65fec2e616b90be54b58744c4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">FlowUi::UiManager::getPreviousFramesInteraction</a></div><div class="ttdeci">const InteractionSnapshot &amp; getPreviousFramesInteraction() const</div><div class="ttdoc">Return the previous completed frame&#39;s interaction snapshot.</div></div>
 <div class="ttc" id="astructFlowUi_1_1InteractionSnapshot_html_a389ad759f1f175955c065a5fe6a88b5b"><div class="ttname"><a href="structFlowUi_1_1InteractionSnapshot.html#a389ad759f1f175955c065a5fe6a88b5b">FlowUi::InteractionSnapshot::isPressed</a></div><div class="ttdeci">bool isPressed(Clay_ElementId id) const</div><div class="ttdoc">Return whether the element was pressed in this snapshot.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:100</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">Full Doxygen reference</a>.</p>
 <h2><b>getCurrentFrameInput</b></h2>
@@ -611,7 +633,7 @@ $(function() {
 <p>Returns the current frame input in FlowUi layout space. Custom elements can use this for low-level pointer, scroll, keyboard, or timing behavior.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a>&amp; input = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">getCurrentFrameInput</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a0caf0ecce99a1beb956ce76179b2f06a"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">FlowUi::UiManager::getCurrentFrameInput</a></div><div class="ttdeci">const FrameInput &amp; getCurrentFrameInput() const</div><div class="ttdoc">Return input for the current layout frame.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:244</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a0caf0ecce99a1beb956ce76179b2f06a"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">FlowUi::UiManager::getCurrentFrameInput</a></div><div class="ttdeci">const FrameInput &amp; getCurrentFrameInput() const</div><div class="ttdoc">Return input for the current layout frame.</div></div>
 <div class="ttc" id="astructFlowUi_1_1FrameInput_html"><div class="ttname"><a href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a></div><div class="ttdoc">Per-frame input snapshot consumed by FlowUi managers and elements.</div><div class="ttdef"><b>Definition</b> InputStructs.hpp:25</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">Full Doxygen reference</a>.</p>
 <h2><b>getPreviousFrameInput</b></h2>
@@ -623,7 +645,7 @@ $(function() {
 <p>Returns the previous frame input in FlowUi layout space. Compare it with <span class="tt">getCurrentFrameInput()</span> for custom edge detection or drag calculations.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> pressedThisFrame = ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">getCurrentFrameInput</a>().<a class="code hl_variable" href="structFlowUi_1_1FrameInput.html#ad452ab0c1a10ba4938ed4cc235dadc38">mouseDown</a>[0] &amp;&amp; !ui.<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">getPreviousFrameInput</a>().<a class="code hl_variable" href="structFlowUi_1_1FrameInput.html#ad452ab0c1a10ba4938ed4cc235dadc38">mouseDown</a>[0];</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a12cb4ceeafcca80fea278337586ae2ac"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">FlowUi::UiManager::getPreviousFrameInput</a></div><div class="ttdeci">const FrameInput &amp; getPreviousFrameInput() const</div><div class="ttdoc">Return input for the previous layout frame.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:260</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a12cb4ceeafcca80fea278337586ae2ac"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">FlowUi::UiManager::getPreviousFrameInput</a></div><div class="ttdeci">const FrameInput &amp; getPreviousFrameInput() const</div><div class="ttdoc">Return input for the previous layout frame.</div></div>
 <div class="ttc" id="astructFlowUi_1_1FrameInput_html_ad452ab0c1a10ba4938ed4cc235dadc38"><div class="ttname"><a href="structFlowUi_1_1FrameInput.html#ad452ab0c1a10ba4938ed4cc235dadc38">FlowUi::FrameInput::mouseDown</a></div><div class="ttdeci">std::array&lt; bool, kMouseButtonCount &gt; mouseDown</div><div class="ttdoc">Mouse button down states for the current frame.</div><div class="ttdef"><b>Definition</b> InputStructs.hpp:73</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">Full Doxygen reference</a>.</p>
 <h2><b>inputFields</b> <span class="tt">1/2</span></h2>
@@ -657,7 +679,7 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a>&amp; shortcuts = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>();</div>
 <div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:32</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a61893809f24d2017db5642a3a780065f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">ShortcutManager &amp; shortcuts()</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:295</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a61893809f24d2017db5642a3a780065f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">ShortcutManager &amp; shortcuts()</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:352</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">Full Doxygen reference</a>.</p>
 <h2><b>shortcuts</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">const ShortcutManager&amp; shortcuts() const</span></h3>
@@ -678,7 +700,7 @@ $(function() {
 <p>Returns the mutable developer runtime when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. This is mainly for developer tooling and custom dev integrations.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; devRuntime = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">devRuntime</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a27ecba8061cf9a454320450d533c2b0c"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">FlowUi::UiManager::devRuntime</a></div><div class="ttdeci">devMode::DevRuntime &amp; devRuntime()</div><div class="ttdoc">Access the developer runtime.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:309</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a27ecba8061cf9a454320450d533c2b0c"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">FlowUi::UiManager::devRuntime</a></div><div class="ttdeci">devMode::DevRuntime &amp; devRuntime()</div><div class="ttdoc">Access the developer runtime.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">Full Doxygen reference</a>.</p>
 <h2><b>devRuntime</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">const devMode::DevRuntime&amp; devRuntime() const</span></h3>
@@ -699,8 +721,8 @@ $(function() {
 <p>Returns mutable developer tooling configuration when <span class="tt">FLOW_UI_DEV_MODE</span> is enabled. This allows runtime updates to developer panel and capture behavior.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">devToolsConfig</a>().<a class="code hl_variable" href="structFlowUi_1_1DevToolsConfig.html#a623cac59825e97831d348b5eaa30c7e1">panelOpenByDefault</a> = <span class="keyword">true</span>;</div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a15f634a57bdcc1cc0838007554144c5d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">FlowUi::UiManager::devToolsConfig</a></div><div class="ttdeci">DevToolsConfig &amp; devToolsConfig()</div><div class="ttdoc">Access developer tooling config.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:323</div></div>
-<div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_a623cac59825e97831d348b5eaa30c7e1"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#a623cac59825e97831d348b5eaa30c7e1">FlowUi::DevToolsConfig::panelOpenByDefault</a></div><div class="ttdeci">bool panelOpenByDefault</div><div class="ttdoc">Open the developer panel during UI manager initialization.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:355</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a15f634a57bdcc1cc0838007554144c5d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">FlowUi::UiManager::devToolsConfig</a></div><div class="ttdeci">DevToolsConfig &amp; devToolsConfig()</div><div class="ttdoc">Access developer tooling config.</div></div>
+<div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html_a623cac59825e97831d348b5eaa30c7e1"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html#a623cac59825e97831d348b5eaa30c7e1">FlowUi::DevToolsConfig::panelOpenByDefault</a></div><div class="ttdeci">bool panelOpenByDefault</div><div class="ttdoc">Open the developer panel during UI manager initialization.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:362</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">Full Doxygen reference</a>.</p>
 <h2><b>devToolsConfig</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">const DevToolsConfig&amp; devToolsConfig() const</span></h3>
@@ -858,7 +880,7 @@ $(function() {
 <p>Returns the Vulkan atlas array resource used by FlowUi text rendering. Use <span class="tt">bindingRevision</span> to decide when external descriptors need refreshing.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a>&amp; atlas = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a">fonts</a>().<a class="code hl_function" href="structFlowUi_1_1FontManager.html#a20dada10a04d85cfb7b46f95c952085e">getAtlasResource</a>();</div>
-<div class="ttc" id="astructFlowUi_1_1FontManager_html_a20dada10a04d85cfb7b46f95c952085e"><div class="ttname"><a href="structFlowUi_1_1FontManager.html#a20dada10a04d85cfb7b46f95c952085e">FlowUi::FontManager::getAtlasResource</a></div><div class="ttdeci">const FlowUi::Font::AtlasArrayResource &amp; getAtlasResource() const</div><div class="ttdoc">Return the active Vulkan font atlas array resource.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:312</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontManager_html_a20dada10a04d85cfb7b46f95c952085e"><div class="ttname"><a href="structFlowUi_1_1FontManager.html#a20dada10a04d85cfb7b46f95c952085e">FlowUi::FontManager::getAtlasResource</a></div><div class="ttdeci">const FlowUi::Font::AtlasArrayResource &amp; getAtlasResource() const</div><div class="ttdoc">Return the active Vulkan font atlas array resource.</div></div>
 <div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a></div><div class="ttdoc">Vulkan resources for the font atlas array.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:159</div></div>
 </div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a20dada10a04d85cfb7b46f95c952085e">Full Doxygen reference</a>.</p>
 <h1><a class="el" href="classFlowUi_1_1ImageManager.html" title="Loads image files and exposes them as FlowUi texture references.">FlowUi::ImageManager</a></h1>
@@ -870,7 +892,7 @@ $(function() {
 </ul>
 <p>Loads an image file, uploads it, and registers it under the provided key. Returns <span class="tt">true</span> for a new key and <span class="tt">false</span> when replacing an existing key.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;avatar&quot;</span>, <span class="stringliteral">&quot;assets/avatar.png&quot;</span>);</div>
+<div class="fragment"><div class="line">app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#ac28bde695aee3b52c21596ef5ee45ba6">registerImage</a>(<span class="stringliteral">&quot;avatar&quot;</span>, <span class="stringliteral">&quot;assets/avatar.png&quot;</span>);</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">Full Doxygen reference</a>.</p>
 <h2><b>removeImage</b></h2>
 <h3><span class="tt">bool removeImage(std::string_view key)</span></h3>
@@ -880,8 +902,8 @@ $(function() {
 </ul>
 <p>Removes an image registration and retires the GPU resource safely. Existing <span class="tt">TextureRef</span> values for that key should be treated as invalid after removal.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5">removeImage</a>(<span class="stringliteral">&quot;avatar&quot;</span>);</div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_ab1bb3be63b631b3947dc8d8a1950b7b5"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5">FlowUi::ImageManager::removeImage</a></div><div class="ttdeci">bool removeImage(std::string_view key)</div><div class="ttdoc">Remove a registered image by key.</div></div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a5ba0d445fd5bc2cb47aa59dbebb0f47a">removeImage</a>(<span class="stringliteral">&quot;avatar&quot;</span>);</div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a5ba0d445fd5bc2cb47aa59dbebb0f47a"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a5ba0d445fd5bc2cb47aa59dbebb0f47a">FlowUi::ImageManager::removeImage</a></div><div class="ttdeci">bool removeImage(ResourceKey key)</div><div class="ttdoc">Remove a registered image by key.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5">Full Doxygen reference</a>.</p>
 <h2><b>contains</b></h2>
 <h3><span class="tt">bool contains(std::string_view key) const</span></h3>
@@ -891,8 +913,8 @@ $(function() {
 </ul>
 <p>Checks whether an image key is currently registered. This performs no file IO or GPU work.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1">contains</a>(<span class="stringliteral">&quot;avatar&quot;</span>)) { app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23">registerImage</a>(<span class="stringliteral">&quot;avatar&quot;</span>, <span class="stringliteral">&quot;assets/avatar.png&quot;</span>); }</div>
-<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a3ce30605daebf796adc6e757a93848c1"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1">FlowUi::ImageManager::contains</a></div><div class="ttdeci">bool contains(std::string_view key) const</div><div class="ttdoc">Return whether an image key is registered.</div></div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a731b0c64abbc33fd69821dcd6c6220e5">contains</a>(<span class="stringliteral">&quot;avatar&quot;</span>)) { app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#ac28bde695aee3b52c21596ef5ee45ba6">registerImage</a>(<span class="stringliteral">&quot;avatar&quot;</span>, <span class="stringliteral">&quot;assets/avatar.png&quot;</span>); }</div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html_a731b0c64abbc33fd69821dcd6c6220e5"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html#a731b0c64abbc33fd69821dcd6c6220e5">FlowUi::ImageManager::contains</a></div><div class="ttdeci">bool contains(ResourceKey key) const</div><div class="ttdoc">Return whether an image key is registered.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1">Full Doxygen reference</a>.</p>
 <h2><b>getTexture</b></h2>
 <h3><span class="tt">TextureRef getTexture(std::string_view key) const</span></h3>
@@ -902,8 +924,8 @@ $(function() {
 </ul>
 <p>Returns the texture reference for a registered image. Missing keys return fallback texture id <span class="tt">0</span> and log a warning once for that key.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> avatar = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">getTexture</a>(<span class="stringliteral">&quot;avatar&quot;</span>);</div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
+<div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> avatar = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9">images</a>().<a class="code hl_function" href="classFlowUi_1_1ImageManager.html#a090629fbd73ee907ba693a64fb46cbce">getTexture</a>(<span class="stringliteral">&quot;avatar&quot;</span>);</div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:473</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc">Full Doxygen reference</a>.</p>
 <h1><a class="el" href="structFlowUi_1_1IconManager.html" title="Registers SVG icons and resolves them to atlas-backed texture references.">FlowUi::IconManager</a></h1>
 <h2><b>registerSvg</b></h2>
@@ -992,8 +1014,19 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">inputFields</a>().<a class="code hl_function" href="classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a">removeField</a>(<span class="stringliteral">&quot;settings/name&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html_a1e0319ffec372a95e5d129a5d8bda14a"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a">FlowUi::InputFieldManager::removeField</a></div><div class="ttdeci">bool removeField(std::string_view fieldId)</div><div class="ttdoc">Remove a managed field by id.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a1a718742e52372ebd62f57980ef501ba"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">InputFieldManager &amp; inputFields()</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:273</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a1a718742e52372ebd62f57980ef501ba"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">InputFieldManager &amp; inputFields()</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:330</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a">Full Doxygen reference</a>.</p>
+<h2><b>replaceText</b></h2>
+<h3><span class="tt">bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true)</span></h3>
+<ul>
+<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Arguments:</b> <span class="tt">fieldId</span> field state to update, <span class="tt">text</span> replacement text, <span class="tt">preserveCaret</span> whether to keep and clamp caret state.</li>
+</ul>
+<p>Replaces stored text for an existing field. By default, active carets and selections are preserved and clamped to the new text; pass <span class="tt">false</span> to clear active carets from that field.</p>
+<p><b>Example:</b></p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> changed = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">inputFields</a>().<a class="code hl_function" href="classFlowUi_1_1InputFieldManager.html#a1d9b2fccea5c0aea69284666c5c985a6">replaceText</a>(<span class="stringliteral">&quot;settings/name&quot;</span>, externalName, <span class="keyword">false</span>);</div>
+<div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html_a1d9b2fccea5c0aea69284666c5c985a6"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html#a1d9b2fccea5c0aea69284666c5c985a6">FlowUi::InputFieldManager::replaceText</a></div><div class="ttdeci">bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret=true)</div><div class="ttdoc">Replace the managed text for an existing input field.</div></div>
+</div><!-- fragment --><p>See: <a href="classFlowUi_1_1InputFieldManager.html">Full Doxygen reference</a>.</p>
 <h2><b>clear</b></h2>
 <h3><span class="tt">void clear()</span></h3>
 <ul>
@@ -1106,7 +1139,7 @@ $(function() {
 <p>Returns the currently focused Clay element id for shortcut dispatch. A zero id means no shortcut-focused element is active.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">Clay_ElementId focused = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc">ui</a>().<a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>().<a class="code hl_function" href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">focusedElement</a>();</div>
-<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_a2d2a678228d439ea9889a30b1a6c94b2"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">FlowUi::ShortcutManager::focusedElement</a></div><div class="ttdeci">Clay_ElementId focusedElement() const</div><div class="ttdoc">Return the currently focused Clay element id.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:172</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html_a2d2a678228d439ea9889a30b1a6c94b2"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">FlowUi::ShortcutManager::focusedElement</a></div><div class="ttdeci">Clay_ElementId focusedElement() const</div><div class="ttdoc">Return the currently focused Clay element id.</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">Full Doxygen reference</a>.</p>
 <h1><a class="el" href="classFlowUi_1_1ViewPort.html" title="Offscreen render target that can be sampled by the FlowUi renderer.">FlowUi::ViewPort</a></h1>
 <h2><b>getKey</b></h2>
@@ -1273,7 +1306,7 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a>* scene = app.<a class="code hl_function" href="classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8">viewPorts</a>().<a class="code hl_function" href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">getViewPort</a>(<span class="stringliteral">&quot;scene&quot;</span>);</div>
 <div class="ttc" id="aclassFlowUi_1_1ViewPortManager_html_af6d427e4ed40d83a5485ab81ede41beb"><div class="ttname"><a href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">FlowUi::ViewPortManager::getViewPort</a></div><div class="ttdeci">ViewPort * getViewPort(std::string_view key)</div><div class="ttdoc">Return a mutable viewport by key.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:62</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ViewPort_html"><div class="ttname"><a href="classFlowUi_1_1ViewPort.html">FlowUi::ViewPort</a></div><div class="ttdoc">Offscreen render target that can be sampled by the FlowUi renderer.</div><div class="ttdef"><b>Definition</b> ViewPortManager.hpp:67</div></div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb">Full Doxygen reference</a>.</p>
 <h2><b>getViewPort</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">const ViewPort* getViewPort(std::string_view key) const</span></h3>

@@ -160,6 +160,62 @@ app.ui().createElement(kButton, "toolbar/save").draw();
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4).
 
+### **theme** `1/2`
+
+
+#### `template <typename T> const T& theme() const`
+
+- **Returns:** `const T&`
+- **Arguments:** none.
+
+Queries the active variant for theme struct type `T`. Use this inside custom element `buildElement` or `constructElement` callbacks to retrieve design tokens.
+
+**Example:**
+
+```cpp
+const auto& appTheme = context.uiManager.theme<AppTheme>();
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).
+
+### **theme** `2/2`
+
+
+#### `template <typename T> const T& theme(std::string_view variantName) const`
+
+- **Returns:** `const T&`
+- **Arguments:** `variantName` registered variant name.
+
+Queries a specific named variant for theme struct type `T`.
+
+**Example:**
+
+```cpp
+const auto& lightTheme = context.uiManager.theme<AppTheme>("light");
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).
+
+### **flowTheme** / **uiTheme**
+
+
+#### `const FlowUiTheme& flowTheme() const`
+#### `const FlowUiTheme& uiTheme() const`
+
+- **Returns:** `const FlowUiTheme&`
+- **Arguments:** none.
+
+Convenience shortcut returning the active built-in `FlowUiTheme` design system tokens (colors, font sizes, spacing, corner radii).
+
+**Example:**
+
+```cpp
+const auto& uiTheme = context.uiManager.uiTheme();
+root.backgroundColor = uiTheme.surface;
+```
+
+See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).
+
 ### **drawConstructed**
 
 

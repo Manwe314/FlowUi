@@ -110,272 +110,186 @@ $(function() {
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;cstddef&gt;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;limits&gt;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;unordered_map&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;clay.h&gt;</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;FlowUi/BuildConfig.hpp&quot;</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &quot;FlowUi/PublicStructs.hpp&quot;</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &quot;Vulkan/Vk_Context.hpp&quot;</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">struct </span>plutosvg_document;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">using </span>plutosvg_document_t = plutosvg_document;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">struct </span>plutovg_surface;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">using </span>plutovg_surface_t = plutovg_surface;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">struct </span>VmaAllocation_T;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">struct </span>VkCommandPool_T;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">struct </span>VkSampler_T;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">using </span>VkCommandPool = VkCommandPool_T*;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">using </span>VkSampler = VkSampler_T*;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#if FLOWUI_INCLUDE_ICON_MANAGER</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1App.html">App</a>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span>detail {</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">struct </span>IUiTextureRegistry;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>} <span class="comment">// namespace detail</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span></div>
-<div class="foldopen" id="foldopen00063" data-start="{" data-end="};">
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="structFlowUi_1_1IconManager.html">   63</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">IconManager</a> {</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">registerSvg</a>(std::string_view key, std::string_view svgSource);</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span></div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(std::string_view key, std::string_view filePath);</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span></div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">remove</a>(std::string_view key);</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span></div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">contains</a>(std::string_view key) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span></div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(std::string_view key);</div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>    <span class="keyword">friend</span> <span class="keyword">class </span>App;</div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span> </div>
-<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    <span class="keywordtype">void</span> setRegistry(detail::IUiTextureRegistry* registry);</div>
-<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="keywordtype">void</span> init(VulkanContext&amp; vk, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>&amp; config);</div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>    <span class="keywordtype">void</span> prepareFrameTextures(</div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>        Clay_RenderCommandArray&amp; renderCommands,</div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>        <span class="keywordtype">float</span> uiToFramebufferScaleX,</div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>        <span class="keywordtype">float</span> uiToFramebufferScaleY);</div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    <span class="keywordtype">void</span> destroy(VulkanContext&amp; vk);</div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span> </div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    <span class="keyword">struct </span>DocumentRecord {</div>
-<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>        plutosvg_document_t* document = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>        <span class="keywordtype">float</span> intrinsicWidth = 0.0f;</div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>        <span class="keywordtype">float</span> intrinsicHeight = 0.0f;</div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    };</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <span class="keyword">struct </span>SurfaceOwner {</div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>        plutovg_surface_t* surface = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span> </div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>        SurfaceOwner() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>        <span class="keyword">explicit</span> SurfaceOwner(plutovg_surface_t* value) : surface(value) {}</div>
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>        SurfaceOwner(<span class="keyword">const</span> SurfaceOwner&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>        SurfaceOwner&amp; operator=(<span class="keyword">const</span> SurfaceOwner&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>        SurfaceOwner(SurfaceOwner&amp;&amp; other) noexcept : surface(other.surface) {</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>            other.surface = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>        }</div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>        SurfaceOwner&amp; operator=(SurfaceOwner&amp;&amp; other) <span class="keyword">noexcept</span>;</div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>        ~SurfaceOwner();</div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    };</div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span> </div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>    <span class="keyword">struct </span>TransientRasterResult {</div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>        SurfaceOwner owner{};</div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>        <span class="keyword">const</span> uint8_t* rgbaPixels = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>        uint32_t width = 0u;</div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>        uint32_t height = 0u;</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>        uint32_t strideBytes = 0u;</div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>        uint32_t requestedWidth = 0u;</div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>        uint32_t requestedHeight = 0u;</div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    };</div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span> </div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    <span class="keyword">struct </span>AtlasRect {</div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>        uint32_t x = 0u;</div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>        uint32_t y = 0u;</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>        uint32_t w = 0u;</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>        uint32_t h = 0u;</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>    };</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span> </div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>    <span class="keyword">struct </span>AtlasAllocation {</div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>        uint32_t pageIndex = std::numeric_limits&lt;uint32_t&gt;::max();</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>        AtlasRect paddedRect{};</div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>        AtlasRect contentRect{};</div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    };</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span> </div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>    <span class="keyword">struct </span>VariantKey {</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>        std::string nameKey{};</div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>        uint32_t requestedWidth = 0u;</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>        uint32_t requestedHeight = 0u;</div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span> </div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>        <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> VariantKey&amp; other) <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>            <span class="keywordflow">return</span></div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>                requestedWidth == other.requestedWidth &amp;&amp;</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>                requestedHeight == other.requestedHeight &amp;&amp;</div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>                nameKey == other.nameKey;</div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>        }</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    };</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>    <span class="keyword">struct </span>VariantKeyHash {</div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>        std::size_t operator()(<span class="keyword">const</span> VariantKey&amp; key) <span class="keyword">const</span> <span class="keyword">noexcept</span>;</div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>    };</div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span> </div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>    <span class="keyword">struct </span>VariantEntry {</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>        VariantKey key{};</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>        uint32_t pageIndex = std::numeric_limits&lt;uint32_t&gt;::max();</div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>        uint32_t slotId = 0u;</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>        AtlasRect paddedRect{};</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>        AtlasRect contentRect{};</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>        <span class="keywordtype">float</span> uv0x = 0.0f;</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        <span class="keywordtype">float</span> uv0y = 0.0f;</div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        <span class="keywordtype">float</span> uv1x = 1.0f;</div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>        <span class="keywordtype">float</span> uv1y = 1.0f;</div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>        uint32_t sourceWidth = 0u;</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>        uint32_t sourceHeight = 0u;</div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>        uint32_t lastUsedFrame = 0u;</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>        <span class="keywordtype">bool</span> referencedThisFrame = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>    };</div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span> </div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>    <span class="keyword">struct </span>AtlasPage {</div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>        std::string namespacedKey{};</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>        uint32_t slotId = 0u;</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>        VkImage image = VK_NULL_HANDLE;</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>        VmaAllocation_T* allocation = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>        VkImageView view = VK_NULL_HANDLE;</div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>        uint32_t width = 0u;</div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>        uint32_t height = 0u;</div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>        uint64_t usedArea = 0u;</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>        uint32_t lastUsedFrame = 0u;</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        std::vector&lt;AtlasRect&gt; freeRects{};</div>
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>    };</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span> </div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>    TransientRasterResult rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>    VariantKey makeVariantKey(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>    <span class="keywordtype">void</span> advanceFrameCounter();</div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>    <span class="keywordtype">void</span> touchVariant(VariantEntry&amp; variant, uint32_t frameIndex);</div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    <span class="keywordtype">void</span> resetVariantFrameMarks();</div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>    <span class="keyword">static</span> uint32_t frameAge(uint32_t currentFrame, uint32_t lastUsedFrame);</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span> </div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>    AtlasPage createAtlasPage(uint32_t pageIndex) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>    <span class="keywordtype">void</span> destroyAtlasPage(AtlasPage&amp; page);</div>
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>    <span class="keywordtype">void</span> destroyAtlasPages();</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>    <span class="keywordtype">bool</span> tryAllocateInPage(</div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>        AtlasPage&amp; page,</div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>        uint32_t contentWidth,</div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>        uint32_t contentHeight,</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        uint32_t padding,</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>        AtlasAllocation&amp; outAllocation);</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>    <span class="keywordtype">void</span> releasePageRegion(AtlasPage&amp; page, <span class="keyword">const</span> AtlasRect&amp; paddedRect);</div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    <span class="keywordtype">void</span> mergeFreeRects(AtlasPage&amp; page);</div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>    <span class="keywordtype">void</span> recalcAtlasUvs(VariantEntry&amp; variant, <span class="keyword">const</span> AtlasPage&amp; page) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>    <span class="keywordtype">void</span> uploadRasterToAtlasPage(</div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>        <span class="keyword">const</span> AtlasPage&amp; page,</div>
-<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>        <span class="keyword">const</span> TransientRasterResult&amp; raster,</div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>        <span class="keyword">const</span> AtlasRect&amp; contentRect);</div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>    <span class="keywordtype">bool</span> tryAllocateAtlasRegion(</div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>        uint32_t contentWidth,</div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>        uint32_t contentHeight,</div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>        AtlasAllocation&amp; outAllocation);</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>    <span class="keywordtype">bool</span> evictLeastRecentlyUsedVariant();</div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>    VariantEntry* findBestCachedVariant(</div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>        std::string_view nameKey,</div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>        uint32_t requestedWidth,</div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>        uint32_t requestedHeight);</div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>    VariantEntry&amp; ensureVariantForRequest(</div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        std::string_view nameKey,</div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        uint32_t requestedWidth,</div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        uint32_t requestedHeight);</div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>    <span class="keyword">const</span> std::string* findRequestedKeyByTextureId(uint32_t textureId) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>    std::string makeRequestNamespacedKey(std::string_view key) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>    detail::IUiTextureRegistry* registry_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>    VulkanContext* vk_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>    VkSampler atlasSampler_ = VK_NULL_HANDLE;</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>    VkCommandPool commandPool_ = VK_NULL_HANDLE;</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>    uint32_t atlasSize_ = 0u;</div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>    uint32_t atlasPadding_ = 1u;</div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>    uint32_t sizeReuseTolerance_ = 8u;</div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>    uint32_t maxAtlasPages_ = 10u;</div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    uint32_t frameCounter_ = 0u;</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>    std::unordered_map&lt;std::string, DocumentRecord&gt; documentsByKey_;</div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>    std::unordered_map&lt;std::string, uint32_t&gt; requestTextureIdByKey_;</div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    std::unordered_map&lt;uint32_t, std::string&gt; requestedKeyByTextureId_;</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>    std::unordered_map&lt;VariantKey, VariantEntry, VariantKeyHash&gt; variantsByKeyAndSize_;</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>    std::vector&lt;AtlasPage&gt; atlasPages_;</div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>};</div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;clay.h&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;FlowUi/BuildConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;FlowUi/PublicStructs.hpp&quot;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;FlowUi/ResourceKey.hpp&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">struct </span>plutosvg_document;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">using </span>plutosvg_document_t = plutosvg_document;</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">struct </span>plutovg_surface;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">using </span>plutovg_surface_t = plutovg_surface;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#if FLOWUI_INCLUDE_ICON_MANAGER</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1App.html">App</a>;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">namespace </span>detail::storage { <span class="keyword">class </span>IStorageSystem; }</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">namespace </span>detail::manager_storage {</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">struct </span>IconDocumentRecord; <span class="keyword">struct </span>IconSurfaceOwner; <span class="keyword">struct </span>IconTransientRasterResult;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">struct </span>IconAtlasRect; <span class="keyword">struct </span>IconAtlasAllocation; <span class="keyword">struct </span>IconVariantKey; <span class="keyword">struct </span>IconVariantKeyHash;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">struct </span>IconVariantEntry; <span class="keyword">struct </span>IconAtlasPage; <span class="keyword">struct </span>IconRetiredRegion; <span class="keyword">class </span>IconCacheController;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>}</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span></div>
+<div class="foldopen" id="foldopen00056" data-start="{" data-end="};">
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="structFlowUi_1_1IconManager.html">   56</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">IconManager</a> {</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">registerSvg</a>(std::string_view key, std::string_view svgSource);</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">registerSvg</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view svgSource);</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(std::string_view key, std::string_view filePath);</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath);</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span></div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">remove</a>(std::string_view key);</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">remove</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span></div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">contains</a>(std::string_view key) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">contains</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(std::string_view key);</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>    <span class="keyword">friend</span> <span class="keyword">class </span>App;</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>    <span class="keywordtype">void</span> init(detail::storage::IStorageSystem&amp; storage, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>&amp; config);</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>    <span class="keywordtype">void</span> beginAppTick();</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    <span class="keywordtype">void</span> prepareFrameTextures(</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>        Clay_RenderCommandArray&amp; renderCommands,</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>        <span class="keywordtype">float</span> uiToFramebufferScaleX,</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>        <span class="keywordtype">float</span> uiToFramebufferScaleY);</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    <span class="keywordtype">void</span> destroy() noexcept;</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    using DocumentRecord = detail::manager_storage::IconDocumentRecord;</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>    using SurfaceOwner = detail::manager_storage::IconSurfaceOwner;</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    using TransientRasterResult = detail::manager_storage::IconTransientRasterResult;</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    using AtlasRect = detail::manager_storage::IconAtlasRect;</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    using AtlasAllocation = detail::manager_storage::IconAtlasAllocation;</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    using VariantKey = detail::manager_storage::IconVariantKey;</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    using VariantEntry = detail::manager_storage::IconVariantEntry;</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    using AtlasPage = detail::manager_storage::IconAtlasPage;</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span> </div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    TransientRasterResult rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const;</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    VariantKey makeVariantKey(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const;</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    <span class="keywordtype">void</span> advanceFrameCounter();</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    <span class="keywordtype">void</span> touchVariant(VariantEntry&amp; variant, uint32_t frameIndex);</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    <span class="keywordtype">void</span> resetVariantFrameMarks();</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    static uint32_t frameAge(uint32_t currentFrame, uint32_t lastUsedFrame);</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span> </div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    AtlasPage createAtlasPage(uint32_t pageIndex) const;</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>    <span class="keywordtype">void</span> destroyAtlasPage(AtlasPage&amp; page);</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>    <span class="keywordtype">void</span> destroyAtlasPages();</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>    <span class="keywordtype">bool</span> tryAllocateInPage(</div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>        AtlasPage&amp; page,</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>        uint32_t contentWidth,</div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>        uint32_t contentHeight,</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>        uint32_t padding,</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>        AtlasAllocation&amp; outAllocation);</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    <span class="keywordtype">void</span> releasePageRegion(AtlasPage&amp; page, const AtlasRect&amp; paddedRect);</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>    <span class="keywordtype">void</span> mergeFreeRects(AtlasPage&amp; page);</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    <span class="keywordtype">void</span> recalcAtlasUvs(VariantEntry&amp; variant, const AtlasPage&amp; page) const;</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>    <span class="keywordtype">void</span> uploadRasterToAtlasPage(</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>        const AtlasPage&amp; page,</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>        const TransientRasterResult&amp; raster,</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>        const AtlasRect&amp; contentRect);</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    <span class="keywordtype">bool</span> tryAllocateAtlasRegion(</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>        uint32_t contentWidth,</div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>        uint32_t contentHeight,</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>        AtlasAllocation&amp; outAllocation);</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    <span class="keywordtype">bool</span> evictLeastRecentlyUsedVariant();</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>    VariantEntry* findBestCachedVariant(</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>        std::string_view nameKey,</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>        uint32_t requestedWidth,</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>        uint32_t requestedHeight);</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    VariantEntry&amp; ensureVariantForRequest(</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>        std::string_view nameKey,</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>        uint32_t requestedWidth,</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>        uint32_t requestedHeight);</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>    const std::<span class="keywordtype">string</span>* findRequestedKeyByTextureHandle(<a class="code hl_struct" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> texture) const;</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>    detail::storage::IStorageSystem* storage_ = <span class="keywordtype">nullptr</span>;</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    uint64_t controllerHandle_ = 0;</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>    detail::manager_storage::IconCacheController* controller_ = <span class="keywordtype">nullptr</span>;</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>};</div>
 </div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span></div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1App.html">App</a>;</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>;</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span> </div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span><span class="keyword">namespace </span>detail {</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span><span class="keyword">struct </span>IUiTextureRegistry;</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>} <span class="comment">// namespace detail</span></div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span></div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span></div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">IconManager</a> {</div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">registerSvg</a>(std::string_view key, std::string_view svgSource) {</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>        (void)key;</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>        (void)svgSource;</div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>    }</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span></div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">registerFromFile</a>(std::string_view key, std::string_view filePath) {</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>        (void)key;</div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>        (void)filePath;</div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    }</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span></div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">remove</a>(std::string_view key) {</div>
-<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>        (void)key;</div>
-<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>    }</div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span></div>
-<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">contains</a>(std::string_view key)<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>        (void)key;</div>
-<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
-<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>    }</div>
-<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span></div>
-<div class="line"><a id="l00442" name="l00442"></a><span class="lineno">  442</span>    TextureRef <a class="code hl_function" href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">textureRef</a>(std::string_view key) {</div>
-<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span>        (void)key;</div>
-<div class="line"><a id="l00444" name="l00444"></a><span class="lineno">  444</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
-<div class="line"><a id="l00445" name="l00445"></a><span class="lineno">  445</span>    }</div>
-<div class="line"><a id="l00446" name="l00446"></a><span class="lineno">  446</span> </div>
-<div class="line"><a id="l00447" name="l00447"></a><span class="lineno">  447</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00448" name="l00448"></a><span class="lineno">  448</span>    <span class="keyword">friend</span> <span class="keyword">class </span>App;</div>
-<div class="line"><a id="l00449" name="l00449"></a><span class="lineno">  449</span> </div>
-<div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span>    <span class="keywordtype">void</span> setRegistry(detail::IUiTextureRegistry*) {}</div>
-<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span> </div>
-<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span>    <span class="keywordtype">void</span> init(VulkanContext&amp;, <span class="keyword">const</span> IconManagerConfig&amp;) {</div>
-<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
-<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span>    }</div>
-<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span> </div>
-<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span>    <span class="keywordtype">void</span> prepareFrameTextures(Clay_RenderCommandArray&amp;, <span class="keywordtype">float</span>, <span class="keywordtype">float</span>) {}</div>
-<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span> </div>
-<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>    <span class="keywordtype">void</span> destroy(VulkanContext&amp;) {}</div>
-<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span>};</div>
-<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span></div>
-<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span> </div>
-<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>} <span class="comment">// namespace FlowUi</span></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:189</div></div>
-<div class="ttc" id="astructFlowUi_1_1IconManagerConfig_html"><div class="ttname"><a href="structFlowUi_1_1IconManagerConfig.html">FlowUi::IconManagerConfig</a></div><div class="ttdoc">Configures SVG icon rasterization, caching, and atlas storage.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:287</div></div>
-<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">Registers SVG icons and resolves them to atlas-backed texture references.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:63</div></div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span></div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span><span class="keyword">class </span>App;</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>;</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span> </div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span><span class="keyword">namespace </span>detail::storage { <span class="keyword">class </span>IStorageSystem; }</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span></div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span></div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">IconManager</a> {</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>    <span class="keywordtype">bool</span> registerSvg(std::string_view key, std::string_view svgSource) {</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>        (void)key;</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>        (void)svgSource;</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>    }</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>    <span class="keywordtype">bool</span> registerSvg(ResourceKey key, std::string_view svgSource) {</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        <span class="keywordflow">return</span> registerSvg(key.name, svgSource);</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>    }</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span></div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>    <span class="keywordtype">bool</span> registerFromFile(std::string_view key, std::string_view filePath) {</div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>        (void)key;</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        (void)filePath;</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>    }</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    <span class="keywordtype">bool</span> registerFromFile(ResourceKey key, std::string_view filePath) {</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>        <span class="keywordflow">return</span> registerFromFile(key.name, filePath);</div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>    }</div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span></div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>    <span class="keywordtype">bool</span> remove(std::string_view key) {</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        (void)key;</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>    }</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>    <span class="keywordtype">bool</span> remove(ResourceKey key) { <span class="keywordflow">return</span> remove(key.name); }</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span></div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    <span class="keywordtype">bool</span> contains(std::string_view key)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>        (void)key;</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>    }</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>    <span class="keywordtype">bool</span> contains(ResourceKey key)<span class="keyword"> const </span>{ <span class="keywordflow">return</span> contains(key.name); }</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span></div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>    TextureRef textureRef(std::string_view key) {</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>        (void)key;</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>    }</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>    TextureRef textureRef(ResourceKey key) { <span class="keywordflow">return</span> textureRef(key.name); }</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span> </div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>    <span class="keyword">friend</span> <span class="keyword">class </span>App;</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span> </div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>    <span class="keywordtype">void</span> init(detail::storage::IStorageSystem&amp;, <span class="keyword">const</span> IconManagerConfig&amp;) {</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.&quot;</span>);</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>    }</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span> </div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>    <span class="keywordtype">void</span> beginAppTick() {}</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>    <span class="keywordtype">void</span> prepareFrameTextures(Clay_RenderCommandArray&amp;, <span class="keywordtype">float</span>, <span class="keywordtype">float</span>) {}</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span> </div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    <span class="keywordtype">void</span> destroy() noexcept {}</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>};</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span></div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span> </div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>} <span class="comment">// namespace FlowUi</span></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:191</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManagerConfig_html"><div class="ttname"><a href="structFlowUi_1_1IconManagerConfig.html">FlowUi::IconManagerConfig</a></div><div class="ttdoc">Configures SVG icon rasterization, caching, and atlas storage.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:294</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">Registers SVG icons and resolves them to atlas-backed texture references.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:56</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManager_html_a0de1a60d027cd3b9985f73aebf128f48"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">FlowUi::IconManager::textureRef</a></div><div class="ttdeci">TextureRef textureRef(std::string_view key)</div><div class="ttdoc">Return a texture request reference for a registered icon key.</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManager_html_a152fda978ab8ce39d2b33ab74cf7df29"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">FlowUi::IconManager::remove</a></div><div class="ttdeci">bool remove(std::string_view key)</div><div class="ttdoc">Remove a registered SVG document by key.</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManager_html_a3014f0a3c8ae23869d23c107c6f469eb"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">FlowUi::IconManager::registerFromFile</a></div><div class="ttdeci">bool registerFromFile(std::string_view key, std::string_view filePath)</div><div class="ttdoc">Register an SVG document from a file path.</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManager_html_aacefdec239a3b1fcd8aadae4eec05516"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">FlowUi::IconManager::contains</a></div><div class="ttdeci">bool contains(std::string_view key) const</div><div class="ttdoc">Return whether an SVG key is registered.</div></div>
 <div class="ttc" id="astructFlowUi_1_1IconManager_html_af03e06a033403fd88d04412b6d11395c"><div class="ttname"><a href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">FlowUi::IconManager::registerSvg</a></div><div class="ttdeci">bool registerSvg(std::string_view key, std::string_view svgSource)</div><div class="ttdoc">Register an SVG document from source text.</div></div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:466</div></div>
+<div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:31</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureHandle_html"><div class="ttname"><a href="structFlowUi_1_1TextureHandle.html">FlowUi::TextureHandle</a></div><div class="ttdef"><b>Definition</b> TextureHandle.hpp:9</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:473</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -173,6 +173,7 @@ inline Clay_Color Flow_Color(std::string_view hexRgba)
 
 class UiManager;
 class ImageManager;
+class ThemeManager;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 class IconManager;
 #endif
@@ -431,6 +432,28 @@ public:
 	 * @see @ref flowui_image_manager "Image Manager"
 	 */
 	const ImageManager& images() const;
+	/** @brief Access the theme manager.
+	 *
+	 * Example:
+	 * @code{.cpp}
+	 * FlowUi::App application = FlowUi::makeApplication(config);
+	 * FlowUi::ThemeManager& themeManager = application.themes();
+	 * @endcode
+	 *
+	 * @return Reference to the FlowUi::ThemeManager.
+	 */
+	ThemeManager& themes();
+	/** @brief Access the theme manager.
+	 *
+	 * Example:
+	 * @code{.cpp}
+	 * FlowUi::App application = FlowUi::makeApplication(config);
+	 * const FlowUi::ThemeManager& themeManager = application.themes();
+	 * @endcode
+	 *
+	 * @return Const reference to the FlowUi::ThemeManager.
+	 */
+	const ThemeManager& themes() const;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.
 	 *

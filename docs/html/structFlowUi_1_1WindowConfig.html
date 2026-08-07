@@ -107,7 +107,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Describes the native window created for the app.  
+<p>Describes a native application window.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a>&gt;</code></p>
@@ -124,6 +124,9 @@ std::string&#160;</td><td class="memItemRight"><b>title</b> = &quot;FlowUi App&q
 <tr class="memitem:aa5943431837d9e67da7212dcda87dec5" id="r_aa5943431837d9e67da7212dcda87dec5"><td class="memItemLeft"><a id="aa5943431837d9e67da7212dcda87dec5" name="aa5943431837d9e67da7212dcda87dec5"></a>
 bool&#160;</td><td class="memItemRight"><b>resizable</b> = true</td></tr>
 <tr class="memdesc:aa5943431837d9e67da7212dcda87dec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allow the user or window manager to resize the window. <br /></td></tr>
+<tr class="memitem:ac039f23374a733fee14c6fe86f2eb7e5" id="r_ac039f23374a733fee14c6fe86f2eb7e5"><td class="memItemLeft"><a id="ac039f23374a733fee14c6fe86f2eb7e5" name="ac039f23374a733fee14c6fe86f2eb7e5"></a>
+bool&#160;</td><td class="memItemRight"><b>decorated</b> = true</td></tr>
+<tr class="memdesc:ac039f23374a733fee14c6fe86f2eb7e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create the window with native title bar and borders. <br /></td></tr>
 <tr class="memitem:a84a3f0ed3f5b12b016520229720cdedc" id="r_a84a3f0ed3f5b12b016520229720cdedc"><td class="memItemLeft"><a id="a84a3f0ed3f5b12b016520229720cdedc" name="a84a3f0ed3f5b12b016520229720cdedc"></a>
 bool&#160;</td><td class="memItemRight"><b>maximized</b> = false</td></tr>
 <tr class="memdesc:a84a3f0ed3f5b12b016520229720cdedc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create the window in a maximized state when supported. <br /></td></tr>
@@ -137,8 +140,8 @@ bool&#160;</td><td class="memItemRight"><b>highDPI</b> = true</td></tr>
 <tr class="memdesc:a7a227fa3742af251c779478733ef4fb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial low-level input behavior for the window. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Describes the native window created for the app. </p>
-<p>Width, height, title, and input settings also provide the initial runtime defaults used by FlowUi managers. </p>
+<div class="textblock"><p>Describes a native application window. </p>
+<p>Width, height, title, and input settings also provide the initial runtime defaults used by FlowUi managers. <a class="el" href="structFlowUi_1_1AppConfig.html#a172fe9b539d98ff43a4d23a0b737a000" title="Initial native-window configuration for the semantic main window.">AppConfig::window</a> configures the semantic main window. Explicit secondary windows inherit the application's Vulkan and UI configuration and supply only this native-window configuration. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="ac6c54ec6f180a991efcd6daeaae9b968" name="ac6c54ec6f180a991efcd6daeaae9b968"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac6c54ec6f180a991efcd6daeaae9b968">&#9670;&#160;</a></span>fullscreen</h2>
