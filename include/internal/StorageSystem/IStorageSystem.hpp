@@ -11,7 +11,7 @@ namespace FlowUi::detail::storage {
 
 class IStorageSystem {
 public:
-	static constexpr uint32_t CurrentInterfaceVersion = 5u;
+	static constexpr uint32_t CurrentInterfaceVersion = 6u;
 
 	virtual ~IStorageSystem() = default;
 
@@ -69,11 +69,22 @@ public:
 		ManagerRecordHandle handle, ResourceKind kind) const noexcept = 0;
 	virtual bool removeManagerRecord(ResourceKey key, ResourceKind kind) = 0;
 	virtual void releaseWindowManagerRecords(WindowId window) noexcept = 0;
+	[[nodiscard]] virtual PersistentRecordHandle createPersistentRecord(
+		const PersistentRecordDesc& desc) = 0;
+	[[nodiscard]] virtual PersistentRecordView persistentRecord(
+		PersistentRecordHandle handle, ResourceKind kind) noexcept = 0;
+	[[nodiscard]] virtual ConstPersistentRecordView persistentRecord(
+		PersistentRecordHandle handle, ResourceKind kind) const noexcept = 0;
+	virtual bool removePersistentRecord(PersistentRecordHandle handle, ResourceKind kind) noexcept = 0;
+	virtual void releaseWindowPersistentRecords(WindowId window) noexcept = 0;
 	virtual void noteManagerMutation(WindowId window) = 0;
 	[[nodiscard]] virtual ManagerFrameView managerFrameView(const FrameToken& frame) const noexcept = 0;
 	[[nodiscard]] virtual uint64_t managerSharedRevision() const noexcept = 0;
 	[[nodiscard]] virtual uint64_t managerWindowRevision(WindowId window) const noexcept = 0;
-	virtual void setManagerFailureCountdown(uint32_t checkpoints) noexcept = 0;
+	virtual void setRecordFailureCountdown(uint32_t checkpoints) noexcept = 0;
+	void setManagerFailureCountdown(uint32_t checkpoints) noexcept {
+		setRecordFailureCountdown(checkpoints);
+	}
 	[[nodiscard]] virtual BlobHandle createBlob(std::span<const std::byte> bytes, StringId debugName) = 0;
 	[[nodiscard]] virtual std::span<const std::byte> readBlob(BlobHandle handle) const noexcept = 0;
 	virtual void releaseBlob(BlobHandle handle, SubmissionSerial lastUse = 0) = 0;

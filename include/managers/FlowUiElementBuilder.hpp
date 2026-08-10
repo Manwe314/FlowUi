@@ -11,6 +11,7 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "clay.h"
 #include "internal/FlowUiElementBridge.hpp"
+#include "managers/ElementManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/elementDevCapture.hpp"
@@ -274,6 +275,13 @@ public:
 	void draw(ElementDrawOptions options = ElementDrawOptions::Default);
 
 private:
+	// transitional: temporary builder bridge registers the current ElementDefinition specialization until the concept-based builder carries a normalized descriptor directly.
+	void ensureDefinitionRegistered()
+	{
+		detail::ensureElementDefinitionRegistered(
+			uiManager_, elementDescriptor<DefinitionType>);
+	}
+
 	UiManager& uiManager_;
 	const DefinitionType* elementDefinition_;
 	std::string elementID_;
@@ -290,9 +298,23 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::
 	if (!elementDefinition_ || !elementDefinition_->constructElement) {
 		throw std::runtime_error("FlowUi: elementDefinition is null or missing constructElement callback.");
 	}
+#if FLOW_UI_DEV_MODE
+	const uint64_t elementFlowId = toFlowId(elementID_);
+	// transitional: temporary dev-only invocation hook claims the current builder root until normalized concept dispatch owns the claim directly.
+	detail::claimFlowRootForDev(
+		uiManager_,
+		elementFlowId,
+		DefinitionType::definitionId,
+		elementID_,
+		sourceLocation_.file_name(),
+		static_cast<uint32_t>(sourceLocation_.line()),
+		static_cast<uint32_t>(sourceLocation_.column()),
+		sourceLocation_.function_name());
+#endif
+	// transitional: temporary invocation hook auto-registers the current builder's definition until normalized concept dispatch owns registration.
+	ensureDefinitionRegistered();
 
 	const Clay_ElementId rootElementId = detail::toClayElementId(uiManager_, elementID_);
-	const uint64_t elementFlowId = toFlowId(elementID_);
 #if FLOW_UI_DEV_MODE
 	const std::size_t captureIndex = detail::devModeBridge::beginCapturedFlowElement(
 		uiManager_,
@@ -387,9 +409,23 @@ void ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>::
 	if (!elementDefinition_ || !elementDefinition_->buildElement) {
 		throw std::runtime_error("FlowUi: elementDefinition is null or missing buildElement callback.");
 	}
+#if FLOW_UI_DEV_MODE
+	const uint64_t elementFlowId = toFlowId(elementID_);
+	// transitional: temporary dev-only invocation hook claims the current builder root until normalized concept dispatch owns the claim directly.
+	detail::claimFlowRootForDev(
+		uiManager_,
+		elementFlowId,
+		DefinitionType::definitionId,
+		elementID_,
+		sourceLocation_.file_name(),
+		static_cast<uint32_t>(sourceLocation_.line()),
+		static_cast<uint32_t>(sourceLocation_.column()),
+		sourceLocation_.function_name());
+#endif
+	// transitional: temporary invocation hook auto-registers the current builder's definition until normalized concept dispatch owns registration.
+	ensureDefinitionRegistered();
 
 	const Clay_ElementId rootElementId = detail::toClayElementId(uiManager_, elementID_);
-	const uint64_t elementFlowId = toFlowId(elementID_);
 #if FLOW_UI_DEV_MODE
 	const std::size_t captureIndex = detail::devModeBridge::beginCapturedFlowElement(
 		uiManager_,

@@ -5,6 +5,7 @@
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
 #include "managers/ThemeManager.hpp"
+#include "managers/ElementManager.hpp"
 #if FLOWUI_INCLUDE_ICON_MANAGER
 #include "managers/IconManager.hpp"
 #endif
@@ -268,6 +269,7 @@ struct App::Impl {
 	FontManager fonts;
 	ImageManager imageManager;
 	ThemeManager themeManager;
+	ElementManager elementManager;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager icons;
 #endif
@@ -359,7 +361,7 @@ struct App::Impl {
 		}
 	}
 
-	void init() {
+	void init(App& owner) {
 		auto main = std::make_unique<AppWindow>(MainWindowId, makeMainWindowConfig(config), config);
 		AppWindow* const mainPointer = main.get();
 		windows.emplace(MainWindowId, std::move(main));
@@ -390,13 +392,16 @@ struct App::Impl {
 		storageSystem->initialize(storageConfig);
 		themeManager.init(*storageSystem);
 		themeManager.registerTheme<FlowUiTheme>("default", FlowUiTheme::dark(), true);
+		elementManager.init(owner, *storageSystem);
 		mainPointer->storageSystem = storageSystem.get();
 		storageSystem->registerWindow(
 			mainPointer->id, makeWindowStorageDesc(*storageSystem, storageConfig, mainPointer->config));
 		mainPointer->storageRegistered = true;
+		elementManager.registerWindow(mainPointer->id);
 		mainPointer->ui.initStorage(
 			*storageSystem, mainPointer->id, makeUiManagerConfig(config, mainPointer->config));
 		mainPointer->ui.setThemeManager(&themeManager);
+		elementManager.attachTo(mainPointer->ui);
 		initSharedUiByteResources(*storageSystem, sharedUiByteResources);
 		const storage::TextureHandle fallbackTexture = storageSystem->publishTexture(
 			storage::ResourceKey{
@@ -481,6 +486,7 @@ struct App::Impl {
 		for (SwapchainGeneration& generation : window.retiredSwapchains) generation.destroy(vk);
 		window.retiredSwapchains.clear();
 		window.swapchain.destroy(vk);
+		elementManager.destroyWindow(window.id);
 		window.ui.destroyStorage();
 		if (storageSystem && window.storageRegistered) {
 			try { storageSystem->unregisterWindow(window.id, window.lastSubmissionSerial); } catch (...) {}
@@ -536,9 +542,11 @@ struct App::Impl {
 			storageSystem->registerWindow(
 				id, makeWindowStorageDesc(*storageSystem, storageConfig, pending->config));
 			pending->storageRegistered = true;
+			elementManager.registerWindow(id);
 			pending->ui.initStorage(
 				*storageSystem, id, makeUiManagerConfig(config, pending->config));
 			pending->ui.setThemeManager(&themeManager);
+			elementManager.attachTo(pending->ui);
 			pending->swapchain.create(
 				pending->config.native,
 				pending->config.vulkan,
@@ -586,6 +594,9 @@ struct App::Impl {
 
 	void cancelStorageFrame(AppWindow& window) noexcept {
 		if (storageSystem && window.storageFrame) storageSystem->cancelFrame(window.storageFrame);
+#if FLOW_UI_DEV_MODE
+		window.ui.cancelDevFlowRootClaims();
+#endif
 		window.preparedUi = {};
 		window.storageReadLease = {};
 		window.storageFrame = {};
@@ -1101,6 +1112,7 @@ struct App::Impl {
 		window.viewPorts.destroyDrained(vk);
 		window.frames.destroy(vk);
 		window.swapchain.destroy(vk);
+		elementManager.destroyWindow(id);
 		window.ui.destroyStorage();
 		if (window.storageRegistered) {
 			storageSystem->unregisterWindow(id, window.lastSubmissionSerial);
@@ -1124,6 +1136,8 @@ struct App::Impl {
 			(void)vkDeviceWaitIdle(vk.device);
 			try { completeAllSubmissionsAfterIdle(); } catch (...) {}
 		}
+		for (auto& [_, window] : windows) elementManager.destroyWindow(window->id);
+		elementManager.destroy();
 
 		if (imagesInitialized) imageManager.destroy();
 #if FLOWUI_INCLUDE_ICON_MANAGER
@@ -1168,9 +1182,17 @@ struct App::Impl {
 
 App::App() = default;
 
-App::App(App&&) noexcept = default;
+App::App(App&& other) noexcept
+	: impl_(std::move(other.impl_)) {
+	if (impl_) impl_->elementManager.rebindOwner(*this);
+}
 
-App& App::operator=(App&&) noexcept = default;
+App& App::operator=(App&& other) noexcept {
+	if (this == &other) return *this;
+	impl_ = std::move(other.impl_);
+	if (impl_) impl_->elementManager.rebindOwner(*this);
+	return *this;
+}
 
 App::~App() = default;
 
@@ -1292,6 +1314,16 @@ const ThemeManager& App::themes() const {
 		throw std::runtime_error("FlowUi::App not initialized.");
 	}
 	return impl_->themeManager;
+}
+
+ElementManager& App::elements() {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->elementManager;
+}
+
+const ElementManager& App::elements() const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->elementManager;
 }
 
 #if FLOWUI_INCLUDE_ICON_MANAGER
@@ -1468,7 +1500,7 @@ std::pair<int, int> App::framebufferSize(WindowId id) const {
 App makeApplication(const AppConfig& cfg) {
 	App app;
 	app.impl_ = std::make_unique<App::Impl>(cfg);
-	app.impl_->init();
+	app.impl_->init(app);
 #if FLOW_UI_DEV_MODE
 	devMode::initializeDevFlowElementResourcesFromApp(app);
 #endif

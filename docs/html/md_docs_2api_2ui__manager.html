@@ -210,17 +210,16 @@ $(function() {
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; lightTheme = context.uiManager.theme&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
-<h2><b>flowTheme</b> / <b>uiTheme</b></h2>
+<h2><b>flowTheme</b></h2>
 <h3><span class="tt">const FlowUiTheme&amp; flowTheme() const</span></h3>
-<h3><span class="tt">const FlowUiTheme&amp; uiTheme() const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">const FlowUiTheme&amp;</span></li>
 <li><b>Arguments:</b> none.</li>
 </ul>
 <p>Convenience shortcut returning the active built-in <span class="tt">FlowUiTheme</span> design system tokens (colors, font sizes, spacing, corner radii).</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; uiTheme = context.uiManager.uiTheme();</div>
-<div class="line">root.backgroundColor = uiTheme.surface;</div>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; flowTheme = context.uiManager.flowTheme();</div>
+<div class="line">root.backgroundColor = flowTheme.surface;</div>
 </div><!-- fragment --><p>See: <a href="classFlowUi_1_1UiManager.html">Full Doxygen reference</a>.</p>
 <h2><b>drawConstructed</b></h2>
 <h3><span class="tt">void drawConstructed()</span></h3>

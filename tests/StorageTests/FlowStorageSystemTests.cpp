@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include "internal/StorageSystem/PersistentRecord.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 
 namespace {
@@ -49,6 +50,8 @@ using FlowUi::detail::storage::MemoryPreference;
 using FlowUi::detail::storage::ManagerRecordDesc;
 using FlowUi::detail::storage::ManagerRecordHandle;
 using FlowUi::detail::storage::PixelFormat;
+using FlowUi::detail::storage::PersistentRecordCreateInfo;
+using FlowUi::detail::storage::PersistentRecordHandle;
 using FlowUi::detail::storage::RendererLayoutHandle;
 using FlowUi::detail::storage::RendererLayoutKey;
 using FlowUi::detail::storage::RendererPipelineBundleHandle;
@@ -68,6 +71,8 @@ using FlowUi::detail::storage::TextureViewDesc;
 using FlowUi::detail::storage::WindowDescriptorBundleDesc;
 using FlowUi::detail::storage::WindowDescriptorBundleHandle;
 using FlowUi::detail::storage::WindowStorageDesc;
+using FlowUi::detail::storage::createTypedPersistentRecord;
+using FlowUi::detail::storage::typedPersistentRecord;
 
 struct ManagerRecordTestState {
 	int value = 0;
@@ -91,6 +96,53 @@ ManagerRecordDesc managerRecordDesc(ResourceKey key, ManagerRecordTestArgs& args
 		.userData = &args,
 	};
 }
+
+struct PersistentRecordTestHeader {
+	static inline int constructions = 0;
+	static inline int destructions = 0;
+
+	uint64_t marker = 0;
+	size_t payloadOffset = 0;
+
+	PersistentRecordTestHeader() noexcept { ++constructions; }
+	~PersistentRecordTestHeader() noexcept { ++destructions; }
+
+	static void resetCounts() noexcept {
+		constructions = 0;
+		destructions = 0;
+	}
+};
+
+struct alignas(64) PersistentRecordTestPayload {
+	static inline int constructions = 0;
+	static inline int destructions = 0;
+
+	int value = 0;
+	int* destructionCounter = nullptr;
+
+	PersistentRecordTestPayload(int initialValue, int* destroyed) noexcept
+		: value(initialValue), destructionCounter(destroyed) {
+		++constructions;
+	}
+	PersistentRecordTestPayload(const PersistentRecordTestPayload&) = delete;
+	PersistentRecordTestPayload& operator=(const PersistentRecordTestPayload&) = delete;
+	PersistentRecordTestPayload(PersistentRecordTestPayload&&) = delete;
+	PersistentRecordTestPayload& operator=(PersistentRecordTestPayload&&) = delete;
+	~PersistentRecordTestPayload() noexcept {
+		++destructions;
+		if (destructionCounter) ++*destructionCounter;
+	}
+
+	static void resetCounts() noexcept {
+		constructions = 0;
+		destructions = 0;
+	}
+};
+
+struct ThrowingPersistentPayload {
+	ThrowingPersistentPayload() { throw std::runtime_error("injected payload construction failure"); }
+	~ThrowingPersistentPayload() noexcept = default;
+};
 
 template <typename Handle>
 uint64_t nativeBits(Handle handle) noexcept {
@@ -433,6 +485,7 @@ void testInitialization(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::WindowScopes));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::WorkerArenas));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::GenerationalHandles));
+	FLOWUI_CHECK(hasCapability(storage, StorageCapability::PersistentRecords));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::DirectMappedWrites));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::HostScratchBufferWrites));
 	FLOWUI_CHECK(hasCapability(storage, StorageCapability::FrameReadLeases));
@@ -1373,6 +1426,149 @@ void testManagerRecordsAndFailureRollback(FlowUi::test::HeadlessVulkanFixture& v
 	storage.unregisterWindow(301u, 0);
 }
 
+void testPersistentAlignedRecordsAndFailureRollback(
+	FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+	storage.registerWindow(401u, windowDesc(1, 1));
+	PersistentRecordTestHeader::resetCounts();
+	PersistentRecordTestPayload::resetCounts();
+	int payloadDestructions = 0;
+
+	const auto createStateRecord = [&](int value) {
+		return createTypedPersistentRecord<
+			PersistentRecordTestHeader,
+			PersistentRecordTestPayload>(
+			storage,
+			PersistentRecordCreateInfo{
+				.kind = ResourceKind::UiElementState,
+				.window = 401u,
+				.debugName = storage.intern("phase-b element state"),
+			},
+			[](PersistentRecordTestHeader& header, const auto& layout) noexcept {
+				header.marker = 0xfeedbeefull;
+				header.payloadOffset = layout.payloadOffset;
+			},
+			value,
+			&payloadDestructions);
+	};
+
+	for (uint32_t checkpoint = 1; checkpoint <= 4; ++checkpoint) {
+		storage.setRecordFailureCountdown(checkpoint);
+		FLOWUI_CHECK_THROWS(createStateRecord(17));
+		FLOWUI_CHECK(storage.resourceStats(ResourceKind::UiElementState).live == 0);
+	}
+	// Only checkpoint four reaches a fully constructed record before failing to
+	// publish it; both objects must be rolled back exactly once.
+	FLOWUI_CHECK(PersistentRecordTestHeader::constructions == 1);
+	FLOWUI_CHECK(PersistentRecordTestHeader::destructions == 1);
+	FLOWUI_CHECK(PersistentRecordTestPayload::constructions == 1);
+	FLOWUI_CHECK(PersistentRecordTestPayload::destructions == 1);
+	FLOWUI_CHECK(payloadDestructions == 1);
+
+	storage.setRecordFailureCountdown(0);
+	const PersistentRecordHandle first = createStateRecord(31);
+	FLOWUI_CHECK(first);
+	FLOWUI_CHECK(storage.validateHandle(
+		ResourceKind::UiElementState, first.index, first.generation));
+	auto firstView = typedPersistentRecord<
+		PersistentRecordTestHeader,
+		PersistentRecordTestPayload>(storage, first, ResourceKind::UiElementState);
+	FLOWUI_CHECK(firstView);
+	FLOWUI_CHECK(firstView.header->marker == 0xfeedbeefull);
+	FLOWUI_CHECK(firstView.payload->value == 31);
+	FLOWUI_CHECK(reinterpret_cast<uintptr_t>(firstView.payload) %
+		alignof(PersistentRecordTestPayload) == 0);
+	FLOWUI_CHECK(firstView.header->payloadOffset >= sizeof(PersistentRecordTestHeader));
+	FLOWUI_CHECK(!storage.persistentRecord(first, ResourceKind::UiElementResources));
+
+#if FLOW_UI_DEV_MODE
+	const auto stateStats = storage.resourceStats(ResourceKind::UiElementState);
+	FLOWUI_CHECK(stateStats.live == 1);
+	FLOWUI_CHECK(stateStats.ready == 1);
+	FLOWUI_CHECK(stateStats.liveBytes >=
+		sizeof(PersistentRecordTestHeader) + sizeof(PersistentRecordTestPayload));
+#endif
+
+	FLOWUI_CHECK(storage.removePersistentRecord(first, ResourceKind::UiElementState));
+	FLOWUI_CHECK(!storage.validateHandle(
+		ResourceKind::UiElementState, first.index, first.generation));
+	FLOWUI_CHECK(!storage.persistentRecord(first, ResourceKind::UiElementState));
+	FLOWUI_CHECK(!storage.removePersistentRecord(first, ResourceKind::UiElementState));
+
+	const PersistentRecordHandle replacement = createStateRecord(47);
+	FLOWUI_CHECK(replacement.index == first.index);
+	FLOWUI_CHECK(replacement.generation != first.generation);
+	FLOWUI_CHECK(!storage.persistentRecord(first, ResourceKind::UiElementState));
+	FLOWUI_CHECK(typedPersistentRecord<
+		PersistentRecordTestHeader,
+		PersistentRecordTestPayload>(
+		storage, replacement, ResourceKind::UiElementState).payload->value == 47);
+
+	const int headerConstructionsBeforeThrow = PersistentRecordTestHeader::constructions;
+	const int headerDestructionsBeforeThrow = PersistentRecordTestHeader::destructions;
+	FLOWUI_CHECK_THROWS((createTypedPersistentRecord<
+		PersistentRecordTestHeader,
+		ThrowingPersistentPayload>(
+		storage,
+		PersistentRecordCreateInfo{
+			.kind = ResourceKind::UiElementState,
+			.window = 401u,
+		},
+		[](PersistentRecordTestHeader&, const auto&) noexcept {})));
+	FLOWUI_CHECK(PersistentRecordTestHeader::constructions == headerConstructionsBeforeThrow + 1);
+	FLOWUI_CHECK(PersistentRecordTestHeader::destructions == headerDestructionsBeforeThrow + 1);
+#if FLOW_UI_DEV_MODE
+	FLOWUI_CHECK(storage.resourceStats(ResourceKind::UiElementState).live == 1);
+#endif
+
+	FLOWUI_CHECK_THROWS((createTypedPersistentRecord<
+		PersistentRecordTestHeader,
+		PersistentRecordTestPayload>(
+		storage,
+		PersistentRecordCreateInfo{.kind = ResourceKind::UiElementState},
+		[](PersistentRecordTestHeader&, const auto&) noexcept {},
+		1,
+		&payloadDestructions)));
+	FLOWUI_CHECK_THROWS((createTypedPersistentRecord<
+		PersistentRecordTestHeader,
+		PersistentRecordTestPayload>(
+		storage,
+		PersistentRecordCreateInfo{
+			.kind = ResourceKind::UiElementResources,
+			.window = 401u,
+		},
+		[](PersistentRecordTestHeader&, const auto&) noexcept {},
+		1,
+		&payloadDestructions)));
+
+	const PersistentRecordHandle resources = createTypedPersistentRecord<
+		PersistentRecordTestHeader,
+		PersistentRecordTestPayload>(
+		storage,
+		PersistentRecordCreateInfo{
+			.kind = ResourceKind::UiElementResources,
+			.window = FlowUi::InvalidWindowId,
+			.debugName = storage.intern("phase-b element resources"),
+		},
+		[](PersistentRecordTestHeader& header, const auto& layout) noexcept {
+			header.payloadOffset = layout.payloadOffset;
+		},
+		73,
+		&payloadDestructions);
+	const auto resourceView = storage.persistentRecord(
+		resources, ResourceKind::UiElementResources);
+	FLOWUI_CHECK(resourceView);
+	FLOWUI_CHECK(resourceView.window == FlowUi::InvalidWindowId);
+	FLOWUI_CHECK(resourceView.kind == ResourceKind::UiElementResources);
+
+	storage.releaseWindowPersistentRecords(401u);
+	FLOWUI_CHECK(!storage.persistentRecord(replacement, ResourceKind::UiElementState));
+	FLOWUI_CHECK(storage.persistentRecord(resources, ResourceKind::UiElementResources));
+	FLOWUI_CHECK(storage.removePersistentRecord(resources, ResourceKind::UiElementResources));
+	storage.unregisterWindow(401u, 0);
+}
+
 void testAnonymousTextureExactRetirement(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	storage.initialize(testConfig());
@@ -1484,6 +1680,9 @@ int main() {
 		runner.run("descriptor bundle replacement", [&] { testDescriptorBundleReplacement(vulkan); });
 		runner.run("manager records, revisions, destruction, and failure rollback", [&] {
 			testManagerRecordsAndFailureRollback(vulkan);
+		});
+		runner.run("persistent aligned records, generations, and failure rollback", [&] {
+			testPersistentAlignedRecordsAndFailureRollback(vulkan);
 		});
 		runner.run("anonymous logical texture exact retirement", [&] {
 			testAnonymousTextureExactRetirement(vulkan);

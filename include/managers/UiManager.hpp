@@ -32,6 +32,7 @@ namespace FlowUi {
 struct AppWindow;
 
 class App;
+class ElementManager;
 struct FlowUiTheme;
 struct FontManager;
 namespace detail::storage { class IStorageSystem; struct FrameToken; }
@@ -533,15 +534,33 @@ public:
 
 private:
 	friend class App;
+	friend class ElementManager;
 	friend struct AppWindow;
 	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
 	friend class ElementBuilder;
 	friend void detail::pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
+	// transitional: temporary friendship exposes the attached manager only to the current builder registration bridge until concept-based dispatch replaces it.
+	friend void detail::ensureElementDefinitionRegistered(
+		UiManager& uiManager,
+		const detail::element::ElementRegistrationDescriptor& descriptor);
+#if FLOW_UI_DEV_MODE
+	// transitional: temporary dev-only friendship exposes the frame tracker to the current ElementBuilder claim bridge until concept-based dispatch replaces it.
+	friend void detail::claimFlowRootForDev(
+		UiManager& uiManager,
+		uint64_t flowId,
+		uint64_t definitionId,
+		std::string_view logicalId,
+		std::string_view fileName,
+		uint32_t line,
+		uint32_t column,
+		std::string_view functionName);
+#endif
 
 	UiManager() = default;
 	void initStorage(detail::storage::IStorageSystem& storage, WindowId window, const AppConfig& config);
 	void destroyStorage() noexcept;
 	void setThemeManager(const ThemeManager* themeManager) noexcept { themeManager_ = themeManager; }
+	void setElementManager(ElementManager* elementManager) noexcept { elementManager_ = elementManager; }
 	const ThemeManager& appThemes() const;
 
 	void beginFrame(
@@ -557,6 +576,9 @@ private:
 		std::function<void(std::string_view)> setClipboardTextAccessor,
 		std::function<std::string()> getClipboardTextAccessor);
 	void advanceFrameInteractionSnapshots();
+#if FLOW_UI_DEV_MODE
+	void cancelDevFlowRootClaims() noexcept;
+#endif
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
 	void pushConstructedElement(Clay_ElementId elementId);
 
@@ -572,6 +594,7 @@ private:
 	std::function<void(CursorType)> setCursorTypeAccessor_{};
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	const ThemeManager* themeManager_ = nullptr;
+	ElementManager* elementManager_ = nullptr;
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	detail::manager_storage::UiManagerState* state_ = nullptr;

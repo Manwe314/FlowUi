@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - **Registrable Themes System**:
   - Added `ThemeManager` (`app.themes()`) for type-safe theme struct registration, named variants (e.g. `"dark"`, `"light"`), active variant switching, and active theme queries.
   - Added standard `FlowUiTheme` design system struct in `FlowUi/PublicStructs.hpp` containing tokens for colors, corner radii, typography, and spacing, with `dark()` and `light()` factories.
-  - Added `UiManager` theme accessors: `ui.theme<T>()`, `ui.theme<T>("name")`, `ui.flowTheme()`, and `ui.uiTheme()`.
+  - Added `UiManager` theme accessors: `ui.theme<T>()`, `ui.theme<T>("name")`, and `ui.flowTheme()`.
   - Added atomic frame-boundary staged theme mutations (`updateTheme<T>()` and `updateActiveTheme<T>()`) evaluated during `app.pollEvents()` / `beginFrame()`.
   - Extended `FlowStorageSystem` with `ResourceKind::UiTheme` and `ThemeRecordHeader` type-erased persistent payload storage.
   - Added `include/internal/TypeOperations.hpp` providing compile-time type tokens and 64-bit FNV-1a hashing under `FlowUi::detail`.

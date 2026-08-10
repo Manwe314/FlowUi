@@ -68,6 +68,57 @@ set_tests_properties(flowui.phase5.manager_storage PROPERTIES
 	TIMEOUT 30
 )
 
+add_executable(flowui_element_definition_registration_tests
+	ElementResourceTests/PhaseDDefinitionRegistrationTests.cpp
+)
+target_compile_features(flowui_element_definition_registration_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_definition_registration_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_element_definition_registration_tests PRIVATE FlowUi::FlowUi)
+add_test(
+	NAME flowui.elements.definition_registration
+	COMMAND flowui_element_definition_registration_tests
+)
+set_tests_properties(flowui.elements.definition_registration PROPERTIES
+	LABELS "flowui;elements;unit"
+	TIMEOUT 30
+)
+
+if(FLOW_UI_DEV_MODE)
+	add_executable(flowui_element_flow_id_dev_tests
+		ElementResourceTests/PhaseADevFlowIdTests.cpp
+		ElementResourceTests/DevFlowIdContractTestDriver.cpp
+	)
+	target_compile_features(flowui_element_flow_id_dev_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_element_flow_id_dev_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(flowui_element_flow_id_dev_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.elements.flow_id_dev COMMAND flowui_element_flow_id_dev_tests)
+	set_tests_properties(flowui.elements.flow_id_dev PROPERTIES
+		LABELS "flowui;elements;dev;unit"
+		TIMEOUT 30
+	)
+else()
+	add_executable(flowui_element_flow_id_production_isolation_tests
+		ElementResourceTests/PhaseAProductionIsolationTests.cpp
+	)
+	target_compile_features(flowui_element_flow_id_production_isolation_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_element_flow_id_production_isolation_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_compile_definitions(flowui_element_flow_id_production_isolation_tests PRIVATE
+		FLOWUI_UI_MANAGER_STATE_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/ManagerStorage/UiManagerState.hpp"
+		FLOWUI_UI_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/UiManager.cpp"
+		FLOWUI_ELEMENT_BUILDER_SOURCE="${PROJECT_SOURCE_DIR}/include/managers/FlowUiElementBuilder.hpp"
+		FLOWUI_ELEMENT_BRIDGE_HEADER="${PROJECT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp"
+	)
+	target_link_libraries(flowui_element_flow_id_production_isolation_tests PRIVATE FlowUi::FlowUi)
+	add_test(
+		NAME flowui.elements.flow_id_production_isolation
+		COMMAND flowui_element_flow_id_production_isolation_tests
+	)
+	set_tests_properties(flowui.elements.flow_id_production_isolation PROPERTIES
+		LABELS "flowui;elements;production;unit"
+		TIMEOUT 30
+	)
+endif()
+
 add_executable(flowui_phase4_window_tests WindowTests/Phase4WindowTests.cpp)
 target_compile_features(flowui_phase4_window_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_phase4_window_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

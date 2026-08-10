@@ -2,6 +2,7 @@
 #include <cstring>
 #include <new>
 #include <stdexcept>
+#include <string>
 
 namespace FlowUi::detail::manager_storage {
 
@@ -17,8 +18,10 @@ void ThemeStorageController::shutdown() noexcept {
 	if (!storage_) return;
 
 	for (auto& [typeHash, record] : typeRegistry_) {
-		for (auto& [variantId, handle] : record.variants) {
-			storage_->removeManagerRecord(makeThemeResourceKey(typeHash, variantId), storage::ResourceKind::UiTheme);
+		(void)typeHash;
+		for (auto& [variantId, variant] : record.variants) {
+			(void)variantId;
+			storage_->removeManagerRecord(variant.resourceKey, storage::ResourceKind::UiTheme);
 		}
 	}
 
@@ -36,10 +39,20 @@ storage::StringId ThemeStorageController::internString(std::string_view str) {
 
 storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
 	uint64_t typeHash,
-	storage::StringId variantNameId) const noexcept {
+	storage::StringId variantNameId) const {
+	if (!storage_) {
+		throw std::runtime_error("ThemeStorageController: storage is null while creating a theme resource key.");
+	}
+
+	const std::string_view variantName = storage_->string(variantNameId);
+	std::string resourceName = "flowui/theme/";
+	resourceName += std::to_string(typeHash);
+	resourceName += '/';
+	resourceName.append(variantName.data(), variantName.size());
+
 	return storage::ResourceKey{
 		.domain = storage::ResourceDomain::Internal,
-		.name = variantNameId,
+		.name = storage_->intern(resourceName),
 		.window = 0
 	};
 }
@@ -55,7 +68,7 @@ void ThemeStorageController::applyStagedMutations() {
 		auto varIt = it->second.variants.find(mutation.variantNameId);
 		if (varIt == it->second.variants.end()) continue;
 
-		void* rawRecord = storage_->managerRecordData(varIt->second, storage::ResourceKind::UiTheme);
+		void* rawRecord = storage_->managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
 		if (rawRecord) {
 			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 			mutation.mutator(header->payload());

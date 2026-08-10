@@ -54,6 +54,8 @@ enum class ResourceKind : uint8_t {
 	Viewport,
 	ManagerRoot,
 	UiTheme,
+	UiElementState,
+	UiElementResources,
 	Count,
 };
 
@@ -185,6 +187,7 @@ enum class StorageCapability : uint64_t {
 	DevelopmentTelemetry = 1ull << 13u,
 	ManagerRecords = 1ull << 15u,
 	ManagerFrameSnapshots = 1ull << 16u,
+	PersistentRecords = 1ull << 17u,
 };
 
 template <ResourceKind KindValue>
@@ -227,27 +230,43 @@ using RendererPipelineBundleHandle = Handle<ResourceKind::RendererPipelineBundle
 using WindowDescriptorBundleHandle = Handle<ResourceKind::WindowDescriptorBundle>;
 using ThemeVariantHandle = Handle<ResourceKind::UiTheme>;
 
+struct PersistentRecordHandle {
+	uint32_t index = InvalidIndex;
+	uint32_t generation = InvalidGeneration;
+
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
+		return index != InvalidIndex && generation != InvalidGeneration;
+	}
+	[[nodiscard]] constexpr uint64_t packed() const noexcept {
+		return (static_cast<uint64_t>(generation) << 32u) | index;
+	}
+	[[nodiscard]] static constexpr PersistentRecordHandle fromPacked(uint64_t value) noexcept {
+		return PersistentRecordHandle{
+			.index = static_cast<uint32_t>(value),
+			.generation = static_cast<uint32_t>(value >> 32u),
+		};
+	}
+	auto operator<=>(const PersistentRecordHandle&) const = default;
+};
+
 struct ThemeRecordHeader {
 	uint64_t typeHash = 0;
 	StringId typeNameId = 0;
 	StringId variantNameId = 0;
 	size_t dataSize = 0;
 	size_t alignment = 0;
+	size_t payloadOffset = 0;
 	uint64_t revision = 1;
 
 	void (*copyConstruct)(void* dest, const void* src) = nullptr;
 	void (*destroy)(void* object) noexcept = nullptr;
 
 	[[nodiscard]] void* payload() noexcept {
-		const uintptr_t headerAddress = reinterpret_cast<uintptr_t>(this);
-		const uintptr_t payloadAddress = (headerAddress + sizeof(ThemeRecordHeader) + (alignment - 1)) & ~(alignment - 1);
-		return reinterpret_cast<void*>(payloadAddress);
+		return reinterpret_cast<std::byte*>(this) + payloadOffset;
 	}
 
 	[[nodiscard]] const void* payload() const noexcept {
-		const uintptr_t headerAddress = reinterpret_cast<uintptr_t>(this);
-		const uintptr_t payloadAddress = (headerAddress + sizeof(ThemeRecordHeader) + (alignment - 1)) & ~(alignment - 1);
-		return reinterpret_cast<const void*>(payloadAddress);
+		return reinterpret_cast<const std::byte*>(this) + payloadOffset;
 	}
 };
 
@@ -298,6 +317,50 @@ struct ManagerRecordDesc {
 	ManagerRecordConstruct construct = nullptr;
 	ManagerRecordDestroy destroy = nullptr;
 	void* userData = nullptr;
+};
+
+using PersistentRecordConstruct = void (*)(void* header, void* payload, void* userData);
+using PersistentRecordDestroy = void (*)(void* header, void* payload) noexcept;
+
+struct PersistentRecordDesc {
+	ResourceKind kind = ResourceKind::Invalid;
+	WindowId window = InvalidWindowId;
+	size_t headerBytes = 0;
+	size_t headerAlignment = alignof(std::max_align_t);
+	size_t payloadBytes = 0;
+	size_t payloadAlignment = alignof(std::max_align_t);
+	StringId debugName = 0;
+	PersistentRecordConstruct construct = nullptr;
+	PersistentRecordDestroy destroy = nullptr;
+	void* userData = nullptr;
+};
+
+struct PersistentRecordView {
+	void* header = nullptr;
+	void* payload = nullptr;
+	size_t headerBytes = 0;
+	size_t payloadBytes = 0;
+	size_t payloadAlignment = 0;
+	ResourceKind kind = ResourceKind::Invalid;
+	WindowId window = InvalidWindowId;
+
+	[[nodiscard]] explicit operator bool() const noexcept {
+		return header != nullptr && payload != nullptr;
+	}
+};
+
+struct ConstPersistentRecordView {
+	const void* header = nullptr;
+	const void* payload = nullptr;
+	size_t headerBytes = 0;
+	size_t payloadBytes = 0;
+	size_t payloadAlignment = 0;
+	ResourceKind kind = ResourceKind::Invalid;
+	WindowId window = InvalidWindowId;
+
+	[[nodiscard]] explicit operator bool() const noexcept {
+		return header != nullptr && payload != nullptr;
+	}
 };
 
 struct ManagerFrameView {
@@ -438,6 +501,7 @@ struct StorageConfig {
 	uint32_t expectedTextureViews = 512;
 	uint32_t expectedRendererObjects = 32;
 	uint32_t expectedManagerRecords = 128;
+	uint32_t expectedPersistentRecords = 1024;
 	uint32_t expectedWindows = 2;
 	uint32_t expectedBindingsPerWindow = 512;
 	uint32_t framesInFlight = 2;
