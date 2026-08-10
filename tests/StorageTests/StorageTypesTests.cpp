@@ -7,6 +7,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "internal/StorageSystem/AlignedRecord.hpp"
 #include "internal/StorageSystem/StorageTypes.hpp"
 
 namespace {
@@ -45,6 +46,37 @@ void testHandlePacking() {
 	FLOWUI_CHECK(handle.packed() == 0x76543210fedcba98ull);
 	FLOWUI_CHECK(TextureHandle::fromPacked(handle.packed()) == handle);
 	FLOWUI_CHECK(!TextureHandle::fromPacked(0));
+
+	static_assert(sizeof(PersistentRecordHandle) == sizeof(uint64_t));
+	static_assert(std::is_trivially_copyable_v<PersistentRecordHandle>);
+	const PersistentRecordHandle record{0xabcdef01u, 0x12345678u};
+	FLOWUI_CHECK(record);
+	FLOWUI_CHECK(PersistentRecordHandle::fromPacked(record.packed()) == record);
+	FLOWUI_CHECK(!PersistentRecordHandle::fromPacked(0));
+}
+
+void testAlignedRecordLayout() {
+	struct Header {
+		uint32_t marker = 0;
+	};
+	struct alignas(64) Payload {
+		std::byte bytes[65]{};
+	};
+
+	const AlignedRecordLayout layout = makeAlignedRecordLayout<Header, Payload>();
+	FLOWUI_CHECK(layout.headerBytes == sizeof(Header));
+	FLOWUI_CHECK(layout.payloadBytes == sizeof(Payload));
+	FLOWUI_CHECK(layout.payloadOffset >= sizeof(Header));
+	FLOWUI_CHECK(layout.payloadOffset % alignof(Payload) == 0);
+	FLOWUI_CHECK(layout.allocationBytes == layout.payloadOffset + sizeof(Payload));
+	FLOWUI_CHECK(layout.allocationAlignment == alignof(Payload));
+
+	alignas(64) std::byte allocation[256]{};
+	FLOWUI_CHECK(reinterpret_cast<uintptr_t>(layout.payload(allocation)) % alignof(Payload) == 0);
+	FLOWUI_CHECK_THROWS(makeAlignedRecordLayout(0, 1, 1, 1));
+	FLOWUI_CHECK_THROWS(makeAlignedRecordLayout(1, 3, 1, 1));
+	FLOWUI_CHECK_THROWS(makeAlignedRecordLayout(
+		std::numeric_limits<size_t>::max(), 1, 1, 64));
 }
 
 void testWindowIdentity() {
@@ -180,6 +212,7 @@ int main() {
 	FlowUi::test::Runner runner;
 	runner.run("canonical main window identity", testWindowIdentity);
 	runner.run("handle packing and generations", testHandlePacking);
+	runner.run("aligned header and payload record layout", testAlignedRecordLayout);
 	runner.run("flag helpers and resource keys", testFlagsAndKeys);
 	runner.run("arena view allocation and overflow", testArenaView);
 	runner.run("generation-checked read views", testReadViews);

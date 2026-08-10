@@ -1,6 +1,7 @@
 #include "HeadlessVulkanFixture.hpp"
 #include "TestHarness.hpp"
 
+#include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -16,6 +17,14 @@ struct TestAppTheme {
 	Clay_Color brandColor = { 0.2f, 0.4f, 0.8f, 1.0f };
 	float cornerRadius = 8.0f;
 	int spacing = 12;
+};
+
+struct TestEditorTheme {
+	int rowHeight = 24;
+};
+
+struct alignas(64) TestOverAlignedTheme {
+	int marker = 0;
 };
 
 void testThemeRegistrationAndAccess(FlowUi::test::HeadlessVulkanFixture& vulkan) {
@@ -70,6 +79,51 @@ void testMultipleVariantsAndSwitching(FlowUi::test::HeadlessVulkanFixture& vulka
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 6.0f);
 }
 
+void testDifferentThemeTypesCanShareVariantNames(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::StorageConfig config{};
+	storage.initialize(config);
+
+	FlowUi::ThemeManager themes;
+	themes.init(storage);
+
+	themes.registerTheme<TestAppTheme>(
+		"default",
+		TestAppTheme{.cornerRadius = 9.0f, .spacing = 18},
+		true);
+	themes.registerTheme<TestEditorTheme>(
+		"default",
+		TestEditorTheme{.rowHeight = 32},
+		true);
+
+	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("default").cornerRadius == 9.0f);
+	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("default").spacing == 18);
+	FLOWUI_CHECK(themes.getTheme<TestEditorTheme>("default").rowHeight == 32);
+
+	themes.updateTheme<TestEditorTheme>("default", [](TestEditorTheme& theme) {
+		theme.rowHeight = 40;
+	});
+	themes.applyStagedMutations();
+
+	FLOWUI_CHECK(themes.getTheme<TestEditorTheme>("default").rowHeight == 40);
+	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("default").cornerRadius == 9.0f);
+}
+
+void testOverAlignedThemePayload(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
+	FlowUi::detail::storage::StorageConfig config{};
+	storage.initialize(config);
+
+	FlowUi::ThemeManager themes;
+	themes.init(storage);
+	themes.registerTheme<TestOverAlignedTheme>(
+		"default", TestOverAlignedTheme{.marker = 73}, true);
+
+	const TestOverAlignedTheme& theme = themes.getActiveTheme<TestOverAlignedTheme>();
+	FLOWUI_CHECK(theme.marker == 73);
+	FLOWUI_CHECK(reinterpret_cast<uintptr_t>(&theme) % alignof(TestOverAlignedTheme) == 0);
+}
+
 void testStagedMutations(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowUi::detail::storage::FlowStorageSystem storage(vulkan.context());
 	FlowUi::detail::storage::StorageConfig config{};
@@ -122,6 +176,12 @@ int main() {
 		FlowUi::test::HeadlessVulkanFixture vulkan;
 		runner.run("theme registration and active retrieval", [&] { testThemeRegistrationAndAccess(vulkan); });
 		runner.run("theme variant switching", [&] { testMultipleVariantsAndSwitching(vulkan); });
+		runner.run("different theme types can share variant names", [&] {
+			testDifferentThemeTypesCanShareVariantNames(vulkan);
+		});
+		runner.run("over-aligned theme payload storage", [&] {
+			testOverAlignedThemePayload(vulkan);
+		});
 		runner.run("staged frame boundary theme mutations", [&] { testStagedMutations(vulkan); });
 		runner.run("built-in FlowUiTheme dark/light variants", [&] { testFlowUiThemeDefaultRegistration(vulkan); });
 		return runner.finish();

@@ -196,11 +196,10 @@ const auto& lightTheme = context.uiManager.theme<AppTheme>("light");
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).
 
-### **flowTheme** / **uiTheme**
+### **flowTheme**
 
 
 #### `const FlowUiTheme& flowTheme() const`
-#### `const FlowUiTheme& uiTheme() const`
 
 - **Returns:** `const FlowUiTheme&`
 - **Arguments:** none.
@@ -210,8 +209,8 @@ Convenience shortcut returning the active built-in `FlowUiTheme` design system t
 **Example:**
 
 ```cpp
-const auto& uiTheme = context.uiManager.uiTheme();
-root.backgroundColor = uiTheme.surface;
+const auto& flowTheme = context.uiManager.flowTheme();
+root.backgroundColor = flowTheme.surface;
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html).

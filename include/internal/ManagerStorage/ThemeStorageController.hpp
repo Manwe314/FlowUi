@@ -12,17 +12,23 @@
 
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
+#include "internal/StorageSystem/AlignedRecord.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
 #include "internal/StorageSystem/StorageTypes.hpp"
 #include "internal/TypeOperations.hpp"
 
 namespace FlowUi::detail::manager_storage {
 
+struct ThemeVariantRegistrationRecord {
+	storage::ManagerRecordHandle handle{};
+	storage::ResourceKey resourceKey{};
+};
+
 struct TypeRegistrationRecord {
 	uint64_t typeHash = 0;
 	storage::StringId typeNameId = 0;
 	storage::StringId activeVariantNameId = 0;
-	std::unordered_map<storage::StringId, storage::ManagerRecordHandle> variants{};
+	std::unordered_map<storage::StringId, ThemeVariantRegistrationRecord> variants{};
 };
 
 struct StagedThemeMutation {
@@ -62,7 +68,7 @@ public:
 
 		auto existingIt = typeRecord.variants.find(variantNameId);
 		if (existingIt != typeRecord.variants.end()) {
-			void* rawRecord = storage_->managerRecordData(existingIt->second, storage::ResourceKind::UiTheme);
+			void* rawRecord = storage_->managerRecordData(existingIt->second.handle, storage::ResourceKind::UiTheme);
 			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 			auto* payload = reinterpret_cast<T*>(header->payload());
 			*payload = std::move(themeData);
@@ -71,43 +77,46 @@ public:
 			if (makeActive || typeRecord.activeVariantNameId == 0) {
 				typeRecord.activeVariantNameId = variantNameId;
 			}
-			return existingIt->second;
+			return existingIt->second.handle;
 		}
 
-		const size_t headerSize = sizeof(storage::ThemeRecordHeader);
-		const size_t align = alignof(T);
-		const size_t totalBytes = headerSize + sizeof(T) + align;
+		const storage::AlignedRecordLayout layout =
+			storage::makeAlignedRecordLayout<storage::ThemeRecordHeader, T>();
 
 		struct ContextPayload {
 			T data;
 			storage::StringId typeName;
 			storage::StringId variantName;
 			uint64_t typeHash;
+			storage::AlignedRecordLayout layout;
 		};
 
 		auto contextData = std::make_unique<ContextPayload>(ContextPayload{
 			.data = std::move(themeData),
 			.typeName = typeNameId,
 			.variantName = variantNameId,
-			.typeHash = typeHash
+			.typeHash = typeHash,
+			.layout = layout,
 		});
 
 		storage::ManagerRecordDesc desc{};
 		desc.key = key;
 		desc.kind = storage::ResourceKind::UiTheme;
-		desc.bytes = totalBytes;
-		desc.alignment = alignof(storage::ThemeRecordHeader);
+		desc.bytes = layout.allocationBytes;
+		desc.alignment = layout.allocationAlignment;
 		desc.debugName = variantNameId;
 		desc.userData = contextData.get();
 
 		desc.construct = [](void* destination, void* userData) {
 			auto* ctx = reinterpret_cast<ContextPayload*>(userData);
-			auto* header = new (destination) storage::ThemeRecordHeader();
+			auto* header = storage::constructAlignedRecord<storage::ThemeRecordHeader, T>(
+				destination, ctx->layout, std::move(ctx->data));
 			header->typeHash = ctx->typeHash;
 			header->typeNameId = ctx->typeName;
 			header->variantNameId = ctx->variantName;
 			header->dataSize = sizeof(T);
 			header->alignment = alignof(T);
+			header->payloadOffset = ctx->layout.payloadOffset;
 			header->revision = 1;
 
 			header->copyConstruct = [](void* dest, const void* src) {
@@ -116,8 +125,6 @@ public:
 			header->destroy = [](void* object) noexcept {
 				reinterpret_cast<T*>(object)->~T();
 			};
-
-			new (header->payload()) T(std::move(ctx->data));
 		};
 
 		desc.destroy = [](void* object) noexcept {
@@ -129,7 +136,10 @@ public:
 		};
 
 		storage::ManagerRecordHandle handle = storage_->createManagerRecord(desc);
-		typeRecord.variants[variantNameId] = handle;
+		typeRecord.variants[variantNameId] = ThemeVariantRegistrationRecord{
+			.handle = handle,
+			.resourceKey = key,
+		};
 
 		if (makeActive || typeRecord.activeVariantNameId == 0) {
 			typeRecord.activeVariantNameId = variantNameId;
@@ -164,7 +174,7 @@ public:
 		auto varIt = it->second.variants.find(it->second.activeVariantNameId);
 		if (varIt == it->second.variants.end()) return nullptr;
 
-		void* rawRecord = storage_->managerRecordData(varIt->second, storage::ResourceKind::UiTheme);
+		void* rawRecord = storage_->managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
 		if (!rawRecord) return nullptr;
 
 		const auto* header = reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
@@ -182,7 +192,7 @@ public:
 		auto varIt = it->second.variants.find(variantNameId);
 		if (varIt == it->second.variants.end()) return nullptr;
 
-		void* rawRecord = storage_->managerRecordData(varIt->second, storage::ResourceKind::UiTheme);
+		void* rawRecord = storage_->managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
 		if (!rawRecord) return nullptr;
 
 		const auto* header = reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
@@ -226,7 +236,7 @@ public:
 	storage::StringId internString(std::string_view str);
 
 private:
-	storage::ResourceKey makeThemeResourceKey(uint64_t typeHash, storage::StringId variantNameId) const noexcept;
+	storage::ResourceKey makeThemeResourceKey(uint64_t typeHash, storage::StringId variantNameId) const;
 
 private:
 	storage::IStorageSystem* storage_ = nullptr;

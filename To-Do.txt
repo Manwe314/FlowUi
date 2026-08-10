@@ -69,12 +69,13 @@ Upgrades to 1.0
 steps: 
 	- decide the fate of deprecated storeTexture(),
 	  reserved msaa, autoSave, and per-reference sampling fields; normalize [[nodiscard]],
-	  naming, const overloads, and exception behavior.
-	- Design Ui Themes and Named Slots for recursive construction
+	  naming, const overloads, and exception behavior. --- still stuff left
+	- Design Ui Themes and Named Slots for recursive construction < --
 	- adding windows from UI  building code and API for creating windows with just a single flow element.
 	- move some configuration struct of Storage system into PublicHeaders
 
-
+Element System:
+	- Parameter operations tied to Storage System. likely params struct does not need link to StorageSystem
 
 ~~~~ Legacy ~~~~
 

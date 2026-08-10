@@ -70,11 +70,19 @@ public:
 		ManagerRecordHandle handle, ResourceKind kind) const noexcept override;
 	bool removeManagerRecord(ResourceKey key, ResourceKind kind) override;
 	void releaseWindowManagerRecords(WindowId window) noexcept override;
+	[[nodiscard]] PersistentRecordHandle createPersistentRecord(
+		const PersistentRecordDesc& desc) override;
+	[[nodiscard]] PersistentRecordView persistentRecord(
+		PersistentRecordHandle handle, ResourceKind kind) noexcept override;
+	[[nodiscard]] ConstPersistentRecordView persistentRecord(
+		PersistentRecordHandle handle, ResourceKind kind) const noexcept override;
+	bool removePersistentRecord(PersistentRecordHandle handle, ResourceKind kind) noexcept override;
+	void releaseWindowPersistentRecords(WindowId window) noexcept override;
 	void noteManagerMutation(WindowId window) override;
 	[[nodiscard]] ManagerFrameView managerFrameView(const FrameToken& frame) const noexcept override;
 	[[nodiscard]] uint64_t managerSharedRevision() const noexcept override;
 	[[nodiscard]] uint64_t managerWindowRevision(WindowId window) const noexcept override;
-	void setManagerFailureCountdown(uint32_t checkpoints) noexcept override;
+	void setRecordFailureCountdown(uint32_t checkpoints) noexcept override;
 	[[nodiscard]] BlobHandle createBlob(std::span<const std::byte> bytes, StringId debugName) override;
 	[[nodiscard]] std::span<const std::byte> readBlob(BlobHandle handle) const noexcept override;
 	void releaseBlob(BlobHandle handle, SubmissionSerial lastUse = 0) override;

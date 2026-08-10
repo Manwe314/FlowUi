@@ -21,6 +21,7 @@
 
 #include "Vulkan/Vk_Context.hpp"
 #include "internal/Vma.hpp"
+#include "internal/StorageSystem/AlignedRecord.hpp"
 
 namespace FlowUi::detail::storage {
 namespace {
@@ -40,7 +41,8 @@ constexpr uint64_t kCapabilityMask =
 	static_cast<uint64_t>(StorageCapability::FrameReadLeases) |
 	static_cast<uint64_t>(StorageCapability::RendererResourceBundles) |
 	static_cast<uint64_t>(StorageCapability::ManagerRecords) |
-	static_cast<uint64_t>(StorageCapability::ManagerFrameSnapshots)
+	static_cast<uint64_t>(StorageCapability::ManagerFrameSnapshots) |
+	static_cast<uint64_t>(StorageCapability::PersistentRecords)
 #if FLOW_UI_DEV_MODE
 	| static_cast<uint64_t>(StorageCapability::DevelopmentTelemetry)
 #endif
@@ -647,6 +649,19 @@ struct FlowStorageSystem::Impl {
 		ManagerRecordDestroy destroy = nullptr;
 	};
 
+	struct PersistentRecord {
+		uint32_t generation = 0;
+		ResourceState state = ResourceState::Invalid;
+		ResourceKind kind = ResourceKind::Invalid;
+		WindowId window = InvalidWindowId;
+		MemoryBlock memory{};
+		size_t headerBytes = 0;
+		size_t payloadOffset = 0;
+		size_t payloadBytes = 0;
+		size_t payloadAlignment = 0;
+		PersistentRecordDestroy destroy = nullptr;
+	};
+
 	struct RendererLayoutRecord {
 		uint32_t generation = 0;
 		ResourceState state = ResourceState::Invalid;
@@ -775,8 +790,10 @@ struct FlowStorageSystem::Impl {
 	std::vector<ManagerRecord> managerRecords{ManagerRecord{}};
 	std::vector<uint32_t> freeManagerRecords;
 	std::unordered_map<ResourceKey, ManagerRecordHandle, ResourceKeyHash> managerRecordByKey;
+	std::vector<PersistentRecord> persistentRecords{PersistentRecord{}};
+	std::vector<uint32_t> freePersistentRecords;
 	uint64_t sharedManagerRevision = 1;
-	uint32_t managerFailureCountdown = 0;
+	uint32_t recordFailureCountdown = 0;
 
 	std::vector<BlobRecord> blobs{BlobRecord{}};
 	std::vector<uint32_t> freeBlobs;
@@ -837,10 +854,10 @@ struct FlowStorageSystem::Impl {
 		return static_cast<uint32_t>(records.size() - 1u);
 	}
 
-	void managerCheckpoint() {
-		if (managerFailureCountdown == 0) return;
-		--managerFailureCountdown;
-		if (managerFailureCountdown == 0) storageError("injected manager transaction failure");
+	void recordCheckpoint() {
+		if (recordFailureCountdown == 0) return;
+		--recordFailureCountdown;
+		if (recordFailureCountdown == 0) storageError("injected record transaction failure");
 	}
 
 	[[nodiscard]] bool usableManagerRecord(
@@ -849,6 +866,14 @@ struct FlowStorageSystem::Impl {
 			managerRecords[handle.index].generation == handle.generation &&
 			managerRecords[handle.index].state == ResourceState::Ready &&
 			managerRecords[handle.index].kind == kind;
+	}
+
+	[[nodiscard]] bool usablePersistentRecord(
+		PersistentRecordHandle handle, ResourceKind kind) const noexcept {
+		return handle && handle.index < persistentRecords.size() &&
+			persistentRecords[handle.index].generation == handle.generation &&
+			persistentRecords[handle.index].state == ResourceState::Ready &&
+			persistentRecords[handle.index].kind == kind;
 	}
 
 	void incrementManagerRevision(WindowId window) {
@@ -878,6 +903,29 @@ struct FlowStorageSystem::Impl {
 		managerRecordByKey.clear();
 		managerRecords.assign(1u, ManagerRecord{});
 		freeManagerRecords.clear();
+	}
+
+	void destroyPersistentRecord(uint32_t index) noexcept {
+		if (index == 0 || index >= persistentRecords.size()) return;
+		PersistentRecord& record = persistentRecords[index];
+		if (record.state == ResourceState::Invalid) return;
+		const uint32_t generation = nextGeneration(record.generation);
+		if (record.destroy && record.memory.data) {
+			record.destroy(
+				record.memory.data,
+				static_cast<std::byte*>(record.memory.data) + record.payloadOffset);
+		}
+		persistentPool.release(record.memory);
+		record = PersistentRecord{.generation = generation};
+		freePersistentRecords.push_back(index);
+	}
+
+	void destroyAllPersistentRecords() noexcept {
+		for (uint32_t index = 1; index < persistentRecords.size(); ++index) {
+			destroyPersistentRecord(index);
+		}
+		persistentRecords.assign(1u, PersistentRecord{});
+		freePersistentRecords.clear();
 	}
 
 	uint32_t acquireImageViewIndex() {
@@ -1849,6 +1897,7 @@ void FlowStorageSystem::initialize(const StorageConfig& config) {
 	impl_->windowDescriptorBundles.reserve(static_cast<size_t>(config.expectedRendererObjects) + 1u);
 	impl_->managerRecords.reserve(static_cast<size_t>(config.expectedManagerRecords) + 1u);
 	impl_->managerRecordByKey.reserve(config.expectedManagerRecords);
+	impl_->persistentRecords.reserve(static_cast<size_t>(config.expectedPersistentRecords) + 1u);
 	impl_->retirements.reserve(
 		static_cast<size_t>(config.expectedBlobs) + config.expectedBuffers + config.expectedImages +
 		config.expectedImageViews + config.expectedSamplers + config.expectedTextureViews +
@@ -1891,6 +1940,7 @@ void FlowStorageSystem::shutdown() noexcept {
 			Impl::invalidateArena(*frame);
 		}
 	}
+	impl_->destroyAllPersistentRecords();
 	impl_->destroyAllManagerRecords();
 	impl_->immediateDestroyAll();
 	impl_->uploads.clear();
@@ -1910,8 +1960,10 @@ void FlowStorageSystem::shutdown() noexcept {
 	impl_->managerRecordByKey.clear();
 	impl_->managerRecords.assign(1u, Impl::ManagerRecord{});
 	impl_->freeManagerRecords.clear();
+	impl_->persistentRecords.assign(1u, Impl::PersistentRecord{});
+	impl_->freePersistentRecords.clear();
 	impl_->sharedManagerRevision = 1;
-	impl_->managerFailureCountdown = 0;
+	impl_->recordFailureCountdown = 0;
 	impl_->blobs.assign(1u, Impl::BlobRecord{});
 	impl_->freeBlobs.clear();
 	impl_->buffers.assign(1u, Impl::BufferRecord{});
@@ -2454,7 +2506,7 @@ ManagerRecordHandle FlowStorageSystem::createManagerRecord(const ManagerRecordDe
 		storageError("manager record key is already published");
 	}
 
-	impl_->managerCheckpoint();
+	impl_->recordCheckpoint();
 	const uint32_t index = Impl::acquireIndex(impl_->managerRecords, impl_->freeManagerRecords);
 	Impl::ManagerRecord& record = impl_->managerRecords[index];
 	const uint32_t generation = record.generation == 0 ? 1u : record.generation;
@@ -2462,7 +2514,7 @@ ManagerRecordHandle FlowStorageSystem::createManagerRecord(const ManagerRecordDe
 	bool constructed = false;
 	bool published = false;
 	try {
-		impl_->managerCheckpoint();
+		impl_->recordCheckpoint();
 		impl_->requireCpuBudget(desc.bytes);
 		memory = impl_->persistentPool.allocate(desc.bytes, desc.alignment,
 			AllocationTag{
@@ -2472,10 +2524,10 @@ ManagerRecordHandle FlowStorageSystem::createManagerRecord(const ManagerRecordDe
 				.frameSlot = InvalidFrameSlot,
 				.debugName = desc.debugName,
 			});
-		impl_->managerCheckpoint();
+		impl_->recordCheckpoint();
 		desc.construct(memory.data, desc.userData);
 		constructed = true;
-		impl_->managerCheckpoint();
+		impl_->recordCheckpoint();
 		record = Impl::ManagerRecord{
 			.generation = generation,
 			.state = ResourceState::Ready,
@@ -2554,6 +2606,142 @@ void FlowStorageSystem::releaseWindowManagerRecords(WindowId window) noexcept {
 	}
 }
 
+PersistentRecordHandle FlowStorageSystem::createPersistentRecord(
+	const PersistentRecordDesc& desc) {
+	std::scoped_lock lock(impl_->mutex);
+	impl_->requireInitialized();
+	if (desc.kind != ResourceKind::UiElementState &&
+		desc.kind != ResourceKind::UiElementResources) {
+		storageError("persistent records currently support only UI element state and resources");
+	}
+	if (desc.construct == nullptr || desc.destroy == nullptr) {
+		storageError("persistent record requires construction and destruction callbacks");
+	}
+	if (desc.kind == ResourceKind::UiElementState) {
+		if (desc.window == InvalidWindowId) {
+			storageError("UI element state persistent records require an owning window");
+		}
+		(void)impl_->requireWindow(desc.window);
+	} else {
+		if (desc.window != InvalidWindowId) {
+			storageError("UI element resource persistent records must be app-scoped");
+		}
+		impl_->requireSharedMutationPhase();
+	}
+
+	const AlignedRecordLayout layout = makeAlignedRecordLayout(
+		desc.headerBytes,
+		desc.headerAlignment,
+		desc.payloadBytes,
+		desc.payloadAlignment);
+
+	impl_->recordCheckpoint();
+	const uint32_t index = Impl::acquireIndex(
+		impl_->persistentRecords, impl_->freePersistentRecords);
+	Impl::PersistentRecord& record = impl_->persistentRecords[index];
+	const uint32_t generation = record.generation == 0 ? 1u : record.generation;
+	MemoryBlock memory{};
+	bool constructed = false;
+	try {
+		impl_->recordCheckpoint();
+		impl_->requireCpuBudget(layout.allocationBytes);
+		memory = impl_->persistentPool.allocate(
+			layout.allocationBytes,
+			layout.allocationAlignment,
+			AllocationTag{
+				.memoryClass = desc.window == InvalidWindowId
+					? MemoryClass::ResourceMetadata
+					: MemoryClass::WindowPersistent,
+				.resourceKind = desc.kind,
+				.window = desc.window,
+				.frameSlot = InvalidFrameSlot,
+				.debugName = desc.debugName,
+			});
+		impl_->recordCheckpoint();
+		desc.construct(memory.data, layout.payload(memory.data), desc.userData);
+		constructed = true;
+		impl_->recordCheckpoint();
+		record = Impl::PersistentRecord{
+			.generation = generation,
+			.state = ResourceState::Ready,
+			.kind = desc.kind,
+			.window = desc.window,
+			.memory = memory,
+			.headerBytes = layout.headerBytes,
+			.payloadOffset = layout.payloadOffset,
+			.payloadBytes = layout.payloadBytes,
+			.payloadAlignment = layout.payloadAlignment,
+			.destroy = desc.destroy,
+		};
+		return PersistentRecordHandle{index, generation};
+	} catch (...) {
+		if (constructed) {
+			desc.destroy(memory.data, layout.payload(memory.data));
+		}
+		if (memory) impl_->persistentPool.release(memory);
+		record = Impl::PersistentRecord{.generation = generation};
+		impl_->freePersistentRecords.push_back(index);
+		throw;
+	}
+}
+
+PersistentRecordView FlowStorageSystem::persistentRecord(
+	PersistentRecordHandle handle, ResourceKind kind) noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->usablePersistentRecord(handle, kind)) return {};
+	Impl::PersistentRecord& record = impl_->persistentRecords[handle.index];
+	return PersistentRecordView{
+		.header = record.memory.data,
+		.payload = static_cast<std::byte*>(record.memory.data) + record.payloadOffset,
+		.headerBytes = record.headerBytes,
+		.payloadBytes = record.payloadBytes,
+		.payloadAlignment = record.payloadAlignment,
+		.kind = record.kind,
+		.window = record.window,
+	};
+}
+
+ConstPersistentRecordView FlowStorageSystem::persistentRecord(
+	PersistentRecordHandle handle, ResourceKind kind) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->usablePersistentRecord(handle, kind)) return {};
+	const Impl::PersistentRecord& record = impl_->persistentRecords[handle.index];
+	return ConstPersistentRecordView{
+		.header = record.memory.data,
+		.payload = static_cast<const std::byte*>(record.memory.data) + record.payloadOffset,
+		.headerBytes = record.headerBytes,
+		.payloadBytes = record.payloadBytes,
+		.payloadAlignment = record.payloadAlignment,
+		.kind = record.kind,
+		.window = record.window,
+	};
+}
+
+bool FlowStorageSystem::removePersistentRecord(
+	PersistentRecordHandle handle, ResourceKind kind) noexcept {
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		if (!impl_->usablePersistentRecord(handle, kind)) return false;
+		impl_->destroyPersistentRecord(handle.index);
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+void FlowStorageSystem::releaseWindowPersistentRecords(WindowId window) noexcept {
+	if (window == InvalidWindowId) return;
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		for (uint32_t index = 1; index < impl_->persistentRecords.size(); ++index) {
+			if (impl_->persistentRecords[index].window == window) {
+				impl_->destroyPersistentRecord(index);
+			}
+		}
+	} catch (...) {
+	}
+}
+
 void FlowStorageSystem::noteManagerMutation(WindowId window) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
@@ -2586,9 +2774,9 @@ uint64_t FlowStorageSystem::managerWindowRevision(WindowId window) const noexcep
 	return it == impl_->windows.end() ? 0 : it->second->managerRevision;
 }
 
-void FlowStorageSystem::setManagerFailureCountdown(uint32_t checkpoints) noexcept {
+void FlowStorageSystem::setRecordFailureCountdown(uint32_t checkpoints) noexcept {
 	std::scoped_lock lock(impl_->mutex);
-	impl_->managerFailureCountdown = checkpoints;
+	impl_->recordFailureCountdown = checkpoints;
 }
 
 BlobHandle FlowStorageSystem::createBlob(std::span<const std::byte> bytes, StringId debugName) {
@@ -3961,6 +4149,14 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 		for (size_t i = 1; i < impl_->windowDescriptorBundles.size(); ++i)
 			add(impl_->windowDescriptorBundles[i].state, 0);
 		break;
+	case ResourceKind::UiElementState:
+	case ResourceKind::UiElementResources:
+		result.slots = static_cast<uint32_t>(impl_->persistentRecords.size() - 1u);
+		for (size_t i = 1; i < impl_->persistentRecords.size(); ++i) {
+			const Impl::PersistentRecord& record = impl_->persistentRecords[i];
+			if (record.kind == kind) add(record.state, record.memory.size);
+		}
+		break;
 	case ResourceKind::UiContext:
 	case ResourceKind::UiInteractionState:
 	case ResourceKind::ImageAsset:
@@ -4003,6 +4199,9 @@ bool FlowStorageSystem::validateHandle(ResourceKind kind, uint32_t index, uint32
 	case ResourceKind::RendererLayout: return impl_->usableRendererLayout({index, generation});
 	case ResourceKind::RendererPipelineBundle: return impl_->usableRendererPipelineBundle({index, generation});
 	case ResourceKind::WindowDescriptorBundle: return impl_->usableWindowDescriptorBundle({index, generation});
+	case ResourceKind::UiElementState:
+	case ResourceKind::UiElementResources:
+		return impl_->usablePersistentRecord({index, generation}, kind);
 	case ResourceKind::UiContext:
 	case ResourceKind::UiInteractionState:
 	case ResourceKind::ImageAsset:

@@ -8,6 +8,7 @@
 #include "devMode/registry.hpp"
 #endif
 #include "managers/FontManager.hpp"
+#include "managers/ElementManager.hpp"
 #include "managers/ThemeManager.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
@@ -93,6 +94,40 @@ namespace FlowUi
 		if (storage && clayMemory) storage->releasePersistent(clayMemory);
 	}
 
+#if FLOW_UI_DEV_MODE
+	void manager_storage::FlowRootIdTrackerForDev::beginFrame() {
+		claims_.clear();
+		collisions_.clear();
+	}
+
+	void manager_storage::FlowRootIdTrackerForDev::discardFrame() noexcept {
+		claims_.clear();
+		collisions_.clear();
+	}
+
+	const manager_storage::FlowRootCollisionForDev*
+	manager_storage::FlowRootIdTrackerForDev::claim(
+		uint64_t flowId,
+		manager_storage::FlowRootClaimSourceForDev source) {
+		auto [entry, inserted] = claims_.try_emplace(flowId, std::move(source));
+		if (inserted) return nullptr;
+		collisions_.push_back(manager_storage::FlowRootCollisionForDev{
+			.flowId = flowId,
+			.first = entry->second,
+			.duplicate = std::move(source),
+		});
+		return &collisions_.back();
+	}
+
+	const manager_storage::FlowRootCollisionForDev&
+	manager_storage::FlowRootIdTrackerForDev::collision(size_t index) const {
+		if (index >= collisions_.size()) {
+			throw std::out_of_range("FlowUi dev Flow-root collision index is out of range.");
+		}
+		return collisions_[index];
+	}
+#endif
+
 	void UiManager::initStorage(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config) {
 		if (storage_) throw std::logic_error("UiManager is already initialized.");
 		const storage::StringId name = storageSystem.intern("flowui.ui.root");
@@ -166,6 +201,7 @@ namespace FlowUi
 		}
 		state_ = nullptr;
 		stateHandle_ = 0;
+		elementManager_ = nullptr;
 		window_ = InvalidWindowId;
 		storage_ = nullptr;
 	}
@@ -311,6 +347,7 @@ namespace FlowUi
 			static_cast<float>(frameInput.dt));
 		state_->constructedElementStack.clear();
 #if FLOW_UI_DEV_MODE
+		state_->flowRootIdTracker.beginFrame();
 		state_->devRuntime.beginFrame();
 		state_->devRootElementOpenThisFrame = false;
 #endif
@@ -389,6 +426,7 @@ namespace FlowUi
 		}
 #if FLOW_UI_DEV_MODE
 		state_->devRuntime.endFrame();
+		state_->flowRootIdTracker.discardFrame();
 #endif
 		return renderCommands;
 	}
@@ -495,7 +533,56 @@ namespace detail {
 		uiManager.pushConstructedElement(elementId);
 	}
 
+	// transitional: temporary bridge delegates current ElementBuilder registration until UiManager's future concept-based builder owns normalized element dispatch directly.
+	void ensureElementDefinitionRegistered(
+		UiManager& uiManager,
+		const element::ElementRegistrationDescriptor& descriptor) {
+		if (!uiManager.elementManager_) {
+			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
+		}
+		(void)uiManager.elementManager_->ensureRegistered(descriptor);
+	}
+
 #if FLOW_UI_DEV_MODE
+	// transitional: temporary dev-only claim bridge reports collisions through UiManager until concept-based dispatch owns the tracker call directly.
+	void claimFlowRootForDev(
+		UiManager& uiManager,
+		uint64_t flowId,
+		uint64_t definitionId,
+		std::string_view logicalId,
+		std::string_view fileName,
+		uint32_t line,
+		uint32_t column,
+		std::string_view functionName) {
+		const manager_storage::FlowRootCollisionForDev* collision =
+			uiManager.state_->flowRootIdTracker.claim(
+				flowId,
+				manager_storage::FlowRootClaimSourceForDev{
+					.definitionId = definitionId,
+					.logicalId = std::string(logicalId),
+					.fileName = std::string(fileName),
+					.functionName = std::string(functionName),
+					.line = line,
+					.column = column,
+				});
+		if (!collision) return;
+
+		std::fprintf(
+			stderr,
+			"[FlowUi] Warning: duplicate Flow root id %llu. First: definition %llu, '%s' at %s:%u:%u. Duplicate: definition %llu, '%s' at %s:%u:%u.\n",
+			static_cast<unsigned long long>(collision->flowId),
+			static_cast<unsigned long long>(collision->first.definitionId),
+			collision->first.logicalId.c_str(),
+			collision->first.fileName.c_str(),
+			collision->first.line,
+			collision->first.column,
+			static_cast<unsigned long long>(collision->duplicate.definitionId),
+			collision->duplicate.logicalId.c_str(),
+			collision->duplicate.fileName.c_str(),
+			collision->duplicate.line,
+			collision->duplicate.column);
+	}
+
 namespace devModeBridge {
 
 	std::size_t beginCapturedFlowElement(
@@ -596,6 +683,12 @@ namespace devMode::elementCapture {
 		state_->currentInteractionSnapshot.heldElementIds.clear();
 		state_->currentInteractionSnapshot.releasedElementIds.clear();
 	}
+
+#if FLOW_UI_DEV_MODE
+	void UiManager::cancelDevFlowRootClaims() noexcept {
+		if (state_) state_->flowRootIdTracker.discardFrame();
+	}
+#endif
 
 	const ThemeManager& UiManager::appThemes() const {
 		if (!themeManager_) {
