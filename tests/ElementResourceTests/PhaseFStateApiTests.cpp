@@ -59,19 +59,19 @@ struct StateMutator {
 };
 
 template <typename Manager>
-concept HasMutableModifyState = requires(
+concept HasMutableStatePointer = requires(
 	Manager& manager,
 	FlowUi::WindowId window,
 	FlowUi::FlowElementId flowId) {
-	{ manager.modifyState(kStatefulElement, window, flowId) } -> std::same_as<State*>;
+	{ manager.getStatePointer(kStatefulElement, window, flowId) } -> std::same_as<State*>;
 };
 
 template <typename Manager>
-concept HasConstModifyState = requires(
+concept HasMutableStatePointerOnConstManager = requires(
 	const Manager& manager,
 	FlowUi::WindowId window,
 	FlowUi::FlowElementId flowId) {
-	manager.modifyState(kStatefulElement, window, flowId);
+	manager.getStatePointer(kStatefulElement, window, flowId);
 };
 
 template <typename Manager>
@@ -80,6 +80,22 @@ concept HasLegacyCallableStateApi = requires(
 	FlowUi::WindowId window,
 	FlowUi::FlowElementId flowId) {
 	manager.withState(kStatefulElement, window, flowId, StateMutator{});
+};
+
+template <typename Manager>
+concept HasLegacyReadState = requires(
+	const Manager& manager,
+	FlowUi::WindowId window,
+	FlowUi::FlowElementId flowId) {
+	manager.readState(kStatefulElement, window, flowId);
+};
+
+template <typename Manager>
+concept HasLegacyModifyState = requires(
+	Manager& manager,
+	FlowUi::WindowId window,
+	FlowUi::FlowElementId flowId) {
+	manager.modifyState(kStatefulElement, window, flowId);
 };
 
 static_assert(std::same_as<
@@ -96,13 +112,13 @@ static_assert(!HasAnyState<StatelessDefinition::BuildContext>);
 static_assert(!HasAnyState<StatelessDefinition::InteractionContext>);
 
 static_assert(std::same_as<
-	decltype(std::declval<const FlowUi::ElementManager&>().readState(
+	decltype(std::declval<const FlowUi::ElementManager&>().getStatePointerConst(
 		kStatefulElement,
 		FlowUi::MainWindowId,
 		FLOW_ID("flowui/tests/phase-f/instance"))),
 	const State*>);
-static_assert(HasMutableModifyState<FlowUi::ElementManager>);
-static_assert(!HasConstModifyState<FlowUi::ElementManager>);
+static_assert(HasMutableStatePointer<FlowUi::ElementManager>);
+static_assert(!HasMutableStatePointerOnConstManager<FlowUi::ElementManager>);
 static_assert(std::same_as<
 	decltype(std::declval<FlowUi::ElementManager&>().eraseState(
 		kStatefulElement,
@@ -110,15 +126,17 @@ static_assert(std::same_as<
 		FLOW_ID("flowui/tests/phase-f/instance"))),
 	bool>);
 static_assert(!HasLegacyCallableStateApi<FlowUi::ElementManager>);
+static_assert(!HasLegacyReadState<FlowUi::ElementManager>);
+static_assert(!HasLegacyModifyState<FlowUi::ElementManager>);
 
 void compileTypedManagerCalls(
 	FlowUi::ElementManager& manager,
 	const FlowUi::ElementManager& constManager) {
 	const FlowUi::FlowElementId flowId = FLOW_ID("flowui/tests/phase-f/instance");
 	[[maybe_unused]] const State* read =
-		constManager.readState(kStatefulElement, FlowUi::MainWindowId, flowId);
+		constManager.getStatePointerConst(kStatefulElement, FlowUi::MainWindowId, flowId);
 	[[maybe_unused]] State* mutableState =
-		manager.modifyState(kStatefulElement, FlowUi::MainWindowId, flowId);
+		manager.getStatePointer(kStatefulElement, FlowUi::MainWindowId, flowId);
 	[[maybe_unused]] const bool erased =
 		manager.eraseState(kStatefulElement, FlowUi::MainWindowId, flowId);
 }

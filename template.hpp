@@ -18,53 +18,58 @@ struct templateResources {
 	}
 };
 
-using TemplateDefinition = FlowUi::ElementDefinition<
-	templateParams,
-	templateState,
-	templateResources,
-	FLOW_DEF_ID("template")>;
+struct TemplateElement {
+	using Parameters = templateParams;
+	using State = templateState;
+	using Resources = templateResources;
+	using InteractionContext = FlowUi::ElementInteractionContext<TemplateElement>;
+	using BuildContext = FlowUi::ElementBuildContext<TemplateElement>;
 
-inline const TemplateDefinition kTemplate = {
+	static constexpr FlowUi::FlowDefinitionId definitionId = FLOW_DEF_ID("template");
+
 	// onHovered: optional callback when this element was hovered in the previous frame
-	+[](TemplateDefinition::InteractionContext& context) {
+	static void onHovered(InteractionContext& context) {
 		(void)context;
-	},
+	}
 
 	// onPressed: optional callback when this element was pressed in the previous frame
-	+[](TemplateDefinition::InteractionContext& context) {
+	static void onPressed(InteractionContext& context) {
 		(void)context;
-	},
+	}
 
 	// onHeld: optional callback when this element was held in the previous frame
-	+[](TemplateDefinition::InteractionContext& context) {
+	static void onHeld(InteractionContext& context) {
 		(void)context;
-	},
+	}
 
 	// onReleased: optional callback when this element was released in the previous frame
-	+[](TemplateDefinition::InteractionContext& context) {
+	static void onReleased(InteractionContext& context) {
 		(void)context;
-	},
+	}
 
 	// runLogic: optional per-frame logic callback before build/construct callback
-	+[](TemplateDefinition::InteractionContext& context) {
+	static void runLogic(InteractionContext& context) {
 		(void)context;
 		// Example state access:
 		// auto& state = context.state();
-	},
+	}
 
 	// constructElement: optional callback used by .construct() flows
-	+[](TemplateDefinition::BuildContext& context) -> Clay_ElementDeclaration {
+	static Clay_ElementDeclaration constructElement(BuildContext& context) {
 		(void)context;
 		// Example resources access:
 		// const auto& resources = context.resources();
 		return Clay_ElementDeclaration{};
-	},
+	}
 
 	// buildElement: callback used by .draw()
-	+[](TemplateDefinition::BuildContext& context) {
+	static void buildElement(BuildContext& context) {
 		(void)context;
-	},
+	}
 };
+
+static_assert(FlowUi::FlowElement<TemplateElement>);
+inline constexpr TemplateElement kTemplate{};
 
 // Dev-mode registration examples:
 FLOWUI_DEV_REGISTER_STRUCT(
@@ -78,4 +83,4 @@ FLOWUI_DEV_REGISTER_STRUCT(
 // Empty registration is valid when a struct has no editable fields yet.
 FLOWUI_DEV_REGISTER_STRUCT(templateResources);
 
-FLOWUI_DEV_REGISTER_ELEMENT(TemplateDefinition, "Template");
+FLOWUI_DEV_REGISTER_ELEMENT(TemplateElement, "Template");
