@@ -1143,6 +1143,7 @@ struct App::Impl {
 		}
 		for (auto& [_, window] : windows) elementManager.destroyWindow(window->id);
 		elementManager.destroy();
+		themeManager.destroy();
 
 		if (imagesInitialized) imageManager.destroy();
 #if FLOWUI_INCLUDE_ICON_MANAGER

@@ -45,7 +45,7 @@ public:
 	ElementManager& operator=(ElementManager&&) = delete;
 
 	/**
-	 * @brief Read an existing element state without creating it.
+	 * @brief Get a const pointer to existing element state without creating it.
 	 * @return Immutable state pointer, or nullptr when the window/instance has no state.
 	 * @note The pointer remains stable until explicit erase, transient-state GC at
 	 * a later successful frame boundary, or window destruction. Do not retain a
@@ -53,7 +53,7 @@ public:
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	[[nodiscard]] const StateOf<Element>* readState(
+	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
 		const Element&,
 		WindowId window,
 		FlowElementId flowId) const {
@@ -62,7 +62,7 @@ public:
 	}
 
 	/**
-	 * @brief Access an existing element state for modification without creating it.
+	 * @brief Get a mutable pointer to existing element state without creating it.
 	 * @return Mutable state pointer, or nullptr when the window/instance has no state.
 	 * @note The pointer remains stable until explicit erase, transient-state GC at
 	 * a later successful frame boundary, or window destruction. Do not retain a
@@ -70,7 +70,7 @@ public:
 	 */
 	template <FlowElement Element>
 		requires HasState<Element>
-	[[nodiscard]] StateOf<Element>* modifyState(
+	[[nodiscard]] StateOf<Element>* getStatePointer(
 		const Element&,
 		WindowId window,
 		FlowElementId flowId) {
@@ -115,8 +115,14 @@ public:
 	 * @note Resource-free members are silently ignored.
 	 */
 	template <FlowElement... Elements>
-	void prepare(const ElementSet<Elements...>& elements) {
-		elements.forEach([this](const auto& element) { prepare(element); });
+	void prepare(const ElementSet<Elements...>&) {
+		auto prepareElementType = [this]<typename Element>() {
+			if constexpr (HasResources<Element>) {
+				(void)resolveResourcesErased(
+					detail::element::elementDescriptor<Element>, true);
+			}
+		};
+		(prepareElementType.template operator()<Elements>(), ...);
 	}
 
 private:

@@ -166,6 +166,7 @@ static_assert(std::same_as<
 		ResourceDefinition,
 		ResourceFreeDefinition,
 		SecondResourceDefinition>>);
+static_assert(std::is_empty_v<std::remove_cv_t<decltype(kMixedElements)>>);
 
 class ResourceStore {
 public:

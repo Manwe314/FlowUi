@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <new>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -63,31 +62,20 @@ consteval element::ElementTypeOperations makeResourceTypeOperations() {
 
 } // namespace detail
 
-/** @brief Compile-time catalog of element definition objects for eager resource preparation. */
+/** @brief Zero-data compile-time catalog of element definition types. */
 template <FlowElement... Elements>
-class ElementSet {
-public:
-	constexpr explicit ElementSet(const Elements&... elements) noexcept
-		: elements_(&elements...) {}
+class ElementSet {};
 
-	template <typename Function>
-	constexpr void forEach(Function&& function) const {
-		std::apply(
-			[&](const auto*... element) {
-				(function(*element), ...);
-			},
-			elements_);
-	}
-
-private:
-	std::tuple<const Elements*...> elements_{};
-};
-
-/** @brief Create a reusable element catalog from lvalue definition objects. */
+/**
+ * @brief Deduce a reusable element-type catalog from definition objects.
+ *
+ * The arguments participate only in type deduction; ElementSet stores no
+ * object addresses or runtime data.
+ */
 template <typename... Elements>
 	requires ((FlowElement<std::remove_cvref_t<Elements>>) && ...)
-[[nodiscard]] constexpr auto elementSet(Elements&... elements) noexcept {
-	return ElementSet<std::remove_cvref_t<Elements>...>(elements...);
+[[nodiscard]] constexpr auto elementSet(const Elements&...) noexcept {
+	return ElementSet<std::remove_cvref_t<Elements>...>{};
 }
 
 namespace detail::element {

@@ -75,11 +75,13 @@ steps:
 	- move some configuration struct of Storage system into PublicHeaders
 	- clean managers folder to only have public FlowUi namespace
 	- clean doxy comments
+	- change for(;;) -> while(true)
 
 Element System:
 	- Theme lookup speedup
 	- interaction querry is N X U n = number of elements u = number of elements in the interaction vector.
 	- ID strings and child ID string work. 
+	- onDoubleClick ?
 
 ~~~~ Legacy ~~~~
 
