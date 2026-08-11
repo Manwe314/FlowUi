@@ -67,6 +67,20 @@ struct devEnum1InputResources {
 	bool disclosureIconsPrepared = false;
 	FlowUi::TextureRef downArrowIcon = FlowUi::TextureRef{};
 	FlowUi::TextureRef upArrowIcon = FlowUi::TextureRef{};
+
+	explicit devEnum1InputResources(FlowUi::App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		constexpr std::string_view downKey = "flowui/dev/enum1/arrow-down";
+		constexpr std::string_view upKey = "flowui/dev/enum1/arrow-up";
+		(void)app.icons().registerSvg(downKey, ::kDownArrow);
+		(void)app.icons().registerSvg(upKey, ::kUpArrow);
+		downArrowIcon = app.icons().textureRef(downKey);
+		upArrowIcon = app.icons().textureRef(upKey);
+#else
+		(void)app;
+#endif
+		disclosureIconsPrepared = true;
+	}
 };
 
 using DevEnum1InputDef = FlowUi::ElementDefinition<
@@ -84,20 +98,16 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 	nullptr,
 	nullptr,
 	+[](DevEnum1InputDef::BuildContext& context) {
-		devEnum1InputState& state = DevEnum1InputDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devEnum1InputState& state = context.state();
 		const uint64_t elementFlowId = FlowUi::toFlowId(context.elementID);
 
-		FlowUi::TextureRef downArrowIcon{};
-		FlowUi::TextureRef upArrowIcon{};
-		if (DevEnum1InputDef::resources.has_value())
-		{
-			const devEnum1InputResources& resources = *DevEnum1InputDef::resources;
-			if (resources.disclosureIconsPrepared)
-			{
-				downArrowIcon = resources.downArrowIcon;
-				upArrowIcon = resources.upArrowIcon;
-			}
-		}
+		const devEnum1InputResources& resources = context.resources();
+		const FlowUi::TextureRef downArrowIcon = resources.disclosureIconsPrepared
+			? resources.downArrowIcon
+			: FlowUi::TextureRef{};
+		const FlowUi::TextureRef upArrowIcon = resources.disclosureIconsPrepared
+			? resources.upArrowIcon
+			: FlowUi::TextureRef{};
 
 		const FlowUi::TextureRef disclosureIcon = state.isExpanded ? downArrowIcon : upArrowIcon;
 		std::string valueText = context.params.selectedLabel;
@@ -161,8 +171,9 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 					context.uiManager
 						.createElement(kDevBasicButton, context.createChildElementId("dismiss-layer/button"))
 						.setParameters(devBasicButtonParams{
-							.onPressedCallback = [elementFlowId](DevBasicButtonInteractionContext) {
-								devEnum1InputState* latestState = DevEnum1InputDef::tryGetState(elementFlowId);
+							.onPressedCallback = [elementFlowId](DevBasicButtonInteractionContext buttonContext) {
+								devEnum1InputState* latestState = buttonContext.uiManager.elements().modifyState(
+									kDevEnum1Input, buttonContext.uiManager.windowId(), elementFlowId);
 								if (latestState != nullptr)
 								{
 									latestState->isExpanded = false;
@@ -205,8 +216,9 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 							DevBasicButtonInteractionContext buttonContext) {
 							buttonContext.params.backgroundColor = hoverColor;
 						},
-						.onPressedCallback = [elementFlowId](DevBasicButtonInteractionContext) {
-							devEnum1InputState* latestState = DevEnum1InputDef::tryGetState(elementFlowId);
+						.onPressedCallback = [elementFlowId](DevBasicButtonInteractionContext buttonContext) {
+							devEnum1InputState* latestState = buttonContext.uiManager.elements().modifyState(
+								kDevEnum1Input, buttonContext.uiManager.windowId(), elementFlowId);
 							if (latestState == nullptr)
 							{
 								return;
@@ -328,8 +340,9 @@ inline const DevEnum1InputDef kDevEnum1Input = {
 										onValueChanged = context.params.onValueChangedCallback,
 										selectedValue = context.params.selectedValue,
 										optionValue = option.value
-									](DevBasicButtonInteractionContext) {
-										devEnum1InputState* latestState = DevEnum1InputDef::tryGetState(elementFlowId);
+									](DevBasicButtonInteractionContext buttonContext) {
+										devEnum1InputState* latestState = buttonContext.uiManager.elements().modifyState(
+											kDevEnum1Input, buttonContext.uiManager.windowId(), elementFlowId);
 										if (latestState != nullptr)
 										{
 											latestState->isExpanded = false;

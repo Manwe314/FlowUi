@@ -46,26 +46,35 @@ struct AppResources {
 inline constexpr FlowUi::FlowDefinitionId kSharedDefinitionId =
 	FLOW_DEF_ID("flowui/tests/phase-d/shared-definition");
 
-using CurrentDefinition = FlowUi::ElementDefinition<
-	CurrentParameters,
-	CurrentState,
-	AppResources,
-	kSharedDefinitionId>;
+struct CurrentDefinition {
+	using Parameters = CurrentParameters;
+	using State = CurrentState;
+	using Resources = AppResources;
+	using BuildContext = FlowUi::ElementBuildContext<CurrentDefinition>;
+	static constexpr FlowUi::FlowDefinitionId definitionId = kSharedDefinitionId;
+	static void buildElement(BuildContext&) {}
+};
 
-using CollidingDefinition = FlowUi::ElementDefinition<
-	CurrentParameters,
-	AlternateState,
-	AppResources,
-	kSharedDefinitionId>;
+struct CollidingDefinition {
+	using Parameters = CurrentParameters;
+	using State = AlternateState;
+	using Resources = AppResources;
+	using BuildContext = FlowUi::ElementBuildContext<CollidingDefinition>;
+	static constexpr FlowUi::FlowDefinitionId definitionId = kSharedDefinitionId;
+	static void buildElement(BuildContext&) {}
+};
 
 struct FutureDefinition {
 	using Parameters = CurrentParameters;
 	using State = CurrentState;
 	using Resources = AppResources;
+	using BuildContext = FlowUi::ElementBuildContext<FutureDefinition>;
 
 	static constexpr FlowUi::FlowDefinitionId definitionId =
 		FLOW_DEF_ID("flowui/tests/phase-d/future-definition");
 	static constexpr std::string_view debugName = "FutureDefinition";
+
+	static void buildElement(BuildContext&) {}
 };
 
 static_assert(FlowUi::FlowElement<CurrentDefinition>);
@@ -78,13 +87,13 @@ static_assert(std::same_as<FlowUi::StateOf<FutureDefinition>, CurrentState>);
 static_assert(std::same_as<FlowUi::ResourcesOf<FutureDefinition>, AppResources>);
 static_assert(FlowUi::HasState<CurrentDefinition>);
 static_assert(FlowUi::HasResources<CurrentDefinition>);
-static_assert(FlowUi::elementDescriptor<CurrentDefinition>.stateSize == sizeof(CurrentState));
-static_assert(FlowUi::elementDescriptor<FutureDefinition>.resourcesAlignment == alignof(AppResources));
+static_assert(FlowUi::detail::element::elementDescriptor<CurrentDefinition>.stateSize == sizeof(CurrentState));
+static_assert(FlowUi::detail::element::elementDescriptor<FutureDefinition>.resourcesAlignment == alignof(AppResources));
 
 void testRegistrationIsIdempotent() {
 	FlowUi::detail::manager_storage::ElementDefinitionRegistry registry;
-	const auto& first = registry.ensureDefinition(FlowUi::elementDescriptor<CurrentDefinition>);
-	const auto& second = registry.ensureDefinition(FlowUi::elementDescriptor<CurrentDefinition>);
+	const auto& first = registry.ensureDefinition(FlowUi::detail::element::elementDescriptor<CurrentDefinition>);
+	const auto& second = registry.ensureDefinition(FlowUi::detail::element::elementDescriptor<CurrentDefinition>);
 
 	FLOWUI_CHECK(&first == &second);
 	FLOWUI_CHECK(registry.size() == 1);
@@ -93,10 +102,10 @@ void testRegistrationIsIdempotent() {
 
 void testIncompatibleDefinitionIdCollisionIsRejected() {
 	FlowUi::detail::manager_storage::ElementDefinitionRegistry registry;
-	(void)registry.ensureDefinition(FlowUi::elementDescriptor<CurrentDefinition>);
+	(void)registry.ensureDefinition(FlowUi::detail::element::elementDescriptor<CurrentDefinition>);
 
 	try {
-		(void)registry.ensureDefinition(FlowUi::elementDescriptor<CollidingDefinition>);
+		(void)registry.ensureDefinition(FlowUi::detail::element::elementDescriptor<CollidingDefinition>);
 	} catch (const std::logic_error& error) {
 		const std::string_view message = error.what();
 		FLOWUI_CHECK(message.find("already registered") != std::string_view::npos);
@@ -115,7 +124,7 @@ void testImmutableTypeOperationsSupportNonMovablePayloads() {
 
 	alignas(CurrentState) std::byte stateMemory[sizeof(CurrentState)];
 	const auto& stateOperations =
-		FlowUi::elementDescriptor<CurrentDefinition>.stateOperations;
+		FlowUi::detail::element::elementDescriptor<CurrentDefinition>.stateOperations;
 	stateOperations.defaultConstruct(stateMemory);
 	FLOWUI_CHECK(CurrentState::constructions == 1);
 	stateOperations.destroy(stateMemory);
@@ -124,7 +133,7 @@ void testImmutableTypeOperationsSupportNonMovablePayloads() {
 	FlowUi::App app;
 	alignas(AppResources) std::byte resourceMemory[sizeof(AppResources)];
 	const auto& resourceOperations =
-		FlowUi::elementDescriptor<FutureDefinition>.resourceOperations;
+		FlowUi::detail::element::elementDescriptor<FutureDefinition>.resourceOperations;
 	resourceOperations.constructWithApp(resourceMemory, app);
 	FLOWUI_CHECK(AppResources::constructions == 1);
 	resourceOperations.destroy(resourceMemory);

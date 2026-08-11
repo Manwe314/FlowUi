@@ -51,6 +51,20 @@ struct devHierarchyContentResources {
 	bool disclosureIconsPrepared = false;
 	FlowUi::TextureRef downArrowIcon = FlowUi::TextureRef{};
 	FlowUi::TextureRef rightArrowIcon = FlowUi::TextureRef{};
+
+	explicit devHierarchyContentResources(FlowUi::App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		constexpr std::string_view downKey = "flowui/dev/hierarchy/arrow-down";
+		constexpr std::string_view rightKey = "flowui/dev/hierarchy/arrow-right";
+		(void)app.icons().registerSvg(downKey, ::kDownArrow);
+		(void)app.icons().registerSvg(rightKey, ::kRightArrow);
+		downArrowIcon = app.icons().textureRef(downKey);
+		rightArrowIcon = app.icons().textureRef(rightKey);
+#else
+		(void)app;
+#endif
+		disclosureIconsPrepared = true;
+	}
 };
 
 using DevHierarchyContentDef = FlowUi::ElementDefinition<
@@ -60,21 +74,14 @@ using DevHierarchyContentDef = FlowUi::ElementDefinition<
 	FLOW_DEF_ID("DevHierarchyContent"),
 	true>;
 
-inline devHierarchyContentState* findSingleDevHierarchyContentState() {
+inline devHierarchyContentState* findSingleDevHierarchyContentState(
+	FlowUi::UiManager& uiManager) {
 	constexpr std::string_view kSingleDevHierarchyContentElementId =
 		"flowui/dev/debug-view/main-view/content/hierarchy/content";
-
-	devHierarchyContentState* state =
-		DevHierarchyContentDef::tryGetState(FlowUi::toFlowId(kSingleDevHierarchyContentElementId));
-	if (state != nullptr)
-	{
-		return state;
-	}
-	if (!DevHierarchyContentDef::statePool.empty())
-	{
-		return &DevHierarchyContentDef::statePool.front().second;
-	}
-	return nullptr;
+	return uiManager.elements().modifyState(
+		DevHierarchyContentDef{},
+		uiManager.windowId(),
+		FlowUi::toFlowId(kSingleDevHierarchyContentElementId));
 }
 
 inline uint64_t makeHierarchyNodeUiKey(const FlowUi::devMode::ElementTreePlaceholder::FlatNode& node) {
@@ -197,17 +204,16 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 	nullptr,
 	nullptr,
 	+[](DevHierarchyContentDef::BuildContext& context) {
-		devHierarchyContentState& state = DevHierarchyContentDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
-		const FlowUi::TextureRef downArrowIcon =
-			(DevHierarchyContentDef::resources.has_value() && DevHierarchyContentDef::resources->disclosureIconsPrepared)
-			? DevHierarchyContentDef::resources->downArrowIcon
+		devHierarchyContentState& state = context.state();
+		const devHierarchyContentResources& resources = context.resources();
+		const FlowUi::TextureRef downArrowIcon = resources.disclosureIconsPrepared
+			? resources.downArrowIcon
 			: FlowUi::TextureRef{};
-		const FlowUi::TextureRef rightArrowIcon =
-			(DevHierarchyContentDef::resources.has_value() && DevHierarchyContentDef::resources->disclosureIconsPrepared)
-			? DevHierarchyContentDef::resources->rightArrowIcon
+		const FlowUi::TextureRef rightArrowIcon = resources.disclosureIconsPrepared
+			? resources.rightArrowIcon
 			: FlowUi::TextureRef{};
 
-		devPanelContentState* panelState = findSingleDevPanelContentState();
+		devPanelContentState* panelState = findSingleDevPanelContentState(context.uiManager);
 		const bool isViewingInstances = (panelState == nullptr) ? true : panelState->isViewingInstances;
 
 		Clay_TextElementConfig textConfigBase{};
@@ -285,9 +291,9 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 							: false;
 
 						const bool hasStatePseudoChild =
-							descriptor.stateStructTypeHash != FlowUi::devMode::typeHash<FlowUi::NoElementState>();
+							descriptor.stateStructTypeHash != 0u;
 						const bool hasResourcesPseudoChild =
-							descriptor.resourcesStructTypeHash != FlowUi::devMode::typeHash<FlowUi::NoElementResources>();
+							descriptor.resourcesStructTypeHash != 0u;
 
 						const std::string definitionSelectionId = definitionName;
 						const devPropertiesSelectionNode definitionSelectionNode =
@@ -315,8 +321,8 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 								.createElement(kDevBasicButton, context.createChildElementId("definition-row-" + std::to_string(i) + "/expand"))
 								.setParameters(devBasicButtonParams{
 									.icon = isExpanded ? downArrowIcon : rightArrowIcon,
-									.onPressedCallback = [entryKey](DevBasicButtonInteractionContext) {
-										devHierarchyContentState* contentState = findSingleDevHierarchyContentState();
+									.onPressedCallback = [entryKey](DevBasicButtonInteractionContext buttonContext) {
+										devHierarchyContentState* contentState = findSingleDevHierarchyContentState(buttonContext.uiManager);
 										if (contentState == nullptr)
 										{
 											return;
@@ -347,13 +353,13 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 									.createElement(kDevBasicButton, context.createChildElementId("definition-row-" + std::to_string(i) + "/select"))
 									.setParameters(devBasicButtonParams{
 										.text = definitionName,
-										.onPressedCallback = [definitionSelectionId, definitionSelectionNode](DevBasicButtonInteractionContext) {
-											devPanelContentState* latestPanelState = findSingleDevPanelContentState();
+									.onPressedCallback = [definitionSelectionId, definitionSelectionNode](DevBasicButtonInteractionContext buttonContext) {
+										devPanelContentState* latestPanelState = findSingleDevPanelContentState(buttonContext.uiManager);
 											if (latestPanelState != nullptr)
 											{
 												latestPanelState->selectedElementId = definitionSelectionId;
 											}
-											(void)setSelectedDevPropertiesNode(definitionSelectionNode);
+										(void)setSelectedDevPropertiesNode(buttonContext.uiManager, definitionSelectionNode);
 										},
 											.contentMode = devBasicButtonParams::ContentMode::TextOnly,
 										.padding = CLAY_PADDING_ALL(4),
@@ -434,13 +440,13 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 											"definition-row-" + std::to_string(i) + "/" + std::string(localChildId) + "/select"))
 										.setParameters(devBasicButtonParams{
 											.text = std::string(typeLabel),
-											.onPressedCallback = [childSelectionId, childSelectionNode](DevBasicButtonInteractionContext) {
-												devPanelContentState* latestPanelState = findSingleDevPanelContentState();
+											.onPressedCallback = [childSelectionId, childSelectionNode](DevBasicButtonInteractionContext buttonContext) {
+												devPanelContentState* latestPanelState = findSingleDevPanelContentState(buttonContext.uiManager);
 												if (latestPanelState != nullptr)
 												{
 													latestPanelState->selectedElementId = childSelectionId;
 												}
-												(void)setSelectedDevPropertiesNode(childSelectionNode);
+												(void)setSelectedDevPropertiesNode(buttonContext.uiManager, childSelectionNode);
 											},
 												.contentMode = devBasicButtonParams::ContentMode::TextOnly,
 											.padding = CLAY_PADDING_ALL(4),
@@ -566,8 +572,8 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 									.createElement(kDevBasicButton, context.createChildElementId("row-" + std::to_string(i) + "/expand"))
 									.setParameters(devBasicButtonParams{
 										.icon = isExpanded ? downArrowIcon : rightArrowIcon,
-										.onPressedCallback = [entryKey](DevBasicButtonInteractionContext) {
-											devHierarchyContentState* contentState = findSingleDevHierarchyContentState();
+									.onPressedCallback = [entryKey](DevBasicButtonInteractionContext buttonContext) {
+										devHierarchyContentState* contentState = findSingleDevHierarchyContentState(buttonContext.uiManager);
 											if (contentState == nullptr)
 											{
 												return;
@@ -610,13 +616,13 @@ inline const DevHierarchyContentDef kDevHierarchyContent = {
 									.createElement(kDevBasicButton, context.createChildElementId("row-" + std::to_string(i) + "/select"))
 									.setParameters(devBasicButtonParams{
 										.text = rowText,
-										.onPressedCallback = [elementId, instanceSelectionNode](DevBasicButtonInteractionContext) {
-											devPanelContentState* latestPanelState = findSingleDevPanelContentState();
+									.onPressedCallback = [elementId, instanceSelectionNode](DevBasicButtonInteractionContext buttonContext) {
+										devPanelContentState* latestPanelState = findSingleDevPanelContentState(buttonContext.uiManager);
 											if (latestPanelState != nullptr)
 											{
 												latestPanelState->selectedElementId = elementId;
 											}
-											(void)setSelectedDevPropertiesNode(instanceSelectionNode);
+										(void)setSelectedDevPropertiesNode(buttonContext.uiManager, instanceSelectionNode);
 										},
 											.contentMode = devBasicButtonParams::ContentMode::TextOnly,
 											.padding = CLAY_PADDING_ALL(4),

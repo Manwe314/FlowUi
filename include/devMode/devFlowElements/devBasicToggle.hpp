@@ -45,7 +45,7 @@ struct devBasicToggleParams {
 inline const DevBasicToggleDef kDevBasicToggle = {
 	nullptr,
 	+[](DevBasicToggleDef::InteractionContext& context) {
-		devBasicToggleState& state = DevBasicToggleDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devBasicToggleState& state = context.state();
 		if (!state.initialized)
 		{
 			state.isEnabled = context.params.defaultEnabled;
@@ -62,7 +62,7 @@ inline const DevBasicToggleDef kDevBasicToggle = {
 	nullptr,
 	nullptr,
 	+[](DevBasicToggleDef::BuildContext& context) {
-		devBasicToggleState& state = DevBasicToggleDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devBasicToggleState& state = context.state();
 		if (!state.initialized)
 		{
 			state.isEnabled = context.params.defaultEnabled;

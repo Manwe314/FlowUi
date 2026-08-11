@@ -1,7 +1,12 @@
 #include "internal/ManagerStorage/ElementStorageController.hpp"
 
+#include <algorithm>
+#include <array>
+#include <new>
 #include <stdexcept>
 #include <string>
+
+#include "internal/StorageSystem/AlignedRecord.hpp"
 
 namespace FlowUi::detail::manager_storage {
 
@@ -32,26 +37,338 @@ std::string descriptorName(const element::ElementRegistrationDescriptor& descrip
 	return name.empty() ? std::string("<unnamed element definition>") : std::string(name);
 }
 
+std::string_view storedDefinitionName(const ElementStateRecordHeader& header) noexcept {
+	return header.definitionName.empty() ? std::string_view("<unnamed element definition>") : header.definitionName;
+}
+
+void requireStateDescriptor(const element::ElementRegistrationDescriptor& descriptor) {
+	if (!descriptor.hasState || descriptor.stateSize == 0 || descriptor.stateAlignment == 0 ||
+		descriptor.stateOperations.defaultConstruct == nullptr ||
+		descriptor.stateOperations.destroy == nullptr) {
+		throw std::logic_error(
+			"FlowUi element " + descriptorName(descriptor) +
+			" does not provide valid state metadata.");
+	}
+}
+
+void requireResourcesDescriptor(const element::ElementRegistrationDescriptor& descriptor) {
+	if (!descriptor.hasResources || descriptor.resourcesSize == 0 ||
+		descriptor.resourcesAlignment == 0 ||
+		(descriptor.resourceOperations.constructWithApp == nullptr &&
+			descriptor.resourceOperations.defaultConstruct == nullptr) ||
+		descriptor.resourceOperations.destroy == nullptr) {
+		throw std::logic_error(
+			"FlowUi element " + descriptorName(descriptor) +
+			" does not provide valid resource metadata.");
+	}
+}
+
+void validateResourceRecord(
+	const ElementResourceRecordHeader& header,
+	const void* payload,
+	const storage::AlignedRecordLayout& layout,
+	const element::ElementRegistrationDescriptor& descriptor) {
+	const bool matches =
+		header.definitionId == descriptor.definitionId &&
+		header.definitionTypeHash == descriptor.definitionTypeHash &&
+		header.resourcesTypeHash == descriptor.resourcesTypeHash &&
+		header.resourcesSize == descriptor.resourcesSize &&
+		header.resourcesAlignment == descriptor.resourcesAlignment &&
+		layout.payloadBytes >= descriptor.resourcesSize &&
+		layout.payloadAlignment >= descriptor.resourcesAlignment &&
+		reinterpret_cast<uintptr_t>(payload) % descriptor.resourcesAlignment == 0;
+	if (matches) return;
+
+	throw std::logic_error(
+		"FlowUi resource metadata mismatch for element definition " +
+		descriptorName(descriptor) + ".");
+}
+
+struct ResourceAllocation {
+	storage::MemoryBlock block{};
+	void* payload = nullptr;
+};
+
+void destroyResourceAllocation(
+	storage::IStorageSystem& storage,
+	storage::MemoryBlock block) noexcept {
+	if (!block || !block.data) return;
+	auto* header = static_cast<ElementResourceRecordHeader*>(block.data);
+	void* payload = storage::makeAlignedRecordLayout(
+		sizeof(ElementResourceRecordHeader),
+		alignof(ElementResourceRecordHeader),
+		header->resourcesSize,
+		header->resourcesAlignment).payload(block.data);
+	if (header->destroyResources) header->destroyResources(payload);
+	header->~ElementResourceRecordHeader();
+	storage.releasePersistent(block);
+}
+
+ResourceAllocation createResourceRecord(
+	storage::IStorageSystem& storage,
+	const element::ElementRegistrationDescriptor& descriptor,
+	App& app) {
+	const storage::AlignedRecordLayout layout = storage::makeAlignedRecordLayout(
+		sizeof(ElementResourceRecordHeader),
+		alignof(ElementResourceRecordHeader),
+		descriptor.resourcesSize,
+		descriptor.resourcesAlignment);
+
+	// This establishes the same app-shared mutation contract used by other
+	// managers and rejects construction while a sealed frame snapshot is active.
+	storage.noteManagerMutation(InvalidWindowId);
+	storage::MemoryBlock block = storage.allocatePersistent(
+		layout.allocationBytes,
+		layout.allocationAlignment,
+		storage::AllocationTag{
+			.memoryClass = storage::MemoryClass::ResourceMetadata,
+			.resourceKind = storage::ResourceKind::UiElementResources,
+			.window = InvalidWindowId,
+			.frameSlot = storage::InvalidFrameSlot,
+			.debugName = 0,
+		});
+
+	auto* header = ::new (block.data) ElementResourceRecordHeader{
+		.definitionId = descriptor.definitionId,
+		.definitionTypeHash = descriptor.definitionTypeHash,
+		.resourcesTypeHash = descriptor.resourcesTypeHash,
+		.resourcesSize = descriptor.resourcesSize,
+		.resourcesAlignment = descriptor.resourcesAlignment,
+		.destroyResources = descriptor.resourceOperations.destroy,
+		.definitionName = descriptor.debugName.empty()
+			? descriptor.definitionTypeName
+			: descriptor.debugName,
+		.resourcesTypeName = descriptor.resourcesTypeName,
+	};
+	void* const payload = layout.payload(block.data);
+	try {
+		if (descriptor.resourceOperations.constructWithApp) {
+			descriptor.resourceOperations.constructWithApp(payload, app);
+		} else {
+			descriptor.resourceOperations.defaultConstruct(payload);
+		}
+	} catch (...) {
+		header->~ElementResourceRecordHeader();
+		storage.releasePersistent(block);
+		throw;
+	}
+
+	try {
+		validateResourceRecord(*header, payload, layout, descriptor);
+	} catch (...) {
+		destroyResourceAllocation(storage, block);
+		throw;
+	}
+	return {.block = block, .payload = payload};
+}
+
+[[noreturn]] void throwResourceConstructionFailure(
+	const element::ElementRegistrationDescriptor& descriptor) {
+	std::throw_with_nested(std::runtime_error(
+		"FlowUi failed to construct app-wide resources for " + descriptorName(descriptor) +
+		". If its constructor mutates app-wide managers, call "
+		"app.elements().prepare(element) or prepare(elementSet) before beginFrame()."));
+}
+
+void validateStateRecord(
+	const ElementStateRecordHeader& header,
+	const storage::PersistentRecordView& view,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor) {
+	const bool matches =
+		header.flowId == flowId &&
+		header.definitionId == descriptor.definitionId &&
+		header.definitionTypeHash == descriptor.definitionTypeHash &&
+		header.stateTypeHash == descriptor.stateTypeHash &&
+		header.stateSize == descriptor.stateSize &&
+		header.stateAlignment == descriptor.stateAlignment &&
+		view.payloadBytes >= descriptor.stateSize &&
+		view.payloadAlignment >= descriptor.stateAlignment &&
+		reinterpret_cast<uintptr_t>(view.payload) % descriptor.stateAlignment == 0;
+	if (matches) return;
+
+	throw std::logic_error(
+		"FlowUi state metadata mismatch for Flow ID " + std::to_string(flowId) +
+		": existing state belongs to " + std::string(storedDefinitionName(header)) +
+		", requested by " + descriptorName(descriptor) + ".");
+}
+
+storage::PersistentRecordView stateRecordView(
+	storage::IStorageSystem& storage,
+	storage::PersistentRecordHandle handle) noexcept {
+	storage::PersistentRecordView view =
+		storage.persistentRecord(handle, storage::ResourceKind::UiElementState);
+	if (!view || view.headerBytes < sizeof(ElementStateRecordHeader) ||
+		reinterpret_cast<uintptr_t>(view.header) % alignof(ElementStateRecordHeader) != 0) {
+		return {};
+	}
+	return view;
+}
+
+ResolvedElementState createStateRecord(
+	storage::IStorageSystem& storage,
+	WindowId window,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor,
+	uint64_t lastSeenCommittedFrame,
+	ElementStatePolicy policy) {
+	struct ConstructionContext {
+		FlowElementId flowId = 0;
+		const element::ElementRegistrationDescriptor* descriptor = nullptr;
+		uint64_t lastSeenCommittedFrame = 0;
+		ElementStatePolicy policy = ElementStatePolicy::transient();
+	} context{flowId, &descriptor, lastSeenCommittedFrame, policy};
+
+	const storage::PersistentRecordHandle handle = storage.createPersistentRecord(
+		storage::PersistentRecordDesc{
+			.kind = storage::ResourceKind::UiElementState,
+			.window = window,
+			.headerBytes = sizeof(ElementStateRecordHeader),
+			.headerAlignment = alignof(ElementStateRecordHeader),
+			.payloadBytes = descriptor.stateSize,
+			.payloadAlignment = descriptor.stateAlignment,
+			.debugName = 0,
+			.construct = +[](void* headerMemory, void* payload, void* userData) {
+				auto& values = *static_cast<ConstructionContext*>(userData);
+				const element::ElementRegistrationDescriptor& type = *values.descriptor;
+				auto* header = ::new (headerMemory) ElementStateRecordHeader{
+					.flowId = values.flowId,
+					.definitionId = type.definitionId,
+					.definitionTypeHash = type.definitionTypeHash,
+					.stateTypeHash = type.stateTypeHash,
+					.stateSize = type.stateSize,
+					.stateAlignment = type.stateAlignment,
+					.lastSeenCommittedFrame = values.lastSeenCommittedFrame,
+					.policy = values.policy,
+					.destroyState = type.stateOperations.destroy,
+					.definitionName = type.debugName.empty() ? type.definitionTypeName : type.debugName,
+					.stateTypeName = type.stateTypeName,
+				};
+				try {
+					type.stateOperations.defaultConstruct(payload);
+				} catch (...) {
+					header->~ElementStateRecordHeader();
+					throw;
+				}
+			},
+			.destroy = +[](void* headerMemory, void* payload) noexcept {
+				auto* header = static_cast<ElementStateRecordHeader*>(headerMemory);
+				if (header->destroyState) header->destroyState(payload);
+				header->~ElementStateRecordHeader();
+			},
+			.userData = &context,
+		});
+
+	storage::PersistentRecordView view = stateRecordView(storage, handle);
+	if (!view) {
+		(void)storage.removePersistentRecord(handle, storage::ResourceKind::UiElementState);
+		throw std::runtime_error("FlowUi state record publication failed.");
+	}
+	validateStateRecord(
+		*static_cast<ElementStateRecordHeader*>(view.header), view, flowId, descriptor);
+	return {.handle = handle, .payload = view.payload};
+}
+
+ElementStateRecordHeader* stateRecordHeader(
+	storage::IStorageSystem& storage,
+	storage::PersistentRecordHandle handle) noexcept {
+	storage::PersistentRecordView view = stateRecordView(storage, handle);
+	return view ? static_cast<ElementStateRecordHeader*>(view.header) : nullptr;
+}
+
+void removeGcCandidateAt(
+	WindowElementStateRegistry& registry,
+	storage::IStorageSystem& storage,
+	size_t index) noexcept {
+	if (index >= registry.gcCandidates.size()) {
+		registry.gcCursor = 0;
+		return;
+	}
+
+	const FlowElementId removedFlowId = registry.gcCandidates[index];
+	if (const auto removed = registry.byFlowId.find(removedFlowId);
+		removed != registry.byFlowId.end()) {
+		if (ElementStateRecordHeader* removedHeader =
+				stateRecordHeader(storage, removed->second)) {
+			removedHeader->gcIndex = std::numeric_limits<size_t>::max();
+		}
+	}
+
+	const size_t lastIndex = registry.gcCandidates.size() - 1;
+	if (index != lastIndex) {
+		const FlowElementId movedFlowId = registry.gcCandidates[lastIndex];
+		registry.gcCandidates[index] = movedFlowId;
+		if (const auto moved = registry.byFlowId.find(movedFlowId);
+			moved != registry.byFlowId.end()) {
+			if (ElementStateRecordHeader* movedHeader =
+					stateRecordHeader(storage, moved->second)) {
+				movedHeader->gcIndex = index;
+			}
+		}
+	}
+	registry.gcCandidates.pop_back();
+	if (index < registry.gcCursor && registry.gcCursor != 0) --registry.gcCursor;
+	if (registry.gcCursor >= registry.gcCandidates.size()) registry.gcCursor = 0;
+}
+
+void removeGcCandidate(
+	WindowElementStateRegistry& registry,
+	storage::IStorageSystem& storage,
+	FlowElementId flowId,
+	ElementStateRecordHeader& header) noexcept {
+	size_t index = header.gcIndex;
+	if (index >= registry.gcCandidates.size() || registry.gcCandidates[index] != flowId) {
+		const auto found = std::find(
+			registry.gcCandidates.begin(), registry.gcCandidates.end(), flowId);
+		if (found == registry.gcCandidates.end()) {
+			header.gcIndex = std::numeric_limits<size_t>::max();
+			return;
+		}
+		index = static_cast<size_t>(found - registry.gcCandidates.begin());
+	}
+	removeGcCandidateAt(registry, storage, index);
+}
+
+bool isStateExpired(
+	const ElementStateRecordHeader& header,
+	uint64_t committedFrameNumber) noexcept {
+	return header.policy.retention == ElementStateRetention::Transient &&
+		committedFrameNumber > header.lastSeenCommittedFrame &&
+		committedFrameNumber - header.lastSeenCommittedFrame > header.policy.graceFrames;
+}
+
+ResolvedElementState resolveExistingState(
+	storage::IStorageSystem& storage,
+	storage::PersistentRecordHandle handle,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor) {
+	storage::PersistentRecordView view = stateRecordView(storage, handle);
+	if (!view) return {};
+	validateStateRecord(
+		*static_cast<ElementStateRecordHeader*>(view.header), view, flowId, descriptor);
+	return {.handle = handle, .payload = view.payload};
+}
+
 } // namespace
 
-const ElementDefinitionRecord& ElementDefinitionRegistry::ensureDefinition(
+ElementDefinitionRecord& ElementDefinitionRegistry::ensureDefinition(
 	const element::ElementRegistrationDescriptor& descriptor) {
 	std::lock_guard<std::mutex> lock(mutex_);
 	auto existing = definitions_.find(descriptor.definitionId);
 	if (existing != definitions_.end()) {
-		if (!descriptorsMatch(existing->second.descriptor, descriptor)) {
+		if (!descriptorsMatch(existing->second->descriptor, descriptor)) {
 			throw std::logic_error(
 				"FlowUi element definition id " + std::to_string(descriptor.definitionId) +
-				" is already registered for " + descriptorName(existing->second.descriptor) +
+				" is already registered for " + descriptorName(existing->second->descriptor) +
 				" with incompatible metadata requested by " + descriptorName(descriptor) + ".");
 		}
-		return existing->second;
+		return *existing->second;
 	}
 
 	auto [inserted, wasInserted] = definitions_.try_emplace(
-		descriptor.definitionId, ElementDefinitionRecord{descriptor});
+		descriptor.definitionId, std::make_unique<ElementDefinitionRecord>(descriptor));
 	(void)wasInserted;
-	return inserted->second;
+	return *inserted->second;
 }
 
 void ElementDefinitionRegistry::clear() noexcept {
@@ -62,6 +379,25 @@ void ElementDefinitionRegistry::clear() noexcept {
 size_t ElementDefinitionRegistry::size() const noexcept {
 	std::lock_guard<std::mutex> lock(mutex_);
 	return definitions_.size();
+}
+
+storage::MemoryBlock
+ElementDefinitionRegistry::takeReadyResourceForDestroy() noexcept {
+	try {
+		std::lock_guard<std::mutex> registryLock(mutex_);
+		for (auto& [_, definition] : definitions_) {
+			ElementResourceSlot& resources = definition->resources;
+			std::lock_guard<std::mutex> resourceLock(resources.mutex);
+			if (resources.state != ElementResourceState::Ready || !resources.allocation) continue;
+			resources.state = ElementResourceState::Destroying;
+			resources.payload.store(nullptr, std::memory_order_release);
+			const storage::MemoryBlock allocation = resources.allocation;
+			resources.allocation = {};
+			return allocation;
+		}
+	} catch (...) {
+	}
+	return {};
 }
 
 ElementStorageController::ElementStorageController(storage::IStorageSystem& storage) noexcept
@@ -82,27 +418,505 @@ void ElementStorageController::registerWindow(WindowId window) {
 	}
 	if (windows_.contains(window)) return;
 	(void)windows_.try_emplace(
-		window, std::make_unique<WindowElementStateRegistry>(window));
+		window, std::make_shared<WindowElementStateRegistry>(window));
 }
 
 void ElementStorageController::destroyWindow(WindowId window) noexcept {
 	storage::IStorageSystem* storage = nullptr;
+	bool releaseRecords = false;
 	{
-		std::lock_guard<std::mutex> lock(windowsMutex_);
+		std::lock_guard<std::mutex> windowsLock(windowsMutex_);
 		storage = storage_;
-		windows_.erase(window);
+		const auto found = windows_.find(window);
+		if (found != windows_.end()) {
+			std::lock_guard<std::mutex> registryLock(found->second->mutex);
+			if (found->second->activeInvocations != 0) {
+				found->second->destroyRequested = true;
+			} else {
+				windows_.erase(found);
+				releaseRecords = true;
+			}
+		} else {
+			releaseRecords = true;
+		}
 	}
 
 	// Always ask storage to release the partition. This makes cleanup safe when
 	// construction failed between publishing a record and indexing it locally.
-	if (storage && window != InvalidWindowId) {
+	if (storage && releaseRecords && window != InvalidWindowId) {
 		storage->releaseWindowPersistentRecords(window);
 	}
 }
 
-const ElementDefinitionRecord& ElementStorageController::ensureDefinition(
+ElementDefinitionRecord& ElementStorageController::ensureDefinition(
 	const element::ElementRegistrationDescriptor& descriptor) {
 	return definitions_.ensureDefinition(descriptor);
+}
+
+const void* ElementStorageController::resolveOrCreateResources(
+	const element::ElementRegistrationDescriptor& descriptor,
+	App& app,
+	bool retryFailed) {
+	if (!descriptor.hasResources) return nullptr;
+	requireResourcesDescriptor(descriptor);
+	ElementDefinitionRecord& definition = definitions_.ensureDefinition(descriptor);
+	ElementResourceSlot& resources = definition.resources;
+	if (const void* ready = resources.payload.load(std::memory_order_acquire)) return ready;
+
+	std::unique_lock<std::mutex> lock(resources.mutex);
+	for (;;) {
+		switch (resources.state) {
+		case ElementResourceState::Ready:
+			if (const void* ready = resources.payload.load(std::memory_order_acquire)) {
+				return ready;
+			} else {
+				throw std::logic_error("FlowUi element resource slot is ready without a payload.");
+			}
+		case ElementResourceState::Constructing:
+			if (resources.constructingThread == std::this_thread::get_id()) {
+				throw std::logic_error(
+					"FlowUi recursively requested resources while constructing " +
+					descriptorName(descriptor) + ".");
+			}
+			resources.ready.wait(lock, [&resources] {
+				return resources.state != ElementResourceState::Constructing;
+			});
+			continue;
+		case ElementResourceState::Failed:
+			if (!retryFailed) {
+				if (resources.failure) std::rethrow_exception(resources.failure);
+				throw std::runtime_error("FlowUi element resource construction previously failed.");
+			}
+			resources.failure = nullptr;
+			[[fallthrough]];
+		case ElementResourceState::Empty:
+			resources.state = ElementResourceState::Constructing;
+			resources.constructingThread = std::this_thread::get_id();
+			break;
+		case ElementResourceState::Destroying:
+			throw std::runtime_error("FlowUi element resources are being destroyed.");
+		}
+		break;
+	}
+	lock.unlock();
+
+	ResourceAllocation created{};
+	try {
+		if (!storage_) throw std::runtime_error("ElementStorageController is not initialized.");
+		created = createResourceRecord(*storage_, descriptor, app);
+	} catch (...) {
+		std::exception_ptr focusedFailure;
+		try {
+			throwResourceConstructionFailure(descriptor);
+		} catch (...) {
+			focusedFailure = std::current_exception();
+		}
+		lock.lock();
+		resources.state = ElementResourceState::Failed;
+		resources.constructingThread = {};
+		resources.failure = focusedFailure;
+		lock.unlock();
+		resources.ready.notify_all();
+		std::rethrow_exception(focusedFailure);
+	}
+
+	lock.lock();
+	resources.allocation = created.block;
+	resources.failure = nullptr;
+	resources.constructingThread = {};
+	resources.state = ElementResourceState::Ready;
+	resources.payload.store(created.payload, std::memory_order_release);
+	lock.unlock();
+	resources.ready.notify_all();
+	return created.payload;
+}
+
+ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation(
+	WindowId window,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor,
+	ElementStatePolicy policy) {
+	requireStateDescriptor(descriptor);
+	if (window == InvalidWindowId || flowId == 0) {
+		throw std::invalid_argument("FlowUi element state requires valid window and Flow IDs.");
+	}
+
+	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+	if (!storage_) throw std::runtime_error("ElementStorageController is not initialized.");
+	const auto windowEntry = windows_.find(window);
+	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) {
+		throw std::invalid_argument("FlowUi element state requested for an unknown or closing window.");
+	}
+
+	WindowElementStateRegistry& registry = *windowEntry->second;
+	std::lock_guard<std::mutex> registryLock(registry.mutex);
+	if (!registry.transaction.active) {
+		throw std::logic_error(
+			"FlowUi element state resolution requires an active window frame transaction.");
+	}
+	ResolvedElementState resolved{};
+	bool created = false;
+	if (const auto existing = registry.byFlowId.find(flowId); existing != registry.byFlowId.end()) {
+		resolved = resolveExistingState(*storage_, existing->second, flowId, descriptor);
+		if (!resolved.payload) registry.byFlowId.erase(existing);
+	}
+	if (!resolved.payload) {
+		resolved = createStateRecord(
+			*storage_, window, flowId, descriptor,
+			registry.committedFrameNumber, policy);
+		try {
+			registry.byFlowId.emplace(flowId, resolved.handle);
+			auto* header = static_cast<ElementStateRecordHeader*>(
+				stateRecordView(*storage_, resolved.handle).header);
+			if (!header) throw std::runtime_error("FlowUi state record became stale during publication.");
+			if (policy.retention == ElementStateRetention::Transient) {
+				registry.gcCandidates.push_back(flowId);
+				header->gcIndex = registry.gcCandidates.size() - 1;
+			}
+			created = true;
+		} catch (...) {
+			registry.byFlowId.erase(flowId);
+			if (!registry.gcCandidates.empty() && registry.gcCandidates.back() == flowId) {
+				registry.gcCandidates.pop_back();
+			}
+			(void)storage_->removePersistentRecord(
+				resolved.handle, storage::ResourceKind::UiElementState);
+			throw;
+		}
+	}
+	try {
+		registry.transaction.touched.insert(flowId);
+		registry.transaction.policies.insert_or_assign(flowId, policy);
+		if (created) registry.transaction.created.insert(flowId);
+	} catch (...) {
+		if (created) {
+			const auto indexed = registry.byFlowId.find(flowId);
+			if (indexed != registry.byFlowId.end()) {
+				if (ElementStateRecordHeader* header = stateRecordHeader(*storage_, indexed->second)) {
+					removeGcCandidate(registry, *storage_, flowId, *header);
+				}
+				registry.byFlowId.erase(indexed);
+			}
+			(void)storage_->removePersistentRecord(
+				resolved.handle, storage::ResourceKind::UiElementState);
+		}
+		throw;
+	}
+	++registry.activeInvocations;
+	return resolved;
+}
+
+void ElementStorageController::endStateInvocation(WindowId window) noexcept {
+	bool invocationClosed = false;
+	for (;;) {
+		storage::IStorageSystem* storage = nullptr;
+		storage::PersistentRecordHandle recordToErase{};
+		bool releaseWindow = false;
+		try {
+			std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+			storage = storage_;
+			const auto windowEntry = windows_.find(window);
+			if (windowEntry == windows_.end()) return;
+			WindowElementStateRegistry& registry = *windowEntry->second;
+			std::lock_guard<std::mutex> registryLock(registry.mutex);
+			if (!invocationClosed) {
+				if (registry.activeInvocations != 0) --registry.activeInvocations;
+				invocationClosed = true;
+				if (registry.activeInvocations != 0) return;
+			}
+			if (registry.transaction.active && !registry.destroyRequested) return;
+
+			if (!registry.deferredErases.empty()) {
+				const auto deferred = registry.deferredErases.begin();
+				const auto state = registry.byFlowId.find(*deferred);
+				if (state != registry.byFlowId.end()) {
+					recordToErase = state->second;
+					if (storage) {
+						if (ElementStateRecordHeader* header =
+								stateRecordHeader(*storage, state->second)) {
+							removeGcCandidate(registry, *storage, state->first, *header);
+						}
+					}
+					registry.byFlowId.erase(state);
+				}
+				registry.deferredErases.erase(deferred);
+			} else if (registry.destroyRequested) {
+				windows_.erase(windowEntry);
+				releaseWindow = true;
+			} else {
+				return;
+			}
+		} catch (...) {
+			return;
+		}
+
+		if (!storage) return;
+		if (releaseWindow) {
+			storage->releaseWindowPersistentRecords(window);
+			return;
+		}
+		if (recordToErase) {
+			(void)storage->removePersistentRecord(
+				recordToErase, storage::ResourceKind::UiElementState);
+		}
+	}
+}
+
+void ElementStorageController::beginWindowFrame(WindowId window, uint64_t epoch) {
+	if (window == InvalidWindowId || epoch == 0) {
+		throw std::invalid_argument(
+			"FlowUi element frame transaction requires valid window and epoch values.");
+	}
+	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+	if (!storage_) throw std::runtime_error("ElementStorageController is not initialized.");
+	const auto windowEntry = windows_.find(window);
+	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) {
+		throw std::invalid_argument(
+			"FlowUi element frame transaction requested for an unknown or closing window.");
+	}
+	WindowElementStateRegistry& registry = *windowEntry->second;
+	std::lock_guard<std::mutex> registryLock(registry.mutex);
+	if (registry.transaction.active || registry.activeInvocations != 0) {
+		throw std::logic_error(
+			"FlowUi element frame transaction is already active for this window.");
+	}
+	if (!registry.deferredErases.empty()) {
+		throw std::logic_error(
+			"FlowUi element frame cannot begin while deferred erasures remain pending.");
+	}
+	registry.transaction.clear();
+	registry.transaction.epoch = epoch;
+	registry.transaction.active = true;
+}
+
+void ElementStorageController::commitWindowFrame(WindowId window, uint64_t epoch) noexcept {
+	try {
+		std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+		if (!storage_) return;
+		const auto windowEntry = windows_.find(window);
+		if (windowEntry == windows_.end()) return;
+		WindowElementStateRegistry& registry = *windowEntry->second;
+		std::lock_guard<std::mutex> registryLock(registry.mutex);
+		if (!registry.transaction.active || registry.transaction.epoch != epoch) return;
+		if (registry.activeInvocations != 0) return;
+
+		const uint64_t committedFrame =
+			registry.committedFrameNumber == std::numeric_limits<uint64_t>::max()
+			? registry.committedFrameNumber
+			: registry.committedFrameNumber + 1;
+		for (const FlowElementId flowId : registry.transaction.touched) {
+			const auto state = registry.byFlowId.find(flowId);
+			if (state == registry.byFlowId.end()) continue;
+			ElementStateRecordHeader* header = stateRecordHeader(*storage_, state->second);
+			if (!header) continue;
+			header->lastSeenCommittedFrame = committedFrame;
+			if (const auto policy = registry.transaction.policies.find(flowId);
+				policy != registry.transaction.policies.end()) {
+				const ElementStatePolicy nextPolicy = policy->second;
+				if (header->policy.retention != nextPolicy.retention) {
+					if (nextPolicy.retention == ElementStateRetention::WindowLifetime) {
+						removeGcCandidate(registry, *storage_, flowId, *header);
+					} else {
+						// A failed bookkeeping allocation leaves the safer retained policy
+						// in place without invalidating an otherwise successful UI frame.
+						try {
+							registry.gcCandidates.push_back(flowId);
+							header->gcIndex = registry.gcCandidates.size() - 1;
+						} catch (...) {
+							continue;
+						}
+					}
+				}
+				header->policy = nextPolicy;
+			}
+		}
+		registry.committedFrameNumber = committedFrame;
+		registry.transaction.clear();
+	} catch (...) {
+		return;
+	}
+
+	// The transaction is now closed and no callback can hold a cached pointer.
+	// Drain explicit erasures before performing bounded GC maintenance.
+	endStateInvocation(window);
+	(void)collectEligibleStates(window, 256);
+}
+
+void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch) noexcept {
+	bool transactionClosed = false;
+	for (;;) {
+		storage::IStorageSystem* storage = nullptr;
+		storage::PersistentRecordHandle recordToErase{};
+		try {
+			std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+			storage = storage_;
+			const auto windowEntry = windows_.find(window);
+			if (windowEntry == windows_.end()) return;
+			WindowElementStateRegistry& registry = *windowEntry->second;
+			std::lock_guard<std::mutex> registryLock(registry.mutex);
+			if (!transactionClosed) {
+				if (!registry.transaction.active || registry.transaction.epoch != epoch) return;
+				registry.transaction.active = false;
+				registry.deferredErases.clear();
+				transactionClosed = true;
+			}
+
+			if (registry.transaction.created.empty()) {
+				registry.transaction.clear();
+				return;
+			}
+			const auto created = registry.transaction.created.begin();
+			const FlowElementId flowId = *created;
+			registry.transaction.created.erase(created);
+			const auto state = registry.byFlowId.find(flowId);
+			if (state != registry.byFlowId.end()) {
+				recordToErase = state->second;
+				if (storage) {
+					if (ElementStateRecordHeader* header =
+							stateRecordHeader(*storage, state->second)) {
+						removeGcCandidate(registry, *storage, flowId, *header);
+					}
+				}
+				registry.byFlowId.erase(state);
+			}
+		} catch (...) {
+			return;
+		}
+
+		if (storage && recordToErase) {
+			(void)storage->removePersistentRecord(
+				recordToErase, storage::ResourceKind::UiElementState);
+		}
+	}
+}
+
+size_t ElementStorageController::collectEligibleStates(
+	WindowId window,
+	size_t scanBudget) noexcept {
+	if (scanBudget == 0) return 0;
+	constexpr size_t kRemovalBatchSize = 256;
+	size_t removedCount = 0;
+	size_t remaining = scanBudget;
+	bool initializeUnlimitedBudget =
+		scanBudget == std::numeric_limits<size_t>::max();
+	for (;;) {
+		std::array<storage::PersistentRecordHandle, kRemovalBatchSize> removals{};
+		size_t removalCount = 0;
+		size_t inspected = 0;
+		storage::IStorageSystem* storage = nullptr;
+		try {
+			std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+			storage = storage_;
+			if (!storage) return removedCount;
+			const auto windowEntry = windows_.find(window);
+			if (windowEntry == windows_.end()) return removedCount;
+			WindowElementStateRegistry& registry = *windowEntry->second;
+			std::lock_guard<std::mutex> registryLock(registry.mutex);
+			if (registry.transaction.active || registry.activeInvocations != 0 ||
+				registry.gcCandidates.empty()) {
+				return removedCount;
+			}
+			if (initializeUnlimitedBudget) {
+				remaining = registry.gcCandidates.size();
+				initializeUnlimitedBudget = false;
+			}
+
+			const size_t batchBudget = std::min({
+				remaining,
+				kRemovalBatchSize,
+				registry.gcCandidates.size(),
+			});
+			while (inspected < batchBudget && !registry.gcCandidates.empty()) {
+				if (registry.gcCursor >= registry.gcCandidates.size()) registry.gcCursor = 0;
+				const size_t candidateIndex = registry.gcCursor;
+				const FlowElementId flowId = registry.gcCandidates[candidateIndex];
+				const auto state = registry.byFlowId.find(flowId);
+				ElementStateRecordHeader* header = state == registry.byFlowId.end()
+					? nullptr
+					: stateRecordHeader(*storage, state->second);
+				++inspected;
+				if (!header || isStateExpired(*header, registry.committedFrameNumber)) {
+					if (state != registry.byFlowId.end()) {
+						removals[removalCount++] = state->second;
+						registry.byFlowId.erase(state);
+					}
+					removeGcCandidateAt(registry, *storage, candidateIndex);
+					continue;
+				}
+				++registry.gcCursor;
+			}
+		} catch (...) {
+			return removedCount;
+		}
+
+		for (size_t index = 0; index < removalCount; ++index) {
+			if (storage->removePersistentRecord(
+					removals[index], storage::ResourceKind::UiElementState)) {
+				++removedCount;
+			}
+		}
+		remaining -= std::min(remaining, inspected);
+		if (remaining == 0 || inspected == 0) return removedCount;
+	}
+}
+
+const void* ElementStorageController::readState(
+	WindowId window,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor) {
+	requireStateDescriptor(descriptor);
+	if (window == InvalidWindowId || flowId == 0) return nullptr;
+	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+	if (!storage_) return nullptr;
+	const auto windowEntry = windows_.find(window);
+	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) return nullptr;
+	WindowElementStateRegistry& registry = *windowEntry->second;
+	std::lock_guard<std::mutex> registryLock(registry.mutex);
+	const auto existing = registry.byFlowId.find(flowId);
+	if (existing == registry.byFlowId.end()) return nullptr;
+	const ResolvedElementState resolved =
+		resolveExistingState(*storage_, existing->second, flowId, descriptor);
+	if (!resolved.payload) registry.byFlowId.erase(existing);
+	return resolved.payload;
+}
+
+void* ElementStorageController::modifyState(
+	WindowId window,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor) {
+	return const_cast<void*>(readState(window, flowId, descriptor));
+}
+
+bool ElementStorageController::eraseState(
+	WindowId window,
+	FlowElementId flowId,
+	const element::ElementRegistrationDescriptor& descriptor) {
+	requireStateDescriptor(descriptor);
+	if (window == InvalidWindowId || flowId == 0) return false;
+	storage::IStorageSystem* storage = nullptr;
+	storage::PersistentRecordHandle handle{};
+	{
+		std::lock_guard<std::mutex> windowsLock(windowsMutex_);
+		storage = storage_;
+		if (!storage) return false;
+		const auto windowEntry = windows_.find(window);
+		if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) return false;
+		WindowElementStateRegistry& registry = *windowEntry->second;
+		std::lock_guard<std::mutex> registryLock(registry.mutex);
+		const auto existing = registry.byFlowId.find(flowId);
+		if (existing == registry.byFlowId.end()) return false;
+		(void)resolveExistingState(*storage, existing->second, flowId, descriptor);
+		if (registry.transaction.active || registry.activeInvocations != 0) {
+			registry.deferredErases.insert(flowId);
+			return true;
+		}
+		handle = existing->second;
+		if (ElementStateRecordHeader* header = stateRecordHeader(*storage, handle)) {
+			removeGcCandidate(registry, *storage, flowId, *header);
+		}
+		registry.byFlowId.erase(existing);
+	}
+	return storage->removePersistentRecord(handle, storage::ResourceKind::UiElementState);
 }
 
 void ElementStorageController::shutdown() noexcept {
@@ -116,7 +930,7 @@ void ElementStorageController::shutdown() noexcept {
 
 	for (;;) {
 		WindowId window = InvalidWindowId;
-		std::unique_ptr<WindowElementStateRegistry> registry;
+		std::shared_ptr<WindowElementStateRegistry> registry;
 		{
 			std::lock_guard<std::mutex> lock(windowsMutex_);
 			if (windows_.empty()) break;
@@ -126,6 +940,16 @@ void ElementStorageController::shutdown() noexcept {
 			windows_.erase(entry);
 		}
 		storage->releaseWindowPersistentRecords(window);
+	}
+
+	// Resource destructors run while App-owned image/icon/font/theme managers and
+	// the storage system are still alive. Handles are detached from definition
+	// slots before invoking user destruction callbacks through storage.
+	for (;;) {
+		const storage::MemoryBlock resource =
+			definitions_.takeReadyResourceForDestroy();
+		if (!resource) break;
+		destroyResourceAllocation(*storage, resource);
 	}
 	definitions_.clear();
 }

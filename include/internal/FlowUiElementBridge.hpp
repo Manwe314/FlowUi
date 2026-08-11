@@ -5,29 +5,15 @@
 #include <string_view>
 
 #include "FlowUi/BuildConfig.hpp"
-#include "clay.h"
-
 namespace FlowUi {
 
-struct InteractionSnapshot;
 class UiManager;
 
 namespace detail {
 
-namespace element {
-struct ElementRegistrationDescriptor;
-}
-
-Clay_ElementId toClayElementId(UiManager& uiManager, std::string_view elementID);
-const InteractionSnapshot& previousInteraction(const UiManager& uiManager);
-void pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
-// transitional: temporary bridge lets the current header-defined ElementBuilder register normalized metadata without depending on UiManager's final concept-based element surface.
-void ensureElementDefinitionRegistered(
-	UiManager& uiManager,
-	const element::ElementRegistrationDescriptor& descriptor);
-
 #if FLOW_UI_DEV_MODE
-// transitional: temporary dev-only claim bridge exists until concept-based element dispatch owns the Flow-root claim directly.
+// transitional: temporary dev-only bridges remain until the later dev element
+// and registry migration consolidates capture operations on UiManager.
 void claimFlowRootForDev(
 	UiManager& uiManager,
 	uint64_t flowId,

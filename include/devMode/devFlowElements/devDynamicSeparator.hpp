@@ -42,7 +42,7 @@ inline const DevDynamicSeparatorDef kDevDynamicSeparator = {
 		context.uiManager.requestCursor(FlowUi::CursorType::ResizeHorizontal);
 	},
 	+[](DevDynamicSeparatorDef::InteractionContext& context) {
-		devDynamicSeparatorState& state = DevDynamicSeparatorDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devDynamicSeparatorState& state = context.state();
 		state.isPressed = true;
 		state.isDragging = true;
 		const FlowUi::FrameInput& input = context.uiManager.getCurrentFrameInput();
@@ -75,12 +75,12 @@ inline const DevDynamicSeparatorDef kDevDynamicSeparator = {
 		},
 	nullptr,
 	+[](DevDynamicSeparatorDef::InteractionContext& context) {
-		devDynamicSeparatorState& state = DevDynamicSeparatorDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devDynamicSeparatorState& state = context.state();
 		state.isPressed = false;
 		state.isDragging = false;
 	},
 	+[](DevDynamicSeparatorDef::InteractionContext& context) {
-		devDynamicSeparatorState& state = DevDynamicSeparatorDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devDynamicSeparatorState& state = context.state();
 		const FlowUi::FrameInput& input = context.uiManager.getCurrentFrameInput();
 		if (!input.mouseDown[0])
 		{
@@ -126,7 +126,7 @@ inline const DevDynamicSeparatorDef kDevDynamicSeparator = {
 	nullptr,
 	+[](DevDynamicSeparatorDef::BuildContext& context) {
 		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
-		const devDynamicSeparatorState* state = DevDynamicSeparatorDef::tryGetStateConst(FlowUi::toFlowId(context.elementID));
+		const devDynamicSeparatorState* state = &context.state();
 		const FlowUi::InteractionSnapshot& previousInteraction = context.uiManager.getPreviousFramesInteraction();
 
 		int width = context.params.width;

@@ -593,7 +593,10 @@ struct App::Impl {
 	}
 
 	void cancelStorageFrame(AppWindow& window) noexcept {
-		if (storageSystem && window.storageFrame) storageSystem->cancelFrame(window.storageFrame);
+		if (window.storageFrame) {
+			elementManager.cancelWindowFrame(window.id, window.storageFrame.epoch);
+			if (storageSystem) storageSystem->cancelFrame(window.storageFrame);
+		}
 #if FLOW_UI_DEV_MODE
 		window.ui.cancelDevFlowRootClaims();
 #endif
@@ -693,6 +696,7 @@ struct App::Impl {
 		window.phase = AppWindow::Phase::Building;
 
 		try {
+			elementManager.beginWindowFrame(window.id, window.storageFrame.epoch);
 			window.frameInput = window.inputQueue.drain(deltaTimeSeconds);
 			const float inverseClampedUiScale = 1 / std::max(1.0e-6f, window.config.ui.uiScale);
 			constexpr float kBaseScrollSensitivity = 20.0f;
@@ -805,6 +809,7 @@ struct App::Impl {
 				devMode::PerformanceDiagnostics::elapsedMs(endFrameStart);
 #endif
 			window.storageReadLease = storageSystem->sealFrame(window.storageFrame);
+			elementManager.commitWindowFrame(window.id, window.storageFrame.epoch);
 			window.phase = AppWindow::Phase::Prepared;
 		} catch (...) {
 			cancelStorageFrame(window);

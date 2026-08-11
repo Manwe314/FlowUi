@@ -34,34 +34,19 @@ using DevPanelContentDef = FlowUi::ElementDefinition<
 	FLOW_DEF_ID("DevPanelContent"),
 	true>;
 
-inline devPanelContentState* findSingleDevPanelContentState() {
+inline devPanelContentState* findSingleDevPanelContentState(FlowUi::UiManager& uiManager) {
 	constexpr std::string_view kSingleDevPanelContentElementId = "flowui/dev/debug-view/main-view/content";
-
-	devPanelContentState* state =
-		DevPanelContentDef::tryGetState(FlowUi::toFlowId(kSingleDevPanelContentElementId));
-	if (state != nullptr)
-	{
-		return state;
-	}
-	if (!DevPanelContentDef::statePool.empty())
-	{
-		return &DevPanelContentDef::statePool.front().second;
-	}
-	return nullptr;
+	return uiManager.elements().modifyState(
+		DevPanelContentDef{},
+		uiManager.windowId(),
+		FlowUi::toFlowId(kSingleDevPanelContentElementId));
 }
 
-inline const devPanelContentState* findSingleDevPanelContentStateConst() {
+inline const devPanelContentState* findSingleDevPanelContentStateConst(
+	const FlowUi::UiManager& uiManager) {
 	constexpr std::string_view kSingleDevPanelContentElementId = "flowui/dev/debug-view/main-view/content";
-
-	const devPanelContentState* state =
-		DevPanelContentDef::tryGetStateConst(FlowUi::toFlowId(kSingleDevPanelContentElementId));
-	if (state != nullptr)
-	{
-		return state;
-	}
-	if (!DevPanelContentDef::statePool.empty())
-	{
-		return &DevPanelContentDef::statePool.front().second;
-	}
-	return nullptr;
+	return uiManager.elements().readState(
+		DevPanelContentDef{},
+		uiManager.windowId(),
+		FlowUi::toFlowId(kSingleDevPanelContentElementId));
 }

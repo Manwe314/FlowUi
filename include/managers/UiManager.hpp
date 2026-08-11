@@ -15,16 +15,16 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
-#include "internal/FlowUiElementBridge.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/ThemeManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
 #include "managers/structs/InputStructs.hpp"
 #if FLOW_UI_DEV_MODE
+#include "devMode/elementDevCapture.hpp"
 #include "devMode/devRuntime.hpp"
 #include "devMode/performanceDiagnostics.hpp"
+#include "internal/FlowUiElementBridge.hpp"
 #endif
 
 namespace FlowUi {
@@ -33,6 +33,8 @@ struct AppWindow;
 
 class App;
 class ElementManager;
+template <FlowElement Element>
+class ElementBuilder;
 struct FlowUiTheme;
 struct FontManager;
 namespace detail::storage { class IStorageSystem; struct FrameToken; }
@@ -194,12 +196,8 @@ public:
 	 * definitions. The returned ElementBuilder owns the element id and parameter
 	 * storage for this invocation until draw() or construct() is called.
 	 *
-	 * @tparam Parameters Parameter struct used by the element definition.
-	 * @tparam State State struct used by the element definition.
-	 * @tparam Resources Resources struct used by the element definition.
-	 * @tparam DefinitionId Compile-time definition id.
-	 * @tparam IsDevInternal Whether the definition is internal to dev tooling.
-	 * @param elementDefinition Element definition to invoke.
+	 * @tparam Element Empty tag type satisfying FlowElement.
+	 * @param element Compile-time element tag used only for type deduction.
 	 * @param elementID Stable Flow element id for this invocation.
 	 * @param sourceLocation Source location captured for developer-mode
 	 * inspection when FLOW_UI_DEV_MODE is enabled.
@@ -217,18 +215,19 @@ public:
 	 * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
 	 * @see @ref md_docs_2tutorials_2developer__mode "Developer Mode"
 	 */
-	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
-	ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(
-		const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition,
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element&,
 		std::string_view elementID
 #if FLOW_UI_DEV_MODE
 		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
 #endif
 		)
 	{
-		return ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal>(
+		return ElementBuilder<Element>(
 			*this,
-			&elementDefinition,
+			elements(),
+			windowId(),
 			std::string(elementID)
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
@@ -236,16 +235,16 @@ public:
 		);
 	}
 
-	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
-	ElementBuilder<Parameters, State, Resources, DefinitionId, IsDevInternal> createElement(
-		const ElementDefinition<Parameters, State, Resources, DefinitionId, IsDevInternal>& elementDefinition,
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element& element,
 		ResourceKey elementKey
 #if FLOW_UI_DEV_MODE
 		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
 #endif
 		) {
 		return createElement(
-			elementDefinition,
+			element,
 			normalizeUiResourceName(elementKey)
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
@@ -532,19 +531,24 @@ public:
 	 */
 	[[nodiscard]] const FlowUiTheme& flowTheme() const;
 
+	/** @brief Access the app-owned element state/resource manager. */
+	[[nodiscard]] ElementManager& elements();
+
+	/** @brief Access the app-owned element state/resource manager. */
+	[[nodiscard]] const ElementManager& elements() const;
+
+	/** @brief Return the window whose frame this UI manager builds. */
+	[[nodiscard]] WindowId windowId() const noexcept { return window_; }
+
 private:
 	friend class App;
 	friend class ElementManager;
 	friend struct AppWindow;
-	template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal>
+	template <FlowElement Element>
 	friend class ElementBuilder;
-	friend void detail::pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId);
-	// transitional: temporary friendship exposes the attached manager only to the current builder registration bridge until concept-based dispatch replaces it.
-	friend void detail::ensureElementDefinitionRegistered(
-		UiManager& uiManager,
-		const detail::element::ElementRegistrationDescriptor& descriptor);
 #if FLOW_UI_DEV_MODE
-	// transitional: temporary dev-only friendship exposes the frame tracker to the current ElementBuilder claim bridge until concept-based dispatch replaces it.
+	// transitional: temporary dev-only friendship exposes the frame tracker until
+	// the later dev element/registry migration consolidates capture on UiManager.
 	friend void detail::claimFlowRootForDev(
 		UiManager& uiManager,
 		uint64_t flowId,
@@ -604,3 +608,5 @@ private:
 /** @} */
 
 } //namespace FlowUi
+
+#include "managers/FlowUiElementBuilder.hpp"

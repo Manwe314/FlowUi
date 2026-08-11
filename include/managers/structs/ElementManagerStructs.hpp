@@ -5,7 +5,9 @@
 #include <cstdint>
 #include <new>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include "FlowUi/App.hpp"
 #include "internal/ManagerStorage/ElementRegistration.hpp"
@@ -16,72 +18,13 @@ namespace FlowUi {
 
 namespace detail {
 
-// transitional: temporary normalization accepts the current ElementDefinition aliases until the planned concept-based element type replaces that five-parameter specialization.
-template <typename Element>
-consteval auto elementParametersTypeIdentity() {
-	using E = std::remove_cvref_t<Element>;
-	if constexpr (requires { typename E::ParametersType; }) {
-		return std::type_identity<typename E::ParametersType>{};
-	} else if constexpr (requires { typename E::Parameters; }) {
-		if constexpr (std::is_void_v<typename E::Parameters>) {
-			return std::type_identity<NoElementParameters>{};
-		} else {
-			return std::type_identity<typename E::Parameters>{};
-		}
-	} else {
-		return std::type_identity<NoElementParameters>{};
-	}
-}
-
-// transitional: temporary normalization accepts the current ElementDefinition state flags and aliases until element concepts expose State directly.
-template <typename Element>
-consteval auto elementStateTypeIdentity() {
-	using E = std::remove_cvref_t<Element>;
-	if constexpr (requires { E::hasState; typename E::StateType; }) {
-		if constexpr (E::hasState) {
-			return std::type_identity<typename E::StateType>{};
-		} else {
-			return std::type_identity<NoElementState>{};
-		}
-	} else if constexpr (requires { typename E::State; }) {
-		if constexpr (std::is_void_v<typename E::State>) {
-			return std::type_identity<NoElementState>{};
-		} else {
-			return std::type_identity<typename E::State>{};
-		}
-	} else {
-		return std::type_identity<NoElementState>{};
-	}
-}
-
-// transitional: temporary normalization accepts the current ElementDefinition resource flags and aliases until element concepts expose Resources directly.
-template <typename Element>
-consteval auto elementResourcesTypeIdentity() {
-	using E = std::remove_cvref_t<Element>;
-	if constexpr (requires { E::hasResources; typename E::ResourcesType; }) {
-		if constexpr (E::hasResources) {
-			return std::type_identity<typename E::ResourcesType>{};
-		} else {
-			return std::type_identity<NoElementResources>{};
-		}
-	} else if constexpr (requires { typename E::Resources; }) {
-		if constexpr (std::is_void_v<typename E::Resources>) {
-			return std::type_identity<NoElementResources>{};
-		} else {
-			return std::type_identity<typename E::Resources>{};
-		}
-	} else {
-		return std::type_identity<NoElementResources>{};
-	}
-}
-
 template <typename Element>
 consteval std::string_view elementDebugName() noexcept {
 	using E = std::remove_cvref_t<Element>;
-	if constexpr (requires { { E::debugName } -> std::convertible_to<std::string_view>; }) {
-		return std::string_view(E::debugName);
-	} else {
+	if constexpr (element::debugName<E>().empty()) {
 		return detail::typeToken<E>();
+	} else {
+		return element::debugName<E>();
 	}
 }
 
@@ -120,34 +63,41 @@ consteval element::ElementTypeOperations makeResourceTypeOperations() {
 
 } // namespace detail
 
-template <typename Element>
-using ParametersOf = typename decltype(detail::elementParametersTypeIdentity<Element>())::type;
+/** @brief Compile-time catalog of element definition objects for eager resource preparation. */
+template <FlowElement... Elements>
+class ElementSet {
+public:
+	constexpr explicit ElementSet(const Elements&... elements) noexcept
+		: elements_(&elements...) {}
 
-template <typename Element>
-using StateOf = typename decltype(detail::elementStateTypeIdentity<Element>())::type;
+	template <typename Function>
+	constexpr void forEach(Function&& function) const {
+		std::apply(
+			[&](const auto*... element) {
+				(function(*element), ...);
+			},
+			elements_);
+	}
 
-template <typename Element>
-using ResourcesOf = typename decltype(detail::elementResourcesTypeIdentity<Element>())::type;
-
-template <typename Element>
-inline constexpr bool HasState = !std::same_as<StateOf<Element>, NoElementState>;
-
-template <typename Element>
-inline constexpr bool HasResources = !std::same_as<ResourcesOf<Element>, NoElementResources>;
-
-template <typename Element>
-concept FlowElement = requires {
-	{ std::remove_cvref_t<Element>::definitionId } -> std::convertible_to<FlowDefinitionId>;
+private:
+	std::tuple<const Elements*...> elements_{};
 };
 
+/** @brief Create a reusable element catalog from lvalue definition objects. */
+template <typename... Elements>
+	requires ((FlowElement<std::remove_cvref_t<Elements>>) && ...)
+[[nodiscard]] constexpr auto elementSet(Elements&... elements) noexcept {
+	return ElementSet<std::remove_cvref_t<Elements>...>(elements...);
+}
+
+namespace detail::element {
+
 template <FlowElement Element>
-consteval detail::element::ElementRegistrationDescriptor makeElementDescriptor() {
+consteval ElementRegistrationDescriptor makeElementDescriptor() {
 	using E = std::remove_cvref_t<Element>;
 	using Parameters = ParametersOf<E>;
-	using State = StateOf<E>;
-	using Resources = ResourcesOf<E>;
 
-	detail::element::ElementRegistrationDescriptor descriptor{
+	ElementRegistrationDescriptor descriptor{
 		.definitionId = static_cast<FlowDefinitionId>(E::definitionId),
 		.definitionTypeHash = detail::typeHash<E>(),
 		.parametersTypeHash = detail::typeHash<Parameters>(),
@@ -161,6 +111,7 @@ consteval detail::element::ElementRegistrationDescriptor makeElementDescriptor()
 	};
 
 	if constexpr (HasState<E>) {
+		using State = StateOf<E>;
 		descriptor.stateTypeHash = detail::typeHash<State>();
 		descriptor.stateSize = sizeof(State);
 		descriptor.stateAlignment = alignof(State);
@@ -168,6 +119,7 @@ consteval detail::element::ElementRegistrationDescriptor makeElementDescriptor()
 		descriptor.stateTypeName = detail::typeToken<State>();
 	}
 	if constexpr (HasResources<E>) {
+		using Resources = ResourcesOf<E>;
 		descriptor.resourcesTypeHash = detail::typeHash<Resources>();
 		descriptor.resourcesSize = sizeof(Resources);
 		descriptor.resourcesAlignment = alignof(Resources);
@@ -178,6 +130,8 @@ consteval detail::element::ElementRegistrationDescriptor makeElementDescriptor()
 }
 
 template <FlowElement Element>
-inline constexpr detail::element::ElementRegistrationDescriptor elementDescriptor = makeElementDescriptor<Element>();
+inline constexpr ElementRegistrationDescriptor elementDescriptor = makeElementDescriptor<Element>();
+
+} // namespace detail::element
 
 } // namespace FlowUi
