@@ -10,10 +10,9 @@ namespace FlowUi {
 class App;
 class UiManager;
 
-namespace detail {
-void ensureElementDefinitionRegistered(
-	UiManager& uiManager,
-	const element::ElementRegistrationDescriptor& descriptor);
+namespace detail::element {
+template <typename Element>
+class ElementInvocation;
 }
 
 namespace detail::storage {
@@ -32,9 +31,8 @@ struct ElementDefinitionRecord;
  * state/resource payloads live in StorageSystem rather than on element
  * definition statics. Applications obtain this manager through App::elements().
  *
- * Phase C establishes ownership and window lifecycles. Element registration,
- * state access, resource preparation, and garbage collection are added by the
- * following migration phases.
+ * Definition metadata, window-owned state, app-wide resources, and state GC
+ * are all routed through its internal storage controller.
  */
 class ElementManager {
 public:
@@ -46,21 +44,120 @@ public:
 	ElementManager(ElementManager&&) = delete;
 	ElementManager& operator=(ElementManager&&) = delete;
 
+	/**
+	 * @brief Read an existing element state without creating it.
+	 * @return Immutable state pointer, or nullptr when the window/instance has no state.
+	 * @note The pointer remains stable until explicit erase, transient-state GC at
+	 * a later successful frame boundary, or window destruction. Do not retain a
+	 * transient-state pointer across frame boundaries.
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] const StateOf<Element>* readState(
+		const Element&,
+		WindowId window,
+		FlowElementId flowId) const {
+		return static_cast<const StateOf<Element>*>(readStateErased(
+			detail::element::elementDescriptor<Element>, window, flowId));
+	}
+
+	/**
+	 * @brief Access an existing element state for modification without creating it.
+	 * @return Mutable state pointer, or nullptr when the window/instance has no state.
+	 * @note The pointer remains stable until explicit erase, transient-state GC at
+	 * a later successful frame boundary, or window destruction. Do not retain a
+	 * transient-state pointer across frame boundaries.
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] StateOf<Element>* modifyState(
+		const Element&,
+		WindowId window,
+		FlowElementId flowId) {
+		return static_cast<StateOf<Element>*>(modifyStateErased(
+			detail::element::elementDescriptor<Element>, window, flowId));
+	}
+
+	/**
+	 * @brief Explicitly erase an existing state instance.
+	 * @note Erasure requested during a window build is deferred to that frame's
+	 * successful commit, after every cached callback pointer has been released.
+	 * A canceled frame discards its queued erasures.
+	 */
+	template <FlowElement Element>
+		requires HasState<Element>
+	bool eraseState(
+		const Element&,
+		WindowId window,
+		FlowElementId flowId) {
+		return eraseStateErased(detail::element::elementDescriptor<Element>, window, flowId);
+	}
+
+	/**
+	 * @brief Aggressively collect every currently expired transient state in a window.
+	 * @return Number of state records removed.
+	 */
+	[[nodiscard]] size_t collectStateGarbage(WindowId window) noexcept;
+
+	/**
+	 * @brief Eagerly construct one element definition's app-wide resources.
+	 * @note Resource-free definitions are silently ignored.
+	 */
+	template <FlowElement Element>
+	void prepare(const Element&) {
+		if constexpr (HasResources<Element>) {
+			(void)resolveResourcesErased(detail::element::elementDescriptor<Element>, true);
+		}
+	}
+
+	/**
+	 * @brief Eagerly construct resources for every resourceful definition in a set.
+	 * @note Resource-free members are silently ignored.
+	 */
+	template <FlowElement... Elements>
+	void prepare(const ElementSet<Elements...>& elements) {
+		elements.forEach([this](const auto& element) { prepare(element); });
+	}
+
 private:
 	friend class App;
-	// transitional: temporary friendship permits the current UiManager bridge to register descriptors until concept-based dispatch calls ElementManager directly.
-	friend void detail::ensureElementDefinitionRegistered(
-		UiManager& uiManager,
-		const detail::element::ElementRegistrationDescriptor& descriptor);
+	// ElementInvocation is the narrow internal owner of registration, state lease,
+	// and lazy resource access used by the compile-time builder pipeline.
+	template <typename Element>
+	friend class detail::element::ElementInvocation;
 
 	void init(App& app, detail::storage::IStorageSystem& storage);
 	void destroy() noexcept;
 	void rebindOwner(App& app) noexcept;
 	void registerWindow(WindowId window);
 	void destroyWindow(WindowId window) noexcept;
+	void beginWindowFrame(WindowId window, uint64_t epoch);
+	void commitWindowFrame(WindowId window, uint64_t epoch) noexcept;
+	void cancelWindowFrame(WindowId window, uint64_t epoch) noexcept;
 	void attachTo(UiManager& uiManager) noexcept;
 	const detail::manager_storage::ElementDefinitionRecord& ensureRegistered(
 		const detail::element::ElementRegistrationDescriptor& descriptor);
+	[[nodiscard]] const void* readStateErased(
+		const detail::element::ElementRegistrationDescriptor& descriptor,
+		WindowId window,
+		FlowElementId flowId) const;
+	[[nodiscard]] void* modifyStateErased(
+		const detail::element::ElementRegistrationDescriptor& descriptor,
+		WindowId window,
+		FlowElementId flowId);
+	bool eraseStateErased(
+		const detail::element::ElementRegistrationDescriptor& descriptor,
+		WindowId window,
+		FlowElementId flowId);
+	[[nodiscard]] const void* resolveResourcesErased(
+		const detail::element::ElementRegistrationDescriptor& descriptor,
+		bool retryFailed);
+	[[nodiscard]] detail::element::ResolvedElementStateInvocation beginStateInvocation(
+		const detail::element::ElementRegistrationDescriptor& descriptor,
+		WindowId window,
+		FlowElementId flowId,
+		ElementStatePolicy policy);
+	void endStateInvocation(WindowId window) noexcept;
 
 	// Kept private so element resource construction can receive the owning App&
 	// without exposing an App mutation backdoor on the public manager surface.
@@ -72,3 +169,5 @@ private:
 };
 
 } // namespace FlowUi
+
+#include "internal/ElementInvocation.hpp"

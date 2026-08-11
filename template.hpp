@@ -49,14 +49,14 @@ inline const TemplateDefinition kTemplate = {
 	+[](TemplateDefinition::InteractionContext& context) {
 		(void)context;
 		// Example state access:
-		// auto& state = TemplateDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		// auto& state = context.state();
 	},
 
 	// constructElement: optional callback used by .construct() flows
 	+[](TemplateDefinition::BuildContext& context) -> Clay_ElementDeclaration {
 		(void)context;
 		// Example resources access:
-		// auto& resources = TemplateDefinition::resources.value();
+		// const auto& resources = context.resources();
 		return Clay_ElementDeclaration{};
 	},
 

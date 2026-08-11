@@ -14,7 +14,7 @@ inline const DevPanelContentDef kDevPanelContent = {
 	nullptr,
 	nullptr,
 	+[](DevPanelContentDef::BuildContext& context) {
-		devPanelContentState& state = DevPanelContentDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devPanelContentState& state = context.state();
 
 		int separatorWidth = context.params.separatorThicknessPx;
 		if (separatorWidth < 1)

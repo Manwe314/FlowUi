@@ -113,7 +113,7 @@ MainViewSizing computeMainViewSizing(
 }
 
 void runDebugViewLogic(DebugViewDefinition::InteractionContext& context) {
-	DebugViewState& state = DebugViewDefinition::getOrCreateState(toFlowId(context.elementID));
+	DebugViewState& state = context.state();
 	if (!state.splitInitialized)
 	{
 		state.mainViewSplitRatio = context.params.defaultMainViewSplitRatio;
@@ -127,7 +127,7 @@ void runDebugViewLogic(DebugViewDefinition::InteractionContext& context) {
 }
 
 void buildDebugView(DebugViewDefinition::BuildContext& context) {
-	DebugViewState& state = DebugViewDefinition::getOrCreateState(toFlowId(context.elementID));
+	DebugViewState& state = context.state();
 
 	const int separatorWidthPx = std::max(1, context.params.separatorThicknessPx);
 	const int rootWidthPx = resolveRootWidthPx(context.uiManager, state, context.params, separatorWidthPx);

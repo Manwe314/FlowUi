@@ -13,6 +13,7 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "devMode/devRuntime.hpp"
 #include "internal/TypeOperations.hpp"
+#include "managers/structs/FlowUiElementConcepts.hpp"
 
 namespace FlowUi::devMode {
 
@@ -167,6 +168,9 @@ public:
 
 	template <typename DefinitionT>
 	void registerElement(std::string_view definitionName) {
+		static_assert(
+			FlowUi::FlowElement<DefinitionT>,
+			"FlowUi dev registry requires a valid Flow element definition type.");
 		const uint64_t definitionTypeHash = typeHash<DefinitionT>();
 		const auto existingIt = elementIndexByDefinitionTypeHash_.find(definitionTypeHash);
 		if (existingIt != elementIndexByDefinitionTypeHash_.end()) {
@@ -178,9 +182,13 @@ public:
 		descriptor.definitionId = DefinitionT::definitionId;
 		descriptor.definitionName = std::string(definitionName);
 		descriptor.definitionTypeToken = std::string(typeToken<DefinitionT>());
-		descriptor.paramsStructTypeHash = typeHash<typename DefinitionT::ParametersType>();
-		descriptor.stateStructTypeHash = typeHash<typename DefinitionT::StateType>();
-		descriptor.resourcesStructTypeHash = typeHash<typename DefinitionT::ResourcesType>();
+		descriptor.paramsStructTypeHash = typeHash<FlowUi::ParametersOf<DefinitionT>>();
+		if constexpr (FlowUi::HasState<DefinitionT>) {
+			descriptor.stateStructTypeHash = typeHash<FlowUi::StateOf<DefinitionT>>();
+		}
+		if constexpr (FlowUi::HasResources<DefinitionT>) {
+			descriptor.resourcesStructTypeHash = typeHash<FlowUi::ResourcesOf<DefinitionT>>();
+		}
 
 		const std::size_t index = elements_.size();
 		elementIndexByDefinitionTypeHash_.emplace(descriptor.definitionTypeHash, index);

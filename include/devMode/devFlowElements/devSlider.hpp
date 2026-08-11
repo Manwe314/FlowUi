@@ -68,7 +68,7 @@ inline const DevSliderDef kDevSlider = {
 			return;
 		}
 
-		devSliderState& state = DevSliderDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devSliderState& state = context.state();
 		const double lower = std::min(context.params.minValue, context.params.maxValue);
 		const double upper = std::max(context.params.minValue, context.params.maxValue);
 		state.dragging = true;
@@ -77,11 +77,11 @@ inline const DevSliderDef kDevSlider = {
 	},
 	nullptr,
 	+[](DevSliderDef::InteractionContext& context) {
-		devSliderState& state = DevSliderDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devSliderState& state = context.state();
 		state.dragging = false;
 	},
 	+[](DevSliderDef::InteractionContext& context) {
-		devSliderState& state = DevSliderDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devSliderState& state = context.state();
 		const FlowUi::FrameInput& input = context.uiManager.getCurrentFrameInput();
 		if (!input.mouseDown[0])
 		{
@@ -131,7 +131,7 @@ inline const DevSliderDef kDevSlider = {
 	},
 	nullptr,
 	+[](DevSliderDef::BuildContext& context) {
-		devSliderState& state = DevSliderDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devSliderState& state = context.state();
 		const double lower = std::min(context.params.minValue, context.params.maxValue);
 		const double upper = std::max(context.params.minValue, context.params.maxValue);
 		const double normalizedIncoming = devSliderRoundTo2Decimals(

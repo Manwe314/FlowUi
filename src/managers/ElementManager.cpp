@@ -1,6 +1,7 @@
 #include "managers/ElementManager.hpp"
 
 #include <functional>
+#include <limits>
 #include <stdexcept>
 
 #include "FlowUi/App.hpp"
@@ -86,6 +87,25 @@ void ElementManager::destroyWindow(WindowId window) noexcept {
 	if (controller_) controller_->destroyWindow(window);
 }
 
+void ElementManager::beginWindowFrame(WindowId window, uint64_t epoch) {
+	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
+	controller_->beginWindowFrame(window, epoch);
+}
+
+void ElementManager::commitWindowFrame(WindowId window, uint64_t epoch) noexcept {
+	if (controller_) controller_->commitWindowFrame(window, epoch);
+}
+
+void ElementManager::cancelWindowFrame(WindowId window, uint64_t epoch) noexcept {
+	if (controller_) controller_->cancelWindowFrame(window, epoch);
+}
+
+size_t ElementManager::collectStateGarbage(WindowId window) noexcept {
+	if (!controller_) return 0;
+	return controller_->collectEligibleStates(
+		window, std::numeric_limits<size_t>::max());
+}
+
 void ElementManager::attachTo(UiManager& uiManager) noexcept {
 	uiManager.setElementManager(this);
 }
@@ -96,6 +116,63 @@ const manager_storage::ElementDefinitionRecord& ElementManager::ensureRegistered
 		throw std::runtime_error("ElementManager is not initialized.");
 	}
 	return controller_->ensureDefinition(descriptor);
+}
+
+const void* ElementManager::readStateErased(
+	const detail::element::ElementRegistrationDescriptor& descriptor,
+	WindowId window,
+	FlowElementId flowId) const {
+	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
+	(void)controller_->ensureDefinition(descriptor);
+	return controller_->readState(window, flowId, descriptor);
+}
+
+void* ElementManager::modifyStateErased(
+	const detail::element::ElementRegistrationDescriptor& descriptor,
+	WindowId window,
+	FlowElementId flowId) {
+	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
+	(void)controller_->ensureDefinition(descriptor);
+	return controller_->modifyState(window, flowId, descriptor);
+}
+
+bool ElementManager::eraseStateErased(
+	const detail::element::ElementRegistrationDescriptor& descriptor,
+	WindowId window,
+	FlowElementId flowId) {
+	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
+	(void)controller_->ensureDefinition(descriptor);
+	return controller_->eraseState(window, flowId, descriptor);
+}
+
+const void* ElementManager::resolveResourcesErased(
+	const detail::element::ElementRegistrationDescriptor& descriptor,
+	bool retryFailed) {
+	if (!controller_ || !app_) {
+		throw std::runtime_error("ElementManager is not initialized.");
+	}
+	if (!descriptor.hasResources) return nullptr;
+	return controller_->resolveOrCreateResources(descriptor, *app_, retryFailed);
+}
+
+detail::element::ResolvedElementStateInvocation ElementManager::beginStateInvocation(
+	const detail::element::ElementRegistrationDescriptor& descriptor,
+	WindowId window,
+	FlowElementId flowId,
+	ElementStatePolicy policy) {
+	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
+	(void)controller_->ensureDefinition(descriptor);
+	if (!descriptor.hasState) return {};
+	const manager_storage::ResolvedElementState state =
+		controller_->resolveOrCreateStateForInvocation(window, flowId, descriptor, policy);
+	return detail::element::ResolvedElementStateInvocation{
+		.handle = state.handle.packed(),
+		.payload = state.payload,
+	};
+}
+
+void ElementManager::endStateInvocation(WindowId window) noexcept {
+	if (controller_) controller_->endStateInvocation(window);
 }
 
 } // namespace FlowUi

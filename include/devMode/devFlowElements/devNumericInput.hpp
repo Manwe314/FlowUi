@@ -302,7 +302,7 @@ using DevNumericInputDef = FlowUi::ElementDefinition<
 inline const DevNumericInputDef kDevNumericInput = {
 	nullptr,
 	+[](DevNumericInputDef::InteractionContext& context) {
-		devNumericInputState& state = DevNumericInputDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devNumericInputState& state = context.state();
 		const Clay_ElementId hintId = context.uiManager.toClayEID(context.createChildElementId("hint"));
 		if (!context.previousInteraction.isPressed(hintId))
 		{
@@ -315,11 +315,11 @@ inline const DevNumericInputDef kDevNumericInput = {
 	},
 	nullptr,
 	+[](DevNumericInputDef::InteractionContext& context) {
-		devNumericInputState& state = DevNumericInputDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devNumericInputState& state = context.state();
 		state.dragging = false;
 	},
 	+[](DevNumericInputDef::InteractionContext& context) {
-		devNumericInputState& state = DevNumericInputDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devNumericInputState& state = context.state();
 		const FlowUi::FrameInput& input = context.uiManager.getCurrentFrameInput();
 		if (!input.mouseDown[0])
 		{
@@ -369,8 +369,9 @@ inline const DevNumericInputDef kDevNumericInput = {
 	},
 	nullptr,
 	+[](DevNumericInputDef::BuildContext& context) {
-		devNumericInputState& state = DevNumericInputDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devNumericInputState& state = context.state();
 		const uint64_t elementFlowId = FlowUi::toFlowId(context.elementID);
+		FlowUi::UiManager* uiManager = &context.uiManager;
 		const std::string fieldId =
 			context.params.fieldId.empty()
 			? context.createChildElementId("numeric-field")
@@ -444,13 +445,15 @@ inline const DevNumericInputDef kDevNumericInput = {
 					.fieldId = fieldId,
 					.initialText = state.normalizedText,
 					.onTextChangedCallback = [
+						uiManager,
 						elementFlowId,
 						valueKind = context.params.valueKind,
 						minValue = context.params.minValue,
 						maxValue = context.params.maxValue,
 						onValueChanged = context.params.onValueChangedCallback
 					](std::string_view text) {
-						devNumericInputState* latestState = DevNumericInputDef::tryGetState(elementFlowId);
+						devNumericInputState* latestState = uiManager->elements().modifyState(
+							kDevNumericInput, uiManager->windowId(), elementFlowId);
 						if (latestState == nullptr)
 						{
 							return;

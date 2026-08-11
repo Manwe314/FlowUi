@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -12,6 +11,7 @@
 #include "FlowUi/App.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "clay.h"
+#include "managers/structs/FlowUiElementConcepts.hpp"
 
 namespace FlowUi {
 
@@ -116,21 +116,17 @@ struct InteractionSnapshot {
 	bool isReleased(Clay_ElementId id) const { return contains(releasedElementIds, id); }
 };
 
-/** @brief Empty parameter type used by elements with no parameters. */
-struct NoElementParameters {};
-
-/** @brief Empty state type used by elements with no state. */
-struct NoElementState {};
-
-/** @brief Empty resource type used by elements with no resources. */
-struct NoElementResources {};
-
 class UiManager;
 
-template <typename Parameters = NoElementParameters>
+namespace detail::element {
+template <typename Element>
+class ElementInvocation;
+}
+
+template <typename Element>
 struct ElementBuildContext;
 
-template <typename Parameters = NoElementParameters>
+template <typename Element>
 struct ElementInteractionContext;
 
 /**
@@ -142,16 +138,28 @@ struct ElementInteractionContext;
  * From Previous callbacks.
  * 
  */
-template <typename Parameters>
+template <typename Element>
 struct ElementBuildContext
 {
+	/** @brief Complete element definition type associated with this callback. */
+	using ElementType = std::remove_cvref_t<Element>;
+
 	/**
 	 * @brief Parameter type exposed through params.
 	 *
-	 * void parameter definitions resolve to NoElementParameters so build
+	 * Elements that omit Parameters resolve to NoElementParameters so build
 	 * callbacks always receive a valid params reference.
 	 */
-	using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
+	using ParametersType = ParametersOf<ElementType>;
+
+	ElementBuildContext(
+		detail::element::ElementInvocation<ElementType>& invocation,
+		std::string_view id,
+		ParametersType& parameters) noexcept
+		: uiManager(invocation.uiManager()),
+		  elementID(id),
+		  params(parameters),
+		  invocation_(invocation) {}
 
 	/**
 	 * @brief UI manager that owns the active frame.
@@ -177,6 +185,27 @@ struct ElementBuildContext
 	 */
 	ParametersType& params;
 
+	/** Return the state resolved once and cached for this element invocation. */
+	template <typename E = ElementType>
+		requires HasState<E>
+	[[nodiscard]] StateOf<E>& state() {
+		return invocation_.template state<E>();
+	}
+
+	/** Return immutable cached state from a const context. */
+	template <typename E = ElementType>
+		requires HasState<E>
+	[[nodiscard]] const StateOf<E>& state() const {
+		return std::as_const(invocation_).template state<E>();
+	}
+
+	/** Lazily resolve and return this definition's immutable app-wide resources. */
+	template <typename E = ElementType>
+		requires HasResources<E>
+	[[nodiscard]] const ResourcesOf<E>& resources() const {
+		return invocation_.template resources<E>();
+	}
+
 	/**
 	 * @brief Create a nested element id for child elements.
 	 *
@@ -191,6 +220,9 @@ struct ElementBuildContext
 	{
 		return std::string(elementID) + "/" + std::string(localChildId);
 	}
+
+private:
+	detail::element::ElementInvocation<ElementType>& invocation_;
 };
 
 /**
@@ -201,16 +233,30 @@ struct ElementBuildContext
  * Event callbacks are invoked from the previous completed frame interaction
  * snapshot. Logic callbacks receive the same context type when enabled.
  */
-template <typename Parameters>
+template <typename Element>
 struct ElementInteractionContext
 {
+	/** @brief Complete element definition type associated with this callback. */
+	using ElementType = std::remove_cvref_t<Element>;
+
 	/**
 	 * @brief Parameter type exposed through params.
 	 *
-	 * void parameter definitions resolve to NoElementParameters so interaction
+	 * Elements that omit Parameters resolve to NoElementParameters so interaction
 	 * callbacks always receive a valid params reference.
 	 */
-	using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
+	using ParametersType = ParametersOf<ElementType>;
+
+	ElementInteractionContext(
+		detail::element::ElementInvocation<ElementType>& invocation,
+		std::string_view id,
+		ParametersType& parameters,
+		const InteractionSnapshot& interaction) noexcept
+		: uiManager(invocation.uiManager()),
+		  elementID(id),
+		  params(parameters),
+		  previousInteraction(interaction),
+		  invocation_(invocation) {}
 
 	/**
 	 * @brief UI manager that owns the active frame.
@@ -245,6 +291,27 @@ struct ElementInteractionContext
 	 */
 	const InteractionSnapshot& previousInteraction;
 
+	/** Return the state resolved once and cached for this element invocation. */
+	template <typename E = ElementType>
+		requires HasState<E>
+	[[nodiscard]] StateOf<E>& state() {
+		return invocation_.template state<E>();
+	}
+
+	/** Return immutable cached state from a const context. */
+	template <typename E = ElementType>
+		requires HasState<E>
+	[[nodiscard]] const StateOf<E>& state() const {
+		return std::as_const(invocation_).template state<E>();
+	}
+
+	/** Lazily resolve and return this definition's immutable app-wide resources. */
+	template <typename E = ElementType>
+		requires HasResources<E>
+	[[nodiscard]] const ResourcesOf<E>& resources() const {
+		return invocation_.template resources<E>();
+	}
+
 	/**
 	 * @brief Create a nested element id for child elements.
 	 *
@@ -259,426 +326,9 @@ struct ElementInteractionContext
 	{
 		return std::string(elementID) + "/" + std::string(localChildId);
 	}
-};
 
-/**
- * @brief Typed definition for a FlowUi element.
- *
- * ElementDefinition binds an element's parameter, state, and resource structs
- * to the callbacks executed by ElementBuilder. Store an ElementDefinition in a const variable
- * to use with ElementBuilder.
- * 
- * Example:
- * @code{.cpp}
- * struct exampleParameters {
- * 		int i = 0;
- * };
- * using exampleElementDefinition = FlowUi::ElementDefinition< 
- * 											exampleParameters,
- * 														 void,
- * 														 void,
- * 														 FLOW_DEF_ID("Example")>;
- * inline const exampleElementDefinition kExampleElement = {
- * // function pointers set here.
- * };
- * @endcode
- *
- * @tparam Parameters User-defined parameter struct copied into each builder
- * instance. Use void or omit the argument for elements with no parameters.
- * @tparam State User-defined per-element-instance state struct keyed by Flow
- * element id. Use void for stateless elements.
- * @tparam Resources User-defined shared resource struct stored once per
- * definition specialization. Use void for elements with no shared resources.
- * @tparam DefinitionId Compile-time id for this element definition.
- * @tparam IsDevInternal Marks this definition as internal to FlowUi dev tooling.
- *
- * @see @ref md_docs_2concepts_2element__system "Element System"
- * @see @ref md_docs_2tutorials_2custom__elements "Custom Elements"
- * @see @ref md_docs_2tutorials_2developer__mode "Developer Mode"
- */
-template <
-	typename Parameters = NoElementParameters,
-	typename State = void,
-	typename Resources = void,
-	uint64_t DefinitionId = 0,
-	bool IsDevInternal = false>
-struct ElementDefinition
-{
-	/** @brief Parameter struct used by this element definition. */
-	using ParametersType = std::conditional_t<std::is_void_v<Parameters>, NoElementParameters, Parameters>;
-
-	/** @brief State struct used by this element definition. */
-	using StateType = std::conditional_t<std::is_void_v<State>, NoElementState, State>;
-
-	/** @brief Resources struct used by this element definition. */
-	using ResourcesType = std::conditional_t<std::is_void_v<Resources>, NoElementResources, Resources>;
-
-	/** @brief Build callback context type. */
-	using BuildContext = ElementBuildContext<Parameters>;
-
-	/** @brief Interaction callback context type. */
-	using InteractionContext = ElementInteractionContext<Parameters>;
-
-	/** @brief State pool entry type. */
-	using StatePoolEntry = std::pair<uint64_t, StateType>;
-
-	/**
-	 * @brief Compile-time id for this element definition.
-	 *
-	 * The id belongs to the element definition type, not to one drawn element
-	 * instance. Element instances are keyed separately by their Flow element id.
-	 */
-	static constexpr uint64_t definitionId = DefinitionId;
-
-	/**
-	 * @brief Whether this definition is internal to FlowUi dev tooling.
-	 *
-	 * Set the fifth ElementDefinition template argument to true to mark the
-	 * definition as dev-internal:
-	 *
-	 * @code{.cpp}
-	 * using DevOnlyDefinition = FlowUi::ElementDefinition<
-	 *     DevOnlyParams,
-	 *     DevOnlyState,
-	 *     void,
-	 *     FLOW_DEF_ID("flowui_dev_only"),
-	 *     true>;
-	 * @endcode
-	 *
-	 * Dev-internal definitions are passed to the dev capture runtime as internal
-	 * tooling.
-	 * @note Normal user elements should leave this as false. Normally users wont ever need to set this to true. 
-	 */
-	static constexpr bool isDevInternal = IsDevInternal;
-
-	/** @brief Whether this definition has a user-defined state struct. */
-	static constexpr bool hasState = !std::is_void_v<State>;
-
-	/** @brief Whether this definition has a user-defined resources struct. */
-	static constexpr bool hasResources = !std::is_void_v<Resources>;
-
-	/**
-	 * @brief Shared resources container for this definition specialization.
-	 *
-	 * Resources are stored once per ElementDefinition type. getResources()
-	 * initializes this optional on first use.
-	 */
-	static inline std::optional<ResourcesType> resources{};
-
-	/**
-	 * @brief State storage for element instances of this definition.
-	 *
-	 * Each entry is keyed by a Flow element id, usually produced with toFlowId()
-	 * from the element id string passed to createElement().
-	 */
-	static inline std::vector<StatePoolEntry> statePool{};
-
-	/**
-	 * @brief Get or lazily create this definition's shared resources.
-	 *
-	 * The resources instance is created once and stored in resources. Construction
-	 * prefers ResourcesType(App&), then ResourcesType(UiManager&), then a default
-	 * constructor.
-	 *
-	 * @param app Active FlowUi application used for resource construction.
-	 * @return Mutable resources instance for this definition specialization.
-	 *
-	 * @warning This function is only available when the Resources template argument
-	 * is not void; otherwise the static_assert fails at compile time.
-	 *
-	 * @code{.cpp}
-	 * struct ButtonResources {
-	 *     explicit ButtonResources(FlowUi::App& app) {
-	 *         (void)app;
-	 *     }
-	 * };
-	 *
-	 * using ButtonDefinition = FlowUi::ElementDefinition<
-	 *     ButtonParams,
-	 *     void,
-	 *     ButtonResources,
-	 *     FLOW_DEF_ID("button")>;
-	 *
-	 * void initializeResources(FlowUi::App& app) {
-	 *     ButtonResources& resources = ButtonDefinition::getResources(app);
-	 *     (void)resources;
-	 * }
-	 * @endcode
-	 * 
-	 * @note returned Resources is Mustable but normally this struct would be used for app lifetime constant values. rarely it might be useful to mutate resources at runtime.
-	 */
-	static ResourcesType& getResources(App& app)
-	{
-		static_assert(hasResources, "FlowUi: getResources is only available when ElementDefinition Resources template argument is not void.");
-		if (!resources.has_value()) {
-			if constexpr (std::is_constructible_v<ResourcesType, App&>) {
-				resources.emplace(app);
-			} else if constexpr (std::is_constructible_v<ResourcesType, UiManager&>) {
-				resources.emplace(app.ui());
-			} else {
-				resources.emplace();
-			}
-		}
-		return *resources;
-	}
-
-	/**
-	 * @brief Get or create mutable state for an element instance.
-	 *
-	 * If statePool already contains elementFlowId, the existing state is
-	 * returned. Otherwise a default-constructed StateType is added and returned.
-	 *
-	 * @param elementFlowId Flow id for the element instance.
-	 * @return Mutable state associated with elementFlowId.
-	 *
-	 * @warning This function is only available when the State template argument is
-	 * not void; otherwise the static_assert fails at compile time.
-	 *
-	 * use this in element callbacks
-	 * @code{.cpp}
-	 * +[](ButtonDefinition::InteractionContext& context) {
-	 *     ButtonState& state =
-	 *         ButtonDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
-	 *     state.clickCount += 1;
-	 * }
-	 * @endcode
-	 * 
-	 * This function can also be used to get data outside element callbacks:
-	 * @code{.cpp}
-	 * int grabNumber() {
-	 *    exampleState& state = ExampleElementDefinition::getOrCreateState(FlowUi::toFlowId("Example"));
-	 * 	  return state.exampleNumber;
-	 * }
-	 * @endcode
-	 */
-	static StateType& getOrCreateState(uint64_t elementFlowId)
-	{
-		static_assert(hasState, "FlowUi: getOrCreateState is only available when ElementDefinition State template argument is not void.");
-		for (StatePoolEntry& entry : statePool) {
-			if (entry.first == elementFlowId) {
-				return entry.second;
-			}
-		}
-		statePool.emplace_back(elementFlowId, StateType{});
-		return statePool.back().second;
-	}
-
-	/**
-	 * @brief Return mutable state for an element instance if it exists.
-	 *
-	 * This lookup does not create a new state entry.
-	 *
-	 * @param elementFlowId Flow id for the element instance.
-	 * @return Pointer to mutable state, or nullptr when no entry exists.
-	 *
-	 * @warning This function is only available when the State template argument is
-	 * not void; otherwise the static_assert fails at compile time.
-	 *
-	 * @code{.cpp}
-	 * if (ButtonState* state = ButtonDefinition::tryGetState(FLOW_ID("button-1"))) {
-	 *     state->isActive = false;
-	 * }
-	 * @endcode
-	 */
-	static StateType* tryGetState(uint64_t elementFlowId)
-	{
-		static_assert(hasState, "FlowUi: tryGetState is only available when ElementDefinition State template argument is not void.");
-		for (StatePoolEntry& entry : statePool) {
-			if (entry.first == elementFlowId) {
-				return &entry.second;
-			}
-		}
-		return nullptr;
-	}
-
-	/**
-	 * @brief Return immutable state for an element instance if it exists.
-	 *
-	 * This lookup does not create a new state entry.
-	 *
-	 * @param elementFlowId Flow id for the element instance.
-	 * @return Pointer to immutable state, or nullptr when no entry exists.
-	 *
-	 * @warning This function is only available when the State template argument is
-	 * not void; otherwise the static_assert fails at compile time.
-	 *
-	 * @code{.cpp}
-	 * const ButtonState* state = ButtonDefinition::tryGetStateConst(FLOW_ID("button-1"));
-	 * const bool active = state && state->isActive;
-	 * @endcode
-	 */
-	static const StateType* tryGetStateConst(uint64_t elementFlowId)
-	{
-		static_assert(hasState, "FlowUi: tryGetStateConst is only available when ElementDefinition State template argument is not void.");
-		for (const StatePoolEntry& entry : statePool) {
-			if (entry.first == elementFlowId) {
-				return &entry.second;
-			}
-		}
-		return nullptr;
-	}
-
-	/**
-	 * @brief Erase state for an element instance.
-	 *
-	 * The matching state entry is removed from statePool when present.
-	 *
-	 * @param elementFlowId Flow id for the element instance.
-	 * @retval true State existed and was erased.
-	 * @retval false No state entry existed for elementFlowId.
-	 *
-	 * @warning This function is only available when the State template argument is
-	 * not void; otherwise the static_assert fails at compile time.
-	 *
-	 * @code{.cpp}
-	 * const bool removed = ButtonDefinition::eraseState(FLOW_ID("button-1"));
-	 * (void)removed;
-	 * @endcode
-	 * 
-	 * @note For now there is no automatic grabage collection for state structs. use this function to keep memory use low.
-	 */
-	static bool eraseState(uint64_t elementFlowId)
-	{
-		static_assert(hasState, "FlowUi: eraseState is only available when ElementDefinition State template argument is not void.");
-		for (std::size_t i = 0; i < statePool.size(); ++i) {
-			if (statePool[i].first == elementFlowId) {
-				statePool[i] = std::move(statePool.back());
-				statePool.pop_back();
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @brief Callback invoked when the root element was hovered.
-	 *
-	 * ElementBuilder calls this before runLogic and before constructElement or
-	 * buildElement when event callbacks are enabled and previousInteraction
-	 * contains the root Clay id.
-	 *
-	 * @code{.cpp}
-	 * +[](ButtonDefinition::InteractionContext& context) {
-	 *     context.params.backgroundColor = FlowUi::Flow_Color("#fff3e8ff");
-	 * }
-	 * @endcode
-	 */
-	void (*onHovered)(InteractionContext&) = nullptr;
-
-	/**
-	 * @brief Callback invoked when the root element was pressed.
-	 *
-	 * ElementBuilder calls this after onHovered and before onHeld, onReleased,
-	 * runLogic, and constructElement or buildElement when previousInteraction
-	 * contains a press for the root Clay id.
-	 *
-	 * @code{.cpp}
-	 * +[](ButtonDefinition::InteractionContext& context) {
-	 *     ButtonState& state =
-	 *         ButtonDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
-	 *     state.clickCount += 1;
-	 * }
-	 * @endcode
-	 */
-	void (*onPressed)(InteractionContext&) = nullptr;
-
-	/**
-	 * @brief Callback invoked when the root element was held.
-	 *
-	 * ElementBuilder calls this after onPressed and before onReleased, runLogic,
-	 * and constructElement or buildElement when previousInteraction contains a
-	 * hold for the root Clay id.
-	 *
-	 * @code{.cpp}
-	 * +[](SliderDefinition::InteractionContext& context) {
-	 *     SliderState& state =
-	 *         SliderDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
-	 *     state.dragging = true;
-	 * }
-	 * @endcode
-	 */
-	void (*onHeld)(InteractionContext&) = nullptr;
-
-	/**
-	 * @brief Callback invoked when the root element was released.
-	 *
-	 * ElementBuilder calls this after onHeld and before runLogic and
-	 * constructElement or buildElement when previousInteraction contains a
-	 * release for the root Clay id.
-	 *
-	 * @code{.cpp}
-	 * +[](SliderDefinition::InteractionContext& context) {
-	 *     SliderState& state =
-	 *         SliderDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
-	 *     state.dragging = false;
-	 * }
-	 * @endcode
-	 */
-	void (*onReleased)(InteractionContext&) = nullptr;
-
-	/**
-	 * @brief Per-frame logic callback invoked before constructElement or buildElement.
-	 *
-	 * ElementBuilder calls this after event callbacks when logic callbacks are
-	 * enabled.
-	 * unlike event callbacks, runLogic will allways be called if enabled from Element builder.
-	 * unlike build or Construct callbacks Logic is passed InteractionContext.
-	 * 
-	 * use runLogic to perform additional functional work even query for interaction events on other elements
-	 *
-	 * @code{.cpp}
-	 * +[](SliderDefinition::InteractionContext& context) {
-	 *     const Clay_ElementId toggleID = context.params.toggleElementId;
-	 *     if (context.previousInteraction.isPressed(toggleID)) {
-	 *         SliderState& state =
-	 *             SliderDefinition::getOrCreateState(FlowUi::toFlowId(context.elementID));
-	 *         state.isEnabled = true;
-	 *     }
-	 * }
-	 * @endcode
-	 */
-	void (*runLogic)(InteractionContext&) = nullptr;
-
-	/**
-	 * @brief Callback that returns the root Clay declaration for construct() flows.
-	 *
-	 * ElementBuilder::construct() calls this after event and logic callbacks.
-	 * The returned declaration is applied to the root element opened by the
-	 * builder using the builder's element id. This callback returns data; it is
-	 * not the draw() path that emits an arbitrary Clay subtree.
-	 * 
-	 * Use this callback for when you want to make open ended Flow Elements that need manual closing
-	 *
-	 * @code{.cpp}
-	 * +[](PanelDefinition::BuildContext& context) -> Clay_ElementDeclaration {
-	 *     Clay_ElementDeclaration root{};
-	 *     root.layout.sizing = context.params.sizing;
-	 *     root.backgroundColor = context.params.backgroundColor;
-	 *     return root;
-	 * }
-	 * @endcode
-	 */
-	Clay_ElementDeclaration (*constructElement)(BuildContext&) = nullptr;
-
-	/**
-	 * @brief Callback that emits Clay UI for draw() flows.
-	 *
-	 * ElementBuilder::draw() calls this after event and logic callbacks when
-	 * build callbacks are enabled. The callback owns the Clay emission for the
-	 * element and may emit the root node and any child nodes or child Flow
-	 * elements.
-	 *
-	 * @code{.cpp}
-	 * +[](ButtonDefinition::BuildContext& context) {
-	 *     Clay_ElementDeclaration root{};
-	 *     root.id = context.uiManager.toClayEID(context.elementID);
-	 *     root.layout.sizing = context.params.sizing;
-	 *
-	 *     CLAY(root) {}
-	 * }
-	 * @endcode
-	 */
-	void (*buildElement)(BuildContext&) = nullptr;
+private:
+	detail::element::ElementInvocation<ElementType>& invocation_;
 };
 
 /**

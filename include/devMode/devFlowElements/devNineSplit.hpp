@@ -86,6 +86,17 @@ struct devNineSplitState {
 struct devNineSplitResources {
 	bool linkIconPrepared = false;
 	FlowUi::TextureRef linkIcon = FlowUi::TextureRef{};
+
+	explicit devNineSplitResources(FlowUi::App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		constexpr std::string_view key = "flowui/dev/nine-split/link";
+		(void)app.icons().registerSvg(key, ::kLink);
+		linkIcon = app.icons().textureRef(key);
+#else
+		(void)app;
+#endif
+		linkIconPrepared = true;
+	}
 };
 
 using DevNineSplitDef = FlowUi::ElementDefinition<
@@ -95,20 +106,6 @@ using DevNineSplitDef = FlowUi::ElementDefinition<
 	FLOW_DEF_ID("DevNineSplit"),
 	true>;
 
-inline int devNineSplitGetSlotValue(std::string_view elementId, uint8_t slotId) {
-	if (slotId >= 9u)
-	{
-		return std::numeric_limits<int>::min();
-	}
-
-	const devNineSplitState* state = DevNineSplitDef::tryGetStateConst(FlowUi::toFlowId(elementId));
-	if (state == nullptr || !state->hasNumeric[slotId])
-	{
-		return std::numeric_limits<int>::min();
-	}
-	return state->cachedIntValues[slotId];
-}
-
 inline const DevNineSplitDef kDevNineSplit = {
 	nullptr,
 	nullptr,
@@ -117,7 +114,7 @@ inline const DevNineSplitDef kDevNineSplit = {
 	nullptr,
 	nullptr,
 	+[](DevNineSplitDef::BuildContext& context) {
-		devNineSplitState& state = DevNineSplitDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devNineSplitState& state = context.state();
 		const uint64_t elementFlowId = FlowUi::toFlowId(context.elementID);
 
 		if (!state.initialized)
@@ -169,15 +166,10 @@ inline const DevNineSplitDef kDevNineSplit = {
 			}
 		}
 
-		FlowUi::TextureRef linkIcon{};
-		if (DevNineSplitDef::resources.has_value())
-		{
-			const devNineSplitResources& resources = *DevNineSplitDef::resources;
-			if (resources.linkIconPrepared)
-			{
-				linkIcon = resources.linkIcon;
-			}
-		}
+		const devNineSplitResources& resources = context.resources();
+		const FlowUi::TextureRef linkIcon = resources.linkIconPrepared
+			? resources.linkIcon
+			: FlowUi::TextureRef{};
 
 		Clay_ElementDeclaration root{};
 		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
@@ -261,8 +253,9 @@ inline const DevNineSplitDef kDevNineSplit = {
 									.createElement(kDevBasicButton, context.createChildElementId("center-link"))
 									.setParameters(devBasicButtonParams{
 										.icon = linkIcon,
-										.onPressedCallback = [elementFlowId](DevBasicButtonInteractionContext) {
-											devNineSplitState* latestState = DevNineSplitDef::tryGetState(elementFlowId);
+										.onPressedCallback = [elementFlowId](DevBasicButtonInteractionContext buttonContext) {
+											devNineSplitState* latestState = buttonContext.uiManager.elements().modifyState(
+												kDevNineSplit, buttonContext.uiManager.windowId(), elementFlowId);
 											if (latestState != nullptr)
 											{
 												latestState->linkEnabled = !latestState->linkEnabled;
@@ -321,12 +314,14 @@ inline const DevNineSplitDef kDevNineSplit = {
 										.floatRatePerPixel = context.params.floatRatePerPixel,
 										.integerRatePerPixel = context.params.integerRatePerPixel,
 										.onValueChangedCallback = [
+											uiManager = &context.uiManager,
 											elementFlowId,
 											slotId,
 											valueKind = context.params.valueKind,
 											onValuesChanged = context.params.onValuesChangedCallback
 										](double changedValue) {
-											devNineSplitState* latestState = DevNineSplitDef::tryGetState(elementFlowId);
+											devNineSplitState* latestState = uiManager->elements().modifyState(
+												kDevNineSplit, uiManager->windowId(), elementFlowId);
 											if (latestState == nullptr)
 											{
 												return;
@@ -378,7 +373,9 @@ inline const DevNineSplitDef kDevNineSplit = {
 												}
 
 												devNumericInputState* numericState =
-													DevNumericInputDef::tryGetState(
+													uiManager->elements().modifyState(
+														kDevNumericInput,
+														uiManager->windowId(),
 														FlowUi::toFlowId(syncedElementId));
 												if (numericState == nullptr)
 												{

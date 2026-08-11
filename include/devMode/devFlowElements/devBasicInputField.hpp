@@ -63,7 +63,7 @@ inline const DevBasicInputFieldDef kDevBasicInputField = {
 	nullptr,
 	nullptr,
 	+[](DevBasicInputFieldDef::BuildContext& context) {
-		devBasicInputFieldState& state = DevBasicInputFieldDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devBasicInputFieldState& state = context.state();
 		const std::string_view fieldId =
 			context.params.fieldId.empty()
 			? context.elementID

@@ -37,4 +37,10 @@ struct ElementRegistrationDescriptor {
 	std::string_view resourcesTypeName{};
 };
 
+/** Erased controller result consumed immediately by typed ElementInvocation. */
+struct ResolvedElementStateInvocation {
+	uint64_t handle = 0;
+	void* payload = nullptr;
+};
+
 } // namespace FlowUi::detail::element

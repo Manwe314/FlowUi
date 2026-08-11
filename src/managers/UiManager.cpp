@@ -206,6 +206,20 @@ namespace FlowUi
 		storage_ = nullptr;
 	}
 
+	ElementManager& UiManager::elements() {
+		if (!elementManager_) {
+			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
+		}
+		return *elementManager_;
+	}
+
+	const ElementManager& UiManager::elements() const {
+		if (!elementManager_) {
+			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
+		}
+		return *elementManager_;
+	}
+
 		void UiManager::setClipboardText(std::string_view text) const {
 			if (!setClipboardTextAccessor_) {
 				return;
@@ -521,30 +535,9 @@ namespace FlowUi
 
 namespace detail {
 
-	Clay_ElementId toClayElementId(UiManager& uiManager, std::string_view elementID) {
-		return uiManager.toClayEID(elementID);
-	}
-
-	const InteractionSnapshot& previousInteraction(const UiManager& uiManager) {
-		return uiManager.getPreviousFramesInteraction();
-	}
-
-	void pushConstructedElement(UiManager& uiManager, Clay_ElementId elementId) {
-		uiManager.pushConstructedElement(elementId);
-	}
-
-	// transitional: temporary bridge delegates current ElementBuilder registration until UiManager's future concept-based builder owns normalized element dispatch directly.
-	void ensureElementDefinitionRegistered(
-		UiManager& uiManager,
-		const element::ElementRegistrationDescriptor& descriptor) {
-		if (!uiManager.elementManager_) {
-			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
-		}
-		(void)uiManager.elementManager_->ensureRegistered(descriptor);
-	}
-
 #if FLOW_UI_DEV_MODE
-	// transitional: temporary dev-only claim bridge reports collisions through UiManager until concept-based dispatch owns the tracker call directly.
+	// transitional: temporary dev-only claim bridge remains until the later dev
+	// element and registry migration consolidates capture operations on UiManager.
 	void claimFlowRootForDev(
 		UiManager& uiManager,
 		uint64_t flowId,

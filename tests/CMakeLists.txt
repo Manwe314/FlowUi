@@ -83,6 +83,64 @@ set_tests_properties(flowui.elements.definition_registration PROPERTIES
 	TIMEOUT 30
 )
 
+add_executable(flowui_element_concept_contract_tests
+	ElementResourceTests/ElementConceptContractTests.cpp
+)
+target_compile_features(flowui_element_concept_contract_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_concept_contract_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_element_concept_contract_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.elements.concept_contracts COMMAND flowui_element_concept_contract_tests)
+set_tests_properties(flowui.elements.concept_contracts PROPERTIES
+	LABELS "flowui;elements;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_element_state_api_tests
+	ElementResourceTests/PhaseFStateApiTests.cpp
+)
+target_compile_features(flowui_element_state_api_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_state_api_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_element_state_api_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.elements.state_api COMMAND flowui_element_state_api_tests)
+set_tests_properties(flowui.elements.state_api PROPERTIES
+	LABELS "flowui;elements;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_element_state_gc_tests
+	ElementResourceTests/PhaseGStateGcTests.cpp
+	HeadlessVulkanFixture.cpp
+)
+target_compile_features(flowui_element_state_gc_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_state_gc_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+	target_compile_definitions(flowui_element_state_gc_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+endif()
+target_link_libraries(flowui_element_state_gc_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+add_test(NAME flowui.elements.state_gc COMMAND flowui_element_state_gc_tests)
+set_tests_properties(flowui.elements.state_gc PROPERTIES
+	LABELS "flowui;elements;storage;unit"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
+add_executable(flowui_element_resources_tests
+	ElementResourceTests/PhaseHResourcesTests.cpp
+	HeadlessVulkanFixture.cpp
+)
+target_compile_features(flowui_element_resources_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_resources_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+	target_compile_definitions(flowui_element_resources_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+endif()
+target_link_libraries(flowui_element_resources_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+add_test(NAME flowui.elements.resources COMMAND flowui_element_resources_tests)
+set_tests_properties(flowui.elements.resources PROPERTIES
+	LABELS "flowui;elements;storage;unit"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
 if(FLOW_UI_DEV_MODE)
 	add_executable(flowui_element_flow_id_dev_tests
 		ElementResourceTests/PhaseADevFlowIdTests.cpp

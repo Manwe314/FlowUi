@@ -181,7 +181,11 @@ struct devFloat4InputState {
 	bool pendingHexFieldReset = false;
 };
 
-inline void devFloat4SyncNumericVisual(devFloat4InputState* state, uint8_t channelIndex, bool forceFieldReset) {
+inline void devFloat4SyncNumericVisual(
+	FlowUi::UiManager& uiManager,
+	devFloat4InputState* state,
+	uint8_t channelIndex,
+	bool forceFieldReset) {
 	if (state == nullptr || channelIndex >= 4u)
 	{
 		return;
@@ -193,7 +197,8 @@ inline void devFloat4SyncNumericVisual(devFloat4InputState* state, uint8_t chann
 		return;
 	}
 
-	devNumericInputState* numericState = DevNumericInputDef::tryGetState(FlowUi::toFlowId(elementId));
+	devNumericInputState* numericState = uiManager.elements().modifyState(
+		kDevNumericInput, uiManager.windowId(), FlowUi::toFlowId(elementId));
 	if (numericState == nullptr)
 	{
 		return;
@@ -228,7 +233,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 	nullptr,
 	+[](DevFloat4InputDef::BuildContext& context) {
 		const uint64_t elementFlowId = FlowUi::toFlowId(context.elementID);
-		devFloat4InputState& state = DevFloat4InputDef::getOrCreateState(elementFlowId);
+		devFloat4InputState& state = context.state();
 
 		if (context.params.useColorEditor)
 		{
@@ -303,7 +308,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 			{
 				if (channelSyncedFromParams[i])
 				{
-					devFloat4SyncNumericVisual(&state, i, true);
+					devFloat4SyncNumericVisual(context.uiManager, &state, i, true);
 				}
 			}
 
@@ -410,11 +415,13 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 								.maxValue = sliderMaxValue,
 								.value = state.displayValues[channelIndex],
 								.onValueChangedCallback = [
+									uiManager = &context.uiManager,
 									elementFlowId,
 									channelIndex,
 									onValueChanged = emitValueChanged
 								](double changedValue) {
-									devFloat4InputState* latestState = DevFloat4InputDef::tryGetState(elementFlowId);
+									devFloat4InputState* latestState = uiManager->elements().modifyState(
+										kDevFloat4Input, uiManager->windowId(), elementFlowId);
 									if (latestState == nullptr)
 									{
 										return;
@@ -437,7 +444,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 									latestState->pendingHexFieldReset = true;
 									latestState->modifiedThisFrame = true;
 
-									devFloat4SyncNumericVisual(latestState, channelIndex, true);
+									devFloat4SyncNumericVisual(*uiManager, latestState, channelIndex, true);
 									onValueChanged(latestState->internalValues);
 								},
 								.functionalWidthPx = context.params.colorSliderFunctionalWidthPx,
@@ -470,11 +477,13 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 								.maxValue = sliderMaxValue,
 								.integerRatePerPixel = 1.0,
 								.onValueChangedCallback = [
+									uiManager = &context.uiManager,
 									elementFlowId,
 									channelIndex,
 									onValueChanged = emitValueChanged
 								](double changedValue) {
-									devFloat4InputState* latestState = DevFloat4InputDef::tryGetState(elementFlowId);
+									devFloat4InputState* latestState = uiManager->elements().modifyState(
+										kDevFloat4Input, uiManager->windowId(), elementFlowId);
 									if (latestState == nullptr)
 									{
 										return;
@@ -536,10 +545,12 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 							.fieldId = state.hexFieldId,
 							.initialText = state.hexText,
 							.onTextChangedCallback = [
+								uiManager = &context.uiManager,
 								elementFlowId,
 								onValueChanged = emitValueChanged
 							](std::string_view changedText) {
-								devFloat4InputState* latestState = DevFloat4InputDef::tryGetState(elementFlowId);
+								devFloat4InputState* latestState = uiManager->elements().modifyState(
+									kDevFloat4Input, uiManager->windowId(), elementFlowId);
 								if (latestState == nullptr)
 								{
 									return;
@@ -566,7 +577,7 @@ inline const DevFloat4InputDef kDevFloat4Input = {
 
 								for (uint8_t i = 0u; i < 4u; ++i)
 								{
-									devFloat4SyncNumericVisual(latestState, i, true);
+									devFloat4SyncNumericVisual(*uiManager, latestState, i, true);
 								}
 
 								latestState->modifiedThisFrame = true;

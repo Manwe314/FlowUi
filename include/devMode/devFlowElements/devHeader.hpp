@@ -49,6 +49,17 @@ struct devHeaderParams {
 struct devHeaderResources {
 	bool exportIconPrepared = false;
 	FlowUi::TextureRef exportIcon = FlowUi::TextureRef{};
+
+	explicit devHeaderResources(FlowUi::App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		constexpr std::string_view key = "flowui/dev/header/export";
+		(void)app.icons().registerSvg(key, ::kExport);
+		exportIcon = app.icons().textureRef(key);
+#else
+		(void)app;
+#endif
+		exportIconPrepared = true;
+	}
 };
 
 using DevHeaderDef = FlowUi::ElementDefinition<
@@ -66,13 +77,9 @@ inline const DevHeaderDef kDevHeader = {
 	nullptr,
 	nullptr,
 	+[](DevHeaderDef::BuildContext& context) {
-		FlowUi::TextureRef exportIcon{};
-		if (DevHeaderDef::resources.has_value()) {
-			const devHeaderResources& resources = *DevHeaderDef::resources;
-			if (resources.exportIconPrepared) {
-				exportIcon = resources.exportIcon;
-			}
-		}
+		const devHeaderResources& resources = context.resources();
+		const FlowUi::TextureRef exportIcon =
+			resources.exportIconPrepared ? resources.exportIcon : FlowUi::TextureRef{};
 
 		Clay_ElementDeclaration root{};
 		const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);

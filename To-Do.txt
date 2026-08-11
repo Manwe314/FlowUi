@@ -73,9 +73,13 @@ steps:
 	- Design Ui Themes and Named Slots for recursive construction < --
 	- adding windows from UI  building code and API for creating windows with just a single flow element.
 	- move some configuration struct of Storage system into PublicHeaders
+	- clean managers folder to only have public FlowUi namespace
+	- clean doxy comments
 
 Element System:
-	- Parameter operations tied to Storage System. likely params struct does not need link to StorageSystem
+	- Theme lookup speedup
+	- interaction querry is N X U n = number of elements u = number of elements in the interaction vector.
+	- ID strings and child ID string work. 
 
 ~~~~ Legacy ~~~~
 

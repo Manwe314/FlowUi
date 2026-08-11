@@ -44,7 +44,7 @@ inline const DevHierarchyHeadDef kDevHierarchyHead = {
 	nullptr,
 	+[](DevHierarchyHeadDef::BuildContext& context) {
 		bool isViewingInstances = true;
-		const devPanelContentState* state = findSingleDevPanelContentStateConst();
+		const devPanelContentState* state = findSingleDevPanelContentStateConst(context.uiManager);
 		if (state != nullptr)
 		{
 			isViewingInstances = state->isViewingInstances;
@@ -99,8 +99,8 @@ inline const DevHierarchyHeadDef kDevHierarchyHead = {
 					.createElement(kDevBasicButton, context.createChildElementId("instances-button"))
 					.setParameters(devBasicButtonParams{
 						.text = context.params.instancesButtonText,
-						.onPressedCallback = [](DevBasicButtonInteractionContext) {
-							devPanelContentState* panelState = findSingleDevPanelContentState();
+						.onPressedCallback = [](DevBasicButtonInteractionContext buttonContext) {
+							devPanelContentState* panelState = findSingleDevPanelContentState(buttonContext.uiManager);
 							if (panelState != nullptr)
 							{
 								panelState->isViewingInstances = true;
@@ -125,8 +125,8 @@ inline const DevHierarchyHeadDef kDevHierarchyHead = {
 					.createElement(kDevBasicButton, context.createChildElementId("definitions-button"))
 					.setParameters(devBasicButtonParams{
 						.text = context.params.definitionsButtonText,
-						.onPressedCallback = [](DevBasicButtonInteractionContext) {
-							devPanelContentState* panelState = findSingleDevPanelContentState();
+						.onPressedCallback = [](DevBasicButtonInteractionContext buttonContext) {
+							devPanelContentState* panelState = findSingleDevPanelContentState(buttonContext.uiManager);
 							if (panelState != nullptr)
 							{
 								panelState->isViewingInstances = false;

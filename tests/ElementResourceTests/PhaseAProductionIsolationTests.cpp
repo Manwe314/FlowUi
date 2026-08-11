@@ -112,7 +112,9 @@ void testFlowIdCollisionImplementationIsDevGuarded() {
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "claimFlowRootForDev"));
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(builder, "claimFlowRootForDev"));
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(bridge, "claimFlowRootForDev"));
-	FLOWUI_CHECK(occurrenceCount(builder, "detail::claimFlowRootForDev") == 2);
+	// draw() and construct() share one typed invocation pipeline, so there is one
+	// physically dev-gated root claim call for both terminal operations.
+	FLOWUI_CHECK(occurrenceCount(builder, "detail::claimFlowRootForDev") == 1);
 }
 
 } // namespace

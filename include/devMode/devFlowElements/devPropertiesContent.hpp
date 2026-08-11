@@ -13,7 +13,7 @@ inline const DevPropertiesContentDef kDevPropertiesContent = {
 	nullptr,
 	nullptr,
 	+[](DevPropertiesContentDef::BuildContext& context) {
-		devPropertiesContentState& state = DevPropertiesContentDef::getOrCreateState(FlowUi::toFlowId(context.elementID));
+		devPropertiesContentState& state = context.state();
 		const devPropertiesSelectionNode& selection = state.selectedNode;
 
 		Clay_TextElementConfig textConfig{};

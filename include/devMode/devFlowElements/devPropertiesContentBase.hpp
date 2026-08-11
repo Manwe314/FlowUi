@@ -34,25 +34,20 @@ using DevPropertiesContentDef = FlowUi::ElementDefinition<
 	FLOW_DEF_ID("DevPropertiesContent"),
 	true>;
 
-inline devPropertiesContentState* findSingleDevPropertiesContentState() {
+inline devPropertiesContentState* findSingleDevPropertiesContentState(
+	FlowUi::UiManager& uiManager) {
 	constexpr std::string_view kSingleDevPropertiesContentElementId =
 		"flowui/dev/debug-view/main-view/content/properties/content";
-
-	devPropertiesContentState* state =
-		DevPropertiesContentDef::tryGetState(FlowUi::toFlowId(kSingleDevPropertiesContentElementId));
-	if (state != nullptr)
-	{
-		return state;
-	}
-	if (!DevPropertiesContentDef::statePool.empty())
-	{
-		return &DevPropertiesContentDef::statePool.front().second;
-	}
-	return nullptr;
+	return uiManager.elements().modifyState(
+		DevPropertiesContentDef{},
+		uiManager.windowId(),
+		FlowUi::toFlowId(kSingleDevPropertiesContentElementId));
 }
 
-inline bool setSelectedDevPropertiesNode(const devPropertiesSelectionNode& selection) {
-	devPropertiesContentState* state = findSingleDevPropertiesContentState();
+inline bool setSelectedDevPropertiesNode(
+	FlowUi::UiManager& uiManager,
+	const devPropertiesSelectionNode& selection) {
+	devPropertiesContentState* state = findSingleDevPropertiesContentState(uiManager);
 	if (state == nullptr)
 	{
 		return false;
