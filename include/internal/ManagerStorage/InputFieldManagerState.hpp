@@ -8,6 +8,7 @@
 #include <clay.h>
 
 #include "internal/InputFieldRenderOverrides.hpp"
+#include "internal/InputFieldKey.hpp"
 #include "internal/ManagerStorage/FontCatalogController.hpp"
 #include "managers/structs/InputFieldManagerStructs.hpp"
 #include "managers/structs/InputStructs.hpp"
@@ -47,15 +48,18 @@ struct InputKeyRepeatState {
 
 struct InputPointerDragState {
 	bool active = false;
-	std::string fieldId{};
+	input_field::InputFieldKey fieldId{};
 	size_t anchorByteOffset = 0;
 };
 
 struct InputFieldManagerState {
 	FrameInput currentInput{};
 	FrameInput previousInput{};
-	std::unordered_map<std::string, InputFieldState> fieldsById{};
-	std::string primaryFieldId{};
+	std::unordered_map<
+		input_field::InputFieldKey,
+		InputFieldState,
+		input_field::InputFieldKeyHash> fieldsById{};
+	input_field::InputFieldKey primaryFieldId{};
 	InputManagerConfig config{};
 	FontFrameView fontView{};
 	float pointsToPixelsScale = 96.0f / 72.0f;

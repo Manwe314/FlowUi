@@ -1,20 +1,22 @@
 # Element API
 
-## Aliases
+## Strong identity types
 
-### **FlowElementId**
+### **FlowDefinitionID**
 
+Identity of an element definition, normally declared with `DefinitionID("name")`.
 
-#### `using FlowElementId = uint64_t`
+### **FlowElementID**
 
-Stable hashed id for an element instance. It is used for state lookup and stable generated child ids.
+Resolved identity of one local element instance. Its value is composed from the parent scope, definition ID, and local name token.
 
-### **FlowDefinitionId**
+### **GlobalFlowID**
 
+Explicit definition-scoped identity that can be reproduced outside the element's local branch with `Global<kElement>("name")`.
 
-#### `using FlowDefinitionId = uint64_t`
+### **FlowElementPart** and **FlowElementPartID**
 
-Stable hashed id for an element definition. It identifies the element definition specialization.
+`FlowElementPart` declares a semantic sub-element address. `context.part(declaration)` or `PartID(...)` binds that declaration to one owner instance and returns `FlowElementPartID`.
 
 ## Enums
 
@@ -57,159 +59,49 @@ Empty marker type used by elements with no shared resource struct.
 
 ### **ElementBuildContext**
 
+#### `template <typename Element> struct ElementBuildContext`
 
-#### `template <typename Parameters> struct ElementBuildContext`
-
-Context passed to construct and build callbacks. It exposes the active UiManager, current element id, parameters, and child-id helper.
+Context passed to construct and build callbacks. It exposes `uiManager`, typed `id`, parameters, state/resources where present, `childID()`, `clayID()`, and semantic-part helpers.
 
 ### **ElementInteractionContext**
 
 
-#### `template <typename Parameters> struct ElementInteractionContext`
+#### `template <typename Element> struct ElementInteractionContext`
 
-Context passed to event and logic callbacks. It exposes UiManager, element id, parameters, previous interaction data, and child-id helper.
-
-### **ElementDefinition**
-
-
-#### `template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal> struct ElementDefinition`
-
-Typed definition for a FlowUi element. It binds params, state, resources, definition id, callback fields, resource storage, and state storage to an element builder flow.
+Context passed to event and logic callbacks. It exposes the same typed identity and semantic helpers plus previous-frame interaction data.
 
 ### **ElementBuilder**
 
 
-#### `template <typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal> class ElementBuilder`
+#### `template <FlowElement Element> class ElementBuilder`
 
-Builder returned by UiManager::createElement. It stores definition, id, and params until draw or construct executes the element flow.
+Builder returned by `UiManager::createElement`. It stores the resolved typed identity and parameters until `draw()` or `construct()` executes the element flow.
 
 ## Public API
 
-### **toFlowId** `1/2`
+### **DefinitionID**
 
+#### `consteval FlowDefinitionID DefinitionID(const char (&name)[N])`
 
-#### `constexpr FlowElementId toFlowId(std::string_view elementName) noexcept`
+Creates a strong definition identity from a stable literal.
 
-- **Returns:** `FlowElementId`
-- **Arguments:** `elementName` string to hash into an element instance id.
+### **Global**
 
-Hashes a runtime string into a stable FlowUi element id. Use this when looking up or managing state for an element instance outside the builder path.
+#### `consteval GlobalFlowID Global<kElement>(const char (&name)[N])`
 
-**Example:**
+Creates an explicit globally addressable identity scoped by the target element definition.
 
-```cpp
-const FlowUi::FlowElementId saveButtonId = FlowUi::toFlowId("toolbar/save");
-```
+### **Part** and **PartID**
 
-See: [Full Doxygen reference](group__flowui__app.html#ga49ddb3f056407bc53580f77d61664c2a).
+`Part("name")` declares a semantic part. `PartID(kOwner, ownerId, declaration)` binds it outside an owner callback; inside a callback prefer `context.part(declaration)`.
 
-### **toFlowId** `2/2`
+### **Indexed**, **Keyed**, and **IndexedIDs**
 
+These factories create numeric name tokens for repeated elements. Use `Keyed()` when identity should follow stable data and `Indexed()`/`IndexedIDs()` when identity deliberately follows position.
 
-#### `template <std::size_t N> constexpr FlowElementId toFlowId(const char (&elementName)[N]) noexcept`
+### **RuntimeName** and **AutoID**
 
-- **Returns:** `FlowElementId`
-- **Arguments:** `elementName` string literal to hash into an element instance id.
-
-String-literal overload for `toFlowId`. It avoids counting the terminating null byte and can be used in constant expressions.
-
-**Example:**
-
-```cpp
-const FlowUi::FlowElementId saveButtonId = FlowUi::toFlowId("toolbar/save");
-```
-
-See: [Full Doxygen reference](group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8).
-
-### **toFlowDefinitionId** `1/2`
-
-
-#### `constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept`
-
-- **Returns:** `FlowDefinitionId`
-- **Arguments:** `definitionName` string to hash into an element definition id.
-
-Hashes a runtime string into a stable FlowUi element definition id. This is the function behind definition ids used by `ElementDefinition`.
-
-**Example:**
-
-```cpp
-constexpr FlowUi::FlowDefinitionId buttonDefinitionId = FlowUi::toFlowDefinitionId("button");
-```
-
-See: [Full Doxygen reference](group__flowui__app.html#gad4ef9ba85d5584740ebdaba96078d2a6).
-
-### **toFlowDefinitionId** `2/2`
-
-
-#### `template <std::size_t N> constexpr FlowDefinitionId toFlowDefinitionId(const char (&definitionName)[N]) noexcept`
-
-- **Returns:** `FlowDefinitionId`
-- **Arguments:** `definitionName` string literal to hash into an element definition id.
-
-String-literal overload for `toFlowDefinitionId`. Prefer this through `FLOW_DEF_ID("name")` when declaring custom element definition types.
-
-**Example:**
-
-```cpp
-constexpr FlowUi::FlowDefinitionId buttonDefinitionId = FlowUi::toFlowDefinitionId("button");
-```
-
-See: [Full Doxygen reference](group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9).
-
-### **createIndexedFlowId** `1/3`
-
-
-#### `constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept`
-
-- **Returns:** `FlowElementId`
-- **Arguments:** `rootId` parent/root Flow id, `index` numeric child/index value.
-
-Creates a stable child-style id by mixing an existing Flow id with an index. This is useful for repeated UI rows or generated children where a string id would be awkward.
-
-**Example:**
-
-```cpp
-const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
-```
-
-See: [Full Doxygen reference](group__flowui__app.html#gab3403318b43d5e0e47a7b32d0dddb12b).
-
-### **createIndexedFlowId** `2/3`
-
-
-#### `constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept`
-
-- **Returns:** `FlowElementId`
-- **Arguments:** `rootName` parent/root name, `index` numeric child/index value.
-
-Hashes the root name and then mixes in the numeric index. Use this when generating stable ids from a named collection or repeated layout section.
-
-**Example:**
-
-```cpp
-const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
-```
-
-See: [Full Doxygen reference](group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52).
-
-### **createIndexedFlowId** `3/3`
-
-
-#### `template <std::size_t N> constexpr FlowElementId createIndexedFlowId(const char (&rootName)[N], uint64_t index) noexcept`
-
-- **Returns:** `FlowElementId`
-- **Arguments:** `rootName` string literal parent/root name, `index` numeric child/index value.
-
-String-literal overload for indexed id creation. It is useful for compile-time root names paired with runtime loop indexes.
-
-**Example:**
-
-```cpp
-const FlowUi::FlowElementId rowId = FlowUi::createIndexedFlowId("asset-list/row", rowIndex);
-```
-
-See: [Full Doxygen reference](group__flowui__app.html#gac4775bf6801619b1dc54427bc63d43a6).
+`RuntimeName()` is the explicit runtime hashing escape hatch. `AutoID()` identifies a stable callsite and is also the default for `createElement(kElement)`; it must not be used repeatedly from one loop callsite.
 
 ### **operator|**
 

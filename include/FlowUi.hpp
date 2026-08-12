@@ -50,4 +50,5 @@
  * @brief Public offscreen viewport rendering API.
  */
 
+#include "FlowUi/ElementID.hpp"
 #include "FlowUi/App.hpp"

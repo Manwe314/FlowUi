@@ -25,7 +25,11 @@ struct TemplateElement {
 	using InteractionContext = FlowUi::ElementInteractionContext<TemplateElement>;
 	using BuildContext = FlowUi::ElementBuildContext<TemplateElement>;
 
-	static constexpr FlowUi::FlowDefinitionId definitionId = FLOW_DEF_ID("template");
+	struct Parts {
+		static constexpr auto content = FlowUi::Part("content");
+	};
+
+	static constexpr FlowUi::FlowDefinitionID definitionId = FlowUi::DefinitionID("template");
 
 	// onHovered: optional callback when this element was hovered in the previous frame
 	static void onHovered(InteractionContext& context) {
@@ -64,7 +68,7 @@ struct TemplateElement {
 
 	// buildElement: callback used by .draw()
 	static void buildElement(BuildContext& context) {
-		(void)context;
+		CLAY(context.uiManager.toClayEID(context.part(Parts::content)), {}) {}
 	}
 };
 

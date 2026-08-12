@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/ElementID.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "clay.h"
@@ -20,117 +21,6 @@ struct FontManager;
 /** @addtogroup flowui_app
  * @{
  */
-
-/** @brief ID type for element instances.
- *
- * Alias for a uint64_t hashed FlowUi element id.
- *
- * @see @ref flowui_element_system "Element System"
- */
-using FlowElementId = uint64_t;
-
-/** @brief ID type for element definitions.
- *
- * Alias for a uint64_t hashed FlowUi element definition id.
- *
- * @see @ref flowui_element_system "Element System"
- */
-using FlowDefinitionId = uint64_t;
-
-namespace detail {
-
-constexpr uint64_t kFlowFnvOffsetBasis = 14695981039346656037ull;
-constexpr uint64_t kFlowFnvPrime = 1099511628211ull;
-
-constexpr uint64_t flowHashBytes(std::string_view text) noexcept {
-	uint64_t hash = kFlowFnvOffsetBasis;
-	for (const char c : text) {
-		hash ^= static_cast<uint64_t>(static_cast<unsigned char>(c));
-		hash *= kFlowFnvPrime;
-	}
-	return (hash == 0ull) ? 1ull : hash;
-}
-
-constexpr uint64_t flowMix64(uint64_t value) noexcept {
-	value ^= value >> 30;
-	value *= 0xbf58476d1ce4e5b9ull;
-	value ^= value >> 27;
-	value *= 0x94d049bb133111ebull;
-	value ^= value >> 31;
-	return (value == 0ull) ? 1ull : value;
-}
-
-} // namespace detail
-
-/** @brief Hash an element name into a FlowUi element id.
- *
- * @param elementName String or string_view representation of the element name.
- * @return FlowElementId generated from the hashed string.
- */
-constexpr FlowElementId toFlowId(std::string_view elementName) noexcept {
-	return detail::flowHashBytes(elementName);
-}
-
-/** @brief Hash an element name into a FlowUi element id.
- *
- * @param elementName String literal representation of the element name.
- * @return FlowElementId generated from the hashed string.
- */
-template <std::size_t N>
-constexpr FlowElementId toFlowId(const char (&elementName)[N]) noexcept {
-	return detail::flowHashBytes(std::string_view{elementName, N - 1});
-}
-
-/** @brief Hash a definition name into a FlowUi definition id.
- *
- * @param definitionName String or string_view representation of the element definition name.
- * @return FlowDefinitionId generated from the hashed string.
- */
-constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept {
-	return detail::flowHashBytes(definitionName);
-}
-
-/** @brief Hash a string literal into a FlowUi definition id.
- *
- * @param definitionName String literal representation of the element definition name.
- * @return FlowDefinitionId generated from the hashed string.
- */
-template <std::size_t N>
-constexpr FlowDefinitionId toFlowDefinitionId(const char (&definitionName)[N]) noexcept {
-	return detail::flowHashBytes(std::string_view{definitionName, N - 1});
-}
-
-/** @brief Create a stable child/index id from a root and numeric index.
- *
- * @param rootId FlowElementId to serve as the root.
- * @param index uint64_t value to mix with the root.
- * @return FlowElementId created by mixing the root id and index.
- */
-constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept {
-	const uint64_t mixedIndex = detail::flowMix64(index + 0x9e3779b97f4a7c15ull);
-	return detail::flowMix64(rootId ^ mixedIndex);
-}
-
-/** @brief Create a stable child/index id from a root name and numeric index.
- *
- * @param rootName String or string_view to serve as the root.
- * @param index uint64_t value to mix with the root.
- * @return FlowElementId created by hashing the root name and mixing in the index.
- */
-constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept {
-	return createIndexedFlowId(toFlowId(rootName), index);
-}
-
-/** @brief Create a stable child/index id from a root string literal and numeric index.
- *
- * @param rootName String literal to serve as the root.
- * @param index uint64_t value to mix with the root.
- * @return FlowElementId created by hashing the root name and mixing in the index.
- */
-template <std::size_t N>
-constexpr FlowElementId createIndexedFlowId(const char (&rootName)[N], uint64_t index) noexcept {
-	return createIndexedFlowId(toFlowId(rootName), index);
-}
 
 /**
  * @brief Convert a \#RRGGBBAA color string into a Clay_Color.
@@ -720,15 +610,3 @@ App makeApplication(const AppConfig& cfg);
 /** @} */
 
 } // namespace FlowUi
-
-/** @brief Convenience macro for FlowUi::toFlowId().
- *
- * @see FlowUi::toFlowId()
- */
-#define FLOW_ID(label) (::FlowUi::toFlowId(label))
-
-/** @brief Convenience macro for FlowUi::toFlowDefinitionId().
- *
- * @see FlowUi::toFlowDefinitionId()
- */
-#define FLOW_DEF_ID(label) (::FlowUi::toFlowDefinitionId(label))

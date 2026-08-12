@@ -71,28 +71,28 @@ struct SharedResources {
 
 struct PrimaryElement {
 	using State = PrimaryState;
-	static constexpr FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/element-resource/primary");
+	static constexpr FlowDefinitionID definitionId =
+		DefinitionID("flowui/tests/element-resource/primary");
 	static constexpr std::string_view debugName = "PrimaryElement";
 };
 
 struct AlternateElement {
 	using State = AlternateState;
-	static constexpr FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/element-resource/alternate");
+	static constexpr FlowDefinitionID definitionId =
+		DefinitionID("flowui/tests/element-resource/alternate");
 	static constexpr std::string_view debugName = "AlternateElement";
 };
 
 struct ResourceElement {
 	using Resources = SharedResources;
-	static constexpr FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/element-resource/resources");
+	static constexpr FlowDefinitionID definitionId =
+		DefinitionID("flowui/tests/element-resource/resources");
 	static constexpr std::string_view debugName = "ResourceElement";
 };
 
 struct StatelessElement {
-	static constexpr FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/element-resource/stateless");
+	static constexpr FlowDefinitionID definitionId =
+		DefinitionID("flowui/tests/element-resource/stateless");
 	static constexpr std::string_view debugName = "StatelessElement";
 };
 
@@ -115,8 +115,8 @@ struct TestStatePolicy {
 };
 
 struct StateRecordMetadataView {
-	FlowElementId flowId = 0;
-	FlowDefinitionId definitionId = 0;
+	FlowElementID flowId{};
+	FlowDefinitionID definitionId{};
 	uint64_t stateTypeHash = 0;
 };
 
@@ -133,24 +133,24 @@ public:
 
 	virtual PrimaryState& resolvePrimary(
 		WindowId window,
-		FlowElementId flowId,
+		FlowElementID flowId,
 		TestStatePolicy policy = TestStatePolicy::transient()) = 0;
 	virtual AlternateState& resolveAlternate(
 		WindowId window,
-		FlowElementId flowId,
+		FlowElementID flowId,
 		TestStatePolicy policy = TestStatePolicy::transient()) = 0;
 
 	[[nodiscard]] virtual PrimaryState* findPrimary(
 		WindowId window,
-		FlowElementId flowId) = 0;
+		FlowElementID flowId) = 0;
 	[[nodiscard]] virtual AlternateState* findAlternate(
 		WindowId window,
-		FlowElementId flowId) = 0;
+		FlowElementID flowId) = 0;
 	[[nodiscard]] virtual StateRecordMetadataView metadata(
 		WindowId window,
-		FlowElementId flowId) const = 0;
+		FlowElementID flowId) const = 0;
 
-	virtual bool erasePrimary(WindowId window, FlowElementId flowId) = 0;
+	virtual bool erasePrimary(WindowId window, FlowElementID flowId) = 0;
 	virtual void collectAllEligible(WindowId window) noexcept = 0;
 	[[nodiscard]] virtual std::size_t liveStateCount(WindowId window) const = 0;
 
@@ -169,11 +169,11 @@ enum class ClaimDisposition : uint8_t {
 };
 
 struct FlowIdCollisionWarning {
-	FlowElementId flowId = 0;
-	FlowDefinitionId firstDefinition = 0;
-	FlowDefinitionId duplicateDefinition = 0;
-	std::string_view logicalId{};
-	std::string_view firstLogicalId{};
+	FlowElementID elementId{};
+	FlowDefinitionID firstDefinition{};
+	FlowDefinitionID duplicateDefinition{};
+	std::string_view debugPath{};
+	std::string_view firstDebugPath{};
 	std::string_view firstFileName{};
 	std::string_view duplicateFileName{};
 	uint32_t firstLine = 0;
@@ -186,9 +186,9 @@ public:
 
 	virtual void beginFrame() = 0;
 	virtual ClaimDisposition claim(
-		FlowElementId flowId,
-		FlowDefinitionId definitionId,
-		std::string_view logicalId) = 0;
+		FlowElementID elementId,
+		FlowDefinitionID definitionId,
+		std::string_view debugPath) = 0;
 
 	[[nodiscard]] virtual std::size_t warningCount() const noexcept = 0;
 	[[nodiscard]] virtual const FlowIdCollisionWarning& warning(std::size_t index) const = 0;

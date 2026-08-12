@@ -597,9 +597,7 @@ struct App::Impl {
 			elementManager.cancelWindowFrame(window.id, window.storageFrame.epoch);
 			if (storageSystem) storageSystem->cancelFrame(window.storageFrame);
 		}
-#if FLOW_UI_DEV_MODE
-		window.ui.cancelDevFlowRootClaims();
-#endif
+		window.ui.cancelFrameState();
 		window.preparedUi = {};
 		window.storageReadLease = {};
 		window.storageFrame = {};

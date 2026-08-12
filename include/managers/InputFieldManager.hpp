@@ -8,6 +8,7 @@
 #include <clay.h>
 
 #include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/ElementID.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "managers/structs/InputFieldManagerStructs.hpp"
@@ -17,6 +18,7 @@ namespace FlowUi {
 
 class UiManager;
 namespace detail { struct InputFieldFrameOverrides; }
+namespace detail::input_field { struct InputFieldKey; }
 namespace detail::storage { class IStorageSystem; }
 namespace detail::manager_storage {
 struct InputCaretState;
@@ -36,8 +38,8 @@ struct FontFrameView;
  * @brief Manages text input fields, focus, caret state, and edit operations.
  *
  * InputFieldManager is the public entry point for custom FlowUi elements that
- * need editable text. The manager owns persistent field state, keyed by
- * FieldRequest::fieldId, while the element remains responsible for drawing the
+ * need editable text. The manager owns persistent field state, keyed by an
+ * explicit strong Flow ID or ResourceKey, while the element remains responsible for drawing the
  * Clay containers and text node for that field.
  *
  * A field becomes part of the current frame when custom UI code calls
@@ -52,32 +54,39 @@ struct FontFrameView;
  * rendering, and text mutation before the frame is rendered.
  *
  * @code{.cpp}
- * inline const MyTextInputDef kMyTextInput = {
- *     nullptr, // onHovered
- *     +[](MyTextInputDef::InteractionContext& context) {
+ * struct MyTextInput {
+ *     using Parameters = MyTextInputParameters;
+ *     using InteractionContext = FlowUi::ElementInteractionContext<MyTextInput>;
+ *     using BuildContext = FlowUi::ElementBuildContext<MyTextInput>;
+ *
+ *     struct Parts {
+ *         static constexpr auto text = FlowUi::Part("text");
+ *         static constexpr auto content = FlowUi::Part("content");
+ *     };
+ *
+ *     static constexpr auto definitionId = FlowUi::DefinitionID("my-text-input");
+ *
+ *     static void onPressed(InteractionContext& context) {
  *         context.uiManager.inputFields().requestCaret(
- *             context.elementID,
+ *             context.id,
  *             FlowUi::CaretRequestKind::SetPrimary);
- *     },      // onPressed
- *     nullptr, // onHeld
- *     nullptr, // onReleased
- *     nullptr, // runLogic
- *     nullptr, // constructElement
- *     +[](MyTextInputDef::BuildContext& context) {
- *         const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
- *         const std::string textElementId = context.createChildElementId("text");
- *         const std::string contentElementId = context.createChildElementId("content");
- *         const Clay_ElementId contentId = context.uiManager.toClayEID(contentElementId);
+ *     }
+ *
+ *     static void buildElement(BuildContext& context) {
+ *         const Clay_ElementId rootId = context.clayID();
+ *         const Clay_ElementId textId =
+ *             context.uiManager.toClayEID(context.part(Parts::text));
+ *         const Clay_ElementId contentId =
+ *             context.uiManager.toClayEID(context.part(Parts::content));
  *
  *         const FlowUi::FieldQueryResult field =
- *             context.uiManager.inputFields().requestField({
- *                 .fieldId = context.elementID,
+ *             context.uiManager.inputFields().requestField(context.id, {
  *                 .initialText = context.params.initialText,
  *                 .config = FlowUi::FieldConfig{
  *                     .readOnly = false,
  *                     .allowNewline = false,
  *                 },
- *                 .textElementId = context.uiManager.toClayEID(textElementId),
+ *                 .textElementId = textId,
  *                 .contentElementId = contentId,
  *             });
  *
@@ -92,7 +101,7 @@ struct FontFrameView;
  *                     CLAY_TEXT_CONFIG(textConfig));
  *             };
  *         };
- *     },      // buildElement
+ *     }
  * };
  * @endcode
  *
@@ -113,31 +122,34 @@ public:
 	 * primary input focus for that field when the frame is finalized. Non-focused
 	 * field state remains cached until removeField() or clear() is called.
 	 *
-	 * @param request Field id, first-use text, behavior configuration, and Clay
-	 * element ids used for text measurement and pointer hit testing.
+	 * @param fieldId Strong element, global, part, or resource identity used to
+	 * address the persistent field state.
+	 * @param request First-use text, behavior configuration, and Clay element ids
+	 * used for text measurement and pointer hit testing.
 	 * @return Current manager-owned text plus focus and selection flags. Returns
-	 * an empty result when request.fieldId is empty.
+	 * an empty result when fieldId is empty.
 	 *
 	 * @throws std::bad_alloc if internal field storage allocation fails.
 	 *
 	 * @code{.cpp}
 	 * const FlowUi::FieldQueryResult field =
-	 *     context.uiManager.inputFields().requestField({
-	 *         .fieldId = context.elementID,
+	 *     context.uiManager.inputFields().requestField(context.id, {
 	 *         .initialText = "Search",
 	 *         .config = FlowUi::FieldConfig{
 	 *             .readOnly = false,
 	 *             .allowNewline = false,
 	 *             .maxBytes = 256,
 	 *         },
-	 *         .textElementId = context.uiManager.toClayEID(textId),
-	 *         .contentElementId = context.uiManager.toClayEID(contentId),
+	 *         .textElementId = context.clayID(FlowUi::LocalElementName("text")),
+	 *         .contentElementId = context.clayID(FlowUi::LocalElementName("content")),
 	 *     });
 	 * @endcode
 	 *
 	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
-	FieldQueryResult requestField(const FieldRequest& request);
+	FieldQueryResult requestField(FlowElementID fieldId, const FieldRequest& request);
+	FieldQueryResult requestField(GlobalFlowID fieldId, const FieldRequest& request);
+	FieldQueryResult requestField(FlowElementPartID fieldId, const FieldRequest& request);
 	FieldQueryResult requestField(ResourceKey key, const FieldRequest& request);
 
 	/**
@@ -161,11 +173,13 @@ public:
 	 *
 	 * @code{.cpp}
 	 * context.uiManager.inputFields().requestCaret(
-	 *     context.elementID,
+	 *     context.id,
 	 *     FlowUi::CaretRequestKind::SetPrimary);
 	 * @endcode
 	 */
-	void requestCaret(std::string_view fieldId, CaretRequestKind kind);
+	void requestCaret(FlowElementID fieldId, CaretRequestKind kind);
+	void requestCaret(GlobalFlowID fieldId, CaretRequestKind kind);
+	void requestCaret(FlowElementPartID fieldId, CaretRequestKind kind);
 	void requestCaret(ResourceKey key, CaretRequestKind kind);
 
 	/**
@@ -189,7 +203,9 @@ public:
 	 * }
 	 * @endcode
 	 */
-	bool removeField(std::string_view fieldId);
+	bool removeField(FlowElementID fieldId);
+	bool removeField(GlobalFlowID fieldId);
+	bool removeField(FlowElementPartID fieldId);
 	bool removeField(ResourceKey key);
 
 	/**
@@ -214,12 +230,14 @@ public:
 	 *
 	 * @code{.cpp}
 	 * const bool changed = app.ui().inputFields().replaceText(
-	 *     "settings/name",
+	 *     MasterNameField,
 	 *     externalName,
 	 *     false);
 	 * @endcode
 	 */
-	bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true);
+	bool replaceText(FlowElementID fieldId, std::string_view text, bool preserveCaret = true);
+	bool replaceText(GlobalFlowID fieldId, std::string_view text, bool preserveCaret = true);
+	bool replaceText(FlowElementPartID fieldId, std::string_view text, bool preserveCaret = true);
 	bool replaceText(ResourceKey key, std::string_view text, bool preserveCaret = true);
 
 	/**
@@ -322,6 +340,18 @@ private:
 	void beginFrame(const FrameInput& currentInput, const FrameInput& previousInput);
 	Clay_RenderCommandArray endFrame(const Clay_RenderCommandArray& renderCommands);
 	const detail::InputFieldFrameOverrides& frameOverrides() const;
+	[[nodiscard]] detail::input_field::InputFieldKey normalizeFieldKey(ResourceKey key) const;
+	FieldQueryResult requestFieldByKey(
+		detail::input_field::InputFieldKey fieldId,
+		const FieldRequest& request);
+	void requestCaretByKey(
+		detail::input_field::InputFieldKey fieldId,
+		CaretRequestKind kind);
+	bool removeFieldByKey(detail::input_field::InputFieldKey fieldId);
+	bool replaceTextByKey(
+		detail::input_field::InputFieldKey fieldId,
+		std::string_view text,
+		bool preserveCaret);
 
 	void applyKeyboardEdits();
 	void markCaretBlinkReset();

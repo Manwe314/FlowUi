@@ -42,6 +42,11 @@ concept DeclaresResources = requires {
 };
 
 template <typename Element>
+concept DeclaresParts = requires {
+	typename UnqualifiedElement<Element>::Parts;
+};
+
+template <typename Element>
 consteval bool hasValidCapabilityAliases() {
 	using E = UnqualifiedElement<Element>;
 	if constexpr (DeclaresParameters<E>) {
@@ -62,6 +67,13 @@ consteval bool hasValidCapabilityAliases() {
 		if constexpr (
 			std::is_void_v<typename E::Resources> ||
 			!std::is_object_v<typename E::Resources>) {
+			return false;
+		}
+	}
+	if constexpr (DeclaresParts<E>) {
+		if constexpr (
+			std::is_void_v<typename E::Parts> ||
+			!std::is_class_v<typename E::Parts>) {
 			return false;
 		}
 	}
@@ -106,6 +118,13 @@ consteval bool hasValidCapabilityPayloads() {
 			(!std::is_constructible_v<Resources, App&> &&
 				!std::is_default_constructible_v<Resources>) ||
 			!std::is_nothrow_destructible_v<Resources>) {
+			return false;
+		}
+	}
+
+	if constexpr (DeclaresParts<E>) {
+		using Parts = typename E::Parts;
+		if constexpr (!CompleteType<Parts> || !std::is_class_v<Parts>) {
 			return false;
 		}
 	}
@@ -246,8 +265,10 @@ concept ValidOptionalMetadata =
 
 template <typename Element>
 concept HasValidDefinitionId = requires {
-	{ UnqualifiedElement<Element>::definitionId } -> std::convertible_to<FlowDefinitionId>;
-	requires (static_cast<FlowDefinitionId>(UnqualifiedElement<Element>::definitionId) != 0);
+	requires std::same_as<
+		std::remove_cv_t<decltype(UnqualifiedElement<Element>::definitionId)>,
+		FlowDefinitionID>;
+	requires (UnqualifiedElement<Element>::definitionId.value != 0);
 };
 
 template <typename Element>
@@ -330,6 +351,12 @@ consteval bool hasResourcesCapability() {
 	}
 }
 
+template <typename Element>
+consteval bool hasPartsCapability() {
+	using E = UnqualifiedElement<Element>;
+	return DeclaresParts<E>;
+}
+
 } // namespace detail::element
 
 template <typename Element>
@@ -337,6 +364,10 @@ concept HasState = detail::element::hasStateCapability<Element>();
 
 template <typename Element>
 concept HasResources = detail::element::hasResourcesCapability<Element>();
+
+/** Element definition that declares semantic part metadata through nested Parts. */
+template <typename Element>
+concept HasParts = detail::element::hasPartsCapability<Element>();
 
 template <typename Element>
 	requires HasState<Element>

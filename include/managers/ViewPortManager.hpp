@@ -390,7 +390,7 @@ public:
 	 * image.imageData = context.uiManager.imageData(
 	 *     app.viewPorts().getTexture("scene"));
 	 *
-	 * CLAY(context.uiManager.toClayEID("scene/preview"), {
+	 * CLAY(context.uiManager.toClaySID("scene/preview"), {
 	 *     .layout = {
 	 *         .sizing = {
 	 *             .width = CLAY_SIZING_FIXED(320.0f),

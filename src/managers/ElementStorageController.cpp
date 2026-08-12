@@ -173,10 +173,10 @@ ResourceAllocation createResourceRecord(
 void validateStateRecord(
 	const ElementStateRecordHeader& header,
 	const storage::PersistentRecordView& view,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor) {
 	const bool matches =
-		header.flowId == flowId &&
+		header.instanceKey == instanceKey &&
 		header.definitionId == descriptor.definitionId &&
 		header.definitionTypeHash == descriptor.definitionTypeHash &&
 		header.stateTypeHash == descriptor.stateTypeHash &&
@@ -188,7 +188,7 @@ void validateStateRecord(
 	if (matches) return;
 
 	throw std::logic_error(
-		"FlowUi state metadata mismatch for Flow ID " + std::to_string(flowId) +
+		"FlowUi state metadata mismatch for Flow ID " + std::to_string(instanceKey.value) +
 		": existing state belongs to " + std::string(storedDefinitionName(header)) +
 		", requested by " + descriptorName(descriptor) + ".");
 }
@@ -208,16 +208,16 @@ storage::PersistentRecordView stateRecordView(
 ResolvedElementState createStateRecord(
 	storage::IStorageSystem& storage,
 	WindowId window,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor,
 	uint64_t lastSeenCommittedFrame,
 	ElementStatePolicy policy) {
 	struct ConstructionContext {
-		FlowElementId flowId = 0;
+		element::ElementInstanceKey instanceKey{};
 		const element::ElementRegistrationDescriptor* descriptor = nullptr;
 		uint64_t lastSeenCommittedFrame = 0;
 		ElementStatePolicy policy = ElementStatePolicy::transient();
-	} context{flowId, &descriptor, lastSeenCommittedFrame, policy};
+	} context{instanceKey, &descriptor, lastSeenCommittedFrame, policy};
 
 	const storage::PersistentRecordHandle handle = storage.createPersistentRecord(
 		storage::PersistentRecordDesc{
@@ -232,7 +232,7 @@ ResolvedElementState createStateRecord(
 				auto& values = *static_cast<ConstructionContext*>(userData);
 				const element::ElementRegistrationDescriptor& type = *values.descriptor;
 				auto* header = ::new (headerMemory) ElementStateRecordHeader{
-					.flowId = values.flowId,
+					.instanceKey = values.instanceKey,
 					.definitionId = type.definitionId,
 					.definitionTypeHash = type.definitionTypeHash,
 					.stateTypeHash = type.stateTypeHash,
@@ -265,7 +265,7 @@ ResolvedElementState createStateRecord(
 		throw std::runtime_error("FlowUi state record publication failed.");
 	}
 	validateStateRecord(
-		*static_cast<ElementStateRecordHeader*>(view.header), view, flowId, descriptor);
+		*static_cast<ElementStateRecordHeader*>(view.header), view, instanceKey, descriptor);
 	return {.handle = handle, .payload = view.payload};
 }
 
@@ -285,9 +285,9 @@ void removeGcCandidateAt(
 		return;
 	}
 
-	const FlowElementId removedFlowId = registry.gcCandidates[index];
-	if (const auto removed = registry.byFlowId.find(removedFlowId);
-		removed != registry.byFlowId.end()) {
+	const element::ElementInstanceKey removedKey = registry.gcCandidates[index];
+	if (const auto removed = registry.byInstance.find(removedKey);
+		removed != registry.byInstance.end()) {
 		if (ElementStateRecordHeader* removedHeader =
 				stateRecordHeader(storage, removed->second)) {
 			removedHeader->gcIndex = std::numeric_limits<size_t>::max();
@@ -296,10 +296,10 @@ void removeGcCandidateAt(
 
 	const size_t lastIndex = registry.gcCandidates.size() - 1;
 	if (index != lastIndex) {
-		const FlowElementId movedFlowId = registry.gcCandidates[lastIndex];
-		registry.gcCandidates[index] = movedFlowId;
-		if (const auto moved = registry.byFlowId.find(movedFlowId);
-			moved != registry.byFlowId.end()) {
+		const element::ElementInstanceKey movedKey = registry.gcCandidates[lastIndex];
+		registry.gcCandidates[index] = movedKey;
+		if (const auto moved = registry.byInstance.find(movedKey);
+			moved != registry.byInstance.end()) {
 			if (ElementStateRecordHeader* movedHeader =
 					stateRecordHeader(storage, moved->second)) {
 				movedHeader->gcIndex = index;
@@ -314,12 +314,12 @@ void removeGcCandidateAt(
 void removeGcCandidate(
 	WindowElementStateRegistry& registry,
 	storage::IStorageSystem& storage,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	ElementStateRecordHeader& header) noexcept {
 	size_t index = header.gcIndex;
-	if (index >= registry.gcCandidates.size() || registry.gcCandidates[index] != flowId) {
+	if (index >= registry.gcCandidates.size() || registry.gcCandidates[index] != instanceKey) {
 		const auto found = std::find(
-			registry.gcCandidates.begin(), registry.gcCandidates.end(), flowId);
+			registry.gcCandidates.begin(), registry.gcCandidates.end(), instanceKey);
 		if (found == registry.gcCandidates.end()) {
 			header.gcIndex = std::numeric_limits<size_t>::max();
 			return;
@@ -340,12 +340,12 @@ bool isStateExpired(
 ResolvedElementState resolveExistingState(
 	storage::IStorageSystem& storage,
 	storage::PersistentRecordHandle handle,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor) {
 	storage::PersistentRecordView view = stateRecordView(storage, handle);
 	if (!view) return {};
 	validateStateRecord(
-		*static_cast<ElementStateRecordHeader*>(view.header), view, flowId, descriptor);
+		*static_cast<ElementStateRecordHeader*>(view.header), view, instanceKey, descriptor);
 	return {.handle = handle, .payload = view.payload};
 }
 
@@ -358,7 +358,7 @@ ElementDefinitionRecord& ElementDefinitionRegistry::ensureDefinition(
 	if (existing != definitions_.end()) {
 		if (!descriptorsMatch(existing->second->descriptor, descriptor)) {
 			throw std::logic_error(
-				"FlowUi element definition id " + std::to_string(descriptor.definitionId) +
+				"FlowUi element definition id " + std::to_string(descriptor.definitionId.value) +
 				" is already registered for " + descriptorName(existing->second->descriptor) +
 				" with incompatible metadata requested by " + descriptorName(descriptor) + ".");
 		}
@@ -533,11 +533,11 @@ const void* ElementStorageController::resolveOrCreateResources(
 
 ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation(
 	WindowId window,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor,
 	ElementStatePolicy policy) {
 	requireStateDescriptor(descriptor);
-	if (window == InvalidWindowId || flowId == 0) {
+	if (window == InvalidWindowId || !instanceKey) {
 		throw std::invalid_argument("FlowUi element state requires valid window and Flow IDs.");
 	}
 
@@ -556,27 +556,28 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 	}
 	ResolvedElementState resolved{};
 	bool created = false;
-	if (const auto existing = registry.byFlowId.find(flowId); existing != registry.byFlowId.end()) {
-		resolved = resolveExistingState(*storage_, existing->second, flowId, descriptor);
-		if (!resolved.payload) registry.byFlowId.erase(existing);
+	if (const auto existing = registry.byInstance.find(instanceKey);
+		existing != registry.byInstance.end()) {
+		resolved = resolveExistingState(*storage_, existing->second, instanceKey, descriptor);
+		if (!resolved.payload) registry.byInstance.erase(existing);
 	}
 	if (!resolved.payload) {
 		resolved = createStateRecord(
-			*storage_, window, flowId, descriptor,
+			*storage_, window, instanceKey, descriptor,
 			registry.committedFrameNumber, policy);
 		try {
-			registry.byFlowId.emplace(flowId, resolved.handle);
+			registry.byInstance.emplace(instanceKey, resolved.handle);
 			auto* header = static_cast<ElementStateRecordHeader*>(
 				stateRecordView(*storage_, resolved.handle).header);
 			if (!header) throw std::runtime_error("FlowUi state record became stale during publication.");
 			if (policy.retention == ElementStateRetention::Transient) {
-				registry.gcCandidates.push_back(flowId);
+				registry.gcCandidates.push_back(instanceKey);
 				header->gcIndex = registry.gcCandidates.size() - 1;
 			}
 			created = true;
 		} catch (...) {
-			registry.byFlowId.erase(flowId);
-			if (!registry.gcCandidates.empty() && registry.gcCandidates.back() == flowId) {
+			registry.byInstance.erase(instanceKey);
+			if (!registry.gcCandidates.empty() && registry.gcCandidates.back() == instanceKey) {
 				registry.gcCandidates.pop_back();
 			}
 			(void)storage_->removePersistentRecord(
@@ -585,17 +586,17 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 		}
 	}
 	try {
-		registry.transaction.touched.insert(flowId);
-		registry.transaction.policies.insert_or_assign(flowId, policy);
-		if (created) registry.transaction.created.insert(flowId);
+		registry.transaction.touched.insert(instanceKey);
+		registry.transaction.policies.insert_or_assign(instanceKey, policy);
+		if (created) registry.transaction.created.insert(instanceKey);
 	} catch (...) {
 		if (created) {
-			const auto indexed = registry.byFlowId.find(flowId);
-			if (indexed != registry.byFlowId.end()) {
+			const auto indexed = registry.byInstance.find(instanceKey);
+			if (indexed != registry.byInstance.end()) {
 				if (ElementStateRecordHeader* header = stateRecordHeader(*storage_, indexed->second)) {
-					removeGcCandidate(registry, *storage_, flowId, *header);
+					removeGcCandidate(registry, *storage_, instanceKey, *header);
 				}
-				registry.byFlowId.erase(indexed);
+				registry.byInstance.erase(indexed);
 			}
 			(void)storage_->removePersistentRecord(
 				resolved.handle, storage::ResourceKind::UiElementState);
@@ -628,8 +629,8 @@ void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 
 			if (!registry.deferredErases.empty()) {
 				const auto deferred = registry.deferredErases.begin();
-				const auto state = registry.byFlowId.find(*deferred);
-				if (state != registry.byFlowId.end()) {
+				const auto state = registry.byInstance.find(*deferred);
+				if (state != registry.byInstance.end()) {
 					recordToErase = state->second;
 					if (storage) {
 						if (ElementStateRecordHeader* header =
@@ -637,7 +638,7 @@ void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 							removeGcCandidate(registry, *storage, state->first, *header);
 						}
 					}
-					registry.byFlowId.erase(state);
+					registry.byInstance.erase(state);
 				}
 				registry.deferredErases.erase(deferred);
 			} else if (registry.destroyRequested) {
@@ -704,23 +705,23 @@ void ElementStorageController::commitWindowFrame(WindowId window, uint64_t epoch
 			registry.committedFrameNumber == std::numeric_limits<uint64_t>::max()
 			? registry.committedFrameNumber
 			: registry.committedFrameNumber + 1;
-		for (const FlowElementId flowId : registry.transaction.touched) {
-			const auto state = registry.byFlowId.find(flowId);
-			if (state == registry.byFlowId.end()) continue;
+		for (const element::ElementInstanceKey instanceKey : registry.transaction.touched) {
+			const auto state = registry.byInstance.find(instanceKey);
+			if (state == registry.byInstance.end()) continue;
 			ElementStateRecordHeader* header = stateRecordHeader(*storage_, state->second);
 			if (!header) continue;
 			header->lastSeenCommittedFrame = committedFrame;
-			if (const auto policy = registry.transaction.policies.find(flowId);
+			if (const auto policy = registry.transaction.policies.find(instanceKey);
 				policy != registry.transaction.policies.end()) {
 				const ElementStatePolicy nextPolicy = policy->second;
 				if (header->policy.retention != nextPolicy.retention) {
 					if (nextPolicy.retention == ElementStateRetention::WindowLifetime) {
-						removeGcCandidate(registry, *storage_, flowId, *header);
+						removeGcCandidate(registry, *storage_, instanceKey, *header);
 					} else {
 						// A failed bookkeeping allocation leaves the safer retained policy
 						// in place without invalidating an otherwise successful UI frame.
 						try {
-							registry.gcCandidates.push_back(flowId);
+							registry.gcCandidates.push_back(instanceKey);
 							header->gcIndex = registry.gcCandidates.size() - 1;
 						} catch (...) {
 							continue;
@@ -766,18 +767,18 @@ void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch
 				return;
 			}
 			const auto created = registry.transaction.created.begin();
-			const FlowElementId flowId = *created;
+			const element::ElementInstanceKey instanceKey = *created;
 			registry.transaction.created.erase(created);
-			const auto state = registry.byFlowId.find(flowId);
-			if (state != registry.byFlowId.end()) {
+			const auto state = registry.byInstance.find(instanceKey);
+			if (state != registry.byInstance.end()) {
 				recordToErase = state->second;
 				if (storage) {
 					if (ElementStateRecordHeader* header =
 							stateRecordHeader(*storage, state->second)) {
-						removeGcCandidate(registry, *storage, flowId, *header);
+						removeGcCandidate(registry, *storage, instanceKey, *header);
 					}
 				}
-				registry.byFlowId.erase(state);
+				registry.byInstance.erase(state);
 			}
 		} catch (...) {
 			return;
@@ -829,16 +830,16 @@ size_t ElementStorageController::collectEligibleStates(
 			while (inspected < batchBudget && !registry.gcCandidates.empty()) {
 				if (registry.gcCursor >= registry.gcCandidates.size()) registry.gcCursor = 0;
 				const size_t candidateIndex = registry.gcCursor;
-				const FlowElementId flowId = registry.gcCandidates[candidateIndex];
-				const auto state = registry.byFlowId.find(flowId);
-				ElementStateRecordHeader* header = state == registry.byFlowId.end()
+				const element::ElementInstanceKey instanceKey = registry.gcCandidates[candidateIndex];
+				const auto state = registry.byInstance.find(instanceKey);
+				ElementStateRecordHeader* header = state == registry.byInstance.end()
 					? nullptr
 					: stateRecordHeader(*storage, state->second);
 				++inspected;
 				if (!header || isStateExpired(*header, registry.committedFrameNumber)) {
-					if (state != registry.byFlowId.end()) {
+					if (state != registry.byInstance.end()) {
 						removals[removalCount++] = state->second;
-						registry.byFlowId.erase(state);
+						registry.byInstance.erase(state);
 					}
 					removeGcCandidateAt(registry, *storage, candidateIndex);
 					continue;
@@ -862,37 +863,37 @@ size_t ElementStorageController::collectEligibleStates(
 
 const void* ElementStorageController::readState(
 	WindowId window,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor) {
 	requireStateDescriptor(descriptor);
-	if (window == InvalidWindowId || flowId == 0) return nullptr;
+	if (window == InvalidWindowId || !instanceKey) return nullptr;
 	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
 	if (!storage_) return nullptr;
 	const auto windowEntry = windows_.find(window);
 	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) return nullptr;
 	WindowElementStateRegistry& registry = *windowEntry->second;
 	std::lock_guard<std::mutex> registryLock(registry.mutex);
-	const auto existing = registry.byFlowId.find(flowId);
-	if (existing == registry.byFlowId.end()) return nullptr;
+	const auto existing = registry.byInstance.find(instanceKey);
+	if (existing == registry.byInstance.end()) return nullptr;
 	const ResolvedElementState resolved =
-		resolveExistingState(*storage_, existing->second, flowId, descriptor);
-	if (!resolved.payload) registry.byFlowId.erase(existing);
+		resolveExistingState(*storage_, existing->second, instanceKey, descriptor);
+	if (!resolved.payload) registry.byInstance.erase(existing);
 	return resolved.payload;
 }
 
 void* ElementStorageController::modifyState(
 	WindowId window,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor) {
-	return const_cast<void*>(readState(window, flowId, descriptor));
+	return const_cast<void*>(readState(window, instanceKey, descriptor));
 }
 
 bool ElementStorageController::eraseState(
 	WindowId window,
-	FlowElementId flowId,
+	element::ElementInstanceKey instanceKey,
 	const element::ElementRegistrationDescriptor& descriptor) {
 	requireStateDescriptor(descriptor);
-	if (window == InvalidWindowId || flowId == 0) return false;
+	if (window == InvalidWindowId || !instanceKey) return false;
 	storage::IStorageSystem* storage = nullptr;
 	storage::PersistentRecordHandle handle{};
 	{
@@ -903,18 +904,18 @@ bool ElementStorageController::eraseState(
 		if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) return false;
 		WindowElementStateRegistry& registry = *windowEntry->second;
 		std::lock_guard<std::mutex> registryLock(registry.mutex);
-		const auto existing = registry.byFlowId.find(flowId);
-		if (existing == registry.byFlowId.end()) return false;
-		(void)resolveExistingState(*storage, existing->second, flowId, descriptor);
+		const auto existing = registry.byInstance.find(instanceKey);
+		if (existing == registry.byInstance.end()) return false;
+		(void)resolveExistingState(*storage, existing->second, instanceKey, descriptor);
 		if (registry.transaction.active || registry.activeInvocations != 0) {
-			registry.deferredErases.insert(flowId);
+			registry.deferredErases.insert(instanceKey);
 			return true;
 		}
 		handle = existing->second;
 		if (ElementStateRecordHeader* header = stateRecordHeader(*storage, handle)) {
-			removeGcCandidate(registry, *storage, flowId, *header);
+			removeGcCandidate(registry, *storage, instanceKey, *header);
 		}
-		registry.byFlowId.erase(existing);
+		registry.byInstance.erase(existing);
 	}
 	return storage->removePersistentRecord(handle, storage::ResourceKind::UiElementState);
 }

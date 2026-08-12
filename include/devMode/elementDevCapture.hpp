@@ -510,9 +510,8 @@ bool tryCaptureParameterFieldValue(
 template <typename ParamsT>
 void captureParameterSnapshotField(
 	devMode::DevRuntime& runtime,
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementID,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	const devMode::FieldDescriptor& field,
 	uint64_t fieldHash,
 	const ParamsT& params) {
@@ -525,15 +524,14 @@ void captureParameterSnapshotField(
 		return;
 	}
 
-	runtime.captureLastSeenParamField(definitionId, flowId, elementID, fieldHash, capturedValue);
+	runtime.captureLastSeenParamField(definitionId, elementId, fieldHash, capturedValue);
 }
 
 template <typename ParamsT>
 void applyParameterOverrides(
 	UiManager& uiManager,
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementID,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	ParamsT& params) {
 	const devMode::StructDescriptor* paramsStruct = devMode::DevRegistry::instance().template findStruct<ParamsT>();
 	if (!paramsStruct || paramsStruct->fields.empty()) {
@@ -554,11 +552,11 @@ void applyParameterOverrides(
 			applySingleOverrideValue(*definitionOverride);
 		}
 		if (const devMode::DevValue* instanceOverride =
-			devRuntime.findInstanceParamOverride(definitionId, flowId, elementID, fieldHash)) {
+			devRuntime.findInstanceParamOverride(definitionId, elementId, fieldHash)) {
 			applySingleOverrideValue(*instanceOverride);
 		}
 
-		captureParameterSnapshotField(devRuntime, definitionId, flowId, elementID, field, fieldHash, params);
+		captureParameterSnapshotField(devRuntime, definitionId, elementId, field, fieldHash, params);
 	}
 }
 

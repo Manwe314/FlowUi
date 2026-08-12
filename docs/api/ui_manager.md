@@ -300,7 +300,7 @@ Returns the mutable input field manager owned by the UI manager. Custom editable
 **Example:**
 
 ```cpp
-context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+context.uiManager.inputFields().requestCaret(context.id, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba).
@@ -318,7 +318,7 @@ Returns the immutable input field manager. Use it for read-only input focus and 
 **Example:**
 
 ```cpp
-context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+context.uiManager.inputFields().requestCaret(context.id, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#ad9373da210911028ada7f4559cc760b3).

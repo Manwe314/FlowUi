@@ -501,9 +501,9 @@ constexpr FieldInfo<Owner, Member> makeFieldInfo(const char* name, Member Owner:
 
 #if FLOW_UI_DEV_MODE
 #define FLOWUI_DEV_REGISTER_STRUCT(TYPE, ...) \
-	[[maybe_unused]] static const ::FlowUi::devMode::DevRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_struct_reg_, __COUNTER__) = \
-		::FlowUi::devMode::DevRegistrar([]() { \
-			::FlowUi::devMode::registerStructSchemaWithSource<TYPE>( \
+	[[maybe_unused]] static const ::FlowUi::devMode::RegistryRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_struct_reg_, __COUNTER__) = \
+		::FlowUi::devMode::RegistryRegistrar([]() { \
+			::FlowUi::devMode::DevRegistry::instance().template registerStructWithSource<TYPE>( \
 				#TYPE, \
 				::FlowUi::devMode::makeDevStructSourceMetadata( \
 					__FILE__, \
@@ -514,24 +514,24 @@ constexpr FieldInfo<Owner, Member> makeFieldInfo(const char* name, Member Owner:
 		})
 
 #define FLOWUI_DEV_REGISTER_ELEMENT_1(DEFINITION_TYPE) \
-	[[maybe_unused]] static const ::FlowUi::devMode::DevRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_element_reg_, __COUNTER__) = \
-		::FlowUi::devMode::DevRegistrar([]() { \
-			::FlowUi::devMode::registerElementSchema<DEFINITION_TYPE>(#DEFINITION_TYPE); \
+	[[maybe_unused]] static const ::FlowUi::devMode::RegistryRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_element_reg_, __COUNTER__) = \
+		::FlowUi::devMode::RegistryRegistrar([]() { \
+			::FlowUi::devMode::DevRegistry::instance().template registerElement<DEFINITION_TYPE>(#DEFINITION_TYPE); \
 		})
 
 #define FLOWUI_DEV_REGISTER_ELEMENT_2(DEFINITION_TYPE, DISPLAY_NAME) \
-	[[maybe_unused]] static const ::FlowUi::devMode::DevRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_element_reg_, __COUNTER__) = \
-		::FlowUi::devMode::DevRegistrar([]() { \
-			::FlowUi::devMode::registerElementSchema<DEFINITION_TYPE>(DISPLAY_NAME); \
+	[[maybe_unused]] static const ::FlowUi::devMode::RegistryRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_element_reg_, __COUNTER__) = \
+		::FlowUi::devMode::RegistryRegistrar([]() { \
+			::FlowUi::devMode::DevRegistry::instance().template registerElement<DEFINITION_TYPE>(DISPLAY_NAME); \
 		})
 
 #define FLOWUI_DEV_REGISTER_ELEMENT(...) \
 	FLOWUI_DEV_DETAIL_GET_MACRO(__VA_ARGS__, FLOWUI_DEV_REGISTER_ELEMENT_2, FLOWUI_DEV_REGISTER_ELEMENT_1)(__VA_ARGS__)
 
 #define FLOWUI_DEV_REGISTER_ENUM(ENUM_TYPE, ...) \
-	[[maybe_unused]] static const ::FlowUi::devMode::DevRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_enum_reg_, __COUNTER__) = \
-		::FlowUi::devMode::DevRegistrar([]() { \
-			::FlowUi::devMode::registerEnumSchema<ENUM_TYPE>(#ENUM_TYPE __VA_OPT__(,) __VA_ARGS__); \
+	[[maybe_unused]] static const ::FlowUi::devMode::RegistryRegistrar FLOWUI_DEV_DETAIL_CONCAT(_flowui_dev_enum_reg_, __COUNTER__) = \
+		::FlowUi::devMode::RegistryRegistrar([]() { \
+			::FlowUi::devMode::DevRegistry::instance().template registerEnum<ENUM_TYPE>(#ENUM_TYPE __VA_OPT__(,) __VA_ARGS__); \
 		})
 #else
 #define FLOWUI_DEV_REGISTER_STRUCT(...)

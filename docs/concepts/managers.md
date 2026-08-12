@@ -155,8 +155,7 @@ Clay can lay out text and boxes, but editable input needs persistent text, focus
 Typical custom element code requests a field every frame:
 
 ```cpp
-FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField({
-    .fieldId = context.elementID,
+FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField(context.id, {
     .initialText = context.params.initialText,
     .textElementId = textId,
     .contentElementId = contentId,
@@ -166,7 +165,7 @@ FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField({
 Interaction callbacks can request focus:
 
 ```cpp
-context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+context.uiManager.inputFields().requestCaret(context.id, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
 The field's text lives in the manager, not in the element's params. That lets the element be rebuilt every frame while the user's edited text persists.

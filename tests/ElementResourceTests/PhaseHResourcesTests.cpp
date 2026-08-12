@@ -87,40 +87,40 @@ struct RecursiveResources {
 	~RecursiveResources() noexcept = default;
 };
 
-template <typename Resource, FlowUi::FlowDefinitionId DefinitionId>
+template <typename Resource, FlowUi::FlowDefinitionID DefinitionId>
 struct ResourceElementDefinition {
 	using Parameters = ::Parameters;
 	using Resources = Resource;
 	using BuildContext = FlowUi::ElementBuildContext<ResourceElementDefinition>;
 	using InteractionContext = FlowUi::ElementInteractionContext<ResourceElementDefinition>;
-	static constexpr FlowUi::FlowDefinitionId definitionId = DefinitionId;
+	static constexpr FlowUi::FlowDefinitionID definitionId = DefinitionId;
 	static void buildElement(BuildContext&) {}
 };
 
-template <FlowUi::FlowDefinitionId DefinitionId>
+template <FlowUi::FlowDefinitionID DefinitionId>
 struct ResourceFreeElementDefinition {
 	using Parameters = ::Parameters;
 	using BuildContext = FlowUi::ElementBuildContext<ResourceFreeElementDefinition>;
 	using InteractionContext = FlowUi::ElementInteractionContext<ResourceFreeElementDefinition>;
-	static constexpr FlowUi::FlowDefinitionId definitionId = DefinitionId;
+	static constexpr FlowUi::FlowDefinitionID definitionId = DefinitionId;
 	static void buildElement(BuildContext&) {}
 };
 
 using ResourceDefinition = ResourceElementDefinition<
-	AppResources, FLOW_DEF_ID("flowui/tests/phase-h/resources")>;
+	AppResources, FlowUi::DefinitionID("flowui/tests/phase-h/resources")>;
 using SecondResourceDefinition = ResourceElementDefinition<
-	AppResources, FLOW_DEF_ID("flowui/tests/phase-h/resources-second")>;
+	AppResources, FlowUi::DefinitionID("flowui/tests/phase-h/resources-second")>;
 using ConstructorPreferenceDefinition = ResourceElementDefinition<
 	ConstructorPreferenceResources,
-	FLOW_DEF_ID("flowui/tests/phase-h/constructor-preference")>;
+	FlowUi::DefinitionID("flowui/tests/phase-h/constructor-preference")>;
 using FlakyDefinition = ResourceElementDefinition<
-	FlakyResources, FLOW_DEF_ID("flowui/tests/phase-h/flaky")>;
+	FlakyResources, FlowUi::DefinitionID("flowui/tests/phase-h/flaky")>;
 using ResourceFreeDefinition = ResourceFreeElementDefinition<
-	FLOW_DEF_ID("flowui/tests/phase-h/resource-free")>;
+	FlowUi::DefinitionID("flowui/tests/phase-h/resource-free")>;
 using ReentrantDefinition = ResourceElementDefinition<
-	ReentrantResources, FLOW_DEF_ID("flowui/tests/phase-h/reentrant")>;
+	ReentrantResources, FlowUi::DefinitionID("flowui/tests/phase-h/reentrant")>;
 using RecursiveDefinition = ResourceElementDefinition<
-	RecursiveResources, FLOW_DEF_ID("flowui/tests/phase-h/recursive")>;
+	RecursiveResources, FlowUi::DefinitionID("flowui/tests/phase-h/recursive")>;
 
 inline FlowUi::detail::manager_storage::ElementStorageController* gRecursiveController = nullptr;
 

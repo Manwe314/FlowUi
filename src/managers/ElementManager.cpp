@@ -121,28 +121,28 @@ const manager_storage::ElementDefinitionRecord& ElementManager::ensureRegistered
 const void* ElementManager::readStateErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
-	FlowElementId flowId) const {
+	detail::element::ElementInstanceKey instanceKey) const {
 	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
 	(void)controller_->ensureDefinition(descriptor);
-	return controller_->readState(window, flowId, descriptor);
+	return controller_->readState(window, instanceKey, descriptor);
 }
 
 void* ElementManager::modifyStateErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
-	FlowElementId flowId) {
+	detail::element::ElementInstanceKey instanceKey) {
 	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
 	(void)controller_->ensureDefinition(descriptor);
-	return controller_->modifyState(window, flowId, descriptor);
+	return controller_->modifyState(window, instanceKey, descriptor);
 }
 
 bool ElementManager::eraseStateErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
-	FlowElementId flowId) {
+	detail::element::ElementInstanceKey instanceKey) {
 	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
 	(void)controller_->ensureDefinition(descriptor);
-	return controller_->eraseState(window, flowId, descriptor);
+	return controller_->eraseState(window, instanceKey, descriptor);
 }
 
 const void* ElementManager::resolveResourcesErased(
@@ -158,13 +158,13 @@ const void* ElementManager::resolveResourcesErased(
 detail::element::ResolvedElementStateInvocation ElementManager::beginStateInvocation(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
-	FlowElementId flowId,
+	detail::element::ElementInstanceKey instanceKey,
 	ElementStatePolicy policy) {
 	if (!controller_) throw std::runtime_error("ElementManager is not initialized.");
 	(void)controller_->ensureDefinition(descriptor);
 	if (!descriptor.hasState) return {};
 	const manager_storage::ResolvedElementState state =
-		controller_->resolveOrCreateStateForInvocation(window, flowId, descriptor, policy);
+		controller_->resolveOrCreateStateForInvocation(window, instanceKey, descriptor, policy);
 	return detail::element::ResolvedElementStateInvocation{
 		.handle = state.handle.packed(),
 		.payload = state.payload,

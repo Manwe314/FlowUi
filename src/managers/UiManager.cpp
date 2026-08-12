@@ -4,7 +4,10 @@
 #include <cstdio>
 
 #if FLOW_UI_DEV_MODE
+#include <charconv>
+#if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
 #include "devMode/debugView.hpp"
+#endif
 #include "devMode/registry.hpp"
 #endif
 #include "managers/FontManager.hpp"
@@ -84,6 +87,8 @@ namespace FlowUi
 			pointsToPixelsScale = configuredDpi / kPointsPerInch;
 		}
 		inputManagerConfig = appConfig.ui.inputManager;
+		flowScopes.reserve(32);
+		constructedElementStack.reserve(16);
 #if FLOW_UI_DEV_MODE
 		devToolsConfig = appConfig.dev;
 		devPanelVisible = devToolsConfig.enabled && devToolsConfig.panelOpenByDefault;
@@ -93,40 +98,6 @@ namespace FlowUi
 	manager_storage::UiManagerState::~UiManagerState() noexcept {
 		if (storage && clayMemory) storage->releasePersistent(clayMemory);
 	}
-
-#if FLOW_UI_DEV_MODE
-	void manager_storage::FlowRootIdTrackerForDev::beginFrame() {
-		claims_.clear();
-		collisions_.clear();
-	}
-
-	void manager_storage::FlowRootIdTrackerForDev::discardFrame() noexcept {
-		claims_.clear();
-		collisions_.clear();
-	}
-
-	const manager_storage::FlowRootCollisionForDev*
-	manager_storage::FlowRootIdTrackerForDev::claim(
-		uint64_t flowId,
-		manager_storage::FlowRootClaimSourceForDev source) {
-		auto [entry, inserted] = claims_.try_emplace(flowId, std::move(source));
-		if (inserted) return nullptr;
-		collisions_.push_back(manager_storage::FlowRootCollisionForDev{
-			.flowId = flowId,
-			.first = entry->second,
-			.duplicate = std::move(source),
-		});
-		return &collisions_.back();
-	}
-
-	const manager_storage::FlowRootCollisionForDev&
-	manager_storage::FlowRootIdTrackerForDev::collision(size_t index) const {
-		if (index >= collisions_.size()) {
-			throw std::out_of_range("FlowUi dev Flow-root collision index is out of range.");
-		}
-		return collisions_[index];
-	}
-#endif
 
 	void UiManager::initStorage(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config) {
 		if (storage_) throw std::logic_error("UiManager is already initialized.");
@@ -360,8 +331,10 @@ namespace FlowUi
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 			static_cast<float>(frameInput.dt));
 		state_->constructedElementStack.clear();
+		state_->flowScopes.beginFrame();
 #if FLOW_UI_DEV_MODE
 		state_->flowRootIdTracker.beginFrame();
+		state_->clayBridgeIdTracker.beginFrame();
 		state_->devRuntime.beginFrame();
 		state_->devRootElementOpenThisFrame = false;
 #endif
@@ -387,15 +360,10 @@ namespace FlowUi
 		}
 
 		Clay_SetCurrentContext(state_->clayContext);
-		int32_t autoClosedConstructedElements = 0;
-		while (!state_->constructedElementStack.empty()) {
-			Clay__CloseElement();
-			state_->constructedElementStack.pop_back();
-#if FLOW_UI_DEV_MODE
-			(void)state_->devRuntime.endCapturedElement();
-#endif
-			++autoClosedConstructedElements;
-		}
+		const int32_t autoClosedConstructedElements =
+			static_cast<int32_t>(state_->constructedElementStack.size());
+		closeConstructedToDepth(0, false);
+		restoreFlowScope(1);
 		if (autoClosedConstructedElements > 0) {
 			std::fprintf(
 				stderr,
@@ -405,7 +373,9 @@ namespace FlowUi
 #if FLOW_UI_DEV_MODE
 		if (state_->devRootElementOpenThisFrame) {
 			if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
+#if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
 				devMode::drawDebugView(*this);
+#endif
 			}
 			Clay__CloseElement();
 			state_->devRootElementOpenThisFrame = false;
@@ -417,7 +387,7 @@ namespace FlowUi
 		Clay_ElementIdArray hoveredIds = Clay_GetPointerOverIds();
 		interactionSnapshot.hoveredElementIds.reserve(static_cast<size_t>(hoveredIds.length));
 		for (int32_t i = 0; i < hoveredIds.length; ++i) {
-			interactionSnapshot.hoveredElementIds.push_back(hoveredIds.internalArray[i]);
+			interactionSnapshot.hoveredElementIds.push_back(hoveredIds.internalArray[i].id);
 		}
 
 		const bool isPrimaryPointerDown = state_->frameInputForCurrentLayout.mouseDown[0];
@@ -441,6 +411,7 @@ namespace FlowUi
 #if FLOW_UI_DEV_MODE
 		state_->devRuntime.endFrame();
 		state_->flowRootIdTracker.discardFrame();
+		state_->clayBridgeIdTracker.discardFrame();
 #endif
 		return renderCommands;
 	}
@@ -500,12 +471,55 @@ namespace FlowUi
 		return toClaySID(normalizeUiResourceName(key));
 	}
 	
-	Clay_ElementId UiManager::toClayEID(std::string_view s) {
-		return Clay_GetElementId(toClayString(s));
+	Clay_ElementId UiManager::toClayEID(FlowElementID id) {
+		const uint32_t clayId = FlowIDToClayID(id);
+#if FLOW_UI_DEV_MODE
+		claimClayBridgeForDev(detail::element::toInstanceKey(id), id.debugName);
+#endif
+		return Clay_ElementId{
+			.id = clayId,
+			.offset = 0,
+			.baseId = clayId,
+#if FLOW_UI_DEV_MODE
+			.stringId = id.debugName.empty() ? Clay_String{} : toClayString(id.debugName),
+#else
+			.stringId = {},
+#endif
+		};
 	}
 
-	Clay_ElementId UiManager::toClayEID(ResourceKey key) {
-		return toClayEID(normalizeUiResourceName(key));
+	Clay_ElementId UiManager::toClayEID(GlobalFlowID id) {
+		const uint32_t clayId = FlowIDToClayID(id);
+#if FLOW_UI_DEV_MODE
+		claimClayBridgeForDev(detail::element::toInstanceKey(id), id.debugName);
+#endif
+		return Clay_ElementId{
+			.id = clayId,
+			.offset = 0,
+			.baseId = clayId,
+#if FLOW_UI_DEV_MODE
+			.stringId = id.debugName.empty() ? Clay_String{} : toClayString(id.debugName),
+#else
+			.stringId = {},
+#endif
+		};
+	}
+
+	Clay_ElementId UiManager::toClayEID(FlowElementPartID id) {
+		const uint32_t clayId = FlowIDToClayID(id);
+#if FLOW_UI_DEV_MODE
+		claimClayBridgeForDev(detail::element::toInstanceKey(id), id.debugName);
+#endif
+		return Clay_ElementId{
+			.id = clayId,
+			.offset = 0,
+			.baseId = clayId,
+#if FLOW_UI_DEV_MODE
+			.stringId = id.debugName.empty() ? Clay_String{} : toClayString(id.debugName),
+#else
+			.stringId = {},
+#endif
+		};
 	}
 
 	const InteractionSnapshot& UiManager::getPreviousFramesInteraction() const {
@@ -529,6 +543,29 @@ namespace FlowUi
 	const devMode::PerformanceDiagnostics& UiManager::performanceDiagnostics() const {
 		return state_->performanceDiagnostics;
 	}
+
+	void UiManager::claimClayBridgeForDev(
+		detail::element::ElementInstanceKey instanceId,
+		std::string_view debugName) {
+		if (!state_ || !instanceId) return;
+		const manager_storage::ClayBridgeCollisionForDev* collision =
+			state_->clayBridgeIdTracker.claim(
+				instanceId,
+				detail::element_id::toClayValue(instanceId.value),
+				manager_storage::FlowRootClaimSourceForDev{
+					.debugPath = std::string(debugName),
+					.fileName = "<direct typed Clay bridge>",
+				});
+		if (!collision) return;
+		std::fprintf(
+			stderr,
+			"[FlowUi] Warning: Clay ID %u aliases distinct Flow IDs %llu ('%s') and %llu ('%s').\n",
+			collision->clayId,
+			static_cast<unsigned long long>(collision->first.instanceId.value),
+			collision->first.source.debugPath.c_str(),
+			static_cast<unsigned long long>(collision->duplicate.instanceId.value),
+			collision->duplicate.source.debugPath.c_str());
+	}
 #endif
 
 
@@ -536,55 +573,92 @@ namespace FlowUi
 namespace detail {
 
 #if FLOW_UI_DEV_MODE
-	// transitional: temporary dev-only claim bridge remains until the later dev
-	// element and registry migration consolidates capture operations on UiManager.
+	// Header-only builders enter the frame-local diagnostic tracker here.
 	void claimFlowRootForDev(
 		UiManager& uiManager,
-		uint64_t flowId,
-		uint64_t definitionId,
-		std::string_view logicalId,
+		FlowElementID elementId,
+		FlowDefinitionID definitionId,
 		std::string_view fileName,
 		uint32_t line,
 		uint32_t column,
-		std::string_view functionName) {
+		std::string_view functionName,
+		bool automaticIdentity) {
+		const manager_storage::FlowRootClaimSourceForDev source{
+			.definitionId = definitionId,
+			.debugPath = std::string(elementId.debugName),
+			.fileName = std::string(fileName),
+			.functionName = std::string(functionName),
+			.line = line,
+			.column = column,
+			.automaticIdentity = automaticIdentity,
+		};
 		const manager_storage::FlowRootCollisionForDev* collision =
 			uiManager.state_->flowRootIdTracker.claim(
-				flowId,
-				manager_storage::FlowRootClaimSourceForDev{
-					.definitionId = definitionId,
-					.logicalId = std::string(logicalId),
-					.fileName = std::string(fileName),
-					.functionName = std::string(functionName),
-					.line = line,
-					.column = column,
-				});
-		if (!collision) return;
+				detail::element::toInstanceKey(elementId),
+				source);
+		const manager_storage::ClayBridgeCollisionForDev* clayCollision =
+			uiManager.state_->clayBridgeIdTracker.claim(
+				detail::element::toInstanceKey(elementId),
+				detail::element_id::toClayValue(elementId.value),
+				source);
 
-		std::fprintf(
-			stderr,
-			"[FlowUi] Warning: duplicate Flow root id %llu. First: definition %llu, '%s' at %s:%u:%u. Duplicate: definition %llu, '%s' at %s:%u:%u.\n",
-			static_cast<unsigned long long>(collision->flowId),
-			static_cast<unsigned long long>(collision->first.definitionId),
-			collision->first.logicalId.c_str(),
-			collision->first.fileName.c_str(),
-			collision->first.line,
-			collision->first.column,
-			static_cast<unsigned long long>(collision->duplicate.definitionId),
-			collision->duplicate.logicalId.c_str(),
-			collision->duplicate.fileName.c_str(),
-			collision->duplicate.line,
-			collision->duplicate.column);
+		if (collision && collision->first.automaticIdentity &&
+			collision->duplicate.automaticIdentity) {
+			std::fprintf(
+				stderr,
+				"[FlowUi] Warning: automatic element ID %llu was used more than once in one window frame. A loop or repeated callsite must use FlowUi::Indexed(), FlowUi::Keyed(), or context.indexedIDs().next(). First: %s:%u:%u. Duplicate: %s:%u:%u.\n",
+				static_cast<unsigned long long>(collision->instanceId.value),
+				collision->first.fileName.c_str(),
+				collision->first.line,
+				collision->first.column,
+				collision->duplicate.fileName.c_str(),
+				collision->duplicate.line,
+				collision->duplicate.column);
+		} else if (collision) {
+			std::fprintf(
+				stderr,
+				"[FlowUi] Warning: duplicate Flow root id %llu. First: definition %llu, '%s' at %s:%u:%u. Duplicate: definition %llu, '%s' at %s:%u:%u.\n",
+				static_cast<unsigned long long>(collision->instanceId.value),
+				static_cast<unsigned long long>(collision->first.definitionId.value),
+				collision->first.debugPath.c_str(),
+				collision->first.fileName.c_str(),
+				collision->first.line,
+				collision->first.column,
+				static_cast<unsigned long long>(collision->duplicate.definitionId.value),
+				collision->duplicate.debugPath.c_str(),
+				collision->duplicate.fileName.c_str(),
+				collision->duplicate.line,
+				collision->duplicate.column);
+		}
+
+		if (clayCollision) {
+			std::fprintf(
+				stderr,
+				"[FlowUi] Warning: Clay ID %u aliases distinct Flow IDs. First: %llu, definition %llu, '%s' at %s:%u:%u. Duplicate: %llu, definition %llu, '%s' at %s:%u:%u.\n",
+				clayCollision->clayId,
+				static_cast<unsigned long long>(clayCollision->first.instanceId.value),
+				static_cast<unsigned long long>(clayCollision->first.source.definitionId.value),
+				clayCollision->first.source.debugPath.c_str(),
+				clayCollision->first.source.fileName.c_str(),
+				clayCollision->first.source.line,
+				clayCollision->first.source.column,
+				static_cast<unsigned long long>(clayCollision->duplicate.instanceId.value),
+				static_cast<unsigned long long>(clayCollision->duplicate.source.definitionId.value),
+				clayCollision->duplicate.source.debugPath.c_str(),
+				clayCollision->duplicate.source.fileName.c_str(),
+				clayCollision->duplicate.source.line,
+				clayCollision->duplicate.source.column);
+		}
 	}
 
 namespace devModeBridge {
 
 	std::size_t beginCapturedFlowElement(
 		UiManager& uiManager,
-		uint64_t definitionId,
+		FlowDefinitionID definitionId,
 		uint64_t definitionTypeHash,
 		std::string_view definitionTypeToken,
-		std::string_view elementID,
-		uint64_t flowId,
+		FlowElementID elementId,
 		bool isInternalToDevMode) {
 		if (isInternalToDevMode && uiManager.devToolsConfig().excludeInternalDevElementsFromCapture) {
 			return devMode::DevRuntime::kInvalidCaptureIndex;
@@ -594,8 +668,7 @@ namespace devModeBridge {
 		const std::size_t captureIndex = runtime.beginCapturedFlowElement(
 			definitionId,
 			definitionTypeHash,
-			flowId,
-			elementID,
+			elementId,
 			{},
 			definitionTypeToken,
 			isInternalToDevMode);
@@ -625,7 +698,7 @@ namespace devModeBridge {
 
 		runtime.setCapturedElementAuthoringKeys(
 			captureIndex,
-			elementID,
+			elementId.debugName,
 			descriptor ? descriptor->definitionName : std::string_view{});
 		return captureIndex;
 	}
@@ -658,15 +731,247 @@ namespace devMode::elementCapture {
 		}
 
 		Clay_SetCurrentContext(state_->clayContext);
-		Clay__CloseElement();
-		state_->constructedElementStack.pop_back();
+		closeConstructedToDepth(state_->constructedElementStack.size() - 1, false);
+	}
+
+	FlowElementID UiManager::currentFlowScope() const noexcept {
+		return state_ ? state_->flowScopes.current() : RootFlowScopeID;
+	}
+
 #if FLOW_UI_DEV_MODE
-		(void)state_->devRuntime.endCapturedElement();
+	std::string_view UiManager::joinFlowDebugPath(
+		std::string_view parent,
+		std::string_view child) {
+		if (child.empty()) return {};
+		const size_t separatorBytes = parent.empty() ? 0 : 1;
+		const size_t totalBytes = parent.size() + separatorBytes + child.size();
+		char* joined = allocBytes(totalBytes, alignof(char));
+		size_t offset = 0;
+		if (!parent.empty()) {
+			std::memcpy(joined, parent.data(), parent.size());
+			offset = parent.size();
+			joined[offset++] = '/';
+		}
+		std::memcpy(joined + offset, child.data(), child.size());
+		return std::string_view(joined, totalBytes);
+	}
+
+	std::string_view UiManager::indexedFlowDebugName(IndexedElementName name) {
+		char indexBuffer[32]{};
+		const auto [indexEnd, error] = std::to_chars(
+			indexBuffer, indexBuffer + sizeof(indexBuffer), name.index);
+		if (error != std::errc{}) {
+			throw std::runtime_error("FlowUi could not format an indexed element debug name.");
+		}
+		const size_t indexBytes = static_cast<size_t>(indexEnd - indexBuffer);
+		const size_t totalBytes = name.debugName.size() + indexBytes + 2;
+		char* formatted = allocBytes(totalBytes, alignof(char));
+		size_t offset = 0;
+		std::memcpy(formatted, name.debugName.data(), name.debugName.size());
+		offset += name.debugName.size();
+		formatted[offset++] = '[';
+		std::memcpy(formatted + offset, indexBuffer, indexBytes);
+		offset += indexBytes;
+		formatted[offset] = ']';
+		return std::string_view(formatted, totalBytes);
+	}
+
+	std::string_view UiManager::automaticFlowDebugName(AutoElementName name) {
+		char lineBuffer[16]{};
+		char columnBuffer[16]{};
+		const auto [lineEnd, lineError] = std::to_chars(
+			lineBuffer, lineBuffer + sizeof(lineBuffer), name.line);
+		const auto [columnEnd, columnError] = std::to_chars(
+			columnBuffer, columnBuffer + sizeof(columnBuffer), name.column);
+		if (lineError != std::errc{} || columnError != std::errc{}) {
+			throw std::runtime_error("FlowUi could not format an automatic element debug name.");
+		}
+		constexpr std::string_view prefix = "@auto/";
+		const size_t lineBytes = static_cast<size_t>(lineEnd - lineBuffer);
+		const size_t columnBytes = static_cast<size_t>(columnEnd - columnBuffer);
+		const size_t totalBytes = prefix.size() + name.fileName.size() +
+			lineBytes + columnBytes + 2;
+		char* formatted = allocBytes(totalBytes, alignof(char));
+		size_t offset = 0;
+		std::memcpy(formatted + offset, prefix.data(), prefix.size());
+		offset += prefix.size();
+		std::memcpy(formatted + offset, name.fileName.data(), name.fileName.size());
+		offset += name.fileName.size();
+		formatted[offset++] = ':';
+		std::memcpy(formatted + offset, lineBuffer, lineBytes);
+		offset += lineBytes;
+		formatted[offset++] = ':';
+		std::memcpy(formatted + offset, columnBuffer, columnBytes);
+		return std::string_view(formatted, totalBytes);
+	}
+
+	std::string_view UiManager::globalFlowDebugName(GlobalFlowID id) {
+		constexpr std::string_view prefix = "@global/";
+		const size_t totalBytes = prefix.size() + id.debugName.size();
+		char* formatted = allocBytes(totalBytes, alignof(char));
+		std::memcpy(formatted, prefix.data(), prefix.size());
+		std::memcpy(formatted + prefix.size(), id.debugName.data(), id.debugName.size());
+		return std::string_view(formatted, totalBytes);
+	}
+#endif
+
+	FlowElementID UiManager::resolveLocalElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		LocalElementName name) {
+		if (!parent || !definition || !name) {
+			throw std::invalid_argument("FlowUi local element IDs require valid parent, definition, and name values.");
+		}
+		return detail::element_id::resolveLocal(
+			parent,
+			definition,
+			name.token
+#if FLOW_UI_DEV_MODE
+			, joinFlowDebugPath(parent.debugName, name.debugName)
+#endif
+		);
+	}
+
+	FlowElementID UiManager::resolveLocalElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		RuntimeElementName name) {
+		if (!parent || !definition || !name) {
+			throw std::invalid_argument("FlowUi runtime element IDs require valid parent, definition, and name values.");
+		}
+		return detail::element_id::resolveLocal(
+			parent,
+			definition,
+			name.token
+#if FLOW_UI_DEV_MODE
+			, joinFlowDebugPath(parent.debugName, name.debugName)
+#endif
+		);
+	}
+
+	FlowElementID UiManager::resolveIndexedElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		IndexedElementName name) {
+		if (!parent || !definition || !name) {
+			throw std::invalid_argument("FlowUi indexed element IDs require valid parent, definition, and name values.");
+		}
+		return detail::element_id::resolveLocal(
+			parent,
+			definition,
+			name.token
+#if FLOW_UI_DEV_MODE
+			, joinFlowDebugPath(parent.debugName, indexedFlowDebugName(name))
+#endif
+		);
+	}
+
+	FlowElementID UiManager::resolveAutomaticElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		AutoElementName name) {
+		if (!parent || !definition || !name) {
+			throw std::invalid_argument("FlowUi automatic element IDs require valid parent, definition, and callsite values.");
+		}
+		return detail::element_id::resolveAutomatic(
+			parent,
+			definition,
+			name.token
+#if FLOW_UI_DEV_MODE
+			, joinFlowDebugPath(parent.debugName, automaticFlowDebugName(name))
+#endif
+		);
+	}
+
+	FlowElementID UiManager::normalizeGlobalElementID(GlobalFlowID id) {
+		if (!id) throw std::invalid_argument("FlowUi requires a valid global element ID.");
+		return FlowElementID{
+			.value = id.value,
+#if FLOW_UI_DEV_MODE
+			.debugName = globalFlowDebugName(id),
+#endif
+		};
+	}
+
+	FlowElementID UiManager::normalizePartElementID(FlowElementPartID id) const noexcept {
+		return FlowElementID{
+			.value = id.value,
+#if FLOW_UI_DEV_MODE
+			.debugName = id.debugName,
+#endif
+		};
+	}
+
+	FlowElementPartID UiManager::resolveElementPartID(
+		FlowDefinitionID ownerDefinition,
+		FlowElementID owner,
+		FlowElementPart part) {
+		if (!ownerDefinition || !owner || !part) {
+			throw std::invalid_argument(
+				"FlowUi semantic parts require valid owner definition, owner ID, and declaration values.");
+		}
+		return FlowElementPartID{
+			.value = detail::element_id::compose(
+				detail::element_id::kPartInstanceDomain,
+				ownerDefinition.value,
+				owner.value,
+				part.token),
+#if FLOW_UI_DEV_MODE
+			.debugName = joinFlowDebugPath(owner.debugName, part.debugName),
+#endif
+		};
+	}
+
+	size_t UiManager::pushFlowScope(FlowElementID id) {
+		if (!state_ || !state_->activeFrame || !id) {
+			throw std::logic_error("FlowUi cannot enter an element scope outside an active frame.");
+		}
+		return state_->flowScopes.push(id);
+	}
+
+	void UiManager::restoreFlowScope(size_t depth) noexcept {
+		if (state_) state_->flowScopes.restore(depth);
+	}
+
+	size_t UiManager::constructedElementDepth() const noexcept {
+		return state_ ? state_->constructedElementStack.size() : 0;
+	}
+
+	void UiManager::closeConstructedToDepth(size_t depth, bool warn) noexcept {
+		if (!state_ || depth >= state_->constructedElementStack.size()) return;
+		const size_t closedCount = state_->constructedElementStack.size() - depth;
+		while (state_->constructedElementStack.size() > depth) {
+			const manager_storage::ConstructedElementFrame frame =
+				state_->constructedElementStack.back();
+			Clay__CloseElement();
+			state_->constructedElementStack.pop_back();
+			restoreFlowScope(frame.priorFlowScopeDepth);
+#if FLOW_UI_DEV_MODE
+			(void)state_->devRuntime.endCapturedElement();
+#endif
+		}
+#if FLOW_UI_DEV_MODE
+		if (warn) {
+			std::fprintf(
+				stderr,
+				"[FlowUi] Warning: auto-closed %zu constructed element(s) left open by a draw callback.\n",
+				closedCount);
+		}
+#else
+		(void)warn;
+		(void)closedCount;
 #endif
 	}
 
-	void UiManager::pushConstructedElement(Clay_ElementId elementId) {
-		state_->constructedElementStack.push_back(elementId);
+	void UiManager::retainConstructedElement(
+		Clay_ElementId clayId,
+		FlowElementID flowId,
+		size_t priorFlowScopeDepth) {
+		state_->constructedElementStack.push_back(manager_storage::ConstructedElementFrame{
+			.clayId = clayId,
+			.flowId = flowId,
+			.priorFlowScopeDepth = priorFlowScopeDepth,
+		});
 	}
 
 	void UiManager::advanceFrameInteractionSnapshots() {
@@ -677,11 +982,17 @@ namespace devMode::elementCapture {
 		state_->currentInteractionSnapshot.releasedElementIds.clear();
 	}
 
+	void UiManager::cancelFrameState() noexcept {
+		if (!state_) return;
+		state_->constructedElementStack.clear();
+		state_->flowScopes.cancelFrame();
+		state_->frameArena = {};
+		state_->activeFrame = {};
 #if FLOW_UI_DEV_MODE
-	void UiManager::cancelDevFlowRootClaims() noexcept {
-		if (state_) state_->flowRootIdTracker.discardFrame();
-	}
+		state_->flowRootIdTracker.discardFrame();
+		state_->clayBridgeIdTracker.discardFrame();
 #endif
+	}
 
 	const ThemeManager& UiManager::appThemes() const {
 		if (!themeManager_) {
