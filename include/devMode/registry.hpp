@@ -109,7 +109,7 @@ struct StructDescriptor {
 
 struct ElementDescriptor {
 	uint64_t definitionTypeHash = 0u;
-	uint64_t definitionId = 0u;
+	FlowDefinitionID definitionId{};
 	std::string definitionName{};
 	std::string definitionTypeToken{};
 	uint64_t paramsStructTypeHash = 0u;
@@ -271,7 +271,7 @@ public:
 		return &elements_[it->second];
 	}
 
-	const ElementDescriptor* findElementByDefinitionId(uint64_t value) const {
+	const ElementDescriptor* findElementByDefinitionId(FlowDefinitionID value) const {
 		const auto it = elementIndexByDefinitionId_.find(value);
 		if (it == elementIndexByDefinitionId_.end()) {
 			return nullptr;
@@ -438,42 +438,16 @@ private:
 	std::unordered_map<uint64_t, std::size_t> structIndexByTypeHash_{};
 	std::unordered_map<std::string, std::size_t> structIndexByName_{};
 	std::unordered_map<uint64_t, std::size_t> elementIndexByDefinitionTypeHash_{};
-	std::unordered_map<uint64_t, std::size_t> elementIndexByDefinitionId_{};
+	std::unordered_map<FlowDefinitionID, std::size_t, FlowDefinitionIDHash>
+		elementIndexByDefinitionId_{};
 	std::unordered_map<std::string, std::size_t> elementIndexByName_{};
 	std::unordered_map<uint64_t, std::size_t> enumIndexByTypeHash_{};
 	std::unordered_map<std::string, std::size_t> enumIndexByName_{};
 };
 
-// old
-template <typename StructT, typename... FieldTs>
-inline void registerStructSchema(std::string_view structName, FieldTs&&... fields) {
-	DevRegistry::instance().template registerStruct<StructT>(structName, std::forward<FieldTs>(fields)...);
-}
-
-template <typename StructT, typename... FieldTs>
-inline void registerStructSchemaWithSource(
-	std::string_view structName,
-	const DevStructSourceMetadata& sourceMetadata,
-	FieldTs&&... fields) {
-	DevRegistry::instance().template registerStructWithSource<StructT>(
-		structName,
-		sourceMetadata,
-		std::forward<FieldTs>(fields)...);
-}
-
-template <typename DefinitionT>
-inline void registerElementSchema(std::string_view definitionName) {
-	DevRegistry::instance().template registerElement<DefinitionT>(definitionName);
-}
-
-template <typename EnumT, typename... EnumValueTs>
-inline void registerEnumSchema(std::string_view enumName, EnumValueTs&&... values) {
-	DevRegistry::instance().template registerEnum<EnumT>(enumName, std::forward<EnumValueTs>(values)...);
-}
-
-struct DevRegistrar {
+struct RegistryRegistrar {
 	template <typename Fn>
-	explicit DevRegistrar(Fn&& fn) {
+	explicit RegistryRegistrar(Fn&& fn) {
 		fn();
 	}
 };

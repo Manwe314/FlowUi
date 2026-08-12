@@ -1,21 +1,5 @@
 # App API
 
-## Aliases
-
-### **FlowElementId**
-
-
-#### `using FlowElementId = uint64_t`
-
-Stable hashed id for a FlowUi element instance. It is used to key per-instance element state and generated child ids.
-
-### **FlowDefinitionId**
-
-
-#### `using FlowDefinitionId = uint64_t`
-
-Stable hashed id for a FlowUi element definition. It identifies the definition type rather than one rendered instance.
-
 ## Public Structs
 
 ### **AppConfig**

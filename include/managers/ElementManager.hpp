@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "FlowUi/WindowId.hpp"
+#include "internal/ElementInstanceKey.hpp"
 #include "managers/structs/ElementManagerStructs.hpp"
 
 namespace FlowUi {
@@ -56,9 +57,32 @@ public:
 	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
 		const Element&,
 		WindowId window,
-		FlowElementId flowId) const {
+		FlowElementID elementId) const {
 		return static_cast<const StateOf<Element>*>(readStateErased(
-			detail::element::elementDescriptor<Element>, window, flowId));
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
+	}
+
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
+		const Element&,
+		WindowId window,
+		GlobalFlowID elementId) const {
+		return static_cast<const StateOf<Element>*>(readStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
+	}
+
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] const StateOf<Element>* getStatePointerConst(
+		const Element&,
+		WindowId window,
+		FlowElementPartID elementId) const {
+		return static_cast<const StateOf<Element>*>(readStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
 	}
 
 	/**
@@ -73,9 +97,32 @@ public:
 	[[nodiscard]] StateOf<Element>* getStatePointer(
 		const Element&,
 		WindowId window,
-		FlowElementId flowId) {
+		FlowElementID elementId) {
 		return static_cast<StateOf<Element>*>(modifyStateErased(
-			detail::element::elementDescriptor<Element>, window, flowId));
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
+	}
+
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] StateOf<Element>* getStatePointer(
+		const Element&,
+		WindowId window,
+		FlowElementPartID elementId) {
+		return static_cast<StateOf<Element>*>(modifyStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
+	}
+
+	template <FlowElement Element>
+		requires HasState<Element>
+	[[nodiscard]] StateOf<Element>* getStatePointer(
+		const Element&,
+		WindowId window,
+		GlobalFlowID elementId) {
+		return static_cast<StateOf<Element>*>(modifyStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId)));
 	}
 
 	/**
@@ -89,8 +136,32 @@ public:
 	bool eraseState(
 		const Element&,
 		WindowId window,
-		FlowElementId flowId) {
-		return eraseStateErased(detail::element::elementDescriptor<Element>, window, flowId);
+		FlowElementID elementId) {
+		return eraseStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId));
+	}
+
+	template <FlowElement Element>
+		requires HasState<Element>
+	bool eraseState(
+		const Element&,
+		WindowId window,
+		FlowElementPartID elementId) {
+		return eraseStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId));
+	}
+
+	template <FlowElement Element>
+		requires HasState<Element>
+	bool eraseState(
+		const Element&,
+		WindowId window,
+		GlobalFlowID elementId) {
+		return eraseStateErased(
+			detail::element::elementDescriptor<Element>, window,
+			detail::element::toInstanceKey(elementId));
 	}
 
 	/**
@@ -146,22 +217,22 @@ private:
 	[[nodiscard]] const void* readStateErased(
 		const detail::element::ElementRegistrationDescriptor& descriptor,
 		WindowId window,
-		FlowElementId flowId) const;
+		detail::element::ElementInstanceKey instanceKey) const;
 	[[nodiscard]] void* modifyStateErased(
 		const detail::element::ElementRegistrationDescriptor& descriptor,
 		WindowId window,
-		FlowElementId flowId);
+		detail::element::ElementInstanceKey instanceKey);
 	bool eraseStateErased(
 		const detail::element::ElementRegistrationDescriptor& descriptor,
 		WindowId window,
-		FlowElementId flowId);
+		detail::element::ElementInstanceKey instanceKey);
 	[[nodiscard]] const void* resolveResourcesErased(
 		const detail::element::ElementRegistrationDescriptor& descriptor,
 		bool retryFailed);
 	[[nodiscard]] detail::element::ResolvedElementStateInvocation beginStateInvocation(
 		const detail::element::ElementRegistrationDescriptor& descriptor,
 		WindowId window,
-		FlowElementId flowId,
+		detail::element::ElementInstanceKey instanceKey,
 		ElementStatePolicy policy);
 	void endStateInvocation(WindowId window) noexcept;
 

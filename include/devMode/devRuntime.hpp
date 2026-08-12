@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/ElementID.hpp"
+#include "internal/ElementInstanceKey.hpp"
 
 namespace FlowUi::devMode {
 
@@ -267,7 +269,7 @@ using DevValue = std::variant<
 	DevCompositeStructValue>;
 
 struct DefinitionFieldKey {
-	uint64_t definitionId = 0u;
+	FlowDefinitionID definitionId{};
 	uint64_t fieldHash = 0u;
 
 	bool operator==(const DefinitionFieldKey& other) const {
@@ -276,30 +278,26 @@ struct DefinitionFieldKey {
 };
 
 struct InstanceScopeKey {
-	uint64_t definitionId = 0u;
-	uint64_t flowId = 0u;
-	std::string elementId{};
+	FlowDefinitionID definitionId{};
+	detail::element::ElementInstanceKey instanceId{};
 
 	bool operator==(const InstanceScopeKey& other) const {
 		return
 			definitionId == other.definitionId &&
-			flowId == other.flowId &&
-			elementId == other.elementId;
+			instanceId == other.instanceId;
 	}
 };
 
 struct InstanceFieldKey {
-	uint64_t definitionId = 0u;
-	uint64_t flowId = 0u;
-	std::string elementId{};
+	FlowDefinitionID definitionId{};
+	detail::element::ElementInstanceKey instanceId{};
 	uint64_t fieldHash = 0u;
 
 	bool operator==(const InstanceFieldKey& other) const {
 		return
 			definitionId == other.definitionId &&
-			flowId == other.flowId &&
-			fieldHash == other.fieldHash &&
-			elementId == other.elementId;
+			instanceId == other.instanceId &&
+			fieldHash == other.fieldHash;
 	}
 };
 
@@ -334,10 +332,11 @@ struct ElementTreePlaceholder {
 		uint32_t depth = 0u;
 		ElementKind kind = ElementKind::Unknown;
 
-		uint64_t definitionId = 0u;
+		FlowDefinitionID definitionId{};
 		uint64_t definitionTypeHash = 0u;
-		uint64_t flowId = 0u;
-		std::string elementId{};
+		detail::element::ElementInstanceKey instanceId{};
+		// Display-only copy. Never participates in override or snapshot identity.
+		std::string debugPath{};
 
 		// Useful display metadata from registry/definition.
 		std::string definitionDisplayName{};
@@ -374,7 +373,8 @@ public:
 	using DefinitionOverrideMap = std::unordered_map<DefinitionFieldKey, DevValue, DefinitionFieldKeyHash>;
 	using InstanceOverrideMap = std::unordered_map<InstanceFieldKey, DevValue, InstanceFieldKeyHash>;
 	using SnapshotByInstanceMap = std::unordered_map<InstanceScopeKey, StructSnapshot, InstanceScopeKeyHash>;
-	using SnapshotByDefinitionMap = std::unordered_map<uint64_t, StructSnapshot>;
+	using SnapshotByDefinitionMap =
+		std::unordered_map<FlowDefinitionID, StructSnapshot, FlowDefinitionIDHash>;
 
 	void beginFrame();
 	void endFrame();
@@ -392,17 +392,15 @@ public:
 		bool suppressCapture = false);
 	bool endCapturedElement();
 	std::size_t beginCapturedFlowElement(
-		uint64_t definitionId,
+		FlowDefinitionID definitionId,
 		uint64_t definitionTypeHash,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowElementID elementId,
 		std::string_view definitionDisplayName = {},
 		std::string_view definitionTypeToken = {},
 		bool isInternalToDevMode = false,
 		bool isFloating = false);
 	std::size_t appendCapturedClayElement(
-		std::string_view elementId,
-		uint64_t flowId = 0u,
+		FlowElementID elementId,
 		bool isInternalToDevMode = false,
 		bool isFloating = false);
 	bool setCapturedElementSource(
@@ -432,91 +430,78 @@ public:
 	void clearAllOverrides();
 	void clearAllSnapshots();
 
-	void setDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash, const DevValue& value);
-	const DevValue* findDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash) const;
-	bool hasDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash) const;
-	bool clearDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash);
-	std::size_t clearDefinitionParamOverridesForDefinition(uint64_t definitionId);
+	void setDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash, const DevValue& value);
+	const DevValue* findDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const;
+	bool hasDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const;
+	bool clearDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash);
+	std::size_t clearDefinitionParamOverridesForDefinition(FlowDefinitionID definitionId);
 
 	void setInstanceParamOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash,
 		const DevValue& value);
 	const DevValue* findInstanceParamOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash) const;
 	bool hasInstanceParamOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash) const;
 	bool clearInstanceParamOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash);
 	std::size_t clearInstanceParamOverridesForElement(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId);
+		FlowDefinitionID definitionId,
+		FlowElementID elementId);
 
 	void setStateOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash,
 		const DevValue& value);
 	const DevValue* findStateOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash) const;
 	bool clearStateOverride(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash);
 	std::size_t clearStateOverridesForElement(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId);
+		FlowDefinitionID definitionId,
+		FlowElementID elementId);
 
-	void setResourceOverride(uint64_t definitionId, uint64_t fieldHash, const DevValue& value);
-	const DevValue* findResourceOverride(uint64_t definitionId, uint64_t fieldHash) const;
-	bool hasResourceOverride(uint64_t definitionId, uint64_t fieldHash) const;
-	bool clearResourceOverride(uint64_t definitionId, uint64_t fieldHash);
-	std::size_t clearResourceOverridesForDefinition(uint64_t definitionId);
+	void setResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash, const DevValue& value);
+	const DevValue* findResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const;
+	bool hasResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const;
+	bool clearResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash);
+	std::size_t clearResourceOverridesForDefinition(FlowDefinitionID definitionId);
 
 	void captureLastSeenParamField(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash,
 		const DevValue& value);
 	void captureLastSeenStateField(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
 		uint64_t fieldHash,
 		const DevValue& value);
 	void captureLastSeenResourceField(
-		uint64_t definitionId,
+		FlowDefinitionID definitionId,
 		uint64_t fieldHash,
 		const DevValue& value);
 
 	const StructSnapshot* findLastSeenParams(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId) const;
+		FlowDefinitionID definitionId,
+		FlowElementID elementId) const;
 	const StructSnapshot* findLastSeenState(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId) const;
-	const StructSnapshot* findLastSeenResources(uint64_t definitionId) const;
+		FlowDefinitionID definitionId,
+		FlowElementID elementId) const;
+	const StructSnapshot* findLastSeenResources(FlowDefinitionID definitionId) const;
 
 	const DefinitionOverrideMap& definitionParamOverrides() const { return definitionParamOverrides_; }
 	const InstanceOverrideMap& instanceParamOverrides() const { return instanceParamOverrides_; }
@@ -531,12 +516,13 @@ public:
 	const ElementTreePlaceholder& elementTreePlaceholder() const { return elementTreePlaceholder_; }
 
 private:
-	static InstanceScopeKey makeInstanceScopeKey(uint64_t definitionId, uint64_t flowId, std::string_view elementId);
+	static InstanceScopeKey makeInstanceScopeKey(
+		FlowDefinitionID definitionId,
+		FlowElementID elementId) noexcept;
 	static InstanceFieldKey makeInstanceFieldKey(
-		uint64_t definitionId,
-		uint64_t flowId,
-		std::string_view elementId,
-		uint64_t fieldHash);
+		FlowDefinitionID definitionId,
+		FlowElementID elementId,
+		uint64_t fieldHash) noexcept;
 	static std::size_t clearInstanceScopedEntries(InstanceOverrideMap& map, const InstanceScopeKey& scope);
 	bool isSuppressedCaptureActive() const;
 	void markDirty() { dirty_ = true; }

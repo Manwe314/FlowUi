@@ -14,7 +14,10 @@ namespace {
 
 using namespace FlowUi::test::element_resource;
 
-constexpr FlowUi::FlowElementId kDuplicateId = FLOW_ID("tests/dev/duplicate");
+constexpr FlowUi::FlowElementID kDuplicateId{
+	.value = 0x7e13b8c24690ad5full,
+	.debugName = "tests/dev/duplicate",
+};
 
 void testDuplicateSameDefinitionWarnsAndContinues() {
 	auto driver = makeDevFlowIdContractDriver();
@@ -31,11 +34,11 @@ void testDuplicateSameDefinitionWarnsAndContinues() {
 
 	FLOWUI_CHECK(driver->warningCount() == 1);
 	const FlowIdCollisionWarning& warning = driver->warning(0);
-	FLOWUI_CHECK(warning.flowId == kDuplicateId);
+	FLOWUI_CHECK(warning.elementId == kDuplicateId);
 	FLOWUI_CHECK(warning.firstDefinition == StatelessElement::definitionId);
 	FLOWUI_CHECK(warning.duplicateDefinition == StatelessElement::definitionId);
-	FLOWUI_CHECK(warning.logicalId == "tests/dev/duplicate");
-	FLOWUI_CHECK(warning.firstLogicalId == "tests/dev/duplicate");
+	FLOWUI_CHECK(warning.debugPath == "tests/dev/duplicate");
+	FLOWUI_CHECK(warning.firstDebugPath == "tests/dev/duplicate");
 	FLOWUI_CHECK(!warning.firstFileName.empty());
 	FLOWUI_CHECK(!warning.duplicateFileName.empty());
 	FLOWUI_CHECK(warning.firstLine != 0);
@@ -102,7 +105,10 @@ void testDistinctIdsDoNotWarn() {
 
 	for (uint64_t index = 0; index < 1024; ++index) {
 		FLOWUI_CHECK(driver->claim(
-			FlowUi::createIndexedFlowId(FLOW_ID("tests/dev/distinct"), index),
+			FlowUi::FlowElementID{
+				.value = index + 1u,
+				.debugName = "tests/dev/distinct",
+			},
 			StatelessElement::definitionId,
 			"tests/dev/distinct") == ClaimDisposition::Continue);
 	}
@@ -114,14 +120,20 @@ void testNestedFlowIdsUseTheSameClaimTable() {
 	auto driver = makeDevFlowIdContractDriver();
 	driver->beginFrame();
 
-	const FlowUi::FlowElementId parent = FLOW_ID("tests/dev/nested");
-	const FlowUi::FlowElementId child = FLOW_ID("tests/dev/nested/child");
+	const FlowUi::FlowElementID parent{
+		.value = 0x1234u,
+		.debugName = "tests/dev/nested",
+	};
+	const FlowUi::FlowElementID child{
+		.value = 0x5678u,
+		.debugName = "tests/dev/nested/child",
+	};
 	static_cast<void>(driver->claim(parent, StatelessElement::definitionId, "tests/dev/nested"));
 	static_cast<void>(driver->claim(child, AlternateElement::definitionId, "tests/dev/nested/child"));
 	static_cast<void>(driver->claim(child, StatelessElement::definitionId, "tests/dev/nested/child"));
 
 	FLOWUI_CHECK(driver->warningCount() == 1);
-	FLOWUI_CHECK(driver->warning(0).flowId == child);
+	FLOWUI_CHECK(driver->warning(0).elementId == child);
 }
 
 } // namespace

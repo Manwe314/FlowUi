@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/ElementID.hpp"
 namespace FlowUi {
 
 class UiManager;
@@ -12,27 +13,26 @@ class UiManager;
 namespace detail {
 
 #if FLOW_UI_DEV_MODE
-// transitional: temporary dev-only bridges remain until the later dev element
-// and registry migration consolidates capture operations on UiManager.
+// Dev-only bridge keeps the header-only typed builder decoupled from
+// UiManager's runtime capture implementation.
 void claimFlowRootForDev(
 	UiManager& uiManager,
-	uint64_t flowId,
-	uint64_t definitionId,
-	std::string_view logicalId,
+	FlowElementID elementId,
+	FlowDefinitionID definitionId,
 	std::string_view fileName,
 	uint32_t line,
 	uint32_t column,
-	std::string_view functionName);
+	std::string_view functionName,
+	bool automaticIdentity);
 
 namespace devModeBridge {
 
 std::size_t beginCapturedFlowElement(
 	UiManager& uiManager,
-	uint64_t definitionId,
+	FlowDefinitionID definitionId,
 	uint64_t definitionTypeHash,
 	std::string_view definitionTypeToken,
-	std::string_view elementID,
-	uint64_t flowId,
+	FlowElementID elementId,
 	bool isInternalToDevMode);
 
 bool endCapturedFlowElement(UiManager& uiManager);

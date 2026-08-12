@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "FlowUi/App.hpp"
+#include "FlowUi/ElementID.hpp"
 
 namespace FlowUi::detail::element {
 
@@ -15,7 +16,7 @@ struct ElementTypeOperations {
 };
 
 struct ElementRegistrationDescriptor {
-	FlowDefinitionId definitionId = 0;
+	FlowDefinitionID definitionId{};
 	uint64_t definitionTypeHash = 0;
 	uint64_t parametersTypeHash = 0;
 	uint64_t stateTypeHash = 0;

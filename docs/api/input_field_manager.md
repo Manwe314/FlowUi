@@ -44,17 +44,19 @@ Current manager-owned field state returned by requestField. It exposes text, pri
 ### **requestField**
 
 
-#### `FieldQueryResult requestField(const FieldRequest& request)`
+#### `FieldQueryResult requestField(ID fieldId, const FieldRequest& request)`
 
 - **Returns:** `FieldQueryResult`
-- **Arguments:** `request` stable field id, initial text, config, and Clay element ids.
+- **Arguments:** `fieldId` a `FlowElementID`, `GlobalFlowID`, `FlowElementPartID`, or `ResourceKey`; `request` initial text, config, and Clay element ids.
 
 Registers or updates an input field for the current frame and returns its current manager-owned state. Call this once per frame from the element that draws the editable field.
 
 **Example:**
 
 ```cpp
-FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField({.fieldId = context.elementID, .initialText = "Search", .textElementId = textId, .contentElementId = contentId});
+FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField(
+    context.id,
+    {.initialText = "Search", .textElementId = textId, .contentElementId = contentId});
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787).
@@ -62,7 +64,7 @@ See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a6deadc46f16
 ### **requestCaret**
 
 
-#### `void requestCaret(std::string_view fieldId, CaretRequestKind kind)`
+#### `void requestCaret(ID fieldId, CaretRequestKind kind)`
 
 - **Returns:** `void`
 - **Arguments:** `fieldId` field to focus or edit, `kind` requested caret operation.
@@ -72,7 +74,7 @@ Requests focus or caret changes for an input field. `SetPrimary` is the common o
 **Example:**
 
 ```cpp
-context.uiManager.inputFields().requestCaret(context.elementID, FlowUi::CaretRequestKind::SetPrimary);
+context.uiManager.inputFields().requestCaret(context.id, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446).
@@ -80,7 +82,7 @@ See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#aad13550088f
 ### **removeField**
 
 
-#### `bool removeField(std::string_view fieldId)`
+#### `bool removeField(ID fieldId)`
 
 - **Returns:** `bool`
 - **Arguments:** `fieldId` field state to remove.
@@ -90,7 +92,7 @@ Deletes stored text, config, caret, and selection state for one field. Use this 
 **Example:**
 
 ```cpp
-const bool removed = app.ui().inputFields().removeField("settings/name");
+const bool removed = app.ui().inputFields().removeField(nameFieldId);
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a).
@@ -98,7 +100,7 @@ See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a1e0319ffec3
 ### **replaceText**
 
 
-#### `bool replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret = true)`
+#### `bool replaceText(ID fieldId, std::string_view text, bool preserveCaret = true)`
 
 - **Returns:** `bool`
 - **Arguments:** `fieldId` field state to update, `text` replacement text, `preserveCaret` whether to keep and clamp caret state.
@@ -108,7 +110,7 @@ Replaces stored text for an existing field. By default, active carets and select
 **Example:**
 
 ```cpp
-const bool changed = app.ui().inputFields().replaceText("settings/name", externalName, false);
+const bool changed = app.ui().inputFields().replaceText(nameFieldId, externalName, false);
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html).

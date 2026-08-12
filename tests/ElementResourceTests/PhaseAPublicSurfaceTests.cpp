@@ -13,14 +13,14 @@ using namespace FlowUi::test::element_resource;
 
 template <typename Policy>
 concept HasAppLifetimePolicyFactory = requires {
-	Policy::appLifetime(FLOW_ID("tests/app-state"));
+	Policy::appLifetime(FlowUi::FlowElementID{.value = 1});
 };
 
 template <typename Manager>
 concept HasWithAppState = requires(Manager& manager) {
 	manager.withAppState(
 		PrimaryElement{},
-		FLOW_ID("tests/app-state"),
+		FlowUi::FlowElementID{.value = 1},
 		[](PrimaryState&) {});
 };
 

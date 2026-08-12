@@ -65,22 +65,20 @@ std::size_t eraseIf(MapT& map, PredicateT&& predicate) {
 namespace FlowUi::devMode {
 
 std::size_t DefinitionFieldKeyHash::operator()(const DefinitionFieldKey& key) const noexcept {
-	std::size_t hash = std::hash<uint64_t>{}(key.definitionId);
+	std::size_t hash = std::hash<uint64_t>{}(key.definitionId.value);
 	hash = hashCombine(hash, std::hash<uint64_t>{}(key.fieldHash));
 	return hash;
 }
 
 std::size_t InstanceScopeKeyHash::operator()(const InstanceScopeKey& key) const noexcept {
-	std::size_t hash = std::hash<uint64_t>{}(key.definitionId);
-	hash = hashCombine(hash, std::hash<uint64_t>{}(key.flowId));
-	hash = hashCombine(hash, std::hash<std::string>{}(key.elementId));
+	std::size_t hash = std::hash<uint64_t>{}(key.definitionId.value);
+	hash = hashCombine(hash, std::hash<uint64_t>{}(key.instanceId.value));
 	return hash;
 }
 
 std::size_t InstanceFieldKeyHash::operator()(const InstanceFieldKey& key) const noexcept {
-	std::size_t hash = std::hash<uint64_t>{}(key.definitionId);
-	hash = hashCombine(hash, std::hash<uint64_t>{}(key.flowId));
-	hash = hashCombine(hash, std::hash<std::string>{}(key.elementId));
+	std::size_t hash = std::hash<uint64_t>{}(key.definitionId.value);
+	hash = hashCombine(hash, std::hash<uint64_t>{}(key.instanceId.value));
 	hash = hashCombine(hash, std::hash<uint64_t>{}(key.fieldHash));
 	return hash;
 }
@@ -165,10 +163,9 @@ bool DevRuntime::endCapturedElement() {
 }
 
 std::size_t DevRuntime::beginCapturedFlowElement(
-	uint64_t definitionId,
+	FlowDefinitionID definitionId,
 	uint64_t definitionTypeHash,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowElementID elementId,
 	std::string_view definitionDisplayName,
 	std::string_view definitionTypeToken,
 	bool isInternalToDevMode,
@@ -177,8 +174,10 @@ std::size_t DevRuntime::beginCapturedFlowElement(
 	node.kind = ElementTreePlaceholder::ElementKind::FlowElement;
 	node.definitionId = definitionId;
 	node.definitionTypeHash = definitionTypeHash;
-	node.flowId = flowId;
-	node.elementId.assign(elementId.data(), elementId.size());
+	node.instanceId = detail::element::toInstanceKey(elementId);
+#if FLOW_UI_DEV_MODE
+	node.debugPath.assign(elementId.debugName.data(), elementId.debugName.size());
+#endif
 	node.definitionDisplayName.assign(definitionDisplayName.data(), definitionDisplayName.size());
 	node.definitionTypeToken.assign(definitionTypeToken.data(), definitionTypeToken.size());
 	node.isInternalToDevMode = isInternalToDevMode;
@@ -187,8 +186,7 @@ std::size_t DevRuntime::beginCapturedFlowElement(
 }
 
 std::size_t DevRuntime::appendCapturedClayElement(
-	std::string_view elementId,
-	uint64_t flowId,
+	FlowElementID elementId,
 	bool isInternalToDevMode,
 	bool isFloating) {
 	if (isInternalToDevMode || isSuppressedCaptureActive()) {
@@ -197,8 +195,10 @@ std::size_t DevRuntime::appendCapturedClayElement(
 
 	ElementTreePlaceholder::FlatNode node{};
 	node.kind = ElementTreePlaceholder::ElementKind::ClayElement;
-	node.flowId = flowId;
-	node.elementId.assign(elementId.data(), elementId.size());
+	node.instanceId = detail::element::toInstanceKey(elementId);
+#if FLOW_UI_DEV_MODE
+	node.debugPath.assign(elementId.debugName.data(), elementId.debugName.size());
+#endif
 	node.isInternalToDevMode = isInternalToDevMode;
 	node.isFloating = isFloating;
 	return appendCapturedElement(node);
@@ -310,22 +310,22 @@ void DevRuntime::clearAllSnapshots() {
 	elementCaptureSuppressedStack_.clear();
 }
 
-void DevRuntime::setDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash, const DevValue& value) {
+void DevRuntime::setDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash, const DevValue& value) {
 	const DefinitionFieldKey key{ definitionId, fieldHash };
 	if (setMapValue(definitionParamOverrides_, key, value)) {
 		markDirty();
 	}
 }
 
-const DevValue* DevRuntime::findDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash) const {
+const DevValue* DevRuntime::findDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const {
 	return findMapValue(definitionParamOverrides_, DefinitionFieldKey{ definitionId, fieldHash });
 }
 
-bool DevRuntime::hasDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash) const {
+bool DevRuntime::hasDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const {
 	return findDefinitionParamOverride(definitionId, fieldHash) != nullptr;
 }
 
-bool DevRuntime::clearDefinitionParamOverride(uint64_t definitionId, uint64_t fieldHash) {
+bool DevRuntime::clearDefinitionParamOverride(FlowDefinitionID definitionId, uint64_t fieldHash) {
 	const std::size_t removed = definitionParamOverrides_.erase(DefinitionFieldKey{ definitionId, fieldHash });
 	if (removed == 0u) {
 		return false;
@@ -334,7 +334,7 @@ bool DevRuntime::clearDefinitionParamOverride(uint64_t definitionId, uint64_t fi
 	return true;
 }
 
-std::size_t DevRuntime::clearDefinitionParamOverridesForDefinition(uint64_t definitionId) {
+std::size_t DevRuntime::clearDefinitionParamOverridesForDefinition(FlowDefinitionID definitionId) {
 	const std::size_t removed = eraseIf(
 		definitionParamOverrides_,
 		[definitionId](const DefinitionFieldKey& key) {
@@ -347,40 +347,36 @@ std::size_t DevRuntime::clearDefinitionParamOverridesForDefinition(uint64_t defi
 }
 
 void DevRuntime::setInstanceParamOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash,
 	const DevValue& value) {
-	const InstanceFieldKey key = makeInstanceFieldKey(definitionId, flowId, elementId, fieldHash);
+	const InstanceFieldKey key = makeInstanceFieldKey(definitionId, elementId, fieldHash);
 	if (setMapValue(instanceParamOverrides_, key, value)) {
 		markDirty();
 	}
 }
 
 const DevValue* DevRuntime::findInstanceParamOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash) const {
-	return findMapValue(instanceParamOverrides_, makeInstanceFieldKey(definitionId, flowId, elementId, fieldHash));
+	return findMapValue(instanceParamOverrides_, makeInstanceFieldKey(definitionId, elementId, fieldHash));
 }
 
 bool DevRuntime::hasInstanceParamOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash) const {
-	return findInstanceParamOverride(definitionId, flowId, elementId, fieldHash) != nullptr;
+	return findInstanceParamOverride(definitionId, elementId, fieldHash) != nullptr;
 }
 
 bool DevRuntime::clearInstanceParamOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash) {
 	const std::size_t removed =
-		instanceParamOverrides_.erase(makeInstanceFieldKey(definitionId, flowId, elementId, fieldHash));
+		instanceParamOverrides_.erase(makeInstanceFieldKey(definitionId, elementId, fieldHash));
 	if (removed == 0u) {
 		return false;
 	}
@@ -389,10 +385,9 @@ bool DevRuntime::clearInstanceParamOverride(
 }
 
 std::size_t DevRuntime::clearInstanceParamOverridesForElement(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId) {
-	const InstanceScopeKey scope = makeInstanceScopeKey(definitionId, flowId, elementId);
+	FlowDefinitionID definitionId,
+	FlowElementID elementId) {
+	const InstanceScopeKey scope = makeInstanceScopeKey(definitionId, elementId);
 	const std::size_t removed = clearInstanceScopedEntries(instanceParamOverrides_, scope);
 	if (removed > 0u) {
 		markDirty();
@@ -401,31 +396,28 @@ std::size_t DevRuntime::clearInstanceParamOverridesForElement(
 }
 
 void DevRuntime::setStateOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash,
 	const DevValue& value) {
-	const InstanceFieldKey key = makeInstanceFieldKey(definitionId, flowId, elementId, fieldHash);
+	const InstanceFieldKey key = makeInstanceFieldKey(definitionId, elementId, fieldHash);
 	if (setMapValue(stateOverrides_, key, value)) {
 		markDirty();
 	}
 }
 
 const DevValue* DevRuntime::findStateOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash) const {
-	return findMapValue(stateOverrides_, makeInstanceFieldKey(definitionId, flowId, elementId, fieldHash));
+	return findMapValue(stateOverrides_, makeInstanceFieldKey(definitionId, elementId, fieldHash));
 }
 
 bool DevRuntime::clearStateOverride(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash) {
-	const std::size_t removed = stateOverrides_.erase(makeInstanceFieldKey(definitionId, flowId, elementId, fieldHash));
+	const std::size_t removed = stateOverrides_.erase(makeInstanceFieldKey(definitionId, elementId, fieldHash));
 	if (removed == 0u) {
 		return false;
 	}
@@ -434,10 +426,9 @@ bool DevRuntime::clearStateOverride(
 }
 
 std::size_t DevRuntime::clearStateOverridesForElement(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId) {
-	const InstanceScopeKey scope = makeInstanceScopeKey(definitionId, flowId, elementId);
+	FlowDefinitionID definitionId,
+	FlowElementID elementId) {
+	const InstanceScopeKey scope = makeInstanceScopeKey(definitionId, elementId);
 	const std::size_t removed = clearInstanceScopedEntries(stateOverrides_, scope);
 	if (removed > 0u) {
 		markDirty();
@@ -445,22 +436,22 @@ std::size_t DevRuntime::clearStateOverridesForElement(
 	return removed;
 }
 
-void DevRuntime::setResourceOverride(uint64_t definitionId, uint64_t fieldHash, const DevValue& value) {
+void DevRuntime::setResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash, const DevValue& value) {
 	const DefinitionFieldKey key{ definitionId, fieldHash };
 	if (setMapValue(resourceOverrides_, key, value)) {
 		markDirty();
 	}
 }
 
-const DevValue* DevRuntime::findResourceOverride(uint64_t definitionId, uint64_t fieldHash) const {
+const DevValue* DevRuntime::findResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const {
 	return findMapValue(resourceOverrides_, DefinitionFieldKey{ definitionId, fieldHash });
 }
 
-bool DevRuntime::hasResourceOverride(uint64_t definitionId, uint64_t fieldHash) const {
+bool DevRuntime::hasResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash) const {
 	return findResourceOverride(definitionId, fieldHash) != nullptr;
 }
 
-bool DevRuntime::clearResourceOverride(uint64_t definitionId, uint64_t fieldHash) {
+bool DevRuntime::clearResourceOverride(FlowDefinitionID definitionId, uint64_t fieldHash) {
 	const std::size_t removed = resourceOverrides_.erase(DefinitionFieldKey{ definitionId, fieldHash });
 	if (removed == 0u) {
 		return false;
@@ -469,7 +460,7 @@ bool DevRuntime::clearResourceOverride(uint64_t definitionId, uint64_t fieldHash
 	return true;
 }
 
-std::size_t DevRuntime::clearResourceOverridesForDefinition(uint64_t definitionId) {
+std::size_t DevRuntime::clearResourceOverridesForDefinition(FlowDefinitionID definitionId) {
 	const std::size_t removed = eraseIf(
 		resourceOverrides_,
 		[definitionId](const DefinitionFieldKey& key) {
@@ -482,29 +473,27 @@ std::size_t DevRuntime::clearResourceOverridesForDefinition(uint64_t definitionI
 }
 
 void DevRuntime::captureLastSeenParamField(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash,
 	const DevValue& value) {
 	StructSnapshot& snapshot =
-		lastSeenParamsByInstance_[makeInstanceScopeKey(definitionId, flowId, elementId)];
+		lastSeenParamsByInstance_[makeInstanceScopeKey(definitionId, elementId)];
 	snapshot.valuesByFieldHash[fieldHash] = value;
 }
 
 void DevRuntime::captureLastSeenStateField(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
 	uint64_t fieldHash,
 	const DevValue& value) {
 	StructSnapshot& snapshot =
-		lastSeenStateByInstance_[makeInstanceScopeKey(definitionId, flowId, elementId)];
+		lastSeenStateByInstance_[makeInstanceScopeKey(definitionId, elementId)];
 	snapshot.valuesByFieldHash[fieldHash] = value;
 }
 
 void DevRuntime::captureLastSeenResourceField(
-	uint64_t definitionId,
+	FlowDefinitionID definitionId,
 	uint64_t fieldHash,
 	const DevValue& value) {
 	StructSnapshot& snapshot = lastSeenResourcesByDefinition_[definitionId];
@@ -512,45 +501,39 @@ void DevRuntime::captureLastSeenResourceField(
 }
 
 const StructSnapshot* DevRuntime::findLastSeenParams(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId) const {
-	return findMapValue(lastSeenParamsByInstance_, makeInstanceScopeKey(definitionId, flowId, elementId));
+	FlowDefinitionID definitionId,
+	FlowElementID elementId) const {
+	return findMapValue(lastSeenParamsByInstance_, makeInstanceScopeKey(definitionId, elementId));
 }
 
 const StructSnapshot* DevRuntime::findLastSeenState(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId) const {
-	return findMapValue(lastSeenStateByInstance_, makeInstanceScopeKey(definitionId, flowId, elementId));
+	FlowDefinitionID definitionId,
+	FlowElementID elementId) const {
+	return findMapValue(lastSeenStateByInstance_, makeInstanceScopeKey(definitionId, elementId));
 }
 
-const StructSnapshot* DevRuntime::findLastSeenResources(uint64_t definitionId) const {
+const StructSnapshot* DevRuntime::findLastSeenResources(FlowDefinitionID definitionId) const {
 	return findMapValue(lastSeenResourcesByDefinition_, definitionId);
 }
 
 InstanceScopeKey DevRuntime::makeInstanceScopeKey(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId) {
-	InstanceScopeKey key{};
-	key.definitionId = definitionId;
-	key.flowId = flowId;
-	key.elementId.assign(elementId.data(), elementId.size());
-	return key;
+	FlowDefinitionID definitionId,
+	FlowElementID elementId) noexcept {
+	return InstanceScopeKey{
+		.definitionId = definitionId,
+		.instanceId = detail::element::toInstanceKey(elementId),
+	};
 }
 
 InstanceFieldKey DevRuntime::makeInstanceFieldKey(
-	uint64_t definitionId,
-	uint64_t flowId,
-	std::string_view elementId,
-	uint64_t fieldHash) {
-	InstanceFieldKey key{};
-	key.definitionId = definitionId;
-	key.flowId = flowId;
-	key.fieldHash = fieldHash;
-	key.elementId.assign(elementId.data(), elementId.size());
-	return key;
+	FlowDefinitionID definitionId,
+	FlowElementID elementId,
+	uint64_t fieldHash) noexcept {
+	return InstanceFieldKey{
+		.definitionId = definitionId,
+		.instanceId = detail::element::toInstanceKey(elementId),
+		.fieldHash = fieldHash,
+	};
 }
 
 std::size_t DevRuntime::clearInstanceScopedEntries(InstanceOverrideMap& map, const InstanceScopeKey& scope) {
@@ -559,8 +542,7 @@ std::size_t DevRuntime::clearInstanceScopedEntries(InstanceOverrideMap& map, con
 		[&scope](const InstanceFieldKey& key) {
 			return
 				key.definitionId == scope.definitionId &&
-				key.flowId == scope.flowId &&
-				key.elementId == scope.elementId;
+				key.instanceId == scope.instanceId;
 		});
 }
 

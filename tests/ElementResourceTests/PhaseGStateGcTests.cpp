@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <string_view>
 
 #include "internal/ManagerStorage/ElementStorageController.hpp"
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
@@ -15,6 +16,11 @@ using FlowUi::detail::manager_storage::ElementStorageController;
 using FlowUi::detail::storage::FlowStorageSystem;
 
 constexpr FlowUi::WindowId kWindow = 71;
+
+[[nodiscard]] constexpr FlowUi::detail::element::ElementInstanceKey instanceKey(
+	std::string_view name) noexcept {
+	return {.value = FlowUi::RuntimeName(name).token};
+}
 
 struct Parameters {};
 
@@ -46,8 +52,8 @@ struct StatefulDefinition {
 	using Parameters = ::Parameters;
 	using State = ::State;
 	using BuildContext = FlowUi::ElementBuildContext<StatefulDefinition>;
-	static constexpr FlowUi::FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/phase-g/stateful");
+	static constexpr FlowUi::FlowDefinitionID definitionId =
+		FlowUi::DefinitionID("flowui/tests/phase-g/stateful");
 	static void buildElement(BuildContext&) {}
 };
 
@@ -55,8 +61,8 @@ struct WindowLifetimeDefinition {
 	using Parameters = ::Parameters;
 	using State = ::State;
 	using BuildContext = FlowUi::ElementBuildContext<WindowLifetimeDefinition>;
-	static constexpr FlowUi::FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/phase-g/window-lifetime");
+	static constexpr FlowUi::FlowDefinitionID definitionId =
+		FlowUi::DefinitionID("flowui/tests/phase-g/window-lifetime");
 	static constexpr FlowUi::ElementStatePolicy statePolicy =
 		FlowUi::ElementStatePolicy::windowLifetime();
 	static void buildElement(BuildContext&) {}
@@ -106,13 +112,13 @@ public:
 	StateStore& operator=(const StateStore&) = delete;
 
 	State& touch(
-		FlowUi::FlowElementId flowId,
+		FlowUi::detail::element::ElementInstanceKey instance,
 		uint64_t epoch,
 		FlowUi::ElementStatePolicy policy) {
 		controller_.beginWindowFrame(kWindow, epoch);
 		auto state = controller_.resolveOrCreateStateForInvocation(
 			kWindow,
-			flowId,
+			instance,
 			FlowUi::detail::element::elementDescriptor<StatefulDefinition>,
 			policy);
 		controller_.endStateInvocation(kWindow);
@@ -130,11 +136,11 @@ public:
 	}
 
 	State& resolve(
-		FlowUi::FlowElementId flowId,
+		FlowUi::detail::element::ElementInstanceKey instance,
 		FlowUi::ElementStatePolicy policy) {
 		auto state = controller_.resolveOrCreateStateForInvocation(
 			kWindow,
-			flowId,
+			instance,
 			FlowUi::detail::element::elementDescriptor<StatefulDefinition>,
 			policy);
 		controller_.endStateInvocation(kWindow);
@@ -144,14 +150,14 @@ public:
 	void commit(uint64_t epoch) { controller_.commitWindowFrame(kWindow, epoch); }
 	void cancel(uint64_t epoch) { controller_.cancelWindowFrame(kWindow, epoch); }
 
-	[[nodiscard]] const State* read(FlowUi::FlowElementId flowId) {
+	[[nodiscard]] const State* read(FlowUi::detail::element::ElementInstanceKey instance) {
 		return static_cast<const State*>(controller_.readState(
-			kWindow, flowId, FlowUi::detail::element::elementDescriptor<StatefulDefinition>));
+			kWindow, instance, FlowUi::detail::element::elementDescriptor<StatefulDefinition>));
 	}
 
-	bool erase(FlowUi::FlowElementId flowId) {
+	bool erase(FlowUi::detail::element::ElementInstanceKey instance) {
 		return controller_.eraseState(
-			kWindow, flowId, FlowUi::detail::element::elementDescriptor<StatefulDefinition>);
+			kWindow, instance, FlowUi::detail::element::elementDescriptor<StatefulDefinition>);
 	}
 
 	[[nodiscard]] size_t collect() {
@@ -167,7 +173,7 @@ private:
 void testDefaultTransientExpiry(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	State::resetCounts();
 	StateStore store(vulkan);
-	const FlowUi::FlowElementId flowId = FLOW_ID("phase-g/default-transient");
+	const auto flowId = instanceKey("phase-g/default-transient");
 
 	store.touch(flowId, 1, kDefaultTransientPolicy).value = 42;
 	FLOWUI_CHECK(State::liveCount == 1);
@@ -188,8 +194,8 @@ void testCanceledFrameDoesNotAgeOrLeakState(
 	FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	State::resetCounts();
 	StateStore store(vulkan);
-	const FlowUi::FlowElementId existing = FLOW_ID("phase-g/cancel-existing");
-	const FlowUi::FlowElementId created = FLOW_ID("phase-g/cancel-created");
+	const auto existing = instanceKey("phase-g/cancel-existing");
+	const auto created = instanceKey("phase-g/cancel-created");
 
 	store.touch(existing, 1, FlowUi::ElementStatePolicy::transient(0)).value = 7;
 	store.begin(2);
@@ -209,7 +215,7 @@ void testWindowLifetimeAndExplicitErasure(
 	FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	State::resetCounts();
 	StateStore store(vulkan);
-	const FlowUi::FlowElementId flowId = FLOW_ID("phase-g/window-lifetime");
+	const auto flowId = instanceKey("phase-g/window-lifetime");
 
 	store.touch(flowId, 1, kWindowLifetimePolicy).value = 83;
 	for (uint64_t epoch = 2; epoch <= 12; ++epoch) store.commitAbsent(epoch);
@@ -225,7 +231,7 @@ void testWindowLifetimeAndExplicitErasure(
 void testPolicyChangesApplyAtCommit(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	State::resetCounts();
 	StateStore store(vulkan);
-	const FlowUi::FlowElementId flowId = FLOW_ID("phase-g/policy-transition");
+	const auto flowId = instanceKey("phase-g/policy-transition");
 
 	store.touch(flowId, 1, FlowUi::ElementStatePolicy::transient(0));
 	store.touch(flowId, 2, FlowUi::ElementStatePolicy::windowLifetime());
@@ -242,7 +248,7 @@ void testQueuedEraseCommitsAndCancelDiscardsIt(
 	FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	State::resetCounts();
 	StateStore store(vulkan);
-	const FlowUi::FlowElementId flowId = FLOW_ID("phase-g/queued-erase");
+	const auto flowId = instanceKey("phase-g/queued-erase");
 	const auto policy = FlowUi::ElementStatePolicy::windowLifetime();
 
 	store.touch(flowId, 1, policy);
@@ -264,11 +270,11 @@ void testWindowDestructionReleasesEveryPolicy(
 	{
 		StateStore store(vulkan);
 		store.touch(
-			FLOW_ID("phase-g/destroy-transient"),
+			instanceKey("phase-g/destroy-transient"),
 			1,
 			FlowUi::ElementStatePolicy::transient());
 		store.touch(
-			FLOW_ID("phase-g/destroy-retained"),
+			instanceKey("phase-g/destroy-retained"),
 			2,
 			FlowUi::ElementStatePolicy::windowLifetime());
 		FLOWUI_CHECK(State::liveCount == 2);

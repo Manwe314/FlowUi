@@ -105,18 +105,11 @@ struct FieldConfig {
  */
 struct FieldRequest {
 	/**
-	 * @brief Stable field id.
-	 *
-	 * This id keys the persistent text and caret state. Use a value that remains
-	 * stable across frames for the same logical field.
-	 */
-	std::string_view fieldId{};
-
-	/**
 	 * @brief Initial text used when the field state is first created.
 	 *
-	 * The value is copied only when fieldId has no existing managed state.
-	 * Later requests with the same fieldId preserve the current edited text.
+	 * The value is copied only when the explicit ID passed to requestField() has
+	 * no existing managed state. Later requests with the same ID preserve the
+	 * current edited text.
 	 */
 	std::string_view initialText{};
 

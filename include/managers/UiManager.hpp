@@ -15,6 +15,7 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
+#include "internal/ElementInstanceKey.hpp"
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/ThemeManager.hpp"
@@ -62,7 +63,7 @@ namespace detail::manager_storage { struct UiManagerState; struct FontFrameView;
  * @code{.cpp}
  * FlowUi::UiManager& ui = app.ui();
  *
- * ui.createElement(kButton, "toolbar/save")
+ * ui.createElement(kButton, "save")
  *     .setParameters(ButtonParams{.label = "Save"})
  *     .draw();
  * @endcode
@@ -169,45 +170,37 @@ public:
 	Clay_ElementId toClaySID(ResourceKey key);
 
 	/**
-	 * @brief Convert an element id string to a Clay element id.
+	 * @brief Deterministically bridge a strong 64-bit Flow identity to Clay.
 	 *
-	 * This is the usual helper for FlowUi element ids and child ids. For custom
-	 * elements, the root Clay element should normally use context.elementID.
-	 *
-	 * @param s Element id string.
-	 * @return Clay element id generated from s.
-	 *
-	 * @throws std::runtime_error if the current frame arena does not have enough
-	 * capacity.
+	 * Production builds construct the numeric Clay id without allocating or
+	 * hashing strings. Developer builds attach the ID's diagnostic name when it
+	 * is available. Use toClaySID() for explicitly string-named Clay-only nodes.
 	 *
 	 * @code{.cpp}
-	 * const Clay_ElementId rootId = context.uiManager.toClayEID(context.elementID);
-	 * const Clay_ElementId labelId =
-	 *     context.uiManager.toClayEID(context.createChildElementId("label"));
+	 * const Clay_ElementId rootId = context.uiManager.toClayEID(context.id);
 	 * @endcode
 	 */
-	Clay_ElementId toClayEID(std::string_view s);
-	Clay_ElementId toClayEID(ResourceKey key);
+	Clay_ElementId toClayEID(FlowElementID id);
+	Clay_ElementId toClayEID(GlobalFlowID id);
+	Clay_ElementId toClayEID(FlowElementPartID id);
 
 	/**
 	 * @brief Create a builder for a typed FlowUi element instance.
 	 *
 	 * createElement() is the public entry point for invoking FlowUi element
-	 * definitions. The returned ElementBuilder owns the element id and parameter
+	 * definitions. The returned ElementBuilder owns the resolved element ID and parameter
 	 * storage for this invocation until draw() or construct() is called.
 	 *
 	 * @tparam Element Empty tag type satisfying FlowElement.
 	 * @param element Compile-time element tag used only for type deduction.
-	 * @param elementID Stable Flow element id for this invocation.
+	 * @param localName Name unique among siblings of the same element definition.
 	 * @param sourceLocation Source location captured for developer-mode
 	 * inspection when FLOW_UI_DEV_MODE is enabled.
 	 * @return ElementBuilder configured for the passed definition and element id.
 	 *
-	 * @throws std::bad_alloc if copying elementID into the builder fails.
-	 *
 	 * @code{.cpp}
 	 * app.ui()
-	 *     .createElement(kButton, "toolbar/save")
+	 *     .createElement(kButton, "save")
 	 *     .setParameters(ButtonParams{.label = "Save"})
 	 *     .draw();
 	 * @endcode
@@ -218,17 +211,19 @@ public:
 	template <FlowElement Element>
 	ElementBuilder<Element> createElement(
 		const Element&,
-		std::string_view elementID
+		LocalElementName localName
 #if FLOW_UI_DEV_MODE
 		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
 #endif
 		)
 	{
+		const FlowElementID parentId = currentFlowScope();
 		return ElementBuilder<Element>(
 			*this,
 			elements(),
 			windowId(),
-			std::string(elementID)
+			parentId,
+			resolveLocalElementID(parentId, Element::definitionId, localName)
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
@@ -237,15 +232,139 @@ public:
 
 	template <FlowElement Element>
 	ElementBuilder<Element> createElement(
-		const Element& element,
-		ResourceKey elementKey
+		const Element&,
+		RuntimeElementName localName
 #if FLOW_UI_DEV_MODE
 		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
 #endif
 		) {
-		return createElement(
-			element,
-			normalizeUiResourceName(elementKey)
+		const FlowElementID parentId = currentFlowScope();
+		return ElementBuilder<Element>(
+			*this,
+			elements(),
+			windowId(),
+			parentId,
+			resolveLocalElementID(parentId, Element::definitionId, localName)
+#if FLOW_UI_DEV_MODE
+			, sourceLocation
+#endif
+		);
+	}
+
+	/** Create a repeated child using a positional or stable numeric key. */
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element&,
+		IndexedElementName indexedName
+#if FLOW_UI_DEV_MODE
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
+#endif
+		) {
+		const FlowElementID parentId = currentFlowScope();
+		return ElementBuilder<Element>(
+			*this,
+			elements(),
+			windowId(),
+			parentId,
+			resolveIndexedElementID(parentId, Element::definitionId, indexedName)
+#if FLOW_UI_DEV_MODE
+			, sourceLocation
+#endif
+		);
+	}
+
+	/**
+	 * Create a positional element identified by this callsite.
+	 *
+	 * Automatic IDs are appropriate only for stable static trees. A callsite
+	 * executed repeatedly must use Indexed(), Keyed(), or indexedIDs().next().
+	 */
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element&,
+		AutoElementName automaticName = AutoID()
+#if FLOW_UI_DEV_MODE
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
+#endif
+		) {
+		const FlowElementID parentId = currentFlowScope();
+		return ElementBuilder<Element>(
+			*this,
+			elements(),
+			windowId(),
+			parentId,
+			resolveAutomaticElementID(parentId, Element::definitionId, automaticName)
+#if FLOW_UI_DEV_MODE
+			, sourceLocation, true
+#endif
+		);
+	}
+
+	/** Create an explicitly global element without applying the local parent hash. */
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element&,
+		GlobalFlowID globalId
+#if FLOW_UI_DEV_MODE
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
+#endif
+		) {
+		if (!globalId) {
+			throw std::invalid_argument("FlowUi createElement requires a valid global ID.");
+		}
+		return ElementBuilder<Element>(
+			*this,
+			elements(),
+			windowId(),
+			currentFlowScope(),
+			normalizeGlobalElementID(globalId)
+#if FLOW_UI_DEV_MODE
+			, sourceLocation
+#endif
+		);
+	}
+
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element&,
+		FlowElementID resolvedId
+#if FLOW_UI_DEV_MODE
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
+#endif
+		) {
+		if (!resolvedId) {
+			throw std::invalid_argument("FlowUi createElement requires a valid resolved ID.");
+		}
+		return ElementBuilder<Element>(
+			*this,
+			elements(),
+			windowId(),
+			currentFlowScope(),
+			resolvedId
+#if FLOW_UI_DEV_MODE
+			, sourceLocation
+#endif
+		);
+	}
+
+	/** Create an element at a semantic part address already bound to its owner. */
+	template <FlowElement Element>
+	ElementBuilder<Element> createElement(
+		const Element&,
+		FlowElementPartID partId
+#if FLOW_UI_DEV_MODE
+		, devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()
+#endif
+		) {
+		if (!partId) {
+			throw std::invalid_argument("FlowUi createElement requires a bound part ID.");
+		}
+		return ElementBuilder<Element>(
+			*this,
+			elements(),
+			windowId(),
+			currentFlowScope(),
+			normalizePartElementID(partId)
 #if FLOW_UI_DEV_MODE
 			, sourceLocation
 #endif
@@ -264,7 +383,7 @@ public:
 	 *
 	 * @code{.cpp}
 	 * ui.createElement(kPanel, "settings").construct();
-	 * CLAY(ui.toClayEID("settings/body"), {}) {}
+	 * CLAY(ui.toClaySID("body"), {}) {}
 	 * ui.drawConstructed();
 	 * @endcode
 	 */
@@ -546,18 +665,24 @@ private:
 	friend struct AppWindow;
 	template <FlowElement Element>
 	friend class ElementBuilder;
+	template <typename Element>
+	friend struct ElementBuildContext;
+	template <typename Element>
+	friend struct ElementInteractionContext;
 #if FLOW_UI_DEV_MODE
-	// transitional: temporary dev-only friendship exposes the frame tracker until
-	// the later dev element/registry migration consolidates capture on UiManager.
+	// Internal builder bridge records frame-local identity diagnostics.
 	friend void detail::claimFlowRootForDev(
 		UiManager& uiManager,
-		uint64_t flowId,
-		uint64_t definitionId,
-		std::string_view logicalId,
+		FlowElementID elementId,
+		FlowDefinitionID definitionId,
 		std::string_view fileName,
 		uint32_t line,
 		uint32_t column,
-		std::string_view functionName);
+		std::string_view functionName,
+		bool automaticIdentity);
+	void claimClayBridgeForDev(
+		detail::element::ElementInstanceKey instanceId,
+		std::string_view debugName);
 #endif
 
 	UiManager() = default;
@@ -580,11 +705,47 @@ private:
 		std::function<void(std::string_view)> setClipboardTextAccessor,
 		std::function<std::string()> getClipboardTextAccessor);
 	void advanceFrameInteractionSnapshots();
-#if FLOW_UI_DEV_MODE
-	void cancelDevFlowRootClaims() noexcept;
-#endif
+	void cancelFrameState() noexcept;
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
-	void pushConstructedElement(Clay_ElementId elementId);
+	[[nodiscard]] FlowElementID currentFlowScope() const noexcept;
+	[[nodiscard]] FlowElementID resolveLocalElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		LocalElementName name);
+	[[nodiscard]] FlowElementID resolveLocalElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		RuntimeElementName name);
+	[[nodiscard]] FlowElementID resolveIndexedElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		IndexedElementName name);
+	[[nodiscard]] FlowElementID resolveAutomaticElementID(
+		FlowElementID parent,
+		FlowDefinitionID definition,
+		AutoElementName name);
+	[[nodiscard]] FlowElementID normalizeGlobalElementID(GlobalFlowID id);
+	[[nodiscard]] FlowElementID normalizePartElementID(FlowElementPartID id) const noexcept;
+	[[nodiscard]] FlowElementPartID resolveElementPartID(
+		FlowDefinitionID ownerDefinition,
+		FlowElementID owner,
+		FlowElementPart part);
+	[[nodiscard]] size_t pushFlowScope(FlowElementID id);
+	void restoreFlowScope(size_t depth) noexcept;
+	[[nodiscard]] size_t constructedElementDepth() const noexcept;
+	void closeConstructedToDepth(size_t depth, bool warn) noexcept;
+	void retainConstructedElement(
+		Clay_ElementId clayId,
+		FlowElementID flowId,
+		size_t priorFlowScopeDepth);
+#if FLOW_UI_DEV_MODE
+	[[nodiscard]] std::string_view joinFlowDebugPath(
+		std::string_view parent,
+		std::string_view child);
+	[[nodiscard]] std::string_view indexedFlowDebugName(IndexedElementName name);
+	[[nodiscard]] std::string_view automaticFlowDebugName(AutoElementName name);
+	[[nodiscard]] std::string_view globalFlowDebugName(GlobalFlowID id);
+#endif
 
 	char* allocBytes(size_t nBytes, size_t align = alignof(std::max_align_t));
 	std::string_view normalizeUiResourceName(ResourceKey key) const;

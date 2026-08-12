@@ -49,7 +49,7 @@ void drawMainWindow(FlowUi::App& app, DemoState& state) {
 	const Clay_TextElementConfig heading = textStyle(24);
 	const Clay_TextElementConfig helper = textStyle(14, FlowUi::Flow_Color("#aeb8ccff"));
 
-	CLAY(ui.toClayEID("example/main/page"), pageStyle()) {
+	CLAY(ui.toClaySID("example/main/page"), pageStyle()) {
 		CLAY_TEXT(ui.toClayString("Multi-window text demo"), CLAY_TEXT_CONFIG(heading));
 
 		ui.createElement(kDevBasicInputField, "example/main/text-input")
@@ -93,7 +93,7 @@ void drawTextWindow(FlowUi::App& app, FlowUi::WindowId window, const DemoState& 
 		? std::string_view("(the input is empty)")
 		: std::string_view(state.text);
 
-	CLAY(ui.toClayEID("example/text-window/page"), pageStyle()) {
+	CLAY(ui.toClaySID("example/text-window/page"), pageStyle()) {
 		CLAY_TEXT(ui.toClayString("Text from the main window:"), CLAY_TEXT_CONFIG(heading));
 		CLAY_TEXT(ui.toClayString(visibleText), CLAY_TEXT_CONFIG(content));
 	}

@@ -43,15 +43,15 @@ struct AppResources {
 	~AppResources() noexcept { ++destructions; }
 };
 
-inline constexpr FlowUi::FlowDefinitionId kSharedDefinitionId =
-	FLOW_DEF_ID("flowui/tests/phase-d/shared-definition");
+inline constexpr FlowUi::FlowDefinitionID kSharedDefinitionId =
+	FlowUi::DefinitionID("flowui/tests/phase-d/shared-definition");
 
 struct CurrentDefinition {
 	using Parameters = CurrentParameters;
 	using State = CurrentState;
 	using Resources = AppResources;
 	using BuildContext = FlowUi::ElementBuildContext<CurrentDefinition>;
-	static constexpr FlowUi::FlowDefinitionId definitionId = kSharedDefinitionId;
+	static constexpr FlowUi::FlowDefinitionID definitionId = kSharedDefinitionId;
 	static void buildElement(BuildContext&) {}
 };
 
@@ -60,7 +60,7 @@ struct CollidingDefinition {
 	using State = AlternateState;
 	using Resources = AppResources;
 	using BuildContext = FlowUi::ElementBuildContext<CollidingDefinition>;
-	static constexpr FlowUi::FlowDefinitionId definitionId = kSharedDefinitionId;
+	static constexpr FlowUi::FlowDefinitionID definitionId = kSharedDefinitionId;
 	static void buildElement(BuildContext&) {}
 };
 
@@ -70,8 +70,8 @@ struct FutureDefinition {
 	using Resources = AppResources;
 	using BuildContext = FlowUi::ElementBuildContext<FutureDefinition>;
 
-	static constexpr FlowUi::FlowDefinitionId definitionId =
-		FLOW_DEF_ID("flowui/tests/phase-d/future-definition");
+	static constexpr FlowUi::FlowDefinitionID definitionId =
+		FlowUi::DefinitionID("flowui/tests/phase-d/future-definition");
 	static constexpr std::string_view debugName = "FutureDefinition";
 
 	static void buildElement(BuildContext&) {}
@@ -109,7 +109,7 @@ void testIncompatibleDefinitionIdCollisionIsRejected() {
 	} catch (const std::logic_error& error) {
 		const std::string_view message = error.what();
 		FLOWUI_CHECK(message.find("already registered") != std::string_view::npos);
-		FLOWUI_CHECK(message.find(std::to_string(kSharedDefinitionId)) != std::string_view::npos);
+		FLOWUI_CHECK(message.find(std::to_string(kSharedDefinitionId.value)) != std::string_view::npos);
 		FLOWUI_CHECK(registry.size() == 1);
 		return;
 	}

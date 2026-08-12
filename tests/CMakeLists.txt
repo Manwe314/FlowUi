@@ -95,6 +95,156 @@ set_tests_properties(flowui.elements.concept_contracts PROPERTIES
 	TIMEOUT 30
 )
 
+# Compile the typed builder's dev-only attachment points without pulling in the
+# intentionally legacy developer element catalog or linking against a dev ABI.
+add_library(flowui_element_builder_dev_compile_contract OBJECT
+	ElementResourceTests/ElementConceptContractTests.cpp
+)
+target_compile_features(flowui_element_builder_dev_compile_contract PRIVATE cxx_std_23)
+target_compile_definitions(flowui_element_builder_dev_compile_contract PRIVATE FLOW_UI_DEV_MODE=1)
+target_include_directories(flowui_element_builder_dev_compile_contract PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_element_builder_dev_compile_contract PRIVATE FlowUi::FlowUi)
+
+# Compile UiManager's internal dev registry/capture/reporting path while the
+# deliberately frozen legacy dev element UI remains excluded.
+add_library(flowui_internal_dev_runtime_compile_contract OBJECT
+	${PROJECT_SOURCE_DIR}/src/managers/UiManager.cpp
+)
+target_compile_features(flowui_internal_dev_runtime_compile_contract PRIVATE cxx_std_23)
+target_compile_definitions(flowui_internal_dev_runtime_compile_contract PRIVATE
+	FLOW_UI_DEV_MODE=1
+	FLOWUI_SKIP_LEGACY_DEV_ELEMENTS=1
+)
+target_include_directories(flowui_internal_dev_runtime_compile_contract
+	PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+)
+
+add_executable(flowui_element_scope_lifecycle_tests
+	ElementResourceTests/ElementScopeLifecycleTests.cpp
+)
+target_compile_features(flowui_element_scope_lifecycle_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_scope_lifecycle_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_element_scope_lifecycle_tests PRIVATE FlowUi::FlowUi)
+add_test(
+	NAME flowui.elements.scope_lifecycle
+	COMMAND flowui_element_scope_lifecycle_tests
+)
+set_tests_properties(flowui.elements.scope_lifecycle PROPERTIES
+	LABELS "flowui;elements;integration;scope"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
+add_executable(flowui_element_id_contract_tests
+	ElementResourceTests/ElementIDContractTests.cpp
+)
+target_compile_features(flowui_element_id_contract_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_id_contract_tests
+	PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+		${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_test(NAME flowui.elements.id_contracts COMMAND flowui_element_id_contract_tests)
+set_tests_properties(flowui.elements.id_contracts PROPERTIES
+	LABELS "flowui;elements;unit"
+	TIMEOUT 30
+)
+
+# This target validates dev-only ID metadata and collision bookkeeping without
+# compiling the intentionally legacy developer element catalog.
+add_executable(flowui_element_id_dev_contract_tests
+	ElementResourceTests/ElementIDContractTests.cpp
+)
+target_compile_features(flowui_element_id_dev_contract_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_element_id_dev_contract_tests PRIVATE FLOW_UI_DEV_MODE=1)
+target_include_directories(flowui_element_id_dev_contract_tests
+	PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+		${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_test(NAME flowui.elements.id_dev_contracts COMMAND flowui_element_id_dev_contract_tests)
+set_tests_properties(flowui.elements.id_dev_contracts PROPERTIES
+	LABELS "flowui;elements;dev;unit"
+	TIMEOUT 30
+)
+
+# Exercise the internal developer registry/runtime and diagnostics without
+# compiling the intentionally legacy dev element catalog or JSON persistence.
+add_executable(flowui_dev_runtime_id_contract_tests
+	ElementResourceTests/DevRuntimeIDContractTests.cpp
+	${PROJECT_SOURCE_DIR}/src/devMode/devRuntime.cpp
+)
+target_compile_features(flowui_dev_runtime_id_contract_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_dev_runtime_id_contract_tests PRIVATE FLOW_UI_DEV_MODE=1)
+target_include_directories(flowui_dev_runtime_id_contract_tests
+	PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+		${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_test(NAME flowui.elements.dev_runtime_id_contracts COMMAND flowui_dev_runtime_id_contract_tests)
+set_tests_properties(flowui.elements.dev_runtime_id_contracts PROPERTIES
+	LABELS "flowui;elements;dev;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_dev_id_reporting_contract_tests
+	ElementResourceTests/PhaseADevFlowIdTests.cpp
+	ElementResourceTests/DevFlowIdContractTestDriver.cpp
+)
+target_compile_features(flowui_dev_id_reporting_contract_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_dev_id_reporting_contract_tests PRIVATE FLOW_UI_DEV_MODE=1)
+target_include_directories(flowui_dev_id_reporting_contract_tests
+	PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+		${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_test(NAME flowui.elements.dev_id_reporting_contracts COMMAND flowui_dev_id_reporting_contract_tests)
+set_tests_properties(flowui.elements.dev_id_reporting_contracts PROPERTIES
+	LABELS "flowui;elements;dev;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_element_interaction_id_contract_tests
+	ElementResourceTests/InteractionIDContractTests.cpp
+)
+target_compile_features(flowui_element_interaction_id_contract_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_element_interaction_id_contract_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_element_interaction_id_contract_tests PRIVATE FlowUi::FlowUi)
+add_test(
+	NAME flowui.elements.interaction_id_contracts
+	COMMAND flowui_element_interaction_id_contract_tests
+)
+set_tests_properties(flowui.elements.interaction_id_contracts PROPERTIES
+	LABELS "flowui;elements;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_input_field_id_contract_tests
+	ElementResourceTests/InputFieldIDContractTests.cpp
+)
+target_compile_features(flowui_input_field_id_contract_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_input_field_id_contract_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_input_field_id_contract_tests PRIVATE FlowUi::FlowUi)
+add_test(
+	NAME flowui.input_fields.id_contracts
+	COMMAND flowui_input_field_id_contract_tests
+)
+set_tests_properties(flowui.input_fields.id_contracts PROPERTIES
+	LABELS "flowui;input-fields;elements;unit"
+	TIMEOUT 30
+)
+
 add_executable(flowui_element_state_api_tests
 	ElementResourceTests/PhaseFStateApiTests.cpp
 )

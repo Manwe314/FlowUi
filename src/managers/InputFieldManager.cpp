@@ -70,6 +70,7 @@ namespace FlowUi {
 namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;
 namespace storage = detail::storage;
+namespace field_key = detail::input_field;
 
 void InputFieldManager::init(
 	storage::IStorageSystem& storageSystem,
@@ -213,14 +214,14 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		state_->pointerDrag = PointerDragState{};
 	}
 
-	if (!state_->primaryFieldId.empty()) {
+	if (state_->primaryFieldId) {
 		const auto primaryIt = state_->fieldsById.find(state_->primaryFieldId);
 		if (primaryIt == state_->fieldsById.end() ||
 			primaryIt->second.lastTouchedEpoch != state_->currentTouchEpoch) {
 			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
-			state_->primaryFieldId.clear();
+			state_->primaryFieldId = {};
 		}
 	}
 
@@ -239,7 +240,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	};
 
 	struct RuntimeFieldState {
-		std::string fieldId{};
+		field_key::InputFieldKey fieldId{};
 		FieldState* field = nullptr;
 		size_t cursor = 0u;
 		bool hasContentBounds = false;
@@ -284,7 +285,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		runtimes.push_back(std::move(runtime));
 	}
 
-	auto findRuntimeByFieldId = [&](std::string_view fieldId) -> RuntimeFieldState* {
+	auto findRuntimeByFieldId = [&](field_key::InputFieldKey fieldId) -> RuntimeFieldState* {
 		for (RuntimeFieldState& runtime : runtimes) {
 			if (runtime.fieldId == fieldId) {
 				return &runtime;
@@ -298,7 +299,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
-			state_->primaryFieldId.clear();
+			state_->primaryFieldId = {};
 			state_->pointerDrag = PointerDragState{};
 		}
 		updateCaretBlinkVisibility(false);
@@ -474,7 +475,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
-			state_->primaryFieldId.clear();
+			state_->primaryFieldId = {};
 			state_->pointerDrag = PointerDragState{};
 		} else {
 			FieldState& field = *targetRuntime->field;
@@ -759,22 +760,45 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	return renderCommands;
 }
 
-FieldQueryResult InputFieldManager::requestField(ResourceKey key, const FieldRequest& request) {
+field_key::InputFieldKey InputFieldManager::normalizeFieldKey(ResourceKey key) const {
 	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
 		*storage_, key, ResourceDomain::InputField,
 		key_storage::ResourceScope::WindowLocal, window_);
-	FieldRequest normalizedRequest = request;
-	normalizedRequest.fieldId = storage_->string(normalized.name);
-	return requestField(normalizedRequest);
+	return field_key::resourceInputFieldKey(normalized.name);
 }
 
-FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
-	if (request.fieldId.empty()) {
+FieldQueryResult InputFieldManager::requestField(
+	FlowElementID fieldId,
+	const FieldRequest& request) {
+	return requestFieldByKey(field_key::toInputFieldKey(fieldId), request);
+}
+
+FieldQueryResult InputFieldManager::requestField(
+	GlobalFlowID fieldId,
+	const FieldRequest& request) {
+	return requestFieldByKey(field_key::toInputFieldKey(fieldId), request);
+}
+
+FieldQueryResult InputFieldManager::requestField(
+	FlowElementPartID fieldId,
+	const FieldRequest& request) {
+	return requestFieldByKey(field_key::toInputFieldKey(fieldId), request);
+}
+
+FieldQueryResult InputFieldManager::requestField(
+	ResourceKey key,
+	const FieldRequest& request) {
+	return requestFieldByKey(normalizeFieldKey(key), request);
+}
+
+FieldQueryResult InputFieldManager::requestFieldByKey(
+	field_key::InputFieldKey fieldId,
+	const FieldRequest& request) {
+	if (!fieldId) {
 		return {};
 	}
 
-	const std::string key(request.fieldId);
-	auto [it, inserted] = state_->fieldsById.try_emplace(key);
+	auto [it, inserted] = state_->fieldsById.try_emplace(fieldId);
 	FieldState& field = it->second;
 	if (inserted) {
 		field.text = std::string(request.initialText);
@@ -787,7 +811,8 @@ FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
 
 	FieldQueryResult result{};
 	result.text = field.text;
-	result.hasPrimaryCaret = !field.carets.empty() && state_->primaryFieldId == key;
+	result.hasPrimaryCaret =
+		!field.carets.empty() && state_->primaryFieldId == fieldId;
 	for (const CaretState& caret : field.carets) {
 		if (caretHasSelection(caret)) {
 			result.hasSelection = true;
@@ -798,14 +823,23 @@ FieldQueryResult InputFieldManager::requestField(const FieldRequest& request) {
 }
 
 void InputFieldManager::requestCaret(ResourceKey key, CaretRequestKind kind) {
-	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-		*storage_, key, ResourceDomain::InputField,
-		key_storage::ResourceScope::WindowLocal, window_);
-	requestCaret(storage_->string(normalized.name), kind);
+	requestCaretByKey(normalizeFieldKey(key), kind);
+}
+
+void InputFieldManager::requestCaret(FlowElementID fieldId, CaretRequestKind kind) {
+	requestCaretByKey(field_key::toInputFieldKey(fieldId), kind);
+}
+
+void InputFieldManager::requestCaret(GlobalFlowID fieldId, CaretRequestKind kind) {
+	requestCaretByKey(field_key::toInputFieldKey(fieldId), kind);
+}
+
+void InputFieldManager::requestCaret(FlowElementPartID fieldId, CaretRequestKind kind) {
+	requestCaretByKey(field_key::toInputFieldKey(fieldId), kind);
 }
 
 bool InputFieldManager::hasPrimaryFieldFocus() const {
-	if (state_->primaryFieldId.empty()) {
+	if (!state_->primaryFieldId) {
 		return false;
 	}
 	const auto it = state_->fieldsById.find(state_->primaryFieldId);
@@ -816,7 +850,7 @@ bool InputFieldManager::hasPrimaryFieldFocus() const {
 }
 
 std::string_view InputFieldManager::getSelectedText() const {
-	if (state_->primaryFieldId.empty()) {
+	if (!state_->primaryFieldId) {
 		return {};
 	}
 	const auto it = state_->fieldsById.find(state_->primaryFieldId);
@@ -849,7 +883,7 @@ std::string_view InputFieldManager::getSelectedText() const {
 }
 
 bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
-	if (utf8Text.empty() || state_->primaryFieldId.empty()) {
+	if (utf8Text.empty() || !state_->primaryFieldId) {
 		return false;
 	}
 
@@ -885,27 +919,28 @@ bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
 	return changed;
 }
 
-void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind kind) {
+void InputFieldManager::requestCaretByKey(
+	field_key::InputFieldKey fieldId,
+	CaretRequestKind kind) {
 	if (kind == CaretRequestKind::ClearAll) {
 		for (auto& [_, field] : state_->fieldsById) {
 			field.carets.clear();
 		}
-		state_->primaryFieldId.clear();
+		state_->primaryFieldId = {};
 		state_->pointerDrag = PointerDragState{};
 		markCaretBlinkReset();
 		return;
 	}
 
-	if (fieldId.empty()) {
+	if (!fieldId) {
 		return;
 	}
 
-	const std::string key(fieldId);
-	auto& field = state_->fieldsById[key];
+	auto& field = state_->fieldsById[fieldId];
 	clampCaretsToText(field);
 
 	if (kind == CaretRequestKind::SetPrimary) {
-		const bool primaryWasSameField = (state_->primaryFieldId == key);
+		const bool primaryWasSameField = (state_->primaryFieldId == fieldId);
 		const bool hadExistingCaret = !field.carets.empty();
 		CaretState preservedCaret{};
 		if (hadExistingCaret) {
@@ -921,10 +956,10 @@ void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind 
 			const size_t offset = field.text.size();
 			field.carets = { CaretState{offset, offset} };
 		}
-		state_->primaryFieldId = key;
+		state_->primaryFieldId = fieldId;
 
 		// Preserve ongoing pointer drag when SetPrimary targets the same field.
-		if (state_->pointerDrag.active && state_->pointerDrag.fieldId != key) {
+		if (state_->pointerDrag.active && state_->pointerDrag.fieldId != fieldId) {
 			state_->pointerDrag = PointerDragState{};
 		}
 
@@ -939,27 +974,38 @@ void InputFieldManager::requestCaret(std::string_view fieldId, CaretRequestKind 
 		offset = field.carets.back().headByteOffset;
 	}
 	field.carets.push_back(CaretState{offset, offset});
-	if (state_->primaryFieldId.empty()) {
-		state_->primaryFieldId = key;
+	if (!state_->primaryFieldId) {
+		state_->primaryFieldId = fieldId;
 	}
 	state_->pointerDrag = PointerDragState{};
 	markCaretBlinkReset();
 }
 
-bool InputFieldManager::removeField(std::string_view fieldId) {
-	if (fieldId.empty()) {
+bool InputFieldManager::removeField(FlowElementID fieldId) {
+	return removeFieldByKey(field_key::toInputFieldKey(fieldId));
+}
+
+bool InputFieldManager::removeField(GlobalFlowID fieldId) {
+	return removeFieldByKey(field_key::toInputFieldKey(fieldId));
+}
+
+bool InputFieldManager::removeField(FlowElementPartID fieldId) {
+	return removeFieldByKey(field_key::toInputFieldKey(fieldId));
+}
+
+bool InputFieldManager::removeFieldByKey(field_key::InputFieldKey fieldId) {
+	if (!fieldId) {
 		return false;
 	}
 
-	const std::string key(fieldId);
-	const auto it = state_->fieldsById.find(key);
+	const auto it = state_->fieldsById.find(fieldId);
 	if (it == state_->fieldsById.end()) {
 		return false;
 	}
 	state_->fieldsById.erase(it);
 
-	if (state_->primaryFieldId == key) {
-		state_->primaryFieldId.clear();
+	if (state_->primaryFieldId == fieldId) {
+		state_->primaryFieldId = {};
 		for (const auto& [candidateId, field] : state_->fieldsById) {
 			if (!field.carets.empty()) {
 				state_->primaryFieldId = candidateId;
@@ -967,26 +1013,46 @@ bool InputFieldManager::removeField(std::string_view fieldId) {
 			}
 		}
 	}
-	if (state_->pointerDrag.fieldId == key) {
+	if (state_->pointerDrag.fieldId == fieldId) {
 		state_->pointerDrag = PointerDragState{};
 	}
 	return true;
 }
 
 bool InputFieldManager::removeField(ResourceKey key) {
-	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-		*storage_, key, ResourceDomain::InputField,
-		key_storage::ResourceScope::WindowLocal, window_);
-	return removeField(storage_->string(normalized.name));
+	return removeFieldByKey(normalizeFieldKey(key));
 }
 
-bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view text, bool preserveCaret) {
-	if (fieldId.empty()) {
+bool InputFieldManager::replaceText(
+	FlowElementID fieldId,
+	std::string_view text,
+	bool preserveCaret) {
+	return replaceTextByKey(field_key::toInputFieldKey(fieldId), text, preserveCaret);
+}
+
+bool InputFieldManager::replaceText(
+	GlobalFlowID fieldId,
+	std::string_view text,
+	bool preserveCaret) {
+	return replaceTextByKey(field_key::toInputFieldKey(fieldId), text, preserveCaret);
+}
+
+bool InputFieldManager::replaceText(
+	FlowElementPartID fieldId,
+	std::string_view text,
+	bool preserveCaret) {
+	return replaceTextByKey(field_key::toInputFieldKey(fieldId), text, preserveCaret);
+}
+
+bool InputFieldManager::replaceTextByKey(
+	field_key::InputFieldKey fieldId,
+	std::string_view text,
+	bool preserveCaret) {
+	if (!fieldId) {
 		return false;
 	}
 
-	const std::string key(fieldId);
-	const auto it = state_->fieldsById.find(key);
+	const auto it = state_->fieldsById.find(fieldId);
 	if (it == state_->fieldsById.end() || it->second.text == text) {
 		return false;
 	}
@@ -997,8 +1063,8 @@ bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view t
 		clampCaretsToText(field);
 	} else {
 		field.carets.clear();
-		if (state_->primaryFieldId == key) {
-			state_->primaryFieldId.clear();
+		if (state_->primaryFieldId == fieldId) {
+			state_->primaryFieldId = {};
 			for (const auto& [candidateId, candidate] : state_->fieldsById) {
 				if (!candidate.carets.empty()) {
 					state_->primaryFieldId = candidateId;
@@ -1006,7 +1072,7 @@ bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view t
 				}
 			}
 		}
-		if (state_->pointerDrag.fieldId == key) {
+		if (state_->pointerDrag.fieldId == fieldId) {
 			state_->pointerDrag = PointerDragState{};
 		}
 	}
@@ -1016,15 +1082,12 @@ bool InputFieldManager::replaceText(std::string_view fieldId, std::string_view t
 }
 
 bool InputFieldManager::replaceText(ResourceKey key, std::string_view text, bool preserveCaret) {
-	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-		*storage_, key, ResourceDomain::InputField,
-		key_storage::ResourceScope::WindowLocal, window_);
-	return replaceText(storage_->string(normalized.name), text, preserveCaret);
+	return replaceTextByKey(normalizeFieldKey(key), text, preserveCaret);
 }
 
 void InputFieldManager::clear() {
 	state_->fieldsById.clear();
-	state_->primaryFieldId.clear();
+	state_->primaryFieldId = {};
 	state_->previousInput = FrameInput{};
 	state_->currentInput = FrameInput{};
 	state_->leftKeyRepeat = KeyRepeatState{};

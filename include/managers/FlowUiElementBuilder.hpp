@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -23,6 +23,82 @@ namespace FlowUi {
 /** @addtogroup flowui_element_system
  * @{
  */
+
+template <typename Element>
+Clay_ElementId ElementBuildContext<Element>::clayID() const {
+	return uiManager.toClayEID(id);
+}
+
+template <typename Element>
+FlowElementID ElementBuildContext<Element>::childID(LocalElementName name) const {
+	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+}
+
+template <typename Element>
+FlowElementID ElementBuildContext<Element>::childID(RuntimeElementName name) const {
+	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+}
+
+template <typename Element>
+Clay_ElementId ElementBuildContext<Element>::clayID(LocalElementName name) const {
+	return uiManager.toClayEID(childID(name));
+}
+
+template <typename Element>
+Clay_ElementId ElementBuildContext<Element>::clayID(RuntimeElementName name) const {
+	return uiManager.toClayEID(childID(name));
+}
+
+template <typename Element>
+FlowElementPartID ElementBuildContext<Element>::part(FlowElementPart declaration) const {
+	return uiManager.resolveElementPartID(ElementType::definitionId, id, declaration);
+}
+
+template <typename Element>
+template <FlowElement PartElement>
+ElementBuilder<PartElement> ElementBuildContext<Element>::createPart(
+	const PartElement& element,
+	FlowElementPart declaration) const {
+	return uiManager.createElement(element, part(declaration));
+}
+
+template <typename Element>
+Clay_ElementId ElementInteractionContext<Element>::clayID() const {
+	return uiManager.toClayEID(id);
+}
+
+template <typename Element>
+FlowElementID ElementInteractionContext<Element>::childID(LocalElementName name) const {
+	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+}
+
+template <typename Element>
+FlowElementID ElementInteractionContext<Element>::childID(RuntimeElementName name) const {
+	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);
+}
+
+template <typename Element>
+Clay_ElementId ElementInteractionContext<Element>::clayID(LocalElementName name) const {
+	return uiManager.toClayEID(childID(name));
+}
+
+template <typename Element>
+Clay_ElementId ElementInteractionContext<Element>::clayID(RuntimeElementName name) const {
+	return uiManager.toClayEID(childID(name));
+}
+
+template <typename Element>
+FlowElementPartID ElementInteractionContext<Element>::part(FlowElementPart declaration) const {
+	return uiManager.resolveElementPartID(ElementType::definitionId, id, declaration);
+}
+
+template <typename Element>
+template <FlowElement PartElement>
+ElementBuilder<PartElement> ElementInteractionContext<Element>::createPart(
+	const PartElement& element,
+	FlowElementPart declaration) const {
+	return uiManager.createElement(element, part(declaration));
+}
 
 /**
  * @brief Builder returned by UiManager::createElement().
@@ -52,19 +128,23 @@ public:
 		UiManager& uiManager,
 		ElementManager& elementManager,
 		WindowId window,
-		std::string elementID
+		FlowElementID parentId,
+		FlowElementID elementId
 #if FLOW_UI_DEV_MODE
 		, devMode::elementCapture::SourceLocation sourceLocation =
-			devMode::elementCapture::SourceLocation::current()
+			devMode::elementCapture::SourceLocation::current(),
+		bool automaticIdentity = false
 #endif
 		)
 		: uiManager_(uiManager),
 		  elementManager_(elementManager),
 		  window_(window),
-		  elementID_(std::move(elementID))
+		  parentId_(parentId),
+		  elementId_(elementId)
 #if FLOW_UI_DEV_MODE
 		, captureAsDevInternal_(detail::element::isDevInternal<ElementType>()),
-		  sourceLocation_(sourceLocation)
+		  sourceLocation_(sourceLocation),
+		  automaticIdentity_(automaticIdentity)
 #endif
 		{}
 
@@ -90,9 +170,73 @@ public:
 		return *this;
 	}
 
-	/** Replace the logical Flow/Clay root id owned by this builder. */
-	ElementBuilder& withElementID(std::string_view elementID) {
-		elementID_.assign(elementID.data(), elementID.size());
+	/** Resolve a replacement local name against the parent captured at creation. */
+	ElementBuilder& withID(LocalElementName name) {
+		elementId_ = uiManager_.resolveLocalElementID(
+			parentId_, ElementType::definitionId, name);
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = false;
+#endif
+		return *this;
+	}
+
+	/** Resolve a runtime-authored replacement name against the captured parent. */
+	ElementBuilder& withID(RuntimeElementName name) {
+		elementId_ = uiManager_.resolveLocalElementID(
+			parentId_, ElementType::definitionId, name);
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = false;
+#endif
+		return *this;
+	}
+
+	/** Resolve an indexed/keyed replacement against the captured parent. */
+	ElementBuilder& withID(IndexedElementName name) {
+		elementId_ = uiManager_.resolveIndexedElementID(
+			parentId_, ElementType::definitionId, name);
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = false;
+#endif
+		return *this;
+	}
+
+	/** Resolve an automatic replacement against the captured parent. */
+	ElementBuilder& withID(AutoElementName name) {
+		elementId_ = uiManager_.resolveAutomaticElementID(
+			parentId_, ElementType::definitionId, name);
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = true;
+#endif
+		return *this;
+	}
+
+	/** Replace the builder identity with an already resolved local ID. */
+	ElementBuilder& withID(FlowElementID id) {
+		if (!id) throw std::invalid_argument("FlowUi ElementBuilder requires a valid ID.");
+		elementId_ = id;
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = false;
+#endif
+		return *this;
+	}
+
+	/** Replace the builder identity with an explicitly global address. */
+	ElementBuilder& withID(GlobalFlowID id) {
+		if (!id) throw std::invalid_argument("FlowUi ElementBuilder requires a valid global ID.");
+		elementId_ = uiManager_.normalizeGlobalElementID(id);
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = false;
+#endif
+		return *this;
+	}
+
+	/** Replace the builder identity with a part address already bound to its owner. */
+	ElementBuilder& withID(FlowElementPartID id) {
+		if (!id) throw std::invalid_argument("FlowUi ElementBuilder requires a bound part ID.");
+		elementId_ = uiManager_.normalizePartElementID(id);
+#if FLOW_UI_DEV_MODE
+		automaticIdentity_ = false;
+#endif
 		return *this;
 	}
 
@@ -127,6 +271,36 @@ private:
 		Construct,
 	};
 
+	struct FlowScopeGuard {
+		UiManager* uiManager = nullptr;
+		size_t priorDepth = 0;
+		bool active = true;
+
+		FlowScopeGuard(UiManager& ui, FlowElementID id)
+			: uiManager(&ui), priorDepth(ui.pushFlowScope(id)) {}
+
+		~FlowScopeGuard() {
+			if (active && uiManager) uiManager->restoreFlowScope(priorDepth);
+		}
+
+		void release() noexcept { active = false; }
+	};
+
+	struct ConstructedDepthGuard {
+		UiManager* uiManager = nullptr;
+		size_t baseline = 0;
+		bool active = true;
+
+		explicit ConstructedDepthGuard(UiManager& ui)
+			: uiManager(&ui), baseline(ui.constructedElementDepth()) {}
+
+		~ConstructedDepthGuard() {
+			if (active && uiManager) uiManager->closeConstructedToDepth(baseline, true);
+		}
+
+		void release() noexcept { active = false; }
+	};
+
 	static constexpr bool hasEventHooks =
 		detail::element::HasOnHoveredHook<ElementType> ||
 		detail::element::HasOnPressedHook<ElementType> ||
@@ -153,28 +327,27 @@ private:
 
 	template <OutputMode Mode>
 	void invoke(ElementDrawOptions options) {
-		const FlowElementId elementFlowId = toFlowId(elementID_);
+		FlowScopeGuard flowScope{uiManager_, elementId_};
 
 #if FLOW_UI_DEV_MODE
-		// transitional: temporary dev capture bridge remains until the later dev
-		// element/registry migration consolidates capture operations on UiManager.
+		// Route header-only builder capture through the internal runtime bridge.
 		detail::claimFlowRootForDev(
 			uiManager_,
-			elementFlowId,
+			elementId_,
 			ElementType::definitionId,
-			elementID_,
 			sourceLocation_.file_name(),
 			static_cast<uint32_t>(sourceLocation_.line()),
 			static_cast<uint32_t>(sourceLocation_.column()),
-			sourceLocation_.function_name());
+			sourceLocation_.function_name(),
+			automaticIdentity_);
 #endif
 
 		auto invocation = detail::element::ElementInvocation<ElementType>::begin(
-			elementManager_, uiManager_, window_, elementFlowId);
+			elementManager_, uiManager_, window_, elementId_);
 
 		Clay_ElementId rootElementId{};
-		if constexpr (Mode == OutputMode::Construct || hasEventHooks) {
-			rootElementId = uiManager_.toClayEID(elementID_);
+		if constexpr (Mode == OutputMode::Construct) {
+			rootElementId = uiManager_.toClayEID(elementId_);
 		}
 
 #if FLOW_UI_DEV_MODE
@@ -183,8 +356,7 @@ private:
 			ElementType::definitionId,
 			devMode::typeHash<ElementType>(),
 			devMode::typeToken<ElementType>(),
-			elementID_,
-			elementFlowId,
+			elementId_,
 			captureAsDevInternal_);
 		if (captureIndex != devMode::DevRuntime::kInvalidCaptureIndex) {
 			(void)devMode::elementCapture::runtime(uiManager_).setCapturedElementSource(
@@ -196,8 +368,9 @@ private:
 		}
 		DevCaptureScope devCapture{&uiManager_};
 #endif
+		ConstructedDepthGuard constructedDepth{uiManager_};
 
-		invokeInteractionHooks(invocation, rootElementId, options);
+		invokeInteractionHooks(invocation, elementId_, options);
 
 		if constexpr (Mode == OutputMode::Draw) {
 			if (elementDrawOptionsHas(options, ElementDrawOptions::SkipBuildCallback)) {
@@ -209,20 +382,26 @@ private:
 		devMode::elementCapture::applyParameterOverrides<ParametersType>(
 			uiManager_,
 			ElementType::definitionId,
-			elementFlowId,
-			elementID_,
+			elementId_,
 			params_);
 #endif
 
-		BuildContext buildContext{invocation, elementID_, params_};
+		BuildContext buildContext{invocation, params_};
 		if constexpr (Mode == OutputMode::Draw) {
 			ElementType::buildElement(buildContext);
 		} else {
 			const Clay_ElementDeclaration declaration =
 				ElementType::constructElement(buildContext);
+			if (uiManager_.constructedElementDepth() != constructedDepth.baseline) {
+				throw std::logic_error(
+					"FlowUi constructElement left a nested constructed element open.");
+			}
+			uiManager_.retainConstructedElement(
+				rootElementId, elementId_, flowScope.priorDepth);
 			Clay__OpenElementWithId(rootElementId);
 			Clay__ConfigureOpenElement(declaration);
-			uiManager_.pushConstructedElement(rootElementId);
+			constructedDepth.release();
+			flowScope.release();
 #if FLOW_UI_DEV_MODE
 			devCapture.leaveOpen();
 #endif
@@ -231,11 +410,11 @@ private:
 
 	void invokeInteractionHooks(
 		detail::element::ElementInvocation<ElementType>& invocation,
-		Clay_ElementId rootElementId,
+		FlowElementID elementId,
 		ElementDrawOptions options) {
 		if constexpr (!hasInteractionHooks) {
 			(void)invocation;
-			(void)rootElementId;
+			(void)elementId;
 			(void)options;
 			return;
 		} else {
@@ -254,26 +433,26 @@ private:
 			const InteractionSnapshot& previousInteraction =
 				uiManager_.getPreviousFramesInteraction();
 			InteractionContext context{
-				invocation, elementID_, params_, previousInteraction};
+				invocation, params_, previousInteraction};
 
 			if (invokeEvents) {
 				if constexpr (detail::element::HasOnHoveredHook<ElementType>) {
-					if (previousInteraction.isHovered(rootElementId)) {
+					if (previousInteraction.isHovered(elementId)) {
 						ElementType::onHovered(context);
 					}
 				}
 				if constexpr (detail::element::HasOnPressedHook<ElementType>) {
-					if (previousInteraction.isPressed(rootElementId)) {
+					if (previousInteraction.isPressed(elementId)) {
 						ElementType::onPressed(context);
 					}
 				}
 				if constexpr (detail::element::HasOnHeldHook<ElementType>) {
-					if (previousInteraction.isHeld(rootElementId)) {
+					if (previousInteraction.isHeld(elementId)) {
 						ElementType::onHeld(context);
 					}
 				}
 				if constexpr (detail::element::HasOnReleasedHook<ElementType>) {
-					if (previousInteraction.isReleased(rootElementId)) {
+					if (previousInteraction.isReleased(elementId)) {
 						ElementType::onReleased(context);
 					}
 				}
@@ -288,11 +467,13 @@ private:
 	UiManager& uiManager_;
 	ElementManager& elementManager_;
 	WindowId window_ = InvalidWindowId;
-	std::string elementID_{};
+	FlowElementID parentId_{};
+	FlowElementID elementId_{};
 	ParametersType params_{};
 #if FLOW_UI_DEV_MODE
 	bool captureAsDevInternal_ = detail::element::isDevInternal<ElementType>();
 	devMode::elementCapture::SourceLocation sourceLocation_{};
+	bool automaticIdentity_ = false;
 #endif
 };
 

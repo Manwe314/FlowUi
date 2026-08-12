@@ -17,7 +17,32 @@ using namespace FlowUi::test::element_resource;
 
 constexpr FlowUi::WindowId kFirstWindow = 101;
 constexpr FlowUi::WindowId kSecondWindow = 202;
-constexpr FlowUi::FlowElementId kSharedFlowId = FLOW_ID("tests/shared/root");
+
+[[nodiscard]] constexpr FlowUi::FlowElementID testElementID(
+	std::string_view name) noexcept {
+	return FlowUi::detail::element_id::resolveLocal(
+		FlowUi::RootFlowScopeID,
+		PrimaryElement::definitionId,
+		FlowUi::RuntimeName(name).token
+#if FLOW_UI_DEV_MODE
+		, name
+#endif
+	);
+}
+
+constexpr FlowUi::FlowElementID kSharedFlowId = testElementID("tests/shared/root");
+
+[[nodiscard]] constexpr FlowUi::FlowElementID indexedTestElementID(
+	uint64_t index) noexcept {
+	return FlowUi::detail::element_id::resolveLocal(
+		FlowUi::RootFlowScopeID,
+		PrimaryElement::definitionId,
+		FlowUi::Indexed(FlowUi::LocalElementName("recursive-child"), index).token
+#if FLOW_UI_DEV_MODE
+		, "recursive-child"
+#endif
+	);
+}
 
 template <typename Function>
 void checkThrowsContaining(Function&& function, std::string_view expectedText) {
@@ -123,7 +148,7 @@ void testDefinitionChangeAtSameFlowIdReportsFocusedDiagnostic() {
 		static_cast<void>(driver->resolveAlternate(kFirstWindow, kSharedFlowId));
 	} catch (const std::exception& error) {
 		const std::string_view message = error.what();
-		const std::string flowIdText = std::to_string(kSharedFlowId);
+		const std::string flowIdText = std::to_string(kSharedFlowId.value);
 		FLOWUI_CHECK(message.find("PrimaryElement") != std::string_view::npos);
 		FLOWUI_CHECK(message.find("AlternateElement") != std::string_view::npos);
 		FLOWUI_CHECK(message.find(flowIdText) != std::string_view::npos);
@@ -142,11 +167,11 @@ void testWindowDestructionDestroysEveryRetentionClass() {
 	driver->beginFrame(kFirstWindow, 1);
 	static_cast<void>(driver->resolvePrimary(
 		kFirstWindow,
-		FLOW_ID("tests/transient"),
+		testElementID("tests/transient"),
 		TestStatePolicy::transient(100)));
 	static_cast<void>(driver->resolvePrimary(
 		kFirstWindow,
-		FLOW_ID("tests/window-lifetime"),
+		testElementID("tests/window-lifetime"),
 		TestStatePolicy::windowLifetime()));
 	driver->commitFrame(kFirstWindow);
 
@@ -162,24 +187,25 @@ void testStateAddressRemainsStableAcrossRegistryMutationAndRecursion() {
 	driver->registerWindow(kFirstWindow);
 
 	driver->beginFrame(kFirstWindow, 1);
-	PrimaryState& root = driver->resolvePrimary(kFirstWindow, FLOW_ID("tests/recursive/root"));
+	const FlowUi::FlowElementID rootId = testElementID("tests/recursive/root");
+	PrimaryState& root = driver->resolvePrimary(kFirstWindow, rootId);
 	PrimaryState* const rootAddress = &root;
 	root.value = 5;
 
 	for (uint64_t index = 0; index < 2048; ++index) {
 		PrimaryState& nested = driver->resolvePrimary(
 			kFirstWindow,
-			FlowUi::createIndexedFlowId(FLOW_ID("tests/recursive/child"), index));
+			indexedTestElementID(index));
 		nested.value = static_cast<int>(index);
 	}
 
 	for (uint64_t index = 0; index < 1024; ++index) {
 		FLOWUI_CHECK(driver->erasePrimary(
 			kFirstWindow,
-			FlowUi::createIndexedFlowId(FLOW_ID("tests/recursive/child"), index)));
+			indexedTestElementID(index)));
 	}
 
-	FLOWUI_CHECK(driver->findPrimary(kFirstWindow, FLOW_ID("tests/recursive/root")) == rootAddress);
+	FLOWUI_CHECK(driver->findPrimary(kFirstWindow, rootId) == rootAddress);
 	FLOWUI_CHECK(rootAddress->value == 5);
 	driver->commitFrame(kFirstWindow);
 }
@@ -188,7 +214,7 @@ void testCanceledFramePreservesPreexistingState() {
 	auto driver = makeElementControllerContractDriver();
 	driver->registerWindow(kFirstWindow);
 
-	const FlowUi::FlowElementId existingId = FLOW_ID("tests/cancel/existing");
+	const FlowUi::FlowElementID existingId = testElementID("tests/cancel/existing");
 	driver->beginFrame(kFirstWindow, 1);
 	PrimaryState& existing = driver->resolvePrimary(
 		kFirstWindow,
@@ -212,7 +238,7 @@ void testCanceledFrameRollsBackNewState() {
 	auto driver = makeElementControllerContractDriver();
 	driver->registerWindow(kFirstWindow);
 
-	const FlowUi::FlowElementId canceledId = FLOW_ID("tests/cancel/new");
+	const FlowUi::FlowElementID canceledId = testElementID("tests/cancel/new");
 	driver->beginFrame(kFirstWindow, 1);
 	static_cast<void>(driver->resolvePrimary(kFirstWindow, canceledId));
 	FLOWUI_CHECK(PrimaryState::constructions == 1);

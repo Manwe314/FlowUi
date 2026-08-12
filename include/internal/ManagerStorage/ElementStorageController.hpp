@@ -14,6 +14,7 @@
 
 #include "FlowUi/App.hpp"
 #include "FlowUi/WindowId.hpp"
+#include "internal/ElementInstanceKey.hpp"
 #include "internal/ManagerStorage/ElementRegistration.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
 #include "managers/structs/ElementStatePolicy.hpp"
@@ -48,7 +49,7 @@ struct ElementDefinitionRecord {
 };
 
 struct ElementResourceRecordHeader {
-	FlowDefinitionId definitionId = 0;
+	FlowDefinitionID definitionId{};
 	uint64_t definitionTypeHash = 0;
 	uint64_t resourcesTypeHash = 0;
 	size_t resourcesSize = 0;
@@ -59,8 +60,8 @@ struct ElementResourceRecordHeader {
 };
 
 struct ElementStateRecordHeader {
-	FlowElementId flowId = 0;
-	FlowDefinitionId definitionId = 0;
+	element::ElementInstanceKey instanceKey{};
+	FlowDefinitionID definitionId{};
 	uint64_t definitionTypeHash = 0;
 	uint64_t stateTypeHash = 0;
 	size_t stateSize = 0;
@@ -81,9 +82,12 @@ struct ResolvedElementState {
 struct ElementStateFrameTransaction {
 	uint64_t epoch = 0;
 	bool active = false;
-	std::unordered_set<FlowElementId> touched{};
-	std::unordered_set<FlowElementId> created{};
-	std::unordered_map<FlowElementId, ElementStatePolicy> policies{};
+	std::unordered_set<element::ElementInstanceKey, element::ElementInstanceKeyHash> touched{};
+	std::unordered_set<element::ElementInstanceKey, element::ElementInstanceKeyHash> created{};
+	std::unordered_map<
+		element::ElementInstanceKey,
+		ElementStatePolicy,
+		element::ElementInstanceKeyHash> policies{};
 
 	void clear() noexcept {
 		epoch = 0;
@@ -104,7 +108,10 @@ public:
 
 private:
 	mutable std::mutex mutex_{};
-	std::unordered_map<FlowDefinitionId, std::unique_ptr<ElementDefinitionRecord>> definitions_{};
+	std::unordered_map<
+		FlowDefinitionID,
+		std::unique_ptr<ElementDefinitionRecord>,
+		FlowDefinitionIDHash> definitions_{};
 };
 
 struct WindowElementStateRegistry {
@@ -113,9 +120,14 @@ struct WindowElementStateRegistry {
 
 	WindowId window = InvalidWindowId;
 	std::mutex mutex{};
-	std::unordered_map<FlowElementId, storage::PersistentRecordHandle> byFlowId{};
-	std::unordered_set<FlowElementId> deferredErases{};
-	std::vector<FlowElementId> gcCandidates{};
+	std::unordered_map<
+		element::ElementInstanceKey,
+		storage::PersistentRecordHandle,
+		element::ElementInstanceKeyHash> byInstance{};
+	std::unordered_set<
+		element::ElementInstanceKey,
+		element::ElementInstanceKeyHash> deferredErases{};
+	std::vector<element::ElementInstanceKey> gcCandidates{};
 	size_t gcCursor = 0;
 	uint64_t committedFrameNumber = 0;
 	ElementStateFrameTransaction transaction{};
@@ -141,7 +153,7 @@ public:
 		bool retryFailed);
 	[[nodiscard]] ResolvedElementState resolveOrCreateStateForInvocation(
 		WindowId window,
-		FlowElementId flowId,
+		element::ElementInstanceKey instanceKey,
 		const element::ElementRegistrationDescriptor& descriptor,
 		ElementStatePolicy policy);
 	void endStateInvocation(WindowId window) noexcept;
@@ -153,15 +165,15 @@ public:
 		size_t scanBudget) noexcept;
 	[[nodiscard]] const void* readState(
 		WindowId window,
-		FlowElementId flowId,
+		element::ElementInstanceKey instanceKey,
 		const element::ElementRegistrationDescriptor& descriptor);
 	[[nodiscard]] void* modifyState(
 		WindowId window,
-		FlowElementId flowId,
+		element::ElementInstanceKey instanceKey,
 		const element::ElementRegistrationDescriptor& descriptor);
 	bool eraseState(
 		WindowId window,
-		FlowElementId flowId,
+		element::ElementInstanceKey instanceKey,
 		const element::ElementRegistrationDescriptor& descriptor);
 	void shutdown() noexcept;
 

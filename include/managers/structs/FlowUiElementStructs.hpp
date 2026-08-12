@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -37,7 +36,7 @@ struct InteractionSnapshot {
 	 *
 	 * Filled from Clay's pointer-over element list at frame end.
 	 */
-	std::vector<Clay_ElementId> hoveredElementIds;
+	std::vector<uint32_t> hoveredElementIds;
 
 	/**
 	 * @brief Elements pressed during the snapshot.
@@ -45,7 +44,7 @@ struct InteractionSnapshot {
 	 * Filled when the primary pointer button transitions from up to down while
 	 * over the element.
 	 */
-	std::vector<Clay_ElementId> pressedElementIds;
+	std::vector<uint32_t> pressedElementIds;
 
 	/**
 	 * @brief Elements held during the snapshot.
@@ -53,7 +52,7 @@ struct InteractionSnapshot {
 	 * Filled while the primary pointer button remains down over the element
 	 * after the initial press frame.
 	 */
-	std::vector<Clay_ElementId> heldElementIds;
+	std::vector<uint32_t> heldElementIds;
 
 	/**
 	 * @brief Elements released during the snapshot.
@@ -61,7 +60,7 @@ struct InteractionSnapshot {
 	 * Filled when the primary pointer button transitions from down to up while
 	 * over the element.
 	 */
-	std::vector<Clay_ElementId> releasedElementIds;
+	std::vector<uint32_t> releasedElementIds;
 
 	/**
 	 * @brief Return whether a list contains an element with the same Clay id.
@@ -73,15 +72,18 @@ struct InteractionSnapshot {
 	 * @retval true A matching element id exists in the list.
 	 * @retval false No matching element id exists in the list.
 	 */
-	static bool contains(const std::vector<Clay_ElementId>& list, Clay_ElementId id)
+private:
+	static bool contains(const std::vector<uint32_t>& list, uint32_t id)
 	{
-		for (const auto& item : list) {
-			if (item.id == id.id) {
+		for (const uint32_t item : list) {
+			if (item == id) {
 				return true;
 			}
 		}
 		return false;
 	}
+
+public:
 
 	/**
 	 * @brief Return whether the element was hovered in this snapshot.
@@ -89,7 +91,16 @@ struct InteractionSnapshot {
 	 * @retval true The element appears in hoveredElementIds.
 	 * @retval false The element does not appear in hoveredElementIds.
 	 */
-	bool isHovered(Clay_ElementId id) const { return contains(hoveredElementIds, id); }
+	bool isHovered(Clay_ElementId id) const { return contains(hoveredElementIds, id.id); }
+	bool isHovered(FlowElementID id) const {
+		return contains(hoveredElementIds, FlowIDToClayID(id));
+	}
+	bool isHovered(GlobalFlowID id) const {
+		return contains(hoveredElementIds, FlowIDToClayID(id));
+	}
+	bool isHovered(FlowElementPartID id) const {
+		return contains(hoveredElementIds, FlowIDToClayID(id));
+	}
 
 	/**
 	 * @brief Return whether the element was pressed in this snapshot.
@@ -97,7 +108,16 @@ struct InteractionSnapshot {
 	 * @retval true The element appears in pressedElementIds.
 	 * @retval false The element does not appear in pressedElementIds.
 	 */
-	bool isPressed(Clay_ElementId id) const { return contains(pressedElementIds, id); }
+	bool isPressed(Clay_ElementId id) const { return contains(pressedElementIds, id.id); }
+	bool isPressed(FlowElementID id) const {
+		return contains(pressedElementIds, FlowIDToClayID(id));
+	}
+	bool isPressed(GlobalFlowID id) const {
+		return contains(pressedElementIds, FlowIDToClayID(id));
+	}
+	bool isPressed(FlowElementPartID id) const {
+		return contains(pressedElementIds, FlowIDToClayID(id));
+	}
 
 	/**
 	 * @brief Return whether the element was held in this snapshot.
@@ -105,7 +125,16 @@ struct InteractionSnapshot {
 	 * @retval true The element appears in heldElementIds.
 	 * @retval false The element does not appear in heldElementIds.
 	 */
-	bool isHeld(Clay_ElementId id) const { return contains(heldElementIds, id); }
+	bool isHeld(Clay_ElementId id) const { return contains(heldElementIds, id.id); }
+	bool isHeld(FlowElementID id) const {
+		return contains(heldElementIds, FlowIDToClayID(id));
+	}
+	bool isHeld(GlobalFlowID id) const {
+		return contains(heldElementIds, FlowIDToClayID(id));
+	}
+	bool isHeld(FlowElementPartID id) const {
+		return contains(heldElementIds, FlowIDToClayID(id));
+	}
 
 	/**
 	 * @brief Return whether the element was released in this snapshot.
@@ -113,10 +142,22 @@ struct InteractionSnapshot {
 	 * @retval true The element appears in releasedElementIds.
 	 * @retval false The element does not appear in releasedElementIds.
 	 */
-	bool isReleased(Clay_ElementId id) const { return contains(releasedElementIds, id); }
+	bool isReleased(Clay_ElementId id) const { return contains(releasedElementIds, id.id); }
+	bool isReleased(FlowElementID id) const {
+		return contains(releasedElementIds, FlowIDToClayID(id));
+	}
+	bool isReleased(GlobalFlowID id) const {
+		return contains(releasedElementIds, FlowIDToClayID(id));
+	}
+	bool isReleased(FlowElementPartID id) const {
+		return contains(releasedElementIds, FlowIDToClayID(id));
+	}
 };
 
 class UiManager;
+
+template <FlowElement Element>
+class ElementBuilder;
 
 namespace detail::element {
 template <typename Element>
@@ -154,10 +195,9 @@ struct ElementBuildContext
 
 	ElementBuildContext(
 		detail::element::ElementInvocation<ElementType>& invocation,
-		std::string_view id,
 		ParametersType& parameters) noexcept
 		: uiManager(invocation.uiManager()),
-		  elementID(id),
+		  id(invocation.elementId()),
 		  params(parameters),
 		  invocation_(invocation) {}
 
@@ -165,17 +205,12 @@ struct ElementBuildContext
 	 * @brief UI manager that owns the active frame.
 	 *
 	 * Build callbacks use this reference for frame-scoped FlowUi services, such
-	 * as converting Flow element id strings to Clay_ElementId values.
+	 * as bridging strong Flow IDs to Clay_ElementId values.
 	 */
 	UiManager& uiManager;
 
-	/**
-	 * @brief Flow element id string for this element instance.
-	 *
-	 * This is the id held by the ElementBuilder passed with createElement.
-	 * @note This Id should be used for root clay element in this Flow Element.
-	 */
-	std::string_view elementID;
+	/** Strong numeric identity of this Flow element instance. */
+	FlowElementID id{};
 
 	/**
 	 * @brief Parameters for this element instance.
@@ -206,19 +241,27 @@ struct ElementBuildContext
 		return invocation_.template resources<E>();
 	}
 
-	/**
-	 * @brief Create a nested element id for child elements.
-	 *
-	 * The returned id is formed by appending "/" and localChildId to elementID.
-	 * Use it when child Clay nodes or child Flow elements need stable ids scoped
-	 * to the current element instance.
-	 *
-	 * @param localChildId Local id segment or relative child path.
-	 * @return Combined child id string.
-	 */
-	std::string createChildElementId(std::string_view localChildId) const
-	{
-		return std::string(elementID) + "/" + std::string(localChildId);
+	/** Return this element's numeric Clay root ID. */
+	[[nodiscard]] Clay_ElementId clayID() const;
+	/** Resolve a named Clay/semantic child under this element. */
+	[[nodiscard]] FlowElementID childID(LocalElementName name) const;
+	[[nodiscard]] FlowElementID childID(RuntimeElementName name) const;
+	/** Resolve and bridge a named child in one call. */
+	[[nodiscard]] Clay_ElementId clayID(LocalElementName name) const;
+	[[nodiscard]] Clay_ElementId clayID(RuntimeElementName name) const;
+	/** Bind one definition-time part declaration to this concrete owner instance. */
+	[[nodiscard]] FlowElementPartID part(FlowElementPart declaration) const;
+	/** Create a child element directly at one semantic part address. */
+	template <FlowElement PartElement>
+	[[nodiscard]] ElementBuilder<PartElement> createPart(
+		const PartElement& element,
+		FlowElementPart declaration) const;
+
+	/** Create a local positional sequence. State follows position after reordering. */
+	[[nodiscard]] constexpr IndexedElementIDSequence indexedIDs(
+		LocalElementName baseName,
+		uint64_t firstIndex = 0) const noexcept {
+		return IndexedIDs(baseName, firstIndex);
 	}
 
 private:
@@ -249,11 +292,10 @@ struct ElementInteractionContext
 
 	ElementInteractionContext(
 		detail::element::ElementInvocation<ElementType>& invocation,
-		std::string_view id,
 		ParametersType& parameters,
 		const InteractionSnapshot& interaction) noexcept
 		: uiManager(invocation.uiManager()),
-		  elementID(id),
+		  id(invocation.elementId()),
 		  params(parameters),
 		  previousInteraction(interaction),
 		  invocation_(invocation) {}
@@ -266,12 +308,8 @@ struct ElementInteractionContext
 	 */
 	UiManager& uiManager;
 
-	/**
-	 * @brief Flow element id string for this element instance.
-	 *
-	 * This is the id held by the ElementBuilder passed with createElement.
-	 */
-	std::string_view elementID;
+	/** Strong numeric identity of this Flow element instance. */
+	FlowElementID id{};
 
 	/**
 	 * @brief Parameters for this element instance.
@@ -312,19 +350,27 @@ struct ElementInteractionContext
 		return invocation_.template resources<E>();
 	}
 
-	/**
-	 * @brief Create a nested element id for child elements.
-	 *
-	 * The returned id is formed by appending "/" and localChildId to elementID.
-	 * Use it when child Clay nodes or child Flow elements need stable ids scoped
-	 * to the current element instance.
-	 *
-	 * @param localChildId Local id segment or relative child path.
-	 * @return Combined child id string.
-	 */
-	std::string createChildElementId(std::string_view localChildId) const
-	{
-		return std::string(elementID) + "/" + std::string(localChildId);
+	/** Return this element's numeric Clay root ID. */
+	[[nodiscard]] Clay_ElementId clayID() const;
+	/** Resolve a named Clay/semantic child under this element. */
+	[[nodiscard]] FlowElementID childID(LocalElementName name) const;
+	[[nodiscard]] FlowElementID childID(RuntimeElementName name) const;
+	/** Resolve and bridge a named child in one call. */
+	[[nodiscard]] Clay_ElementId clayID(LocalElementName name) const;
+	[[nodiscard]] Clay_ElementId clayID(RuntimeElementName name) const;
+	/** Bind one definition-time part declaration to this concrete owner instance. */
+	[[nodiscard]] FlowElementPartID part(FlowElementPart declaration) const;
+	/** Create a child element directly at one semantic part address. */
+	template <FlowElement PartElement>
+	[[nodiscard]] ElementBuilder<PartElement> createPart(
+		const PartElement& element,
+		FlowElementPart declaration) const;
+
+	/** Create a local positional sequence. State follows position after reordering. */
+	[[nodiscard]] constexpr IndexedElementIDSequence indexedIDs(
+		LocalElementName baseName,
+		uint64_t firstIndex = 0) const noexcept {
+		return IndexedIDs(baseName, firstIndex);
 	}
 
 private:

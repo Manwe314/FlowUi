@@ -139,7 +139,7 @@ public:
 	 * @param elementId Clay element id to treat as focused.
 	 *
 	 * @code{.cpp}
-	 * app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));
+	 * app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.id));
 	 * @endcode
 	 */
 	void setFocusedElement(Clay_ElementId elementId);

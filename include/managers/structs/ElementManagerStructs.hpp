@@ -86,7 +86,7 @@ consteval ElementRegistrationDescriptor makeElementDescriptor() {
 	using Parameters = ParametersOf<E>;
 
 	ElementRegistrationDescriptor descriptor{
-		.definitionId = static_cast<FlowDefinitionId>(E::definitionId),
+		.definitionId = E::definitionId,
 		.definitionTypeHash = detail::typeHash<E>(),
 		.parametersTypeHash = detail::typeHash<Parameters>(),
 		.parametersSize = sizeof(Parameters),

@@ -30,11 +30,11 @@ public:
 		ElementManager& elements,
 		UiManager& uiManager,
 		WindowId window,
-		FlowElementId flowId) {
+		FlowElementID elementId) {
 		static_assert(
 			FlowElement<ElementType>,
 			"FlowUi: ElementInvocation requires an element satisfying FlowElement.");
-		return ElementInvocation(elements, uiManager, window, flowId);
+		return ElementInvocation(elements, uiManager, window, elementId);
 	}
 
 	ElementInvocation(const ElementInvocation&) = delete;
@@ -50,7 +50,7 @@ public:
 
 	[[nodiscard]] UiManager& uiManager() const noexcept { return uiManager_; }
 	[[nodiscard]] WindowId windowId() const noexcept { return window_; }
-	[[nodiscard]] FlowElementId flowId() const noexcept { return flowId_; }
+	[[nodiscard]] FlowElementID elementId() const noexcept { return elementId_; }
 	[[nodiscard]] uint64_t stateHandle() const noexcept { return stateHandle_; }
 	[[nodiscard]] bool hasActiveStateInvocation() const noexcept {
 		return stateInvocationActive_;
@@ -95,17 +95,17 @@ private:
 		ElementManager& elements,
 		UiManager& uiManager,
 		WindowId window,
-		FlowElementId flowId)
+		FlowElementID elementId)
 		: elements_(elements),
 		  uiManager_(uiManager),
 		  window_(window),
-		  flowId_(flowId) {
+		  elementId_(elementId) {
 		if constexpr (HasState<ElementType>) {
 			const ResolvedElementStateInvocation state =
 				elements_.beginStateInvocation(
 					elementDescriptor<ElementType>,
 					window_,
-					flowId_,
+					detail::element::toInstanceKey(elementId_),
 					statePolicy<ElementType>());
 			stateHandle_ = state.handle;
 			statePayload_ = state.payload;
@@ -118,7 +118,7 @@ private:
 	ElementManager& elements_;
 	UiManager& uiManager_;
 	WindowId window_ = InvalidWindowId;
-	FlowElementId flowId_ = 0;
+	FlowElementID elementId_{};
 	uint64_t stateHandle_ = 0;
 	void* statePayload_ = nullptr;
 	mutable const void* resourcePayload_ = nullptr;

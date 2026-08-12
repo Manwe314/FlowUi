@@ -24,14 +24,14 @@ public:
 	}
 
 	ClaimDisposition claim(
-		FlowElementId flowId,
-		FlowDefinitionId definitionId,
-		std::string_view logicalId) override {
+		FlowElementID elementId,
+		FlowDefinitionID definitionId,
+		std::string_view debugPath) override {
 		(void)tracker_.claim(
-			flowId,
+			detail::element::toInstanceKey(elementId),
 			detail::manager_storage::FlowRootClaimSourceForDev{
 				.definitionId = definitionId,
-				.logicalId = std::string(logicalId),
+				.debugPath = std::string(debugPath),
 				.fileName = "PhaseADevFlowIdTests.cpp",
 				.functionName = "DevFlowIdContractDriverImpl::claim",
 				.line = 1,
@@ -48,11 +48,14 @@ public:
 		const detail::manager_storage::FlowRootCollisionForDev& collision =
 			tracker_.collision(index);
 		warning_ = FlowIdCollisionWarning{
-			.flowId = collision.flowId,
+			.elementId = FlowElementID{
+				.value = collision.instanceId.value,
+				.debugName = collision.duplicate.debugPath,
+			},
 			.firstDefinition = collision.first.definitionId,
 			.duplicateDefinition = collision.duplicate.definitionId,
-			.logicalId = collision.duplicate.logicalId,
-			.firstLogicalId = collision.first.logicalId,
+			.debugPath = collision.duplicate.debugPath,
+			.firstDebugPath = collision.first.debugPath,
 			.firstFileName = collision.first.fileName,
 			.duplicateFileName = collision.duplicate.fileName,
 			.firstLine = collision.first.line,

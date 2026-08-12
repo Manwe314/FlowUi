@@ -109,12 +109,27 @@ void testFlowIdCollisionImplementationIsDevGuarded() {
 	// this feature must be physically inside a FLOW_UI_DEV_MODE preprocessor
 	// block, rather than relying on dead-code elimination in production.
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiState, "flowRootIdTracker"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiState, "clayBridgeIdTracker"));
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "claimFlowRootForDev"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "clayBridgeIdTracker"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "claimClayBridgeForDev"));
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(builder, "claimFlowRootForDev"));
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(bridge, "claimFlowRootForDev"));
 	// draw() and construct() share one typed invocation pipeline, so there is one
 	// physically dev-gated root claim call for both terminal operations.
 	FLOWUI_CHECK(occurrenceCount(builder, "detail::claimFlowRootForDev") == 1);
+}
+
+void testTypedClayBridgeDoesNotHashStringsInProduction() {
+	const std::string uiManager = readSource(FLOWUI_UI_MANAGER_SOURCE);
+	const std::string builder = readSource(FLOWUI_ELEMENT_BUILDER_SOURCE);
+	FLOWUI_CHECK(uiManager.find("Clay_GetElementId(") == std::string::npos);
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "id.debugName"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "indexedFlowDebugName"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "automaticFlowDebugName"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "globalFlowDebugName"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "std::to_chars"));
+	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(builder, "automaticIdentity_"));
 }
 
 } // namespace
@@ -124,5 +139,8 @@ int main() {
 	runner.run(
 		"Flow-ID collision storage and code are dev-guarded",
 		testFlowIdCollisionImplementationIsDevGuarded);
+	runner.run(
+		"typed Clay bridge performs no production string hashing",
+		testTypedClayBridgeDoesNotHashStringsInProduction);
 	return runner.finish();
 }
