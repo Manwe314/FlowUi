@@ -2,7 +2,7 @@
 
 ## Introduction
 
-FlowUi managers are compact subsystem objects owned by the main `FlowUi::App`. They are "singleton-like" within one app instance: there is one UI manager, one font manager, one image manager, one viewport manager, and so on for that running application. Users do not create, initialize, destroy, or synchronize these managers manually. `App` owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes references through accessors such as `app.ui()`, `app.fonts()`, `app.images()`, and `app.viewPorts()`.
+FlowUi managers are compact subsystem objects owned by the main `FlowUi::App`. They are "singleton-like" within one app instance: there is one action manager, one font manager, one image manager, one viewport manager, and so on for that running application. A `UiManager` remains window-specific. Users do not create, initialize, destroy, or synchronize these managers manually. `App` owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes references through accessors such as `app.ui()`, `app.actions()`, `app.fonts()`, `app.images()`, and `app.viewPorts()`.
 
 ## TL;DR
 
@@ -12,6 +12,7 @@ You normally access a manager by reference and pass that reference around:
 
 ```cpp
 FlowUi::UiManager& ui = app.ui();
+FlowUi::ActionManager& actions = app.actions();
 FlowUi::FontManager& fonts = app.fonts();
 FlowUi::ImageManager& images = app.images();
 ```
@@ -56,6 +57,10 @@ void drawToolbar(FlowUi::UiManager& ui, FlowUi::ImageManager& images) {
 ```
 
 The references should not outlive the `App` that owns them. They are not independent services. They are parts of one running FlowUi application.
+
+## ActionManager
+
+`ActionManager` is app-owned and exposed through every `UiManager`. Its `appActions()` surface stores semantic bindings in `StorageSystem`; the application still owns every pointer or `reference_wrapper` supplied as a resource. Its `uiActions()` surface creates allocation-free transient calls from stateless recipes and local lvalues. See the [Action Manager API](../api/action_manager.md) for lifetime rules and examples.
 
 ## UiManager
 

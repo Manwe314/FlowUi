@@ -9,6 +9,8 @@
 #include <GLFW/glfw3.h>
 
 #include "FlowUi.hpp"
+#include "managers/ActionManager.hpp"
+#include "managers/UiManager.hpp"
 #include "managers/FontManager.hpp"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 #include "managers/ViewPortManager.hpp"
@@ -78,6 +80,9 @@ int main() {
 		FLOWUI_CHECK(second > first);
 		FLOWUI_CHECK(app.hasWindow(first));
 		FLOWUI_CHECK(&app.ui(first) != &app.ui(second));
+		FLOWUI_CHECK(&app.ui().actions() == &app.actions());
+		FLOWUI_CHECK(&app.ui(first).actions() == &app.actions());
+		FLOWUI_CHECK(&app.ui(second).actions() == &app.actions());
 		FLOWUI_CHECK(app.nativeWindowHandle(first) != app.nativeWindowHandle(second));
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 		const FlowUi::ResourceKey automaticViewport{.name = "window-local"};

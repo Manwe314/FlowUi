@@ -6,6 +6,7 @@
 #include <clay.h>
 
 #include "managers/structs/InputStructs.hpp"
+#include "managers/structs/ActionManagerStructs.hpp"
 
 namespace FlowUi {
 
@@ -49,6 +50,12 @@ enum class ShortcutTrigger : uint8_t {
 
 	/** @brief Fire every frame while the key is down. */
 	Down = 2,
+};
+
+/** Whether a registered app action consumes a matching shortcut. */
+enum class ShortcutHandling : uint8_t {
+	Consume = 0,
+	PassThrough,
 };
 
 /**

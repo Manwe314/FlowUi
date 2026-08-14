@@ -23,21 +23,24 @@ struct FontManager;
  */
 
 /**
- * @brief Convert a \#RRGGBBAA color string into a Clay_Color.
+ * @brief Convert a \#RRGGBB or \#RRGGBBAA color string into a Clay_Color.
  *
  * Example:
  * @code{.cpp}
  * Clay_Color color = FlowUi::Flow_Color("\#fff3e8ff");
+ * Clay_Color opaque = FlowUi::Flow_Color("\#fff3e8");
  * @endcode
  *
- * @param hexRgba String view of a \#RRGGBBAA hex color code.
+ * Six-digit RGB input receives an implicit `ff` alpha channel.
+ *
+ * @param hexRgba String view of a \#RRGGBB or \#RRGGBBAA hex color code.
  * @return Clay_Color decoded from the hex color input.
- * @throws std::invalid_argument if the string is not valid \#RRGGBBAA.
+ * @throws std::invalid_argument if the string is not valid \#RRGGBB or \#RRGGBBAA.
  */
 inline Clay_Color Flow_Color(std::string_view hexRgba)
 {
-	if (hexRgba.size() != 9 || hexRgba[0] != '#') {
-		throw std::invalid_argument("Flow_Color expects #RRGGBBAA.");
+	if ((hexRgba.size() != 7 && hexRgba.size() != 9) || hexRgba[0] != '#') {
+		throw std::invalid_argument("Flow_Color expects #RRGGBB or #RRGGBBAA.");
 	}
 
 	const auto decodeHexNibble = [](char c) -> uint8_t {
@@ -57,7 +60,7 @@ inline Clay_Color Flow_Color(std::string_view hexRgba)
 		decodeHexByte(1),
 		decodeHexByte(3),
 		decodeHexByte(5),
-		decodeHexByte(7),
+		hexRgba.size() == 9 ? decodeHexByte(7) : 255.0f,
 	};
 }
 
@@ -65,6 +68,7 @@ class UiManager;
 class ImageManager;
 class ThemeManager;
 class ElementManager;
+class ActionManager;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 class IconManager;
 #endif
@@ -357,6 +361,10 @@ public:
 	 * @see @ref flowui_element_system "Element System"
 	 */
 	const ElementManager& elements() const;
+	/** @brief Access the app-wide action manager. */
+	ActionManager& actions();
+	/** @brief Access the immutable app-wide action manager. */
+	const ActionManager& actions() const;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.
 	 *

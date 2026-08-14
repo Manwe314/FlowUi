@@ -2611,8 +2611,9 @@ PersistentRecordHandle FlowStorageSystem::createPersistentRecord(
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
 	if (desc.kind != ResourceKind::UiElementState &&
-		desc.kind != ResourceKind::UiElementResources) {
-		storageError("persistent records currently support only UI element state and resources");
+		desc.kind != ResourceKind::UiElementResources &&
+		desc.kind != ResourceKind::AppActionBinding) {
+		storageError("persistent record kind is not supported");
 	}
 	if (desc.construct == nullptr || desc.destroy == nullptr) {
 		storageError("persistent record requires construction and destruction callbacks");
@@ -2624,7 +2625,7 @@ PersistentRecordHandle FlowStorageSystem::createPersistentRecord(
 		(void)impl_->requireWindow(desc.window);
 	} else {
 		if (desc.window != InvalidWindowId) {
-			storageError("UI element resource persistent records must be app-scoped");
+			storageError("app-shared persistent records must not name a window");
 		}
 		impl_->requireSharedMutationPhase();
 	}

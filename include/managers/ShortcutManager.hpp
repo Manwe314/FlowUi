@@ -97,6 +97,14 @@ public:
 		int32_t priority,
 		ShortcutCallback callback);
 
+	/** Register a retained semantic app action for this window's shortcut scope. */
+	ShortcutId registerShortcut(
+		const ShortcutChord& chord,
+		ShortcutScope scope,
+		int32_t priority,
+		AppActionCall action,
+		ShortcutHandling handling = ShortcutHandling::Consume);
+
 	/**
 	 * @brief Unregister a shortcut by id.
 	 *

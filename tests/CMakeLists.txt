@@ -16,6 +16,48 @@ set_tests_properties(flowui.storage.types PROPERTIES
     TIMEOUT 30
 )
 
+add_executable(flowui_action_value_contract_tests
+	ActionTests/ActionValueContractTests.cpp
+)
+target_compile_features(flowui_action_value_contract_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_action_value_contract_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_action_value_contract_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.actions.value_contracts COMMAND flowui_action_value_contract_tests)
+set_tests_properties(flowui.actions.value_contracts PROPERTIES
+	LABELS "flowui;actions;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_app_action_manager_tests
+	ActionTests/AppActionManagerTests.cpp
+	HeadlessVulkanFixture.cpp
+)
+target_compile_features(flowui_app_action_manager_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_app_action_manager_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+	target_compile_definitions(flowui_app_action_manager_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+endif()
+target_link_libraries(flowui_app_action_manager_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+add_test(NAME flowui.actions.app_manager COMMAND flowui_app_action_manager_tests)
+set_tests_properties(flowui.actions.app_manager PROPERTIES
+	LABELS "flowui;actions;storage;integration"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
+add_library(flowui_action_dev_compile_contract OBJECT
+	ActionTests/ActionValueContractTests.cpp
+	${PROJECT_SOURCE_DIR}/src/managers/ActionManager.cpp
+)
+target_compile_features(flowui_action_dev_compile_contract PRIVATE cxx_std_23)
+target_compile_definitions(flowui_action_dev_compile_contract PRIVATE FLOW_UI_DEV_MODE=1)
+target_include_directories(flowui_action_dev_compile_contract PRIVATE
+	${FLOWUI_GENERATED_INCLUDE_DIR}
+	${PROJECT_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/external
+	${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 add_executable(flowui_ui_renderer_conversion_tests
     RendererTests/UiRendererConversionTests.cpp
 )
@@ -94,6 +136,105 @@ set_tests_properties(flowui.elements.concept_contracts PROPERTIES
 	LABELS "flowui;elements;unit"
 	TIMEOUT 30
 )
+
+if(FLOWUI_COMPILE_FSELI_ENABLED)
+	add_executable(flowui_fsel_button_contract_tests
+		FSELTests/ButtonContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_button_contract_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_fsel_button_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_button_contract_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.fsel.button_contracts COMMAND flowui_fsel_button_contract_tests)
+	set_tests_properties(flowui.fsel.button_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_selectable_surface_contract_tests
+		FSELTests/SelectableSurfaceContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_selectable_surface_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_selectable_surface_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_selectable_surface_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.selectable_surface_contracts
+		COMMAND flowui_fsel_selectable_surface_contract_tests
+	)
+	set_tests_properties(flowui.fsel.selectable_surface_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_radio_choice_contract_tests
+		FSELTests/RadioChoiceContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_radio_choice_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_radio_choice_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_radio_choice_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.radio_choice_contracts
+		COMMAND flowui_fsel_radio_choice_contract_tests
+	)
+	set_tests_properties(flowui.fsel.radio_choice_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_boolean_control_contract_tests
+		FSELTests/BooleanControlContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_boolean_control_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_boolean_control_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_boolean_control_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.boolean_control_contracts
+		COMMAND flowui_fsel_boolean_control_contract_tests
+	)
+	set_tests_properties(flowui.fsel.boolean_control_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_slider_contract_tests
+		FSELTests/SliderContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_slider_contract_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_fsel_slider_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_slider_contract_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.fsel.slider_contracts COMMAND flowui_fsel_slider_contract_tests)
+	set_tests_properties(flowui.fsel.slider_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	# Interactive showcase: built with the tests, but deliberately not registered
+	# with CTest because it runs until its window is closed.
+	add_executable(flowui_fsel_demo demo/main.cpp)
+	target_compile_features(flowui_fsel_demo PRIVATE cxx_std_23)
+	target_link_libraries(flowui_fsel_demo PRIVATE FlowUi::FlowUi)
+endif()
 
 # Compile the typed builder's dev-only attachment points without pulling in the
 # intentionally legacy developer element catalog or linking against a dev ABI.

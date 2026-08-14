@@ -32,6 +32,10 @@ Scope controlling when a shortcut is eligible to run. Focused input and focused 
 
 Input transition used to trigger a shortcut. It supports press, release, and every-frame down behavior.
 
+### **ShortcutHandling**
+
+Explicit consumption policy for the `AppActionCall` registration overload. `Consume` stops later matches after successful invocation; `PassThrough` continues dispatch. Disabled and unbound actions fall through.
+
 ## Public Structs
 
 ### **ShortcutChord**
@@ -67,6 +71,10 @@ FlowUi::ShortcutId saveShortcut = app.ui().shortcuts().registerShortcut({.key = 
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f).
+
+#### `ShortcutId registerShortcut(const ShortcutChord& chord, ShortcutScope scope, int32_t priority, AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume)`
+
+Registers a semantic app action without retaining a local UI recipe or arbitrary callback. Return values never determine consumption.
 
 ### **unregisterShortcut**
 
