@@ -8,6 +8,7 @@
 
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ShortcutManagerState.hpp"
+#include "managers/ActionManager.hpp"
 #include "managers/UiManager.hpp"
 
 namespace {
@@ -152,6 +153,43 @@ ShortcutId ShortcutManager::registerShortcut(
 	return id;
 }
 
+ShortcutId ShortcutManager::registerShortcut(
+	const ShortcutChord& chord,
+	ShortcutScope scope,
+	int32_t priority,
+	AppActionCall action,
+	ShortcutHandling handling) {
+	if (!action || chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) return 0u;
+	auto& current = state();
+	if (current.nextShortcutId == 0 || current.nextShortcutId > std::numeric_limits<ShortcutId>::max()) return 0u;
+
+	manager_storage::ShortcutManagerState candidate = current;
+	const ShortcutId id = static_cast<ShortcutId>(candidate.nextShortcutId);
+	const uint32_t packed = packChord(chord.key, modsMaskFromChord(chord), chord.trigger);
+	auto registration = std::make_shared<manager_storage::ShortcutRegistrationRecord>();
+	registration->scope = scope;
+	registration->priority = priority;
+	registration->id = id;
+	registration->registrationOrder = candidate.nextRegistrationOrder;
+	registration->packedChord = packed;
+	registration->action = action;
+	registration->handling = handling;
+	manager_storage::ShortcutBucket bucket;
+	if (const auto existing = candidate.chordBuckets.find(packed); existing != candidate.chordBuckets.end()) {
+		bucket = *existing->second;
+	}
+	bucket.push_back(registration);
+	std::stable_sort(bucket.begin(), bucket.end(), executableOrderLess);
+	candidate.chordBuckets[packed] = std::make_shared<const manager_storage::ShortcutBucket>(std::move(bucket));
+	candidate.registrationsById.emplace(id, std::move(registration));
+	candidate.registeredKeyRefCount[chord.key] += 1u;
+	++candidate.nextShortcutId;
+	++candidate.nextRegistrationOrder;
+	current = std::move(candidate);
+	storage_->noteManagerMutation(window_);
+	return id;
+}
+
 bool ShortcutManager::unregisterShortcut(ShortcutId id) {
 	auto& current = state();
 	const auto registrationIt = current.registrationsById.find(id);
@@ -224,8 +262,23 @@ void ShortcutManager::beginFrame(UiManager& ui, const FrameInput& currentInput, 
 		for (const auto& executable : *snapshot) {
 			if (!executable || executable->tombstoned ||
 				!current.registrationsById.contains(executable->id) ||
-				!scopeIsActive(*executable, context, ui) || !executable->callback) continue;
-			if (executable->callback(context)) break;
+				!scopeIsActive(*executable, context, ui)) continue;
+			if (executable->callback) {
+				if (executable->callback(context)) break;
+				continue;
+			}
+			if (!executable->action) continue;
+			const ActionInvocationStatus status = ui.actions().invoke(
+				ActionCall{executable->action},
+				ActionInvocationSource{
+					.kind = ActionInvocationSourceKind::Shortcut,
+					.window = ui.windowId(),
+					.sourceId = executable->id,
+				});
+			// Consumption is authored explicitly and never inferred from an
+			// arbitrary action result. Unavailable actions fall through.
+			if (status == ActionInvocationStatus::Invoked &&
+				executable->handling == ShortcutHandling::Consume) break;
 		}
 	}
 }

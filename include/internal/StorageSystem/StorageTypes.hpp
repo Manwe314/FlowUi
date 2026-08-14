@@ -56,6 +56,8 @@ enum class ResourceKind : uint8_t {
 	UiTheme,
 	UiElementState,
 	UiElementResources,
+	ActionManager,
+	AppActionBinding,
 	Count,
 };
 
@@ -69,6 +71,7 @@ enum class ResourceDomain : uint16_t {
 	Input,
 	Development,
 	Internal,
+	Action,
 };
 
 enum class MemoryClass : uint8_t {

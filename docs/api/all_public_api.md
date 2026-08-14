@@ -136,14 +136,15 @@ See: [Full Doxygen reference](group__flowui__app.html#gac4775bf6801619b1dc54427b
 #### `Clay_Color Flow_Color(std::string_view hexRgba)`
 
 - **Returns:** `Clay_Color`
-- **Arguments:** `hexRgba` color string in `#RRGGBBAA` form.
+- **Arguments:** `hexRgba` color string in `#RRGGBB` or `#RRGGBBAA` form.
 
-Converts a hex RGBA string into a Clay color. The input must include the leading `#` and eight hex digits; invalid input throws `std::invalid_argument`.
+Converts a hex RGB/RGBA string into a Clay color. Six-digit RGB receives an implicit `ff` alpha channel. The leading `#` is required; invalid input throws `std::invalid_argument`.
 
 **Example:**
 
 ```cpp
 Clay_Color panelColor = FlowUi::Flow_Color("#20242cff");
+Clay_Color opaquePanelColor = FlowUi::Flow_Color("#20242c");
 ```
 
 See: [Full Doxygen reference](group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919).

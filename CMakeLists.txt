@@ -8,6 +8,12 @@ option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generat
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+option(COMPILE_FSELI "Include the Flow Standard Element Library in FlowUi/Flow.hpp." ON)
+set(FLOWUI_COMPILE_FSELI_ENABLED ${COMPILE_FSELI})
+if(FLOW_UI_DEV_MODE AND NOT FLOWUI_COMPILE_FSELI_ENABLED)
+    message(STATUS "FLOW_UI_DEV_MODE enables FSEL for this build.")
+    set(FLOWUI_COMPILE_FSELI_ENABLED ON)
+endif()
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     set(FLOWUI_BUILD_TESTS_DEFAULT ON)
 else()
@@ -66,6 +72,12 @@ if(FLOW_UI_DEV_MODE)
     set(FLOW_UI_DEV_MODE_VALUE 1)
 else()
     set(FLOW_UI_DEV_MODE_VALUE 0)
+endif()
+
+if(FLOWUI_COMPILE_FSELI_ENABLED)
+    set(COMPILE_FSELI_VALUE 1)
+else()
+    set(COMPILE_FSELI_VALUE 0)
 endif()
 
 set(FLOWUI_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
@@ -212,6 +224,7 @@ target_sources(flowui
         src/managers/FontManager.cpp
         src/managers/FontCatalogController.cpp
         src/managers/ElementManager.cpp
+		src/managers/ActionManager.cpp
         src/managers/ElementStorageController.cpp
         src/managers/ViewportStorageController.cpp
         src/managers/ImageManager.cpp
@@ -237,6 +250,7 @@ target_sources(flowui
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/AppActionID.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ElementID.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
@@ -244,7 +258,13 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ResourceKey.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/TextureHandle.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/WindowId.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/elements/Button.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ElementInstanceKey.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/IdentityHash.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ActionBinding.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ActionManagerAccess.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/UiActionBinding.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ActionManagerState.hpp>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowScopeStack.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputFieldRenderOverrides.hpp>
@@ -266,6 +286,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FontManagerStructs.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ActionManagerStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ElementManagerStructs.hpp>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ElementStatePolicy.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FlowUiElementStructs.hpp>
@@ -275,6 +296,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ViewPortManagerStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/FlowUiElementBuilder.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/ElementManager.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/ActionManager.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/IWindow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Context.hpp>
@@ -283,6 +305,27 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Ui/Vk_UiRenderer.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/clay.h>
 )
+
+if(FLOWUI_COMPILE_FSELI_ENABLED)
+    target_sources(flowui
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Theme.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Box.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Button.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Checkbox.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BooleanControlInteraction.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/SelectableSurfaceBehavior.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/RadioChoice.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SelectableSurface.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SelectableSurfaceStyle.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Slider.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/SliderMath.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Spacer.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SplitterHandle.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Switch.hpp>
+    )
+endif()
 
 if(FLOWUI_INCLUDE_ICON_MANAGER)
     target_sources(flowui PRIVATE src/managers/IconManager.cpp src/managers/IconCacheController.cpp)

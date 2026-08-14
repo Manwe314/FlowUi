@@ -19,6 +19,7 @@
 #include "managers/InputFieldManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/ThemeManager.hpp"
+#include "managers/structs/ActionManagerStructs.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #include "managers/structs/InputStructs.hpp"
 #if FLOW_UI_DEV_MODE
@@ -34,6 +35,7 @@ struct AppWindow;
 
 class App;
 class ElementManager;
+class ActionManager;
 template <FlowElement Element>
 class ElementBuilder;
 struct FlowUiTheme;
@@ -476,6 +478,13 @@ public:
 	 * @return Immutable ShortcutManager owned by this UiManager.
 	 */
 	const ShortcutManager& shortcuts() const { return shortcutManager_; }
+
+	/** @brief Access the app-wide ActionManager attached to this UI. */
+	[[nodiscard]] ActionManager& actions();
+	/** @brief Access the immutable app-wide ActionManager attached to this UI. */
+	[[nodiscard]] const ActionManager& actions() const;
+	/** @brief Invoke an action from this window's UI context. */
+	ActionInvocationStatus invoke(ActionCall call);
 #if FLOW_UI_DEV_MODE
 	/**
 	 * @brief Access the developer runtime.
@@ -662,6 +671,7 @@ public:
 private:
 	friend class App;
 	friend class ElementManager;
+	friend class ActionManager;
 	friend struct AppWindow;
 	template <FlowElement Element>
 	friend class ElementBuilder;
@@ -690,6 +700,7 @@ private:
 	void destroyStorage() noexcept;
 	void setThemeManager(const ThemeManager* themeManager) noexcept { themeManager_ = themeManager; }
 	void setElementManager(ElementManager* elementManager) noexcept { elementManager_ = elementManager; }
+	void setActionManager(ActionManager* actionManager) noexcept { actionManager_ = actionManager; }
 	const ThemeManager& appThemes() const;
 
 	void beginFrame(
@@ -760,6 +771,7 @@ private:
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	const ThemeManager* themeManager_ = nullptr;
 	ElementManager* elementManager_ = nullptr;
+	ActionManager* actionManager_ = nullptr;
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	detail::manager_storage::UiManagerState* state_ = nullptr;

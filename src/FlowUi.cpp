@@ -6,6 +6,10 @@
 #include "managers/ImageManager.hpp"
 #include "managers/ThemeManager.hpp"
 #include "managers/ElementManager.hpp"
+#include "managers/ActionManager.hpp"
+#if COMPILE_FSELI
+#include "FSEL/Theme.hpp"
+#endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 #include "managers/IconManager.hpp"
 #endif
@@ -270,6 +274,7 @@ struct App::Impl {
 	ImageManager imageManager;
 	ThemeManager themeManager;
 	ElementManager elementManager;
+	ActionManager actionManager;
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager icons;
 #endif
@@ -392,6 +397,10 @@ struct App::Impl {
 		storageSystem->initialize(storageConfig);
 		themeManager.init(*storageSystem);
 		themeManager.registerTheme<FlowUiTheme>("default", FlowUiTheme::dark(), true);
+#if COMPILE_FSELI
+		themeManager.registerTheme<FSEL::FSELTheme>("default", FSEL::FSELTheme{}, true);
+#endif
+		actionManager.init(owner, *storageSystem);
 		elementManager.init(owner, *storageSystem);
 		mainPointer->storageSystem = storageSystem.get();
 		storageSystem->registerWindow(
@@ -401,6 +410,7 @@ struct App::Impl {
 		mainPointer->ui.initStorage(
 			*storageSystem, mainPointer->id, makeUiManagerConfig(config, mainPointer->config));
 		mainPointer->ui.setThemeManager(&themeManager);
+		actionManager.attachTo(mainPointer->ui);
 		elementManager.attachTo(mainPointer->ui);
 		initSharedUiByteResources(*storageSystem, sharedUiByteResources);
 		const storage::TextureHandle fallbackTexture = storageSystem->publishTexture(
@@ -546,6 +556,7 @@ struct App::Impl {
 			pending->ui.initStorage(
 				*storageSystem, id, makeUiManagerConfig(config, pending->config));
 			pending->ui.setThemeManager(&themeManager);
+			actionManager.attachTo(pending->ui);
 			elementManager.attachTo(pending->ui);
 			pending->swapchain.create(
 				pending->config.native,
@@ -1141,6 +1152,7 @@ struct App::Impl {
 		}
 		for (auto& [_, window] : windows) elementManager.destroyWindow(window->id);
 		elementManager.destroy();
+		actionManager.destroy();
 		themeManager.destroy();
 
 		if (imagesInitialized) imageManager.destroy();
@@ -1188,13 +1200,19 @@ App::App() = default;
 
 App::App(App&& other) noexcept
 	: impl_(std::move(other.impl_)) {
-	if (impl_) impl_->elementManager.rebindOwner(*this);
+	if (impl_) {
+		impl_->elementManager.rebindOwner(*this);
+		impl_->actionManager.rebindOwner(*this);
+	}
 }
 
 App& App::operator=(App&& other) noexcept {
 	if (this == &other) return *this;
 	impl_ = std::move(other.impl_);
-	if (impl_) impl_->elementManager.rebindOwner(*this);
+	if (impl_) {
+		impl_->elementManager.rebindOwner(*this);
+		impl_->actionManager.rebindOwner(*this);
+	}
 	return *this;
 }
 
@@ -1328,6 +1346,16 @@ ElementManager& App::elements() {
 const ElementManager& App::elements() const {
 	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
 	return impl_->elementManager;
+}
+
+ActionManager& App::actions() {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->actionManager;
+}
+
+const ActionManager& App::actions() const {
+	if (!impl_) throw std::runtime_error("FlowUi::App not initialized.");
+	return impl_->actionManager;
 }
 
 #if FLOWUI_INCLUDE_ICON_MANAGER

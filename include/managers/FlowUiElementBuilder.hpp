@@ -11,6 +11,7 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "clay.h"
 #include "managers/ElementManager.hpp"
+#include "managers/ActionManager.hpp"
 #include "managers/UiManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #if FLOW_UI_DEV_MODE
@@ -60,6 +61,21 @@ ElementBuilder<PartElement> ElementBuildContext<Element>::createPart(
 	const PartElement& element,
 	FlowElementPart declaration) const {
 	return uiManager.createElement(element, part(declaration));
+}
+
+template <typename Element>
+ActionInvocationStatus ElementInteractionContext<Element>::invoke(ActionCall call) {
+	return uiManager.actions().invoke(call, ActionInvocationSource{
+		.kind = actionInvocationSourceKind_,
+		.window = uiManager.windowId(),
+		.element = id,
+	});
+}
+
+template <typename Element>
+ActionAvailability ElementInteractionContext<Element>::actionAvailability(
+	ActionCall call) const {
+	return uiManager.actions().availability(call);
 }
 
 template <typename Element>
@@ -438,28 +454,40 @@ private:
 			if (invokeEvents) {
 				if constexpr (detail::element::HasOnHoveredHook<ElementType>) {
 					if (previousInteraction.isHovered(elementId)) {
+						context.setActionInvocationSourceKind(
+							ActionInvocationSourceKind::ElementHovered);
 						ElementType::onHovered(context);
 					}
 				}
 				if constexpr (detail::element::HasOnPressedHook<ElementType>) {
 					if (previousInteraction.isPressed(elementId)) {
+						context.setActionInvocationSourceKind(
+							ActionInvocationSourceKind::ElementPressed);
 						ElementType::onPressed(context);
 					}
 				}
 				if constexpr (detail::element::HasOnHeldHook<ElementType>) {
 					if (previousInteraction.isHeld(elementId)) {
+						context.setActionInvocationSourceKind(
+							ActionInvocationSourceKind::ElementHeld);
 						ElementType::onHeld(context);
 					}
 				}
 				if constexpr (detail::element::HasOnReleasedHook<ElementType>) {
 					if (previousInteraction.isReleased(elementId)) {
+						context.setActionInvocationSourceKind(
+							ActionInvocationSourceKind::ElementReleased);
 						ElementType::onReleased(context);
 					}
 				}
 			}
 
 			if constexpr (detail::element::HasRunLogicHook<ElementType>) {
-				if (invokeLogic) ElementType::runLogic(context);
+				if (invokeLogic) {
+					context.setActionInvocationSourceKind(
+						ActionInvocationSourceKind::ElementLogic);
+					ElementType::runLogic(context);
+				}
 			}
 		}
 	}

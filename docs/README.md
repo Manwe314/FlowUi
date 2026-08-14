@@ -147,6 +147,7 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - **Frames are explicit.** Application code builds UI between `beginFrame()` and `endFrame()`, then presents with `drawFrame()`.
 - **Elements are typed.** Reusable UI is expressed through `ElementDefinition<Params, State, Resources, Id>`, separating per-frame parameters, persistent per-instance state, and shared per-definition resources.
 - **Managers own specialized systems.** Fonts, images, icons, input fields, shortcuts, viewports, and UI rendering have dedicated managers instead of one large global API.
+- **Actions wire behavior once.** App actions select semantic app operations, while inline UI actions connect local element state without polling or callback modes.
 - **Developer mode is opt-in.** `FLOW_UI_DEV_MODE` enables the dev registration and capture systems used to inspect and edit Flow elements while building an app.
 - **Vulkan interop is a first-class path.** Viewport APIs can expose Vulkan render context data when `FLOWUI_PUBLIC_VULKAN_INTEROP` is enabled, so apps can integrate custom rendering where needed.
 
@@ -183,6 +184,7 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - [Icon Manager API](api/icon_manager.md)
 - [Input Field Manager API](api/input_field_manager.md)
 - [Shortcut Manager API](api/shortcut_manager.md)
+- [Action Manager API](api/action_manager.md)
 - [Viewport Manager API](api/viewport_manager.md)
 
 ### Public API

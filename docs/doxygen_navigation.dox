@@ -7,6 +7,7 @@
 - \subpage md_docs_2api_2app "App"
 - \subpage md_docs_2api_2config "Configuration"
 - \subpage md_docs_2api_2elements "Elements"
+- \subpage md_docs_2api_2action__manager "Action Manager"
 - \subpage md_docs_2api_2ui__manager "UI Manager"
 - \subpage md_docs_2api_2theme__manager "Theme Manager"
 - \subpage md_docs_2api_2font__manager "Font Manager"

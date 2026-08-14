@@ -16,6 +16,7 @@
 #endif
 
 #include "FlowUi/BuildConfig.hpp"
+#include "internal/IdentityHash.hpp"
 
 namespace FlowUi {
 
@@ -116,58 +117,6 @@ inline constexpr uint64_t kPartDeclarationDomain = 0x25e6a1c94f0b73d8ull;
 inline constexpr uint64_t kPartInstanceDomain = 0xf4097bc15e2a86d3ull;
 inline constexpr uint64_t kClayBridgeDomain = 0x71c8e534ad09f26bull;
 
-inline constexpr uint64_t kFnvOffsetBasis = 14695981039346656037ull;
-inline constexpr uint64_t kFnvPrime = 1099511628211ull;
-inline constexpr uint64_t kCombineBias = 0x9e3779b97f4a7c15ull;
-
-[[nodiscard]] constexpr uint64_t reserveZero(uint64_t value) noexcept {
-	return value == 0 ? 1 : value;
-}
-
-[[nodiscard]] constexpr uint64_t avalanche64(uint64_t value) noexcept {
-	value ^= value >> 30;
-	value *= 0xbf58476d1ce4e5b9ull;
-	value ^= value >> 27;
-	value *= 0x94d049bb133111ebull;
-	value ^= value >> 31;
-	return value;
-}
-
-[[nodiscard]] constexpr uint64_t hashBytes(std::string_view text) noexcept {
-	uint64_t hash = kFnvOffsetBasis;
-	for (const char character : text) {
-		hash ^= static_cast<uint64_t>(static_cast<unsigned char>(character));
-		hash *= kFnvPrime;
-	}
-	return hash;
-}
-
-[[nodiscard]] constexpr uint64_t combine(uint64_t seed, uint64_t value) noexcept {
-	return avalanche64(seed ^ avalanche64(value + kCombineBias));
-}
-
-template <typename... Values>
-[[nodiscard]] constexpr uint64_t compose(
-	uint64_t domain,
-	Values... values) noexcept {
-	uint64_t hash = domain;
-	((hash = combine(hash, static_cast<uint64_t>(values))), ...);
-	hash = combine(hash, sizeof...(Values));
-	return reserveZero(hash);
-}
-
-[[nodiscard]] constexpr uint64_t authoredNameToken(
-	uint64_t domain,
-	std::string_view name) noexcept {
-	return name.empty() ? 0 : compose(domain, hashBytes(name));
-}
-
-template <std::size_t N>
-[[nodiscard]] constexpr std::string_view literalView(const char (&name)[N]) {
-	static_assert(N > 1, "FlowUi identity names must not be empty.");
-	return std::string_view{name, N - 1};
-}
-
 template <typename Element>
 concept HasIdentityDefinition = requires {
 	requires std::same_as<
@@ -195,7 +144,8 @@ constexpr uint64_t definitionValue() noexcept {
 	) noexcept {
 	if (!parent || !definition || nameToken == 0) return {};
 	return FlowElementID{
-		.value = compose(kLocalElementDomain, parent.value, definition.value, nameToken),
+		.value = detail::identity_hash::compose(
+			kLocalElementDomain, parent.value, definition.value, nameToken),
 #if FLOW_UI_DEV_MODE
 		.debugName = debugName,
 #endif
@@ -212,7 +162,8 @@ constexpr uint64_t definitionValue() noexcept {
 	) noexcept {
 	if (!parent || !definition || callsiteToken == 0) return {};
 	return FlowElementID{
-		.value = compose(kAutoElementDomain, parent.value, definition.value, callsiteToken),
+		.value = detail::identity_hash::compose(
+			kAutoElementDomain, parent.value, definition.value, callsiteToken),
 #if FLOW_UI_DEV_MODE
 		.debugName = debugName,
 #endif
@@ -223,7 +174,7 @@ constexpr uint64_t definitionValue() noexcept {
 
 /** Stable semantic parent used for top-level local elements in every window. */
 inline constexpr FlowElementID RootFlowScopeID{
-	.value = detail::element_id::compose(detail::element_id::kRootFlowScopeDomain),
+	.value = detail::identity_hash::compose(detail::element_id::kRootFlowScopeDomain),
 #if FLOW_UI_DEV_MODE
 	.debugName = {},
 #endif
@@ -240,11 +191,11 @@ struct LocalElementName {
 
 	template <std::size_t N>
 	consteval LocalElementName(const char (&name)[N])
-		: token(detail::element_id::authoredNameToken(
+		: token(detail::identity_hash::authoredNameToken(
 			detail::element_id::kLocalElementDomain,
-			detail::element_id::literalView(name)))
+			detail::identity_hash::literalView(name)))
 #if FLOW_UI_DEV_MODE
-		, debugName(detail::element_id::literalView(name))
+		, debugName(detail::identity_hash::literalView(name))
 #endif
 	{}
 
@@ -322,15 +273,15 @@ struct AutoElementName {
 /** Create a strong definition ID from a stable authored literal. */
 template <std::size_t N>
 [[nodiscard]] consteval FlowDefinitionID DefinitionID(const char (&name)[N]) {
-	return FlowDefinitionID{detail::element_id::authoredNameToken(
+	return FlowDefinitionID{detail::identity_hash::authoredNameToken(
 		detail::element_id::kDefinitionDomain,
-		detail::element_id::literalView(name))};
+		detail::identity_hash::literalView(name))};
 }
 
 /** Mark a string as the explicit runtime-hashed local-name path. */
 [[nodiscard]] constexpr RuntimeElementName RuntimeName(std::string_view name) noexcept {
 	return RuntimeElementName{
-		.token = detail::element_id::authoredNameToken(
+		.token = detail::identity_hash::authoredNameToken(
 			detail::element_id::kLocalElementDomain,
 			name),
 #if FLOW_UI_DEV_MODE
@@ -345,7 +296,7 @@ template <std::size_t N>
 	uint64_t index) noexcept {
 	if (!name) return {};
 	return IndexedElementName{
-		.token = detail::element_id::compose(
+		.token = detail::identity_hash::compose(
 			detail::element_id::kIndexedNameDomain,
 			name.token,
 			index),
@@ -381,9 +332,9 @@ inline constexpr IndexedElementName IndexedElementIDSequence::next() noexcept {
 	uint32_t column) {
 	if (fileName.empty()) return {};
 	return AutoElementName{
-		.token = detail::element_id::compose(
+		.token = detail::identity_hash::compose(
 			detail::element_id::kAutoElementDomain,
-			detail::element_id::hashBytes(fileName),
+			detail::identity_hash::hashBytes(fileName),
 			line,
 			column),
 #if FLOW_UI_DEV_MODE
@@ -418,9 +369,9 @@ inline constexpr IndexedElementName IndexedElementIDSequence::next() noexcept {
 /** Declare one semantic element part. */
 template <std::size_t N>
 [[nodiscard]] consteval FlowElementPart Part(const char (&name)[N]) {
-	const std::string_view view = detail::element_id::literalView(name);
+	const std::string_view view = detail::identity_hash::literalView(name);
 	return FlowElementPart{
-		.token = detail::element_id::authoredNameToken(
+		.token = detail::identity_hash::authoredNameToken(
 			detail::element_id::kPartDeclarationDomain,
 			view),
 #if FLOW_UI_DEV_MODE
@@ -438,15 +389,15 @@ template <std::size_t N>
 template <auto& Element, std::size_t N>
 	requires detail::element_id::HasIdentityDefinition<decltype(Element)>
 [[nodiscard]] consteval GlobalFlowID Global(const char (&name)[N]) {
-	const std::string_view view = detail::element_id::literalView(name);
+	const std::string_view view = detail::identity_hash::literalView(name);
 	constexpr uint64_t definition =
 		detail::element_id::definitionValue<decltype(Element)>();
 	static_assert(definition != 0, "FlowUi global IDs require a nonzero definitionId.");
 	return GlobalFlowID{
-		.value = detail::element_id::compose(
+		.value = detail::identity_hash::compose(
 			detail::element_id::kGlobalElementDomain,
 			definition,
-			detail::element_id::hashBytes(view)),
+			detail::identity_hash::hashBytes(view)),
 #if FLOW_UI_DEV_MODE
 		.debugName = view,
 #endif
@@ -470,7 +421,7 @@ template <typename OwnerElement>
 	const uint64_t definition = detail::element_id::definitionValue<OwnerElement>();
 	if (!owner || !part || definition == 0) return {};
 	return FlowElementPartID{
-		.value = detail::element_id::compose(
+		.value = detail::identity_hash::compose(
 			detail::element_id::kPartInstanceDomain,
 			definition,
 			owner.value,
@@ -505,7 +456,8 @@ namespace detail::element_id {
 /** Internal numeric implementation of the deterministic Clay bridge. */
 [[nodiscard]] constexpr uint32_t toClayValue(uint64_t flowValue) noexcept {
 	if (flowValue == 0) return 0;
-	const uint64_t mixed = avalanche64(flowValue ^ kClayBridgeDomain);
+	const uint64_t mixed = detail::identity_hash::avalanche64(
+		flowValue ^ kClayBridgeDomain);
 	const uint32_t folded = static_cast<uint32_t>(mixed) ^
 		static_cast<uint32_t>(mixed >> 32);
 	return folded == 0 ? 1u : folded;

@@ -29,6 +29,24 @@ void testPublicOverloads() {
 	FLOWUI_CHECK(FlowUi::MainWindowId == 1u);
 }
 
+void testFlowColorRgbAndRgbaForms() {
+	const Clay_Color rgb = FlowUi::Flow_Color("#12aBcD");
+	FLOWUI_CHECK(rgb.r == 0x12);
+	FLOWUI_CHECK(rgb.g == 0xab);
+	FLOWUI_CHECK(rgb.b == 0xcd);
+	FLOWUI_CHECK(rgb.a == 0xff);
+
+	const Clay_Color rgba = FlowUi::Flow_Color("#12abcd34");
+	FLOWUI_CHECK(rgba.r == 0x12);
+	FLOWUI_CHECK(rgba.g == 0xab);
+	FLOWUI_CHECK(rgba.b == 0xcd);
+	FLOWUI_CHECK(rgba.a == 0x34);
+
+	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color("#12345"));
+	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color("123456"));
+	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color("#12345g"));
+}
+
 std::string readSource(const char* path) {
 	std::ifstream input(path, std::ios::binary);
 	FLOWUI_CHECK(input.good());
@@ -63,6 +81,7 @@ void testLifecycleAndIdleRegressions() {
 int main() {
 	FlowUi::test::Runner runner;
 	runner.run("Phase 4 public overloads and move-only WSI types", testPublicOverloads);
+	runner.run("Flow_Color accepts RGB and RGBA hex forms", testFlowColorRgbAndRgbaForms);
 	runner.run("Phase 4 lifecycle, renderer, and no-idle source regressions", testLifecycleAndIdleRegressions);
 	return runner.finish();
 }

@@ -12,6 +12,7 @@
 #endif
 #include "managers/FontManager.hpp"
 #include "managers/ElementManager.hpp"
+#include "managers/ActionManager.hpp"
 #include "managers/ThemeManager.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
@@ -173,6 +174,7 @@ namespace FlowUi
 		state_ = nullptr;
 		stateHandle_ = 0;
 		elementManager_ = nullptr;
+		actionManager_ = nullptr;
 		window_ = InvalidWindowId;
 		storage_ = nullptr;
 	}
@@ -189,6 +191,27 @@ namespace FlowUi
 			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
 		}
 		return *elementManager_;
+	}
+
+	ActionManager& UiManager::actions() {
+		if (!actionManager_) {
+			throw std::runtime_error("FlowUi: UiManager is not connected to ActionManager.");
+		}
+		return *actionManager_;
+	}
+
+	const ActionManager& UiManager::actions() const {
+		if (!actionManager_) {
+			throw std::runtime_error("FlowUi: UiManager is not connected to ActionManager.");
+		}
+		return *actionManager_;
+	}
+
+	ActionInvocationStatus UiManager::invoke(ActionCall call) {
+		return actions().invoke(call, ActionInvocationSource{
+			.kind = ActionInvocationSourceKind::UiManager,
+			.window = window_,
+		});
 	}
 
 		void UiManager::setClipboardText(std::string_view text) const {
@@ -911,7 +934,7 @@ namespace devMode::elementCapture {
 				"FlowUi semantic parts require valid owner definition, owner ID, and declaration values.");
 		}
 		return FlowElementPartID{
-			.value = detail::element_id::compose(
+			.value = detail::identity_hash::compose(
 				detail::element_id::kPartInstanceDomain,
 				ownerDefinition.value,
 				owner.value,

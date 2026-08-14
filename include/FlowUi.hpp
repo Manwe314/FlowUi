@@ -16,6 +16,16 @@
  */
 
 /**
+ * @defgroup flowui_fsel Flow Standard Element Library
+ * @brief Optional standard reusable FlowUi elements and their shared theme.
+ */
+
+/**
+ * @defgroup flowui_action_manager Action Manager
+ * @brief Semantic app actions and transient UI action recipes.
+ */
+
+/**
  * @defgroup flowui_font_manager Font Manager
  * @brief Public font loading and lookup API.
  */
@@ -51,4 +61,5 @@
  */
 
 #include "FlowUi/ElementID.hpp"
+#include "FlowUi/AppActionID.hpp"
 #include "FlowUi/App.hpp"

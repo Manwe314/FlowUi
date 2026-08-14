@@ -18,6 +18,8 @@ struct ShortcutRegistrationRecord {
 	uint64_t registrationOrder = 0;
 	uint32_t packedChord = 0;
 	ShortcutCallback callback{};
+	AppActionCall action{};
+	ShortcutHandling handling = ShortcutHandling::Consume;
 	bool tombstoned = false;
 };
 

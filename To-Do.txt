@@ -37,6 +37,7 @@ Possible Big Upgrades:
 	- Networking Manager
 	- Total Memory allocation upfront with custom memeory management
 	- As much Retained mode support as **logical**
+	- Revisit how FlowUi can support DATA -> UI and DATA <- UI flows. 
 
 
 dev tool upgrades:
@@ -82,6 +83,49 @@ Element System:
 	- interaction querry is N X U n = number of elements u = number of elements in the interaction vector.
 	- ID strings and child ID string work. 
 	- onDoubleClick ?
+
+things i want to do:
+	- Work on dev:
+		- upgrade dev runtime Telemetry / measurements, Injections
+		- complete overhaul of Dev Tools 
+		- Upgrade Dev tool's ability to modify code
+	- Clean things UP:
+		- Remove StoreTexture() and other Legacy functions
+		- Wire in MSAA and Potentially upgrade some configuration about it.
+		- add Decorations [[]] to older code.
+		- Move all Non FlowUi namespcae things out of /include/managers
+		- Clean UP /include/FlowUi move internals and maybe move files / add folders
+		- change For(;;) into While(True)
+		- Remove Doxy comments on internals and update doxy comments on new API
+	- Lock in Configuration Structs
+		- Move internal Config Structs to Public config Structs
+		- Give concrete shape and single AppConfig umbrela
+		- double check for no-Op's and add useful configs
+	- Based on new Dev Reporting optimize
+		- Double check where most time is Spent.
+		- optimize lookups
+		- Implement level 1 and 2 Multi threading (single thread / internal Worker threads)
+	- Window APIs
+		- API to make a window with auto copied AppConfig + local overrides.
+		- API to define "window Operation" from another windows Build code and have it run after this windows execution
+		- API to provide a single FlowElement with Build callback as the entire UI tree and be serviced in another window automatically
+    - App bundles
+		- Define AppConfig a single Element + provide Variables to Bind and a single call is the entire application
+    - Complete defaults
+		- Complete Input Field Operations (ctrl / home / end / delete / ...)
+		- Make a standart Set of Shortcuts (opt in with configuration)
+		- Elements Standart library
+	- Move shortcut Manager to be App shared
+	- Make element Assers Descriptive maybe.
+	- Interactions Upgrade
+		- Overlapping interaction Resolution Needs care 
+			- Event bubling / interaction consumption / interaction flaging
+		- better Onpressed Semantic of elements
+			- full trigger on press -> release
+			- just press or just release
+			- cancalble release or not 
+
+
 
 ~~~~ Legacy ~~~~
 

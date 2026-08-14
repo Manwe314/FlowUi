@@ -9,6 +9,7 @@
 
 #include "FlowUi/App.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "managers/structs/ActionManagerStructs.hpp"
 #include "clay.h"
 #include "managers/structs/FlowUiElementConcepts.hpp"
 
@@ -373,7 +374,18 @@ struct ElementInteractionContext
 		return IndexedIDs(baseName, firstIndex);
 	}
 
+	/** Invoke an app or local UI action from this element interaction hook. */
+	ActionInvocationStatus invoke(ActionCall call);
+	/** Query whether an action is currently available. */
+	[[nodiscard]] ActionAvailability actionAvailability(ActionCall call) const;
+
 private:
+	friend class ElementBuilder<ElementType>;
+	void setActionInvocationSourceKind(ActionInvocationSourceKind kind) noexcept {
+		actionInvocationSourceKind_ = kind;
+	}
+	ActionInvocationSourceKind actionInvocationSourceKind_ =
+		ActionInvocationSourceKind::ElementLogic;
 	detail::element::ElementInvocation<ElementType>& invocation_;
 };
 
