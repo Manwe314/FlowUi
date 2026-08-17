@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <span>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -46,6 +47,8 @@ concept AcceptsCompleteFieldSurface = requires(
 	{ manager.requestCaret(id, FlowUi::CaretRequestKind::SetPrimary) } -> std::same_as<void>;
 	{ manager.removeField(id) } -> std::same_as<bool>;
 	{ manager.replaceText(id, text) } -> std::same_as<bool>;
+	{ manager.applyEdits(id, std::span<const FlowUi::TextReplacement>{}, FlowUi::EditOrigin::Programmatic) }
+		-> std::same_as<FlowUi::EditResult>;
 };
 
 static_assert(!RequestContainsFieldID<FlowUi::FieldRequest>);
@@ -74,6 +77,24 @@ void testElementBackedKeysShareOneIdentityDomain() {
 	FLOWUI_CHECK(InputFieldKeyHash{}(toInputFieldKey(kElementID)) != 0);
 }
 
+void testEditingAndShortcutDefaults() {
+	const FlowUi::FieldConfig field{};
+	FLOWUI_CHECK(field.transactionDetail == FlowUi::TransactionReportDetail::Summary);
+
+	const FlowUi::ShortcutManagerConfig shortcuts{};
+	FLOWUI_CHECK(shortcuts.textEditing.enabled);
+	FLOWUI_CHECK(shortcuts.textEditing.selectAll);
+	FLOWUI_CHECK(shortcuts.textEditing.clipboard);
+	FLOWUI_CHECK(shortcuts.textEditing.undoRedoRequests);
+	FLOWUI_CHECK(shortcuts.textEditing.wordNavigation);
+	FLOWUI_CHECK(shortcuts.textEditing.platform == FlowUi::PlatformShortcutStyle::Auto);
+
+	static_assert(std::is_same_v<decltype(FlowUi::FieldQueryResult{}.transactions),
+		std::span<const FlowUi::FieldEditTransaction>>);
+	static_assert(std::is_same_v<decltype(FlowUi::FieldQueryResult{}.commandRequests),
+		std::span<const FlowUi::FieldCommandRequest>>);
+}
+
 } // namespace
 
 int main() {
@@ -81,5 +102,6 @@ int main() {
 	runner.run(
 		"input field IDs use an explicit typed numeric key",
 		testElementBackedKeysShareOneIdentityDomain);
+	runner.run("input editing and shortcut defaults are public", testEditingAndShortcutDefaults);
 	return runner.finish();
 }

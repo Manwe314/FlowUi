@@ -11,6 +11,7 @@
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
+#include "managers/structs/ShortcutManagerStructs.hpp"
 
 namespace FlowUi {
 
@@ -283,6 +284,9 @@ struct UiConfig {
 	 * @see FlowUi::InputManagerConfig
 	 */
 	InputManagerConfig inputManager{};
+
+	/** @brief Built-in shortcut registrations installed for this UI manager. */
+	ShortcutManagerConfig shortcuts{};
 };
 
 /**

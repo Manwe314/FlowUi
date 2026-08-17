@@ -117,6 +117,26 @@ using ShortcutCallback = std::function<bool(ShortcutContext&)>;
 /** @brief Opaque shortcut registration id. */
 using ShortcutId = uint32_t;
 
+enum class PlatformShortcutStyle : uint8_t {
+	Auto = 0,
+	Control,
+	Command,
+};
+
+struct DefaultTextShortcutConfig {
+	bool enabled = true;
+	PlatformShortcutStyle platform = PlatformShortcutStyle::Auto;
+	int32_t priority = 0;
+	bool selectAll = true;
+	bool clipboard = true;
+	bool undoRedoRequests = true;
+	bool wordNavigation = true;
+};
+
+struct ShortcutManagerConfig {
+	DefaultTextShortcutConfig textEditing{};
+};
+
 /** @} */
 
 } // namespace FlowUi

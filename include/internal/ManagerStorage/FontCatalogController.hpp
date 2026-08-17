@@ -80,6 +80,7 @@ public:
 
 	storage::IStorageSystem* storage = nullptr;
 	uint32_t atlasSizeHint = 0;
+	uint64_t catalogRevision = 1;
 	FontId nextFontId = 0;
 	bool familyTransaction = false;
 	std::deque<FontFamilyRecord> families{};

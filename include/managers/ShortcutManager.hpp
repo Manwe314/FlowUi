@@ -183,6 +183,7 @@ private:
 	friend class UiManager;
 
 	void init(detail::storage::IStorageSystem& storage, WindowId window);
+	void installDefaultTextShortcuts(const DefaultTextShortcutConfig& config);
 	void destroy() noexcept;
 	/** @brief Dispatch shortcuts for the current frame. */
 	void beginFrame(UiManager& ui, const FrameInput& currentInput, const FrameInput& previousInput);

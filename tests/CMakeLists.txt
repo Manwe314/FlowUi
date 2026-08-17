@@ -16,6 +16,39 @@ set_tests_properties(flowui.storage.types PROPERTIES
     TIMEOUT 30
 )
 
+add_executable(flowui_text_layout_service_tests
+	TextTests/TextLayoutServiceTests.cpp
+)
+target_compile_features(flowui_text_layout_service_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_text_layout_service_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(flowui_text_layout_service_tests PRIVATE
+	FLOWUI_UI_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/UiManager.cpp"
+	FLOWUI_INPUT_FIELD_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/InputFieldManager.cpp"
+	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
+)
+target_link_libraries(flowui_text_layout_service_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.text.layout_service COMMAND flowui_text_layout_service_tests)
+set_tests_properties(flowui.text.layout_service PROPERTIES
+	LABELS "flowui;text;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_text_storage_viewport_tests
+	TextTests/TextStorageViewportTests.cpp
+)
+target_compile_features(flowui_text_storage_viewport_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_text_storage_viewport_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(flowui_text_storage_viewport_tests PRIVATE
+	FLOWUI_INPUT_FIELD_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/InputFieldManager.cpp"
+	FLOWUI_INPUT_FIELD_STATE_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/ManagerStorage/InputFieldManagerState.hpp"
+)
+target_link_libraries(flowui_text_storage_viewport_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.text.storage_viewport COMMAND flowui_text_storage_viewport_tests)
+set_tests_properties(flowui.text.storage_viewport PROPERTIES
+	LABELS "flowui;text;input;unit"
+	TIMEOUT 30
+)
+
 add_executable(flowui_action_value_contract_tests
 	ActionTests/ActionValueContractTests.cpp
 )
@@ -225,6 +258,48 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 	target_link_libraries(flowui_fsel_slider_contract_tests PRIVATE FlowUi::FlowUi)
 	add_test(NAME flowui.fsel.slider_contracts COMMAND flowui_fsel_slider_contract_tests)
 	set_tests_properties(flowui.fsel.slider_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_progress_bar_contract_tests
+		FSELTests/ProgressBarContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_progress_bar_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_progress_bar_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_progress_bar_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.progress_bar_contracts
+		COMMAND flowui_fsel_progress_bar_contract_tests
+	)
+	set_tests_properties(flowui.fsel.progress_bar_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_text_field_contract_tests
+		FSELTests/TextFieldContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_text_field_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_text_field_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_text_field_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.text_field_contracts
+		COMMAND flowui_fsel_text_field_contract_tests
+	)
+	set_tests_properties(flowui.fsel.text_field_contracts PROPERTIES
 		LABELS "flowui;fsel;elements;unit"
 		TIMEOUT 30
 	)

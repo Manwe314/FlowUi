@@ -235,6 +235,10 @@ target_sources(flowui
         src/managers/ViewPortManager.cpp
         src/managers/FlowUiElementSystem.cpp
         src/managers/UiManager.cpp
+		src/internal/Text/CurrentTextShaper.cpp
+		src/internal/Text/TextLineBreaker.cpp
+		src/internal/Text/TextLayoutService.cpp
+		src/internal/Text/TextStorage.cpp
         src/devMode/debugView.cpp
         src/devMode/devJson.cpp
         src/devMode/devRuntime.cpp
@@ -247,6 +251,12 @@ target_sources(flowui
         include/internal/StorageSystem/StorageTypes.hpp
 		include/internal/StorageSystem/IStorageSystem.hpp
 		include/internal/StorageSystem/FlowStorageSystem.hpp
+		include/internal/Text/CurrentTextShaper.hpp
+		include/internal/Text/TextAnalysis.hpp
+		include/internal/Text/TextLineBreaker.hpp
+		include/internal/Text/TextLayoutRecords.hpp
+		include/internal/Text/TextLayoutService.hpp
+		include/internal/Text/TextStorage.hpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
@@ -314,6 +324,8 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Box.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Button.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Checkbox.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/ProgressBar.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BoundedValueMath.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BooleanControlInteraction.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/SelectableSurfaceBehavior.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/RadioChoice.hpp>
@@ -324,6 +336,9 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Spacer.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SplitterHandle.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Switch.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/TextArea.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/TextInput.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/TextFieldCommon.hpp>
     )
 endif()
 

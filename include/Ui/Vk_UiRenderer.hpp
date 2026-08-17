@@ -16,6 +16,7 @@
 #include "internal/InputFieldRenderOverrides.hpp"
 #include "internal/ManagerStorage/FontCatalogController.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
+#include "internal/Text/TextLayoutService.hpp"
 
 enum class UiType : uint8_t {
 	Solid = 0,
@@ -183,6 +184,7 @@ struct VulkanUiRenderer {
 	uint32_t frameResourceCount_ = 1u;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
 	std::vector<uint32_t> boundFontAtlasRevisionByFrame_{};
+	FlowUi::detail::text::TextLayoutService textLayoutService_{};
 
 	void init(
 		const FlowUi::VulkanConfig& vulkanConfig,

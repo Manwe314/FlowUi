@@ -25,9 +25,15 @@ struct InputFieldTextColorOverride {
 	std::vector<InputFieldTextColorRangeOverride> ranges{};
 };
 
+struct InputFieldTextLayoutOverride {
+	int32_t commandIndex = 0;
+	uint8_t tabWidth = 4;
+};
+
 struct InputFieldFrameOverrides {
 	std::vector<InputFieldRectOverride> rects{};
 	std::vector<InputFieldTextColorOverride> textColorOverrides{};
+	std::vector<InputFieldTextLayoutOverride> textLayoutOverrides{};
 };
 
 } // namespace FlowUi::detail

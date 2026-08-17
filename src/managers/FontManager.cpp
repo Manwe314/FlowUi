@@ -311,6 +311,7 @@ FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& 
 		controller_->families.pop_back();
 		throw;
 	}
+	++controller_->catalogRevision;
 	storage_->noteManagerMutation(InvalidWindowId);
 	return familyId;
 }
@@ -346,7 +347,10 @@ FontManager::FontId FontManager::addFamilyFace(FontFamilyId familyId, const Font
 		.weight = createInfo.weight,
 		.style = createInfo.style,
 	});
-	if (!controller_->familyTransaction) storage_->noteManagerMutation(InvalidWindowId);
+	if (!controller_->familyTransaction) {
+		++controller_->catalogRevision;
+		storage_->noteManagerMutation(InvalidWindowId);
+	}
 	return fontId;
 }
 
@@ -872,7 +876,7 @@ manager_storage::FontFrameView FontManager::frameView(const storage::FrameToken&
 		.atlasImage = controller_->atlasImage,
 		.atlasView = controller_->atlasView,
 		.atlasSampler = controller_->atlasSampler,
-		.publicationRevision = frame.managerSharedRevision,
+		.publicationRevision = controller_->catalogRevision,
 	};
 }
 
