@@ -21,6 +21,7 @@
 #include "internal/ElementInstanceKey.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
 #include "internal/ManagerStorage/FontCatalogController.hpp"
+#include "internal/Text/TextLayoutService.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/devRuntime.hpp"
 #include "devMode/performanceDiagnostics.hpp"
@@ -188,6 +189,7 @@ struct UiManagerState {
 	CursorType previousCursor = CursorType::Arrow;
 	uint8_t cursorPriority = 0;
 	FontFrameView fontView{};
+	text::TextLayoutService textLayoutService{};
 	float pointsToPixelsScale = 96.0f / 72.0f;
 	InputManagerConfig inputManagerConfig{};
 };

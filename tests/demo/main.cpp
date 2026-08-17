@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <exception>
 #include <iomanip>
@@ -13,7 +14,13 @@ namespace {
 using namespace FlowUi;
 using namespace FlowUi::FSEL;
 
+enum class DemoPage : uint8_t {
+	Gallery = 0,
+	WritingStudio,
+};
+
 struct DemoState {
+	DemoPage page = DemoPage::Gallery;
 	uint64_t buttonActivations = 0;
 	bool surfaceSelected = false;
 	uint64_t selectedTool = 1;
@@ -26,6 +33,34 @@ struct DemoState {
 	uint64_t sliderChanges = 0;
 	uint64_t sliderCommits = 0;
 	float leftPaneWidth = 465.0f;
+	std::string quickNote = "FSEL text fields";
+	uint64_t quickNoteChanges = 0;
+	uint64_t quickNoteCommits = 0;
+	uint64_t quickNoteSubmits = 0;
+	std::string documentTitle = "Field notes · August study";
+	std::string document =
+		"A quiet place to test TextArea\n"
+		"\n"
+		"This page is deliberately arranged like a small writing application. "
+		"The document remains an ordinary application-owned std::string while "
+		"InputFieldManager owns editing mechanics, selection, caret placement, "
+		"navigation, and the visible-line window.\n"
+		"\n"
+		"Things to try\n"
+		"  • Click anywhere in a line to place the caret.\n"
+		"  • Drag across text, then use the arrow keys with Shift.\n"
+		"  • Add enough lines to make the editor scroll.\n"
+		"  • Toggle soft wrap from the side panel.\n"
+		"\n"
+		"A tab follows this label:\tcolumn two\n"
+		"The editor asks Clay to draw only the currently materialized visible lines, "
+		"so this same element shape can scale beyond this friendly demo document.\n";
+	bool editorSoftWrap = true;
+	uint64_t documentChanges = 0;
+	uint64_t documentCommits = 0;
+	uint64_t documentFocuses = 0;
+	uint64_t undoRequests = 0;
+	uint64_t redoRequests = 0;
 };
 
 constexpr auto kIncrement = UiAction(
@@ -43,6 +78,12 @@ constexpr auto kClear = UiAction(
 constexpr auto kReset = UiAction(
 	"fsel.demo.reset",
 	[](DemoState& state) { state = DemoState{}; });
+constexpr auto kShowGallery = UiAction(
+	"fsel.demo.show-gallery",
+	[](DemoState& state) { state.page = DemoPage::Gallery; });
+constexpr auto kShowWritingStudio = UiAction(
+	"fsel.demo.show-writing-studio",
+	[](DemoState& state) { state.page = DemoPage::WritingStudio; });
 
 struct DemoActions {
 	ActionCall activateButton{};
@@ -53,6 +94,17 @@ struct DemoActions {
 	ActionCall sliderBegin{};
 	ActionCall sliderChange{};
 	ActionCall sliderCommit{};
+	ActionCall quickNoteChange{};
+	ActionCall quickNoteCommit{};
+	ActionCall quickNoteSubmit{};
+	ActionCall documentChange{};
+	ActionCall documentCommit{};
+	ActionCall documentFocus{};
+	ActionCall undoRequested{};
+	ActionCall redoRequested{};
+	ActionCall toggleEditorWrap{};
+	ActionCall showGallery{};
+	ActionCall showWritingStudio{};
 	ActionCall reset{};
 };
 
@@ -67,6 +119,17 @@ DemoActions makeActions(App& app, DemoState& state) {
 		.sliderBegin = ActionCall{actions.make(kIncrement, state.sliderBegins)},
 		.sliderChange = ActionCall{actions.make(kIncrement, state.sliderChanges)},
 		.sliderCommit = ActionCall{actions.make(kIncrement, state.sliderCommits)},
+		.quickNoteChange = ActionCall{actions.make(kIncrement, state.quickNoteChanges)},
+		.quickNoteCommit = ActionCall{actions.make(kIncrement, state.quickNoteCommits)},
+		.quickNoteSubmit = ActionCall{actions.make(kIncrement, state.quickNoteSubmits)},
+		.documentChange = ActionCall{actions.make(kIncrement, state.documentChanges)},
+		.documentCommit = ActionCall{actions.make(kIncrement, state.documentCommits)},
+		.documentFocus = ActionCall{actions.make(kIncrement, state.documentFocuses)},
+		.undoRequested = ActionCall{actions.make(kIncrement, state.undoRequests)},
+		.redoRequested = ActionCall{actions.make(kIncrement, state.redoRequests)},
+		.toggleEditorWrap = ActionCall{actions.make(kToggle, state.editorSoftWrap)},
+		.showGallery = ActionCall{actions.make(kShowGallery, state)},
+		.showWritingStudio = ActionCall{actions.make(kShowWritingStudio, state)},
 		.reset = ActionCall{actions.make(kReset, state)},
 	};
 }
@@ -104,6 +167,10 @@ std::string decimal(double value, int precision = 2) {
 	std::ostringstream stream;
 	stream << std::fixed << std::setprecision(precision) << value;
 	return stream.str();
+}
+
+size_t lineCount(std::string_view text) {
+	return 1u + static_cast<size_t>(std::ranges::count(text, '\n'));
 }
 
 BoxParameters cardParameters() {
@@ -313,6 +380,55 @@ void drawRadioCard(UiManager& ui, DemoState& state) {
 	ui.drawConstructed();
 }
 
+void drawTextInputCard(
+	UiManager& ui,
+	DemoState& state,
+	const DemoActions& actions) {
+	ui.createElement(kBox, "text-input-card")
+		.setParameters(cardParameters())
+		.construct();
+	drawCardHeading(
+		ui,
+		"TextInput",
+		"Single-line editing with live binding. Press Enter to submit and release focus.");
+
+	ui.createElement(kTextInput, "quick-note-input")
+		.setParameters(TextInputParameters{
+			.value = &state.quickNote,
+			.syncPolicy = TextFieldSyncPolicy::Live,
+			.actions = TextFieldActions{
+				.onChanged = actions.quickNoteChange,
+				.onCommit = actions.quickNoteCommit,
+				.onSubmit = actions.quickNoteSubmit,
+			},
+			.placeholder = "Type a short note…",
+			.sizing = Clay_Sizing{
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_FIXED(38),
+			},
+			.focusedOverrides = TextFieldStateOverrides{
+				.borderColor = kAccent,
+			},
+			.caret = TextFieldCaretOverrides{
+				.shape = InputCaretShape::Underline,
+				.thicknessPx = 2.0f,
+				.blockWidthPx = 9.0f,
+				.color = kWarm,
+				.selectionBoxColor = Flow_Color("#247ba066"),
+				.blinkPeriodSeconds = 0.9,
+			},
+		})
+		.draw();
+
+	drawText(
+		ui,
+		"change " + std::to_string(state.quickNoteChanges) +
+			"  ·  commit " + std::to_string(state.quickNoteCommits) +
+			"  ·  submit " + std::to_string(state.quickNoteSubmits),
+		textStyle(ui, 11, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+	ui.drawConstructed();
+}
+
 void drawBooleanCard(
 	UiManager& ui,
 	const DemoState& state,
@@ -475,6 +591,61 @@ void drawSlidersCard(
 	ui.drawConstructed();
 }
 
+void drawProgressBarsCard(UiManager& ui, const DemoState& state) {
+	ui.createElement(kBox, "progress-bars-card")
+		.setParameters(cardParameters())
+		.construct();
+	drawCardHeading(
+		ui,
+		"ProgressBar",
+		"A stateless display of the value snapshot supplied for this frame.");
+
+	CLAY(ui.toClaySID("demo/progress/horizontal-row"), row(14)) {
+		drawText(ui, "Volume", textStyle(ui, 13, kText, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kProgressBar, "volume-progress")
+			.setParameters(ProgressBarParameters{
+				.value = state.volume,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_GROW(0),
+					.height = CLAY_SIZING_FIXED(14),
+				},
+				.baseColor = Flow_Color("#101722ff"),
+				.borderColor = Flow_Color("#3a4b66ff"),
+				.fillColor = kAccent,
+			})
+			.draw();
+		drawText(
+			ui,
+			decimal(state.volume * 100.0, 0) + "%",
+			textStyle(ui, 12, kAccent, 650, CLAY_TEXT_WRAP_NONE));
+	}
+
+	CLAY(ui.toClaySID("demo/progress/vertical-row"), row(14)) {
+		drawText(
+			ui,
+			"Temperature",
+			textStyle(ui, 13, kText, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kProgressBar, "temperature-progress")
+			.setParameters(ProgressBarParameters{
+				.axis = ProgressBarAxis::Vertical,
+				.value = state.temperature,
+				.minimum = 0.0,
+				.maximum = 100.0,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(14),
+					.height = CLAY_SIZING_FIXED(64),
+				},
+				.fillColor = kWarm,
+			})
+			.draw();
+		drawText(
+			ui,
+			decimal(state.temperature, 0),
+			textStyle(ui, 12, kWarm, 650, CLAY_TEXT_WRAP_NONE));
+	}
+	ui.drawConstructed();
+}
+
 void drawLayoutCard(UiManager& ui, const DemoState& state) {
 	ui.createElement(kBox, "layout-card")
 		.setParameters(cardParameters())
@@ -490,7 +661,11 @@ void drawLayoutCard(UiManager& ui, const DemoState& state) {
 	ui.drawConstructed();
 }
 
-void drawHeader(UiManager& ui, const DemoActions& actions) {
+void drawHeader(
+	UiManager& ui,
+	const DemoState& state,
+	const DemoActions& actions) {
+	const bool isGallery = state.page == DemoPage::Gallery;
 	Clay_ElementDeclaration header = row(14);
 	header.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 	CLAY(ui.toClaySID("demo/header"), header) {
@@ -502,10 +677,15 @@ void drawHeader(UiManager& ui, const DemoActions& actions) {
 		titleGroup.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		titleGroup.layout.childGap = 3;
 		CLAY(ui.toClaySID("demo/header/title"), titleGroup) {
-			drawText(ui, "FSEL · Immediate Gallery", textStyle(ui, 27, kText, 700));
 			drawText(
 				ui,
-				"A live tour of the first Flow Standard Element Library primitives",
+				isGallery ? "FSEL · Immediate Gallery" : "FSEL · Writing Studio",
+				textStyle(ui, 27, kText, 700));
+			drawText(
+				ui,
+				isGallery
+					? "A live tour of the first Flow Standard Element Library primitives"
+					: "A focused TextArea workspace built from the same small element catalogue",
 				textStyle(ui, 12, kMuted));
 		}
 
@@ -518,8 +698,27 @@ void drawHeader(UiManager& ui, const DemoActions& actions) {
 			})
 			.draw();
 
+		ui.createElement(FlowUi::FSEL::kButton, "page-navigation")
+			.setParameters(FlowUi::FSEL::ButtonParameters{
+				.onActivate = isGallery
+					? actions.showWritingStudio
+					: actions.showGallery,
+				.contentMode = ButtonContentMode::TextOnly,
+				.text = isGallery ? "Open writing studio  →" : "←  Back to gallery",
+				.padding = Clay_Padding{11, 11, 6, 6},
+				.idleOverrides = ButtonStateOverrides{
+					.backgroundColor = Flow_Color("#163c4aff"),
+					.labelColor = kAccent,
+					.borderColor = Flow_Color("#2d7894ff"),
+				},
+			})
+			.draw();
+
 		CLAY(ui.toClaySID("demo/header/severity"), badge(Flow_Color("#183848ff"))) {
-			drawText(ui, "IMMEDIATE", textStyle(ui, 11, kAccent, 750, CLAY_TEXT_WRAP_NONE));
+			drawText(
+				ui,
+				isGallery ? "GALLERY" : "EDITOR",
+				textStyle(ui, 11, kAccent, 750, CLAY_TEXT_WRAP_NONE));
 		}
 		ui.createElement(FlowUi::FSEL::kButton, "reset-demo")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
@@ -550,7 +749,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 		})
 		.construct();
 
-	drawHeader(ui, actions);
+	drawHeader(ui, state, actions);
 
 	Clay_ElementDeclaration panes{};
 	panes.layout.sizing = {
@@ -581,6 +780,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 		drawButtonsCard(ui, state, actions);
 		drawSelectableCard(ui, state, actions);
 		drawRadioCard(ui, state);
+		drawTextInputCard(ui, state, actions);
 		ui.drawConstructed();
 
 		ui.createElement(kSplitterHandle, "gallery-splitter")
@@ -615,9 +815,257 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 			})
 			.construct();
 		drawBooleanCard(ui, state, actions);
+		drawProgressBarsCard(ui, state);
 		drawSlidersCard(ui, state, actions);
 		drawLayoutCard(ui, state);
 		ui.drawConstructed();
+	}
+
+	ui.drawConstructed();
+}
+
+void drawEditorSidebar(
+	UiManager& ui,
+	DemoState& state,
+	const DemoActions& actions) {
+	ui.createElement(kBox, "editor-sidebar")
+		.setParameters(BoxParameters{
+			.sizing = {
+				.width = CLAY_SIZING_FIXED(255),
+				.height = CLAY_SIZING_GROW(0),
+			},
+			.padding = CLAY_PADDING_ALL(16),
+			.childGap = 18,
+			.childAlignment = {
+				.x = CLAY_ALIGN_X_LEFT,
+				.y = CLAY_ALIGN_Y_TOP,
+			},
+			.layoutDirection = CLAY_TOP_TO_BOTTOM,
+			.backgroundColor = Flow_Color("#111925ff"),
+			.borderColor = kCardBorder,
+			.cornerRadius = CLAY_CORNER_RADIUS(12),
+			.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0},
+		})
+		.construct();
+
+	drawCardHeading(
+		ui,
+		"Editor guide",
+		"The surrounding chrome is ordinary Box, Button, Switch, Spacer, and text composition.");
+
+	CLAY(ui.toClaySID("demo/editor/wrap-row"), row(10)) {
+		ui.createElement(kSwitch, "editor-soft-wrap")
+			.setParameters(SwitchParameters{
+				.isOn = state.editorSoftWrap,
+				.onToggle = actions.toggleEditorWrap,
+			})
+			.draw();
+		drawText(
+			ui,
+			state.editorSoftWrap ? "Soft wrap on" : "Soft wrap off",
+			textStyle(ui, 13, kText, 600, CLAY_TEXT_WRAP_NONE));
+	}
+
+	CLAY(ui.toClaySID("demo/editor/model-badge"), badge(Flow_Color("#163c4aff"))) {
+		drawText(ui, "LIVE STRING BINDING", textStyle(ui, 10, kAccent, 750));
+	}
+	drawText(
+		ui,
+		"The TextArea edits DemoState::document. FSEL synchronizes the application value from manager transactions.",
+		textStyle(ui, 12, kMuted));
+
+	drawText(ui, "Try these", textStyle(ui, 13, kText, 650));
+	drawText(
+		ui,
+		"• click to place the caret\n• Shift + arrows to select\n• Ctrl/Cmd + A to select all\n• wheel over the editor to scroll",
+		textStyle(ui, 11, kMuted));
+
+	ui.createElement(kSpacer, "editor-sidebar-spacer")
+		.setParameters(SpacerParameters{
+			.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			},
+		})
+		.draw();
+
+	drawText(ui, "External history hooks", textStyle(ui, 13, kText, 650));
+	drawText(
+		ui,
+		"Undo and redo remain application transactions. The demo counts requests without installing a document history.",
+		textStyle(ui, 11, kMuted));
+	CLAY(ui.toClaySID("demo/editor/history-counts"), row(8)) {
+		CLAY(ui.toClaySID("demo/editor/undo-count"), badge(Flow_Color("#2b2340ff"))) {
+			drawText(
+				ui,
+				"UNDO " + std::to_string(state.undoRequests),
+				textStyle(ui, 10, kWarm, 700, CLAY_TEXT_WRAP_NONE));
+		}
+		CLAY(ui.toClaySID("demo/editor/redo-count"), badge(Flow_Color("#2b2340ff"))) {
+			drawText(
+				ui,
+				"REDO " + std::to_string(state.redoRequests),
+				textStyle(ui, 10, kWarm, 700, CLAY_TEXT_WRAP_NONE));
+		}
+	}
+
+	ui.drawConstructed();
+}
+
+void drawDocumentEditor(
+	UiManager& ui,
+	DemoState& state,
+	const DemoActions& actions) {
+	ui.createElement(kBox, "document-editor")
+		.setParameters(BoxParameters{
+			.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			},
+			.padding = CLAY_PADDING_ALL(18),
+			.childGap = 12,
+			.childAlignment = {
+				.x = CLAY_ALIGN_X_LEFT,
+				.y = CLAY_ALIGN_Y_TOP,
+			},
+			.layoutDirection = CLAY_TOP_TO_BOTTOM,
+			.backgroundColor = kCard,
+			.borderColor = kCardBorder,
+			.cornerRadius = CLAY_CORNER_RADIUS(12),
+			.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0},
+		})
+		.construct();
+
+	Clay_ElementDeclaration titleRow = row(12);
+	CLAY(ui.toClaySID("demo/editor/title-row"), titleRow) {
+		ui.createElement(kTextInput, "document-title")
+			.setParameters(TextInputParameters{
+				.value = &state.documentTitle,
+				.syncPolicy = TextFieldSyncPolicy::OnCommit,
+				.placeholder = "Untitled document",
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_GROW(0),
+					.height = CLAY_SIZING_FIXED(40),
+				},
+				.idleOverrides = TextFieldStateOverrides{
+					.backgroundColor = Flow_Color("#101722ff"),
+					.borderColor = Flow_Color("#263750ff"),
+				},
+				.focusedOverrides = TextFieldStateOverrides{
+					.backgroundColor = Flow_Color("#101722ff"),
+					.borderColor = kAccent,
+				},
+				.fontSize = 17,
+				.caret = TextFieldCaretOverrides{
+					.color = kAccent,
+				},
+			})
+			.draw();
+		CLAY(ui.toClaySID("demo/editor/live-badge"), badge(Flow_Color("#173c32ff"))) {
+			drawText(ui, "LIVE", textStyle(ui, 10, kAccent, 750, CLAY_TEXT_WRAP_NONE));
+		}
+	}
+
+	drawText(
+		ui,
+		"The title uses OnCommit synchronization; the document body below uses Live synchronization.",
+		textStyle(ui, 11, kMuted));
+
+	ui.createElement(kTextArea, "main-document")
+		.setParameters(TextAreaParameters{
+			.value = &state.document,
+			.syncPolicy = TextFieldSyncPolicy::Live,
+			.actions = TextFieldActions{
+				.onChanged = actions.documentChange,
+				.onCommit = actions.documentCommit,
+				.onFocus = actions.documentFocus,
+				.onUndoRequested = actions.undoRequested,
+				.onRedoRequested = actions.redoRequested,
+			},
+			.softWrap = state.editorSoftWrap,
+			.transactionDetail = TransactionReportDetail::Reversible,
+			.placeholder = "Start writing here…",
+			.sizing = Clay_Sizing{
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			},
+			.padding = CLAY_PADDING_ALL(18),
+			.idleOverrides = TextFieldStateOverrides{
+				.backgroundColor = Flow_Color("#0e1520ff"),
+				.borderColor = Flow_Color("#263750ff"),
+			},
+			.focusedOverrides = TextFieldStateOverrides{
+				.backgroundColor = Flow_Color("#0e1520ff"),
+				.borderColor = kAccent,
+			},
+			.fontSize = 15,
+			.tabWidth = 4,
+			.caret = TextFieldCaretOverrides{
+				.shape = InputCaretShape::Bar,
+				.thicknessPx = 2.0f,
+				.color = kAccent,
+				.selectionBoxColor = Flow_Color("#247ba077"),
+				.selectedTextColor = Flow_Color("#ffffffff"),
+				.blinkPeriodSeconds = 1.1,
+				.blinkVisibleSeconds = 0.62,
+			},
+		})
+		.draw();
+
+	CLAY(ui.toClaySID("demo/editor/status-row"), row(14)) {
+		drawText(
+			ui,
+			std::to_string(lineCount(state.document)) + " lines  ·  " +
+				std::to_string(state.document.size()) + " UTF-8 bytes",
+			textStyle(ui, 11, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kSpacer, "editor-status-spacer")
+			.setParameters(SpacerParameters{
+				.sizing = {
+					.width = CLAY_SIZING_GROW(0),
+					.height = CLAY_SIZING_FIXED(1),
+				},
+			})
+			.draw();
+		drawText(
+			ui,
+			"focus " + std::to_string(state.documentFocuses) +
+				"  ·  changes " + std::to_string(state.documentChanges) +
+				"  ·  commits " + std::to_string(state.documentCommits),
+			textStyle(ui, 11, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+	}
+
+	ui.drawConstructed();
+}
+
+void drawWritingStudio(
+	UiManager& ui,
+	DemoState& state,
+	const DemoActions& actions) {
+	ui.createElement(kBox, "writing-studio-page")
+		.setParameters(BoxParameters{
+			.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			},
+			.padding = CLAY_PADDING_ALL(22),
+			.childGap = 18,
+			.childAlignment = {
+				.x = CLAY_ALIGN_X_LEFT,
+				.y = CLAY_ALIGN_Y_TOP,
+			},
+			.layoutDirection = CLAY_TOP_TO_BOTTOM,
+			.backgroundColor = Flow_Color("#0c111bff"),
+		})
+		.construct();
+
+	drawHeader(ui, state, actions);
+
+	Clay_ElementDeclaration workspace = row(16);
+	workspace.layout.sizing.height = CLAY_SIZING_GROW(0);
+	workspace.layout.childAlignment.y = CLAY_ALIGN_Y_TOP;
+	CLAY(ui.toClaySID("demo/editor/workspace"), workspace) {
+		drawEditorSidebar(ui, state, actions);
+		drawDocumentEditor(ui, state, actions);
 	}
 
 	ui.drawConstructed();
@@ -639,7 +1087,11 @@ int main() {
 
 		while (!app.shouldClose()) {
 			app.beginFrame();
-			drawGallery(app.ui(), state, actions);
+			if (state.page == DemoPage::Gallery) {
+				drawGallery(app.ui(), state, actions);
+			} else {
+				drawWritingStudio(app.ui(), state, actions);
+			}
 			app.endFrame();
 			app.drawFrame();
 		}

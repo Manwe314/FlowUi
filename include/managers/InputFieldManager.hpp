@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -19,6 +21,7 @@ namespace FlowUi {
 class UiManager;
 namespace detail { struct InputFieldFrameOverrides; }
 namespace detail::input_field { struct InputFieldKey; }
+namespace detail::text { class TextLayoutService; }
 namespace detail::storage { class IStorageSystem; }
 namespace detail::manager_storage {
 struct InputCaretState;
@@ -97,7 +100,8 @@ struct FontFrameView;
  *         CLAY(rootId, {}) {
  *             CLAY(contentId, {}) {
  *                 CLAY_TEXT(
- *                     context.uiManager.toClayString(field.text),
+ *                     context.uiManager.toClayString(
+ *                         field.text.contiguous().value_or(std::string_view{})),
  *                     CLAY_TEXT_CONFIG(textConfig));
  *             };
  *         };
@@ -151,6 +155,14 @@ public:
 	FieldQueryResult requestField(GlobalFlowID fieldId, const FieldRequest& request);
 	FieldQueryResult requestField(FlowElementPartID fieldId, const FieldRequest& request);
 	FieldQueryResult requestField(ResourceKey key, const FieldRequest& request);
+
+	/**
+	 * @brief Associate a rendered visible line with its logical document range.
+	 *
+	 * Multiline controls call this once for every VisibleTextLine they emit.
+	 * The frame-scoped handle prevents stale submissions from being accepted.
+	 */
+	bool submitTextSpan(FieldHandle field, const FieldTextSpanSubmission& span);
 
 	/**
 	 * @brief Request focus or caret changes for an input field.
@@ -271,6 +283,7 @@ public:
 	 * @endcode
 	 */
 	bool hasPrimaryFieldFocus() const;
+	bool canEditPrimaryField() const;
 
 	/**
 	 * @brief Return selected text from the primary input field.
@@ -318,6 +331,27 @@ public:
 	 */
 	bool insertTextAtPrimaryCaret(std::string_view utf8Text);
 
+	/** Queue a semantic command for the currently focused field. */
+	bool enqueueCommand(TextCommand command, std::string_view payload = {});
+
+	/** Apply a validated replacement batch atomically to an existing field. */
+	EditResult applyEdits(
+		FlowElementID fieldId,
+		std::span<const TextReplacement> edits,
+		EditOrigin origin = EditOrigin::Programmatic);
+	EditResult applyEdits(
+		GlobalFlowID fieldId,
+		std::span<const TextReplacement> edits,
+		EditOrigin origin = EditOrigin::Programmatic);
+	EditResult applyEdits(
+		FlowElementPartID fieldId,
+		std::span<const TextReplacement> edits,
+		EditOrigin origin = EditOrigin::Programmatic);
+	EditResult applyEdits(
+		ResourceKey key,
+		std::span<const TextReplacement> edits,
+		EditOrigin origin = EditOrigin::Programmatic);
+
 private:
 	friend class UiManager;
 
@@ -331,13 +365,17 @@ private:
 		detail::storage::IStorageSystem& storage,
 		WindowId window,
 		const InputManagerConfig& config,
-		float pointsToPixelsScale);
+		float pointsToPixelsScale,
+		detail::text::TextLayoutService& textLayoutService);
 	void destroy() noexcept;
 	void setConfig(const InputManagerConfig& config);
 	void setFontFrameView(
 		const detail::manager_storage::FontFrameView& fontView,
 		float pointsToPixelsScale);
 	void beginFrame(const FrameInput& currentInput, const FrameInput& previousInput);
+	void setClipboardAccess(
+		std::function<void(std::string_view)> setClipboardText,
+		std::function<std::string()> getClipboardText);
 	Clay_RenderCommandArray endFrame(const Clay_RenderCommandArray& renderCommands);
 	const detail::InputFieldFrameOverrides& frameOverrides() const;
 	[[nodiscard]] detail::input_field::InputFieldKey normalizeFieldKey(ResourceKey key) const;
@@ -353,15 +391,38 @@ private:
 		std::string_view text,
 		bool preserveCaret);
 
-	void applyKeyboardEdits();
+	void applyCapturedEdits(detail::input_field::InputFieldKey fieldId, FieldState& field);
+	void applyPendingCommands(detail::input_field::InputFieldKey fieldId, FieldState& field);
+	EditResult applyEditsByKey(
+		detail::input_field::InputFieldKey fieldId,
+		std::span<const TextReplacement> edits,
+		EditOrigin origin,
+		bool requireFocus,
+		bool enforceReadOnly);
+	EditResult commitEdits(
+		FieldState& field,
+		std::span<const TextReplacement> edits,
+		EditOrigin origin,
+		bool enforceReadOnly);
+	void refreshTransactionViews(FieldState& field);
+	void moveCaretsByWord(FieldState& field, int direction, bool selecting);
+	void applyWordDelete(FieldState& field, bool backspace);
 	void markCaretBlinkReset();
-	void updateCaretBlinkVisibility(bool hasAnyActiveCaret);
+	void updateCaretBlinkVisibility(
+		bool hasAnyActiveCaret,
+		const InputFieldOverlayStyle* style = nullptr);
 	bool shouldTriggerActionWithRepeat(int key, KeyRepeatState& state);
-	void applyTextInsertion(FieldState& field, std::string_view utf8Text);
-	void applyDelete(FieldState& field, bool backspace);
+	void applyTextInsertion(FieldState& field, std::string_view utf8Text, EditOrigin origin = EditOrigin::TypedInput);
+	void applyDelete(FieldState& field, bool backspace, EditOrigin origin = EditOrigin::Delete);
 	void moveCaretsHorizontal(FieldState& field, int direction, bool selecting);
+	void moveCaretsVertical(FieldState& field, int direction, bool selecting);
+	void moveCaretsToLineBoundary(FieldState& field, bool toEnd, bool selecting);
 	void clampCaretsToText(FieldState& field) const;
-	void eraseRange(FieldState& field, size_t start, size_t end, size_t sourceCaretIndex);
+	void revealPrimaryCaret(FieldState& field);
+	void materializeVisibleLines(FieldState& field);
+	float fieldLineHeight(const FieldState& field) const;
+	std::vector<TextRange> visualRangesForHardLine(FieldState& field, size_t hardLineIndex);
+	float caretXInRange(const FieldState& field, TextRange range, size_t byteOffset) const;
 
 	static size_t clampUtf8Boundary(std::string_view text, size_t offset);
 	static size_t nextUtf8Codepoint(std::string_view text, size_t offset);
@@ -389,6 +450,7 @@ private:
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	detail::manager_storage::InputFieldManagerState* state_ = nullptr;
+	detail::text::TextLayoutService* textLayoutService_ = nullptr;
 };
 
 /** @} */

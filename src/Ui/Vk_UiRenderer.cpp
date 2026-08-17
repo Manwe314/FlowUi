@@ -1,6 +1,5 @@
 #include "Ui/Vk_UiRenderer.hpp"
 #include "managers/InputFieldManager.hpp"
-#include "internal/TextLayoutEngine.hpp"
 
 #include <algorithm>
 #include <array>
@@ -444,10 +443,12 @@ static void EmitSolidBorder(
 static void EmitTextMsdf(
 	const Clay_RenderCommand& command,
 	const FlowUi::detail::manager_storage::FontFrameView* fontView,
+	FlowUi::detail::text::TextLayoutService& textLayoutService,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
 	const FlowUi::detail::InputFieldTextColorOverride* textColorOverride,
+	uint8_t tabWidth,
 	BoundedWriter<UiInstance>& instances,
 	uint32_t& textGlyphCount)
 {
@@ -496,34 +497,31 @@ static void EmitTextMsdf(
 		++textGlyphCount;
 	};
 
-	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(fontView, textData.fontId);
-	uint32_t atlasLayer = fontFace ? fontFace->atlasLayer : 0u;
-	float distanceRangePx = 2.0f;
-	if (fontFace) {
-		if (const FlowUi::Font::FontVariantData* variant = fontFace->defaultVariant();
-			variant && variant->distanceRange > 0.0f) {
-			distanceRangePx = variant->distanceRange;
-		}
-	}
-	const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
-		FlowUi::detail::TextLayoutRequest{
-			.text = textData.stringContents,
-			.fontFace = fontFace,
+	const FlowUi::detail::text::TextLayoutResult& layoutResult = textLayoutService.layout(
+		FlowUi::detail::text::TextLayoutRequest{
+			.text = textData.stringContents.chars
+				? std::string_view(
+					textData.stringContents.chars,
+					static_cast<size_t>(std::max(0, textData.stringContents.length)))
+				: std::string_view{},
+			.fontView = fontView,
+			.fontId = static_cast<FlowUi::FontId>(textData.fontId),
 			.pointsToPixelsScale = pointsToPixelsScale,
 			.fontSize = textData.fontSize,
 			.letterSpacing = textData.letterSpacing,
-			.lineOriginX = bounds.x,
-			.lineOriginY = bounds.y,
-			.emitGlyphQuads = true,
-		},
-		[&](const FlowUi::detail::TextLayoutGlyphQuad& glyph) {
-			emitGlyph(GlyphQuad{
-				glyph.x, glyph.y, glyph.w, glyph.h,
-				glyph.u0, glyph.v0, glyph.u1, glyph.v1,
-				glyph.byteStartOffset, glyph.byteEndOffset,
-			}, atlasLayer, distanceRangePx);
+			.tabWidth = tabWidth,
+			.includeGlyphGeometry = true,
 		});
-	if (!layoutResult.success) {
+	if (layoutResult.success) {
+		for (const FlowUi::detail::text::TextLayoutGlyph& glyph : layoutResult.glyphs) {
+			emitGlyph(GlyphQuad{
+				bounds.x + glyph.x, bounds.y + glyph.y, glyph.width, glyph.height,
+				glyph.u0, glyph.v0, glyph.u1, glyph.v1,
+				static_cast<int>(std::min<size_t>(glyph.clusterStartByte, static_cast<size_t>(std::numeric_limits<int>::max()))),
+				static_cast<int>(std::min<size_t>(glyph.clusterEndByte, static_cast<size_t>(std::numeric_limits<int>::max()))),
+			}, layoutResult.atlasLayer, layoutResult.distanceRangePx);
+		}
+	} else {
 		emitGlyph(GlyphQuad{
 			bounds.x, bounds.y, bounds.width, bounds.height,
 			0.0f, 0.0f, 1.0f, 1.0f,
@@ -585,6 +583,7 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 	const FlowUi::detail::InputFieldFrameOverrides& inputFieldOverrides,
 	VkExtent2D extent,
 	const FlowUi::detail::manager_storage::FontFrameView* fontView,
+	FlowUi::detail::text::TextLayoutService& textLayoutService,
 	float pointsToPixelsScale,
 	float uiToFramebufferScaleX,
 	float uiToFramebufferScaleY,
@@ -635,6 +634,8 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 	size_t inputRectOverrideCursor = 0u;
 	const std::vector<FlowUi::detail::InputFieldTextColorOverride>& inputTextColorOverrides = inputFieldOverrides.textColorOverrides;
 	size_t inputTextColorOverrideCursor = 0u;
+	const std::vector<FlowUi::detail::InputFieldTextLayoutOverride>& inputTextLayoutOverrides = inputFieldOverrides.textLayoutOverrides;
+	size_t inputTextLayoutOverrideCursor = 0u;
 	auto emitInputOverridesBefore = [&](int32_t commandIndex) {
 		while (inputRectOverrideCursor < inputRectOverrides.size()) {
 			const FlowUi::detail::InputFieldRectOverride& rectOverride = inputRectOverrides[inputRectOverrideCursor];
@@ -665,6 +666,16 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 				inputTextColorOverrides[inputTextColorOverrideCursor].commandIndex == i) {
 				++inputTextColorOverrideCursor;
 			}
+		}
+		while (inputTextLayoutOverrideCursor < inputTextLayoutOverrides.size() &&
+			inputTextLayoutOverrides[inputTextLayoutOverrideCursor].commandIndex < i) {
+			++inputTextLayoutOverrideCursor;
+		}
+		uint8_t inputTabWidth = 4;
+		if (inputTextLayoutOverrideCursor < inputTextLayoutOverrides.size() &&
+			inputTextLayoutOverrides[inputTextLayoutOverrideCursor].commandIndex == i) {
+			inputTabWidth = inputTextLayoutOverrides[inputTextLayoutOverrideCursor].tabWidth;
+			++inputTextLayoutOverrideCursor;
 		}
 		const Clay_RenderCommand& command = commands.internalArray[i];
 
@@ -712,10 +723,12 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 				EmitTextMsdf(
 					command,
 					fontView,
+					textLayoutService,
 					pointsToPixelsScale,
 					uiToFramebufferScaleX,
 					uiToFramebufferScaleY,
 					inputTextColorOverride,
+					inputTabWidth,
 					outInstances,
 					result.textGlyphCount);
 				break;
@@ -1266,11 +1279,13 @@ FlowUi::detail::UiConversionResult FlowUi::detail::buildUiInstancesDirect(
 	std::span<UiRun> runs,
 	std::span<RectF> scissorStack,
 	std::span<const storage::BindingHotRecord> textureBindings) {
+	text::TextLayoutService textLayoutService;
 	const UiBuildResult built = BuildInstancesAndRunsFromClay(
 		commands,
 		overrides,
 		extent,
 		fontView,
+		textLayoutService,
 		pointsToPixelsScale,
 		uiToFramebufferScaleX,
 		uiToFramebufferScaleY,
@@ -1616,6 +1631,7 @@ void VulkanUiRenderer::destroy(
 	storage::SubmissionSerial lastUse)
 {
 	boundFontAtlasRevisionByFrame_.clear();
+	textLayoutService_.clear();
 	frameResourceCount_ = 1u;
 
 	(void)vk;
@@ -1848,6 +1864,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		inputFieldOverrides,
 		extent,
 		&fontView,
+		textLayoutService_,
 		pointsToPixelsScale_,
 		clampedScaleX,
 		clampedScaleY,

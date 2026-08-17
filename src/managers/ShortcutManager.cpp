@@ -6,6 +6,8 @@
 #include <utility>
 #include <array>
 
+#include <GLFW/glfw3.h>
+
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ShortcutManagerState.hpp"
 #include "managers/ActionManager.hpp"
@@ -86,6 +88,64 @@ void ShortcutManager::init(storage::IStorageSystem& storageSystem, WindowId wind
 	storage_ = &storageSystem;
 	window_ = window;
 	stateHandle_ = handle.packed();
+}
+
+void ShortcutManager::installDefaultTextShortcuts(const DefaultTextShortcutConfig& config) {
+	if (!config.enabled) return;
+	PlatformShortcutStyle platform = config.platform;
+	if (platform == PlatformShortcutStyle::Auto) {
+#if defined(__APPLE__)
+		platform = PlatformShortcutStyle::Command;
+#else
+		platform = PlatformShortcutStyle::Control;
+#endif
+	}
+	const auto chord = [platform](int key, bool shift = false, bool wordModifier = false) {
+		ShortcutChord result{.key = key, .shift = shift};
+		if (wordModifier && platform == PlatformShortcutStyle::Command) result.alt = true;
+		else if (platform == PlatformShortcutStyle::Command) result.super = true;
+		else result.ctrl = true;
+		return result;
+	};
+	const auto add = [this, &config](ShortcutChord value, TextCommand command) {
+		(void)registerShortcut(
+			value,
+			ShortcutScope::FocusedInput,
+			config.priority,
+			[command](ShortcutContext& context) {
+				return context.ui.inputFields().enqueueCommand(command);
+			});
+	};
+	if (config.selectAll) add(chord(GLFW_KEY_A), TextCommand::SelectAll);
+	if (config.clipboard) {
+		add(chord(GLFW_KEY_C), TextCommand::Copy);
+		add(chord(GLFW_KEY_X), TextCommand::Cut);
+		add(chord(GLFW_KEY_V), TextCommand::Paste);
+	}
+	if (config.undoRedoRequests) {
+		add(chord(GLFW_KEY_Z), TextCommand::RequestUndo);
+		add(chord(GLFW_KEY_Z, true), TextCommand::RequestRedo);
+		if (platform == PlatformShortcutStyle::Control) add(chord(GLFW_KEY_Y), TextCommand::RequestRedo);
+	}
+	if (config.wordNavigation) {
+		add(chord(GLFW_KEY_LEFT, false, true), TextCommand::MoveWordLeft);
+		add(chord(GLFW_KEY_RIGHT, false, true), TextCommand::MoveWordRight);
+		add(chord(GLFW_KEY_LEFT, true, true), TextCommand::MoveWordLeft);
+		add(chord(GLFW_KEY_RIGHT, true, true), TextCommand::MoveWordRight);
+		add(chord(GLFW_KEY_BACKSPACE, false, true), TextCommand::DeleteWordBackward);
+		add(chord(GLFW_KEY_DELETE, false, true), TextCommand::DeleteWordForward);
+		if (platform == PlatformShortcutStyle::Control) {
+			add(chord(GLFW_KEY_HOME), TextCommand::MoveDocumentStart);
+			add(chord(GLFW_KEY_END), TextCommand::MoveDocumentEnd);
+			add(chord(GLFW_KEY_HOME, true), TextCommand::MoveDocumentStart);
+			add(chord(GLFW_KEY_END, true), TextCommand::MoveDocumentEnd);
+		} else {
+			add(chord(GLFW_KEY_LEFT), TextCommand::MoveDocumentStart);
+			add(chord(GLFW_KEY_RIGHT), TextCommand::MoveDocumentEnd);
+			add(chord(GLFW_KEY_LEFT, true), TextCommand::MoveDocumentStart);
+			add(chord(GLFW_KEY_RIGHT, true), TextCommand::MoveDocumentEnd);
+		}
+	}
 }
 
 void ShortcutManager::destroy() noexcept {

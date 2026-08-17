@@ -1,13 +1,18 @@
 #include "managers/InputFieldManager.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include <optional>
+#include <utility>
 
 #include <GLFW/glfw3.h>
 
-#include "internal/TextLayoutEngine.hpp"
+#include "internal/Text/TextLayoutService.hpp"
+#include "internal/Text/TextLineBreaker.hpp"
+#include "internal/Text/TextStorage.hpp"
 #include "internal/ManagerStorage/InputFieldManagerState.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
@@ -15,8 +20,6 @@
 namespace {
 
 constexpr float kBoundsEpsilon = 0.5f;
-constexpr double kCaretBlinkPeriodSeconds = 1.0;
-constexpr double kCaretBlinkVisibleSeconds = 0.5;
 constexpr double kKeyRepeatInitialDelaySeconds = 0.35;
 constexpr double kKeyRepeatIntervalSeconds = 0.06;
 
@@ -30,6 +33,37 @@ bool boundsContains(const Clay_BoundingBox& outer, const Clay_BoundingBox& inner
 bool boundsContainsPoint(const Clay_BoundingBox& bounds, float x, float y) {
 	return x >= bounds.x && x <= (bounds.x + bounds.width) &&
 		y >= bounds.y && y <= (bounds.y + bounds.height);
+}
+
+FlowUi::InputFieldOverlayStyle defaultOverlayStyle(
+	const FlowUi::InputManagerConfig& config) {
+	return {
+		.caretShape = FlowUi::InputCaretShape::Bar,
+		.caretThicknessPx = config.caretWidthPx,
+		.caretBlockWidthPx = std::max(config.caretWidthPx, 8.0f),
+		.caretHeightOverflowTopPx = config.caretHeightOverflowTopPx,
+		.caretHeightOverflowBottomPx = config.caretHeightOverflowBottomPx,
+		.caretColor = config.caretColor,
+		.selectionBoxColor = config.highlightBoxColor,
+		.selectedTextColor = config.highlightedTextColor,
+	};
+}
+
+FlowUi::InputFieldOverlayStyle normalizeOverlayStyle(
+	FlowUi::InputFieldOverlayStyle style) {
+	style.caretThicknessPx = std::max(style.caretThicknessPx, 0.0f);
+	style.caretBlockWidthPx = std::max(style.caretBlockWidthPx, 0.0f);
+	style.caretHeightOverflowTopPx = std::max(
+		style.caretHeightOverflowTopPx, 0.0f);
+	style.caretHeightOverflowBottomPx = std::max(
+		style.caretHeightOverflowBottomPx, 0.0f);
+	style.caretBlinkPeriodSeconds = std::max(
+		style.caretBlinkPeriodSeconds, 1.0e-6);
+	style.caretBlinkVisibleSeconds = std::clamp(
+		style.caretBlinkVisibleSeconds,
+		0.0,
+		style.caretBlinkPeriodSeconds);
+	return style;
 }
 
 bool appendUtf8Codepoint(std::string& out, char32_t codepoint) {
@@ -63,6 +97,84 @@ bool appendUtf8Codepoint(std::string& out, char32_t codepoint) {
 	return true;
 }
 
+bool containsNewline(std::string_view text) {
+	return text.find('\n') != std::string_view::npos || text.find('\r') != std::string_view::npos;
+}
+
+bool validUtf8(std::string_view text) {
+	for (size_t i = 0; i < text.size();) {
+		const auto first = static_cast<unsigned char>(text[i]);
+		size_t count = 0;
+		uint32_t value = 0;
+		if (first <= 0x7Fu) { count = 1; value = first; }
+		else if ((first & 0xE0u) == 0xC0u) { count = 2; value = first & 0x1Fu; }
+		else if ((first & 0xF0u) == 0xE0u) { count = 3; value = first & 0x0Fu; }
+		else if ((first & 0xF8u) == 0xF0u) { count = 4; value = first & 0x07u; }
+		else return false;
+		if (i + count > text.size()) return false;
+		for (size_t j = 1; j < count; ++j) {
+			const auto continuation = static_cast<unsigned char>(text[i + j]);
+			if ((continuation & 0xC0u) != 0x80u) return false;
+			value = (value << 6u) | (continuation & 0x3Fu);
+		}
+		if ((count == 2 && value < 0x80u) || (count == 3 && value < 0x800u) ||
+			(count == 4 && value < 0x10000u) || value > 0x10FFFFu ||
+			(value >= 0xD800u && value <= 0xDFFFu)) return false;
+		i += count;
+	}
+	return true;
+}
+
+std::string normalizedNewlines(std::string_view text) {
+	std::string result;
+	result.reserve(text.size());
+	for (size_t i = 0; i < text.size(); ++i) {
+		if (text[i] != '\r') result.push_back(text[i]);
+		else {
+			result.push_back('\n');
+			if (i + 1 < text.size() && text[i + 1] == '\n') ++i;
+		}
+	}
+	return result;
+}
+
+int wordClass(unsigned char value) {
+	if (std::isspace(value)) return 0;
+	if (std::isalnum(value) || value == '_') return 1;
+	return 2;
+}
+
+size_t fieldTextSize(const void* context) noexcept {
+	return FlowUi::detail::text::byteCount(
+		*static_cast<const FlowUi::detail::text::FieldStorage*>(context));
+}
+
+std::optional<std::string_view> fieldTextContiguous(const void* context) noexcept {
+	return FlowUi::detail::text::contiguous(
+		*static_cast<const FlowUi::detail::text::FieldStorage*>(context));
+}
+
+std::string fieldTextCopy(const void* context, FlowUi::TextRange range) {
+	return FlowUi::detail::text::copy(
+		*static_cast<const FlowUi::detail::text::FieldStorage*>(context), range);
+}
+
+void fieldTextForEachChunk(
+	const void* context,
+	FlowUi::TextRange range,
+	const FlowUi::TextChunkVisitor& visitor) {
+	FlowUi::detail::text::forEachChunk(
+		*static_cast<const FlowUi::detail::text::FieldStorage*>(context), range, visitor);
+}
+
+bool sameLayoutDescriptor(
+	const FlowUi::TextLayoutDescriptor& a,
+	const FlowUi::TextLayoutDescriptor& b) noexcept {
+	return a.fontId == b.fontId && a.fontSize == b.fontSize &&
+		a.letterSpacing == b.letterSpacing && a.viewportWidth == b.viewportWidth &&
+		a.viewportHeight == b.viewportHeight && a.tabWidth == b.tabWidth;
+}
+
 } // namespace
 
 namespace FlowUi {
@@ -71,12 +183,14 @@ namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;
 namespace storage = detail::storage;
 namespace field_key = detail::input_field;
+namespace text_storage = detail::text;
 
 void InputFieldManager::init(
 	storage::IStorageSystem& storageSystem,
 	WindowId window,
 	const InputManagerConfig& config,
-	float pointsToPixelsScale) {
+	float pointsToPixelsScale,
+	detail::text::TextLayoutService& textLayoutService) {
 	if (storage_) throw std::logic_error("InputFieldManager is already initialized.");
 	const storage::StringId name = storageSystem.intern("flowui.input.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
@@ -93,6 +207,7 @@ void InputFieldManager::init(
 	}
 	state_->config = config;
 	state_->pointsToPixelsScale = std::max(pointsToPixelsScale, 1.0e-6f);
+	textLayoutService_ = &textLayoutService;
 }
 
 void InputFieldManager::destroy() noexcept {
@@ -106,6 +221,7 @@ void InputFieldManager::destroy() noexcept {
 		}
 	}
 	state_ = nullptr;
+	textLayoutService_ = nullptr;
 	stateHandle_ = 0;
 	window_ = InvalidWindowId;
 	storage_ = nullptr;
@@ -132,7 +248,9 @@ void InputFieldManager::markCaretBlinkReset() {
 	state_->emitCaretsThisFrame = true;
 }
 
-void InputFieldManager::updateCaretBlinkVisibility(bool hasAnyActiveCaret) {
+void InputFieldManager::updateCaretBlinkVisibility(
+	bool hasAnyActiveCaret,
+	const InputFieldOverlayStyle* style) {
 	if (!hasAnyActiveCaret) {
 		state_->caretBlinkElapsedSeconds = 0.0;
 		state_->caretBlinkResetPending = false;
@@ -150,8 +268,13 @@ void InputFieldManager::updateCaretBlinkVisibility(bool hasAnyActiveCaret) {
 	const double dt = std::max(0.0, state_->currentInput.dt);
 	state_->caretBlinkElapsedSeconds += dt;
 
-	const double period = std::max(kCaretBlinkPeriodSeconds, 1.0e-6);
-	const double visibleDuration = std::clamp(kCaretBlinkVisibleSeconds, 0.0, period);
+	const InputFieldOverlayStyle fallback = defaultOverlayStyle(state_->config);
+	const InputFieldOverlayStyle& resolved = style ? *style : fallback;
+	const double period = std::max(resolved.caretBlinkPeriodSeconds, 1.0e-6);
+	const double visibleDuration = std::clamp(
+		resolved.caretBlinkVisibleSeconds,
+		0.0,
+		period);
 	const double phase = std::fmod(state_->caretBlinkElapsedSeconds, period);
 	state_->emitCaretsThisFrame = phase < visibleDuration;
 }
@@ -193,8 +316,31 @@ void InputFieldManager::beginFrame(const FrameInput& currentInput, const FrameIn
 		++state_->currentTouchEpoch;
 	}
 
-	applyKeyboardEdits();
+	state_->pendingCommands.clear();
+	for (auto& [_, field] : state_->fieldsById) {
+		field.frameTransactions.clear();
+		field.frameTransactionViews.clear();
+		field.frameCommandRequests.clear();
+		field.submittedTextSpans.clear();
+	}
+	if (!hasPrimaryFieldFocus()) {
+		state_->leftKeyRepeat = KeyRepeatState{};
+		state_->rightKeyRepeat = KeyRepeatState{};
+		state_->upKeyRepeat = KeyRepeatState{};
+		state_->downKeyRepeat = KeyRepeatState{};
+		state_->homeKeyRepeat = KeyRepeatState{};
+		state_->endKeyRepeat = KeyRepeatState{};
+		state_->backspaceKeyRepeat = KeyRepeatState{};
+		state_->deleteKeyRepeat = KeyRepeatState{};
+	}
 	state_->dirty = true;
+}
+
+void InputFieldManager::setClipboardAccess(
+	std::function<void(std::string_view)> setClipboardText,
+	std::function<std::string()> getClipboardText) {
+	state_->setClipboardText = std::move(setClipboardText);
+	state_->getClipboardText = std::move(getClipboardText);
 }
 
 Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArray& renderCommands) {
@@ -205,6 +351,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	};
 	state_->frameOverrides.rects.clear();
 	state_->frameOverrides.textColorOverrides.clear();
+	state_->frameOverrides.textLayoutOverrides.clear();
 
 	const bool isPrimaryPointerDown = state_->currentInput.mouseDown[0];
 	const bool wasPrimaryPointerDown = state_->previousInput.mouseDown[0];
@@ -238,6 +385,11 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		size_t startByteOffset = 0u;
 		size_t endByteOffset = 0u;
 	};
+	struct RuntimeSubmittedSpan {
+		TextRange logicalRange{};
+		uint32_t visualLineIndex = 0;
+		Clay_BoundingBox bounds{};
+	};
 
 	struct RuntimeFieldState {
 		field_key::InputFieldKey fieldId{};
@@ -247,6 +399,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		Clay_BoundingBox contentBounds{};
 		bool hasTextBounds = false;
 		Clay_BoundingBox textBounds{};
+		std::vector<RuntimeSubmittedSpan> submittedSpans{};
 		std::vector<RuntimeTextSpan> textSpans{};
 		std::vector<SelectionRange> mergedSelections{};
 		std::vector<bool> caretDrawn{};
@@ -282,6 +435,17 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			}
 		}
 
+		for (const manager_storage::InputSubmittedTextSpan& submission : field.submittedTextSpans) {
+			if (!elementIdIsValid(submission.textElementId)) continue;
+			const Clay_ElementData elementData = Clay_GetElementData(submission.textElementId);
+			if (!elementData.found) continue;
+			runtime.submittedSpans.push_back(RuntimeSubmittedSpan{
+				.logicalRange = submission.logicalRange,
+				.visualLineIndex = submission.visualLineIndex,
+				.bounds = elementData.boundingBox,
+			});
+		}
+
 		runtimes.push_back(std::move(runtime));
 	}
 
@@ -293,6 +457,33 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 		return nullptr;
 	};
+
+	for (RuntimeFieldState& runtime : runtimes) {
+		if (!runtime.field || !runtime.hasContentBounds ||
+			text_storage::storageMode(runtime.field->storage) != TextFieldMode::MultiLine ||
+			!boundsContainsPoint(
+				runtime.contentBounds,
+				state_->currentInput.mouseX,
+				state_->currentInput.mouseY)) {
+			continue;
+		}
+		FieldState& field = *runtime.field;
+		const float previousX = field.scrollOffset.x;
+		const float previousY = field.scrollOffset.y;
+		if (!field.config.softWrap) {
+			field.scrollOffset.x = std::clamp(
+				field.scrollOffset.x - state_->currentInput.scrollX,
+				0.0f,
+				field.maximumScrollX);
+		}
+		field.scrollOffset.y = std::clamp(
+			field.scrollOffset.y - state_->currentInput.scrollY,
+			0.0f,
+			field.maximumScrollY);
+		if (field.scrollOffset.x != previousX || field.scrollOffset.y != previousY) {
+			state_->dirty = true;
+		}
+	}
 
 	if (runtimes.empty()) {
 		if (pointerPressed) {
@@ -322,17 +513,27 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				static_cast<size_t>(commandByteLength));
 
 			RuntimeFieldState* matchedRuntime = nullptr;
+			const RuntimeSubmittedSpan* matchedSubmission = nullptr;
 			for (RuntimeFieldState& runtime : runtimes) {
-				if (!runtime.field || !runtime.hasTextBounds) {
-					continue;
+				if (!runtime.field) continue;
+				for (const RuntimeSubmittedSpan& submission : runtime.submittedSpans) {
+					if (boundsContains(submission.bounds, command.boundingBox)) {
+						matchedRuntime = &runtime;
+						matchedSubmission = &submission;
+						break;
+					}
 				}
+				if (matchedRuntime) break;
+				if (text_storage::storageMode(runtime.field->storage) != TextFieldMode::SingleLine ||
+					!runtime.hasTextBounds) continue;
 				if (!boundsContains(runtime.textBounds, command.boundingBox)) {
 					continue;
 				}
 
-				size_t resolved = std::min(runtime.cursor, runtime.field->text.size());
+				const std::string_view fullText = text_storage::contiguous(runtime.field->storage).value_or(std::string_view{});
+				size_t resolved = std::min(runtime.cursor, fullText.size());
 				if (!commandTextView.empty() &&
-					!findSliceOffsetFromCursor(runtime.field->text, commandTextView, runtime.cursor, resolved)) {
+					!findSliceOffsetFromCursor(fullText, commandTextView, runtime.cursor, resolved)) {
 					continue;
 				}
 
@@ -345,18 +546,22 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			}
 
 			FieldState& field = *matchedRuntime->field;
-			size_t commandStartInField = std::min(matchedRuntime->cursor, field.text.size());
-			if (!commandTextView.empty()) {
+			const size_t fieldSize = text_storage::byteCount(field.storage);
+			size_t commandStartInField = matchedSubmission
+				? std::min(matchedSubmission->logicalRange.startByte, fieldSize)
+				: std::min(matchedRuntime->cursor, fieldSize);
+			if (!matchedSubmission && !commandTextView.empty()) {
 				size_t resolved = commandStartInField;
-				if (findSliceOffsetFromCursor(field.text, commandTextView, matchedRuntime->cursor, resolved)) {
+				const std::string_view fullText = text_storage::contiguous(field.storage).value_or(std::string_view{});
+				if (findSliceOffsetFromCursor(fullText, commandTextView, matchedRuntime->cursor, resolved)) {
 					commandStartInField = resolved;
 				}
 			}
-			const size_t commandEndInField = std::min(
-				field.text.size(),
-				commandStartInField + commandTextView.size());
+			const size_t commandEndInField = matchedSubmission
+				? std::min(matchedSubmission->logicalRange.endByte, fieldSize)
+				: std::min(fieldSize, commandStartInField + commandTextView.size());
 
-			matchedRuntime->cursor = commandEndInField;
+			if (!matchedSubmission) matchedRuntime->cursor = commandEndInField;
 			matchedRuntime->hasTextCommand = true;
 			matchedRuntime->lastTextCommand = command;
 			matchedRuntime->lastTextCommandIndex = i;
@@ -366,6 +571,11 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				.startByteOffset = commandStartInField,
 				.endByteOffset = commandEndInField,
 			});
+			state_->frameOverrides.textLayoutOverrides.push_back(
+				detail::InputFieldTextLayoutOverride{
+					.commandIndex = i,
+					.tabWidth = field.layout.tabWidth,
+				});
 		}
 	}
 
@@ -375,11 +585,11 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 		const FieldState& field = *runtime.field;
 		if (runtime.textSpans.empty()) {
-			if (field.text.empty()) {
+			if (text_storage::empty(field.storage)) {
 				return 0u;
 			}
 			if (runtime.hasContentBounds && mouseX > (runtime.contentBounds.x + runtime.contentBounds.width * 0.5f)) {
-				return field.text.size();
+				return text_storage::byteCount(field.storage);
 			}
 			return 0u;
 		}
@@ -412,35 +622,33 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		const std::string_view commandTextView(
 			sourceSlice.chars ? sourceSlice.chars : "",
 			static_cast<size_t>(commandByteLength));
-		const float commandX = bestSpan->command.boundingBox.x;
-		float commandAdvance = measureTextSlice(sourceSlice, textData);
-		if (commandAdvance <= 0.0f) {
-			commandAdvance = std::max(0.0f, bestSpan->command.boundingBox.width);
-		}
-
-		if (mouseX <= commandX) {
-			return clampUtf8Boundary(field.text, bestSpan->startByteOffset);
-		}
-		if (mouseX >= (commandX + commandAdvance)) {
-			return clampUtf8Boundary(field.text, bestSpan->endByteOffset);
-		}
-
-		size_t localOffset = 0u;
-		float previousX = commandX;
-		while (localOffset < commandTextView.size()) {
-			const size_t nextOffset = nextUtf8Codepoint(commandTextView, localOffset);
-			const Clay_StringSlice nextPrefix = subSlice(sourceSlice, 0, static_cast<int>(nextOffset));
-			const float nextX = commandX + measureTextSlice(nextPrefix, textData);
-			const float midpoint = 0.5f * (previousX + nextX);
-			if (mouseX < midpoint) {
-				const size_t resolved = bestSpan->startByteOffset + localOffset;
-				return clampUtf8Boundary(field.text, std::min(resolved, bestSpan->endByteOffset));
+		const float localX = mouseX - bestSpan->command.boundingBox.x;
+		const detail::text::TextLayoutResult& layout = textLayoutService_->layout(
+			detail::text::TextLayoutRequest{
+				.text = commandTextView,
+				.fontView = &state_->fontView,
+				.fontId = static_cast<FontId>(textData.fontId),
+				.pointsToPixelsScale = state_->pointsToPixelsScale,
+				.fontSize = textData.fontSize,
+				.letterSpacing = textData.letterSpacing,
+				.tabWidth = field.layout.tabWidth,
+				.includeGlyphGeometry = false,
+			});
+		size_t localOffset = localX <= 0.0f ? 0u : commandTextView.size();
+		if (layout.success && !layout.caretStops.empty()) {
+			localOffset = layout.caretStops.back().byteOffset;
+			for (size_t i = 0; i + 1u < layout.caretStops.size(); ++i) {
+				const float midpoint = 0.5f * (layout.caretStops[i].x + layout.caretStops[i + 1u].x);
+				if (localX < midpoint) {
+					localOffset = layout.caretStops[i].byteOffset;
+					break;
+				}
 			}
-			localOffset = nextOffset;
-			previousX = nextX;
 		}
-
-		return clampUtf8Boundary(field.text, bestSpan->endByteOffset);
+		const size_t resolved = std::min(
+			bestSpan->startByteOffset + localOffset,
+			bestSpan->endByteOffset);
+		return text_storage::clampUtf8Boundary(field.storage, resolved);
 	};
 
 	if (pointerPressed) {
@@ -484,6 +692,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				candidate.carets.clear();
 			}
 			field.carets = { CaretState{hitOffset, hitOffset} };
+			field.caretRevealPending = true;
 			state_->primaryFieldId = targetRuntime->fieldId;
 			state_->pointerDrag.active = true;
 			state_->pointerDrag.fieldId = targetRuntime->fieldId;
@@ -498,7 +707,8 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			state_->pointerDrag = PointerDragState{};
 		} else {
 			FieldState& dragField = *dragRuntime->field;
-			const size_t clampedAnchor = clampUtf8Boundary(dragField.text, state_->pointerDrag.anchorByteOffset);
+			const size_t clampedAnchor = text_storage::clampUtf8Boundary(
+				dragField.storage, state_->pointerDrag.anchorByteOffset);
 			const size_t hitOffset = resolvePointerOffsetInRuntime(*dragRuntime, state_->currentInput.mouseX, state_->currentInput.mouseY);
 			if (dragField.carets.empty()) {
 				dragField.carets.push_back(CaretState{clampedAnchor, hitOffset});
@@ -508,6 +718,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				if (caret.anchorByteOffset != clampedAnchor || caret.headByteOffset != hitOffset) {
 					caret.anchorByteOffset = clampedAnchor;
 					caret.headByteOffset = hitOffset;
+					dragField.caretRevealPending = true;
 					markCaretBlinkReset();
 				}
 				if (dragField.carets.size() > 1u) {
@@ -516,11 +727,34 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			}
 			state_->primaryFieldId = state_->pointerDrag.fieldId;
 			clampCaretsToText(dragField);
+			if (dragRuntime->hasContentBounds &&
+				text_storage::storageMode(dragField.storage) == TextFieldMode::MultiLine) {
+				const float dt = static_cast<float>(std::max(0.0, state_->currentInput.dt));
+				const float verticalSpeed = std::max(60.0f, dragRuntime->contentBounds.height * 3.0f);
+				if (state_->currentInput.mouseY < dragRuntime->contentBounds.y) {
+					dragField.scrollOffset.y = std::max(0.0f, dragField.scrollOffset.y - verticalSpeed * dt);
+				} else if (state_->currentInput.mouseY > dragRuntime->contentBounds.y + dragRuntime->contentBounds.height) {
+					dragField.scrollOffset.y = std::min(
+						dragField.maximumScrollY,
+						dragField.scrollOffset.y + verticalSpeed * dt);
+				}
+				if (!dragField.config.softWrap) {
+					const float horizontalSpeed = std::max(60.0f, dragRuntime->contentBounds.width * 3.0f);
+					if (state_->currentInput.mouseX < dragRuntime->contentBounds.x) {
+						dragField.scrollOffset.x = std::max(0.0f, dragField.scrollOffset.x - horizontalSpeed * dt);
+					} else if (state_->currentInput.mouseX > dragRuntime->contentBounds.x + dragRuntime->contentBounds.width) {
+						dragField.scrollOffset.x = std::min(
+							dragField.maximumScrollX,
+							dragField.scrollOffset.x + horizontalSpeed * dt);
+					}
+				}
+			}
 		}
 	}
 
 	bool needsOverrides = false;
 	bool hasAnyVisibleCaret = false;
+	const InputFieldOverlayStyle* blinkStyle = nullptr;
 	for (RuntimeFieldState& runtime : runtimes) {
 		if (!runtime.field) {
 			continue;
@@ -532,9 +766,12 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		const bool fieldShowsCaret = !runtime.field->config.readOnly && !runtime.field->carets.empty();
 		needsOverrides = needsOverrides || fieldShowsCaret || !runtime.mergedSelections.empty();
 		hasAnyVisibleCaret = hasAnyVisibleCaret || fieldShowsCaret;
+		if (fieldShowsCaret && runtime.fieldId == state_->primaryFieldId) {
+			blinkStyle = &runtime.field->overlayStyle;
+		}
 	}
 
-	updateCaretBlinkVisibility(hasAnyVisibleCaret);
+	updateCaretBlinkVisibility(hasAnyVisibleCaret, blinkStyle);
 	if (!needsOverrides) {
 		publishMutation();
 		return renderCommands;
@@ -560,24 +797,40 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		state_->frameOverrides.rects.push_back(rectOverride);
 	};
 
-	auto pushCaretRect = [&](int32_t insertBeforeCommandIndex, float caretX, float y, float h) {
-		pushRectOverride(
-			insertBeforeCommandIndex,
-			caretX,
-			y,
-			std::max(0.0f, state_->config.caretWidthPx),
-			h,
-			state_->config.caretColor);
+	auto pushCaretRect = [&](const InputFieldOverlayStyle& style,
+		int32_t insertBeforeCommandIndex, float caretX, float y, float h) {
+		const float thickness = std::max(0.0f, style.caretThicknessPx);
+		const float blockWidth = std::max(0.0f, style.caretBlockWidthPx);
+		switch (style.caretShape) {
+		case InputCaretShape::Bar:
+			pushRectOverride(
+				insertBeforeCommandIndex, caretX, y, thickness, h,
+				style.caretColor);
+			break;
+		case InputCaretShape::Block:
+			pushRectOverride(
+				insertBeforeCommandIndex, caretX, y, blockWidth, h,
+				style.caretColor);
+			break;
+		case InputCaretShape::Underline:
+			pushRectOverride(
+				insertBeforeCommandIndex, caretX, y + std::max(0.0f, h - thickness),
+				blockWidth, thickness, style.caretColor);
+			break;
+		}
 	};
 
-	auto pushTextColorOverride = [&](int32_t commandIndex, const std::vector<SelectionRange>& localSelections, int commandByteLength) {
+	auto pushTextColorOverride = [&](int32_t commandIndex,
+		const std::vector<SelectionRange>& localSelections,
+		int commandByteLength,
+		const Clay_Color& selectedTextColor) {
 		if (localSelections.empty() || commandByteLength <= 0) {
 			return;
 		}
 
 		detail::InputFieldTextColorOverride textOverride{};
 		textOverride.commandIndex = std::clamp(commandIndex, 0, std::max(0, renderCommands.length - 1));
-		textOverride.color = state_->config.highlightedTextColor;
+		textOverride.color = selectedTextColor;
 		textOverride.ranges.reserve(localSelections.size());
 
 		for (const SelectionRange& localSelection : localSelections) {
@@ -605,11 +858,37 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 
 		FieldState& field = *runtime.field;
+		const InputFieldOverlayStyle& overlayStyle = field.overlayStyle;
 		for (const RuntimeTextSpan& span : runtime.textSpans) {
 			const Clay_RenderCommand& command = span.command;
 			const Clay_TextRenderData& textData = command.renderData.text;
 			const Clay_StringSlice sourceSlice = textData.stringContents;
 			const int commandByteLength = std::max(0, sourceSlice.length);
+			const std::string_view commandText(
+				sourceSlice.chars ? sourceSlice.chars : "",
+				static_cast<size_t>(commandByteLength));
+			const detail::text::TextLayoutResult& spanLayout = textLayoutService_->layout(
+				detail::text::TextLayoutRequest{
+					.text = commandText,
+					.fontView = &state_->fontView,
+					.fontId = static_cast<FontId>(textData.fontId),
+					.pointsToPixelsScale = state_->pointsToPixelsScale,
+					.fontSize = textData.fontSize,
+					.letterSpacing = textData.letterSpacing,
+					.tabWidth = field.layout.tabWidth,
+					.includeGlyphGeometry = false,
+				});
+			const auto xAtByte = [&](size_t localByte) {
+				if (!spanLayout.success || spanLayout.caretStops.empty()) return 0.0f;
+				localByte = std::min(localByte, commandText.size());
+				float x = 0.0f;
+				for (const detail::text::TextCaretStop& stop : spanLayout.caretStops) {
+					if (stop.byteOffset > localByte) break;
+					x = stop.x;
+					if (stop.byteOffset == localByte) break;
+				}
+				return x;
+			};
 			if (command.boundingBox.height > 0.0f) {
 				field.fallbackMetrics.valid = true;
 				field.fallbackMetrics.height = command.boundingBox.height;
@@ -628,15 +907,14 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				});
 			}
 
-			auto emitHighlightRect = [&](int localStart, int localEnd) {
+			auto emitHighlightRect = [&](size_t localStart, size_t localEnd) {
 				if (localEnd <= localStart) {
 					return;
 				}
-				const Clay_StringSlice prefixSlice = subSlice(sourceSlice, 0, localStart);
-				const Clay_StringSlice selectionSlice = subSlice(sourceSlice, localStart, localEnd - localStart);
-
-				const float x0 = command.boundingBox.x + measureTextSlice(prefixSlice, textData);
-				const float selectionWidth = measureTextSlice(selectionSlice, textData);
+				const float startX = xAtByte(localStart);
+				const float endX = xAtByte(localEnd);
+				const float x0 = command.boundingBox.x + std::min(startX, endX);
+				const float selectionWidth = std::abs(endX - startX);
 				if (selectionWidth <= 0.0f) {
 					return;
 				}
@@ -647,14 +925,18 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 					command.boundingBox.y,
 					selectionWidth,
 					command.boundingBox.height,
-					state_->config.highlightBoxColor);
+					overlayStyle.selectionBoxColor);
 			};
 
 			if (!localSelections.empty() && commandByteLength > 0) {
-				pushTextColorOverride(span.commandIndex, localSelections, commandByteLength);
+				pushTextColorOverride(
+					span.commandIndex,
+					localSelections,
+					commandByteLength,
+					overlayStyle.selectedTextColor);
 				for (const SelectionRange& localSelection : localSelections) {
-					const int selStart = static_cast<int>(std::min<size_t>(localSelection.start, static_cast<size_t>(commandByteLength)));
-					const int selEnd = static_cast<int>(std::min<size_t>(localSelection.end, static_cast<size_t>(commandByteLength)));
+					const size_t selStart = std::min<size_t>(localSelection.start, static_cast<size_t>(commandByteLength));
+					const size_t selEnd = std::min<size_t>(localSelection.end, static_cast<size_t>(commandByteLength));
 					if (selEnd <= selStart) {
 						continue;
 					}
@@ -663,25 +945,35 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			}
 
 			if (state_->emitCaretsThisFrame && !field.config.readOnly) {
-				const float caretY = command.boundingBox.y - state_->config.caretHeightOverflowTopPx;
-				const float caretH = command.boundingBox.height + state_->config.caretHeightOverflowTopPx + state_->config.caretHeightOverflowBottomPx;
+				const float caretY = command.boundingBox.y - overlayStyle.caretHeightOverflowTopPx;
+				const float caretH = command.boundingBox.height +
+					overlayStyle.caretHeightOverflowTopPx +
+					overlayStyle.caretHeightOverflowBottomPx;
 				for (size_t caretIndex = 0; caretIndex < field.carets.size(); ++caretIndex) {
 					if (caretIndex >= runtime.caretDrawn.size() || runtime.caretDrawn[caretIndex]) {
 						continue;
 					}
 
-					const size_t caretOffset = clampUtf8Boundary(field.text, field.carets[caretIndex].headByteOffset);
+					const size_t fieldSize = text_storage::byteCount(field.storage);
+					const size_t caretOffset = text_storage::clampUtf8Boundary(
+						field.storage, field.carets[caretIndex].headByteOffset);
+					const bool spanEndsHardLine = span.endByteOffset == fieldSize ||
+						text_storage::byteAt(field.storage, span.endByteOffset) == '\n';
 					const bool caretInsideCommand =
 						(caretOffset >= span.startByteOffset && caretOffset < span.endByteOffset) ||
-						(caretOffset == span.endByteOffset && caretOffset == field.text.size());
+						(caretOffset == span.endByteOffset && spanEndsHardLine);
 					if (!caretInsideCommand) {
 						continue;
 					}
 
 					const size_t localCaret = std::min(caretOffset - span.startByteOffset, static_cast<size_t>(commandByteLength));
-					const Clay_StringSlice caretPrefix = subSlice(sourceSlice, 0, static_cast<int>(localCaret));
-					const float caretX = command.boundingBox.x + measureTextSlice(caretPrefix, textData);
-					pushCaretRect(span.commandIndex + 1, caretX, caretY, caretH);
+					const float caretX = command.boundingBox.x + xAtByte(localCaret);
+					pushCaretRect(
+						overlayStyle,
+						span.commandIndex + 1,
+						caretX,
+						caretY,
+						caretH);
 					runtime.caretDrawn[caretIndex] = true;
 				}
 			}
@@ -711,8 +1003,32 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 
 		FieldState& field = *runtime.field;
+		const InputFieldOverlayStyle& overlayStyle = field.overlayStyle;
 		for (size_t caretIndex = 0; caretIndex < field.carets.size(); ++caretIndex) {
 			if (caretIndex < runtime.caretDrawn.size() && runtime.caretDrawn[caretIndex]) {
+				continue;
+			}
+
+			if (text_storage::storageMode(field.storage) == TextFieldMode::MultiLine) {
+				const size_t caretOffset = field.carets[caretIndex].headByteOffset;
+				const auto submitted = std::find_if(
+					runtime.submittedSpans.begin(), runtime.submittedSpans.end(),
+					[&](const RuntimeSubmittedSpan& span) {
+						return span.logicalRange.startByte == span.logicalRange.endByte &&
+							caretOffset == span.logicalRange.startByte;
+					});
+				if (submitted != runtime.submittedSpans.end()) {
+					const float caretY = submitted->bounds.y - overlayStyle.caretHeightOverflowTopPx;
+					const float caretH = std::max(submitted->bounds.height, fieldLineHeight(field)) +
+						overlayStyle.caretHeightOverflowTopPx +
+						overlayStyle.caretHeightOverflowBottomPx;
+					pushCaretRect(
+						overlayStyle,
+						maxInsertionIndex,
+						submitted->bounds.x,
+						caretY,
+						caretH);
+				}
 				continue;
 			}
 
@@ -720,9 +1036,16 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				const Clay_RenderCommand& referenceCommand = runtime.lastTextCommand;
 				const Clay_TextRenderData& textData = referenceCommand.renderData.text;
 				const float textWidth = measureTextSlice(textData.stringContents, textData);
-				const float caretY = referenceCommand.boundingBox.y - state_->config.caretHeightOverflowTopPx;
-				const float caretH = referenceCommand.boundingBox.height + state_->config.caretHeightOverflowTopPx + state_->config.caretHeightOverflowBottomPx;
-				pushCaretRect(runtime.lastTextCommandIndex + 1, referenceCommand.boundingBox.x + textWidth, caretY, caretH);
+				const float caretY = referenceCommand.boundingBox.y - overlayStyle.caretHeightOverflowTopPx;
+				const float caretH = referenceCommand.boundingBox.height +
+					overlayStyle.caretHeightOverflowTopPx +
+					overlayStyle.caretHeightOverflowBottomPx;
+				pushCaretRect(
+					overlayStyle,
+					runtime.lastTextCommandIndex + 1,
+					referenceCommand.boundingBox.x + textWidth,
+					caretY,
+					caretH);
 				continue;
 			}
 
@@ -736,9 +1059,16 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				} else if (fallbackHeight <= 0.0f && runtime.hasContentBounds) {
 					fallbackHeight = runtime.contentBounds.height;
 				}
-				const float caretY = fallbackBounds.y - state_->config.caretHeightOverflowTopPx;
-				const float caretH = fallbackHeight + state_->config.caretHeightOverflowTopPx + state_->config.caretHeightOverflowBottomPx;
-				pushCaretRect(maxInsertionIndex, fallbackBounds.x, caretY, caretH);
+				const float caretY = fallbackBounds.y - overlayStyle.caretHeightOverflowTopPx;
+				const float caretH = fallbackHeight +
+					overlayStyle.caretHeightOverflowTopPx +
+					overlayStyle.caretHeightOverflowBottomPx;
+				pushCaretRect(
+					overlayStyle,
+					maxInsertionIndex,
+					fallbackBounds.x,
+					caretY,
+					caretH);
 			}
 		}
 	}
@@ -800,19 +1130,69 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 
 	auto [it, inserted] = state_->fieldsById.try_emplace(fieldId);
 	FieldState& field = it->second;
-	if (inserted) {
-		field.text = std::string(request.initialText);
+	FieldConfig normalizedConfig = request.config;
+	if (normalizedConfig.allowNewline) normalizedConfig.mode = TextFieldMode::MultiLine;
+	normalizedConfig.allowNewline = normalizedConfig.mode == TextFieldMode::MultiLine;
+	if (inserted || !field.initialized) {
+		field.modeChangeRejected = normalizedConfig.mode == TextFieldMode::SingleLine &&
+			containsNewline(request.initialText);
+		if (field.modeChangeRejected) {
+			normalizedConfig.mode = TextFieldMode::MultiLine;
+			normalizedConfig.allowNewline = true;
+		}
+		field.storage = text_storage::makeFieldStorage(normalizedConfig.mode, request.initialText);
+		field.handleValue = state_->nextFieldHandle++;
+		if (field.handleValue == 0) field.handleValue = state_->nextFieldHandle++;
+		field.initialized = true;
+	} else if (text_storage::storageMode(field.storage) != normalizedConfig.mode) {
+		field.modeChangeRejected = !text_storage::migrate(field.storage, normalizedConfig.mode);
+		if (field.modeChangeRejected) {
+			normalizedConfig.mode = text_storage::storageMode(field.storage);
+			normalizedConfig.allowNewline = normalizedConfig.mode == TextFieldMode::MultiLine;
+		} else {
+			field.wrapCacheByHardLine.clear();
+			field.scrollOffset = {};
+		}
+	} else {
+		field.modeChangeRejected = false;
 	}
-	field.config = request.config;
+	if (!sameLayoutDescriptor(field.layout, request.layout)) field.wrapCacheByHardLine.clear();
+	field.config = normalizedConfig;
+	field.layout = request.layout;
+	field.overlayStyle = normalizeOverlayStyle(request.overlayStyle.value_or(
+		defaultOverlayStyle(state_->config)));
 	field.textElementId = request.textElementId;
 	field.contentElementId = request.contentElementId;
 	field.lastTouchedEpoch = state_->currentTouchEpoch;
 	clampCaretsToText(field);
+	if (state_->primaryFieldId == fieldId && !field.carets.empty() &&
+		field.commandsAppliedEpoch != state_->currentTouchEpoch) {
+		field.commandsAppliedEpoch = state_->currentTouchEpoch;
+		applyPendingCommands(fieldId, field);
+		applyCapturedEdits(fieldId, field);
+	}
+	if (state_->primaryFieldId == fieldId) revealPrimaryCaret(field);
+	materializeVisibleLines(field);
+	refreshTransactionViews(field);
 
 	FieldQueryResult result{};
-	result.text = field.text;
+	result.field = FieldHandle{field.handleValue, state_->currentTouchEpoch};
+	result.text = FieldTextView{
+		&field.storage,
+		fieldTextSize,
+		fieldTextContiguous,
+		fieldTextCopy,
+		fieldTextForEachChunk,
+	};
+	result.mode = text_storage::storageMode(field.storage);
+	result.modeChangeRejected = field.modeChangeRejected;
+	result.visibleLines = field.visibleLines;
+	result.scrollOffset = field.scrollOffset;
 	result.hasPrimaryCaret =
 		!field.carets.empty() && state_->primaryFieldId == fieldId;
+	result.revision = field.revision;
+	result.transactions = field.frameTransactionViews;
+	result.commandRequests = field.frameCommandRequests;
 	for (const CaretState& caret : field.carets) {
 		if (caretHasSelection(caret)) {
 			result.hasSelection = true;
@@ -820,6 +1200,36 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 		}
 	}
 	return result;
+}
+
+bool InputFieldManager::submitTextSpan(
+	FieldHandle handle,
+	const FieldTextSpanSubmission& span) {
+	if (!handle || handle.frameEpoch != state_->currentTouchEpoch ||
+		!elementIdIsValid(span.textElementId)) return false;
+	for (auto& [_, field] : state_->fieldsById) {
+		if (field.handleValue != handle.value || field.lastTouchedEpoch != handle.frameEpoch) continue;
+		const size_t size = text_storage::byteCount(field.storage);
+		if (span.logicalRange.startByte > span.logicalRange.endByte ||
+			span.logicalRange.endByte > size ||
+			text_storage::clampUtf8Boundary(field.storage, span.logicalRange.startByte) != span.logicalRange.startByte ||
+			text_storage::clampUtf8Boundary(field.storage, span.logicalRange.endByte) != span.logicalRange.endByte) {
+			return false;
+		}
+		const bool isVisible = std::ranges::any_of(field.visibleLines, [&](const VisibleTextLine& line) {
+			return line.logicalRange.startByte == span.logicalRange.startByte &&
+				line.logicalRange.endByte == span.logicalRange.endByte &&
+				line.visualLineIndex == span.visualLineIndex;
+		});
+		if (!isVisible) return false;
+		field.submittedTextSpans.push_back(manager_storage::InputSubmittedTextSpan{
+			.logicalRange = span.logicalRange,
+			.textElementId = span.textElementId,
+			.visualLineIndex = span.visualLineIndex,
+		});
+		return true;
+	}
+	return false;
 }
 
 void InputFieldManager::requestCaret(ResourceKey key, CaretRequestKind kind) {
@@ -849,6 +1259,12 @@ bool InputFieldManager::hasPrimaryFieldFocus() const {
 	return !it->second.carets.empty();
 }
 
+bool InputFieldManager::canEditPrimaryField() const {
+	if (!state_->primaryFieldId) return false;
+	const auto it = state_->fieldsById.find(state_->primaryFieldId);
+	return it != state_->fieldsById.end() && !it->second.carets.empty() && !it->second.config.readOnly;
+}
+
 std::string_view InputFieldManager::getSelectedText() const {
 	if (!state_->primaryFieldId) {
 		return {};
@@ -859,8 +1275,9 @@ std::string_view InputFieldManager::getSelectedText() const {
 	}
 
 	const FieldState& field = it->second;
-	size_t selectedStart = field.text.size();
-	size_t selectedEnd = field.text.size();
+	const size_t fieldSize = text_storage::byteCount(field.storage);
+	size_t selectedStart = fieldSize;
+	size_t selectedEnd = fieldSize;
 	bool foundSelection = false;
 	for (const CaretState& caret : field.carets) {
 		if (!caretHasSelection(caret)) {
@@ -878,8 +1295,12 @@ std::string_view InputFieldManager::getSelectedText() const {
 	if (!foundSelection || selectedEnd <= selectedStart) {
 		return {};
 	}
-	const std::string_view textView(field.text);
-	return textView.substr(selectedStart, selectedEnd - selectedStart);
+	if (const auto textView = text_storage::contiguous(field.storage)) {
+		return textView->substr(selectedStart, selectedEnd - selectedStart);
+	}
+	state_->selectedTextScratch = text_storage::copy(
+		field.storage, TextRange{selectedStart, selectedEnd});
+	return state_->selectedTextScratch;
 }
 
 bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
@@ -897,9 +1318,9 @@ bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
 		return false;
 	}
 
-	const std::string beforeText = field.text;
+	const uint64_t beforeRevision = field.revision;
 	const std::vector<CaretState> beforeCarets = field.carets;
-	applyTextInsertion(field, utf8Text);
+	applyTextInsertion(field, utf8Text, EditOrigin::Programmatic);
 
 	bool caretsChanged = beforeCarets.size() != field.carets.size();
 	if (!caretsChanged) {
@@ -912,11 +1333,221 @@ bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
 		}
 	}
 
-	const bool changed = (field.text != beforeText) || caretsChanged;
+	const bool changed = field.revision != beforeRevision || caretsChanged;
 	if (changed) {
 		markCaretBlinkReset();
 	}
 	return changed;
+}
+
+bool InputFieldManager::enqueueCommand(TextCommand command, std::string_view payload) {
+	if (!state_->primaryFieldId || !hasPrimaryFieldFocus()) return false;
+	state_->pendingCommands.push_back(manager_storage::InputPendingCommand{
+		.fieldId = state_->primaryFieldId,
+		.command = command,
+		.payload = std::string(payload),
+		.extendSelection = state_->currentInput.shift,
+	});
+	return true;
+}
+
+EditResult InputFieldManager::applyEdits(
+	FlowElementID fieldId,
+	std::span<const TextReplacement> edits,
+	EditOrigin origin) {
+	return applyEditsByKey(field_key::toInputFieldKey(fieldId), edits, origin, false, true);
+}
+
+EditResult InputFieldManager::applyEdits(
+	GlobalFlowID fieldId,
+	std::span<const TextReplacement> edits,
+	EditOrigin origin) {
+	return applyEditsByKey(field_key::toInputFieldKey(fieldId), edits, origin, false, true);
+}
+
+EditResult InputFieldManager::applyEdits(
+	FlowElementPartID fieldId,
+	std::span<const TextReplacement> edits,
+	EditOrigin origin) {
+	return applyEditsByKey(field_key::toInputFieldKey(fieldId), edits, origin, false, true);
+}
+
+EditResult InputFieldManager::applyEdits(
+	ResourceKey key,
+	std::span<const TextReplacement> edits,
+	EditOrigin origin) {
+	return applyEditsByKey(normalizeFieldKey(key), edits, origin, false, true);
+}
+
+EditResult InputFieldManager::applyEditsByKey(
+	field_key::InputFieldKey fieldId,
+	std::span<const TextReplacement> edits,
+	EditOrigin origin,
+	bool requireFocus,
+	bool enforceReadOnly) {
+	if (!fieldId) return EditResult::RejectedNoField;
+	const auto it = state_->fieldsById.find(fieldId);
+	if (it == state_->fieldsById.end()) return EditResult::RejectedNoField;
+	if (requireFocus && state_->primaryFieldId != fieldId) return EditResult::RejectedNoFocus;
+	const EditResult result = commitEdits(it->second, edits, origin, enforceReadOnly);
+	if (result == EditResult::Applied) {
+		markCaretBlinkReset();
+		state_->dirty = true;
+	}
+	return result;
+}
+
+EditResult InputFieldManager::commitEdits(
+	FieldState& field,
+	std::span<const TextReplacement> edits,
+	EditOrigin origin,
+	bool enforceReadOnly) {
+	if (edits.empty()) return EditResult::NoChange;
+	if (enforceReadOnly && field.config.readOnly) return EditResult::RejectedReadOnly;
+
+	struct PreparedEdit { TextRange range{}; std::string inserted{}; };
+	std::vector<PreparedEdit> prepared;
+	prepared.reserve(edits.size());
+	const size_t originalSize = text_storage::byteCount(field.storage);
+	for (const TextReplacement& edit : edits) {
+		if (edit.oldRange.startByte > edit.oldRange.endByte ||
+			edit.oldRange.endByte > originalSize ||
+			text_storage::clampUtf8Boundary(field.storage, edit.oldRange.startByte) != edit.oldRange.startByte ||
+			text_storage::clampUtf8Boundary(field.storage, edit.oldRange.endByte) != edit.oldRange.endByte) {
+			return EditResult::RejectedInvalidRange;
+		}
+		if (!field.config.allowNewline && containsNewline(edit.insertedText)) {
+			return EditResult::RejectedNewline;
+		}
+		if (!validUtf8(edit.insertedText)) return EditResult::RejectedInvalidUtf8;
+		prepared.push_back(PreparedEdit{
+			edit.oldRange,
+			field.config.allowNewline ? normalizedNewlines(edit.insertedText) : std::string(edit.insertedText),
+		});
+	}
+	std::stable_sort(prepared.begin(), prepared.end(), [](const PreparedEdit& a, const PreparedEdit& b) {
+		return a.range.startByte < b.range.startByte;
+	});
+
+	size_t removedBytes = 0;
+	size_t insertedBytes = 0;
+	bool hasChange = false;
+	for (size_t i = 0; i < prepared.size(); ++i) {
+		if (i > 0 && (prepared[i - 1].range.endByte > prepared[i].range.startByte ||
+			(prepared[i - 1].range.endByte == prepared[i].range.startByte &&
+				(prepared[i - 1].range.startByte == prepared[i - 1].range.endByte ||
+				 prepared[i].range.startByte == prepared[i].range.endByte)))) {
+			return EditResult::RejectedInvalidRange;
+		}
+		const size_t removed = prepared[i].range.endByte - prepared[i].range.startByte;
+		if (removedBytes > std::numeric_limits<size_t>::max() - removed ||
+			insertedBytes > std::numeric_limits<size_t>::max() - prepared[i].inserted.size()) {
+			return EditResult::RejectedSizeLimit;
+		}
+		removedBytes += removed;
+		insertedBytes += prepared[i].inserted.size();
+		hasChange = hasChange ||
+			text_storage::copy(field.storage, prepared[i].range) != prepared[i].inserted;
+	}
+	if (!hasChange) return EditResult::NoChange;
+	if (insertedBytes > field.config.maxBytes ||
+		originalSize - removedBytes > field.config.maxBytes - insertedBytes) {
+		return EditResult::RejectedSizeLimit;
+	}
+
+	manager_storage::InputOwnedTransaction transaction{};
+	transaction.sequence = state_->nextTransactionSequence++;
+	transaction.revisionBefore = field.revision;
+	transaction.revisionAfter = field.revision + 1;
+	transaction.origin = origin;
+	for (const CaretState& caret : field.carets) {
+		transaction.selectionsBefore.push_back(TextSelection{
+			caret.anchorByteOffset,
+			caret.headByteOffset,
+			caret.hasPreferredX ? caret.preferredX : 0.0f,
+		});
+	}
+	transaction.selectionsAfter.reserve(field.carets.size());
+	transaction.replacements.reserve(prepared.size());
+	transaction.replacementViews.reserve(prepared.size());
+	for (const PreparedEdit& edit : prepared) {
+		const size_t removed = edit.range.endByte - edit.range.startByte;
+		auto& report = transaction.replacements.emplace_back();
+		report.range = edit.range;
+		report.removedByteCount = removed;
+		report.insertedByteCount = edit.inserted.size();
+		if (field.config.transactionDetail == TransactionReportDetail::Reversible) {
+			report.removedText = text_storage::copy(field.storage, edit.range);
+			report.insertedText = edit.inserted;
+		}
+	}
+	field.frameTransactions.reserve(field.frameTransactions.size() + 1);
+	field.frameTransactionViews.reserve(field.frameTransactions.size() + 1);
+
+	const auto remapOffset = [&prepared](size_t original) {
+		size_t mapped = original;
+		for (const PreparedEdit& edit : prepared) {
+			const size_t removed = edit.range.endByte - edit.range.startByte;
+			if (original < edit.range.startByte) break;
+			if (original <= edit.range.endByte) {
+				return mapped - (original - edit.range.startByte) + edit.inserted.size();
+			}
+			if (edit.inserted.size() >= removed) mapped += edit.inserted.size() - removed;
+			else mapped -= removed - edit.inserted.size();
+		}
+		return mapped;
+	};
+	const size_t firstChangedLine = text_storage::lineFromByte(
+		field.storage, prepared.front().range.startByte);
+	for (auto it = prepared.rbegin(); it != prepared.rend(); ++it) {
+		text_storage::replace(field.storage, it->range, it->inserted);
+	}
+	for (auto cache = field.wrapCacheByHardLine.begin(); cache != field.wrapCacheByHardLine.end();) {
+		if (cache->first >= firstChangedLine) cache = field.wrapCacheByHardLine.erase(cache);
+		else ++cache;
+	}
+	for (CaretState& caret : field.carets) {
+		caret.anchorByteOffset = remapOffset(caret.anchorByteOffset);
+		caret.headByteOffset = remapOffset(caret.headByteOffset);
+		caret.hasPreferredX = false;
+		transaction.selectionsAfter.push_back(TextSelection{
+			caret.anchorByteOffset,
+			caret.headByteOffset,
+			caret.hasPreferredX ? caret.preferredX : 0.0f,
+		});
+	}
+	field.revision = transaction.revisionAfter;
+	field.caretRevealPending = true;
+	field.frameTransactions.push_back(std::move(transaction));
+	refreshTransactionViews(field);
+	return EditResult::Applied;
+}
+
+void InputFieldManager::refreshTransactionViews(FieldState& field) {
+	field.frameTransactionViews.clear();
+	field.frameTransactionViews.reserve(field.frameTransactions.size());
+	for (auto& transaction : field.frameTransactions) {
+		transaction.replacementViews.clear();
+		transaction.replacementViews.reserve(transaction.replacements.size());
+		for (const auto& replacement : transaction.replacements) {
+			transaction.replacementViews.push_back(TextReplacementReport{
+				.oldRange = replacement.range,
+				.insertedByteCount = replacement.insertedByteCount,
+				.removedByteCount = replacement.removedByteCount,
+				.removedText = replacement.removedText,
+				.insertedText = replacement.insertedText,
+			});
+		}
+		field.frameTransactionViews.push_back(FieldEditTransaction{
+			.sequence = transaction.sequence,
+			.revisionBefore = transaction.revisionBefore,
+			.revisionAfter = transaction.revisionAfter,
+			.origin = transaction.origin,
+			.replacements = transaction.replacementViews,
+			.selectionsBefore = transaction.selectionsBefore,
+			.selectionsAfter = transaction.selectionsAfter,
+		});
+	}
 }
 
 void InputFieldManager::requestCaretByKey(
@@ -953,7 +1584,7 @@ void InputFieldManager::requestCaretByKey(
 		if (hadExistingCaret) {
 			field.carets = { preservedCaret };
 		} else {
-			const size_t offset = field.text.size();
+			const size_t offset = text_storage::byteCount(field.storage);
 			field.carets = { CaretState{offset, offset} };
 		}
 		state_->primaryFieldId = fieldId;
@@ -964,16 +1595,18 @@ void InputFieldManager::requestCaretByKey(
 		}
 
 		if (!primaryWasSameField || !hadExistingCaret) {
+			field.caretRevealPending = true;
 			markCaretBlinkReset();
 		}
 		return;
 	}
 
-	size_t offset = field.text.size();
+	size_t offset = text_storage::byteCount(field.storage);
 	if (!field.carets.empty()) {
 		offset = field.carets.back().headByteOffset;
 	}
 	field.carets.push_back(CaretState{offset, offset});
+	field.caretRevealPending = true;
 	if (!state_->primaryFieldId) {
 		state_->primaryFieldId = fieldId;
 	}
@@ -1053,12 +1686,18 @@ bool InputFieldManager::replaceTextByKey(
 	}
 
 	const auto it = state_->fieldsById.find(fieldId);
-	if (it == state_->fieldsById.end() || it->second.text == text) {
+	if (it == state_->fieldsById.end() || text_storage::equals(it->second.storage, text)) {
 		return false;
 	}
 
 	FieldState& field = it->second;
-	field.text = std::string(text);
+	const TextReplacement replacement{
+		.oldRange = TextRange{0, text_storage::byteCount(field.storage)},
+		.insertedText = text,
+	};
+	if (commitEdits(field, std::span<const TextReplacement>(&replacement, 1), EditOrigin::Programmatic, false) != EditResult::Applied) {
+		return false;
+	}
 	if (preserveCaret) {
 		clampCaretsToText(field);
 	} else {
@@ -1076,8 +1715,21 @@ bool InputFieldManager::replaceTextByKey(
 			state_->pointerDrag = PointerDragState{};
 		}
 	}
+	if (!field.frameTransactions.empty()) {
+		auto& after = field.frameTransactions.back().selectionsAfter;
+		after.clear();
+		for (const CaretState& caret : field.carets) {
+			after.push_back(TextSelection{
+				caret.anchorByteOffset,
+				caret.headByteOffset,
+				caret.hasPreferredX ? caret.preferredX : 0.0f,
+			});
+		}
+		refreshTransactionViews(field);
+	}
 
 	markCaretBlinkReset();
+	state_->dirty = true;
 	return true;
 }
 
@@ -1092,6 +1744,10 @@ void InputFieldManager::clear() {
 	state_->currentInput = FrameInput{};
 	state_->leftKeyRepeat = KeyRepeatState{};
 	state_->rightKeyRepeat = KeyRepeatState{};
+	state_->upKeyRepeat = KeyRepeatState{};
+	state_->downKeyRepeat = KeyRepeatState{};
+	state_->homeKeyRepeat = KeyRepeatState{};
+	state_->endKeyRepeat = KeyRepeatState{};
 	state_->backspaceKeyRepeat = KeyRepeatState{};
 	state_->deleteKeyRepeat = KeyRepeatState{};
 	state_->pointerDrag = PointerDragState{};
@@ -1100,159 +1756,192 @@ void InputFieldManager::clear() {
 	state_->emitCaretsThisFrame = true;
 	state_->frameOverrides.rects.clear();
 	state_->frameOverrides.textColorOverrides.clear();
+	state_->frameOverrides.textLayoutOverrides.clear();
+	state_->pendingCommands.clear();
+	state_->selectedTextScratch.clear();
 }
 
-void InputFieldManager::applyKeyboardEdits() {
-	bool hasAnyCarets = false;
-	for (const auto& [_, field] : state_->fieldsById) {
-		if (!field.carets.empty()) {
-			hasAnyCarets = true;
-			break;
-		}
-	}
-
-	bool leftPressed = false;
-	bool rightPressed = false;
-	bool backspacePressed = false;
-	bool deletePressed = false;
-	if (hasAnyCarets) {
-		leftPressed = shouldTriggerActionWithRepeat(GLFW_KEY_LEFT, state_->leftKeyRepeat);
-		rightPressed = shouldTriggerActionWithRepeat(GLFW_KEY_RIGHT, state_->rightKeyRepeat);
-		backspacePressed = shouldTriggerActionWithRepeat(GLFW_KEY_BACKSPACE, state_->backspaceKeyRepeat);
-		deletePressed = shouldTriggerActionWithRepeat(GLFW_KEY_DELETE, state_->deleteKeyRepeat);
-	} else {
+void InputFieldManager::applyCapturedEdits(field_key::InputFieldKey fieldId, FieldState& field) {
+	if (state_->primaryFieldId != fieldId || field.carets.empty()) return;
+	const bool modified = state_->currentInput.ctrl || state_->currentInput.super || state_->currentInput.alt;
+	const bool selecting = state_->currentInput.shift;
+	bool caretMoved = false;
+	if (modified) {
 		state_->leftKeyRepeat = KeyRepeatState{};
 		state_->rightKeyRepeat = KeyRepeatState{};
+		state_->upKeyRepeat = KeyRepeatState{};
+		state_->downKeyRepeat = KeyRepeatState{};
+		state_->homeKeyRepeat = KeyRepeatState{};
+		state_->endKeyRepeat = KeyRepeatState{};
 		state_->backspaceKeyRepeat = KeyRepeatState{};
 		state_->deleteKeyRepeat = KeyRepeatState{};
 	}
-
-	const bool selecting = state_->currentInput.shift;
-	bool shouldResetCaretBlink = false;
-
-	for (auto& [_, field] : state_->fieldsById) {
-		if (field.carets.empty()) {
-			continue;
+	if (!modified && field.config.allowArrowNavigation) {
+		if (shouldTriggerActionWithRepeat(GLFW_KEY_LEFT, state_->leftKeyRepeat)) {
+			moveCaretsHorizontal(field, -1, selecting);
+			caretMoved = true;
 		}
-		clampCaretsToText(field);
-
-		if (field.config.allowArrowNavigation) {
-			if (leftPressed) {
-				moveCaretsHorizontal(field, -1, selecting);
-				shouldResetCaretBlink = true;
+		if (shouldTriggerActionWithRepeat(GLFW_KEY_RIGHT, state_->rightKeyRepeat)) {
+			moveCaretsHorizontal(field, +1, selecting);
+			caretMoved = true;
+		}
+		if (text_storage::storageMode(field.storage) == TextFieldMode::MultiLine) {
+			if (shouldTriggerActionWithRepeat(GLFW_KEY_UP, state_->upKeyRepeat)) {
+				moveCaretsVertical(field, -1, selecting);
+				caretMoved = true;
 			}
-			if (rightPressed) {
-				moveCaretsHorizontal(field, +1, selecting);
-				shouldResetCaretBlink = true;
+			if (shouldTriggerActionWithRepeat(GLFW_KEY_DOWN, state_->downKeyRepeat)) {
+				moveCaretsVertical(field, +1, selecting);
+				caretMoved = true;
 			}
 		}
-
-		if (field.config.readOnly) {
-			continue;
+		if (shouldTriggerActionWithRepeat(GLFW_KEY_HOME, state_->homeKeyRepeat)) {
+			moveCaretsToLineBoundary(field, false, selecting);
+			caretMoved = true;
 		}
-
-		if (backspacePressed) {
-			applyDelete(field, true);
-			shouldResetCaretBlink = true;
-		}
-		if (deletePressed) {
-			applyDelete(field, false);
-			shouldResetCaretBlink = true;
-		}
-
-		const std::string textInput = encodeTextInput(state_->currentInput, field.config.allowNewline);
-		if (!textInput.empty()) {
-			applyTextInsertion(field, textInput);
-			shouldResetCaretBlink = true;
+		if (shouldTriggerActionWithRepeat(GLFW_KEY_END, state_->endKeyRepeat)) {
+			moveCaretsToLineBoundary(field, true, selecting);
+			caretMoved = true;
 		}
 	}
-
-	if (shouldResetCaretBlink) {
-		markCaretBlinkReset();
+	if (!modified && !field.config.readOnly) {
+		if (shouldTriggerActionWithRepeat(GLFW_KEY_BACKSPACE, state_->backspaceKeyRepeat)) applyDelete(field, true);
+		if (shouldTriggerActionWithRepeat(GLFW_KEY_DELETE, state_->deleteKeyRepeat)) applyDelete(field, false);
+		std::string textInput = encodeTextInput(state_->currentInput, field.config.allowNewline);
+		const bool enterPressed =
+			keyPressedThisFrame(state_->currentInput, state_->previousInput, GLFW_KEY_ENTER) ||
+			keyPressedThisFrame(state_->currentInput, state_->previousInput, GLFW_KEY_KP_ENTER);
+		if (enterPressed) {
+			if (text_storage::storageMode(field.storage) == TextFieldMode::SingleLine) {
+				field.frameCommandRequests.push_back(FieldCommandRequest::Submit);
+			} else if (textInput.find('\n') == std::string::npos) {
+				textInput.push_back('\n');
+			}
+		}
+		if (!textInput.empty()) applyTextInsertion(field, textInput);
 	}
+	if (caretMoved) markCaretBlinkReset();
 }
 
-void InputFieldManager::applyTextInsertion(FieldState& field, std::string_view utf8Text) {
+void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, FieldState& field) {
+	const auto clipboardSelection = [this, &field] {
+		std::string result;
+		for (const SelectionRange& range : mergedSelectionRanges(field)) {
+			if (!result.empty()) result.push_back('\n');
+			result += text_storage::copy(field.storage, TextRange{range.start, range.end});
+		}
+		return result;
+	};
+	for (const auto& pending : state_->pendingCommands) {
+		if (pending.fieldId != fieldId) continue;
+		switch (pending.command) {
+		case TextCommand::SelectAll:
+			field.carets = {CaretState{0, text_storage::byteCount(field.storage)}};
+			field.caretRevealPending = true;
+			markCaretBlinkReset();
+			break;
+		case TextCommand::Copy: {
+			const std::string selected = clipboardSelection();
+			if (!selected.empty() && state_->setClipboardText) state_->setClipboardText(selected);
+			break;
+		}
+		case TextCommand::Cut: {
+			if (field.config.readOnly || !state_->setClipboardText) break;
+			const std::string selected = clipboardSelection();
+			if (selected.empty()) break;
+			std::vector<TextReplacement> cuts;
+			for (const SelectionRange& range : mergedSelectionRanges(field)) {
+				cuts.push_back(TextReplacement{TextRange{range.start, range.end}, {}});
+			}
+			if (commitEdits(field, cuts, EditOrigin::Cut, true) == EditResult::Applied) {
+				state_->setClipboardText(selected);
+			}
+			break;
+		}
+		case TextCommand::Paste: {
+			const std::string pasted = !pending.payload.empty()
+				? pending.payload
+				: (state_->getClipboardText ? state_->getClipboardText() : std::string{});
+			if (!pasted.empty() && !field.config.readOnly) {
+				applyTextInsertion(field, pasted, EditOrigin::Paste);
+			}
+			break;
+		}
+		case TextCommand::RequestUndo:
+			field.frameCommandRequests.push_back(FieldCommandRequest::Undo);
+			break;
+		case TextCommand::RequestRedo:
+			field.frameCommandRequests.push_back(FieldCommandRequest::Redo);
+			break;
+		case TextCommand::MoveWordLeft:
+			if (field.config.allowArrowNavigation) moveCaretsByWord(field, -1, pending.extendSelection);
+			break;
+		case TextCommand::MoveWordRight:
+			if (field.config.allowArrowNavigation) moveCaretsByWord(field, +1, pending.extendSelection);
+			break;
+		case TextCommand::MoveDocumentStart:
+		case TextCommand::MoveDocumentEnd: {
+			if (!field.config.allowArrowNavigation) break;
+			const size_t target = pending.command == TextCommand::MoveDocumentStart
+				? 0
+				: text_storage::byteCount(field.storage);
+			for (CaretState& caret : field.carets) {
+				if (pending.extendSelection) caret.headByteOffset = target;
+				else caret.anchorByteOffset = caret.headByteOffset = target;
+				caret.hasPreferredX = false;
+			}
+			field.caretRevealPending = true;
+			markCaretBlinkReset();
+			break;
+		}
+		case TextCommand::DeleteWordBackward:
+			if (!field.config.readOnly) applyWordDelete(field, true);
+			break;
+		case TextCommand::DeleteWordForward:
+			if (!field.config.readOnly) applyWordDelete(field, false);
+			break;
+		}
+	}
+	refreshTransactionViews(field);
+}
+
+void InputFieldManager::applyTextInsertion(FieldState& field, std::string_view utf8Text, EditOrigin origin) {
 	if (utf8Text.empty() || field.carets.empty()) {
 		return;
 	}
 	clampCaretsToText(field);
-
-	std::vector<size_t> caretOrder(field.carets.size());
-	for (size_t i = 0; i < caretOrder.size(); ++i) {
-		caretOrder[i] = i;
+	std::vector<TextReplacement> edits;
+	for (const CaretState& caret : field.carets) {
+		edits.push_back(TextReplacement{
+			.oldRange = TextRange{caretSelectionStart(caret), caretSelectionEnd(caret)},
+			.insertedText = utf8Text,
+		});
 	}
-
-	std::sort(caretOrder.begin(), caretOrder.end(), [&field](size_t a, size_t b) {
-		const size_t ah = field.carets[a].headByteOffset;
-		const size_t bh = field.carets[b].headByteOffset;
-		if (ah != bh) {
-			return ah > bh;
-		}
-		return a > b;
+	std::sort(edits.begin(), edits.end(), [](const auto& a, const auto& b) {
+		if (a.oldRange.startByte != b.oldRange.startByte) return a.oldRange.startByte < b.oldRange.startByte;
+		return a.oldRange.endByte < b.oldRange.endByte;
 	});
-
-	for (size_t caretIndex : caretOrder) {
-		if (caretIndex >= field.carets.size()) {
-			continue;
-		}
-
-		CaretState& caret = field.carets[caretIndex];
-		if (caretHasSelection(caret)) {
-			eraseRange(field, caretSelectionStart(caret), caretSelectionEnd(caret), caretIndex);
-		}
-
-		if (field.text.size() + utf8Text.size() > field.config.maxBytes) {
-			continue;
-		}
-
-		const size_t insertOffset = std::min(caret.headByteOffset, field.text.size());
-		field.text.insert(insertOffset, utf8Text);
-
-		for (size_t i = 0; i < field.carets.size(); ++i) {
-			CaretState& candidate = field.carets[i];
-			if (i == caretIndex) {
-				candidate.anchorByteOffset = insertOffset + utf8Text.size();
-				candidate.headByteOffset = insertOffset + utf8Text.size();
-				continue;
-			}
-
-			if (candidate.anchorByteOffset >= insertOffset) {
-				candidate.anchorByteOffset += utf8Text.size();
-			}
-			if (candidate.headByteOffset >= insertOffset) {
-				candidate.headByteOffset += utf8Text.size();
-			}
+	std::vector<TextReplacement> normalized;
+	for (const TextReplacement& edit : edits) {
+		if (!normalized.empty() && edit.oldRange.startByte <= normalized.back().oldRange.endByte) {
+			normalized.back().oldRange.endByte = std::max(
+				normalized.back().oldRange.endByte,
+				edit.oldRange.endByte);
+		} else {
+			normalized.push_back(edit);
 		}
 	}
+	(void)commitEdits(field, normalized, origin, true);
 }
 
-void InputFieldManager::applyDelete(FieldState& field, bool backspace) {
+void InputFieldManager::applyDelete(FieldState& field, bool backspace, EditOrigin origin) {
 	if (field.carets.empty()) {
 		return;
 	}
 	clampCaretsToText(field);
 
-	std::vector<size_t> caretOrder(field.carets.size());
-	for (size_t i = 0; i < caretOrder.size(); ++i) {
-		caretOrder[i] = i;
-	}
-
-	std::sort(caretOrder.begin(), caretOrder.end(), [&field](size_t a, size_t b) {
-		const size_t ae = caretSelectionEnd(field.carets[a]);
-		const size_t be = caretSelectionEnd(field.carets[b]);
-		if (ae != be) {
-			return ae > be;
-		}
-		return a > b;
-	});
-
-	for (size_t caretIndex : caretOrder) {
-		if (caretIndex >= field.carets.size()) {
-			continue;
-		}
-
-		const CaretState caret = field.carets[caretIndex];
+	std::vector<TextReplacement> edits;
+	for (const CaretState& caret : field.carets) {
 		size_t eraseStart = 0u;
 		size_t eraseEnd = 0u;
 
@@ -1261,17 +1950,22 @@ void InputFieldManager::applyDelete(FieldState& field, bool backspace) {
 			eraseEnd = caretSelectionEnd(caret);
 		} else if (backspace) {
 			eraseEnd = caret.headByteOffset;
-			eraseStart = prevUtf8Codepoint(field.text, eraseEnd);
+			eraseStart = text_storage::previousUtf8Codepoint(field.storage, eraseEnd);
 		} else {
 			eraseStart = caret.headByteOffset;
-			eraseEnd = nextUtf8Codepoint(field.text, eraseStart);
+			eraseEnd = text_storage::nextUtf8Codepoint(field.storage, eraseStart);
 		}
 
-		if (eraseStart >= eraseEnd) {
-			continue;
-		}
-		eraseRange(field, eraseStart, eraseEnd, caretIndex);
+		if (eraseStart < eraseEnd) edits.push_back(TextReplacement{TextRange{eraseStart, eraseEnd}, {}});
 	}
+	std::sort(edits.begin(), edits.end(), [](const auto& a, const auto& b) { return a.oldRange.startByte < b.oldRange.startByte; });
+	std::vector<TextReplacement> merged;
+	for (const auto& edit : edits) {
+		if (!merged.empty() && edit.oldRange.startByte <= merged.back().oldRange.endByte) {
+			merged.back().oldRange.endByte = std::max(merged.back().oldRange.endByte, edit.oldRange.endByte);
+		} else merged.push_back(edit);
+	}
+	(void)commitEdits(field, merged, origin, true);
 }
 
 void InputFieldManager::moveCaretsHorizontal(FieldState& field, int direction, bool selecting) {
@@ -1285,13 +1979,14 @@ void InputFieldManager::moveCaretsHorizontal(FieldState& field, int direction, b
 			const size_t collapsed = (direction < 0) ? caretSelectionStart(caret) : caretSelectionEnd(caret);
 			caret.anchorByteOffset = collapsed;
 			caret.headByteOffset = collapsed;
+			caret.hasPreferredX = false;
 			continue;
 		}
 
 		const size_t currentHead = caret.headByteOffset;
 		const size_t target = (direction < 0)
-			? prevUtf8Codepoint(field.text, currentHead)
-			: nextUtf8Codepoint(field.text, currentHead);
+			? text_storage::previousUtf8Codepoint(field.storage, currentHead)
+			: text_storage::nextUtf8Codepoint(field.storage, currentHead);
 
 		if (selecting) {
 			caret.headByteOffset = target;
@@ -1299,45 +1994,411 @@ void InputFieldManager::moveCaretsHorizontal(FieldState& field, int direction, b
 			caret.anchorByteOffset = target;
 			caret.headByteOffset = target;
 		}
+		caret.hasPreferredX = false;
 	}
+	field.caretRevealPending = true;
+}
+
+void InputFieldManager::moveCaretsByWord(FieldState& field, int direction, bool selecting) {
+	clampCaretsToText(field);
+	for (CaretState& caret : field.carets) {
+		size_t target = caret.headByteOffset;
+		if (!selecting && caretHasSelection(caret)) {
+			target = direction < 0 ? caretSelectionStart(caret) : caretSelectionEnd(caret);
+		} else if (direction < 0) {
+			while (target > 0) {
+				const size_t previous = text_storage::previousUtf8Codepoint(field.storage, target);
+				if (wordClass(static_cast<unsigned char>(text_storage::byteAt(field.storage, previous))) != 0) break;
+				target = previous;
+			}
+			if (target > 0) {
+				const size_t previous = text_storage::previousUtf8Codepoint(field.storage, target);
+				const int klass = wordClass(static_cast<unsigned char>(text_storage::byteAt(field.storage, previous)));
+				while (target > 0) {
+					const size_t candidate = text_storage::previousUtf8Codepoint(field.storage, target);
+					if (wordClass(static_cast<unsigned char>(text_storage::byteAt(field.storage, candidate))) != klass) break;
+					target = candidate;
+				}
+			}
+		} else {
+			const size_t size = text_storage::byteCount(field.storage);
+			if (target < size) {
+				const int klass = wordClass(static_cast<unsigned char>(text_storage::byteAt(field.storage, target)));
+				while (target < size && wordClass(static_cast<unsigned char>(text_storage::byteAt(field.storage, target))) == klass) {
+					target = text_storage::nextUtf8Codepoint(field.storage, target);
+				}
+			}
+			while (target < size && wordClass(static_cast<unsigned char>(text_storage::byteAt(field.storage, target))) == 0) {
+				target = text_storage::nextUtf8Codepoint(field.storage, target);
+			}
+		}
+		if (selecting) caret.headByteOffset = target;
+		else caret.anchorByteOffset = caret.headByteOffset = target;
+		caret.hasPreferredX = false;
+	}
+	markCaretBlinkReset();
+	field.caretRevealPending = true;
+}
+
+void InputFieldManager::applyWordDelete(FieldState& field, bool backspace) {
+	const std::vector<CaretState> original = field.carets;
+	moveCaretsByWord(field, backspace ? -1 : +1, true);
+	std::vector<TextReplacement> edits;
+	for (size_t i = 0; i < field.carets.size(); ++i) {
+		if (caretHasSelection(original[i])) {
+			edits.push_back(TextReplacement{TextRange{caretSelectionStart(original[i]), caretSelectionEnd(original[i])}, {}});
+		} else {
+			edits.push_back(TextReplacement{TextRange{
+				std::min(original[i].headByteOffset, field.carets[i].headByteOffset),
+				std::max(original[i].headByteOffset, field.carets[i].headByteOffset)}, {}});
+		}
+	}
+	field.carets = original;
+	std::sort(edits.begin(), edits.end(), [](const auto& a, const auto& b) { return a.oldRange.startByte < b.oldRange.startByte; });
+	std::vector<TextReplacement> merged;
+	for (const auto& edit : edits) {
+		if (edit.oldRange.startByte == edit.oldRange.endByte) continue;
+		if (!merged.empty() && edit.oldRange.startByte <= merged.back().oldRange.endByte) {
+			merged.back().oldRange.endByte = std::max(merged.back().oldRange.endByte, edit.oldRange.endByte);
+		} else merged.push_back(edit);
+	}
+	(void)commitEdits(field, merged, EditOrigin::Delete, true);
+}
+
+float InputFieldManager::fieldLineHeight(const FieldState& field) const {
+	const detail::text::TextLayoutResult& layout = textLayoutService_->layout(
+		detail::text::TextLayoutRequest{
+			.text = "Mg",
+			.fontView = &state_->fontView,
+			.fontId = static_cast<FontId>(field.layout.fontId),
+			.pointsToPixelsScale = state_->pointsToPixelsScale,
+			.fontSize = field.layout.fontSize,
+			.letterSpacing = field.layout.letterSpacing,
+			.tabWidth = field.layout.tabWidth,
+			.includeGlyphGeometry = false,
+		});
+	if (layout.success && layout.lineHeight > 0.0f) return layout.lineHeight;
+	return std::max(
+		1.0f,
+		static_cast<float>(std::max<uint16_t>(1u, field.layout.fontSize)) *
+			state_->pointsToPixelsScale);
+}
+
+float InputFieldManager::caretXInRange(
+	const FieldState& field,
+	TextRange range,
+	size_t byteOffset) const {
+	const std::string lineText = text_storage::copy(field.storage, range);
+	const detail::text::TextLayoutResult& layout = textLayoutService_->layout(
+		detail::text::TextLayoutRequest{
+			.text = lineText,
+			.fontView = &state_->fontView,
+			.fontId = static_cast<FontId>(field.layout.fontId),
+			.pointsToPixelsScale = state_->pointsToPixelsScale,
+			.fontSize = field.layout.fontSize,
+			.letterSpacing = field.layout.letterSpacing,
+			.tabWidth = field.layout.tabWidth,
+			.includeGlyphGeometry = false,
+		});
+	if (!layout.success || layout.caretStops.empty()) return 0.0f;
+	const size_t local = std::min(byteOffset, range.endByte) - range.startByte;
+	float x = 0.0f;
+	for (const detail::text::TextCaretStop& stop : layout.caretStops) {
+		if (stop.byteOffset > local) break;
+		x = stop.x;
+		if (stop.byteOffset == local) break;
+	}
+	return x;
+}
+
+std::vector<TextRange> InputFieldManager::visualRangesForHardLine(
+	FieldState& field,
+	size_t hardLineIndex) {
+	const TextRange hardRange = text_storage::lineRange(field.storage, hardLineIndex);
+	if (!field.config.softWrap || field.layout.viewportWidth <= 0.0f) return {hardRange};
+	auto cached = field.wrapCacheByHardLine.find(hardLineIndex);
+	if (cached != field.wrapCacheByHardLine.end() &&
+		cached->second.revision == field.revision &&
+		cached->second.hardLineRange.startByte == hardRange.startByte &&
+		cached->second.hardLineRange.endByte == hardRange.endByte &&
+		sameLayoutDescriptor(cached->second.layout, field.layout)) {
+		return cached->second.visualRanges;
+	}
+
+	const std::string hardText = text_storage::copy(field.storage, hardRange);
+	const detail::text::TextLayoutResult& layout = textLayoutService_->layout(
+		detail::text::TextLayoutRequest{
+			.text = hardText,
+			.fontView = &state_->fontView,
+			.fontId = static_cast<FontId>(field.layout.fontId),
+			.pointsToPixelsScale = state_->pointsToPixelsScale,
+			.fontSize = field.layout.fontSize,
+			.letterSpacing = field.layout.letterSpacing,
+			.tabWidth = field.layout.tabWidth,
+			.includeGlyphGeometry = false,
+		});
+	std::vector<TextRange> ranges = detail::text::breakVisualLines(
+		hardText, layout, field.layout.viewportWidth);
+	for (TextRange& range : ranges) {
+		range.startByte += hardRange.startByte;
+		range.endByte += hardRange.startByte;
+	}
+	auto& entry = field.wrapCacheByHardLine[hardLineIndex];
+	entry.revision = field.revision;
+	entry.hardLineRange = hardRange;
+	entry.layout = field.layout;
+	entry.visualRanges = ranges;
+	return ranges;
+}
+
+void InputFieldManager::moveCaretsVertical(
+	FieldState& field,
+	int direction,
+	bool selecting) {
+	if (direction == 0 || field.carets.empty() ||
+		text_storage::storageMode(field.storage) != TextFieldMode::MultiLine) return;
+	clampCaretsToText(field);
+	const size_t hardLineCount = text_storage::lineCount(field.storage);
+	for (CaretState& caret : field.carets) {
+		const size_t hardLine = text_storage::lineFromByte(field.storage, caret.headByteOffset);
+		std::vector<TextRange> ranges = visualRangesForHardLine(field, hardLine);
+		size_t visualInHardLine = 0;
+		for (size_t i = 0; i < ranges.size(); ++i) {
+			if (caret.headByteOffset >= ranges[i].startByte &&
+				(caret.headByteOffset < ranges[i].endByte || i + 1u == ranges.size())) {
+				visualInHardLine = i;
+				break;
+			}
+		}
+		const TextRange currentRange = ranges[visualInHardLine];
+		if (!caret.hasPreferredX) {
+			caret.preferredX = caretXInRange(field, currentRange, caret.headByteOffset);
+			caret.hasPreferredX = true;
+		}
+
+		TextRange targetRange = currentRange;
+		if (direction < 0) {
+			if (visualInHardLine > 0) targetRange = ranges[visualInHardLine - 1u];
+			else if (hardLine > 0) {
+				ranges = visualRangesForHardLine(field, hardLine - 1u);
+				targetRange = ranges.back();
+			}
+		} else {
+			if (visualInHardLine + 1u < ranges.size()) targetRange = ranges[visualInHardLine + 1u];
+			else if (hardLine + 1u < hardLineCount) {
+				ranges = visualRangesForHardLine(field, hardLine + 1u);
+				targetRange = ranges.front();
+			}
+		}
+
+		const std::string targetText = text_storage::copy(field.storage, targetRange);
+		const detail::text::TextLayoutResult& targetLayout = textLayoutService_->layout(
+			detail::text::TextLayoutRequest{
+				.text = targetText,
+				.fontView = &state_->fontView,
+				.fontId = static_cast<FontId>(field.layout.fontId),
+				.pointsToPixelsScale = state_->pointsToPixelsScale,
+				.fontSize = field.layout.fontSize,
+				.letterSpacing = field.layout.letterSpacing,
+				.tabWidth = field.layout.tabWidth,
+				.includeGlyphGeometry = false,
+			});
+		size_t target = targetRange.startByte;
+		float bestDistance = std::numeric_limits<float>::max();
+		for (const detail::text::TextCaretStop& stop : targetLayout.caretStops) {
+			const float distance = std::abs(stop.x - caret.preferredX);
+			if (distance < bestDistance) {
+				bestDistance = distance;
+				target = targetRange.startByte + stop.byteOffset;
+			}
+		}
+		if (selecting) caret.headByteOffset = target;
+		else caret.anchorByteOffset = caret.headByteOffset = target;
+	}
+	field.caretRevealPending = true;
+}
+
+void InputFieldManager::moveCaretsToLineBoundary(
+	FieldState& field,
+	bool toEnd,
+	bool selecting) {
+	clampCaretsToText(field);
+	for (CaretState& caret : field.carets) {
+		const size_t hardLine = text_storage::lineFromByte(field.storage, caret.headByteOffset);
+		const std::vector<TextRange> ranges = visualRangesForHardLine(field, hardLine);
+		TextRange targetRange = ranges.front();
+		for (size_t i = 0; i < ranges.size(); ++i) {
+			if (caret.headByteOffset >= ranges[i].startByte &&
+				(caret.headByteOffset < ranges[i].endByte || i + 1u == ranges.size())) {
+				targetRange = ranges[i];
+				break;
+			}
+		}
+		const size_t target = toEnd ? targetRange.endByte : targetRange.startByte;
+		if (selecting) caret.headByteOffset = target;
+		else caret.anchorByteOffset = caret.headByteOffset = target;
+		caret.hasPreferredX = false;
+	}
+	field.caretRevealPending = true;
+}
+
+void InputFieldManager::revealPrimaryCaret(FieldState& field) {
+	if (!field.caretRevealPending || field.carets.empty() ||
+		field.layout.viewportHeight <= 0.0f) return;
+	field.caretRevealPending = false;
+	const float lineHeight = fieldLineHeight(field);
+	const size_t hardLine = text_storage::lineFromByte(
+		field.storage, field.carets.front().headByteOffset);
+	size_t visualLine = hardLine;
+	TextRange caretRange = text_storage::lineRange(field.storage, hardLine);
+	if (field.config.softWrap) {
+		visualLine = 0;
+		size_t firstLineToCount = 0;
+		for (const auto& [cachedLine, entry] : field.wrapCacheByHardLine) {
+			if (cachedLine <= hardLine && entry.hasVisualLineStart &&
+				cachedLine >= firstLineToCount) {
+				firstLineToCount = cachedLine;
+				visualLine = entry.visualLineStart;
+			}
+		}
+		for (size_t line = firstLineToCount; line < hardLine; ++line) {
+			visualLine += visualRangesForHardLine(field, line).size();
+		}
+		const std::vector<TextRange> ranges = visualRangesForHardLine(field, hardLine);
+		for (size_t i = 0; i < ranges.size(); ++i) {
+			if (field.carets.front().headByteOffset >= ranges[i].startByte &&
+				(field.carets.front().headByteOffset < ranges[i].endByte || i + 1u == ranges.size())) {
+				visualLine += i;
+				caretRange = ranges[i];
+				break;
+			}
+		}
+	}
+	const float caretTop = static_cast<float>(visualLine) * lineHeight;
+	if (caretTop < field.scrollOffset.y) field.scrollOffset.y = caretTop;
+	else if (caretTop + lineHeight > field.scrollOffset.y + field.layout.viewportHeight) {
+		field.scrollOffset.y = caretTop + lineHeight - field.layout.viewportHeight;
+	}
+	field.scrollOffset.y = std::max(0.0f, field.scrollOffset.y);
+
+	if (!field.config.softWrap && field.layout.viewportWidth > 0.0f) {
+		const float caretX = caretXInRange(field, caretRange, field.carets.front().headByteOffset);
+		if (caretX < field.scrollOffset.x) field.scrollOffset.x = caretX;
+		else if (caretX > field.scrollOffset.x + field.layout.viewportWidth) {
+			field.scrollOffset.x = caretX - field.layout.viewportWidth;
+		}
+		field.scrollOffset.x = std::max(0.0f, field.scrollOffset.x);
+	} else {
+		field.scrollOffset.x = 0.0f;
+	}
+}
+
+void InputFieldManager::materializeVisibleLines(FieldState& field) {
+	field.visibleLineStrings.clear();
+	field.visibleLines.clear();
+	const float lineHeight = fieldLineHeight(field);
+	const float viewportHeight = field.layout.viewportHeight > 0.0f
+		? field.layout.viewportHeight
+		: lineHeight;
+	const size_t overscan = 2;
+	const size_t firstVisible = static_cast<size_t>(std::floor(
+		std::max(0.0f, field.scrollOffset.y) / lineHeight));
+	const size_t visibleCount = std::max<size_t>(
+		1u, static_cast<size_t>(std::ceil(viewportHeight / lineHeight)));
+	const size_t firstWanted = firstVisible > overscan ? firstVisible - overscan : 0u;
+	const size_t lastWanted = firstVisible + visibleCount + overscan;
+
+	std::vector<std::pair<TextRange, size_t>> materializedRanges;
+	const size_t hardLineCount = text_storage::lineCount(field.storage);
+	size_t totalVisualLines = hardLineCount;
+	if (field.config.softWrap && text_storage::storageMode(field.storage) == TextFieldMode::MultiLine) {
+		totalVisualLines = 0;
+		size_t firstHardLine = 0;
+		for (const auto& [cachedLine, entry] : field.wrapCacheByHardLine) {
+			if (entry.hasVisualLineStart && entry.visualLineStart <= firstWanted &&
+				entry.visualLineStart >= totalVisualLines) {
+				firstHardLine = cachedLine;
+				totalVisualLines = entry.visualLineStart;
+			}
+		}
+		for (size_t hardLine = firstHardLine; hardLine < hardLineCount; ++hardLine) {
+			const std::vector<TextRange> ranges = visualRangesForHardLine(field, hardLine);
+			auto& cacheEntry = field.wrapCacheByHardLine[hardLine];
+			cacheEntry.visualLineStart = totalVisualLines;
+			cacheEntry.hasVisualLineStart = true;
+			for (const TextRange range : ranges) {
+				if (totalVisualLines >= firstWanted && totalVisualLines < lastWanted) {
+					materializedRanges.emplace_back(range, totalVisualLines);
+				}
+				++totalVisualLines;
+			}
+			if (totalVisualLines >= lastWanted) {
+				totalVisualLines += hardLineCount - hardLine - 1u;
+				break;
+			}
+		}
+	} else {
+		const size_t end = std::min(hardLineCount, lastWanted);
+		for (size_t line = std::min(firstWanted, hardLineCount); line < end; ++line) {
+			materializedRanges.emplace_back(text_storage::lineRange(field.storage, line), line);
+		}
+	}
+
+	field.visibleLineStrings.resize(materializedRanges.size());
+	for (size_t i = 0; i < materializedRanges.size(); ++i) {
+		field.visibleLineStrings[i] = text_storage::copy(
+			field.storage, materializedRanges[i].first);
+	}
+	field.visibleLines.reserve(materializedRanges.size());
+	float maximumVisibleAdvance = 0.0f;
+	for (size_t i = 0; i < materializedRanges.size(); ++i) {
+		const auto [range, visualIndex] = materializedRanges[i];
+		Clay_ElementDeclaration declaration{};
+		declaration.layout.sizing.height = CLAY_SIZING_FIXED(lineHeight);
+		declaration.floating.offset = Clay_Vector2{
+			-field.scrollOffset.x,
+			static_cast<float>(visualIndex) * lineHeight - field.scrollOffset.y,
+		};
+		declaration.floating.attachPoints = Clay_FloatingAttachPoints{
+			CLAY_ATTACH_POINT_LEFT_TOP,
+			CLAY_ATTACH_POINT_LEFT_TOP,
+		};
+		declaration.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
+		declaration.floating.attachTo = CLAY_ATTACH_TO_PARENT;
+		declaration.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
+		field.visibleLines.push_back(VisibleTextLine{
+			.text = field.visibleLineStrings[i],
+			.logicalRange = range,
+			.visualLineIndex = static_cast<uint32_t>(std::min<size_t>(
+				visualIndex, std::numeric_limits<uint32_t>::max())),
+			.declaration = declaration,
+		});
+		const detail::text::TextLayoutResult& layout = textLayoutService_->layout(
+			detail::text::TextLayoutRequest{
+				.text = field.visibleLineStrings[i],
+				.fontView = &state_->fontView,
+				.fontId = static_cast<FontId>(field.layout.fontId),
+				.pointsToPixelsScale = state_->pointsToPixelsScale,
+				.fontSize = field.layout.fontSize,
+				.letterSpacing = field.layout.letterSpacing,
+				.tabWidth = field.layout.tabWidth,
+				.includeGlyphGeometry = false,
+			});
+		maximumVisibleAdvance = std::max(maximumVisibleAdvance, layout.measuredAdvance);
+	}
+	field.maximumScrollX = field.config.softWrap
+		? 0.0f
+		: std::max(field.maximumScrollX, maximumVisibleAdvance - field.layout.viewportWidth);
+	field.maximumScrollY = std::max(
+		0.0f, static_cast<float>(totalVisualLines) * lineHeight - viewportHeight);
+	field.scrollOffset.x = std::clamp(field.scrollOffset.x, 0.0f, field.maximumScrollX);
+	field.scrollOffset.y = std::clamp(field.scrollOffset.y, 0.0f, field.maximumScrollY);
 }
 
 void InputFieldManager::clampCaretsToText(FieldState& field) const {
-	const std::string_view textView(field.text);
 	for (CaretState& caret : field.carets) {
-		caret.anchorByteOffset = clampUtf8Boundary(textView, caret.anchorByteOffset);
-		caret.headByteOffset = clampUtf8Boundary(textView, caret.headByteOffset);
-	}
-}
-
-void InputFieldManager::eraseRange(FieldState& field, size_t start, size_t end, size_t sourceCaretIndex) {
-	const size_t clampedStart = std::min(start, field.text.size());
-	const size_t clampedEnd = std::min(end, field.text.size());
-	if (clampedStart >= clampedEnd) {
-		return;
-	}
-
-	const size_t removedBytes = clampedEnd - clampedStart;
-	field.text.erase(clampedStart, removedBytes);
-
-	const auto adjustOffset = [clampedStart, clampedEnd, removedBytes](size_t offset) -> size_t {
-		if (offset <= clampedStart) {
-			return offset;
-		}
-		if (offset >= clampedEnd) {
-			return offset - removedBytes;
-		}
-		return clampedStart;
-	};
-
-	for (CaretState& caret : field.carets) {
-		caret.anchorByteOffset = adjustOffset(caret.anchorByteOffset);
-		caret.headByteOffset = adjustOffset(caret.headByteOffset);
-	}
-
-	if (sourceCaretIndex < field.carets.size()) {
-		field.carets[sourceCaretIndex].anchorByteOffset = clampedStart;
-		field.carets[sourceCaretIndex].headByteOffset = clampedStart;
+		caret.anchorByteOffset = text_storage::clampUtf8Boundary(field.storage, caret.anchorByteOffset);
+		caret.headByteOffset = text_storage::clampUtf8Boundary(field.storage, caret.headByteOffset);
 	}
 }
 
@@ -1427,24 +2488,22 @@ float InputFieldManager::measureTextSlice(const Clay_StringSlice& text, const Cl
 		return 0.0f;
 	}
 
-	const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(&state_->fontView, textData.fontId);
+	const FlowUi::Font::FontFaceData* fontFace = detail::text::resolveFontFace(&state_->fontView, textData.fontId);
 	if (!fontFace) {
 		const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, textData.fontSize)) * state_->pointsToPixelsScale;
 		return static_cast<float>(text.length) * fallbackEmPixels * 0.5f;
 	}
 
-	const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
-		FlowUi::detail::TextLayoutRequest{
-			.text = text,
-			.fontFace = fontFace,
+	const detail::text::TextLayoutResult& layoutResult = textLayoutService_->layout(
+		detail::text::TextLayoutRequest{
+			.text = std::string_view(text.chars, static_cast<size_t>(text.length)),
+			.fontView = &state_->fontView,
+			.fontId = static_cast<FontId>(textData.fontId),
 			.pointsToPixelsScale = state_->pointsToPixelsScale,
 			.fontSize = textData.fontSize,
 			.letterSpacing = textData.letterSpacing,
-			.lineOriginX = 0.0f,
-			.lineOriginY = 0.0f,
-			.emitGlyphQuads = false,
-		},
-		[](const FlowUi::detail::TextLayoutGlyphQuad&) {});
+			.includeGlyphGeometry = false,
+		});
 
 	if (!layoutResult.success) {
 		return 0.0f;

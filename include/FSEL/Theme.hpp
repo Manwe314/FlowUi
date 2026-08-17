@@ -2,6 +2,7 @@
 
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/App.hpp"
+#include "managers/structs/InputFieldManagerStructs.hpp"
 
 namespace FlowUi::FSEL {
 
@@ -241,6 +242,74 @@ struct FSELSliderTheme {
 	uint8_t cursorPriority = 10;
 };
 
+struct FSELProgressBarTheme {
+	Clay_Color baseColor = Flow_Color("#2d2d30ff");
+	Clay_Color borderColor = Flow_Color("#454545ff");
+	Clay_Color fillColor = Flow_Color("#007accff");
+	float length = 160.0f;
+	float thickness = 12.0f;
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
+};
+
+struct FSELTextFieldStateTheme {
+	Clay_Color backgroundColor = Flow_Color("#1e1e1eff");
+	Clay_Color textColor = Flow_Color("#f0f0f0ff");
+	Clay_Color placeholderColor = Flow_Color("#858585ff");
+	Clay_Color borderColor = Flow_Color("#454545ff");
+};
+
+struct FSELTextFieldTheme {
+	FSELTextFieldStateTheme idle{};
+	FSELTextFieldStateTheme hovered = {
+		.backgroundColor = Flow_Color("#1e1e1eff"),
+		.textColor = Flow_Color("#ffffffff"),
+		.placeholderColor = Flow_Color("#909090ff"),
+		.borderColor = Flow_Color("#666666ff"),
+	};
+	FSELTextFieldStateTheme focused = {
+		.backgroundColor = Flow_Color("#1e1e1eff"),
+		.textColor = Flow_Color("#ffffffff"),
+		.placeholderColor = Flow_Color("#858585ff"),
+		.borderColor = Flow_Color("#007accff"),
+	};
+	FSELTextFieldStateTheme readOnly = {
+		.backgroundColor = Flow_Color("#252526ff"),
+		.textColor = Flow_Color("#c8c8c8ff"),
+		.placeholderColor = Flow_Color("#777777ff"),
+		.borderColor = Flow_Color("#454545ff"),
+	};
+	FSELTextFieldStateTheme invalid = {
+		.backgroundColor = Flow_Color("#1e1e1eff"),
+		.textColor = Flow_Color("#ffffffff"),
+		.placeholderColor = Flow_Color("#858585ff"),
+		.borderColor = Flow_Color("#f14c4cff"),
+	};
+	FSELTextFieldStateTheme disabled = {
+		.backgroundColor = Flow_Color("#252526ff"),
+		.textColor = Flow_Color("#6c6c6cff"),
+		.placeholderColor = Flow_Color("#5f5f5fff"),
+		.borderColor = Flow_Color("#3e3e42ff"),
+	};
+
+	float width = 240.0f;
+	float height = 34.0f;
+	Clay_Padding padding = CLAY_PADDING_ALL(8);
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(4);
+
+	FontFamilyId fontFamily = 0;
+	uint32_t fontWeight = 400;
+	FontStyle fontStyle = FontStyle::Normal;
+	uint16_t fontSize = 14;
+	uint16_t letterSpacing = 0;
+	uint8_t tabWidth = 4;
+
+	InputFieldOverlayStyle overlayStyle{};
+	CursorType cursor = CursorType::IBeam;
+	uint8_t cursorPriority = 20;
+};
+
 struct FSELSelectableSurfaceStateTheme {
 	Clay_Color backgroundColor = Flow_Color("#00000000");
 	Clay_Color borderColor = Flow_Color("#00000000");
@@ -282,6 +351,15 @@ struct FSELTheme {
 	FSELCheckboxTheme checkboxTheme{};
 	FSELSwitchTheme switchTheme{};
 	FSELSliderTheme sliderTheme{};
+	FSELProgressBarTheme progressBarTheme{};
+	FSELTextFieldTheme textInputTheme{};
+	FSELTextFieldTheme textAreaTheme = [] {
+		FSELTextFieldTheme theme{};
+		theme.width = 480.0f;
+		theme.height = 220.0f;
+		theme.padding = CLAY_PADDING_ALL(10);
+		return theme;
+	}();
 	FSELSelectableSurfaceTheme selectableSurfaceTheme{};
 };
 

@@ -17,7 +17,7 @@
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include "internal/ManagerStorage/UiManagerState.hpp"
-#include "internal/TextLayoutEngine.hpp"
+#include "internal/Text/TextLayoutService.hpp"
 
 namespace {
 
@@ -127,13 +127,17 @@ namespace FlowUi
 		try {
 			inputFieldManager_.init(
 				storageSystem, window, state_->inputManagerConfig,
-				state_->pointsToPixelsScale);
+				state_->pointsToPixelsScale, state_->textLayoutService);
+			inputFieldManager_.setClipboardAccess(
+				setClipboardTextAccessor_,
+				getClipboardTextAccessor_);
 		} catch (...) {
 			destroyStorage();
 			throw;
 		}
 		try {
 			shortcutManager_.init(storageSystem, window);
+			shortcutManager_.installDefaultTextShortcuts(config.ui.shortcuts.textEditing);
 		} catch (...) {
 			destroyStorage();
 			throw;
@@ -234,17 +238,15 @@ namespace FlowUi
 
 		Clay_ElementDeclaration UiManager::inputContentElement(const Clay_TextElementConfig& textConfig) const {
 			float lineHeight = static_cast<float>(std::max<uint16_t>(1u, textConfig.fontSize)) * state_->pointsToPixelsScale;
-
-			const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(&state_->fontView, textConfig.fontId);
-			const FlowUi::Font::FontVariantData* variant = fontFace ? fontFace->defaultVariant() : nullptr;
-			if (variant && variant->emSize > 0.0f) {
-				const float emPixels = textConfig.fontSize > 0
-					? static_cast<float>(textConfig.fontSize) * state_->pointsToPixelsScale
-					: variant->fontSizePx;
-				if (emPixels > 0.0f) {
-					lineHeight = variant->lineHeight * (emPixels / variant->emSize);
-				}
-			}
+			const detail::text::TextLayoutResult& layout = state_->textLayoutService.layout(
+				detail::text::TextLayoutRequest{
+					.fontView = &state_->fontView,
+					.fontId = static_cast<FontId>(textConfig.fontId),
+					.pointsToPixelsScale = state_->pointsToPixelsScale,
+					.fontSize = textConfig.fontSize,
+					.letterSpacing = textConfig.letterSpacing,
+				});
+			if (layout.success) lineHeight = layout.lineHeight;
 
 			Clay_ElementDeclaration declaration{};
 			declaration.layout.sizing = Clay_Sizing{
@@ -259,6 +261,11 @@ namespace FlowUi
 			std::function<std::string()> getClipboardTextAccessor) {
 			setClipboardTextAccessor_ = std::move(setClipboardTextAccessor);
 			getClipboardTextAccessor_ = std::move(getClipboardTextAccessor);
+			if (state_) {
+				inputFieldManager_.setClipboardAccess(
+					setClipboardTextAccessor_,
+					getClipboardTextAccessor_);
+			}
 		}
 
 		void UiManager::setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor) {
@@ -286,7 +293,7 @@ namespace FlowUi
 				return Clay_Dimensions{ 0.0f, 0.0f };
 			}
 
-		const FlowUi::Font::FontFaceData* fontFace = FlowUi::detail::ResolveFontFace(&state_->fontView, config->fontId);
+		const FlowUi::Font::FontFaceData* fontFace = detail::text::resolveFontFace(&state_->fontView, config->fontId);
 		if (!fontFace) {
 			const float fallbackEmPixels = static_cast<float>(std::max<uint16_t>(1u, config->fontSize)) * state_->pointsToPixelsScale;
 			return Clay_Dimensions{
@@ -295,18 +302,16 @@ namespace FlowUi
 			};
 		}
 
-		const FlowUi::detail::TextLayoutResult layoutResult = FlowUi::detail::LayoutTextLine(
-			FlowUi::detail::TextLayoutRequest{
-				.text = text,
-				.fontFace = fontFace,
+		const detail::text::TextLayoutResult& layoutResult = state_->textLayoutService.layout(
+			detail::text::TextLayoutRequest{
+				.text = std::string_view(text.chars, static_cast<size_t>(text.length)),
+				.fontView = &state_->fontView,
+				.fontId = static_cast<FontId>(config->fontId),
 				.pointsToPixelsScale = state_->pointsToPixelsScale,
 				.fontSize = config->fontSize,
 				.letterSpacing = config->letterSpacing,
-				.lineOriginX = 0.0f,
-				.lineOriginY = 0.0f,
-				.emitGlyphQuads = false,
-			},
-			[](const FlowUi::detail::TextLayoutGlyphQuad&) {});
+				.includeGlyphGeometry = false,
+			});
 
 		if (!layoutResult.success) {
 			return Clay_Dimensions{ 0.0f, 0.0f };
