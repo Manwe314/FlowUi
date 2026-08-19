@@ -17,6 +17,7 @@
 #include "FlowUi/ResourceKey.hpp"
 #include "internal/ElementInstanceKey.hpp"
 #include "managers/InputFieldManager.hpp"
+#include "managers/PopupManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/ThemeManager.hpp"
 #include "managers/structs/ActionManagerStructs.hpp"
@@ -479,6 +480,9 @@ public:
 	 */
 	const ShortcutManager& shortcuts() const { return shortcutManager_; }
 
+	PopupManager& popups() { return popupManager_; }
+	const PopupManager& popups() const { return popupManager_; }
+
 	/** @brief Access the app-wide ActionManager attached to this UI. */
 	[[nodiscard]] ActionManager& actions();
 	/** @brief Access the immutable app-wide ActionManager attached to this UI. */
@@ -764,6 +768,7 @@ private:
 private:
 	
 	InputFieldManager inputFieldManager_{};
+	PopupManager popupManager_{};
 	ShortcutManager shortcutManager_{};
 	std::function<void(std::string_view)> setClipboardTextAccessor_{};
 	std::function<std::string()> getClipboardTextAccessor_{};

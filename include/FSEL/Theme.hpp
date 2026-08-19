@@ -252,6 +252,17 @@ struct FSELProgressBarTheme {
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
 };
 
+struct FSELLabelTheme {
+	Clay_Color textColor = Flow_Color("#ffffffff");
+	FontFamilyId fontFamily = 0;
+	uint32_t fontWeight = 400;
+	FontStyle fontStyle = FontStyle::Normal;
+	uint16_t fontSize = 14;
+	uint16_t letterSpacing = 0;
+	Clay_TextElementConfigWrapMode wrapMode = CLAY_TEXT_WRAP_NONE;
+	Clay_TextAlignment textAlignment = CLAY_TEXT_ALIGN_LEFT;
+};
+
 struct FSELTextFieldStateTheme {
 	Clay_Color backgroundColor = Flow_Color("#1e1e1eff");
 	Clay_Color textColor = Flow_Color("#f0f0f0ff");
@@ -310,6 +321,51 @@ struct FSELTextFieldTheme {
 	uint8_t cursorPriority = 20;
 };
 
+struct FSELNumberInputStepButtonStateTheme {
+	Clay_Color backgroundColor = Flow_Color("#00000000");
+	Clay_Color foregroundColor = Flow_Color("#c8c8c8ff");
+};
+
+struct FSELNumberInputTheme {
+	FSELTextFieldTheme field{};
+	FSELNumberInputStepButtonStateTheme stepIdle{};
+	FSELNumberInputStepButtonStateTheme stepHovered = {
+		.backgroundColor = Flow_Color("#ffffff12"),
+		.foregroundColor = Flow_Color("#ffffffff"),
+	};
+	FSELNumberInputStepButtonStateTheme stepPressed = {
+		.backgroundColor = Flow_Color("#007accff"),
+		.foregroundColor = Flow_Color("#ffffffff"),
+	};
+	FSELNumberInputStepButtonStateTheme stepDisabled = {
+		.backgroundColor = Flow_Color("#00000000"),
+		.foregroundColor = Flow_Color("#6c6c6cff"),
+	};
+	Clay_Color stepSeparatorColor = Flow_Color("#454545ff");
+	float stepButtonWidth = 22.0f;
+	float stepIconSize = 10.0f;
+	uint16_t stepTextSize = 12;
+	CursorType stepCursor = CursorType::PointingHand;
+	uint8_t stepCursorPriority = 30;
+};
+
+struct FSELDragValueTheme {
+	FSELTextFieldTheme field = [] {
+		FSELTextFieldTheme theme{};
+		theme.width = 160.0f;
+		return theme;
+	}();
+	FSELTextFieldStateTheme dragging = {
+		.backgroundColor = Flow_Color("#094771ff"),
+		.textColor = Flow_Color("#ffffffff"),
+		.placeholderColor = Flow_Color("#858585ff"),
+		.borderColor = Flow_Color("#007accff"),
+	};
+	CursorType dragCursor = CursorType::ResizeHorizontal;
+	CursorType editCursor = CursorType::IBeam;
+	uint8_t cursorPriority = 30;
+};
+
 struct FSELSelectableSurfaceStateTheme {
 	Clay_Color backgroundColor = Flow_Color("#00000000");
 	Clay_Color borderColor = Flow_Color("#00000000");
@@ -352,7 +408,10 @@ struct FSELTheme {
 	FSELSwitchTheme switchTheme{};
 	FSELSliderTheme sliderTheme{};
 	FSELProgressBarTheme progressBarTheme{};
+	FSELLabelTheme labelTheme{};
 	FSELTextFieldTheme textInputTheme{};
+	FSELNumberInputTheme numberInputTheme{};
+	FSELDragValueTheme dragValueTheme{};
 	FSELTextFieldTheme textAreaTheme = [] {
 		FSELTextFieldTheme theme{};
 		theme.width = 480.0f;

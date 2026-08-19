@@ -283,6 +283,39 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 		TIMEOUT 30
 	)
 
+	add_executable(flowui_fsel_label_contract_tests
+		FSELTests/LabelContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_label_contract_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_fsel_label_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_label_contract_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.fsel.label_contracts COMMAND flowui_fsel_label_contract_tests)
+	set_tests_properties(flowui.fsel.label_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_library(flowui_fsel_label_dev_compile_contract OBJECT
+		FSELTests/LabelContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_label_dev_compile_contract
+		PRIVATE cxx_std_23
+	)
+	target_compile_definitions(flowui_fsel_label_dev_compile_contract
+		PRIVATE
+			FLOW_UI_DEV_MODE=1
+			COMPILE_FSELI=1
+	)
+	target_include_directories(flowui_fsel_label_dev_compile_contract
+		PRIVATE
+			${FLOWUI_GENERATED_INCLUDE_DIR}
+			${PROJECT_SOURCE_DIR}/include
+			${PROJECT_SOURCE_DIR}/external
+			${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
 	add_executable(flowui_fsel_text_field_contract_tests
 		FSELTests/TextFieldContractTests.cpp
 	)
@@ -302,6 +335,86 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 	set_tests_properties(flowui.fsel.text_field_contracts PROPERTIES
 		LABELS "flowui;fsel;elements;unit"
 		TIMEOUT 30
+	)
+
+	add_executable(flowui_fsel_number_input_contract_tests
+		FSELTests/NumberInputContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_number_input_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_number_input_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_number_input_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.number_input_contracts
+		COMMAND flowui_fsel_number_input_contract_tests
+	)
+	set_tests_properties(flowui.fsel.number_input_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_library(flowui_fsel_number_input_dev_compile_contract OBJECT
+		FSELTests/NumberInputContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_number_input_dev_compile_contract
+		PRIVATE cxx_std_23
+	)
+	target_compile_definitions(flowui_fsel_number_input_dev_compile_contract
+		PRIVATE
+			FLOW_UI_DEV_MODE=1
+			COMPILE_FSELI=1
+	)
+	target_include_directories(flowui_fsel_number_input_dev_compile_contract
+		PRIVATE
+			${FLOWUI_GENERATED_INCLUDE_DIR}
+			${PROJECT_SOURCE_DIR}/include
+			${PROJECT_SOURCE_DIR}/external
+			${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
+	add_executable(flowui_fsel_drag_value_contract_tests
+		FSELTests/DragValueContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_drag_value_contract_tests
+		PRIVATE cxx_std_23
+	)
+	target_include_directories(flowui_fsel_drag_value_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_drag_value_contract_tests
+		PRIVATE FlowUi::FlowUi
+	)
+	add_test(
+		NAME flowui.fsel.drag_value_contracts
+		COMMAND flowui_fsel_drag_value_contract_tests
+	)
+	set_tests_properties(flowui.fsel.drag_value_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_library(flowui_fsel_drag_value_dev_compile_contract OBJECT
+		FSELTests/DragValueContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_drag_value_dev_compile_contract
+		PRIVATE cxx_std_23
+	)
+	target_compile_definitions(flowui_fsel_drag_value_dev_compile_contract
+		PRIVATE
+			FLOW_UI_DEV_MODE=1
+			COMPILE_FSELI=1
+	)
+	target_include_directories(flowui_fsel_drag_value_dev_compile_contract
+		PRIVATE
+			${FLOWUI_GENERATED_INCLUDE_DIR}
+			${PROJECT_SOURCE_DIR}/include
+			${PROJECT_SOURCE_DIR}/external
+			${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
 	# Interactive showcase: built with the tests, but deliberately not registered

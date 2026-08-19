@@ -13,6 +13,7 @@
 #include "managers/structs/ActionManagerStructs.hpp"
 #include "managers/structs/ElementManagerStructs.hpp"
 #include "managers/InputFieldManager.hpp"
+#include "managers/PopupManager.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #include "managers/FlowUiElementBuilder.hpp"

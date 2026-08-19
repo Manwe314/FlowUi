@@ -225,9 +225,10 @@ public:
 	 *
 	 * replaceText() updates a field without removing its config, Clay element
 	 * ids, or frame presence state. By default, existing carets and selections
-	 * are preserved and clamped to valid UTF-8 boundaries in the replacement
-	 * text. Pass false to clear any active carets from the field after updating
-	 * the text.
+	 * are remapped through the smallest differing UTF-8 range and then clamped
+	 * to valid boundaries in the replacement text. This keeps carets before and
+	 * after an edited numeric or formatted segment stable. Pass false to clear
+	 * any active carets from the field after updating the text.
 	 *
 	 * @param fieldId Stable id of the field state to update.
 	 * @param text Replacement text to store for the field.

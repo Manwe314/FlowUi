@@ -124,7 +124,11 @@ things i want to do:
 			- full trigger on press -> release
 			- just press or just release
 			- cancalble release or not 
-
+	- Change single/multi line distinction to short/long text distinction.
+		- application wide byte boundry for "size of text"
+		- remove enforcement of newline characters from InputfieldManager
+		- TextInput and TextArea should be the Newlines boundry
+	- change internal Bools into bit packed words.
 
 
 ~~~~ Legacy ~~~~

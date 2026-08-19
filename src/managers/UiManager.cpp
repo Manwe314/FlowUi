@@ -136,6 +136,12 @@ namespace FlowUi
 			throw;
 		}
 		try {
+			popupManager_.init(storageSystem, window);
+		} catch (...) {
+			destroyStorage();
+			throw;
+		}
+		try {
 			shortcutManager_.init(storageSystem, window);
 			shortcutManager_.installDefaultTextShortcuts(config.ui.shortcuts.textEditing);
 		} catch (...) {
@@ -165,6 +171,7 @@ namespace FlowUi
 
 	void UiManager::destroyStorage() noexcept {
 		shortcutManager_.destroy();
+		popupManager_.destroy();
 		inputFieldManager_.destroy();
 		if (storage_) {
 			try {
@@ -341,11 +348,6 @@ namespace FlowUi
 		advanceFrameInteractionSnapshots();
 		state_->previousFrameInputForCurrentLayout = state_->frameInputForCurrentLayout;
 		state_->frameInputForCurrentLayout = frameInput;
-		inputFieldManager_.beginFrame(state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
-		shortcutManager_.beginFrame(*this, state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
-		state_->cursor = CursorType::Arrow;
-		state_->cursorPriority = 0;
-
 		Clay_SetCurrentContext(state_->clayContext);
 
 		const float clampedScreenWidth = std::max(1.0f, screenWidth);
@@ -354,6 +356,15 @@ namespace FlowUi
 		Clay_SetPointerState(
 			Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
 			frameInput.mouseDown[0]);
+		popupManager_.beginFrame(
+			state_->frameInputForCurrentLayout,
+			state_->previousFrameInputForCurrentLayout,
+			clampedScreenWidth,
+			clampedScreenHeight);
+		inputFieldManager_.beginFrame(state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		shortcutManager_.beginFrame(*this, state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		state_->cursor = CursorType::Arrow;
+		state_->cursorPriority = 0;
 		Clay_UpdateScrollContainers(
 			false,
 			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
@@ -441,6 +452,7 @@ namespace FlowUi
 		state_->flowRootIdTracker.discardFrame();
 		state_->clayBridgeIdTracker.discardFrame();
 #endif
+		popupManager_.endFrame();
 		return renderCommands;
 	}
 	
@@ -1014,6 +1026,7 @@ namespace devMode::elementCapture {
 		if (!state_) return;
 		state_->constructedElementStack.clear();
 		state_->flowScopes.cancelFrame();
+		popupManager_.cancelFrame();
 		state_->frameArena = {};
 		state_->activeFrame = {};
 #if FLOW_UI_DEV_MODE
