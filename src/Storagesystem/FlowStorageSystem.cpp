@@ -4169,6 +4169,7 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 	case ResourceKind::IconVariant:
 	case ResourceKind::InputField:
 	case ResourceKind::ShortcutRegistration:
+	case ResourceKind::PopupManager:
 	case ResourceKind::Viewport:
 	case ResourceKind::ViewportTarget:
 	case ResourceKind::ManagerRoot:
@@ -4214,6 +4215,7 @@ bool FlowStorageSystem::validateHandle(ResourceKind kind, uint32_t index, uint32
 	case ResourceKind::IconVariant:
 	case ResourceKind::InputField:
 	case ResourceKind::ShortcutRegistration:
+	case ResourceKind::PopupManager:
 	case ResourceKind::Viewport:
 	case ResourceKind::ViewportTarget:
 	case ResourceKind::ManagerRoot:

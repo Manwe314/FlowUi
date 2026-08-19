@@ -155,7 +155,7 @@ struct FieldEditTransaction {
 	std::span<const TextSelection> selectionsAfter{};
 };
 
-enum class FieldCommandRequest : uint8_t { Undo = 0, Redo, Submit };
+enum class FieldCommandRequest : uint8_t { Undo = 0, Redo, Submit, Cancel };
 
 /** Visual form used when the manager emits a field's caret overlay. */
 enum class InputCaretShape : uint8_t { Bar = 0, Block, Underline };
@@ -318,6 +318,17 @@ struct FieldRequest {
 	 * focus.
 	 */
 	Clay_ElementId contentElementId{};
+
+	/**
+	 * @brief Auxiliary element surfaces whose pointer presses retain this field's focus.
+	 *
+	 * Composite inputs use these surfaces for controls such as numeric increment
+	 * and decrement buttons. Pressing one of the submitted elements does not move
+	 * the caret, begin text selection, or clear the field's existing focus. The
+	 * manager copies the IDs during requestField(), so this span only needs to
+	 * remain valid for the duration of that call.
+	 */
+	std::span<const Clay_ElementId> focusRetentionElementIds{};
 };
 
 /**
@@ -373,7 +384,7 @@ struct FieldQueryResult {
 	/** @brief Successful edits published for this field during the current frame. */
 	std::span<const FieldEditTransaction> transactions{};
 
-	/** @brief Undo, redo, or single-line submit requests from this frame. */
+	/** @brief Undo, redo, submit, or cancel requests from this frame. */
 	std::span<const FieldCommandRequest> commandRequests{};
 };
 

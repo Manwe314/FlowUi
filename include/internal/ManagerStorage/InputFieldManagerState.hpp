@@ -81,6 +81,7 @@ struct InputFieldState {
 	std::vector<InputCaretState> carets{};
 	Clay_ElementId textElementId{};
 	Clay_ElementId contentElementId{};
+	std::vector<Clay_ElementId> focusRetentionElementIds{};
 	InputCaretFallbackMetrics fallbackMetrics{};
 	uint64_t lastTouchedEpoch = 0;
 	uint64_t commandsAppliedEpoch = 0;

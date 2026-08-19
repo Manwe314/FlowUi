@@ -51,6 +51,7 @@ enum class ResourceKind : uint8_t {
 	IconAtlasPage,
 	InputField,
 	ShortcutRegistration,
+	PopupManager,
 	Viewport,
 	ManagerRoot,
 	UiTheme,

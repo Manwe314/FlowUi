@@ -679,13 +679,35 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			}
 		}
 
-		if (!targetRuntime || !targetRuntime->field) {
+		bool retainPrimaryFocus = false;
+		if (!targetRuntime && state_->primaryFieldId) {
+			const auto primaryIt = state_->fieldsById.find(state_->primaryFieldId);
+			if (primaryIt != state_->fieldsById.end()) {
+				for (Clay_ElementId retentionId :
+					primaryIt->second.focusRetentionElementIds) {
+					if (!elementIdIsValid(retentionId)) {
+						continue;
+					}
+					const Clay_ElementData retentionData =
+						Clay_GetElementData(retentionId);
+					if (retentionData.found && boundsContainsPoint(
+						retentionData.boundingBox,
+						state_->currentInput.mouseX,
+						state_->currentInput.mouseY)) {
+						retainPrimaryFocus = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if ((!targetRuntime || !targetRuntime->field) && !retainPrimaryFocus) {
 			for (auto& [_, field] : state_->fieldsById) {
 				field.carets.clear();
 			}
 			state_->primaryFieldId = {};
 			state_->pointerDrag = PointerDragState{};
-		} else {
+		} else if (targetRuntime && targetRuntime->field) {
 			FieldState& field = *targetRuntime->field;
 			const size_t hitOffset = resolvePointerOffsetInRuntime(*targetRuntime, state_->currentInput.mouseX, state_->currentInput.mouseY);
 			for (auto& [_, candidate] : state_->fieldsById) {
@@ -1163,6 +1185,9 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 		defaultOverlayStyle(state_->config)));
 	field.textElementId = request.textElementId;
 	field.contentElementId = request.contentElementId;
+	field.focusRetentionElementIds.assign(
+		request.focusRetentionElementIds.begin(),
+		request.focusRetentionElementIds.end());
 	field.lastTouchedEpoch = state_->currentTouchEpoch;
 	clampCaretsToText(field);
 	if (state_->primaryFieldId == fieldId && !field.carets.empty() &&
@@ -1691,9 +1716,41 @@ bool InputFieldManager::replaceTextByKey(
 	}
 
 	FieldState& field = it->second;
+	const std::string currentText = text_storage::copy(
+		field.storage,
+		TextRange{0, text_storage::byteCount(field.storage)});
+	size_t commonPrefix = 0;
+	const size_t maximumPrefix = std::min(currentText.size(), text.size());
+	while (commonPrefix < maximumPrefix &&
+		currentText[commonPrefix] == text[commonPrefix]) {
+		++commonPrefix;
+	}
+	while (commonPrefix > 0 && commonPrefix < currentText.size() &&
+		(static_cast<unsigned char>(currentText[commonPrefix]) & 0xc0u) == 0x80u) {
+		--commonPrefix;
+	}
+
+	size_t commonSuffix = 0;
+	while (commonSuffix < currentText.size() - commonPrefix &&
+		commonSuffix < text.size() - commonPrefix &&
+		currentText[currentText.size() - 1u - commonSuffix] ==
+			text[text.size() - 1u - commonSuffix]) {
+		++commonSuffix;
+	}
+	while (commonSuffix > 0 &&
+		currentText.size() - commonSuffix < currentText.size() &&
+		(static_cast<unsigned char>(
+			currentText[currentText.size() - commonSuffix]) & 0xc0u) == 0x80u) {
+		--commonSuffix;
+	}
+
+	const size_t currentEnd = currentText.size() - commonSuffix;
+	const size_t replacementEnd = text.size() - commonSuffix;
 	const TextReplacement replacement{
-		.oldRange = TextRange{0, text_storage::byteCount(field.storage)},
-		.insertedText = text,
+		.oldRange = TextRange{commonPrefix, currentEnd},
+		.insertedText = text.substr(
+			commonPrefix,
+			replacementEnd - commonPrefix),
 	};
 	if (commitEdits(field, std::span<const TextReplacement>(&replacement, 1), EditOrigin::Programmatic, false) != EditResult::Applied) {
 		return false;
@@ -1763,6 +1820,13 @@ void InputFieldManager::clear() {
 
 void InputFieldManager::applyCapturedEdits(field_key::InputFieldKey fieldId, FieldState& field) {
 	if (state_->primaryFieldId != fieldId || field.carets.empty()) return;
+	if (keyPressedThisFrame(
+		state_->currentInput,
+		state_->previousInput,
+		GLFW_KEY_ESCAPE)) {
+		field.frameCommandRequests.push_back(FieldCommandRequest::Cancel);
+		return;
+	}
 	const bool modified = state_->currentInput.ctrl || state_->currentInput.super || state_->currentInput.alt;
 	const bool selecting = state_->currentInput.shift;
 	bool caretMoved = false;

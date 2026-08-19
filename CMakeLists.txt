@@ -229,6 +229,7 @@ target_sources(flowui
         src/managers/ViewportStorageController.cpp
         src/managers/ImageManager.cpp
         src/managers/InputFieldManager.cpp
+		src/managers/PopupManager.cpp
         src/managers/ShortcutManager.cpp
         src/managers/ThemeManager.cpp
         src/managers/ThemeStorageController.cpp
@@ -282,6 +283,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ResourceKeyNormalization.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ManagerStateAccess.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ShortcutManagerState.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/PopupManagerState.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/InputFieldManagerState.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/UiManagerState.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/FontCatalogController.hpp>
@@ -302,11 +304,13 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FlowUiElementStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/InputFieldManagerStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/InputStructs.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/PopupManagerStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ShortcutManagerStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ViewPortManagerStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/FlowUiElementBuilder.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/ElementManager.hpp>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/ActionManager.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/PopupManager.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/IWindow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Context.hpp>
@@ -324,10 +328,17 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Box.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Button.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Checkbox.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/DragValue.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Label.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/NumberInput.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Numeric.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/ProgressBar.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BoundedValueMath.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BooleanControlInteraction.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/DragValueMath.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/NumericControl.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/SelectableSurfaceBehavior.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/NumericText.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/RadioChoice.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SelectableSurface.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SelectableSurfaceStyle.hpp>
@@ -336,6 +347,7 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Spacer.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SplitterHandle.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Switch.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/StandardIcons.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/TextArea.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/TextInput.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/TextFieldCommon.hpp>

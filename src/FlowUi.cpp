@@ -9,6 +9,7 @@
 #include "managers/ActionManager.hpp"
 #if COMPILE_FSELI
 #include "FSEL/Theme.hpp"
+#include "FSEL/StandardIcons.hpp"
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 #include "managers/IconManager.hpp"
@@ -455,6 +456,9 @@ struct App::Impl {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 		iconsInitialized = true;
 		icons.init(*storageSystem, config.iconManager);
+#if COMPILE_FSELI
+		FSEL::standard_icons::registerStandardIcons(icons);
+#endif
 #endif
 		initializeDefaultFont();
 	}

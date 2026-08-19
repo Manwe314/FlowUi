@@ -37,6 +37,9 @@ struct DemoState {
 	uint64_t quickNoteChanges = 0;
 	uint64_t quickNoteCommits = 0;
 	uint64_t quickNoteSubmits = 0;
+	int retryCount = 3;
+	unsigned int batchSize = 12;
+	float exposure = 0.5f;
 	std::string documentTitle = "Field notes · August study";
 	std::string document =
 		"A quiet place to test TextArea\n"
@@ -429,6 +432,140 @@ void drawTextInputCard(
 	ui.drawConstructed();
 }
 
+void drawNumberInputCard(UiManager& ui, DemoState& state) {
+	ui.createElement(kBox, "number-input-card")
+		.setParameters(cardParameters())
+		.construct();
+	drawCardHeading(
+		ui,
+		"NumberInput",
+		"Native int, uint, and float bindings with soft bounds and optional step controls.");
+
+	CLAY(ui.toClaySID("demo/number-input/retry"), row(12)) {
+		drawText(ui, "Retries", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kNumberInputInt, "retry-count")
+			.setParameters(NumberInputParameters<int>{
+				.value = &state.retryCount,
+				.minimum = 0,
+				.maximum = 20,
+				.step = 1,
+				.stepButtons = NumberInputStepButtons::TrailingVertical,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(150),
+					.height = CLAY_SIZING_FIXED(36),
+				},
+			})
+			.draw();
+	}
+
+	CLAY(ui.toClaySID("demo/number-input/batch"), row(12)) {
+		drawText(ui, "Batch", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kNumberInputUInt, "batch-size")
+			.setParameters(NumberInputParameters<unsigned int>{
+				.value = &state.batchSize,
+				.minimum = 1u,
+				.maximum = 128u,
+				.step = 4u,
+				.stepButtons = NumberInputStepButtons::TrailingHorizontal,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(150),
+					.height = CLAY_SIZING_FIXED(36),
+				},
+			})
+			.draw();
+	}
+
+	CLAY(ui.toClaySID("demo/number-input/exposure"), row(12)) {
+		drawText(ui, "Exposure", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kNumberInputFloat, "exposure")
+			.setParameters(NumberInputParameters<float>{
+				.value = &state.exposure,
+				.minimum = -2.0f,
+				.maximum = 2.0f,
+				.step = 0.1f,
+				.format = NumericFormatOptions{
+					.notation = NumericFloatNotation::Fixed,
+					.precision = 2,
+				},
+				.stepButtons = NumberInputStepButtons::None,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(150),
+					.height = CLAY_SIZING_FIXED(36),
+				},
+			})
+			.draw();
+	}
+
+	ui.drawConstructed();
+}
+
+void drawDragValueCard(UiManager& ui, DemoState& state) {
+	ui.createElement(kBox, "drag-value-card")
+		.setParameters(cardParameters())
+		.construct();
+	drawCardHeading(
+		ui,
+		"DragValue",
+		"Drag horizontally to scrub. A short click enters native numeric text editing.");
+
+	CLAY(ui.toClaySID("demo/drag-value/retry"), row(12)) {
+		drawText(ui, "Retries", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kDragValueInt, "retry-count-drag")
+			.setParameters(DragValueParameters<int>{
+				.value = &state.retryCount,
+				.minimum = 0,
+				.maximum = 20,
+				.step = 1,
+				.pixelsPerStep = 6.0f,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(150),
+					.height = CLAY_SIZING_FIXED(36),
+				},
+			})
+			.draw();
+	}
+
+	CLAY(ui.toClaySID("demo/drag-value/exposure"), row(12)) {
+		drawText(ui, "Exposure", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kDragValueFloat, "exposure-drag")
+			.setParameters(DragValueParameters<float>{
+				.value = &state.exposure,
+				.minimum = -2.0f,
+				.maximum = 2.0f,
+				.step = 0.05f,
+				.pixelsPerStep = 3.0f,
+				.format = NumericFormatOptions{
+					.notation = NumericFloatNotation::Fixed,
+					.precision = 2,
+				},
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(150),
+					.height = CLAY_SIZING_FIXED(36),
+				},
+			})
+			.draw();
+	}
+
+	CLAY(ui.toClaySID("demo/drag-value/batch"), row(12)) {
+		drawText(ui, "Drag only", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
+		ui.createElement(kDragValueUInt, "batch-size-drag")
+			.setParameters(DragValueParameters<unsigned int>{
+				.value = &state.batchSize,
+				.minimum = 1u,
+				.maximum = 128u,
+				.step = 4u,
+				.allowTextEntry = false,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(150),
+					.height = CLAY_SIZING_FIXED(36),
+				},
+			})
+			.draw();
+	}
+
+	ui.drawConstructed();
+}
+
 void drawBooleanCard(
 	UiManager& ui,
 	const DemoState& state,
@@ -781,6 +918,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 		drawSelectableCard(ui, state, actions);
 		drawRadioCard(ui, state);
 		drawTextInputCard(ui, state, actions);
+		drawNumberInputCard(ui, state);
 		ui.drawConstructed();
 
 		ui.createElement(kSplitterHandle, "gallery-splitter")
@@ -815,6 +953,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 			})
 			.construct();
 		drawBooleanCard(ui, state, actions);
+		drawDragValueCard(ui, state);
 		drawProgressBarsCard(ui, state);
 		drawSlidersCard(ui, state, actions);
 		drawLayoutCard(ui, state);
