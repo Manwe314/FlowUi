@@ -320,6 +320,26 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/clay.h>
 )
 
+if(FLOW_UI_DEV_MODE)
+	target_sources(flowui
+		PRIVATE
+			src/devSystems/devFunctionality/DevFunctionality.cpp
+			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
+			src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp
+			src/devSystems/devMonitoringAndReporting/timing/DevTimingRecorder.cpp
+			src/devSystems/devMonitoringAndReporting/timing/DevTimingZone.cpp
+			src/devSystems/devTooling/DevTooling.cpp
+		PUBLIC
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devFunctionality/DevFunctionality.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTiming.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTimingTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/DevTooling.hpp>
+	)
+endif()
+
 if(FLOWUI_COMPILE_FSELI_ENABLED)
     target_sources(flowui
         PUBLIC
@@ -328,10 +348,12 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Box.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Button.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Checkbox.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/ComboBox.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/DragValue.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Label.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/NumberInput.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/Numeric.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/PopupSurface.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/ProgressBar.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BoundedValueMath.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/BooleanControlInteraction.hpp>
@@ -339,6 +361,7 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/NumericControl.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/SelectableSurfaceBehavior.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/NumericText.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/internal/ScrollIndicatorMath.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/RadioChoice.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SelectableSurface.hpp>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FSEL/SelectableSurfaceStyle.hpp>

@@ -8,7 +8,7 @@ FlowUi 0.10.0 is organized into distinct layer boundaries:
 |                   FlowUi::App / Window Loops                      |
 +-------------------------------------------------------------------+
 |                         Manager Layer                             |
-|  ThemeManager | UiManager | FontManager | ImageManager | Icons    |
+| ThemeManager | UiManager | PopupManager | Fonts | Images | Icons |
 +-------------------------------------------------------------------+
 |                      Clay Layout Engine                           |
 |         Immediate-Mode Element System & Command Generation        |
@@ -37,6 +37,7 @@ FlowUi 0.10.0 is organized into distinct layer boundaries:
    - **`FontManager`**: Manages font families, MSDF font atlas baking, and `FontId` resolution.
    - **`ImageManager` / `IconManager`**: Asset texture loading, SVG rasterization, and `TextureRef` lookup.
    - **`ShortcutManager` / `InputFieldManager`**: Input chord matching and text field state tracking.
+   - **`PopupManager`**: Floating placement, measurement, stacking, overflow correction, and dismissal.
    - **`ViewPortManager`**: Offscreen render target management and custom Vulkan rendering callbacks.
 
 4. **Vulkan Renderer (`Vk_UiRenderer`)**

@@ -316,6 +316,78 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 			${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
+	add_executable(flowui_fsel_popup_surface_contract_tests
+		FSELTests/PopupSurfaceContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_popup_surface_contract_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_fsel_popup_surface_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_popup_surface_contract_tests PRIVATE FlowUi::FlowUi)
+	add_test(
+		NAME flowui.fsel.popup_surface_contracts
+		COMMAND flowui_fsel_popup_surface_contract_tests
+	)
+	set_tests_properties(flowui.fsel.popup_surface_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_library(flowui_fsel_popup_surface_dev_compile_contract OBJECT
+		FSELTests/PopupSurfaceContractTests.cpp
+	)
+
+	add_executable(flowui_fsel_combo_box_contract_tests
+		FSELTests/ComboBoxContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_combo_box_contract_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_fsel_combo_box_contract_tests
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_link_libraries(flowui_fsel_combo_box_contract_tests PRIVATE FlowUi::FlowUi)
+	add_test(
+		NAME flowui.fsel.combo_box_contracts
+		COMMAND flowui_fsel_combo_box_contract_tests
+	)
+	set_tests_properties(flowui.fsel.combo_box_contracts PROPERTIES
+		LABELS "flowui;fsel;elements;unit"
+		TIMEOUT 30
+	)
+
+	add_library(flowui_fsel_combo_box_dev_compile_contract OBJECT
+		FSELTests/ComboBoxContractTests.cpp
+	)
+	target_compile_features(flowui_fsel_combo_box_dev_compile_contract
+		PRIVATE cxx_std_23
+	)
+	target_compile_definitions(flowui_fsel_combo_box_dev_compile_contract
+		PRIVATE
+			FLOW_UI_DEV_MODE=1
+			COMPILE_FSELI=1
+	)
+	target_include_directories(flowui_fsel_combo_box_dev_compile_contract
+		PRIVATE
+			${FLOWUI_GENERATED_INCLUDE_DIR}
+			${PROJECT_SOURCE_DIR}/include
+			${PROJECT_SOURCE_DIR}/external
+			${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	target_compile_features(flowui_fsel_popup_surface_dev_compile_contract
+		PRIVATE cxx_std_23
+	)
+	target_compile_definitions(flowui_fsel_popup_surface_dev_compile_contract
+		PRIVATE
+			FLOW_UI_DEV_MODE=1
+			COMPILE_FSELI=1
+	)
+	target_include_directories(flowui_fsel_popup_surface_dev_compile_contract
+		PRIVATE
+			${FLOWUI_GENERATED_INCLUDE_DIR}
+			${PROJECT_SOURCE_DIR}/include
+			${PROJECT_SOURCE_DIR}/external
+			${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
 	add_executable(flowui_fsel_text_field_contract_tests
 		FSELTests/TextFieldContractTests.cpp
 	)

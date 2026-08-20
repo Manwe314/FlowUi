@@ -22,9 +22,10 @@ struct PopupRecord {
 	bool hasBounds = false;
 	bool dismissed = false;
 	bool dismissalPending = false;
-	bool dismissOnOutsidePress = true;
+	PopupOutsidePressPolicy outsidePress = PopupOutsidePressPolicy::DismissAndBlockAnchor;
 	bool dismissOnEscape = true;
 	bool visibleLastCommitted = false;
+	uint32_t anchorClayId = 0;
 };
 
 struct PopupSubmission {
@@ -44,6 +45,10 @@ struct PopupManagerState {
 	uint64_t nextSubmissionOrder = 1;
 	bool frameActive = false;
 	bool capacityWarningIssued = false;
+	bool rawPrimaryPointerDownLastFrame = false;
+	bool consumePrimaryPointerUntilRelease = false;
+	bool suppressAllPrimaryPointerThisFrame = false;
+	uint32_t suppressedAnchorClayIdThisFrame = 0;
 };
 
 } // namespace FlowUi::detail::manager_storage

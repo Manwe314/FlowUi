@@ -247,9 +247,11 @@ struct ElementBuildContext
 	/** Resolve a named Clay/semantic child under this element. */
 	[[nodiscard]] FlowElementID childID(LocalElementName name) const;
 	[[nodiscard]] FlowElementID childID(RuntimeElementName name) const;
+	[[nodiscard]] FlowElementID childID(IndexedElementName name) const;
 	/** Resolve and bridge a named child in one call. */
 	[[nodiscard]] Clay_ElementId clayID(LocalElementName name) const;
 	[[nodiscard]] Clay_ElementId clayID(RuntimeElementName name) const;
+	[[nodiscard]] Clay_ElementId clayID(IndexedElementName name) const;
 	/** Bind one definition-time part declaration to this concrete owner instance. */
 	[[nodiscard]] FlowElementPartID part(FlowElementPart declaration) const;
 	/** Create a child element directly at one semantic part address. */
@@ -356,9 +358,11 @@ struct ElementInteractionContext
 	/** Resolve a named Clay/semantic child under this element. */
 	[[nodiscard]] FlowElementID childID(LocalElementName name) const;
 	[[nodiscard]] FlowElementID childID(RuntimeElementName name) const;
+	[[nodiscard]] FlowElementID childID(IndexedElementName name) const;
 	/** Resolve and bridge a named child in one call. */
 	[[nodiscard]] Clay_ElementId clayID(LocalElementName name) const;
 	[[nodiscard]] Clay_ElementId clayID(RuntimeElementName name) const;
+	[[nodiscard]] Clay_ElementId clayID(IndexedElementName name) const;
 	/** Bind one definition-time part declaration to this concrete owner instance. */
 	[[nodiscard]] FlowElementPartID part(FlowElementPart declaration) const;
 	/** Create a child element directly at one semantic part address. */

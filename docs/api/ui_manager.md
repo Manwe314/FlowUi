@@ -359,6 +359,38 @@ FlowUi::ShortcutManager& shortcuts = app.ui().shortcuts();
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc).
 
+### **popups** `1/2`
+
+
+#### `PopupManager& popups()`
+
+- **Returns:** `PopupManager&`
+- **Arguments:** none.
+
+Returns the mutable window-scoped popup manager. Custom popup elements use it for placement, measurement, overflow correction, z-order, and dismissal behavior.
+
+**Example:**
+
+```cpp
+FlowUi::PopupFrame frame = context.uiManager.popups().request(
+    context.id,
+    context.params.popupRequest);
+```
+
+See: [Popup Manager API](popup_manager.md).
+
+### **popups** `2/2`
+
+
+#### `const PopupManager& popups() const`
+
+- **Returns:** `const PopupManager&`
+- **Arguments:** none.
+
+Returns the immutable window-scoped popup manager.
+
+See: [Popup Manager API](popup_manager.md).
+
 ### **devRuntime** `1/2`
 
 

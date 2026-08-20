@@ -13,6 +13,20 @@ struct FSELBoxTheme {
 	Clay_CornerRadius cornerRadius = {0, 0, 0, 0};
 };
 
+struct FSELPopupSurfaceTheme {
+	Clay_Color backgroundColor = Flow_Color("#252526ff");
+	Clay_Color borderColor = Flow_Color("#454545ff");
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
+	Clay_Padding padding = CLAY_PADDING_ALL(10);
+	uint16_t childGap = 6;
+	Clay_ChildAlignment childAlignment = {
+		.x = CLAY_ALIGN_X_LEFT,
+		.y = CLAY_ALIGN_Y_TOP,
+	};
+	Clay_LayoutDirection layoutDirection = CLAY_TOP_TO_BOTTOM;
+};
+
 struct FSELSplitterHandleTheme {
 	Clay_Color backgroundColor = Flow_Color("#00000000");
 	Clay_Color hoverColor = Flow_Color("#ffffff18");
@@ -400,6 +414,75 @@ struct FSELSelectableSurfaceTheme {
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(4);
 };
 
+struct FSELComboBoxStateTheme {
+	Clay_Color backgroundColor = Flow_Color("#252526ff");
+	Clay_Color textColor = Flow_Color("#ffffffff");
+	Clay_Color iconColor = Flow_Color("#ffffffff");
+	Clay_Color borderColor = Flow_Color("#454545ff");
+};
+
+struct FSELComboBoxOptionStateTheme {
+	Clay_Color backgroundColor = Flow_Color("#00000000");
+	Clay_Color textColor = Flow_Color("#ffffffff");
+	Clay_Color iconColor = Flow_Color("#ffffffff");
+};
+
+struct FSELComboBoxTheme {
+	FSELComboBoxStateTheme idle{};
+	FSELComboBoxStateTheme hovered = {
+		.backgroundColor = Flow_Color("#3e3e42ff"),
+		.borderColor = Flow_Color("#5a5a5eff"),
+	};
+	FSELComboBoxStateTheme open = {
+		.backgroundColor = Flow_Color("#094771ff"),
+		.borderColor = Flow_Color("#007accff"),
+	};
+	FSELComboBoxStateTheme disabled = {
+		.backgroundColor = Flow_Color("#252526ff"),
+		.textColor = Flow_Color("#6c6c6cff"),
+		.iconColor = Flow_Color("#6c6c6cff"),
+		.borderColor = Flow_Color("#3e3e42ff"),
+	};
+	FSELComboBoxOptionStateTheme optionIdle{};
+	FSELComboBoxOptionStateTheme optionHovered = {
+		.backgroundColor = Flow_Color("#3e3e42ff"),
+	};
+	FSELComboBoxOptionStateTheme optionPressed = {
+		.backgroundColor = Flow_Color("#094771ff"),
+	};
+	FSELComboBoxOptionStateTheme optionSelected = {
+		.backgroundColor = Flow_Color("#094771a0"),
+	};
+	FSELComboBoxOptionStateTheme optionDisabled = {
+		.textColor = Flow_Color("#6c6c6cff"),
+		.iconColor = Flow_Color("#6c6c6cff"),
+	};
+	Clay_Color placeholderColor = Flow_Color("#858585ff");
+	Clay_Color scrollTrackColor = Flow_Color("#ffffff12");
+	Clay_Color scrollThumbColor = Flow_Color("#858585ff");
+	Clay_Padding triggerPadding = {10, 8, 6, 6};
+	Clay_Padding optionPadding = {8, 8, 4, 4};
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
+	float width = 240.0f;
+	float height = 34.0f;
+	float popupMaxHeight = 240.0f;
+	float optionHeight = 32.0f;
+	float iconSize = 16.0f;
+	float scrollTrackWidth = 6.0f;
+	float scrollThumbMinimum = 22.0f;
+	uint16_t contentGap = 8;
+	uint16_t optionGap = 2;
+	uint16_t popupGap = 4;
+	uint16_t scrollGap = 6;
+	FontFamilyId fontFamily = 0;
+	uint32_t fontWeight = 400;
+	FontStyle fontStyle = FontStyle::Normal;
+	uint16_t fontSize = 16;
+	CursorType cursor = CursorType::PointingHand;
+	uint8_t cursorPriority = 10;
+};
+
 struct FSELTheme {
 	FSELBoxTheme boxTheme{};
 	FSELSplitterHandleTheme splitterHandleTheme{};
@@ -420,6 +503,8 @@ struct FSELTheme {
 		return theme;
 	}();
 	FSELSelectableSurfaceTheme selectableSurfaceTheme{};
+	FSELPopupSurfaceTheme popupSurfaceTheme{};
+	FSELComboBoxTheme comboBoxTheme{};
 };
 
 } // namespace FlowUi::FSEL

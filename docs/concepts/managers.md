@@ -2,11 +2,11 @@
 
 ## Introduction
 
-FlowUi managers are compact subsystem objects owned by the main `FlowUi::App`. They are "singleton-like" within one app instance: there is one action manager, one font manager, one image manager, one viewport manager, and so on for that running application. A `UiManager` remains window-specific. Users do not create, initialize, destroy, or synchronize these managers manually. `App` owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes references through accessors such as `app.ui()`, `app.actions()`, `app.fonts()`, `app.images()`, and `app.viewPorts()`.
+FlowUi managers are compact subsystem objects owned by the main `FlowUi::App`. They are "singleton-like" within one app instance: there is one action manager, one font manager, one image manager, one viewport manager, and so on for that running application. A `UiManager` remains window-specific and owns its input-field, shortcut, and popup services. Users do not create, initialize, destroy, or synchronize these managers manually. `App` owns them, wires them to the window, Vulkan context, renderer, texture registry, and frame lifecycle, then exposes references through accessors such as `app.ui()`, `app.actions()`, `app.fonts()`, `app.images()`, and `app.viewPorts()`.
 
 ## TL;DR
 
-Managers exist because Clay is a layout library, not a full desktop application runtime. FlowUi adds app-owned subsystems for text, textures, icons, input fields, shortcuts, viewports, frame-local UI services, and rendering support so users can start writing application code sooner.
+Managers exist because Clay is a layout library, not a full desktop application runtime. FlowUi adds subsystems for text, textures, icons, input fields, shortcuts, popup behavior, viewports, frame-local UI services, and rendering support so users can start writing application code sooner.
 
 You normally access a manager by reference and pass that reference around:
 
@@ -28,6 +28,7 @@ Clay gives FlowUi a fast immediate-mode layout engine. That solves layout, but a
 - icons need SVG parsing, rasterization, atlas packing, and per-size caching
 - input fields need text state, focus, caret, selection, and edit operations
 - shortcuts need keyboard chord registration and dispatch
+- popups need stable placement, measurement, stacking, overflow correction, and dismissal
 - viewports need offscreen render targets and Vulkan callback integration
 - UI construction needs frame-local string storage, texture storage, input snapshots, and Clay context ownership
 
@@ -66,7 +67,7 @@ The references should not outlive the `App` that owns them. They are not indepen
 
 `UiManager` is the main frame-authoring surface. Most user UI code touches it directly or indirectly.
 
-It owns the Clay context, frame-local string arenas, frame-local texture reference storage, current and previous frame input snapshots, previous/current interaction snapshots, cursor requests, clipboard accessors, and the input field and shortcut managers. It also bridges font resolution by forwarding requests to the connected `FlowUi::FontManager`.
+It owns the Clay context, frame-local string arenas, frame-local texture reference storage, current and previous frame input snapshots, previous/current interaction snapshots, cursor requests, clipboard accessors, and the input-field, shortcut, and popup managers. It also bridges font resolution by forwarding requests to the connected `FlowUi::FontManager`.
 
 Common use cases:
 
@@ -199,6 +200,18 @@ FlowUi::ShortcutId saveShortcut = shortcuts.registerShortcut(
 Each frame, the shortcut manager compares current and previous `FrameInput`, detects press/release/down transitions, checks scope, orders callbacks by priority, and stops dispatch when a callback returns `true`.
 
 Scopes let local behavior handle a chord before global fallback behavior. For example, a focused input field can handle copy/paste while the app still has global shortcuts elsewhere.
+
+## PopupManager
+
+`PopupManager` is the window-scoped behavior service for floating popup roots. It is reached through `UiManager`:
+
+```cpp
+FlowUi::PopupManager& popups = app.ui().popups();
+```
+
+Custom elements submit a stable popup identity and `PopupRequest` each visible frame. The manager resolves parent, element, pointer, position, or viewport anchors; translates the requested nine-point attachment into Clay floating configuration; corrects viewport overflow once a size is known; assigns a z-index from the chosen popup layer; and reports automatic outside-press or Escape dismissal. Outside presses can be ignored, can dismiss while blocking only the popup anchor, or can dismiss while consuming the complete pointer gesture.
+
+The manager does not prescribe visual styling, content, modal backdrops, focus trapping, or application-owned open state. `FlowUi::FSEL::kPopupSurface` is one convenience element built on this general service. See the [Popup Manager API](../api/popup_manager.md) for the request contract, first-frame measurement behavior, and custom-element example.
 
 ## ViewPortManager
 

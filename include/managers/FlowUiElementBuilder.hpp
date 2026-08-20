@@ -41,12 +41,22 @@ FlowElementID ElementBuildContext<Element>::childID(RuntimeElementName name) con
 }
 
 template <typename Element>
+FlowElementID ElementBuildContext<Element>::childID(IndexedElementName name) const {
+	return uiManager.resolveIndexedElementID(id, ElementType::definitionId, name);
+}
+
+template <typename Element>
 Clay_ElementId ElementBuildContext<Element>::clayID(LocalElementName name) const {
 	return uiManager.toClayEID(childID(name));
 }
 
 template <typename Element>
 Clay_ElementId ElementBuildContext<Element>::clayID(RuntimeElementName name) const {
+	return uiManager.toClayEID(childID(name));
+}
+
+template <typename Element>
+Clay_ElementId ElementBuildContext<Element>::clayID(IndexedElementName name) const {
 	return uiManager.toClayEID(childID(name));
 }
 
@@ -94,12 +104,22 @@ FlowElementID ElementInteractionContext<Element>::childID(RuntimeElementName nam
 }
 
 template <typename Element>
+FlowElementID ElementInteractionContext<Element>::childID(IndexedElementName name) const {
+	return uiManager.resolveIndexedElementID(id, ElementType::definitionId, name);
+}
+
+template <typename Element>
 Clay_ElementId ElementInteractionContext<Element>::clayID(LocalElementName name) const {
 	return uiManager.toClayEID(childID(name));
 }
 
 template <typename Element>
 Clay_ElementId ElementInteractionContext<Element>::clayID(RuntimeElementName name) const {
+	return uiManager.toClayEID(childID(name));
+}
+
+template <typename Element>
+Clay_ElementId ElementInteractionContext<Element>::clayID(IndexedElementName name) const {
 	return uiManager.toClayEID(childID(name));
 }
 

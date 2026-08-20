@@ -129,6 +129,11 @@ things i want to do:
 		- remove enforcement of newline characters from InputfieldManager
 		- TextInput and TextArea should be the Newlines boundry
 	- change internal Bools into bit packed words.
+	- FSEL extention
+		- Tabs and TAb bar elements
+		- Menu items a Menu elements
+		- Dedicated Scrolling Area with scroll indicator
+		
 
 
 ~~~~ Legacy ~~~~

@@ -119,6 +119,16 @@ struct PopupOverflowPolicy {
 	bool shiftToFit = true;
 };
 
+/** Controls both outside-press dismissal and ownership of the dismissing press. */
+enum class PopupOutsidePressPolicy : uint8_t {
+	/** Dismiss and hide the complete primary-pointer gesture from the UI below. */
+	DismissAndConsume,
+	/** Dismiss and prevent only this popup's anchor/trigger from receiving the press. */
+	DismissAndBlockAnchor,
+	/** Keep the popup open and leave the press untouched. */
+	Ignore,
+};
+
 struct PopupRequest {
 	PopupAnchor anchor = PopupAnchor::parent();
 	PopupPlacement placement{};
@@ -128,7 +138,7 @@ struct PopupRequest {
 	PopupLayer layer = PopupLayer::CasualPopup;
 	Clay_PointerCaptureMode pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE;
 	Clay_FloatingClipToElement clipTo = CLAY_CLIP_TO_NONE;
-	bool dismissOnOutsidePress = true;
+	PopupOutsidePressPolicy outsidePress = PopupOutsidePressPolicy::DismissAndBlockAnchor;
 	bool dismissOnEscape = true;
 };
 

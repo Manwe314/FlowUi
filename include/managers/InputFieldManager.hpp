@@ -373,7 +373,10 @@ private:
 	void setFontFrameView(
 		const detail::manager_storage::FontFrameView& fontView,
 		float pointsToPixelsScale);
-	void beginFrame(const FrameInput& currentInput, const FrameInput& previousInput);
+	void beginFrame(
+		const FrameInput& currentInput,
+		const FrameInput& previousInput,
+		uint32_t suppressedPrimaryPressClayId = 0);
 	void setClipboardAccess(
 		std::function<void(std::string_view)> setClipboardText,
 		std::function<std::string()> getClipboardText);
