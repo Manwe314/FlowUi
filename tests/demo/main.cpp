@@ -14,6 +14,19 @@ namespace {
 using namespace FlowUi;
 using namespace FlowUi::FSEL;
 
+constexpr GlobalFlowID kAnchoredPopupTriggerId =
+	Global<FlowUi::FSEL::kButton>("demo.popup.anchor-trigger");
+constexpr GlobalFlowID kAnchoredPopupSurfaceId =
+	Global<FlowUi::FSEL::kPopupSurface>("demo.popup.anchored");
+constexpr GlobalFlowID kPointerPopupSurfaceId =
+	Global<FlowUi::FSEL::kPopupSurface>("demo.popup.pointer");
+constexpr GlobalFlowID kHeadsUpPopupSurfaceId =
+	Global<FlowUi::FSEL::kPopupSurface>("demo.popup.heads-up");
+constexpr GlobalFlowID kHoverPopupAreaId =
+	Global<FlowUi::FSEL::kBox>("demo.popup.hover-area");
+constexpr GlobalFlowID kHoverPopupSurfaceId =
+	Global<FlowUi::FSEL::kPopupSurface>("demo.popup.hover-follow");
+
 enum class DemoPage : uint8_t {
 	Gallery = 0,
 	WritingStudio,
@@ -64,6 +77,11 @@ struct DemoState {
 	uint64_t documentFocuses = 0;
 	uint64_t undoRequests = 0;
 	uint64_t redoRequests = 0;
+	bool anchoredPopupOpen = false;
+	bool pointerPopupOpen = false;
+	bool headsUpPopupOpen = false;
+	uint64_t comboSelection = 2;
+	uint64_t comboChanges = 0;
 };
 
 constexpr auto kIncrement = UiAction(
@@ -108,6 +126,13 @@ struct DemoActions {
 	ActionCall toggleEditorWrap{};
 	ActionCall showGallery{};
 	ActionCall showWritingStudio{};
+	ActionCall openAnchoredPopup{};
+	ActionCall closeAnchoredPopup{};
+	ActionCall openPointerPopup{};
+	ActionCall closePointerPopup{};
+	ActionCall openHeadsUpPopup{};
+	ActionCall closeHeadsUpPopup{};
+	ActionCall comboChanged{};
 	ActionCall reset{};
 };
 
@@ -133,6 +158,13 @@ DemoActions makeActions(App& app, DemoState& state) {
 		.toggleEditorWrap = ActionCall{actions.make(kToggle, state.editorSoftWrap)},
 		.showGallery = ActionCall{actions.make(kShowGallery, state)},
 		.showWritingStudio = ActionCall{actions.make(kShowWritingStudio, state)},
+		.openAnchoredPopup = ActionCall{actions.make(kSelect, state.anchoredPopupOpen)},
+		.closeAnchoredPopup = ActionCall{actions.make(kClear, state.anchoredPopupOpen)},
+		.openPointerPopup = ActionCall{actions.make(kSelect, state.pointerPopupOpen)},
+		.closePointerPopup = ActionCall{actions.make(kClear, state.pointerPopupOpen)},
+		.openHeadsUpPopup = ActionCall{actions.make(kSelect, state.headsUpPopupOpen)},
+		.closeHeadsUpPopup = ActionCall{actions.make(kClear, state.headsUpPopupOpen)},
+		.comboChanged = ActionCall{actions.make(kIncrement, state.comboChanges)},
 		.reset = ActionCall{actions.make(kReset, state)},
 	};
 }
@@ -798,6 +830,214 @@ void drawLayoutCard(UiManager& ui, const DemoState& state) {
 	ui.drawConstructed();
 }
 
+void drawPopupSurfaceCard(
+	UiManager& ui,
+	const DemoState& state,
+	const DemoActions& actions) {
+	ui.createElement(kBox, "popup-surface-card")
+		.setParameters(cardParameters())
+		.construct();
+	drawCardHeading(
+		ui,
+		"PopupSurface",
+		"The same construct-only surface can anchor to an element, snapshot the pointer, or attach to the viewport.");
+
+	CLAY(ui.toClaySID("demo/popup/anchor-row"), row(10)) {
+		ui.createElement(FlowUi::FSEL::kButton, "anchored-popup-trigger")
+			.withID(kAnchoredPopupTriggerId)
+			.setParameters(FlowUi::FSEL::ButtonParameters{
+				.onActivate = actions.openAnchoredPopup,
+				.enabled = true,
+				.contentMode = ButtonContentMode::TextOnly,
+				.text = "Anchored dropdown",
+			})
+			.draw();
+
+		if (state.anchoredPopupOpen) {
+			ui.createElement(kPopupSurface, "anchored-popup")
+				.withID(kAnchoredPopupSurfaceId)
+				.setParameters(PopupSurfaceParameters{
+					.popupRequest = PopupRequest{
+						.anchor = PopupAnchor::element(kAnchoredPopupTriggerId),
+						.placement = PopupPlacement{
+							.anchorPoint = PopupAttachmentPoint::BottomLeft,
+							.popupPoint = PopupAttachmentPoint::TopLeft,
+							.offset = Clay_Vector2{0.0f, 8.0f},
+						},
+					},
+					.onDismissed = actions.closeAnchoredPopup,
+					.sizing = Clay_Sizing{
+						.width = CLAY_SIZING_FIXED(250),
+						.height = CLAY_SIZING_FIXED(72),
+					},
+				})
+				.construct();
+			drawText(
+				ui,
+				"Anchored surfaces work well for dropdowns and compact inspectors.",
+				textStyle(ui, 13, kText));
+			ui.drawConstructed();
+		}
+	}
+
+	CLAY(ui.toClaySID("demo/popup/free-row"), row(10)) {
+		ui.createElement(FlowUi::FSEL::kButton, "pointer-popup-trigger")
+			.setParameters(FlowUi::FSEL::ButtonParameters{
+				.onActivate = actions.openPointerPopup,
+				.enabled = !state.pointerPopupOpen,
+				.contentMode = ButtonContentMode::TextOnly,
+				.text = "Pointer popup",
+			})
+			.draw();
+
+		if (state.pointerPopupOpen) {
+			ui.createElement(kPopupSurface, "pointer-popup")
+				.withID(kPointerPopupSurfaceId)
+				.setParameters(PopupSurfaceParameters{
+					.popupRequest = PopupRequest{
+						.anchor = PopupAnchor::pointerSnapshot(),
+						.placement = PopupPlacement{
+							.anchorPoint = PopupAttachmentPoint::TopLeft,
+							.popupPoint = PopupAttachmentPoint::TopLeft,
+							.offset = Clay_Vector2{12.0f, 12.0f},
+						},
+						.expectedSize = Clay_Dimensions{230.0f, 64.0f},
+					},
+					.onDismissed = actions.closePointerPopup,
+					.sizing = Clay_Sizing{
+						.width = CLAY_SIZING_FIXED(230),
+						.height = CLAY_SIZING_FIXED(64),
+					},
+					.backgroundColor = Flow_Color("#173342ff"),
+					.borderColor = Flow_Color("#2d7894ff"),
+				})
+				.construct();
+			drawText(ui, "The opening pointer position is captured once.", textStyle(ui, 13, kAccent));
+			ui.drawConstructed();
+		}
+
+		ui.createElement(FlowUi::FSEL::kButton, "heads-up-popup-trigger")
+			.setParameters(FlowUi::FSEL::ButtonParameters{
+				.onActivate = actions.openHeadsUpPopup,
+				.enabled = !state.headsUpPopupOpen,
+				.contentMode = ButtonContentMode::TextOnly,
+				.text = "Heads-up notice",
+			})
+			.draw();
+
+		if (state.headsUpPopupOpen) {
+			ui.createElement(kPopupSurface, "heads-up-popup")
+				.withID(kHeadsUpPopupSurfaceId)
+				.setParameters(PopupSurfaceParameters{
+					.popupRequest = PopupRequest{
+						.anchor = PopupAnchor::viewport(),
+						.placement = PopupPlacement{
+							.anchorPoint = PopupAttachmentPoint::TopMiddle,
+							.popupPoint = PopupAttachmentPoint::TopMiddle,
+							.offset = Clay_Vector2{0.0f, 24.0f},
+						},
+						.expectedSize = Clay_Dimensions{340.0f, 66.0f},
+						.layer = PopupLayer::WarningPopup,
+						.outsidePress = PopupOutsidePressPolicy::DismissAndConsume,
+					},
+					.onDismissed = actions.closeHeadsUpPopup,
+					.sizing = Clay_Sizing{
+						.width = CLAY_SIZING_FIXED(340),
+						.height = CLAY_SIZING_FIXED(66),
+					},
+					.backgroundColor = Flow_Color("#46351bff"),
+					.borderColor = kWarm,
+				})
+				.construct();
+			drawText(ui, "Viewport-relative warning popup · click outside or press Escape.", textStyle(ui, 13, kWarm, 650));
+			ui.drawConstructed();
+		}
+	}
+
+	ui.createElement(kBox, "hover-popup-area")
+		.withID(kHoverPopupAreaId)
+		.setParameters(BoxParameters{
+			.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_FIXED(54),
+			},
+			.padding = CLAY_PADDING_ALL(10),
+			.childAlignment = {.x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER},
+			.backgroundColor = Flow_Color("#101f2dff"),
+			.borderColor = Flow_Color("#2d7894ff"),
+			.cornerRadius = CLAY_CORNER_RADIUS(7),
+			.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0},
+		})
+		.construct();
+	drawText(ui, "Hover here · this popup follows the pointer", textStyle(ui, 12, kAccent, 600));
+	ui.drawConstructed();
+
+	if (ui.getPreviousFramesInteraction().isHovered(kHoverPopupAreaId)) {
+		ui.createElement(kPopupSurface, "hover-follow-popup")
+			.withID(kHoverPopupSurfaceId)
+			.setParameters(PopupSurfaceParameters{
+				.popupRequest = PopupRequest{
+					.anchor = PopupAnchor::pointerFollow(),
+					.placement = PopupPlacement{
+						.anchorPoint = PopupAttachmentPoint::TopLeft,
+						.popupPoint = PopupAttachmentPoint::TopLeft,
+						.offset = Clay_Vector2{14.0f, 14.0f},
+					},
+					.expectedSize = Clay_Dimensions{220.0f, 52.0f},
+					.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH,
+					.outsidePress = PopupOutsidePressPolicy::Ignore,
+					.dismissOnEscape = false,
+				},
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_FIXED(220),
+					.height = CLAY_SIZING_FIXED(52),
+				},
+				.backgroundColor = Flow_Color("#173342ff"),
+				.borderColor = kAccent,
+			})
+			.construct();
+		drawText(ui, "PointerFollow updates every frame.", textStyle(ui, 12, kText));
+		ui.drawConstructed();
+	}
+	ui.drawConstructed();
+}
+
+void drawComboBoxCard(UiManager& ui, DemoState& state, const DemoActions& actions) {
+	static constexpr ComboBoxOption kOptions[] = {
+		{.value = 1, .text = "Design"},
+		{.value = 2, .text = "Implementation"},
+		{.value = 3, .text = "Verification"},
+		{.value = 4, .text = "Documentation"},
+		{.value = 5, .text = "Release"},
+		{.value = 6, .text = "Archived", .enabled = false},
+		{.value = 7, .text = "Long option list"},
+		{.value = 8, .text = "Scrollable menu"},
+		{.value = 9, .text = "Final review"},
+	};
+
+	ui.createElement(kBox, "combo-box-card")
+		.setParameters(cardParameters())
+		.construct();
+	drawCardHeading(
+		ui,
+		"ComboBox",
+		"The standard element owns the common text/icon option contract; arbitrary option rows remain a custom composition.");
+	ui.createElement(kComboBox, "workflow-combo")
+		.setParameters(ComboBoxParameters{
+			.options = kOptions,
+			.selectedValue = &state.comboSelection,
+			.onChanged = actions.comboChanged,
+			.popupMaxHeight = 154.0f,
+		})
+		.draw();
+	drawText(
+		ui,
+		"Selected value " + std::to_string(state.comboSelection) +
+			" · changes " + std::to_string(state.comboChanges),
+		textStyle(ui, 11, kMuted, 500));
+	ui.drawConstructed();
+}
+
 void drawHeader(
 	UiManager& ui,
 	const DemoState& state,
@@ -882,6 +1122,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 				.y = CLAY_ALIGN_Y_TOP,
 			},
 			.layoutDirection = CLAY_TOP_TO_BOTTOM,
+			.clipConfig = Clay_ClipElementConfig{.vertical = true},
 			.backgroundColor = Flow_Color("#0c111bff"),
 		})
 		.construct();
@@ -891,7 +1132,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 	Clay_ElementDeclaration panes{};
 	panes.layout.sizing = {
 		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_GROW(0),
+		.height = CLAY_SIZING_FIT(0),
 	};
 	panes.layout.childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT,
@@ -903,7 +1144,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 			.setParameters(BoxParameters{
 				.sizing = {
 					.width = CLAY_SIZING_FIXED(state.leftPaneWidth),
-					.height = CLAY_SIZING_GROW(0),
+					.height = CLAY_SIZING_FIT(0),
 				},
 				.padding = Clay_Padding{0, 10, 0, 0},
 				.childGap = 12,
@@ -915,6 +1156,8 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 			})
 			.construct();
 		drawButtonsCard(ui, state, actions);
+		drawPopupSurfaceCard(ui, state, actions);
+		drawComboBoxCard(ui, state, actions);
 		drawSelectableCard(ui, state, actions);
 		drawRadioCard(ui, state);
 		drawTextInputCard(ui, state, actions);
@@ -941,7 +1184,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 			.setParameters(BoxParameters{
 				.sizing = {
 					.width = CLAY_SIZING_GROW(0),
-					.height = CLAY_SIZING_GROW(0),
+					.height = CLAY_SIZING_FIT(0),
 				},
 				.padding = Clay_Padding{10, 0, 0, 0},
 				.childGap = 12,

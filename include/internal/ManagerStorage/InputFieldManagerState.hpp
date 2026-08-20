@@ -120,6 +120,7 @@ struct InputPointerDragState {
 struct InputFieldManagerState {
 	FrameInput currentInput{};
 	FrameInput previousInput{};
+	uint32_t suppressedPrimaryPressClayId = 0;
 	std::unordered_map<
 		input_field::InputFieldKey,
 		InputFieldState,

@@ -361,7 +361,16 @@ namespace FlowUi
 			state_->previousFrameInputForCurrentLayout,
 			clampedScreenWidth,
 			clampedScreenHeight);
-		inputFieldManager_.beginFrame(state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		if (popupManager_.suppressesAllPrimaryPointerInput()) {
+			state_->frameInputForCurrentLayout.mouseDown[0] = false;
+			Clay_SetPointerState(
+				Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
+				false);
+		}
+		inputFieldManager_.beginFrame(
+			state_->frameInputForCurrentLayout,
+			state_->previousFrameInputForCurrentLayout,
+			popupManager_.suppressedAnchorClayId());
 		shortcutManager_.beginFrame(*this, state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
 		state_->cursor = CursorType::Arrow;
 		state_->cursorPriority = 0;
@@ -432,6 +441,13 @@ namespace FlowUi
 		const bool isPrimaryPointerDown = state_->frameInputForCurrentLayout.mouseDown[0];
 		if (isPrimaryPointerDown && !state_->wasPrimaryPointerDownLastFrame) {
 			interactionSnapshot.pressedElementIds = interactionSnapshot.hoveredElementIds;
+			const uint32_t suppressedAnchor = popupManager_.suppressedAnchorClayId();
+			if (suppressedAnchor != 0) {
+				auto& pressed = interactionSnapshot.pressedElementIds;
+				pressed.erase(
+					std::remove(pressed.begin(), pressed.end(), suppressedAnchor),
+					pressed.end());
+			}
 		} else if (isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
 			interactionSnapshot.heldElementIds = interactionSnapshot.hoveredElementIds;
 		} else if (!isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {

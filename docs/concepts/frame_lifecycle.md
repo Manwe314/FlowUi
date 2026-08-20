@@ -2,7 +2,7 @@
 
 ## Introduction
 
-FlowUi's frame lifecycle is the internal path that turns one loop iteration of user code into presented pixels. At the public API level this looks small: `shouldClose()`, `beginFrame()`, UI construction, `endFrame()`, and `drawFrame()`. Internally, each step coordinates the window backend, frame input, Clay layout, frame-local arenas, input fields, shortcuts, icons, viewports, texture registry state, Vulkan frame resources, swapchain images, and the UI renderer. The public configuration structs affect this path before the loop even starts: most importantly, `AppConfig::vk.framesInFlight` chooses how many frame slots FlowUi creates and then manages internally for command buffers, fences, semaphores, UI arenas, texture retirement buckets, viewport resources, renderer instance buffers, and descriptor sets.
+FlowUi's frame lifecycle is the internal path that turns one loop iteration of user code into presented pixels. At the public API level this looks small: `shouldClose()`, `beginFrame()`, UI construction, `endFrame()`, and `drawFrame()`. Internally, each step coordinates the window backend, frame input, Clay layout, frame-local arenas, input fields, shortcuts, popups, icons, viewports, texture registry state, Vulkan frame resources, swapchain images, and the UI renderer. The public configuration structs affect this path before the loop even starts: most importantly, `AppConfig::vk.framesInFlight` chooses how many frame slots FlowUi creates and then manages internally for command buffers, fences, semaphores, UI arenas, texture retirement buckets, viewport resources, renderer instance buffers, and descriptor sets.
 
 The frame can be pictured as a pipeline:
 
@@ -21,7 +21,7 @@ App::beginFrame()
 User UI code
     creates Flow elements
     emits Clay nodes
-    requests fonts, images, icons, input fields, shortcuts, and viewports
+    requests fonts, images, icons, input fields, shortcuts, popups, and viewports
 
 App::endFrame()
     closes layout
@@ -139,7 +139,7 @@ This produces two important scale relationships:
 - Input is divided by `uiScale` before Clay sees it.
 - UI-to-framebuffer scale is computed so render commands can later be converted into framebuffer pixels.
 
-`UiManager::beginFrame()` then starts the UI layer for this frame. Internally it selects the active string arena, resets that arena's offset, advances previous/current interaction snapshots, stores current and previous layout input, begins input-field and shortcut processing, resets cursor request priority, sets the Clay context and dimensions, updates Clay pointer and scroll state, clears constructed-element bookkeeping, begins developer runtime capture when enabled, and calls `Clay_BeginLayout()`.
+`UiManager::beginFrame()` then starts the UI layer for this frame. Internally it selects the active string arena, resets that arena's offset, advances previous/current interaction snapshots, stores current and previous layout input, begins popup, input-field, and shortcut processing, resets cursor request priority, sets the Clay context and dimensions, updates Clay pointer and scroll state, clears constructed-element bookkeeping, begins developer runtime capture when enabled, and calls `Clay_BeginLayout()`. Popup dismissal is evaluated first from current input and the last committed popup stack and bounds, allowing its outside-press policy to filter the dismissing press before other interaction systems observe it.
 
 The interaction snapshot advance is important. `UiManager` keeps both a previous interaction snapshot and a current interaction snapshot. At the start of a new frame, the current snapshot from the last completed layout becomes the previous snapshot that element callbacks can read. A fresh empty current snapshot is then prepared for the layout that is about to be built.
 
@@ -150,6 +150,7 @@ From user code's point of view, after `beginFrame()` returns:
 - `UiManager::getCurrentFrameInput()` returns this frame's layout-space input.
 - Shortcuts have already had a chance to dispatch from the current input transition.
 - Input fields have already applied keyboard edits for the active field.
+- Popups have already processed one topmost eligible outside-press or Escape dismissal.
 - Clay is inside an active layout.
 
 ## UI Construction
@@ -176,6 +177,7 @@ Inside the element callback, user-authored code emits Clay nodes. The callback m
 - Images and icons provide `TextureRef` values for Clay image commands.
 - Input fields request persistent editable text state.
 - Shortcuts may use focused element ids or input-field focus.
+- Popups request placement, measurement, stacking, and dismissal state from `UiManager::popups()`.
 - Viewports provide texture refs that will later be detected and sized.
 - Developer capture records element definition and instance metadata.
 
@@ -196,6 +198,8 @@ This is a deliberate tradeoff in FlowUi's immediate-mode model. During UI constr
 For most UI, that lag is minor because the next frame is normally only one refresh interval away. If the app is configured with `VulkanConfig::presentMode = PresentMode::Immediate`, presentation does not wait for vertical sync in the same way as FIFO-style presentation, so the perceived delay can be even less noticeable. The cost of the tradeoff is one-frame delayed callbacks; the benefit is that interaction tests are based on Clay's final, correct element bounds instead of guessed bounds from partially built UI.
 
 Input fields also finish their frame during `endFrame()`. `InputFieldManager::endFrame()` receives the Clay render commands, checks which fields were requested this frame, clears focus for fields that disappeared, reads Clay element bounds for text/content nodes, computes caret and selection geometry, and produces render overrides for selection rectangles, carets, and selected text color. Those overrides are later passed to the renderer alongside the Clay commands.
+
+`PopupManager::endFrame()` reads the final Clay bounds of submitted popup roots. Measurement-only submissions retain their size for placement on the next frame; visible submissions also commit bounds and stacking order for the next frame's outside-press dismissal test. Popup identities not submitted in the frame are retired from the manager's active session state.
 
 After `UiManager::endFrame()` returns, `App::Impl::endFrame()` lets resource-dependent systems inspect or prepare the command array:
 

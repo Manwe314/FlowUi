@@ -306,9 +306,13 @@ bool InputFieldManager::shouldTriggerActionWithRepeat(int key, KeyRepeatState& s
 	return true;
 }
 
-void InputFieldManager::beginFrame(const FrameInput& currentInput, const FrameInput& previousInput) {
+void InputFieldManager::beginFrame(
+	const FrameInput& currentInput,
+	const FrameInput& previousInput,
+	uint32_t suppressedPrimaryPressClayId) {
 	state_->previousInput = previousInput;
 	state_->currentInput = currentInput;
+	state_->suppressedPrimaryPressClayId = suppressedPrimaryPressClayId;
 	if (state_->currentTouchEpoch == std::numeric_limits<uint64_t>::max()) {
 		for (auto& [_, field] : state_->fieldsById) field.lastTouchedEpoch = 0;
 		state_->currentTouchEpoch = 1;
@@ -653,6 +657,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 
 	if (pointerPressed) {
 		RuntimeFieldState* targetRuntime = nullptr;
+		bool hitSuppressedAnchor = false;
 		float bestArea = std::numeric_limits<float>::max();
 		int32_t bestZ = std::numeric_limits<int32_t>::min();
 		for (RuntimeFieldState& runtime : runtimes) {
@@ -669,6 +674,13 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			if (!hasHitBounds || !boundsContainsPoint(hitBounds, state_->currentInput.mouseX, state_->currentInput.mouseY)) {
 				continue;
 			}
+			if (state_->suppressedPrimaryPressClayId != 0 &&
+				runtime.fieldId.domain == detail::input_field::InputFieldKeyDomain::Element &&
+				FlowIDToClayID(FlowElementID{.value = runtime.fieldId.value}) ==
+					state_->suppressedPrimaryPressClayId) {
+				hitSuppressedAnchor = true;
+				continue;
+			}
 
 			const float area = std::max(0.0f, hitBounds.width) * std::max(0.0f, hitBounds.height);
 			const int32_t z = runtime.lastTextCommandIndex;
@@ -679,7 +691,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			}
 		}
 
-		bool retainPrimaryFocus = false;
+		bool retainPrimaryFocus = hitSuppressedAnchor;
 		if (!targetRuntime && state_->primaryFieldId) {
 			const auto primaryIt = state_->fieldsById.find(state_->primaryFieldId);
 			if (primaryIt != state_->fieldsById.end()) {

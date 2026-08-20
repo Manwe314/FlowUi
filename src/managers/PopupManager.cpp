@@ -17,6 +17,7 @@ namespace {
 using FlowUi::PopupAnchorKind;
 using FlowUi::PopupAttachmentPoint;
 using FlowUi::PopupLayer;
+using FlowUi::PopupOutsidePressPolicy;
 using FlowUi::PopupOverflowPolicy;
 using FlowUi::PopupPlacement;
 using FlowUi::detail::manager_storage::PopupManagerState;
@@ -397,6 +398,8 @@ void PopupManager::beginFrame(
 	};
 	current.nextPopupOffset = 0;
 	current.capacityWarningIssued = false;
+	current.suppressAllPrimaryPointerThisFrame = false;
+	current.suppressedAnchorClayIdThisFrame = 0;
 	current.frameActive = true;
 
 	bool dismissedAutomatically = false;
@@ -413,7 +416,15 @@ void PopupManager::beginFrame(
 		}
 	}
 
-	const bool pointerPressed = currentInput.mouseDown[0] && !previousInput.mouseDown[0];
+	const bool pointerPressed = currentInput.mouseDown[0] && !current.rawPrimaryPointerDownLastFrame;
+	current.rawPrimaryPointerDownLastFrame = currentInput.mouseDown[0];
+	if (current.consumePrimaryPointerUntilRelease) {
+		if (currentInput.mouseDown[0]) {
+			current.suppressAllPrimaryPointerThisFrame = true;
+		} else {
+			current.consumePrimaryPointerUntilRelease = false;
+		}
+	}
 	if (!dismissedAutomatically && pointerPressed) {
 		for (auto it = current.committedStack.rbegin(); it != current.committedStack.rend(); ++it) {
 			auto recordIt = current.workingRecords.find(*it);
@@ -421,10 +432,32 @@ void PopupManager::beginFrame(
 			PopupRecord& record = recordIt->second;
 			if (!record.visibleLastCommitted || !record.hasBounds) continue;
 			if (containsPoint(record.bounds, currentInput.mouseX, currentInput.mouseY)) break;
-			if (!record.dismissOnOutsidePress) continue;
-			if (markDismissed(record)) break;
+			switch (record.outsidePress) {
+			case PopupOutsidePressPolicy::Ignore:
+				// The topmost popup owns the outside-press decision; do not reach through it.
+				return;
+			case PopupOutsidePressPolicy::DismissAndConsume:
+				if (markDismissed(record)) {
+					current.consumePrimaryPointerUntilRelease = true;
+					current.suppressAllPrimaryPointerThisFrame = true;
+				}
+				return;
+			case PopupOutsidePressPolicy::DismissAndBlockAnchor:
+				if (markDismissed(record)) {
+					current.suppressedAnchorClayIdThisFrame = record.anchorClayId;
+				}
+				return;
+			}
 		}
 	}
+}
+
+bool PopupManager::suppressesAllPrimaryPointerInput() const {
+	return state().suppressAllPrimaryPointerThisFrame;
+}
+
+uint32_t PopupManager::suppressedAnchorClayId() const {
+	return state().suppressedAnchorClayIdThisFrame;
 }
 
 PopupFrame PopupManager::request(FlowElementID popupId, const PopupRequest& requestValue) {
@@ -458,7 +491,7 @@ PopupFrame PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requ
 	auto recordIt = current.workingRecords.try_emplace(popupKey).first;
 	PopupRecord& record = recordIt->second;
 	record.rootId = clayElementId(popupKey);
-	record.dismissOnOutsidePress = requestValue.dismissOnOutsidePress;
+	record.outsidePress = requestValue.outsidePress;
 	record.dismissOnEscape = requestValue.dismissOnEscape;
 	record.submissionOrder = current.nextSubmissionOrder++;
 
@@ -466,6 +499,7 @@ PopupFrame PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requ
 	if (!record.dismissed) {
 		const ResolvedAnchor anchor = resolveAnchor(requestValue.anchor, record, current);
 		if (anchor.valid) {
+			record.anchorClayId = anchor.parentId.id;
 			const uint32_t offset = std::min(current.nextPopupOffset, kPopupLayerCapacity - 1u);
 			if (current.nextPopupOffset < std::numeric_limits<uint32_t>::max()) {
 				++current.nextPopupOffset;

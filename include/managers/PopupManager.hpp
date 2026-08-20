@@ -39,6 +39,8 @@ private:
 		float viewportHeight);
 	void endFrame();
 	void cancelFrame() noexcept;
+	[[nodiscard]] bool suppressesAllPrimaryPointerInput() const;
+	[[nodiscard]] uint32_t suppressedAnchorClayId() const;
 
 	[[nodiscard]] PopupFrame requestImpl(uint64_t popupKey, const PopupRequest& request);
 	void dismissImpl(uint64_t popupKey);

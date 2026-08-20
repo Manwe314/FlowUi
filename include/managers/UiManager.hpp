@@ -480,7 +480,9 @@ public:
 	 */
 	const ShortcutManager& shortcuts() const { return shortcutManager_; }
 
+	/** @brief Access this window's mutable popup placement and dismissal service. */
 	PopupManager& popups() { return popupManager_; }
+	/** @brief Access this window's immutable popup placement and dismissal service. */
 	const PopupManager& popups() const { return popupManager_; }
 
 	/** @brief Access the app-wide ActionManager attached to this UI. */

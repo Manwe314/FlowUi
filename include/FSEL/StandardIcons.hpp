@@ -12,6 +12,8 @@ namespace FlowUi::FSEL::standard_icons {
 
 inline constexpr std::string_view kIncrementKey = "fsel/increment";
 inline constexpr std::string_view kDecrementKey = "fsel/decrement";
+inline constexpr std::string_view kComboBoxOpenKey = "fsel/combo-box/open";
+inline constexpr std::string_view kComboBoxClosedKey = "fsel/combo-box/closed";
 
 // Minimal valid placeholders. Applications may replace the SVG artwork while
 // retaining these semantic keys.
@@ -27,6 +29,18 @@ inline constexpr std::string_view kDecrementSvg = R"svg(
 </svg>
 )svg";
 
+inline constexpr std::string_view kComboBoxOpenSvg = R"svg(
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M3 10l5-5 5 5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+)svg";
+
+inline constexpr std::string_view kComboBoxClosedSvg = R"svg(
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M3 6l5 5 5-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+)svg";
+
 #if FLOWUI_INCLUDE_ICON_MANAGER
 inline void registerStandardIcons(IconManager& icons) {
 	if (!icons.contains(kIncrementKey)) {
@@ -34,6 +48,12 @@ inline void registerStandardIcons(IconManager& icons) {
 	}
 	if (!icons.contains(kDecrementKey)) {
 		(void)icons.registerSvg(kDecrementKey, kDecrementSvg);
+	}
+	if (!icons.contains(kComboBoxOpenKey)) {
+		(void)icons.registerSvg(kComboBoxOpenKey, kComboBoxOpenSvg);
+	}
+	if (!icons.contains(kComboBoxClosedKey)) {
+		(void)icons.registerSvg(kComboBoxClosedKey, kComboBoxClosedSvg);
 	}
 }
 #endif
