@@ -47,6 +47,14 @@ struct VulkanContext {
 	VkQueue presentQ  = VK_NULL_HANDLE;
 	WsiRetirementMode wsiRetirementMode = WsiRetirementMode::LegacyDeviceIdle;
 	PFN_vkWaitForPresentKHR waitForPresentKHR = nullptr;
+#if FLOW_UI_DEV_MODE
+	bool devGpuTimingRequested = true;
+	bool devGpuMemoryRequested = true;
+	bool memoryBudgetEnabled = false;
+	bool synchronization2Enabled = false;
+	bool calibratedTimestampsEnabled = false;
+	PFN_vkGetCalibratedTimestampsEXT getCalibratedTimestampsEXT = nullptr;
+#endif
 
 	void createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts);
 

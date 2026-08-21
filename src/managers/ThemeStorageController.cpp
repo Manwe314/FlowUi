@@ -1,10 +1,27 @@
 #include "internal/ManagerStorage/ThemeStorageController.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 #include <cstring>
 #include <new>
 #include <stdexcept>
 #include <string>
 
 namespace FlowUi::detail::manager_storage {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void ThemeStorageController::appendDevMemorySamples(
+	::FlowUi::devSystems::MemorySampleSink& sink) const noexcept {
+	try {
+		std::scoped_lock lock(mutex_);
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(typeRegistry_);
+		for (const auto& [_, type] : typeRegistry_) memory.addNodeContainer(type.variants);
+		memory.add(stagedMutations_);
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kThemes.id, memory);
+	} catch (...) {}
+}
+#endif
 
 void ThemeStorageController::init(storage::IStorageSystem& storage) {
 	std::lock_guard<std::mutex> lock(mutex_);

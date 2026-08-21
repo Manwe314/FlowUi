@@ -25,10 +25,8 @@ enum class UiType : uint8_t {
 };
 
 namespace FlowUi {
-#if FLOW_UI_DEV_MODE
-namespace devMode {
-struct FrameDiagnostics;
-}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+namespace devSystems { class DevTimingRecorder; class MemorySampleSink; struct GpuTimingCommandContext; }
 #endif
 }
 
@@ -142,6 +140,11 @@ void destroySharedUiByteResources(
 	SharedUiByteResources& resources) noexcept;
 
 struct VulkanUiRenderer {
+#if FLOW_UI_DEV_MODE
+	void appendDevMemorySamples(
+		FlowUi::devSystems::MemorySampleSink& sink,
+		const PreparedUiFrame* prepared = nullptr) const noexcept;
+#endif
 	struct UiFrameResources {
 		FlowUi::detail::storage::BufferHandle instanceBuffer{};
 		FlowUi::detail::storage::NativeBufferView nativeBuffer{};
@@ -221,7 +224,7 @@ struct VulkanUiRenderer {
 		float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
 		,
-		FlowUi::devMode::FrameDiagnostics* diagnostics = nullptr
+		FlowUi::devSystems::DevTimingRecorder* timingRecorder = nullptr
 #endif
 		);
 	void recordPreparedFrame(
@@ -233,7 +236,8 @@ struct VulkanUiRenderer {
 		const PreparedUiFrame& prepared
 #if FLOW_UI_DEV_MODE
 		,
-		FlowUi::devMode::FrameDiagnostics* diagnostics = nullptr
+		FlowUi::devSystems::DevTimingRecorder* timingRecorder = nullptr,
+		FlowUi::devSystems::GpuTimingCommandContext* gpuTiming = nullptr
 #endif
 		);
 

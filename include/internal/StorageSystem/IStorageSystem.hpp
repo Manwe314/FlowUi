@@ -11,7 +11,7 @@ namespace FlowUi::detail::storage {
 
 class IStorageSystem {
 public:
-	static constexpr uint32_t CurrentInterfaceVersion = 6u;
+	static constexpr uint32_t CurrentInterfaceVersion = 7u;
 
 	virtual ~IStorageSystem() = default;
 
@@ -142,6 +142,11 @@ public:
 
 	[[nodiscard]] virtual StorageStats stats() const = 0;
 	[[nodiscard]] virtual ResourceStats resourceStats(ResourceKind kind) const = 0;
+#if FLOW_UI_DEV_MODE
+	virtual void appendMemorySnapshot(
+		const StorageMemorySnapshotRequest& request,
+		StorageMemorySnapshot& destination) const = 0;
+#endif
 	[[nodiscard]] virtual bool validateHandle(
 		ResourceKind kind,
 		uint32_t index,

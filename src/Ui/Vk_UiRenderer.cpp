@@ -15,7 +15,47 @@
 #include <vector>
 
 #if FLOW_UI_DEV_MODE
-#include "devMode/performanceDiagnostics.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
+#endif
+
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void VulkanUiRenderer::appendDevMemorySamples(
+	FlowUi::devSystems::MemorySampleSink& sink,
+	const PreparedUiFrame* prepared) const noexcept {
+	try {
+		FlowUi::devSystems::DevContainerMemoryAccumulator memory{};
+		memory.add(descriptors_.globalsSets);
+		memory.add(descriptors_.texturesSets);
+		memory.add(frameResources_);
+		memory.add(boundFontAtlasRevisionByFrame_);
+		memory.liveBytes += textLayoutService_.cacheBytes();
+		memory.capacityBytes += textLayoutService_.cacheBytes();
+		memory.objectCount += textLayoutService_.cacheEntryCount();
+		memory.capacityCount += FlowUi::detail::text::TextLayoutService::MaxCacheEntries;
+		if (prepared) {
+			memory.liveBytes += static_cast<uint64_t>(prepared->instanceCount) * sizeof(UiInstance);
+			memory.liveBytes += static_cast<uint64_t>(prepared->runs.size()) * sizeof(UiRun);
+			memory.capacityBytes += static_cast<uint64_t>(prepared->runs.size()) * sizeof(UiRun);
+			memory.objectCount += prepared->instanceCount + prepared->runs.size();
+			memory.capacityCount += prepared->runs.size();
+		}
+		FlowUi::devSystems::appendManagerSample(
+			sink, FlowUi::devSystems::memory_sources::kRenderer.id, memory, windowId_);
+		if (prepared) {
+			FlowUi::devSystems::MemoryValueSample framePayload{
+				.source = FlowUi::devSystems::memory_sources::kRendererFramePayload.id,
+				.window = windowId_,
+				.logicalLiveBytes = static_cast<uint64_t>(prepared->instanceCount) * sizeof(UiInstance) +
+					static_cast<uint64_t>(prepared->runs.size()) * sizeof(UiRun),
+				.objectCount = prepared->instanceCount + prepared->runs.size(),
+			};
+			(void)sink.append(framePayload);
+		}
+	} catch (...) {}
+}
 #endif
 
 namespace {
@@ -1777,10 +1817,15 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
 	,
-	FlowUi::devMode::FrameDiagnostics* diagnostics
+	FlowUi::devSystems::DevTimingRecorder* timingRecorder
 #endif
 	)
 {
+#if FLOW_UI_DEV_MODE
+	FLOWUI_DEV_TIMING_ZONE_IF(
+		timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
+		FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.prepare");
+#endif
 	if (!frame || frame.window != windowId_ || &storageSystem != storage_) {
 		throw std::runtime_error("UI renderer received a frame from the wrong storage/window scope.");
 	}
@@ -1813,36 +1858,35 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	}
 	if (latestFontAtlasRevision != boundRevision) {
 		UpdateFontDescriptorForFrame(*this, vk.device, frameSlot, &fontView);
-#if FLOW_UI_DEV_MODE
-		if (diagnostics) {
-			diagnostics->textureDescriptorsRebuilt = true;
-		}
-#endif
 		if (frameSlot < boundFontAtlasRevisionByFrame_.size()) {
 			boundFontAtlasRevisionByFrame_[frameSlot] = latestFontAtlasRevision;
 		}
 	}
 
-	const UiBuildUpperBound upperBound = ComputeBuildUpperBound(renderCommands, inputFieldOverrides);
-	if (upperBound.instances == 0 || upperBound.runs == 0) {
+	UiBuildUpperBound upperBound{};
+	{
 #if FLOW_UI_DEV_MODE
-		if (diagnostics) {
-			diagnostics->uiInstanceCount = 0;
-			diagnostics->uiRunCount = 0;
-			diagnostics->textGlyphCount = 0;
-			diagnostics->imageCommandCount = 0;
-		}
+		FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+			timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
+			FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.build_upper_bound");
 #endif
+		upperBound = ComputeBuildUpperBound(renderCommands, inputFieldOverrides);
+	}
+	if (upperBound.instances == 0 || upperBound.runs == 0) {
 		return PreparedUiFrame{.epoch = frame.epoch};
 	}
 	if (upperBound.instances > std::numeric_limits<uint64_t>::max() / sizeof(UiInstance)) {
 		throw std::runtime_error("UI instance byte-size overflow.");
 	}
 	const uint64_t requiredBytes = static_cast<uint64_t>(upperBound.instances) * sizeof(UiInstance);
+	{
 #if FLOW_UI_DEV_MODE
-	const uint64_t oldCapacity = frameResources_[frameSlot].capacityBytes;
+		FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+			timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
+			FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.ensure_instance_buffer");
 #endif
-	EnsureInstanceBufferCapacity(vk, *this, frameSlot, requiredBytes);
+		EnsureInstanceBufferCapacity(vk, *this, frameSlot, requiredBytes);
+	}
 
 	storage::ArenaView arena = storageSystem.frameArena(frame, storage::MemoryClass::FrameTransient);
 	std::span<UiRun> runs = arena.allocateArray<UiRun>(upperBound.runs);
@@ -1859,23 +1903,38 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	};
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
 	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
-	const UiBuildResult built = BuildInstancesAndRunsFromClay(
-		renderCommands,
-		inputFieldOverrides,
-		extent,
-		&fontView,
-		textLayoutService_,
-		pointsToPixelsScale_,
-		clampedScaleX,
-		clampedScaleY,
-		textureBindings.bindingsByTextureIndex,
-		instances,
-		runs,
-		scissorStack);
-	storageSystem.commitBufferWrite(
-		frame,
-		write,
-		static_cast<uint64_t>(built.instanceCount) * sizeof(UiInstance));
+	UiBuildResult built{};
+	{
+#if FLOW_UI_DEV_MODE
+		FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+			timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
+			FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.build_instances_runs");
+#endif
+		built = BuildInstancesAndRunsFromClay(
+			renderCommands,
+			inputFieldOverrides,
+			extent,
+			&fontView,
+			textLayoutService_,
+			pointsToPixelsScale_,
+			clampedScaleX,
+			clampedScaleY,
+			textureBindings.bindingsByTextureIndex,
+			instances,
+			runs,
+			scissorStack);
+	}
+	{
+#if FLOW_UI_DEV_MODE
+		FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+			timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
+			FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.commit_instance_write");
+#endif
+		storageSystem.commitBufferWrite(
+			frame,
+			write,
+			static_cast<uint64_t>(built.instanceCount) * sizeof(UiInstance));
+	}
 
 	if (built.instanceCount > 0 && built.runCount > 0) {
 		if (!sharedByteResources_) throw std::runtime_error("UI shared byte resources are unavailable.");
@@ -1889,15 +1948,6 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		};
 		storageSystem.trackUses(frame, sharedUses);
 	}
-#if FLOW_UI_DEV_MODE
-	if (diagnostics) {
-		diagnostics->uiInstanceCount = built.instanceCount;
-		diagnostics->uiRunCount = built.runCount;
-		diagnostics->textGlyphCount = built.textGlyphCount;
-		diagnostics->imageCommandCount = built.imageCommandCount;
-		diagnostics->instanceBufferGrew = frameResources_[frameSlot].capacityBytes > oldCapacity;
-	}
-#endif
 	return PreparedUiFrame{
 		.runs = runs.first(built.runCount),
 		.instanceCount = built.instanceCount,
@@ -1914,14 +1964,17 @@ void VulkanUiRenderer::recordPreparedFrame(
 	const PreparedUiFrame& prepared
 #if FLOW_UI_DEV_MODE
 	,
-	FlowUi::devMode::FrameDiagnostics* diagnostics
+	FlowUi::devSystems::DevTimingRecorder* timingRecorder,
+	FlowUi::devSystems::GpuTimingCommandContext* gpuTiming
 #endif
 	)
 {
 	(void)vk;
-	#if FLOW_UI_DEV_MODE
-	(void)diagnostics;
-	#endif
+#if FLOW_UI_DEV_MODE
+	FLOWUI_DEV_TIMING_ZONE_IF(
+		timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
+		FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.record_ui");
+#endif
 	if (cmd == VK_NULL_HANDLE || targetView == VK_NULL_HANDLE || prepared.instanceCount == 0 ||
 		prepared.runs.empty() || prepared.epoch == 0) return;
 	if (pipelines_.layout == VK_NULL_HANDLE || pipelines_.solid == VK_NULL_HANDLE || !sharedByteResources_) return;
@@ -1933,6 +1986,11 @@ void VulkanUiRenderer::recordPreparedFrame(
 		frameSlot >= descriptors_.texturesSets.size()) return;
 	if (frameResources_[frameSlot].nativeBuffer.nativeBuffer == 0 ||
 		sharedByteResources_->nativeQuadBuffer == VK_NULL_HANDLE) return;
+
+#if FLOW_UI_DEV_MODE
+	FlowUi::devSystems::GpuCommandTimingZone gpuZone(
+		gpuTiming, cmd, FlowUi::devSystems::gpu_timing_zones::kUiPass);
+#endif
 
 	VkRenderingAttachmentInfo colorAttachment{};
 	colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;

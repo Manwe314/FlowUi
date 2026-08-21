@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -33,9 +35,7 @@ struct ViewportTargetGeneration; struct ViewportRecord; class ViewportStorageCon
 }
 
 #if FLOW_UI_DEV_MODE
-namespace devMode {
-struct FrameDiagnostics;
-}
+namespace devSystems { class DevTimingRecorder; class MemorySampleSink; struct GpuTimingCommandContext; }
 #endif
 
 class App;
@@ -285,6 +285,9 @@ private:
  */
 class ViewPortManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	/**
 	 * @brief Create a viewport by key.
 	 *
@@ -444,7 +447,8 @@ private:
 		uint32_t frameIndex
 #if FLOW_UI_DEV_MODE
 		,
-		devMode::FrameDiagnostics* diagnostics = nullptr
+		devSystems::DevTimingRecorder* timingRecorder = nullptr,
+		devSystems::GpuTimingCommandContext* gpuTiming = nullptr
 #endif
 		);
 	// The owning AppWindow must be drained before this teardown is called.

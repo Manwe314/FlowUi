@@ -5,6 +5,7 @@
 #if FLOW_UI_DEV_MODE
 
 #include <cstdint>
+#include <string>
 #include <string_view>
 
 #include "FlowUi/ElementID.hpp"
@@ -181,11 +182,30 @@ struct CpuTimingRecord {
 	}
 };
 
+struct TimingTrackDescriptor {
+	TimingTrackId id = 0u;
+	std::string name{};
+};
+
+struct ElementDefinitionTimingAggregate {
+	FlowDefinitionID definition{};
+	WindowFrameKey frame{};
+	AppTickId appTick = 0u;
+	uint64_t invocationCount = 0u;
+	uint64_t totalInclusiveNs = 0u;
+	uint64_t maximumInclusiveNs = 0u;
+	uint64_t canceledInvocationCount = 0u;
+};
+
 struct DevTimingConfig {
 	CpuTimingLevel cpuLevel = CpuTimingLevel::Summary;
 	uint32_t enabledCategoryMask = 0xFFFFFFFFu;
-	bool gpuTimingEnabled = false;
+	bool gpuTimingEnabled = true;
+	uint32_t gpuQueryCapacityPerFrame = 512u;
 	uint32_t producerRecordCapacity = 8192u;
+	uint64_t balancedElementRetentionThresholdNs = 50'000u;
+	FlowDefinitionID selectedElementDefinition{};
+	FlowElementID selectedElementInstance{};
 };
 
 struct TimingClockCalibration {
@@ -204,6 +224,7 @@ struct TimingQualitySnapshot {
 	uint64_t incompleteZones = 0u;
 	uint64_t clockAnomalies = 0u;
 	uint64_t descriptorCollisions = 0u;
+	uint64_t timingOverheadNs = 0u;
 };
 
 [[nodiscard]] constexpr uint32_t timingCategoryBit(TimingCategory category) noexcept {
@@ -287,6 +308,55 @@ inline constexpr TimingZoneDescriptor kWindowFrameTotal = makeBuiltinTimingDescr
 	TimingZoneRole::Work,
 	CpuTimingLevel::OnlyFrameTime,
 	"flowui.frame.total");
+
+inline constexpr TimingZoneDescriptor kWindowFrameBegin = makeBuiltinTimingDescriptor(
+	0xa3f277f0f9b44d10ull,
+	TimingCategory::Frame,
+	TimingZoneRole::Work,
+	CpuTimingLevel::Summary,
+	"flowui.frame.begin");
+
+inline constexpr TimingZoneDescriptor kWindowFrameUserBuild = makeBuiltinTimingDescriptor(
+	0x16ba65267a1d4582ull,
+	TimingCategory::Frame,
+	TimingZoneRole::Work,
+	CpuTimingLevel::Summary,
+	"flowui.frame.user_build");
+
+inline constexpr TimingZoneDescriptor kWindowFrameEnd = makeBuiltinTimingDescriptor(
+	0x3c7ef860f33245cbull,
+	TimingCategory::Frame,
+	TimingZoneRole::Work,
+	CpuTimingLevel::Summary,
+	"flowui.frame.end");
+
+inline constexpr TimingZoneDescriptor kWindowFramePreparedGap = makeBuiltinTimingDescriptor(
+	0x98d5c988951a46e8ull,
+	TimingCategory::Frame,
+	TimingZoneRole::Gap,
+	CpuTimingLevel::Summary,
+	"flowui.frame.prepared_gap");
+
+inline constexpr TimingZoneDescriptor kWindowFrameDraw = makeBuiltinTimingDescriptor(
+	0xb8abdb819fd44377ull,
+	TimingCategory::Frame,
+	TimingZoneRole::Work,
+	CpuTimingLevel::Summary,
+	"flowui.frame.draw");
+
+inline constexpr TimingZoneDescriptor kElementInvoke = makeBuiltinTimingDescriptor(
+	0x1a80ba423d5c40efull,
+	TimingCategory::Element,
+	TimingZoneRole::Work,
+	CpuTimingLevel::Summary,
+	"flowui.element.invoke");
+
+inline constexpr TimingZoneDescriptor kElementConstructedSubtree = makeBuiltinTimingDescriptor(
+	0xc651715e15db4e1bull,
+	TimingCategory::Element,
+	TimingZoneRole::Work,
+	CpuTimingLevel::Balanced,
+	"flowui.element.constructed_subtree");
 
 } // namespace timing_zones
 

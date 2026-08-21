@@ -1072,7 +1072,7 @@ inline std::optional<FlowUi::devMode::DevValue> parseEditableTextToDevValue(
 
 		std::vector<std::string> components{};
 		std::size_t segmentStart = 0u;
-		for (;;)
+		while (true)
 		{
 			const std::size_t commaPos = trimmed.find(',', segmentStart);
 			const std::string token = trimDevInputText(
@@ -1226,7 +1226,7 @@ inline std::optional<FlowUi::devMode::DevValue> parseEditableTextToDevValue(
 		std::vector<std::string> components{};
 		components.reserve(5u);
 		std::size_t segmentStart = 0u;
-		for (;;)
+		while (true)
 		{
 			const std::size_t commaPos = trimmed.find(',', segmentStart);
 			const std::string token = trimDevInputText(
@@ -1400,7 +1400,7 @@ inline std::optional<FlowUi::devMode::DevValue> parseEditableTextToDevValue(
 		std::vector<std::string> components{};
 		components.reserve(4u);
 		std::size_t segmentStart = 0u;
-		for (;;)
+		while (true)
 		{
 			const std::size_t commaPos = trimmed.find(',', segmentStart);
 			const std::string token = trimDevInputText(

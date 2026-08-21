@@ -14,6 +14,10 @@ public:
 		DevTimingRecorder& recorder,
 		const TimingZoneDescriptor& descriptor,
 		TimingEntityRef entity = {}) noexcept;
+	CpuTimingZone(
+		DevTimingRecorder* recorder,
+		const TimingZoneDescriptor& descriptor,
+		TimingEntityRef entity = {}) noexcept;
 	~CpuTimingZone() noexcept;
 
 	CpuTimingZone(const CpuTimingZone&) = delete;
@@ -54,6 +58,25 @@ private:
 	ActiveZoneToken token_{};
 };
 
+class ElementTimingZone {
+public:
+	ElementTimingZone(
+		DevTimingRecorder* recorder,
+		FlowDefinitionID definition,
+		FlowElementID instance) noexcept;
+	~ElementTimingZone() noexcept;
+
+	ElementTimingZone(const ElementTimingZone&) = delete;
+	ElementTimingZone& operator=(const ElementTimingZone&) = delete;
+
+	void end(TimingRecordFlag result = TimingRecordFlag::Completed) noexcept;
+
+private:
+	DevTimingRecorder* recorder_ = nullptr;
+	FlowDefinitionID definition_{};
+	ActiveZoneToken token_{};
+};
+
 } // namespace FlowUi::devSystems
 
 #define FLOWUI_DEV_TIMING_JOIN_IMPL(left, right) left##right
@@ -71,6 +94,17 @@ private:
 			FLOWUI_DEV_TIMING_JOIN(_flowTimingDescriptor_, unique),                \
 			entity}
 
+#define FLOWUI_DEV_TIMING_ZONE_POINTER_LEVEL_IMPL(                              \
+	recorder, category, role, level, name, entity, unique)                       \
+	static constexpr auto FLOWUI_DEV_TIMING_JOIN(_flowTimingDescriptor_, unique) = \
+		::FlowUi::devSystems::makeTimingDescriptor(                               \
+			category, role, name,                                                   \
+			::FlowUi::devSystems::TimingSourceLocation::current(), level);          \
+	[[maybe_unused]] ::FlowUi::devSystems::CpuTimingZone                         \
+		FLOWUI_DEV_TIMING_JOIN(_flowTimingZone_, unique){                        \
+			recorder, FLOWUI_DEV_TIMING_JOIN(_flowTimingDescriptor_, unique), entity}
+
+#if FLOWUI_DEV_TIMING_LEVEL >= 1
 #define FLOWUI_DEV_TIMING_ZONE(recorder, category, role, name)                  \
 	FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL(                                            \
 		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Summary,   \
@@ -80,16 +114,64 @@ private:
 	FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL(                                            \
 		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Summary,   \
 		name, entity, __COUNTER__)
+#define FLOWUI_DEV_TIMING_ZONE_IF(recorder, category, role, name)               \
+	FLOWUI_DEV_TIMING_ZONE_POINTER_LEVEL_IMPL(                                    \
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Summary,   \
+		name, ::FlowUi::devSystems::TimingEntityRef{}, __COUNTER__)
+#else
+#define FLOWUI_DEV_TIMING_ZONE(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_ENTITY(recorder, category, role, name, entity) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_IF(recorder, category, role, name) ((void)0)
+#endif
 
-#define FLOWUI_DEV_TIMING_ZONE_LEVEL(recorder, category, role, level, name)     \
+#if FLOWUI_DEV_TIMING_LEVEL >= 2
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED(recorder, category, role, name)         \
 	FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL(                                            \
-		recorder, category, role, level, name,                                     \
-		::FlowUi::devSystems::TimingEntityRef{}, __COUNTER__)
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Balanced,    \
+		name, ::FlowUi::devSystems::TimingEntityRef{}, __COUNTER__)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED_ENTITY(recorder, category, role, name, entity) \
+	FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL(                                            \
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Balanced,    \
+		name, entity, __COUNTER__)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(recorder, category, role, name)      \
+	FLOWUI_DEV_TIMING_ZONE_POINTER_LEVEL_IMPL(                                    \
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Balanced,  \
+		name, ::FlowUi::devSystems::TimingEntityRef{}, __COUNTER__)
+#else
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED_ENTITY(recorder, category, role, name, entity) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(recorder, category, role, name) ((void)0)
+#endif
+
+#if FLOWUI_DEV_TIMING_LEVEL >= 3
+#define FLOWUI_DEV_TIMING_ZONE_DEEP(recorder, category, role, name)             \
+	FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL(                                            \
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Deep,        \
+		name, ::FlowUi::devSystems::TimingEntityRef{}, __COUNTER__)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP_ENTITY(recorder, category, role, name, entity) \
+	FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL(                                            \
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Deep,        \
+		name, entity, __COUNTER__)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP_IF(recorder, category, role, name)          \
+	FLOWUI_DEV_TIMING_ZONE_POINTER_LEVEL_IMPL(                                    \
+		recorder, category, role, ::FlowUi::devSystems::CpuTimingLevel::Deep,      \
+		name, ::FlowUi::devSystems::TimingEntityRef{}, __COUNTER__)
+#else
+#define FLOWUI_DEV_TIMING_ZONE_DEEP(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP_ENTITY(recorder, category, role, name, entity) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP_IF(recorder, category, role, name) ((void)0)
+#endif
 
 #else
 
 #define FLOWUI_DEV_TIMING_ZONE(recorder, category, role, name) ((void)0)
 #define FLOWUI_DEV_TIMING_ZONE_ENTITY(recorder, category, role, name, entity) ((void)0)
-#define FLOWUI_DEV_TIMING_ZONE_LEVEL(recorder, category, role, level, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_IF(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED_ENTITY(recorder, category, role, name, entity) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP(recorder, category, role, name) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP_ENTITY(recorder, category, role, name, entity) ((void)0)
+#define FLOWUI_DEV_TIMING_ZONE_DEEP_IF(recorder, category, role, name) ((void)0)
 
 #endif

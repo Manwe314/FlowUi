@@ -395,6 +395,16 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	}
 
 	std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+#if FLOW_UI_DEV_MODE
+	const bool enableCalibratedTimestamps = devGpuTimingRequested &&
+		deviceHasExtension(phys, VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
+	if (enableCalibratedTimestamps) {
+		deviceExtensions.push_back(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
+	}
+	const bool enableMemoryBudget = devGpuMemoryRequested &&
+		deviceHasExtension(phys, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+	if (enableMemoryBudget) deviceExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+#endif
 	const bool hasSwapchainMaintenance1 =
 		deviceHasExtension(phys, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
 	const bool hasPresentId = deviceHasExtension(phys, VK_KHR_PRESENT_ID_EXTENSION_NAME);
@@ -497,6 +507,14 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	createInfo.pEnabledFeatures = nullptr;
 
 	vkCheck(vkCreateDevice(phys, &createInfo, nullptr, &device), "Failed to create Vulkan device.");
+#if FLOW_UI_DEV_MODE
+	synchronization2Enabled = enabled13.synchronization2 == VK_TRUE;
+	if (enableCalibratedTimestamps) {
+		getCalibratedTimestampsEXT = reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(
+			vkGetDeviceProcAddr(device, "vkGetCalibratedTimestampsEXT"));
+	}
+	calibratedTimestampsEnabled = getCalibratedTimestampsEXT != nullptr;
+#endif
 
 	vkGetDeviceQueue(device, graphicsQFamily, 0, &graphicsQ);
 	vkGetDeviceQueue(device, presentQFamily, 0, &presentQ);
@@ -513,6 +531,10 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	allocatorInfo.physicalDevice = phys;
 	allocatorInfo.device = device;
 	allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+#if FLOW_UI_DEV_MODE
+	if (enableMemoryBudget) allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+	memoryBudgetEnabled = enableMemoryBudget;
+#endif
 	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator), "Failed to create VMA allocator.");
 }
 
@@ -533,6 +555,9 @@ void VulkanContext::destroy() {
 			vmaDestroyAllocator(allocator);
 			allocator = nullptr;
 		}
+#if FLOW_UI_DEV_MODE
+		memoryBudgetEnabled = false;
+#endif
 		vkDestroyDevice(device, nullptr);
 		device = VK_NULL_HANDLE;
 	}
@@ -548,6 +573,12 @@ void VulkanContext::destroy() {
 	}
 
 	phys = VK_NULL_HANDLE;
+#if FLOW_UI_DEV_MODE
+	devGpuTimingRequested = true;
+	synchronization2Enabled = false;
+	calibratedTimestampsEnabled = false;
+	getCalibratedTimestampsEXT = nullptr;
+#endif
 	graphicsQFamily = UINT32_MAX;
 	presentQFamily = UINT32_MAX;
 	graphicsQ = VK_NULL_HANDLE;

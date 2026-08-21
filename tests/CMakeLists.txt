@@ -778,6 +778,60 @@ set_tests_properties(flowui.storage.system PROPERTIES
     TIMEOUT 60
 )
 
+if(FLOW_UI_DEV_MODE)
+    add_executable(flowui_dev_memory_tests
+        DevSystemsTests/DevMemoryTests.cpp
+        DevSystemsTests/DevMemoryVulkanSupport.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp
+    )
+    target_compile_features(flowui_dev_memory_tests PRIVATE cxx_std_23)
+    target_include_directories(flowui_dev_memory_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_BINARY_DIR}/include
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/external
+    )
+    target_link_libraries(flowui_dev_memory_tests PRIVATE Vulkan::Vulkan)
+    if(WIN32)
+        target_link_libraries(flowui_dev_memory_tests PRIVATE Psapi)
+    endif()
+    add_test(NAME flowui.dev.memory COMMAND flowui_dev_memory_tests)
+    set_tests_properties(flowui.dev.memory PROPERTIES LABELS "flowui;dev;memory")
+
+    add_executable(flowui_storage_memory_dev_tests
+        DevSystemsTests/DevMemoryStorageTests.cpp
+        HeadlessVulkanFixture.cpp
+        DevSystemsTests/DevMemoryVulkanSupport.cpp
+        ${PROJECT_SOURCE_DIR}/src/Storagesystem/FlowStorageSystem.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
+    )
+    target_compile_features(flowui_storage_memory_dev_tests PRIVATE cxx_std_23)
+    target_include_directories(flowui_storage_memory_dev_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_BINARY_DIR}/include
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/external
+    )
+    target_compile_definitions(flowui_storage_memory_dev_tests PRIVATE
+        FLOWUI_PUBLIC_VULKAN_INTEROP=1
+    )
+    if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+        target_compile_definitions(flowui_storage_memory_dev_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+    endif()
+    target_link_libraries(flowui_storage_memory_dev_tests PRIVATE Vulkan::Vulkan)
+    add_test(NAME flowui.dev.memory_storage COMMAND flowui_storage_memory_dev_tests)
+    set_tests_properties(flowui.dev.memory_storage PROPERTIES
+        LABELS "flowui;dev;memory;storage;integration;vulkan"
+        SKIP_RETURN_CODE 77
+        TIMEOUT 60
+    )
+endif()
+
 add_executable(flowui_theme_manager_tests
     ThemesTests/ThemeManagerTests.cpp
     HeadlessVulkanFixture.cpp

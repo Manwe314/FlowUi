@@ -1,4 +1,9 @@
 #include "managers/FontManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <cctype>
@@ -26,6 +31,43 @@
 namespace Font = FlowUi::Font;
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void FontManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!controller_) return;
+	try {
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.liveBytes += controller_->families.size() * sizeof(detail::manager_storage::FontFamilyRecord);
+		memory.capacityBytes += memory.liveBytes;
+		memory.objectCount += controller_->families.size();
+		memory.capacityCount += controller_->families.size();
+		memory.addNodeContainer(controller_->familyIdByName);
+		memory.liveBytes += controller_->fonts.size() * sizeof(Font::FontFaceData);
+		memory.capacityBytes += controller_->fonts.size() * sizeof(Font::FontFaceData);
+		memory.objectCount += controller_->fonts.size();
+		memory.capacityCount += controller_->fonts.size();
+		memory.addNodeContainer(controller_->fontIndexById);
+		memory.addNodeContainer(controller_->fontIdByName);
+		memory.add(controller_->atlasLayerPixels);
+		for (const auto& family : controller_->families) {
+			memory.add(family.name);
+			memory.add(family.faces);
+		}
+		for (const auto& layer : controller_->atlasLayerPixels) memory.add(layer);
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kFonts.id, memory);
+		devSystems::DevContainerMemoryAccumulator atlasPixels{};
+		atlasPixels.add(controller_->atlasLayerPixels);
+		for (const auto& layer : controller_->atlasLayerPixels) atlasPixels.add(layer);
+		atlasPixels.flags = devSystems::MemorySampleFlag::None;
+		devSystems::appendManagerSample(
+			sink, devSystems::memory_sources::kFontAtlasCpuPixels.id, atlasPixels);
+	} catch (...) {}
+}
+
+void FontManager::setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept {
+	devMemoryRecorder_ = recorder;
+	if (controller_) controller_->setDevMemoryRecorder(recorder);
+}
+#endif
 
 namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;
@@ -95,7 +137,12 @@ int pickAtlasImageIndex(const artery_font::StdArteryFont<float>& font) {
 	return -1;
 }
 
-DecodedAtlasImage decodeImageToRgba8(const artery_font::StdArteryFont<float>::Image& image) {
+DecodedAtlasImage decodeImageToRgba8(
+	const artery_font::StdArteryFont<float>::Image& image
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	, devSystems::DevMemoryRecorder* memoryRecorder
+#endif
+	) {
 	DecodedAtlasImage decoded{};
 	decoded.width = image.width;
 	decoded.height = image.height;
@@ -134,6 +181,10 @@ DecodedAtlasImage decodeImageToRgba8(const artery_font::StdArteryFont<float>::Im
 			}
 
 			const size_t decodedBytes = static_cast<size_t>(decodedWidth) * static_cast<size_t>(decodedHeight) * 4u;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+			devSystems::DevExternalMemoryScope decodedMemory(
+				memoryRecorder, devSystems::memory_sources::kFontDecode.id, decodedBytes);
+#endif
 			decoded.rgbaPixels.resize(decodedBytes);
 			std::memcpy(decoded.rgbaPixels.data(), rgbaPixels, decodedBytes);
 			stbi_image_free(rgbaPixels);
@@ -273,6 +324,9 @@ void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSiz
 		destroy();
 		throw std::runtime_error("Font catalog storage publication failed.");
 	}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	controller_->setDevMemoryRecorder(devMemoryRecorder_);
+#endif
 }
 
 FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
@@ -713,7 +767,12 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	}
 
 	const auto* images = listData(arteryFont.images);
-	const DecodedAtlasImage decodedImage = decodeImageToRgba8(images[imageIndex]);
+	const DecodedAtlasImage decodedImage = decodeImageToRgba8(
+		images[imageIndex]
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+		, devMemoryRecorder_
+#endif
+		);
 	const uint32_t pageWidth = controller_->atlasSizeHint;
 	const uint32_t pageHeight = controller_->atlasSizeHint;
 	std::vector<uint8_t> pagePixels = copyAtlasIntoPage(decodedImage, pageWidth, pageHeight, path);

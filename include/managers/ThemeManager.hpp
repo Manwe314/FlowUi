@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <functional>
 #include <memory>
 #include <stdexcept>
@@ -15,6 +17,7 @@ class App;
 class UiManager;
 
 namespace detail::storage { class IStorageSystem; }
+namespace devSystems { class MemorySampleSink; }
 
 /**
  * @defgroup flowui_theme_manager Theme Manager
@@ -31,6 +34,9 @@ namespace detail::storage { class IStorageSystem; }
  */
 class ThemeManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	ThemeManager();
 	~ThemeManager();
 

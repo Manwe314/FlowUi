@@ -9,6 +9,10 @@
 
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 namespace FlowUi {
 namespace storage = detail::storage;
@@ -87,6 +91,10 @@ bool ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
 		throw std::overflow_error("Decoded image byte size exceeds the host address space.");
 	}
 	const size_t byteCount = static_cast<size_t>(pixelCount * 4u);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevExternalMemoryScope decodeMemory(
+		devMemoryRecorder_, devSystems::memory_sources::kImageDecode.id, byteCount);
+#endif
 	const bool inserted = !static_cast<bool>(storage_->findTexture(normalized));
 
 	CandidateImage candidate{};

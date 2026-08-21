@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <string_view>
 
 #include "FlowUi/PublicStructs.hpp"
@@ -9,8 +11,8 @@ namespace FlowUi {
 
 namespace detail {
 namespace storage { class IStorageSystem; }
-
 } // namespace detail
+namespace devSystems { class DevMemoryRecorder; }
 
 class App;
 
@@ -39,6 +41,9 @@ class App;
  */
 class ImageManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept { devMemoryRecorder_ = recorder; }
+#endif
 	/**
 	 * @brief Load and register an image from disk under a caller-provided key.
 	 *
@@ -144,6 +149,9 @@ private:
 	void destroy() noexcept;
 
 	detail::storage::IStorageSystem* storage_ = nullptr;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevMemoryRecorder* devMemoryRecorder_ = nullptr;
+#endif
 };
 
 /** @} */

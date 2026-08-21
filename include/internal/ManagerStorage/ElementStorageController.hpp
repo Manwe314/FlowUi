@@ -19,6 +19,7 @@
 #include "internal/StorageSystem/IStorageSystem.hpp"
 #include "managers/structs/ElementStatePolicy.hpp"
 
+namespace FlowUi::devSystems { class MemorySampleSink; }
 namespace FlowUi::detail::manager_storage {
 
 enum class ElementResourceState : uint8_t {
@@ -176,10 +177,13 @@ public:
 		element::ElementInstanceKey instanceKey,
 		const element::ElementRegistrationDescriptor& descriptor);
 	void shutdown() noexcept;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(::FlowUi::devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 
 private:
 	storage::IStorageSystem* storage_ = nullptr;
-	std::mutex windowsMutex_{};
+	mutable std::mutex windowsMutex_{};
 	std::unordered_map<WindowId, std::shared_ptr<WindowElementStateRegistry>> windows_{};
 	ElementDefinitionRegistry definitions_{};
 };

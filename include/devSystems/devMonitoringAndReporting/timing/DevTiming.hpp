@@ -16,6 +16,7 @@ namespace FlowUi::devSystems {
 class CpuTimingZone;
 class ManualTimingZone;
 class DevTiming;
+class DevGpuTiming;
 
 class DevTimingRecorder {
 public:
@@ -31,6 +32,10 @@ public:
 		TimingEntityRef entity = {}) noexcept;
 	void end(
 		ActiveZoneToken token,
+		TimingRecordFlag result = TimingRecordFlag::Completed) noexcept;
+	void endElement(
+		ActiveZoneToken token,
+		FlowDefinitionID definition,
 		TimingRecordFlag result = TimingRecordFlag::Completed) noexcept;
 
 	void setFrameContext(WindowFrameKey frame, AppTickId appTick = 0u) noexcept;
@@ -51,6 +56,7 @@ private:
 		uint32_t recordCapacity);
 	void detachCurrentThread() noexcept;
 	void drainInto(std::vector<CpuTimingRecord>& output);
+	void drainElementAggregatesInto(std::vector<ElementDefinitionTimingAggregate>& output);
 	[[nodiscard]] TimingQualitySnapshot qualitySnapshot() const noexcept;
 
 	std::unique_ptr<Impl> impl_{};
@@ -90,7 +96,9 @@ public:
 
 	[[nodiscard]] DevTimingThreadAttachment attachCurrentThread(std::string_view trackName);
 	[[nodiscard]] std::vector<CpuTimingRecord> drainCompletedRecords();
+	[[nodiscard]] std::vector<ElementDefinitionTimingAggregate> drainElementTimingAggregates();
 	[[nodiscard]] std::vector<TimingZoneDescriptor> descriptorSnapshot() const;
+	[[nodiscard]] std::vector<TimingTrackDescriptor> trackSnapshot() const;
 	[[nodiscard]] TimingQualitySnapshot qualitySnapshot() const;
 
 	void setConfig(const DevTimingConfig& config) noexcept;
@@ -99,6 +107,7 @@ public:
 
 private:
 	friend class DevTimingRecorder;
+	friend class DevGpuTiming;
 	struct Impl;
 
 	[[nodiscard]] uint64_t nowNs() const noexcept;

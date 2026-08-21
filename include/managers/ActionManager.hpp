@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -27,6 +29,7 @@ class ActionManager;
 namespace detail::storage {
 class IStorageSystem;
 }
+namespace devSystems { class MemorySampleSink; }
 
 namespace detail::manager_storage {
 struct ActionManagerState;
@@ -90,6 +93,9 @@ private:
 
 class ActionManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	ActionManager() noexcept
 		: appActions_(*this), uiActions_(*this) {}
 	~ActionManager();

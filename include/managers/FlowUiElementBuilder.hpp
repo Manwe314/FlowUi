@@ -14,6 +14,7 @@
 #include "managers/ActionManager.hpp"
 #include "managers/UiManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/elementDevCapture.hpp"
 #include "internal/FlowUiElementBridge.hpp"
@@ -378,8 +379,19 @@ private:
 			automaticIdentity_);
 #endif
 
-		auto invocation = detail::element::ElementInvocation<ElementType>::begin(
-			elementManager_, uiManager_, window_, elementId_);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 1
+		devSystems::ElementTimingZone invocationTiming(
+			uiManager_.devTimingRecorder(), ElementType::definitionId, elementId_);
+#endif
+		auto invocation = [&]() {
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+				uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+				devSystems::TimingZoneRole::Work, "flowui.element.registration_state");
+#endif
+			return detail::element::ElementInvocation<ElementType>::begin(
+				elementManager_, uiManager_, window_, elementId_);
+		}();
 
 		Clay_ElementId rootElementId{};
 		if constexpr (Mode == OutputMode::Construct) {
@@ -406,34 +418,70 @@ private:
 #endif
 		ConstructedDepthGuard constructedDepth{uiManager_};
 
-		invokeInteractionHooks(invocation, elementId_, options);
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+				devSystems::TimingZoneRole::Work, "flowui.element.interaction_hooks");
+#endif
+			invokeInteractionHooks(invocation, elementId_, options);
+		}
 
 		if constexpr (Mode == OutputMode::Draw) {
 			if (elementDrawOptionsHas(options, ElementDrawOptions::SkipBuildCallback)) {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 1
+				invocationTiming.end();
+#endif
 				return;
 			}
 		}
 
 #if FLOW_UI_DEV_MODE
-		devMode::elementCapture::applyParameterOverrides<ParametersType>(
-			uiManager_,
-			ElementType::definitionId,
-			elementId_,
-			params_);
+		{
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+				devSystems::TimingZoneRole::Work, "flowui.element.apply_effective_params");
+			devMode::elementCapture::applyParameterOverrides<ParametersType>(
+				uiManager_,
+				ElementType::definitionId,
+				elementId_,
+				params_);
+		}
 #endif
 
 		BuildContext buildContext{invocation, params_};
 		if constexpr (Mode == OutputMode::Draw) {
-			ElementType::buildElement(buildContext);
+			{
+#if FLOW_UI_DEV_MODE
+				FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+					uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+					devSystems::TimingZoneRole::Work, "flowui.element.build_callback");
+#endif
+				ElementType::buildElement(buildContext);
+			}
 		} else {
-			const Clay_ElementDeclaration declaration =
-				ElementType::constructElement(buildContext);
+			Clay_ElementDeclaration declaration{};
+			{
+#if FLOW_UI_DEV_MODE
+				FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+					uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+					devSystems::TimingZoneRole::Work, "flowui.element.construct_callback");
+#endif
+				declaration = ElementType::constructElement(buildContext);
+			}
 			if (uiManager_.constructedElementDepth() != constructedDepth.baseline) {
 				throw std::logic_error(
 					"FlowUi constructElement left a nested constructed element open.");
 			}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 1
+			invocationTiming.end();
+#endif
 			uiManager_.retainConstructedElement(
-				rootElementId, elementId_, flowScope.priorDepth);
+				rootElementId, elementId_, flowScope.priorDepth
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+				, ElementType::definitionId
+#endif
+			);
 			Clay__OpenElementWithId(rootElementId);
 			Clay__ConfigureOpenElement(declaration);
 			constructedDepth.release();
@@ -442,6 +490,9 @@ private:
 			devCapture.leaveOpen();
 #endif
 		}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 1
+		if constexpr (Mode == OutputMode::Draw) invocationTiming.end();
+#endif
 	}
 
 	void invokeInteractionHooks(
@@ -474,6 +525,9 @@ private:
 			if (invokeEvents) {
 				if constexpr (detail::element::HasOnHoveredHook<ElementType>) {
 					if (previousInteraction.isHovered(elementId)) {
+						FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+							uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+							devSystems::TimingZoneRole::Work, "flowui.element.on_hovered");
 						context.setActionInvocationSourceKind(
 							ActionInvocationSourceKind::ElementHovered);
 						ElementType::onHovered(context);
@@ -481,6 +535,9 @@ private:
 				}
 				if constexpr (detail::element::HasOnPressedHook<ElementType>) {
 					if (previousInteraction.isPressed(elementId)) {
+						FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+							uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+							devSystems::TimingZoneRole::Work, "flowui.element.on_pressed");
 						context.setActionInvocationSourceKind(
 							ActionInvocationSourceKind::ElementPressed);
 						ElementType::onPressed(context);
@@ -488,6 +545,9 @@ private:
 				}
 				if constexpr (detail::element::HasOnHeldHook<ElementType>) {
 					if (previousInteraction.isHeld(elementId)) {
+						FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+							uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+							devSystems::TimingZoneRole::Work, "flowui.element.on_held");
 						context.setActionInvocationSourceKind(
 							ActionInvocationSourceKind::ElementHeld);
 						ElementType::onHeld(context);
@@ -495,6 +555,9 @@ private:
 				}
 				if constexpr (detail::element::HasOnReleasedHook<ElementType>) {
 					if (previousInteraction.isReleased(elementId)) {
+						FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+							uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+							devSystems::TimingZoneRole::Work, "flowui.element.on_released");
 						context.setActionInvocationSourceKind(
 							ActionInvocationSourceKind::ElementReleased);
 						ElementType::onReleased(context);
@@ -504,6 +567,9 @@ private:
 
 			if constexpr (detail::element::HasRunLogicHook<ElementType>) {
 				if (invokeLogic) {
+					FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+						uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
+						devSystems::TimingZoneRole::Work, "flowui.element.run_logic");
 					context.setActionInvocationSourceKind(
 						ActionInvocationSourceKind::ElementLogic);
 					ElementType::runLogic(context);

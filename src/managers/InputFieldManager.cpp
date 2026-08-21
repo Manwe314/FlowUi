@@ -1,4 +1,8 @@
 #include "managers/InputFieldManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <cctype>
@@ -178,6 +182,48 @@ bool sameLayoutDescriptor(
 } // namespace
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void InputFieldManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!state_) return;
+	try {
+		devSystems::DevContainerMemoryAccumulator memory{};
+		devSystems::DevContainerMemoryAccumulator textPayload{};
+		memory.addNodeContainer(state_->fieldsById);
+		memory.add(state_->pendingCommands);
+		memory.add(state_->selectedTextScratch);
+		for (const auto& [_, field] : state_->fieldsById) {
+			textPayload.liveBytes += detail::text::byteCount(field.storage);
+			std::visit([&](const auto& storage) {
+				using Storage = std::decay_t<decltype(storage)>;
+				if constexpr (std::is_same_v<Storage, detail::text::SingleLineStorage>) {
+					memory.add(storage.text);
+					textPayload.add(storage.text);
+				} else {
+					memory.add(storage.chunks);
+					memory.add(storage.lineStarts);
+					for (const auto& chunk : storage.chunks) memory.add(chunk);
+					for (const auto& chunk : storage.chunks) textPayload.add(chunk);
+				}
+			}, field.storage);
+			memory.add(field.carets);
+			memory.add(field.focusRetentionElementIds);
+			memory.add(field.visibleLineStrings);
+			for (const auto& line : field.visibleLineStrings) memory.add(line);
+			memory.add(field.visibleLines);
+			memory.add(field.submittedTextSpans);
+			memory.addNodeContainer(field.wrapCacheByHardLine);
+			for (const auto& [__, wrap] : field.wrapCacheByHardLine) memory.add(wrap.visualRanges);
+			memory.add(field.frameTransactions);
+			memory.add(field.frameTransactionViews);
+			memory.add(field.frameCommandRequests);
+		}
+		devSystems::appendManagerSample(
+			sink, devSystems::memory_sources::kInputFields.id, memory, window_);
+		devSystems::appendManagerSample(
+			sink, devSystems::memory_sources::kInputTextPayload.id, textPayload, window_);
+	} catch (...) {}
+}
+#endif
 
 namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;

@@ -19,6 +19,12 @@ namespace {
 
 using TimingClock = std::chrono::steady_clock;
 
+[[nodiscard]] constexpr CpuTimingLevel clampToCompiledCpuLevel(CpuTimingLevel requested) noexcept {
+	constexpr uint8_t compiledMaximum = static_cast<uint8_t>(FLOWUI_DEV_TIMING_LEVEL);
+	return static_cast<CpuTimingLevel>(
+		std::min(static_cast<uint8_t>(requested), compiledMaximum));
+}
+
 [[nodiscard]] TimingClockCalibration calibrateClock() {
 	constexpr uint32_t kSampleCount = 1024u;
 	std::vector<uint64_t> samples;
@@ -60,6 +66,7 @@ void accumulateQuality(TimingQualitySnapshot& destination, const TimingQualitySn
 	destination.incompleteZones += source.incompleteZones;
 	destination.clockAnomalies += source.clockAnomalies;
 	destination.descriptorCollisions += source.descriptorCollisions;
+	destination.timingOverheadNs += source.timingOverheadNs;
 }
 
 } // namespace
@@ -68,17 +75,25 @@ struct DevTiming::Impl {
 	explicit Impl(const DevTimingConfig& initialConfig)
 		: epoch(TimingClock::now()),
 		  calibration(calibrateClock()),
-		  cpuLevel(static_cast<uint8_t>(initialConfig.cpuLevel)),
+		  cpuLevel(static_cast<uint8_t>(clampToCompiledCpuLevel(initialConfig.cpuLevel))),
 		  categoryMask(initialConfig.enabledCategoryMask),
 		  gpuEnabled(initialConfig.gpuTimingEnabled),
-		  producerCapacity(std::max(64u, initialConfig.producerRecordCapacity)) {}
+		  gpuQueryCapacity(std::max(16u, initialConfig.gpuQueryCapacityPerFrame & ~1u)),
+		  producerCapacity(std::max(64u, initialConfig.producerRecordCapacity)),
+		  balancedElementRetentionThresholdNs(initialConfig.balancedElementRetentionThresholdNs),
+		  selectedElementDefinition(initialConfig.selectedElementDefinition.value),
+		  selectedElementInstance(initialConfig.selectedElementInstance.value) {}
 
 	TimingClock::time_point epoch{};
 	TimingClockCalibration calibration{};
 	std::atomic<uint8_t> cpuLevel{static_cast<uint8_t>(CpuTimingLevel::Summary)};
 	std::atomic<uint32_t> categoryMask{0xFFFFFFFFu};
-	std::atomic<bool> gpuEnabled{false};
+	std::atomic<bool> gpuEnabled{true};
+	std::atomic<uint32_t> gpuQueryCapacity{512u};
 	std::atomic<uint32_t> producerCapacity{8192u};
+	std::atomic<uint64_t> balancedElementRetentionThresholdNs{50'000u};
+	std::atomic<uint64_t> selectedElementDefinition{0u};
+	std::atomic<uint64_t> selectedElementInstance{0u};
 	std::atomic<uint64_t> configGeneration{1u};
 	std::atomic<uint32_t> nextTrackId{1u};
 	std::atomic<uint64_t> descriptorCollisions{0u};
@@ -122,6 +137,35 @@ std::vector<CpuTimingRecord> DevTiming::drainCompletedRecords() {
 	return result;
 }
 
+std::vector<ElementDefinitionTimingAggregate> DevTiming::drainElementTimingAggregates() {
+	std::vector<ElementDefinitionTimingAggregate> result;
+	std::lock_guard lock(impl_->mutex);
+	for (const auto& recorder : impl_->recorders) {
+		recorder->drainElementAggregatesInto(result);
+	}
+	std::sort(result.begin(), result.end(), [](const auto& left, const auto& right) {
+		if (left.appTick != right.appTick) return left.appTick < right.appTick;
+		if (left.frame != right.frame) return left.frame < right.frame;
+		return left.definition.value < right.definition.value;
+	});
+	std::vector<ElementDefinitionTimingAggregate> merged;
+	merged.reserve(result.size());
+	for (const ElementDefinitionTimingAggregate& aggregate : result) {
+		if (merged.empty() || merged.back().definition != aggregate.definition ||
+			merged.back().frame != aggregate.frame || merged.back().appTick != aggregate.appTick) {
+			merged.push_back(aggregate);
+			continue;
+		}
+		auto& destination = merged.back();
+		destination.invocationCount += aggregate.invocationCount;
+		destination.totalInclusiveNs += aggregate.totalInclusiveNs;
+		destination.maximumInclusiveNs =
+			std::max(destination.maximumInclusiveNs, aggregate.maximumInclusiveNs);
+		destination.canceledInvocationCount += aggregate.canceledInvocationCount;
+	}
+	return merged;
+}
+
 std::vector<TimingZoneDescriptor> DevTiming::descriptorSnapshot() const {
 	std::vector<TimingZoneDescriptor> result;
 	std::lock_guard lock(impl_->mutex);
@@ -131,6 +175,22 @@ std::vector<TimingZoneDescriptor> DevTiming::descriptorSnapshot() const {
 	}
 	std::sort(result.begin(), result.end(), [](const auto& left, const auto& right) {
 		return left.typeId < right.typeId;
+	});
+	return result;
+}
+
+std::vector<TimingTrackDescriptor> DevTiming::trackSnapshot() const {
+	std::vector<TimingTrackDescriptor> result;
+	std::lock_guard lock(impl_->mutex);
+	result.reserve(impl_->recorders.size());
+	for (const auto& recorder : impl_->recorders) {
+		result.push_back(TimingTrackDescriptor{
+			.id = recorder->trackId(),
+			.name = std::string(recorder->trackName()),
+		});
+	}
+	std::sort(result.begin(), result.end(), [](const auto& left, const auto& right) {
+		return left.id < right.id;
 	});
 	return result;
 }
@@ -146,11 +206,21 @@ TimingQualitySnapshot DevTiming::qualitySnapshot() const {
 }
 
 void DevTiming::setConfig(const DevTimingConfig& config) noexcept {
-	impl_->cpuLevel.store(static_cast<uint8_t>(config.cpuLevel), std::memory_order_relaxed);
+	impl_->cpuLevel.store(
+		static_cast<uint8_t>(clampToCompiledCpuLevel(config.cpuLevel)),
+		std::memory_order_relaxed);
 	impl_->categoryMask.store(config.enabledCategoryMask, std::memory_order_relaxed);
 	impl_->gpuEnabled.store(config.gpuTimingEnabled, std::memory_order_relaxed);
+	impl_->gpuQueryCapacity.store(
+		std::max(16u, config.gpuQueryCapacityPerFrame & ~1u), std::memory_order_relaxed);
 	impl_->producerCapacity.store(
 		std::max(64u, config.producerRecordCapacity), std::memory_order_relaxed);
+	impl_->balancedElementRetentionThresholdNs.store(
+		config.balancedElementRetentionThresholdNs, std::memory_order_relaxed);
+	impl_->selectedElementDefinition.store(
+		config.selectedElementDefinition.value, std::memory_order_relaxed);
+	impl_->selectedElementInstance.store(
+		config.selectedElementInstance.value, std::memory_order_relaxed);
 	impl_->configGeneration.fetch_add(1u, std::memory_order_release);
 }
 
@@ -159,7 +229,14 @@ DevTimingConfig DevTiming::config() const noexcept {
 		.cpuLevel = static_cast<CpuTimingLevel>(impl_->cpuLevel.load(std::memory_order_relaxed)),
 		.enabledCategoryMask = impl_->categoryMask.load(std::memory_order_relaxed),
 		.gpuTimingEnabled = impl_->gpuEnabled.load(std::memory_order_relaxed),
+		.gpuQueryCapacityPerFrame = impl_->gpuQueryCapacity.load(std::memory_order_relaxed),
 		.producerRecordCapacity = impl_->producerCapacity.load(std::memory_order_relaxed),
+		.balancedElementRetentionThresholdNs =
+			impl_->balancedElementRetentionThresholdNs.load(std::memory_order_relaxed),
+		.selectedElementDefinition = FlowDefinitionID{
+			impl_->selectedElementDefinition.load(std::memory_order_relaxed)},
+		.selectedElementInstance = FlowElementID{
+			impl_->selectedElementInstance.load(std::memory_order_relaxed)},
 	};
 }
 

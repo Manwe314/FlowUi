@@ -4,6 +4,10 @@
 #include "FlowUi/ElementID.hpp"
 #include "FlowUi/AppActionID.hpp"
 #include "FlowUi/App.hpp"
+#include "FlowUi/MemoryCapacityProfile.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devSystems.hpp"
+#endif
 #include "FlowUi/ResourceKey.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"

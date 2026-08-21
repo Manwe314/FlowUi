@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <cstdint>
 #include <clay.h>
 
@@ -11,6 +13,7 @@ namespace FlowUi {
 class UiManager;
 namespace detail::storage { class IStorageSystem; }
 namespace detail::manager_storage { struct ShortcutManagerState; }
+namespace devSystems { class MemorySampleSink; }
 
 /** @addtogroup flowui_shortcut_manager
  * @{
@@ -31,6 +34,9 @@ namespace detail::manager_storage { struct ShortcutManagerState; }
  */
 class ShortcutManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	/**
 	 * @brief Register a shortcut and return its id.
 	 *

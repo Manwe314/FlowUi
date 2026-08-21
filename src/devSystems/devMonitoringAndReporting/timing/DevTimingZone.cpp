@@ -13,6 +13,13 @@ CpuTimingZone::CpuTimingZone(
 	: recorder_(&recorder),
 	  token_(recorder.tryBegin(descriptor, entity)) {}
 
+CpuTimingZone::CpuTimingZone(
+	DevTimingRecorder* recorder,
+	const TimingZoneDescriptor& descriptor,
+	TimingEntityRef entity) noexcept
+	: recorder_(recorder),
+	  token_(recorder ? recorder->tryBegin(descriptor, entity) : ActiveZoneToken{}) {}
+
 CpuTimingZone::~CpuTimingZone() noexcept {
 	if (recorder_ && token_) recorder_->end(token_);
 }
@@ -55,6 +62,28 @@ void ManualTimingZone::end(TimingRecordFlag result) noexcept {
 
 void ManualTimingZone::abandon() noexcept {
 	if (recorder_ && token_) recorder_->end(token_, TimingRecordFlag::Incomplete);
+	recorder_ = nullptr;
+	token_ = {};
+}
+
+ElementTimingZone::ElementTimingZone(
+	DevTimingRecorder* recorder,
+	FlowDefinitionID definition,
+	FlowElementID instance) noexcept
+	: recorder_(recorder), definition_(definition) {
+	if (recorder_) {
+		token_ = recorder_->tryBegin(
+			timing_zones::kElementInvoke,
+			TimingEntityRef::element(definition, instance));
+	}
+}
+
+ElementTimingZone::~ElementTimingZone() noexcept {
+	end(TimingRecordFlag::Incomplete);
+}
+
+void ElementTimingZone::end(TimingRecordFlag result) noexcept {
+	if (recorder_ && token_) recorder_->endElement(token_, definition_, result);
 	recorder_ = nullptr;
 	token_ = {};
 }

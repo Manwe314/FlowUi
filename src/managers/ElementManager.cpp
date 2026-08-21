@@ -1,4 +1,7 @@
 #include "managers/ElementManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"
+#endif
 
 #include <functional>
 #include <limits>
@@ -9,8 +12,16 @@
 #include "internal/ManagerStorage/ElementStorageController.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "managers/UiManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
+#endif
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void ElementManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (controller_) controller_->appendDevMemorySamples(sink);
+}
+#endif
 
 namespace storage = detail::storage;
 namespace manager_storage = detail::manager_storage;
@@ -152,6 +163,11 @@ const void* ElementManager::resolveResourcesErased(
 		throw std::runtime_error("ElementManager is not initialized.");
 	}
 	if (!descriptor.hasResources) return nullptr;
+#if FLOW_UI_DEV_MODE
+	FLOWUI_DEV_TIMING_ZONE_DEEP_IF(
+		devTimingRecorder_, devSystems::TimingCategory::Element,
+		devSystems::TimingZoneRole::Work, "flowui.element.resource_resolution");
+#endif
 	return controller_->resolveOrCreateResources(descriptor, *app_, retryFailed);
 }
 

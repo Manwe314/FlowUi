@@ -1,4 +1,8 @@
 #include "managers/ActionManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <stdexcept>
@@ -13,6 +17,18 @@
 #include "managers/UiManager.hpp"
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void ActionManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!storage_ || stateHandle_ == 0u) return;
+	try {
+		const auto& current = state();
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(current.bindings);
+		memory.add(current.deferredRemovals);
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kActions.id, memory);
+	} catch (...) {}
+}
+#endif
 
 namespace action = detail::action;
 namespace manager_storage = detail::manager_storage;

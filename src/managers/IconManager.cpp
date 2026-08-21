@@ -1,4 +1,9 @@
 #include "managers/IconManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #if FLOWUI_INCLUDE_ICON_MANAGER
 
@@ -20,6 +25,35 @@
 #include <plutosvg.h>
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void IconManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!controller_) return;
+	try {
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(controller_->documentsByKey);
+		memory.addNodeContainer(controller_->requestTextureByKey);
+		memory.addNodeContainer(controller_->requestedKeyByTexture);
+		memory.addNodeContainer(controller_->variantsByKeyAndSize);
+		memory.add(controller_->atlasPages);
+		memory.add(controller_->retiredRegions);
+		for (const auto& [key, _] : controller_->documentsByKey) memory.add(key);
+		for (const auto& [key, _] : controller_->requestTextureByKey) memory.add(key);
+		for (const auto& [_, key] : controller_->requestedKeyByTexture) memory.add(key);
+		for (const auto& page : controller_->atlasPages) memory.add(page.freeRects);
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kIcons.id, memory);
+		devSystems::DevContainerMemoryAccumulator documents{};
+		documents.addNodeContainer(controller_->documentsByKey);
+		for (const auto& [key, _] : controller_->documentsByKey) documents.add(key);
+		devSystems::appendManagerSample(
+			sink, devSystems::memory_sources::kIconSvgDocuments.id, documents);
+		devSystems::DevContainerMemoryAccumulator atlasMetadata{};
+		atlasMetadata.add(controller_->atlasPages);
+		for (const auto& page : controller_->atlasPages) atlasMetadata.add(page.freeRects);
+		devSystems::appendManagerSample(
+			sink, devSystems::memory_sources::kIconAtlasMetadata.id, atlasMetadata);
+	} catch (...) {}
+}
+#endif
 
 namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;
@@ -351,6 +385,10 @@ void IconManager::uploadRasterToAtlasPage(
 
 	const size_t tightRowBytes = static_cast<size_t>(raster.width) * 4u;
 	std::vector<std::byte> tight(tightRowBytes * raster.height);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevExternalMemoryScope tightMemory(
+		devMemoryRecorder_, devSystems::memory_sources::kIconTightUpload.id, tight.size());
+#endif
 	for (uint32_t row = 0; row < raster.height; ++row) {
 		std::memcpy(tight.data() + row * tightRowBytes,
 			raster.rgbaPixels + static_cast<size_t>(row) * raster.strideBytes, tightRowBytes);
@@ -907,6 +945,11 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 	if (!owner.surface) {
 		throw std::runtime_error("IconManager failed to rasterize SVG document.");
 	}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevExternalMemoryScope rasterMemory(
+		devMemoryRecorder_, devSystems::memory_sources::kIconRaster.id,
+		static_cast<uint64_t>(rasterWidth) * rasterHeight * 4u);
+#endif
 
 	const int surfaceWidth = plutovg_surface_get_width(owner.surface);
 	const int surfaceHeight = plutovg_surface_get_height(owner.surface);

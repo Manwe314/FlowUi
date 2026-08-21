@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "FlowUi/BuildConfig.hpp"
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE && !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
 #include "devMode/devFlowElements.hpp"
 #endif
 

@@ -1,4 +1,8 @@
 #include "managers/ShortcutManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <limits>
@@ -75,6 +79,22 @@ bool scopeIsActive(
 } // namespace
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void ShortcutManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!storage_ || stateHandle_ == 0u) return;
+	try {
+		const auto& current = state();
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(current.chordBuckets);
+		memory.addNodeContainer(current.registrationsById);
+		memory.addNodeContainer(current.registeredKeyRefCount);
+		for (const auto& [_, bucket] : current.chordBuckets) {
+			if (bucket) memory.add(*bucket);
+		}
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kShortcuts.id, memory, window_);
+	} catch (...) {}
+}
+#endif
 
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;

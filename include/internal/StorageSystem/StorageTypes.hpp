@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <compare>
@@ -10,8 +11,10 @@
 #include <span>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/MemoryCapacityProfile.hpp"
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
 
@@ -526,6 +529,46 @@ struct WindowStorageDesc {
 	StringId debugName = 0;
 };
 
+/** Applies the storage portion of a generated or handwritten capacity profile. */
+inline bool applyMemoryCapacitySetting(StorageConfig& config, const FlowUi::MemoryCapacitySetting& setting) noexcept {
+	switch (setting.target) {
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.initial_persistent_cpu_bytes"):
+		config.initialPersistentCpuBytes = setting.value; return true;
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.initial_string_bytes"):
+		config.initialStringBytes = setting.value; return true;
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.transient_bytes_per_frame_per_window"):
+		config.transientBytesPerFramePerWindow = setting.value; return true;
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.transient_bytes_per_worker"):
+		config.transientBytesPerWorker = setting.value; return true;
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.initial_decode_scratch_bytes"):
+		config.initialDecodeScratchBytes = setting.value; return true;
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.initial_upload_staging_bytes"):
+		config.initialUploadStagingBytes = setting.value; return true;
+	case FlowUi::makeMemoryCapacityTargetId("flowui.tuning.storage.initial_instance_bytes_per_frame"):
+		config.initialInstanceBytesPerFrame = setting.value; return true;
+	default: return false;
+	}
+}
+
+inline uint32_t applyMemoryCapacityProfile(
+	StorageConfig& config, const FlowUi::MemoryCapacityProfile& profile) noexcept {
+	uint32_t applied = 0u;
+	const auto apply = [&](uint64_t value, uint64_t& destination) {
+		if (value != 0u) { destination = value; ++applied; }
+	};
+	apply(profile.storage.initialPersistentCpuBytes, config.initialPersistentCpuBytes);
+	apply(profile.storage.initialStringBytes, config.initialStringBytes);
+	apply(profile.storage.transientBytesPerFramePerWindow, config.transientBytesPerFramePerWindow);
+	apply(profile.storage.transientBytesPerWorker, config.transientBytesPerWorker);
+	apply(profile.storage.initialDecodeScratchBytes, config.initialDecodeScratchBytes);
+	apply(profile.storage.initialUploadStagingBytes, config.initialUploadStagingBytes);
+	apply(profile.storage.initialInstanceBytesPerFrame, config.initialInstanceBytesPerFrame);
+	for (const auto& setting : profile.settings) if (applyMemoryCapacitySetting(config, setting)) ++applied;
+	config.growthFactor = std::max(1.1f, profile.growthFactor);
+	config.allowRuntimeGrowth = profile.allowRuntimeGrowth;
+	return applied;
+}
+
 struct FrameStorageDesc {
 	uint32_t frameSlot = 0;
 	uint64_t frameNumber = 0;
@@ -796,7 +839,18 @@ struct MemoryClassStats {
 	uint64_t liveBytes = 0;
 	uint64_t peakLiveBytes = 0;
 	uint64_t allocationCount = 0;
+	uint64_t cumulativeAllocationCount = 0;
 	uint64_t growthCount = 0;
+	uint64_t reusableBytes = 0;
+	uint64_t paddingBytes = 0;
+	uint64_t largestReusableBlockBytes = 0;
+	uint64_t cumulativeAllocatedBytes = 0;
+	uint64_t cumulativeLogicalReleasedBytes = 0;
+	uint64_t cumulativePhysicalReleasedBytes = 0;
+	uint64_t logicalReleaseCount = 0;
+	uint64_t physicalReleaseCount = 0;
+	uint64_t resetCount = 0;
+	uint32_t backingAllocationCount = 0;
 };
 
 struct StorageStats {
@@ -804,6 +858,12 @@ struct StorageStats {
 	uint64_t gpuLiveBytes = 0;
 	uint64_t gpuRetiredBytes = 0;
 	uint64_t gpuPeakBytes = 0;
+	uint64_t gpuAllocationCount = 0;
+	uint64_t gpuCreateCount = 0;
+	uint64_t gpuRetireCount = 0;
+	uint64_t gpuDestroyCount = 0;
+	uint64_t cumulativeGpuCreatedBytes = 0;
+	uint64_t cumulativeGpuDestroyedBytes = 0;
 	uint64_t cpuSoftBudgetBytes = 0;
 	uint64_t gpuSoftBudgetBytes = 0;
 	uint64_t queuedUploadBytes = 0;
@@ -828,6 +888,84 @@ struct ResourceStats {
 	uint32_t failed = 0;
 	uint32_t retiring = 0;
 };
+
+#if FLOW_UI_DEV_MODE
+
+enum class StorageMemoryDetail : uint8_t {
+	Summary = 0,
+	IndividualResources,
+};
+
+enum class StorageAllocatorKind : uint8_t {
+	PersistentPool = 0,
+	LinearArena,
+	ResourceMetadata,
+};
+
+struct StorageMemorySnapshotRequest {
+	StorageMemoryDetail detail = StorageMemoryDetail::Summary;
+	bool includeResourceKinds = true;
+	bool includeWindows = true;
+	uint64_t individualResourceThresholdBytes = 0;
+};
+
+struct StorageAllocatorSnapshot {
+	StorageAllocatorKind kind = StorageAllocatorKind::PersistentPool;
+	MemoryClass memoryClass = MemoryClass::Persistent;
+	WindowId window = InvalidWindowId;
+	uint32_t frameSlot = InvalidFrameSlot;
+	uint32_t workerIndex = InvalidIndex;
+	uint64_t reservedBytes = 0;
+	uint64_t liveBytes = 0;
+	uint64_t peakLiveBytes = 0;
+	uint64_t reusableBytes = 0;
+	uint64_t largestReusableBlockBytes = 0;
+	uint64_t paddingBytes = 0;
+	uint64_t cumulativeAllocatedBytes = 0;
+	uint64_t cumulativeLogicalReleasedBytes = 0;
+	uint64_t cumulativePhysicalReleasedBytes = 0;
+	uint64_t allocationCount = 0;
+	uint64_t cumulativeAllocationCount = 0;
+	uint64_t logicalReleaseCount = 0;
+	uint64_t physicalReleaseCount = 0;
+	uint64_t growthCount = 0;
+	uint64_t resetCount = 0;
+	uint64_t mutationSequence = 0;
+	uint32_t backingAllocationCount = 0;
+};
+
+struct ResourceMemoryRecord {
+	uint64_t lifetimeId = 0;
+	ResourceKind kind = ResourceKind::Invalid;
+	StringId debugName = 0;
+	WindowId window = InvalidWindowId;
+	uint32_t frameSlot = InvalidFrameSlot;
+	uint64_t requestedBytes = 0;
+	uint64_t allocationBytes = 0;
+	uint32_t memoryTypeIndex = InvalidIndex;
+	uint32_t memoryHeapIndex = InvalidIndex;
+	ResourceState state = ResourceState::Invalid;
+	SubmissionSerial retireAfter = 0;
+};
+
+struct StorageMemorySnapshot {
+	StorageStats totals{};
+	std::array<ResourceStats, static_cast<size_t>(ResourceKind::Count)> resources{};
+	std::vector<WindowStorageSnapshot> windows{};
+	std::vector<StorageAllocatorSnapshot> allocators{};
+	std::vector<ResourceMemoryRecord> individualResources{};
+	uint64_t resourceMetadataBytes = 0;
+	uint64_t resourceMetadataLiveBytes = 0;
+	uint64_t mutationSequence = 0;
+	uint64_t snapshotLockWaitNs = 0;
+	uint64_t snapshotBuildNs = 0;
+	bool includesResourceKinds = false;
+	bool includesWindows = false;
+	bool includesIndividualResources = false;
+	bool resourceMetadataEstimated = true;
+};
+
+#endif
 
 enum class RetirementKind : uint8_t {
 	Blob = 0,

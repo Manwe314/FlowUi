@@ -1,4 +1,8 @@
 #include "managers/PopupManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <array>
@@ -334,6 +338,21 @@ Clay_FloatingElementConfig makeMeasurementFloating(
 } // namespace
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void PopupManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!storage_ || stateHandle_ == 0u) return;
+	try {
+		const auto& current = state();
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(current.committedRecords);
+		memory.addNodeContainer(current.workingRecords);
+		memory.add(current.committedStack);
+		memory.add(current.currentSubmissions);
+		memory.addNodeContainer(current.currentSubmissionByKey);
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kPopups.id, memory, window_);
+	} catch (...) {}
+}
+#endif
 
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;

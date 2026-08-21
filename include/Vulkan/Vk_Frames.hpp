@@ -6,6 +6,9 @@
 #include "FlowUi/PublicStructs.hpp"
 #include "internal/StorageSystem/StorageTypes.hpp"
 #include "Vulkan/Vk_Context.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
+#endif
 
 
 struct FrameVk {
@@ -15,6 +18,9 @@ struct FrameVk {
 		VkSemaphore imageAvailable = VK_NULL_HANDLE;
 		VkFence inFlight = VK_NULL_HANDLE;
 		FlowUi::detail::storage::SubmissionToken storageSubmission{};
+#if FLOW_UI_DEV_MODE
+		FlowUi::devSystems::GpuTimingFrameSlot gpuTiming{};
+#endif
 	};
 
 	std::vector<Frame> frames;
