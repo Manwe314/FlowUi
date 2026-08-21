@@ -69,6 +69,9 @@ class ImageManager;
 class ThemeManager;
 class ElementManager;
 class ActionManager;
+#if FLOW_UI_DEV_MODE
+namespace devSystems { class DevMonitoringAndReporting; }
+#endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 class IconManager;
 #endif
@@ -365,6 +368,11 @@ public:
 	ActionManager& actions();
 	/** @brief Access the immutable app-wide action manager. */
 	const ActionManager& actions() const;
+#if FLOW_UI_DEV_MODE
+	/** Development-only access to timing monitoring and retained reports. */
+	devSystems::DevMonitoringAndReporting& devMonitoring();
+	const devSystems::DevMonitoringAndReporting& devMonitoring() const;
+#endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.
 	 *

@@ -11,6 +11,7 @@
 #include "FlowUi/FontResources.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
 
+namespace FlowUi::devSystems { class DevMemoryRecorder; }
 namespace FlowUi::detail::manager_storage {
 
 struct FontFamilyFaceRecord {
@@ -76,6 +77,11 @@ public:
 	FontCatalogController& operator=(const FontCatalogController&) = delete;
 
 	void uploadLayerTransactional(uint32_t layer, const std::vector<uint8_t>& rgbaPixels);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void setDevMemoryRecorder(::FlowUi::devSystems::DevMemoryRecorder* recorder) noexcept {
+		devMemoryRecorder = recorder;
+	}
+#endif
 	void refreshBorrowedAtlas();
 
 	storage::IStorageSystem* storage = nullptr;
@@ -89,6 +95,9 @@ public:
 	std::unordered_map<FontId, size_t> fontIndexById{};
 	std::unordered_map<std::string, FontId> fontIdByName{};
 	std::vector<std::vector<uint8_t>> atlasLayerPixels{};
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	::FlowUi::devSystems::DevMemoryRecorder* devMemoryRecorder = nullptr;
+#endif
 	storage::ImageHandle atlasImage{};
 	storage::ImageViewHandle atlasView{};
 	storage::SamplerHandle atlasSampler{};

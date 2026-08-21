@@ -23,7 +23,7 @@
 #include "managers/structs/ActionManagerStructs.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #include "managers/structs/InputStructs.hpp"
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 #include "devMode/elementDevCapture.hpp"
 #include "devMode/devRuntime.hpp"
 #include "devMode/performanceDiagnostics.hpp"
@@ -31,6 +31,11 @@
 #endif
 
 namespace FlowUi {
+namespace devSystems { class MemorySampleSink; }
+
+#if FLOW_UI_DEV_MODE
+namespace devSystems { class DevTimingRecorder; }
+#endif
 
 struct AppWindow;
 
@@ -77,6 +82,9 @@ namespace detail::manager_storage { struct UiManagerState; struct FontFrameView;
  */
 class UiManager {
 public:
+#if FLOW_UI_DEV_MODE
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	/**
 	 * @brief Store a string in the current frame arena and return a Clay string.
 	 *
@@ -707,6 +715,14 @@ private:
 	void setThemeManager(const ThemeManager* themeManager) noexcept { themeManager_ = themeManager; }
 	void setElementManager(ElementManager* elementManager) noexcept { elementManager_ = elementManager; }
 	void setActionManager(ActionManager* actionManager) noexcept { actionManager_ = actionManager; }
+#if FLOW_UI_DEV_MODE
+	void setDevTimingRecorder(devSystems::DevTimingRecorder* recorder) noexcept {
+		devTimingRecorder_ = recorder;
+	}
+	[[nodiscard]] devSystems::DevTimingRecorder* devTimingRecorder() const noexcept {
+		return devTimingRecorder_;
+	}
+#endif
 	const ThemeManager& appThemes() const;
 
 	void beginFrame(
@@ -754,7 +770,11 @@ private:
 	void retainConstructedElement(
 		Clay_ElementId clayId,
 		FlowElementID flowId,
-		size_t priorFlowScopeDepth);
+		size_t priorFlowScopeDepth
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+		, FlowDefinitionID definitionId
+#endif
+		);
 #if FLOW_UI_DEV_MODE
 	[[nodiscard]] std::string_view joinFlowDebugPath(
 		std::string_view parent,
@@ -779,6 +799,9 @@ private:
 	const ThemeManager* themeManager_ = nullptr;
 	ElementManager* elementManager_ = nullptr;
 	ActionManager* actionManager_ = nullptr;
+#if FLOW_UI_DEV_MODE
+	devSystems::DevTimingRecorder* devTimingRecorder_ = nullptr;
+#endif
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;
 	detail::manager_storage::UiManagerState* state_ = nullptr;

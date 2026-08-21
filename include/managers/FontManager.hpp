@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 
+#include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/FontResources.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
@@ -12,6 +13,7 @@
 namespace FlowUi {
 class App;
 namespace detail::storage { class IStorageSystem; struct FrameToken; }
+namespace devSystems { class MemorySampleSink; class DevMemoryRecorder; }
 namespace detail::manager_storage {
 class FontCatalogController;
 struct FontFrameView;
@@ -56,6 +58,10 @@ struct FontFrameView;
  * @see @ref md_docs_2concepts_2managers "Managers"
  */
 struct FontManager {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept;
+#endif
 	/** @brief Convenience alias for FlowUi::FontId. */
 	using FontId = FlowUi::FontId;
 
@@ -330,6 +336,9 @@ private:
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::FontCatalogController* controller_ = nullptr;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevMemoryRecorder* devMemoryRecorder_ = nullptr;
+#endif
 };
 
 /** @} */

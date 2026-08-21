@@ -10,6 +10,7 @@
 
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
+#include "FlowUi/MemoryCapacityProfile.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
 #include "managers/structs/ShortcutManagerStructs.hpp"
 
@@ -437,6 +438,9 @@ struct AppConfig {
 	 * @see FlowUi::IconManagerConfig
 	 */
 	IconManagerConfig iconManager{};
+
+	/** Optional profiled startup capacities; zero fields preserve library defaults. */
+	MemoryCapacityProfile memoryCapacityProfile{};
 
 	/**
 	 * @brief Developer tooling and capture defaults.

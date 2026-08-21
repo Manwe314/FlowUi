@@ -1,5 +1,9 @@
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "managers/ViewPortManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -12,8 +16,9 @@
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include "internal/ManagerStorage/ViewportStorageController.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if FLOW_UI_DEV_MODE
-#include "devMode/performanceDiagnostics.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
 #endif
 
 namespace {
@@ -59,6 +64,25 @@ void transitionViewportImageLayout(
 } // namespace
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void ViewPortManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+	if (!controller_) return;
+	try {
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(controller_->records);
+		memory.addNodeContainer(controller_->facades);
+		memory.addNodeContainer(controller_->textureOwners);
+		memory.add(controller_->retired);
+		for (const auto& [_, record] : controller_->records) {
+			memory.add(record.state.key);
+			memory.add(record.active.images);
+			memory.add(record.active.commands);
+			memory.add(record.active.textures);
+		}
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kViewports.id, memory, windowId_);
+	} catch (...) {}
+}
+#endif
 
 namespace manager_storage = detail::manager_storage;
 namespace key_storage = detail::managerStorage;
@@ -348,25 +372,30 @@ static void ensureRenderTargetSize(
 void ViewPortManager::recordFramePasses(
 	VulkanContext& vk, VkCommandBuffer primary, uint32_t frameIndex
 #if FLOW_UI_DEV_MODE
-	, devMode::FrameDiagnostics* diagnostics
+	, devSystems::DevTimingRecorder* timingRecorder,
+	devSystems::GpuTimingCommandContext* gpuTiming
 #endif
 ) {
+#if FLOW_UI_DEV_MODE
+	FLOWUI_DEV_TIMING_ZONE_IF(
+		timingRecorder, devSystems::TimingCategory::RendererCpu,
+		devSystems::TimingZoneRole::Work, "flowui.viewport.record_all");
+#endif
 	if (!controller_ || !primary || !vk.device) return;
 	const uint32_t slot = frameIndex % controller_->framesInFlight;
-	for (auto& [_, record] : controller_->records) {
+	for (auto& [key, record] : controller_->records) {
 		if (!record.referencedThisFrame) continue;
 #if FLOW_UI_DEV_MODE
-		const auto recordStart = devMode::PerformanceDiagnostics::Clock::now();
-		devMode::ViewPortFrameDiagnostics* viewportDiagnostics = nullptr;
-		if (diagnostics) {
-			auto& entry = diagnostics->viewports[record.state.key];
-			entry.key = record.state.key; entry.width = record.desiredWidth; entry.height = record.desiredHeight;
-			entry.hadCallback = static_cast<bool>(record.state.renderCallback);
-			viewportDiagnostics = &entry;
-			diagnostics->referencedViewportCount++;
-			diagnostics->viewportPixelArea += static_cast<uint64_t>(record.desiredWidth) * record.desiredHeight;
-		}
+		devSystems::GpuCommandTimingZone gpuZone(
+			gpuTiming, primary, devSystems::gpu_timing_zones::kViewportPass,
+			devSystems::TimingEntityRef{
+				.kind = devSystems::TimingEntityKind::Viewport,
+				.primaryId = std::hash<std::string_view>{}(key),
+			});
 #endif
+		FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+			timingRecorder, devSystems::TimingCategory::RendererCpu,
+			devSystems::TimingZoneRole::Work, "flowui.viewport.record");
 		if (slot >= record.active.commands.size() || slot >= record.active.images.size()) {
 			throw std::runtime_error("ViewPortManager active target generation is incomplete.");
 		}
@@ -389,14 +418,10 @@ void ViewPortManager::recordFramePasses(
 				.colorFormat = record.state.colorFormat, .frameIndex = slot,
 				.key = record.state.key, .vulkan = &controller_->interop,
 			};
-#if FLOW_UI_DEV_MODE
-			const auto callbackStart = devMode::PerformanceDiagnostics::Clock::now();
-#endif
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				timingRecorder, devSystems::TimingCategory::User,
+				devSystems::TimingZoneRole::Work, "flowui.viewport.callback");
 			record.state.renderCallback(context);
-#if FLOW_UI_DEV_MODE
-			if (viewportDiagnostics) viewportDiagnostics->callbackCpuMs =
-				devMode::PerformanceDiagnostics::elapsedMs(callbackStart);
-#endif
 		}
 		vkCheck(vkEndCommandBuffer(frame.commandBuffer), "Failed to end viewport command buffer.");
 		const VkImageLayout previousLayout = image.layout;
@@ -418,10 +443,6 @@ void ViewPortManager::recordFramePasses(
 		vkCmdEndRendering(primary);
 		transitionViewportImageLayout(primary, image.nativeImage, image.layout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		image.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-#if FLOW_UI_DEV_MODE
-		if (viewportDiagnostics) viewportDiagnostics->recordCpuMs =
-			devMode::PerformanceDiagnostics::elapsedMs(recordStart);
-#endif
 	}
 }
 

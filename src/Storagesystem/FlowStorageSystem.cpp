@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <chrono>
 #include <cmath>
 #include <condition_variable>
 #include <cstring>
@@ -292,11 +293,17 @@ public:
 			if (page.alignment < alignment) continue;
 			const size_t offset = alignUp(page.offset, alignment);
 			if (offset <= page.capacity && bytes <= page.capacity - offset) {
+					const size_t padding = offset - page.offset;
 					page.offset = offset + bytes;
 					currentPage_ = attempt;
 #if FLOW_UI_DEV_MODE
 					liveBytes_ += bytes;
 					highWaterBytes_ = std::max(highWaterBytes_, liveBytes_);
+					paddingBytes_ += padding;
+					cumulativeAllocatedBytes_ += bytes;
+					++currentAllocationCount_;
+					++cumulativeAllocationCount_;
+					++mutationSequence_;
 #endif
 					return page.memory.get() + offset;
 			}
@@ -322,12 +329,27 @@ public:
 			}
 			currentPage_ = 0;
 #if FLOW_UI_DEV_MODE
+			cumulativeLogicalReleasedBytes_ += liveBytes_;
+			++logicalReleaseCount_;
+			++resetCount_;
 			liveBytes_ = 0;
+			paddingBytes_ = 0;
+			currentAllocationCount_ = 0;
+			++mutationSequence_;
 #endif
 	}
 
 	void trimOverflow() {
 		if (pages_.size() > 1) {
+#if FLOW_UI_DEV_MODE
+			uint64_t releasedBytes = 0;
+			for (size_t index = 1; index < pages_.size(); ++index) {
+				releasedBytes += pages_[index].capacity;
+			}
+			cumulativePhysicalReleasedBytes_ += releasedBytes;
+			physicalReleaseCount_ += pages_.size() - 1u;
+			++mutationSequence_;
+#endif
 			pages_.erase(pages_.begin() + 1, pages_.end());
 		}
 		currentPage_ = 0;
@@ -338,6 +360,18 @@ public:
 		for (const Page& page : pages_) result += page.capacity;
 		return result;
 	}
+	[[nodiscard]] uint64_t reusableBytes() const noexcept {
+		uint64_t result = 0u;
+		for (const Page& page : pages_) result += page.capacity - std::min(page.capacity, page.offset);
+		return result;
+	}
+	[[nodiscard]] uint64_t largestReusableBlock() const noexcept {
+		uint64_t result = 0u;
+		for (const Page& page : pages_) {
+			result = std::max<uint64_t>(result, page.capacity - std::min(page.capacity, page.offset));
+		}
+		return result;
+	}
 	[[nodiscard]] uint64_t highWater() const noexcept {
 #if FLOW_UI_DEV_MODE
 		return highWaterBytes_;
@@ -345,6 +379,84 @@ public:
 		return 0;
 #endif
 	}
+	[[nodiscard]] uint64_t liveBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return liveBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t paddingBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return paddingBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t allocationCount() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return currentAllocationCount_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativeAllocationCount() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativeAllocationCount_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t logicalReleaseCount() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return logicalReleaseCount_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t physicalReleaseCount() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return physicalReleaseCount_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t resetCount() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return resetCount_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativeAllocatedBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativeAllocatedBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativeLogicalReleasedBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativeLogicalReleasedBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativePhysicalReleasedBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativePhysicalReleasedBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t mutationSequence() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return mutationSequence_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint32_t pageCount() const noexcept { return static_cast<uint32_t>(pages_.size()); }
 	[[nodiscard]] uint64_t growthCount() const noexcept {
 #if FLOW_UI_DEV_MODE
 		return growthCount_;
@@ -373,6 +485,10 @@ private:
 		page.capacity = capacity;
 		page.alignment = alignment;
 		pages_.push_back(std::move(page));
+#if FLOW_UI_DEV_MODE
+		++backingAllocationCount_;
+		++mutationSequence_;
+#endif
 	}
 
 	std::vector<Page> pages_;
@@ -381,6 +497,17 @@ private:
 	uint64_t liveBytes_ = 0;
 	uint64_t highWaterBytes_ = 0;
 	uint64_t growthCount_ = 0;
+	uint64_t paddingBytes_ = 0;
+	uint64_t cumulativeAllocatedBytes_ = 0;
+	uint64_t cumulativeLogicalReleasedBytes_ = 0;
+	uint64_t cumulativePhysicalReleasedBytes_ = 0;
+	uint64_t currentAllocationCount_ = 0;
+	uint64_t cumulativeAllocationCount_ = 0;
+	uint64_t logicalReleaseCount_ = 0;
+	uint64_t physicalReleaseCount_ = 0;
+	uint64_t resetCount_ = 0;
+	uint64_t mutationSequence_ = 0;
+	uint32_t backingAllocationCount_ = 0;
 #endif
 	float growthFactor_ = 1.5f;
 	bool allowGrowth_ = true;
@@ -423,6 +550,15 @@ public:
 				liveBytes_ += bytes;
 #if FLOW_UI_DEV_MODE
 				peakLiveBytes_ = std::max(peakLiveBytes_, liveBytes_);
+				const size_t classIndex = static_cast<size_t>(tag.memoryClass);
+				classLiveBytes_[classIndex] += bytes;
+				classPeakLiveBytes_[classIndex] = std::max(
+					classPeakLiveBytes_[classIndex], classLiveBytes_[classIndex]);
+				++classAllocationOps_[classIndex];
+				classAllocatedBytes_[classIndex] += bytes;
+				++allocationOps_;
+				cumulativeAllocatedBytes_ += bytes;
+				++mutationSequence_;
 #endif
 				return MemoryBlock{slab.memory.get() + alignedOffset, bytes, id, tag};
 			}
@@ -458,6 +594,16 @@ public:
 		if (slab.activeAllocations > 0) --slab.activeAllocations;
 		merge(slab.free);
 		liveBytes_ -= std::min<uint64_t>(liveBytes_, allocation.size);
+#if FLOW_UI_DEV_MODE
+		const size_t classIndex = static_cast<size_t>(allocation.tag.memoryClass);
+		classLiveBytes_[classIndex] -= std::min<uint64_t>(
+			classLiveBytes_[classIndex], allocation.size);
+		++classLogicalReleaseOps_[classIndex];
+		classLogicalReleasedBytes_[classIndex] += allocation.size;
+		++logicalReleaseOps_;
+		cumulativeLogicalReleasedBytes_ += allocation.size;
+		++mutationSequence_;
+#endif
 		allocations_.erase(it);
 	}
 
@@ -475,6 +621,86 @@ public:
 #endif
 	}
 	[[nodiscard]] uint64_t allocationCount() const noexcept { return allocations_.size(); }
+	[[nodiscard]] uint64_t freeBytes() const noexcept {
+		uint64_t result = 0;
+		for (const Slab& slab : slabs_) {
+			for (const FreeBlock& block : slab.free) result += block.size;
+		}
+		return result;
+	}
+	[[nodiscard]] uint64_t largestFreeBlock() const noexcept {
+		uint64_t result = 0;
+		for (const Slab& slab : slabs_) {
+			for (const FreeBlock& block : slab.free) result = std::max<uint64_t>(result, block.size);
+		}
+		return result;
+	}
+	[[nodiscard]] uint32_t slabCount() const noexcept { return static_cast<uint32_t>(slabs_.size()); }
+	[[nodiscard]] MemoryClassStats classStats(MemoryClass memoryClass) const noexcept {
+		MemoryClassStats result{};
+#if FLOW_UI_DEV_MODE
+		const size_t index = static_cast<size_t>(memoryClass);
+		result.liveBytes = classLiveBytes_[index];
+		result.peakLiveBytes = classPeakLiveBytes_[index];
+		result.allocationCount = classAllocationOps_[index] - classLogicalReleaseOps_[index];
+		result.cumulativeAllocationCount = classAllocationOps_[index];
+		result.cumulativeAllocatedBytes = classAllocatedBytes_[index];
+		result.cumulativeLogicalReleasedBytes = classLogicalReleasedBytes_[index];
+		result.logicalReleaseCount = classLogicalReleaseOps_[index];
+#else
+		(void)memoryClass;
+#endif
+		return result;
+	}
+	[[nodiscard]] uint64_t allocationOps() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return allocationOps_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t logicalReleaseOps() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return logicalReleaseOps_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t physicalReleaseOps() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return physicalReleaseOps_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativeAllocatedBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativeAllocatedBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativeLogicalReleasedBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativeLogicalReleasedBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t cumulativePhysicalReleasedBytes() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return cumulativePhysicalReleasedBytes_;
+#else
+		return 0;
+#endif
+	}
+	[[nodiscard]] uint64_t mutationSequence() const noexcept {
+#if FLOW_UI_DEV_MODE
+		return mutationSequence_;
+#else
+		return 0;
+#endif
+	}
 	[[nodiscard]] uint64_t growthCount() const noexcept {
 #if FLOW_UI_DEV_MODE
 		return growthCount_;
@@ -509,10 +735,18 @@ private:
 		slab.free.reserve(2u);
 		slab.free.push_back({0, capacity});
 		slabs_.push_back(std::move(slab));
+#if FLOW_UI_DEV_MODE
+		++backingAllocationOps_;
+		++mutationSequence_;
+#endif
 	}
 
 public:
 	void clear() noexcept {
+#if FLOW_UI_DEV_MODE
+		for (const Slab& slab : slabs_) cumulativePhysicalReleasedBytes_ += slab.capacity;
+		physicalReleaseOps_ += slabs_.size();
+#endif
 		slabs_.clear();
 		allocations_.clear();
 		nextId_ = 1;
@@ -520,6 +754,20 @@ public:
 #if FLOW_UI_DEV_MODE
 		peakLiveBytes_ = 0;
 		growthCount_ = 0;
+		classLiveBytes_.fill(0);
+		classPeakLiveBytes_.fill(0);
+		classAllocationOps_.fill(0);
+		classLogicalReleaseOps_.fill(0);
+		classAllocatedBytes_.fill(0);
+		classLogicalReleasedBytes_.fill(0);
+		allocationOps_ = 0;
+		logicalReleaseOps_ = 0;
+		physicalReleaseOps_ = 0;
+		backingAllocationOps_ = 0;
+		cumulativeAllocatedBytes_ = 0;
+		cumulativeLogicalReleasedBytes_ = 0;
+		cumulativePhysicalReleasedBytes_ = 0;
+		mutationSequence_ = 0;
 #endif
 	}
 
@@ -547,6 +795,20 @@ private:
 #if FLOW_UI_DEV_MODE
 	uint64_t peakLiveBytes_ = 0;
 	uint64_t growthCount_ = 0;
+	std::array<uint64_t, static_cast<size_t>(MemoryClass::Count)> classLiveBytes_{};
+	std::array<uint64_t, static_cast<size_t>(MemoryClass::Count)> classPeakLiveBytes_{};
+	std::array<uint64_t, static_cast<size_t>(MemoryClass::Count)> classAllocationOps_{};
+	std::array<uint64_t, static_cast<size_t>(MemoryClass::Count)> classLogicalReleaseOps_{};
+	std::array<uint64_t, static_cast<size_t>(MemoryClass::Count)> classAllocatedBytes_{};
+	std::array<uint64_t, static_cast<size_t>(MemoryClass::Count)> classLogicalReleasedBytes_{};
+	uint64_t allocationOps_ = 0;
+	uint64_t logicalReleaseOps_ = 0;
+	uint64_t physicalReleaseOps_ = 0;
+	uint64_t backingAllocationOps_ = 0;
+	uint64_t cumulativeAllocatedBytes_ = 0;
+	uint64_t cumulativeLogicalReleasedBytes_ = 0;
+	uint64_t cumulativePhysicalReleasedBytes_ = 0;
+	uint64_t mutationSequence_ = 0;
 #endif
 	float growthFactor_ = 1.5f;
 	bool allowGrowth_ = true;
@@ -595,6 +857,7 @@ struct FlowStorageSystem::Impl {
 		VkMemoryPropertyFlags memoryProperties = 0;
 		uint64_t size = 0;
 		uint64_t allocationBytes = 0;
+		uint32_t memoryTypeIndex = InvalidIndex;
 		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
 		BufferDesc desc{};
@@ -606,7 +869,9 @@ struct FlowStorageSystem::Impl {
 		VkImage image = VK_NULL_HANDLE;
 		VmaAllocation allocation = nullptr;
 		VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		uint64_t requestedBytes = 0;
 		uint64_t byteSize = 0;
+		uint32_t memoryTypeIndex = InvalidIndex;
 		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
 		ImageDesc desc{};
@@ -736,6 +1001,7 @@ struct FlowStorageSystem::Impl {
 #endif
 		LinearArena transient;
 		LinearArena decode;
+		LinearArena upload;
 		std::vector<std::unique_ptr<LinearArena>> workers;
 		std::vector<UsedResource> used;
 		std::vector<UseEpochMarker> usedBufferEpochs;
@@ -839,6 +1105,134 @@ struct FlowStorageSystem::Impl {
 	std::unordered_set<SubmissionSerial> completedOutOfOrder;
 #if FLOW_UI_DEV_MODE
 	StorageStats telemetry{};
+	mutable uint64_t memorySnapshotSequence = 0u;
+	mutable uint64_t memorySnapshotSignature = 0u;
+	mutable uint64_t resourceMetadataPeakBytes = 0u;
+#endif
+
+#if FLOW_UI_DEV_MODE
+	template <typename T>
+	[[nodiscard]] static uint64_t vectorCapacityBytes(const std::vector<T>& values) noexcept {
+		return static_cast<uint64_t>(values.capacity()) * sizeof(T);
+	}
+
+	template <typename T>
+	[[nodiscard]] static uint64_t vectorLiveBytes(const std::vector<T>& values) noexcept {
+		return static_cast<uint64_t>(values.size()) * sizeof(T);
+	}
+
+	template <typename Container>
+	[[nodiscard]] static uint64_t unorderedEstimatedBytes(const Container& values) noexcept {
+		return static_cast<uint64_t>(values.bucket_count()) * sizeof(void*) +
+			static_cast<uint64_t>(values.size()) * sizeof(typename Container::value_type);
+	}
+
+	[[nodiscard]] uint64_t resourceMetadataCapacityBytes() const noexcept {
+		uint64_t bytes = 0u;
+#define FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(member) bytes += vectorCapacityBytes(member)
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(strings);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(managerRecords);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeManagerRecords);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(persistentRecords);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freePersistentRecords);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(blobs);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeBlobs);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(buffers);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeBuffers);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(images);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeImages);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(imageViews);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(imageViewHot);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeImageViews);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(samplers);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(samplerHot);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeSamplers);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(textureHot);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(textureCold);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeTextures);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(rendererLayouts);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeRendererLayouts);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(rendererPipelineBundles);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeRendererPipelineBundles);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(windowDescriptorBundles);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(freeWindowDescriptorBundles);
+		FLOWUI_STORAGE_ADD_VECTOR_CAPACITY(retirements);
+#undef FLOWUI_STORAGE_ADD_VECTOR_CAPACITY
+		bytes += static_cast<uint64_t>(uploads.size()) * sizeof(UploadRecord);
+		bytes += unorderedEstimatedBytes(stringIds);
+		bytes += unorderedEstimatedBytes(diagnosticMarks);
+		bytes += unorderedEstimatedBytes(managerRecordByKey);
+		bytes += unorderedEstimatedBytes(samplerByKey);
+		bytes += unorderedEstimatedBytes(textureByKey);
+		bytes += unorderedEstimatedBytes(rendererLayoutByKey);
+		bytes += unorderedEstimatedBytes(rendererPipelineByKey);
+		bytes += unorderedEstimatedBytes(windows);
+		bytes += unorderedEstimatedBytes(registeredWindowIds);
+		bytes += unorderedEstimatedBytes(uploadStates);
+		bytes += unorderedEstimatedBytes(completedOutOfOrder);
+		for (const auto& [_, window] : windows) {
+			bytes += sizeof(WindowState);
+			bytes += vectorCapacityBytes(window->frames);
+			bytes += vectorCapacityBytes(window->bindingsByTextureIndex);
+			bytes += vectorCapacityBytes(window->freeDescriptorIndices);
+			for (const auto& frame : window->frames) {
+				bytes += sizeof(FrameState);
+				bytes += vectorCapacityBytes(frame->workers);
+				bytes += vectorCapacityBytes(frame->used);
+				bytes += vectorCapacityBytes(frame->usedBufferEpochs);
+				bytes += vectorCapacityBytes(frame->usedImageEpochs);
+				bytes += vectorCapacityBytes(frame->usedImageViewEpochs);
+				bytes += vectorCapacityBytes(frame->usedSamplerEpochs);
+				bytes += vectorCapacityBytes(frame->usedTextureEpochs);
+				bytes += vectorCapacityBytes(frame->usedRendererLayoutEpochs);
+				bytes += vectorCapacityBytes(frame->usedRendererPipelineEpochs);
+				bytes += vectorCapacityBytes(frame->usedDescriptorBundleEpochs);
+				bytes += vectorCapacityBytes(frame->appliedBindingRevisions);
+				bytes += vectorCapacityBytes(frame->preparedBindingBatches);
+				bytes += vectorCapacityBytes(frame->pendingBufferWrites);
+			}
+		}
+		for (const WindowDescriptorBundleRecord& bundle : windowDescriptorBundles) {
+			bytes += vectorCapacityBytes(bundle.globalsSets);
+			bytes += vectorCapacityBytes(bundle.textureSets);
+		}
+		return bytes;
+	}
+
+	[[nodiscard]] uint64_t resourceMetadataLiveBytes() const noexcept {
+		uint64_t bytes = 0u;
+#define FLOWUI_STORAGE_ADD_VECTOR_LIVE(member) bytes += vectorLiveBytes(member)
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(strings);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(managerRecords);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(persistentRecords);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(blobs);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(buffers);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(images);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(imageViews);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(imageViewHot);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(samplers);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(samplerHot);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(textureHot);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(textureCold);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(rendererLayouts);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(rendererPipelineBundles);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(windowDescriptorBundles);
+		FLOWUI_STORAGE_ADD_VECTOR_LIVE(retirements);
+#undef FLOWUI_STORAGE_ADD_VECTOR_LIVE
+		bytes += static_cast<uint64_t>(uploads.size()) * sizeof(UploadRecord);
+		bytes += unorderedEstimatedBytes(stringIds);
+		bytes += unorderedEstimatedBytes(diagnosticMarks);
+		bytes += unorderedEstimatedBytes(managerRecordByKey);
+		bytes += unorderedEstimatedBytes(samplerByKey);
+		bytes += unorderedEstimatedBytes(textureByKey);
+		bytes += unorderedEstimatedBytes(rendererLayoutByKey);
+		bytes += unorderedEstimatedBytes(rendererPipelineByKey);
+		bytes += unorderedEstimatedBytes(windows);
+		bytes += unorderedEstimatedBytes(registeredWindowIds);
+		bytes += unorderedEstimatedBytes(uploadStates);
+		bytes += unorderedEstimatedBytes(completedOutOfOrder);
+		return bytes;
+	}
 #endif
 
 	template <typename Record>
@@ -1225,6 +1619,9 @@ struct FlowStorageSystem::Impl {
 		});
 		gpuLiveBytes -= std::min(gpuLiveBytes, bytes);
 		gpuRetiredBytes += bytes;
+#if FLOW_UI_DEV_MODE
+		if (bytes != 0u) ++telemetry.gpuRetireCount;
+#endif
 		updateGpuPeak();
 	}
 
@@ -1791,6 +2188,12 @@ struct FlowStorageSystem::Impl {
 		}
 		}
 		gpuRetiredBytes -= std::min(gpuRetiredBytes, retired.byteSize);
+#if FLOW_UI_DEV_MODE
+		if (retired.byteSize != 0u) {
+			++telemetry.gpuDestroyCount;
+			telemetry.cumulativeGpuDestroyedBytes += retired.byteSize;
+		}
+#endif
 	}
 
 	void immediateDestroyAll() noexcept {
@@ -1998,6 +2401,9 @@ void FlowStorageSystem::shutdown() noexcept {
 	impl_->completedWatermark = 0;
 #if FLOW_UI_DEV_MODE
 	impl_->telemetry = {};
+	impl_->memorySnapshotSequence = 0u;
+	impl_->memorySnapshotSignature = 0u;
+	impl_->resourceMetadataPeakBytes = 0u;
 #endif
 	impl_->initialized = false;
 	impl_->terminated = true;
@@ -2049,6 +2455,9 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 			impl_->config.allowRuntimeGrowth);
 		frame->decode.initialize(checkedSize(impl_->config.initialDecodeScratchBytes,
 			"decode arena size exceeds the host address space"), impl_->config.growthFactor,
+			impl_->config.allowRuntimeGrowth);
+		frame->upload.initialize(checkedSize(impl_->config.initialUploadStagingBytes,
+			"upload-staging arena size exceeds the host address space"), impl_->config.growthFactor,
 			impl_->config.allowRuntimeGrowth);
 		frame->workers.reserve(window->desc.workerCount);
 		frame->pendingBufferWrites.reserve(4u);
@@ -2132,6 +2541,7 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 #endif
 	frame.transient.reset();
 	frame.decode.reset();
+	frame.upload.reset();
 	for (const auto& worker : frame.workers) worker->reset();
 	frame.used.clear();
 	frame.pendingBufferWrites.clear();
@@ -2221,7 +2631,7 @@ MemoryBlock FlowStorageSystem::allocatePersistent(
 		storageError("persistent allocation uses an invalid memory class");
 	}
 	if (tag.memoryClass == MemoryClass::FrameTransient || tag.memoryClass == MemoryClass::WorkerTransient ||
-		tag.memoryClass == MemoryClass::DecodeTransient) {
+		tag.memoryClass == MemoryClass::DecodeTransient || tag.memoryClass == MemoryClass::UploadStaging) {
 		storageError("transient memory classes must use an arena view");
 	}
 	if (tag.memoryClass == MemoryClass::WindowPersistent) {
@@ -2245,7 +2655,8 @@ ArenaView FlowStorageSystem::frameArena(const FrameToken& frame, MemoryClass mem
 	Impl::FrameState& state = impl_->requireFrame(frame, false);
 	LinearArena* arena = nullptr;
 	if (memoryClass == MemoryClass::FrameTransient) arena = &state.transient;
-	else if (memoryClass == MemoryClass::DecodeTransient || memoryClass == MemoryClass::UploadStaging) arena = &state.decode;
+	else if (memoryClass == MemoryClass::DecodeTransient) arena = &state.decode;
+	else if (memoryClass == MemoryClass::UploadStaging) arena = &state.upload;
 	else storageError("requested memory class is not available from a frame arena");
 	ArenaView view{.context = arena, .allocateFunction = &LinearArena::arenaAllocate, .epoch = frame.epoch};
 #if FLOW_UI_DEV_MODE
@@ -2311,7 +2722,8 @@ BufferWriteView FlowStorageSystem::beginBufferWrite(
 		writeData = static_cast<std::byte*>(record.mapped) + destinationOffset;
 	} else if (mode == BufferWriteMode::HostScratchThenCopy) {
 		if (bytes > std::numeric_limits<size_t>::max()) storageError("host scratch buffer write is too large");
-		writeData = static_cast<std::byte*>(state.transient.allocate(static_cast<size_t>(bytes), alignof(std::max_align_t)));
+		writeData = static_cast<std::byte*>(state.upload.allocate(
+			static_cast<size_t>(bytes), alignof(std::max_align_t)));
 	} else {
 		storageError("unsupported buffer write mode");
 	}
@@ -2870,6 +3282,7 @@ BufferHandle FlowStorageSystem::createBuffer(const BufferDesc& desc) {
 	record.mapped = resultInfo.pMappedData;
 	vmaGetAllocationMemoryProperties(impl_->vk.allocator, record.allocation, &record.memoryProperties);
 	record.allocationBytes = std::max<uint64_t>(record.size, resultInfo.size);
+	record.memoryTypeIndex = resultInfo.memoryType;
 	if (record.allocationBytes > impl_->gpuSoftBudgetBytes ||
 		impl_->gpuLiveBytes + impl_->gpuRetiredBytes > impl_->gpuSoftBudgetBytes - record.allocationBytes) {
 		vmaDestroyBuffer(impl_->vk.allocator, record.buffer, record.allocation);
@@ -2879,6 +3292,10 @@ BufferHandle FlowStorageSystem::createBuffer(const BufferDesc& desc) {
 	}
 	record.state = ResourceState::Ready;
 	impl_->gpuLiveBytes += record.allocationBytes;
+#if FLOW_UI_DEV_MODE
+	++impl_->telemetry.gpuCreateCount;
+	impl_->telemetry.cumulativeGpuCreatedBytes += record.allocationBytes;
+#endif
 	impl_->updateGpuPeak();
 	return BufferHandle{index, record.generation};
 }
@@ -2900,6 +3317,7 @@ ImageHandle FlowStorageSystem::createImage(const ImageDesc& desc) {
 	record.generation = record.generation == 0 ? 1u : record.generation;
 	record.desc = desc;
 	record.referenceCount = 1;
+	record.requestedBytes = estimatedBytes;
 	record.byteSize = estimatedBytes;
 	record.state = ResourceState::Queued;
 
@@ -2925,6 +3343,7 @@ ImageHandle FlowStorageSystem::createImage(const ImageDesc& desc) {
 		storageError("failed to allocate Vulkan image");
 	}
 	if (resultInfo.size > 0) record.byteSize = resultInfo.size;
+	record.memoryTypeIndex = resultInfo.memoryType;
 	record.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 	record.state = hasFlag(desc.usage, ImageUsage::TransferDestination) ? ResourceState::Queued : ResourceState::Ready;
 	if (record.byteSize > impl_->gpuSoftBudgetBytes ||
@@ -2935,6 +3354,10 @@ ImageHandle FlowStorageSystem::createImage(const ImageDesc& desc) {
 		storageError("actual Vulkan image allocation exceeds the GPU soft budget");
 	}
 	impl_->gpuLiveBytes += record.byteSize;
+#if FLOW_UI_DEV_MODE
+	++impl_->telemetry.gpuCreateCount;
+	impl_->telemetry.cumulativeGpuCreatedBytes += record.byteSize;
+#endif
 	impl_->updateGpuPeak();
 	return ImageHandle{index, record.generation};
 }
@@ -3622,8 +4045,10 @@ WindowStorageSnapshot FlowStorageSystem::windowSnapshot(WindowId id) const {
 	result.liveBindings = window.liveBindings;
 	result.retiredBindings = window.retiredBindings;
 	for (const auto& frame : window.frames) {
-		result.transientCapacityBytes += frame->transient.capacity() + frame->decode.capacity();
-		result.transientHighWaterBytes += frame->transient.highWater() + frame->decode.highWater();
+		result.transientCapacityBytes +=
+			frame->transient.capacity() + frame->decode.capacity() + frame->upload.capacity();
+		result.transientHighWaterBytes +=
+			frame->transient.highWater() + frame->decode.highWater() + frame->upload.highWater();
 		for (const auto& worker : frame->workers) {
 			result.transientCapacityBytes += worker->capacity();
 			result.transientHighWaterBytes += worker->highWater();
@@ -3977,7 +4402,7 @@ void FlowStorageSystem::retire(const RetirementRequest& request) {
 void FlowStorageSystem::collect() {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireSharedMutationPhase();
-	for (;;) {
+	while (true) {
 		size_t readyCount = 0;
 		size_t blobCount = 0;
 		size_t bufferCount = 0;
@@ -4046,12 +4471,13 @@ void FlowStorageSystem::trim(uint64_t targetBytes) {
 	for (auto& [_, window] : impl_->windows) {
 		for (auto& frame : window->frames) {
 			if (frame->active || frame->inFlightSerial != 0) continue;
-			uint64_t before = frame->transient.capacity() + frame->decode.capacity();
+			uint64_t before = frame->transient.capacity() + frame->decode.capacity() + frame->upload.capacity();
 			for (const auto& worker : frame->workers) before += worker->capacity();
 			frame->transient.trimOverflow();
 			frame->decode.trimOverflow();
+			frame->upload.trimOverflow();
 			for (auto& worker : frame->workers) worker->trimOverflow();
-			uint64_t after = frame->transient.capacity() + frame->decode.capacity();
+			uint64_t after = frame->transient.capacity() + frame->decode.capacity() + frame->upload.capacity();
 			for (const auto& worker : frame->workers) after += worker->capacity();
 			released += before - std::min(before, after);
 			if (released >= targetBytes) return;
@@ -4067,24 +4493,83 @@ StorageStats FlowStorageSystem::stats() const {
 	StorageStats result = impl_->telemetry;
 	result.gpuLiveBytes = impl_->gpuLiveBytes;
 	result.gpuRetiredBytes = impl_->gpuRetiredBytes;
+	result.gpuAllocationCount = 0u;
+	for (size_t index = 1u; index < impl_->buffers.size(); ++index) {
+		if (impl_->buffers[index].state != ResourceState::Invalid) ++result.gpuAllocationCount;
+	}
+	for (size_t index = 1u; index < impl_->images.size(); ++index) {
+		if (impl_->images[index].state != ResourceState::Invalid) ++result.gpuAllocationCount;
+	}
 	result.cpuSoftBudgetBytes = impl_->cpuSoftBudgetBytes;
 	result.gpuSoftBudgetBytes = impl_->gpuSoftBudgetBytes;
-	auto persistent = result.cpu[static_cast<size_t>(MemoryClass::Persistent)];
+	for (size_t index = 0; index < static_cast<size_t>(MemoryClass::Count); ++index) {
+		const MemoryClass memoryClass = static_cast<MemoryClass>(index);
+		MemoryClassStats combined = impl_->persistentPool.classStats(memoryClass);
+		const MemoryClassStats stringValues = impl_->stringPool.classStats(memoryClass);
+		combined.liveBytes += stringValues.liveBytes;
+		combined.peakLiveBytes += stringValues.peakLiveBytes;
+		combined.allocationCount += stringValues.allocationCount;
+		combined.cumulativeAllocationCount += stringValues.cumulativeAllocationCount;
+		combined.cumulativeAllocatedBytes += stringValues.cumulativeAllocatedBytes;
+		combined.cumulativeLogicalReleasedBytes += stringValues.cumulativeLogicalReleasedBytes;
+		combined.logicalReleaseCount += stringValues.logicalReleaseCount;
+		result.cpu[index] = combined;
+	}
+	auto& persistent = result.cpu[static_cast<size_t>(MemoryClass::Persistent)];
 	persistent.reservedBytes = impl_->persistentPool.reservedBytes();
 	persistent.committedBytes = persistent.reservedBytes;
-	persistent.liveBytes = impl_->persistentPool.liveBytes();
-	persistent.peakLiveBytes = impl_->persistentPool.peakLiveBytes();
-	persistent.allocationCount = impl_->persistentPool.allocationCount();
+	persistent.reusableBytes = impl_->persistentPool.freeBytes();
+	persistent.largestReusableBlockBytes = impl_->persistentPool.largestFreeBlock();
 	persistent.growthCount = impl_->persistentPool.growthCount();
-	result.cpu[static_cast<size_t>(MemoryClass::Persistent)] = persistent;
-	auto strings = result.cpu[static_cast<size_t>(MemoryClass::StringPool)];
+	persistent.backingAllocationCount = impl_->persistentPool.slabCount();
+	auto& strings = result.cpu[static_cast<size_t>(MemoryClass::StringPool)];
 	strings.reservedBytes = impl_->stringPool.reservedBytes();
 	strings.committedBytes = strings.reservedBytes;
-	strings.liveBytes = impl_->stringPool.liveBytes();
-	strings.peakLiveBytes = impl_->stringPool.peakLiveBytes();
-	strings.allocationCount = impl_->stringPool.allocationCount();
+	strings.reusableBytes = impl_->stringPool.freeBytes();
+	strings.largestReusableBlockBytes = impl_->stringPool.largestFreeBlock();
 	strings.growthCount = impl_->stringPool.growthCount();
-	result.cpu[static_cast<size_t>(MemoryClass::StringPool)] = strings;
+	strings.backingAllocationCount = impl_->stringPool.slabCount();
+
+	auto addArena = [&](MemoryClass memoryClass, const LinearArena& arena) {
+		MemoryClassStats& values = result.cpu[static_cast<size_t>(memoryClass)];
+		values.reservedBytes += arena.capacity();
+		values.committedBytes += arena.capacity();
+		values.liveBytes += arena.liveBytes();
+		values.peakLiveBytes += arena.highWater();
+		values.reusableBytes += arena.reusableBytes();
+		values.largestReusableBlockBytes = std::max(
+			values.largestReusableBlockBytes, arena.largestReusableBlock());
+		values.paddingBytes += arena.paddingBytes();
+		values.allocationCount += arena.allocationCount();
+		values.cumulativeAllocationCount += arena.cumulativeAllocationCount();
+		values.growthCount += arena.growthCount();
+		values.cumulativeAllocatedBytes += arena.cumulativeAllocatedBytes();
+		values.cumulativeLogicalReleasedBytes += arena.cumulativeLogicalReleasedBytes();
+		values.cumulativePhysicalReleasedBytes += arena.cumulativePhysicalReleasedBytes();
+		values.logicalReleaseCount += arena.logicalReleaseCount();
+		values.physicalReleaseCount += arena.physicalReleaseCount();
+		values.resetCount += arena.resetCount();
+		values.backingAllocationCount += arena.pageCount();
+	};
+	for (const auto& [_, window] : impl_->windows) {
+		for (const auto& frame : window->frames) {
+			addArena(MemoryClass::FrameTransient, frame->transient);
+			addArena(MemoryClass::DecodeTransient, frame->decode);
+			addArena(MemoryClass::UploadStaging, frame->upload);
+			for (const auto& worker : frame->workers) {
+				addArena(MemoryClass::WorkerTransient, *worker);
+			}
+		}
+	}
+	MemoryClassStats& metadata = result.cpu[static_cast<size_t>(MemoryClass::ResourceMetadata)];
+	const uint64_t metadataCapacity = impl_->resourceMetadataCapacityBytes();
+	const uint64_t metadataLive = impl_->resourceMetadataLiveBytes();
+	impl_->resourceMetadataPeakBytes = std::max(impl_->resourceMetadataPeakBytes, metadataLive);
+	metadata.reservedBytes += metadataCapacity;
+	metadata.committedBytes += metadataCapacity;
+	metadata.liveBytes += metadataLive;
+	metadata.peakLiveBytes = std::max(metadata.peakLiveBytes, impl_->resourceMetadataPeakBytes);
+	metadata.reusableBytes += metadataCapacity - std::min(metadataCapacity, metadataLive);
 	return result;
 #endif
 }
@@ -4099,14 +4584,15 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 	auto add = [&](ResourceState state, uint64_t bytes) {
 		if (state == ResourceState::Invalid) { ++result.free; return; }
 		++result.live;
-		result.liveBytes += bytes;
+		if (state == ResourceState::Retiring) result.retiredBytes += bytes;
+		else result.liveBytes += bytes;
 		switch (state) {
 		case ResourceState::Queued:
 		case ResourceState::Decoding:
 		case ResourceState::Uploading: ++result.queued; break;
 		case ResourceState::Ready: ++result.ready; break;
 		case ResourceState::Failed: ++result.failed; break;
-		case ResourceState::Retiring: ++result.retiring; result.retiredBytes += bytes; break;
+		case ResourceState::Retiring: ++result.retiring; break;
 		default: break;
 		}
 	};
@@ -4174,6 +4660,8 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 	case ResourceKind::ViewportTarget:
 	case ResourceKind::ManagerRoot:
 	case ResourceKind::UiTheme:
+	case ResourceKind::ActionManager:
+	case ResourceKind::AppActionBinding:
 		result.slots = static_cast<uint32_t>(impl_->managerRecords.size() - 1u);
 		for (size_t i = 1; i < impl_->managerRecords.size(); ++i) {
 			const Impl::ManagerRecord& record = impl_->managerRecords[i];
@@ -4185,6 +4673,244 @@ ResourceStats FlowStorageSystem::resourceStats(ResourceKind kind) const {
 	return result;
 #endif
 }
+
+#if FLOW_UI_DEV_MODE
+void FlowStorageSystem::appendMemorySnapshot(
+	const StorageMemorySnapshotRequest& request,
+	StorageMemorySnapshot& destination) const {
+	const auto started = std::chrono::steady_clock::now();
+	std::scoped_lock lock(impl_->mutex);
+	const auto lockedAt = std::chrono::steady_clock::now();
+
+	destination.windows.clear();
+	destination.allocators.clear();
+	destination.individualResources.clear();
+	destination.resources.fill({});
+	destination.includesResourceKinds = request.includeResourceKinds;
+	destination.includesWindows = request.includeWindows;
+	destination.includesIndividualResources =
+		request.detail == StorageMemoryDetail::IndividualResources;
+	destination.resourceMetadataEstimated = true;
+	destination.totals = stats();
+	destination.resourceMetadataBytes = impl_->resourceMetadataCapacityBytes();
+	destination.resourceMetadataLiveBytes = impl_->resourceMetadataLiveBytes();
+
+	if (request.includeResourceKinds) {
+		for (size_t index = 0; index < static_cast<size_t>(ResourceKind::Count); ++index) {
+			destination.resources[index] = resourceStats(static_cast<ResourceKind>(index));
+		}
+	}
+
+	auto appendPool = [&](MemoryClass memoryClass, const PersistentPool& pool) {
+		destination.allocators.push_back(StorageAllocatorSnapshot{
+			.kind = StorageAllocatorKind::PersistentPool,
+			.memoryClass = memoryClass,
+			.reservedBytes = pool.reservedBytes(),
+			.liveBytes = pool.liveBytes(),
+			.peakLiveBytes = pool.peakLiveBytes(),
+			.reusableBytes = pool.freeBytes(),
+			.largestReusableBlockBytes = pool.largestFreeBlock(),
+			.cumulativeAllocatedBytes = pool.cumulativeAllocatedBytes(),
+			.cumulativeLogicalReleasedBytes = pool.cumulativeLogicalReleasedBytes(),
+			.cumulativePhysicalReleasedBytes = pool.cumulativePhysicalReleasedBytes(),
+			.allocationCount = pool.allocationCount(),
+			.cumulativeAllocationCount = pool.allocationOps(),
+			.logicalReleaseCount = pool.logicalReleaseOps(),
+			.physicalReleaseCount = pool.physicalReleaseOps(),
+			.growthCount = pool.growthCount(),
+			.mutationSequence = pool.mutationSequence(),
+			.backingAllocationCount = pool.slabCount(),
+		});
+	};
+	appendPool(MemoryClass::Persistent, impl_->persistentPool);
+	appendPool(MemoryClass::StringPool, impl_->stringPool);
+
+	destination.allocators.push_back(StorageAllocatorSnapshot{
+		.kind = StorageAllocatorKind::ResourceMetadata,
+		.memoryClass = MemoryClass::ResourceMetadata,
+		.reservedBytes = destination.resourceMetadataBytes,
+		.liveBytes = destination.resourceMetadataLiveBytes,
+		.reusableBytes = destination.resourceMetadataBytes - std::min(
+			destination.resourceMetadataBytes, destination.resourceMetadataLiveBytes),
+	});
+
+	auto appendArena = [&](
+		MemoryClass memoryClass,
+		WindowId window,
+		uint32_t frameSlot,
+		uint32_t workerIndex,
+		const LinearArena& arena) {
+		destination.allocators.push_back(StorageAllocatorSnapshot{
+			.kind = StorageAllocatorKind::LinearArena,
+			.memoryClass = memoryClass,
+			.window = window,
+			.frameSlot = frameSlot,
+			.workerIndex = workerIndex,
+			.reservedBytes = arena.capacity(),
+			.liveBytes = arena.liveBytes(),
+			.peakLiveBytes = arena.highWater(),
+			.reusableBytes = arena.reusableBytes(),
+			.largestReusableBlockBytes = arena.largestReusableBlock(),
+			.paddingBytes = arena.paddingBytes(),
+			.cumulativeAllocatedBytes = arena.cumulativeAllocatedBytes(),
+			.cumulativeLogicalReleasedBytes = arena.cumulativeLogicalReleasedBytes(),
+			.cumulativePhysicalReleasedBytes = arena.cumulativePhysicalReleasedBytes(),
+			.allocationCount = arena.allocationCount(),
+			.cumulativeAllocationCount = arena.cumulativeAllocationCount(),
+			.logicalReleaseCount = arena.logicalReleaseCount(),
+			.physicalReleaseCount = arena.physicalReleaseCount(),
+			.growthCount = arena.growthCount(),
+			.resetCount = arena.resetCount(),
+			.mutationSequence = arena.mutationSequence(),
+			.backingAllocationCount = arena.pageCount(),
+		});
+	};
+
+	if (request.includeWindows) destination.windows.reserve(impl_->windows.size());
+	for (const auto& [windowId, window] : impl_->windows) {
+		if (request.includeWindows) destination.windows.push_back(windowSnapshot(windowId));
+		for (uint32_t slot = 0u; slot < window->frames.size(); ++slot) {
+			const Impl::FrameState& frame = *window->frames[slot];
+			appendArena(MemoryClass::FrameTransient, windowId, slot, InvalidIndex, frame.transient);
+			appendArena(MemoryClass::DecodeTransient, windowId, slot, InvalidIndex, frame.decode);
+			appendArena(MemoryClass::UploadStaging, windowId, slot, InvalidIndex, frame.upload);
+			for (uint32_t worker = 0u; worker < frame.workers.size(); ++worker) {
+				appendArena(MemoryClass::WorkerTransient, windowId, slot, worker, *frame.workers[worker]);
+			}
+		}
+	}
+
+	if (request.detail == StorageMemoryDetail::IndividualResources) {
+		VkPhysicalDeviceMemoryProperties memoryProperties{};
+		vkGetPhysicalDeviceMemoryProperties(impl_->vk.phys, &memoryProperties);
+		const auto heapForType = [&](uint32_t memoryTypeIndex) {
+			return memoryTypeIndex < memoryProperties.memoryTypeCount
+				? memoryProperties.memoryTypes[memoryTypeIndex].heapIndex
+				: InvalidIndex;
+		};
+		const auto include = [&](uint64_t bytes) {
+			return bytes >= request.individualResourceThresholdBytes;
+		};
+		for (uint32_t index = 1u; index < impl_->blobs.size(); ++index) {
+			const Impl::BlobRecord& record = impl_->blobs[index];
+			if (record.state == ResourceState::Invalid || !include(record.memory.size)) continue;
+			destination.individualResources.push_back(ResourceMemoryRecord{
+				.lifetimeId = BlobHandle{index, record.generation}.packed(),
+				.kind = ResourceKind::CpuBlob,
+				.debugName = record.debugName,
+				.requestedBytes = record.memory.size,
+				.allocationBytes = record.memory.size,
+				.state = record.state,
+				.retireAfter = record.lastUse,
+			});
+		}
+		for (uint32_t index = 1u; index < impl_->buffers.size(); ++index) {
+			const Impl::BufferRecord& record = impl_->buffers[index];
+			if (record.state == ResourceState::Invalid || !include(record.allocationBytes)) continue;
+			destination.individualResources.push_back(ResourceMemoryRecord{
+				.lifetimeId = BufferHandle{index, record.generation}.packed(),
+				.kind = ResourceKind::GpuBuffer,
+				.debugName = record.desc.debugName,
+				.window = record.desc.window,
+				.frameSlot = record.desc.frameSlot,
+				.requestedBytes = record.size,
+				.allocationBytes = record.allocationBytes,
+				.memoryTypeIndex = record.memoryTypeIndex,
+				.memoryHeapIndex = heapForType(record.memoryTypeIndex),
+				.state = record.state,
+				.retireAfter = record.lastUse,
+			});
+		}
+		for (uint32_t index = 1u; index < impl_->images.size(); ++index) {
+			const Impl::ImageRecord& record = impl_->images[index];
+			if (record.state == ResourceState::Invalid || !include(record.byteSize)) continue;
+			destination.individualResources.push_back(ResourceMemoryRecord{
+				.lifetimeId = ImageHandle{index, record.generation}.packed(),
+				.kind = ResourceKind::GpuImage,
+				.debugName = record.desc.debugName,
+				.window = record.desc.window,
+				.frameSlot = record.desc.frameSlot,
+				.requestedBytes = record.requestedBytes,
+				.allocationBytes = record.byteSize,
+				.memoryTypeIndex = record.memoryTypeIndex,
+				.memoryHeapIndex = heapForType(record.memoryTypeIndex),
+				.state = record.state,
+				.retireAfter = record.lastUse,
+			});
+		}
+		for (uint32_t index = 1u; index < impl_->managerRecords.size(); ++index) {
+			const Impl::ManagerRecord& record = impl_->managerRecords[index];
+			if (record.state == ResourceState::Invalid || !include(record.memory.size)) continue;
+			destination.individualResources.push_back(ResourceMemoryRecord{
+				.lifetimeId = ManagerRecordHandle{index, record.generation}.packed(),
+				.kind = record.kind,
+				.debugName = record.memory.tag.debugName,
+				.window = record.key.window,
+				.requestedBytes = record.memory.size,
+				.allocationBytes = record.memory.size,
+				.state = record.state,
+			});
+		}
+		for (uint32_t index = 1u; index < impl_->persistentRecords.size(); ++index) {
+			const Impl::PersistentRecord& record = impl_->persistentRecords[index];
+			if (record.state == ResourceState::Invalid || !include(record.memory.size)) continue;
+			destination.individualResources.push_back(ResourceMemoryRecord{
+				.lifetimeId = PersistentRecordHandle{index, record.generation}.packed(),
+				.kind = record.kind,
+				.debugName = record.memory.tag.debugName,
+				.window = record.window,
+				.requestedBytes = record.memory.size,
+				.allocationBytes = record.memory.size,
+				.state = record.state,
+			});
+		}
+	}
+
+	uint64_t signature = 14695981039346656037ull;
+	const auto mix = [&](uint64_t value) {
+		signature ^= value;
+		signature *= 1099511628211ull;
+	};
+	for (const MemoryClassStats& values : destination.totals.cpu) {
+		mix(values.reservedBytes);
+		mix(values.liveBytes);
+		mix(values.peakLiveBytes);
+		mix(values.allocationCount);
+		mix(values.cumulativeAllocationCount);
+		mix(values.growthCount);
+		mix(values.logicalReleaseCount);
+		mix(values.physicalReleaseCount);
+	}
+	mix(destination.totals.gpuLiveBytes);
+	mix(destination.totals.gpuRetiredBytes);
+	mix(destination.totals.gpuCreateCount);
+	mix(destination.totals.gpuRetireCount);
+	mix(destination.totals.gpuDestroyCount);
+	mix(destination.resourceMetadataBytes);
+	if (destination.includesResourceKinds) {
+		for (const ResourceStats& values : destination.resources) {
+			mix(values.liveBytes);
+			mix(values.retiredBytes);
+			mix(values.live);
+			mix(values.free);
+			mix(values.queued);
+			mix(values.ready);
+			mix(values.failed);
+			mix(values.retiring);
+		}
+	}
+	if (signature != impl_->memorySnapshotSignature) {
+		impl_->memorySnapshotSignature = signature;
+		++impl_->memorySnapshotSequence;
+	}
+	destination.mutationSequence = impl_->memorySnapshotSequence;
+	destination.snapshotLockWaitNs = static_cast<uint64_t>(
+		std::chrono::duration_cast<std::chrono::nanoseconds>(lockedAt - started).count());
+	destination.snapshotBuildNs = static_cast<uint64_t>(
+		std::chrono::duration_cast<std::chrono::nanoseconds>(
+			std::chrono::steady_clock::now() - lockedAt).count());
+}
+#endif
 
 bool FlowStorageSystem::validateHandle(ResourceKind kind, uint32_t index, uint32_t generation) const noexcept {
 	std::scoped_lock lock(impl_->mutex);

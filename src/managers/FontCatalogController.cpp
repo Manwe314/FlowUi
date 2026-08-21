@@ -6,6 +6,10 @@
 #include <stdexcept>
 
 #include "managers/FontManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 namespace FlowUi::detail::manager_storage {
 
@@ -113,6 +117,10 @@ void FontCatalogController::uploadLayerTransactional(
 	}
 	const size_t candidateBytes = static_cast<size_t>(layerBytes64 * candidateCapacity);
 	std::vector<std::byte> combined(candidateBytes, std::byte{0});
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevExternalMemoryScope combinedMemory(
+		devMemoryRecorder, devSystems::memory_sources::kFontAtlasCombine.id, combined.size());
+#endif
 	for (size_t existing = 0; existing < atlasLayerPixels.size(); ++existing) {
 		std::memcpy(combined.data() + existing * static_cast<size_t>(layerBytes64),
 			atlasLayerPixels[existing].data(), static_cast<size_t>(layerBytes64));

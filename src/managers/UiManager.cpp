@@ -5,6 +5,9 @@
 
 #if FLOW_UI_DEV_MODE
 #include <charconv>
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
 #include "devMode/debugView.hpp"
 #endif
@@ -46,6 +49,29 @@ namespace FlowUi
 	namespace manager_storage = detail::manager_storage;
 	namespace key_storage = detail::managerStorage;
 	namespace storage = detail::storage;
+
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void UiManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
+		if (!state_) return;
+		try {
+			devSystems::DevContainerMemoryAccumulator memory{};
+			memory.add(state_->constructedElementStack);
+			memory.liveBytes += state_->textLayoutService.cacheBytes();
+			memory.capacityBytes += state_->textLayoutService.cacheBytes();
+			memory.objectCount += state_->textLayoutService.cacheEntryCount();
+			memory.capacityCount += detail::text::TextLayoutService::MaxCacheEntries;
+			memory.liveBytes += state_->flowRootIdTracker.retainedBytesForDev();
+			memory.capacityBytes += state_->flowRootIdTracker.retainedBytesForDev();
+			memory.liveBytes += state_->clayBridgeIdTracker.retainedBytesForDev();
+			memory.capacityBytes += state_->clayBridgeIdTracker.retainedBytesForDev();
+			devSystems::appendManagerSample(
+				sink, devSystems::memory_sources::kUiLayout.id, memory, window_);
+			inputFieldManager_.appendDevMemorySamples(sink);
+			popupManager_.appendDevMemorySamples(sink);
+			shortcutManager_.appendDevMemorySamples(sink);
+		} catch (...) {}
+	}
+#endif
 
 	manager_storage::UiManagerState::UiManagerState(
 		storage::IStorageSystem& storageSystem,
@@ -334,6 +360,11 @@ namespace FlowUi
 		float screenWidth,
 		float screenHeight)
 	{
+#if FLOW_UI_DEV_MODE
+		FLOWUI_DEV_TIMING_ZONE_IF(
+			devTimingRecorder_, devSystems::TimingCategory::Frame,
+			devSystems::TimingZoneRole::Work, "flowui.ui.begin_frame");
+#endif
 		if (!state_->clayContext) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
 		}
@@ -345,7 +376,14 @@ namespace FlowUi
 			throw std::runtime_error("FlowUi: window frame arena is unavailable.");
 		}
 
-		advanceFrameInteractionSnapshots();
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.ui.interaction_advance");
+#endif
+			advanceFrameInteractionSnapshots();
+		}
 		state_->previousFrameInputForCurrentLayout = state_->frameInputForCurrentLayout;
 		state_->frameInputForCurrentLayout = frameInput;
 		Clay_SetCurrentContext(state_->clayContext);
@@ -356,28 +394,57 @@ namespace FlowUi
 		Clay_SetPointerState(
 			Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
 			frameInput.mouseDown[0]);
-		popupManager_.beginFrame(
-			state_->frameInputForCurrentLayout,
-			state_->previousFrameInputForCurrentLayout,
-			clampedScreenWidth,
-			clampedScreenHeight);
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.popup.begin_frame");
+#endif
+			popupManager_.beginFrame(
+				state_->frameInputForCurrentLayout,
+				state_->previousFrameInputForCurrentLayout,
+				clampedScreenWidth,
+				clampedScreenHeight);
+		}
 		if (popupManager_.suppressesAllPrimaryPointerInput()) {
 			state_->frameInputForCurrentLayout.mouseDown[0] = false;
 			Clay_SetPointerState(
 				Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
 				false);
 		}
-		inputFieldManager_.beginFrame(
-			state_->frameInputForCurrentLayout,
-			state_->previousFrameInputForCurrentLayout,
-			popupManager_.suppressedAnchorClayId());
-		shortcutManager_.beginFrame(*this, state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.input_field.begin_frame");
+#endif
+			inputFieldManager_.beginFrame(
+				state_->frameInputForCurrentLayout,
+				state_->previousFrameInputForCurrentLayout,
+				popupManager_.suppressedAnchorClayId());
+		}
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.shortcut.begin_frame");
+#endif
+			shortcutManager_.beginFrame(
+				*this, state_->frameInputForCurrentLayout, state_->previousFrameInputForCurrentLayout);
+		}
 		state_->cursor = CursorType::Arrow;
 		state_->cursorPriority = 0;
-		Clay_UpdateScrollContainers(
-			false,
-			Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
-			static_cast<float>(frameInput.dt));
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Layout,
+				devSystems::TimingZoneRole::Work, "flowui.layout.scroll_update");
+#endif
+			Clay_UpdateScrollContainers(
+				false,
+				Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
+				static_cast<float>(frameInput.dt));
+		}
 		state_->constructedElementStack.clear();
 		state_->flowScopes.beginFrame();
 #if FLOW_UI_DEV_MODE
@@ -386,7 +453,14 @@ namespace FlowUi
 		state_->devRuntime.beginFrame();
 		state_->devRootElementOpenThisFrame = false;
 #endif
-		Clay_BeginLayout();
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Layout,
+				devSystems::TimingZoneRole::Work, "flowui.layout.begin");
+#endif
+			Clay_BeginLayout();
+		}
 #if FLOW_UI_DEV_MODE
 		if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
 			Clay_ElementDeclaration devRoot{};
@@ -403,6 +477,11 @@ namespace FlowUi
 
 	Clay_RenderCommandArray UiManager::endFrame()
 	{
+#if FLOW_UI_DEV_MODE
+		FLOWUI_DEV_TIMING_ZONE_IF(
+			devTimingRecorder_, devSystems::TimingCategory::Frame,
+			devSystems::TimingZoneRole::Work, "flowui.ui.end_frame");
+#endif
 		if (!state_->clayContext) {
 			throw std::runtime_error("FlowUi: Clay context is not initialized.");
 		}
@@ -422,40 +501,67 @@ namespace FlowUi
 		if (state_->devRootElementOpenThisFrame) {
 			if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
 #if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
-				devMode::drawDebugView(*this);
+				{
+					FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+						devTimingRecorder_, devSystems::TimingCategory::DevTool,
+						devSystems::TimingZoneRole::DevToolWork, "flowui.dev_tool.build");
+					devMode::drawDebugView(*this);
+				}
 #endif
 			}
 			Clay__CloseElement();
 			state_->devRootElementOpenThisFrame = false;
 		}
 #endif
-		Clay_RenderCommandArray renderCommands = Clay_EndLayout(static_cast<float>(state_->frameInputForCurrentLayout.dt));
-
-		InteractionSnapshot& interactionSnapshot = state_->currentInteractionSnapshot;
-		Clay_ElementIdArray hoveredIds = Clay_GetPointerOverIds();
-		interactionSnapshot.hoveredElementIds.reserve(static_cast<size_t>(hoveredIds.length));
-		for (int32_t i = 0; i < hoveredIds.length; ++i) {
-			interactionSnapshot.hoveredElementIds.push_back(hoveredIds.internalArray[i].id);
+		Clay_RenderCommandArray renderCommands{};
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Layout,
+				devSystems::TimingZoneRole::Work, "flowui.layout.end");
+#endif
+			renderCommands = Clay_EndLayout(static_cast<float>(state_->frameInputForCurrentLayout.dt));
 		}
 
-		const bool isPrimaryPointerDown = state_->frameInputForCurrentLayout.mouseDown[0];
-		if (isPrimaryPointerDown && !state_->wasPrimaryPointerDownLastFrame) {
-			interactionSnapshot.pressedElementIds = interactionSnapshot.hoveredElementIds;
-			const uint32_t suppressedAnchor = popupManager_.suppressedAnchorClayId();
-			if (suppressedAnchor != 0) {
-				auto& pressed = interactionSnapshot.pressedElementIds;
-				pressed.erase(
-					std::remove(pressed.begin(), pressed.end(), suppressedAnchor),
-					pressed.end());
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.input.interaction_snapshot");
+#endif
+			InteractionSnapshot& interactionSnapshot = state_->currentInteractionSnapshot;
+			Clay_ElementIdArray hoveredIds = Clay_GetPointerOverIds();
+			interactionSnapshot.hoveredElementIds.reserve(static_cast<size_t>(hoveredIds.length));
+			for (int32_t i = 0; i < hoveredIds.length; ++i) {
+				interactionSnapshot.hoveredElementIds.push_back(hoveredIds.internalArray[i].id);
 			}
-		} else if (isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
-			interactionSnapshot.heldElementIds = interactionSnapshot.hoveredElementIds;
-		} else if (!isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
-			interactionSnapshot.releasedElementIds = interactionSnapshot.hoveredElementIds;
-		}
-		state_->wasPrimaryPointerDownLastFrame = isPrimaryPointerDown;
 
-		renderCommands = inputFieldManager_.endFrame(renderCommands);
+			const bool isPrimaryPointerDown = state_->frameInputForCurrentLayout.mouseDown[0];
+			if (isPrimaryPointerDown && !state_->wasPrimaryPointerDownLastFrame) {
+				interactionSnapshot.pressedElementIds = interactionSnapshot.hoveredElementIds;
+				const uint32_t suppressedAnchor = popupManager_.suppressedAnchorClayId();
+				if (suppressedAnchor != 0) {
+					auto& pressed = interactionSnapshot.pressedElementIds;
+					pressed.erase(
+						std::remove(pressed.begin(), pressed.end(), suppressedAnchor),
+						pressed.end());
+				}
+			} else if (isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
+				interactionSnapshot.heldElementIds = interactionSnapshot.hoveredElementIds;
+			} else if (!isPrimaryPointerDown && state_->wasPrimaryPointerDownLastFrame) {
+				interactionSnapshot.releasedElementIds = interactionSnapshot.hoveredElementIds;
+			}
+			state_->wasPrimaryPointerDownLastFrame = isPrimaryPointerDown;
+		}
+
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.input_field.end_frame");
+#endif
+			renderCommands = inputFieldManager_.endFrame(renderCommands);
+		}
 		storage_->noteManagerMutation(window_);
 		if (state_->cursor != state_->previousCursor) {
 			if (setCursorTypeAccessor_) {
@@ -468,7 +574,14 @@ namespace FlowUi
 		state_->flowRootIdTracker.discardFrame();
 		state_->clayBridgeIdTracker.discardFrame();
 #endif
-		popupManager_.endFrame();
+		{
+#if FLOW_UI_DEV_MODE
+			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
+				devTimingRecorder_, devSystems::TimingCategory::Input,
+				devSystems::TimingZoneRole::Work, "flowui.popup.end_frame");
+#endif
+			popupManager_.endFrame();
+		}
 		return renderCommands;
 	}
 	
@@ -997,13 +1110,16 @@ namespace devMode::elementCapture {
 		if (!state_ || depth >= state_->constructedElementStack.size()) return;
 		const size_t closedCount = state_->constructedElementStack.size() - depth;
 		while (state_->constructedElementStack.size() > depth) {
-			const manager_storage::ConstructedElementFrame frame =
-				state_->constructedElementStack.back();
+			manager_storage::ConstructedElementFrame frame =
+				std::move(state_->constructedElementStack.back());
 			Clay__CloseElement();
 			state_->constructedElementStack.pop_back();
 			restoreFlowScope(frame.priorFlowScopeDepth);
 #if FLOW_UI_DEV_MODE
 			(void)state_->devRuntime.endCapturedElement();
+#endif
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+			frame.subtreeTiming.end();
 #endif
 		}
 #if FLOW_UI_DEV_MODE
@@ -1022,12 +1138,24 @@ namespace devMode::elementCapture {
 	void UiManager::retainConstructedElement(
 		Clay_ElementId clayId,
 		FlowElementID flowId,
-		size_t priorFlowScopeDepth) {
-		state_->constructedElementStack.push_back(manager_storage::ConstructedElementFrame{
+		size_t priorFlowScopeDepth
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+		, FlowDefinitionID definitionId
+#endif
+		) {
+		manager_storage::ConstructedElementFrame frame{
 			.clayId = clayId,
 			.flowId = flowId,
 			.priorFlowScopeDepth = priorFlowScopeDepth,
-		});
+		};
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+		if (devTimingRecorder_) {
+			frame.subtreeTiming.begin(
+				*devTimingRecorder_, devSystems::timing_zones::kElementConstructedSubtree,
+				devSystems::TimingEntityRef::element(definitionId, flowId));
+		}
+#endif
+		state_->constructedElementStack.push_back(std::move(frame));
 	}
 
 	void UiManager::advanceFrameInteractionSnapshots() {
@@ -1040,6 +1168,11 @@ namespace devMode::elementCapture {
 
 	void UiManager::cancelFrameState() noexcept {
 		if (!state_) return;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+		for (auto& frame : state_->constructedElementStack) {
+			frame.subtreeTiming.end(devSystems::TimingRecordFlag::Canceled);
+		}
+#endif
 		state_->constructedElementStack.clear();
 		state_->flowScopes.cancelFrame();
 		popupManager_.cancelFrame();

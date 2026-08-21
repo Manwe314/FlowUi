@@ -25,6 +25,9 @@
 #if FLOW_UI_DEV_MODE
 #include "devMode/devRuntime.hpp"
 #include "devMode/performanceDiagnostics.hpp"
+#if FLOWUI_DEV_TIMING_LEVEL >= 2
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
+#endif
 #endif
 
 namespace FlowUi {
@@ -70,6 +73,11 @@ public:
 		return &collisions_.back();
 	}
 	[[nodiscard]] size_t collisionCount() const noexcept { return collisions_.size(); }
+	[[nodiscard]] size_t retainedBytesForDev() const noexcept {
+		return claims_.size() * sizeof(decltype(claims_)::value_type) +
+			claims_.bucket_count() * sizeof(void*) +
+			collisions_.capacity() * sizeof(FlowRootCollisionForDev);
+	}
 	[[nodiscard]] const FlowRootCollisionForDev& collision(size_t index) const {
 		if (index >= collisions_.size()) {
 			throw std::out_of_range("FlowUi dev Flow-root collision index is out of range.");
@@ -136,6 +144,12 @@ public:
 	}
 
 	[[nodiscard]] size_t collisionCount() const noexcept { return collisions_.size(); }
+	[[nodiscard]] size_t retainedBytesForDev() const noexcept {
+		return claims_.size() * sizeof(decltype(claims_)::value_type) +
+			claims_.bucket_count() * sizeof(void*) +
+			claimedInstanceIds_.size() * sizeof(decltype(claimedInstanceIds_)::value_type) +
+			collisions_.capacity() * sizeof(ClayBridgeCollisionForDev);
+	}
 	[[nodiscard]] const ClayBridgeCollisionForDev& collision(size_t index) const {
 		if (index >= collisions_.size()) {
 			throw std::out_of_range("FlowUi dev Clay-bridge collision index is out of range.");
@@ -156,6 +170,9 @@ struct ConstructedElementFrame {
 	Clay_ElementId clayId{};
 	FlowElementID flowId{};
 	size_t priorFlowScopeDepth = 0;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
+	devSystems::ManualTimingZone subtreeTiming{};
+#endif
 };
 
 struct UiManagerState {

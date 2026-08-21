@@ -138,6 +138,11 @@ public:
 
 	[[nodiscard]] StorageStats stats() const override;
 	[[nodiscard]] ResourceStats resourceStats(ResourceKind kind) const override;
+#if FLOW_UI_DEV_MODE
+	void appendMemorySnapshot(
+		const StorageMemorySnapshotRequest& request,
+		StorageMemorySnapshot& destination) const override;
+#endif
 	[[nodiscard]] bool validateHandle(ResourceKind kind, uint32_t index, uint32_t generation) const noexcept override;
 	void setBudget(uint64_t cpuBytes, uint64_t gpuBytes) override;
 	[[nodiscard]] NativePublishResult<RendererLayoutHandle> publishRendererLayout(

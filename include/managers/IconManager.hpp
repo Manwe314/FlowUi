@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <cstdint>
 #include <cstddef>
 #include <stdexcept>
@@ -8,7 +10,6 @@
 
 #include <clay.h>
 
-#include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
 
@@ -23,6 +24,7 @@ class App;
 struct IconManagerConfig;
 
 namespace detail::storage { class IStorageSystem; }
+namespace devSystems { class MemorySampleSink; class DevMemoryRecorder; }
 namespace detail::manager_storage {
 struct IconDocumentRecord; struct IconSurfaceOwner; struct IconTransientRasterResult;
 struct IconAtlasRect; struct IconAtlasAllocation; struct IconVariantKey; struct IconVariantKeyHash;
@@ -54,6 +56,10 @@ struct IconVariantEntry; struct IconAtlasPage; struct IconRetiredRegion; class I
  * @see @ref md_docs_2concepts_2managers "Managers"
  */
 struct IconManager {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept { devMemoryRecorder_ = recorder; }
+#endif
 	/**
 	 * @brief Register an SVG document from source text.
 	 *
@@ -241,6 +247,9 @@ private:
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::IconCacheController* controller_ = nullptr;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	devSystems::DevMemoryRecorder* devMemoryRecorder_ = nullptr;
+#endif
 };
 
 /** @} */
@@ -262,6 +271,10 @@ namespace detail::storage { class IStorageSystem; }
  * icon support fail explicitly.
  */
 struct IconManager {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink&) const noexcept {}
+	void setDevMemoryRecorder(devSystems::DevMemoryRecorder*) noexcept {}
+#endif
 	/**
 	 * @brief Throws because icon support is disabled.
 	 *

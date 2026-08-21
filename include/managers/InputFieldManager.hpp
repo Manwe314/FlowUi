@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <cstddef>
 #include <functional>
 #include <span>
@@ -23,6 +25,7 @@ namespace detail { struct InputFieldFrameOverrides; }
 namespace detail::input_field { struct InputFieldKey; }
 namespace detail::text { class TextLayoutService; }
 namespace detail::storage { class IStorageSystem; }
+namespace devSystems { class MemorySampleSink; }
 namespace detail::manager_storage {
 struct InputCaretState;
 struct InputFieldState;
@@ -114,6 +117,9 @@ struct FontFrameView;
  */
 class InputFieldManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	/**
 	 * @brief Register or update an input field for the current frame.
 	 *

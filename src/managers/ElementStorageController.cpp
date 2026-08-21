@@ -1,4 +1,8 @@
 #include "internal/ManagerStorage/ElementStorageController.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
 
 #include <algorithm>
 #include <array>
@@ -464,7 +468,7 @@ const void* ElementStorageController::resolveOrCreateResources(
 	if (const void* ready = resources.payload.load(std::memory_order_acquire)) return ready;
 
 	std::unique_lock<std::mutex> lock(resources.mutex);
-	for (;;) {
+	while (true) {
 		switch (resources.state) {
 		case ElementResourceState::Ready:
 			if (const void* ready = resources.payload.load(std::memory_order_acquire)) {
@@ -609,7 +613,7 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 
 void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 	bool invocationClosed = false;
-	for (;;) {
+	while (true) {
 		storage::IStorageSystem* storage = nullptr;
 		storage::PersistentRecordHandle recordToErase{};
 		bool releaseWindow = false;
@@ -745,7 +749,7 @@ void ElementStorageController::commitWindowFrame(WindowId window, uint64_t epoch
 
 void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch) noexcept {
 	bool transactionClosed = false;
-	for (;;) {
+	while (true) {
 		storage::IStorageSystem* storage = nullptr;
 		storage::PersistentRecordHandle recordToErase{};
 		try {
@@ -800,7 +804,7 @@ size_t ElementStorageController::collectEligibleStates(
 	size_t remaining = scanBudget;
 	bool initializeUnlimitedBudget =
 		scanBudget == std::numeric_limits<size_t>::max();
-	for (;;) {
+	while (true) {
 		std::array<storage::PersistentRecordHandle, kRemovalBatchSize> removals{};
 		size_t removalCount = 0;
 		size_t inspected = 0;
@@ -929,7 +933,7 @@ void ElementStorageController::shutdown() noexcept {
 	}
 	if (!storage) return;
 
-	for (;;) {
+	while (true) {
 		WindowId window = InvalidWindowId;
 		std::shared_ptr<WindowElementStateRegistry> registry;
 		{
@@ -946,7 +950,7 @@ void ElementStorageController::shutdown() noexcept {
 	// Resource destructors run while App-owned image/icon/font/theme managers and
 	// the storage system are still alive. Handles are detached from definition
 	// slots before invoking user destruction callbacks through storage.
-	for (;;) {
+	while (true) {
 		const storage::MemoryBlock resource =
 			definitions_.takeReadyResourceForDestroy();
 		if (!resource) break;
@@ -956,3 +960,29 @@ void ElementStorageController::shutdown() noexcept {
 }
 
 } // namespace FlowUi::detail::manager_storage
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+namespace FlowUi::detail::manager_storage {
+void ElementStorageController::appendDevMemorySamples(
+	::FlowUi::devSystems::MemorySampleSink& sink) const noexcept {
+	try {
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.objectCount += definitions_.size();
+		memory.liveBytes += definitions_.size() * sizeof(ElementDefinitionRecord);
+		memory.capacityBytes += memory.liveBytes;
+		std::scoped_lock windowsLock(windowsMutex_);
+		memory.addNodeContainer(windows_);
+		for (const auto& [_, window] : windows_) {
+			if (!window) continue;
+			std::scoped_lock windowLock(window->mutex);
+			memory.addNodeContainer(window->byInstance);
+			memory.addNodeContainer(window->deferredErases);
+			memory.add(window->gcCandidates);
+			memory.addNodeContainer(window->transaction.touched);
+			memory.addNodeContainer(window->transaction.created);
+			memory.addNodeContainer(window->transaction.policies);
+		}
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kElements.id, memory);
+	} catch (...) {}
+}
+} // namespace FlowUi::detail::manager_storage
+#endif

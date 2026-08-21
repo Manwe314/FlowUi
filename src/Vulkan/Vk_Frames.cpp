@@ -60,6 +60,12 @@ void FrameVk::destroy(VulkanContext& vk) {
 	}
 
 	for (auto& frame : frames) {
+#if FLOW_UI_DEV_MODE
+		if (frame.gpuTiming.queryPool != VK_NULL_HANDLE) {
+			vkDestroyQueryPool(vk.device, frame.gpuTiming.queryPool, nullptr);
+			frame.gpuTiming = {};
+		}
+#endif
 		if (frame.inFlight != VK_NULL_HANDLE) {
 			vkDestroyFence(vk.device, frame.inFlight, nullptr);
 			frame.inFlight = VK_NULL_HANDLE;

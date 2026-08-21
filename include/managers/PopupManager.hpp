@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <cstdint>
 
 #include "FlowUi/ElementID.hpp"
@@ -12,9 +14,13 @@ class UiManager;
 struct FrameInput;
 namespace detail::storage { class IStorageSystem; }
 namespace detail::manager_storage { struct PopupManagerState; }
+namespace devSystems { class MemorySampleSink; }
 
 class PopupManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	[[nodiscard]] PopupFrame request(FlowElementID popupId, const PopupRequest& request);
 	[[nodiscard]] PopupFrame request(GlobalFlowID popupId, const PopupRequest& request);
 	[[nodiscard]] PopupFrame request(FlowElementPartID popupId, const PopupRequest& request);

@@ -63,3 +63,4 @@
 #include "FlowUi/ElementID.hpp"
 #include "FlowUi/AppActionID.hpp"
 #include "FlowUi/App.hpp"
+#include "FlowUi/MemoryCapacityProfile.hpp"

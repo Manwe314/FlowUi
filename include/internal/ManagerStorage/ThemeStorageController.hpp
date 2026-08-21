@@ -17,6 +17,7 @@
 #include "internal/StorageSystem/StorageTypes.hpp"
 #include "internal/TypeOperations.hpp"
 
+namespace FlowUi::devSystems { class MemorySampleSink; }
 namespace FlowUi::detail::manager_storage {
 
 struct ThemeVariantRegistrationRecord {
@@ -234,6 +235,9 @@ public:
 
 	void applyStagedMutations();
 	storage::StringId internString(std::string_view str);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(::FlowUi::devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 
 private:
 	storage::ResourceKey makeThemeResourceKey(uint64_t typeHash, storage::StringId variantNameId) const;

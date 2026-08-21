@@ -1624,6 +1624,35 @@ void testTelemetryConfiguration(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	const auto snapshot = storage.windowSnapshot(41u);
 	FLOWUI_CHECK(snapshot.window == 41u);
 	FLOWUI_CHECK(snapshot.framesInFlight == 1);
+	const auto frame = storage.beginFrame(41u, FrameStorageDesc{.frameSlot = 0, .frameNumber = 1});
+	FLOWUI_CHECK(storage.frameArena(frame, MemoryClass::FrameTransient).allocate(24u) != nullptr);
+	FLOWUI_CHECK(storage.frameArena(frame, MemoryClass::DecodeTransient).allocate(16u) != nullptr);
+	FLOWUI_CHECK(storage.frameArena(frame, MemoryClass::UploadStaging).allocate(12u) != nullptr);
+	FLOWUI_CHECK(storage.workerArena(frame, 0u).allocate(8u) != nullptr);
+	FlowUi::detail::storage::StorageMemorySnapshot memorySnapshot{};
+	storage.appendMemorySnapshot(
+		FlowUi::detail::storage::StorageMemorySnapshotRequest{
+			.detail = FlowUi::detail::storage::StorageMemoryDetail::IndividualResources,
+		},
+		memorySnapshot);
+	FLOWUI_CHECK(memorySnapshot.mutationSequence != 0u);
+	FLOWUI_CHECK(memorySnapshot.includesResourceKinds);
+	FLOWUI_CHECK(memorySnapshot.includesWindows);
+	FLOWUI_CHECK(memorySnapshot.includesIndividualResources);
+	FLOWUI_CHECK(memorySnapshot.resourceMetadataBytes >= memorySnapshot.resourceMetadataLiveBytes);
+	FLOWUI_CHECK(!memorySnapshot.allocators.empty());
+	FLOWUI_CHECK(std::any_of(
+		memorySnapshot.allocators.begin(), memorySnapshot.allocators.end(), [](const auto& allocator) {
+			return allocator.memoryClass == MemoryClass::UploadStaging &&
+				allocator.liveBytes >= 12u && allocator.reservedBytes >= allocator.liveBytes;
+		}));
+	FLOWUI_CHECK(memorySnapshot.totals.cpu[
+		static_cast<size_t>(MemoryClass::FrameTransient)].liveBytes >= 24u);
+	FLOWUI_CHECK(memorySnapshot.totals.cpu[
+		static_cast<size_t>(MemoryClass::DecodeTransient)].liveBytes >= 16u);
+	FLOWUI_CHECK(memorySnapshot.totals.cpu[
+		static_cast<size_t>(MemoryClass::UploadStaging)].liveBytes >= 12u);
+	storage.cancelFrame(frame);
 #else
 	FLOWUI_CHECK(!hasCapability(storage, StorageCapability::DevelopmentTelemetry));
 	const auto stats = storage.stats();

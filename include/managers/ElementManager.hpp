@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/BuildConfig.hpp"
+
 #include <cstdint>
 
 #include "FlowUi/WindowId.hpp"
@@ -10,6 +12,9 @@ namespace FlowUi {
 
 class App;
 class UiManager;
+#if FLOW_UI_DEV_MODE
+namespace devSystems { class DevTimingRecorder; class MemorySampleSink; }
+#endif
 
 namespace detail::element {
 template <typename Element>
@@ -37,6 +42,9 @@ struct ElementDefinitionRecord;
  */
 class ElementManager {
 public:
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+#endif
 	ElementManager() = default;
 	~ElementManager();
 
@@ -212,6 +220,11 @@ private:
 	void commitWindowFrame(WindowId window, uint64_t epoch) noexcept;
 	void cancelWindowFrame(WindowId window, uint64_t epoch) noexcept;
 	void attachTo(UiManager& uiManager) noexcept;
+#if FLOW_UI_DEV_MODE
+	void setDevTimingRecorder(devSystems::DevTimingRecorder* recorder) noexcept {
+		devTimingRecorder_ = recorder;
+	}
+#endif
 	const detail::manager_storage::ElementDefinitionRecord& ensureRegistered(
 		const detail::element::ElementRegistrationDescriptor& descriptor);
 	[[nodiscard]] const void* readStateErased(
@@ -243,6 +256,9 @@ private:
 	detail::manager_storage::ElementStorageController* controller_ = nullptr;
 	uint64_t controllerHandle_ = 0;
 	uint32_t controllerName_ = 0;
+#if FLOW_UI_DEV_MODE
+	devSystems::DevTimingRecorder* devTimingRecorder_ = nullptr;
+#endif
 };
 
 } // namespace FlowUi

@@ -8,6 +8,18 @@ option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generat
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+set(FLOWUI_DEV_TIMING_LEVEL "2" CACHE STRING
+    "Maximum compiled development CPU timing detail: 0=frame, 1=summary, 2=balanced, 3=deep.")
+set_property(CACHE FLOWUI_DEV_TIMING_LEVEL PROPERTY STRINGS 0 1 2 3)
+if(NOT FLOWUI_DEV_TIMING_LEVEL MATCHES "^[0-3]$")
+    message(FATAL_ERROR "FLOWUI_DEV_TIMING_LEVEL must be 0, 1, 2, or 3.")
+endif()
+set(FLOWUI_DEV_MEMORY_LEVEL "2" CACHE STRING
+    "Maximum compiled development memory detail: 0=disabled, 1=storage, 2=subsystems, 3=lifetimes, 4=deep.")
+set_property(CACHE FLOWUI_DEV_MEMORY_LEVEL PROPERTY STRINGS 0 1 2 3 4)
+if(NOT FLOWUI_DEV_MEMORY_LEVEL MATCHES "^[0-4]$")
+    message(FATAL_ERROR "FLOWUI_DEV_MEMORY_LEVEL must be 0, 1, 2, 3, or 4.")
+endif()
 option(COMPILE_FSELI "Include the Flow Standard Element Library in FlowUi/Flow.hpp." ON)
 set(FLOWUI_COMPILE_FSELI_ENABLED ${COMPILE_FSELI})
 if(FLOW_UI_DEV_MODE AND NOT FLOWUI_COMPILE_FSELI_ENABLED)
@@ -265,6 +277,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ElementID.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/MemoryCapacityProfile.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ResourceKey.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/TextureHandle.hpp>
@@ -325,7 +338,15 @@ if(FLOW_UI_DEV_MODE)
 		PRIVATE
 			src/devSystems/devFunctionality/DevFunctionality.cpp
 			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
+			src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp
+			src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
+			src/devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.cpp
+			src/devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.cpp
+			src/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp
+			src/devSystems/devMonitoringAndReporting/timing/DevGpuTiming.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevTimingRecorder.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevTimingZone.cpp
 			src/devSystems/devTooling/DevTooling.cpp
@@ -333,11 +354,25 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devFunctionality/DevFunctionality.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemory.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemoryTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTiming.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTimingTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/DevTooling.hpp>
 	)
+	if(WIN32)
+		target_link_libraries(flowui PRIVATE Psapi)
+	endif()
 endif()
 
 if(FLOWUI_COMPILE_FSELI_ENABLED)
