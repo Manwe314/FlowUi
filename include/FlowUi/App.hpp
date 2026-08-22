@@ -123,7 +123,7 @@ public:
 	 * @throws std::runtime_error if the window or its rendering resources cannot
 	 * be created on the selected device.
 	 */
-	[[nodiscard]] WindowId createWindow(const WindowConfig& config);
+	[[nodiscard]] Result<WindowId> createWindow(const WindowConfig& config);
 	/** @brief Destroy a secondary window after draining its outstanding work.
 	 *
 	 * The semantic main window cannot be explicitly destroyed.
@@ -133,7 +133,7 @@ public:
 	 * a registered window.
 	 * @throws std::logic_error if another window frame triplet is active.
 	 */
-	void destroyWindow(WindowId id);
+	[[nodiscard]] Status destroyWindow(WindowId id);
 	/** @brief Return whether an identity currently names a registered window.
 	 *
 	 * @param id Window identity to query.
@@ -154,7 +154,7 @@ public:
 	 * @throws std::logic_error if a window frame triplet is active or the call is
 	 * made from outside the app's platform thread.
 	 */
-	void pollEvents();
+	[[nodiscard]] Status pollEvents();
 
 	/** @brief Query whether the window backend requested shutdown.
 	 *
@@ -225,7 +225,7 @@ public:
 	 * @see @ref md_docs_2concepts_2frame__lifecycle "Frame Lifecycle"
 	 * @see @ref md_docs_2tutorials_2quick__start "Quick Start"
 	 */
-	void beginFrame();
+	[[nodiscard]] Status beginFrame();
 	/** @brief Begin one explicit window frame without polling global events.
 	 *
 	 * Use this overload after one pollEvents() call when driving multiple windows;
@@ -236,7 +236,7 @@ public:
 	 * @pre pollEvents() was called at the cadence required by the application.
 	 * @post The selected window's UI manager is ready for frame construction.
 	 */
-	void beginFrame(WindowId id);
+	[[nodiscard]] Status beginFrame(WindowId id);
 	/** @brief End UI construction and produce render commands.
 	 *
 	 * Completes UI construction, produces render commands for this frame, and
@@ -253,12 +253,12 @@ public:
 	 * @post Render commands for this frame are ready and viewport handles are sized.
 	 * @note This function should be called exactly once per frame.
 	 */
-	void endFrame();
+	[[nodiscard]] Status endFrame();
 	/** @brief End UI construction for a specific active window frame.
 	 *
 	 * @param id Window identity passed to the matching beginFrame(id).
 	 */
-	void endFrame(WindowId id);
+	[[nodiscard]] Status endFrame(WindowId id);
 	/** @brief Submit the current frame for rendering and presentation.
 	 *
 	 * Takes the render commands output by endFrame(), builds GPU draw runs,
@@ -274,13 +274,13 @@ public:
 	 * @post This frame is rendered and presented.
 	 * @note This function should be called exactly once per frame.
 	 */
-	void drawFrame();
+	[[nodiscard]] Status drawFrame();
 	/** @brief Submit and present a specific prepared window frame.
 	 *
 	 * @param id Window identity passed to the matching beginFrame(id) and
 	 * endFrame(id).
 	 */
-	void drawFrame(WindowId id);
+	[[nodiscard]] Status drawFrame(WindowId id);
 
 	/** @brief Access the font manager.
 	 *

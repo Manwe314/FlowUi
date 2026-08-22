@@ -7,7 +7,15 @@ namespace {
 
 static void vkCheck(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error(message);
+		(void)message;
+		FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
+			? FlowUi::ErrorCode::VulkanDeviceLost : FlowUi::ErrorCode::VulkanNativeCallFailed;
+		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+			code = FlowUi::ErrorCode::AllocationFailed;
+		}
+		throw FlowUi::FlowUiException(FlowUi::makeError(
+			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			static_cast<std::uint32_t>(result)));
 	}
 }
 
@@ -15,7 +23,7 @@ static void vkCheck(VkResult result, const char* message) {
 
 void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk) {
 	if (vk.device == VK_NULL_HANDLE) {
-		throw std::runtime_error("Vulkan device must be created before frame resources.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
 	}
 
 	uint32_t frameCount = std::max<uint32_t>(1u, framesInFlight);

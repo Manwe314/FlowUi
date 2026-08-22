@@ -49,38 +49,53 @@ constexpr uint64_t kCapabilityMask =
 #endif
 	;
 
-[[noreturn]] void storageError(const char* message) {
-	throw std::runtime_error(std::string("FlowStorageSystem: ") + message);
+[[noreturn]] void storageError(
+	const char* message,
+	ErrorCode code = ErrorCode::StoragePublicationFailed) {
+	(void)message;
+	const FlowUiError error = makeError(code);
+	if (error.descriptor().category == ErrorCategory::Fatal) {
+		::FlowUi::detail::terminateForFatalError(error);
+	}
+	throw FlowUiException(error);
 }
 
 void checkVk(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
-		storageError(message);
+		ErrorCode code = result == VK_ERROR_DEVICE_LOST
+			? ErrorCode::VulkanDeviceLost : ErrorCode::VulkanNativeCallFailed;
+		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+			code = ErrorCode::AllocationFailed;
+		}
+		(void)message;
+		throw FlowUiException(makeError(
+			code, ErrorSubjectKind::None, 0u, 0u,
+			static_cast<std::uint32_t>(result)));
 	}
 }
 
 size_t alignUp(size_t value, size_t alignment) {
 	if (alignment == 0 || !std::has_single_bit(alignment)) {
-		storageError("alignment must be a non-zero power of two");
+		storageError("alignment must be a non-zero power of two", ErrorCode::StorageConfigurationInvalid);
 	}
 	if (value > std::numeric_limits<size_t>::max() - (alignment - 1u)) {
-		storageError("allocation alignment overflow");
+		storageError("allocation alignment overflow", ErrorCode::ArithmeticOverflow);
 	}
 	return (value + alignment - 1u) & ~(alignment - 1u);
 }
 
 size_t checkedSize(uint64_t value, const char* message) {
-	if (value > std::numeric_limits<size_t>::max()) storageError(message);
+	if (value > std::numeric_limits<size_t>::max()) storageError(message, ErrorCode::ArithmeticOverflow);
 	return static_cast<size_t>(value);
 }
 
 uint64_t checkedMultiply(uint64_t lhs, uint64_t rhs, const char* message) {
-	if (lhs != 0 && rhs > std::numeric_limits<uint64_t>::max() / lhs) storageError(message);
+	if (lhs != 0 && rhs > std::numeric_limits<uint64_t>::max() / lhs) storageError(message, ErrorCode::ArithmeticOverflow);
 	return lhs * rhs;
 }
 
 uint64_t checkedAdd(uint64_t lhs, uint64_t rhs, const char* message) {
-	if (rhs > std::numeric_limits<uint64_t>::max() - lhs) storageError(message);
+	if (rhs > std::numeric_limits<uint64_t>::max() - lhs) storageError(message, ErrorCode::ArithmeticOverflow);
 	return lhs + rhs;
 }
 
@@ -310,7 +325,7 @@ public:
 		}
 
 		if (!allowGrowth_) {
-			storageError("transient arena exhausted and runtime growth is disabled");
+			storageError("transient arena exhausted and runtime growth is disabled", ErrorCode::StorageCapacityExceeded);
 		}
 		const size_t base = pages_.empty() ? bytes : pages_.back().capacity;
 		const uint64_t required = checkedAdd(bytes, alignment, "transient arena growth overflow");
@@ -535,7 +550,7 @@ public:
 
 				slab.free.reserve(slab.free.size() + slab.activeAllocations + 2u);
 				if (nextId_ == 0 || allocations_.contains(nextId_)) {
-					storageError("persistent allocation id space exhausted");
+					storageError("persistent allocation id space exhausted", ErrorCode::IdentitySpaceExhausted);
 				}
 				const AllocationId id = nextId_;
 				allocations_.emplace(id, Allocation{slabIndex, alignedOffset, bytes, tag});
@@ -564,7 +579,7 @@ public:
 			}
 		}
 
-		if (!allowGrowth_) storageError("persistent pool exhausted and runtime growth is disabled");
+		if (!allowGrowth_) storageError("persistent pool exhausted and runtime growth is disabled", ErrorCode::StorageCapacityExceeded);
 		const size_t base = slabs_.empty() ? bytes : slabs_.back().capacity;
 		const uint64_t required = checkedAdd(bytes, alignment, "persistent pool growth overflow");
 		addSlab(checkedSize(nextCapacity(base, required, growthFactor_),
@@ -1242,7 +1257,7 @@ struct FlowStorageSystem::Impl {
 			freeIndices.pop_back();
 			return index;
 		}
-		if (records.size() >= std::numeric_limits<uint32_t>::max()) storageError("resource handle table exhausted");
+		if (records.size() >= std::numeric_limits<uint32_t>::max()) storageError("resource handle table exhausted", ErrorCode::ResourceGenerationExhausted);
 		freeIndices.reserve(freeIndices.size() + 1u);
 		records.emplace_back();
 		return static_cast<uint32_t>(records.size() - 1u);
@@ -1274,7 +1289,7 @@ struct FlowStorageSystem::Impl {
 		uint64_t* revision = &sharedManagerRevision;
 		if (window != 0) revision = &requireWindow(window).managerRevision;
 		if (*revision == std::numeric_limits<uint64_t>::max()) {
-			storageError("manager publication revision space exhausted");
+			storageError("manager publication revision space exhausted", ErrorCode::StorageGenerationExhausted);
 		}
 		++*revision;
 	}
@@ -1350,7 +1365,7 @@ struct FlowStorageSystem::Impl {
 			index = freeTextures.back();
 			freeTextures.pop_back();
 		} else {
-			if (textureHot.size() >= std::numeric_limits<uint32_t>::max()) storageError("texture handle table exhausted");
+			if (textureHot.size() >= std::numeric_limits<uint32_t>::max()) storageError("texture handle table exhausted", ErrorCode::ResourceGenerationExhausted);
 			freeTextures.reserve(freeTextures.size() + 1u);
 			textureHot.reserve(textureHot.size() + 1u);
 			textureCold.reserve(textureCold.size() + 1u);
@@ -1362,13 +1377,13 @@ struct FlowStorageSystem::Impl {
 	}
 
 	void requireInitialized() const {
-		if (!initialized) storageError("system is not initialized");
+		if (!initialized) storageError("system is not initialized", ErrorCode::ObjectNotInitialized);
 	}
 
 	void requireCpuBudget(uint64_t bytes) const {
 		const uint64_t live = persistentPool.liveBytes() + stringPool.liveBytes();
 		if (bytes > cpuSoftBudgetBytes || live > cpuSoftBudgetBytes - bytes) {
-			storageError("CPU soft budget exceeded while allocating persistent memory");
+			storageError("CPU soft budget exceeded while allocating persistent memory", ErrorCode::StorageBudgetExceeded);
 		}
 	}
 
@@ -1392,7 +1407,7 @@ struct FlowStorageSystem::Impl {
 
 	void requireSharedMutationPhase() const {
 		if (hasSealedFrames()) {
-			storageError("shared resource mutation is not allowed while a sealed frame snapshot is active");
+			storageError("shared resource mutation is not allowed while a sealed frame snapshot is active", ErrorCode::StorageMutationSealed);
 		}
 	}
 
@@ -1401,20 +1416,20 @@ struct FlowStorageSystem::Impl {
 			if (slot == currentFrameSlot) continue;
 			const FrameState& frame = *window.frames[slot];
 			if (frame.active && frame.sealed) {
-				storageError("window binding mutation is not allowed while another frame read lease for that window is active");
+				storageError("window binding mutation is not allowed while another frame read lease for that window is active", ErrorCode::StorageMutationSealed);
 			}
 		}
 	}
 
 	WindowState& requireWindow(WindowId id) {
 		auto it = windows.find(id);
-		if (it == windows.end() || it->second->closing) storageError("window storage scope was not found");
+		if (it == windows.end() || it->second->closing) storageError("window storage scope was not found", ErrorCode::InvalidWindowId);
 		return *it->second;
 	}
 
 	const WindowState& requireWindow(WindowId id) const {
 		auto it = windows.find(id);
-		if (it == windows.end() || it->second->closing) storageError("window storage scope was not found");
+		if (it == windows.end() || it->second->closing) storageError("window storage scope was not found", ErrorCode::InvalidWindowId);
 		return *it->second;
 	}
 
@@ -1486,9 +1501,9 @@ struct FlowStorageSystem::Impl {
 	}
 
 	void validateTextureOwnership(ResourceKey key, const TextureViewDesc& desc) const {
-		if (!usableImageView(desc.imageView)) storageError("texture image view is invalid or retiring");
+		if (!usableImageView(desc.imageView)) storageError("texture image view is invalid or retiring", ErrorCode::ResourceHandleInvalid);
 		const ImageHandle image = imageViews[desc.imageView.index].image;
-		if (!usableImage(image)) storageError("texture backing image is invalid or retiring");
+		if (!usableImage(image)) storageError("texture backing image is invalid or retiring", ErrorCode::ResourceHandleInvalid);
 		const ImageDesc& imageDesc = images[image.index].desc;
 		if (imageDesc.sharing == ResourceSharing::AppShared) {
 			if (key.window != 0) storageError("app-shared texture must use root ResourceKey attribution");
@@ -1501,13 +1516,13 @@ struct FlowStorageSystem::Impl {
 		WindowState& window = requireWindow(token.window);
 		if (token.frameSlot >= window.frames.size()) storageError("frame slot is out of range");
 		FrameState& frame = *window.frames[token.frameSlot];
-		if (!frame.active || frame.epoch != token.epoch) storageError("frame token is stale or inactive");
-		if (!allowSealed && frame.sealed) storageError("frame storage is sealed");
+		if (!frame.active || frame.epoch != token.epoch) storageError("frame token is stale or inactive", ErrorCode::StorageFrameProtocolViolation);
+		if (!allowSealed && frame.sealed) storageError("frame storage is sealed", ErrorCode::StorageMutationSealed);
 		return frame;
 	}
 
 	FrameState& requireLease(const FrameReadLease& lease) {
-		if (!lease) storageError("frame read lease is invalid");
+		if (!lease) storageError("frame read lease is invalid", ErrorCode::StorageFrameProtocolViolation);
 		FrameState& frame = requireFrame(lease.frame);
 		if (!frame.sealed || frame.leaseId != lease.leaseId) storageError("frame read lease is stale or inactive");
 #if FLOW_UI_DEV_MODE
@@ -1517,7 +1532,7 @@ struct FlowStorageSystem::Impl {
 	}
 
 	const FrameState& requireLease(const FrameReadLease& lease) const {
-		if (!lease) storageError("frame read lease is invalid");
+		if (!lease) storageError("frame read lease is invalid", ErrorCode::StorageFrameProtocolViolation);
 		const FrameState& frame = requireFrame(lease.frame);
 		if (!frame.sealed || frame.leaseId != lease.leaseId) storageError("frame read lease is stale or inactive");
 #if FLOW_UI_DEV_MODE
@@ -1633,28 +1648,28 @@ struct FlowStorageSystem::Impl {
 	}
 
 	void retainImage(ImageHandle handle) {
-		if (!usableImage(handle)) storageError("cannot retain invalid or retiring image handle");
+		if (!usableImage(handle)) storageError("cannot retain invalid or retiring image handle", ErrorCode::ResourceHandleInvalid);
 		incrementReference(images[handle.index].referenceCount);
 	}
 
 	void retainBlob(BlobHandle handle) {
 		if (!validBlob(handle) || blobs[handle.index].state == ResourceState::Retiring)
-			storageError("cannot retain invalid or retiring blob handle");
+			storageError("cannot retain invalid or retiring blob handle", ErrorCode::ResourceHandleInvalid);
 		incrementReference(blobs[handle.index].referenceCount);
 	}
 
 	void retainBuffer(BufferHandle handle) {
-		if (!usableBuffer(handle)) storageError("cannot retain invalid or retiring buffer handle");
+		if (!usableBuffer(handle)) storageError("cannot retain invalid or retiring buffer handle", ErrorCode::ResourceHandleInvalid);
 		incrementReference(buffers[handle.index].referenceCount);
 	}
 
 	void retainImageView(ImageViewHandle handle) {
-		if (!usableImageView(handle)) storageError("cannot retain invalid or retiring image-view handle");
+		if (!usableImageView(handle)) storageError("cannot retain invalid or retiring image-view handle", ErrorCode::ResourceHandleInvalid);
 		incrementReference(imageViews[handle.index].referenceCount);
 	}
 
 	void retainSampler(SamplerHandle handle) {
-		if (!usableSampler(handle)) storageError("cannot retain invalid or retiring sampler handle");
+		if (!usableSampler(handle)) storageError("cannot retain invalid or retiring sampler handle", ErrorCode::ResourceHandleInvalid);
 		incrementReference(samplers[handle.index].referenceCount);
 	}
 
@@ -1746,7 +1761,7 @@ struct FlowStorageSystem::Impl {
 	}
 
 	void retainTexture(TextureHandle handle) {
-		if (!usableTexture(handle)) storageError("cannot retain invalid or retiring texture handle");
+		if (!usableTexture(handle)) storageError("cannot retain invalid or retiring texture handle", ErrorCode::ResourceHandleInvalid);
 		incrementReference(textureCold[handle.index].referenceCount);
 	}
 	void retainRendererLayout(RendererLayoutHandle handle) {
@@ -1903,7 +1918,7 @@ struct FlowStorageSystem::Impl {
 					window.freeDescriptorIndices.pop_back();
 				} else {
 					if (window.nextDescriptorIndex >= window.desc.maxTextureBindings) {
-						storageError("window texture descriptor capacity was exhausted");
+						storageError("window texture descriptor capacity was exhausted", ErrorCode::StorageCapacityExceeded);
 					}
 					binding.descriptorIndex = window.nextDescriptorIndex++;
 				}
@@ -1915,7 +1930,7 @@ struct FlowStorageSystem::Impl {
 			binding.textureGeneration = texture.generation;
 			binding.textureRevision = hot.revision;
 			if (window.bindingRevision == std::numeric_limits<uint32_t>::max()) {
-				storageError("window binding revision space exhausted");
+				storageError("window binding revision space exhausted", ErrorCode::StorageGenerationExhausted);
 			}
 			binding.bindingRevision = ++window.bindingRevision;
 			binding.state = hot.state;
@@ -2263,18 +2278,18 @@ FlowStorageSystem::~FlowStorageSystem() {
 
 void FlowStorageSystem::initialize(const StorageConfig& config) {
 	std::scoped_lock lock(impl_->mutex);
-	if (impl_->initialized) storageError("initialize called more than once");
-	if (impl_->terminated) storageError("a shut-down FlowStorageSystem instance cannot be reinitialized");
+	if (impl_->initialized) storageError("initialize called more than once", ErrorCode::ObjectAlreadyInitialized);
+	if (impl_->terminated) storageError("a shut-down FlowStorageSystem instance cannot be reinitialized", ErrorCode::ObjectAlreadyInitialized);
 	if (impl_->vk.device == VK_NULL_HANDLE || impl_->vk.allocator == nullptr) {
-		storageError("a valid Vulkan device and VMA allocator are required");
+		storageError("a valid Vulkan device and VMA allocator are required", ErrorCode::ObjectNotInitialized);
 	}
-	if (config.growthFactor <= 1.0f) storageError("growthFactor must be greater than one");
+	if (config.growthFactor <= 1.0f) storageError("growthFactor must be greater than one", ErrorCode::StorageConfigurationInvalid);
 	if (config.cpuSoftBudgetBytes == 0 || config.gpuSoftBudgetBytes == 0) {
-		storageError("storage budgets must be non-zero");
+		storageError("storage budgets must be non-zero", ErrorCode::StorageConfigurationInvalid);
 	}
 	if (config.defaultBufferWriteMode != BufferWriteMode::DirectMapped &&
 		config.defaultBufferWriteMode != BufferWriteMode::HostScratchThenCopy) {
-		storageError("defaultBufferWriteMode must select a concrete mapped write path");
+		storageError("defaultBufferWriteMode must select a concrete mapped write path", ErrorCode::StorageConfigurationInvalid);
 	}
 
 	impl_->config = config;
@@ -2282,10 +2297,10 @@ void FlowStorageSystem::initialize(const StorageConfig& config) {
 	impl_->config.expectedWorkerCount = std::max(1u, config.expectedWorkerCount);
 	impl_->persistentPool.initialize(
 		checkedSize(config.initialPersistentCpuBytes, "initial persistent pool size exceeds the host address space"),
-		config.growthFactor, config.allowRuntimeGrowth);
+		config.growthFactor, config.allowPersistentGrowth);
 	impl_->stringPool.initialize(
 		checkedSize(config.initialStringBytes, "initial string pool size exceeds the host address space"),
-		config.growthFactor, config.allowRuntimeGrowth);
+		config.growthFactor, config.allowPersistentGrowth);
 	impl_->blobs.reserve(static_cast<size_t>(config.expectedBlobs) + 1u);
 	impl_->buffers.reserve(static_cast<size_t>(config.expectedBuffers) + 1u);
 	impl_->images.reserve(static_cast<size_t>(config.expectedImages) + 1u);
@@ -2415,9 +2430,9 @@ uint64_t FlowStorageSystem::capabilities() const noexcept { return kCapabilityMa
 void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& desc) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
-	if (id == 0) storageError("window id zero is reserved");
+	if (id == 0) storageError("window id zero is reserved", ErrorCode::InvalidWindowId);
 	if (impl_->registeredWindowIds.contains(id)) {
-		storageError("window ids cannot be reused during one storage-system lifetime");
+		storageError("window ids cannot be reused during one storage-system lifetime", ErrorCode::InvalidWindowId);
 	}
 
 	auto window = std::make_unique<Impl::WindowState>();
@@ -2427,7 +2442,7 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 	window->desc.workerCount = std::max(1u, desc.workerCount);
 	window->desc.maxTextureBindings = std::max(1u, desc.maxTextureBindings);
 	if (desc.initialTextureBindings > window->desc.maxTextureBindings) {
-		storageError("initial texture binding count exceeds the window binding limit");
+		storageError("initial texture binding count exceeds the window binding limit", ErrorCode::StorageConfigurationInvalid);
 	}
 	window->bindingsByTextureIndex.reserve(std::max({
 		static_cast<size_t>(desc.initialTextureBindings),
@@ -2452,13 +2467,13 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 		auto frame = std::make_unique<Impl::FrameState>();
 		frame->transient.initialize(checkedSize(desc.transientBytesPerFrame,
 			"window frame arena size exceeds the host address space"), impl_->config.growthFactor,
-			impl_->config.allowRuntimeGrowth);
+			impl_->config.allowTransientGrowth);
 		frame->decode.initialize(checkedSize(impl_->config.initialDecodeScratchBytes,
 			"decode arena size exceeds the host address space"), impl_->config.growthFactor,
-			impl_->config.allowRuntimeGrowth);
+			impl_->config.allowTransientGrowth);
 		frame->upload.initialize(checkedSize(impl_->config.initialUploadStagingBytes,
 			"upload-staging arena size exceeds the host address space"), impl_->config.growthFactor,
-			impl_->config.allowRuntimeGrowth);
+			impl_->config.allowTransientGrowth);
 		frame->workers.reserve(window->desc.workerCount);
 		frame->pendingBufferWrites.reserve(4u);
 		frame->used.reserve(std::max<size_t>(
@@ -2477,16 +2492,16 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 			auto arena = std::make_unique<LinearArena>();
 			arena->initialize(checkedSize(desc.transientBytesPerWorker,
 				"window worker arena size exceeds the host address space"), impl_->config.growthFactor,
-				impl_->config.allowRuntimeGrowth);
+				impl_->config.allowTransientGrowth);
 			frame->workers.push_back(std::move(arena));
 		}
 		window->frames.push_back(std::move(frame));
 	}
 	auto [registered, inserted] = impl_->windows.emplace(id, std::move(window));
-	if (!inserted) storageError("window id is already registered");
+	if (!inserted) storageError("window id is already registered", ErrorCode::WindowRegistryCollision);
 	try {
 		if (!impl_->registeredWindowIds.insert(id).second) {
-			storageError("window id tombstone insertion collided");
+			storageError("window id tombstone insertion collided", ErrorCode::WindowRegistryCollision);
 		}
 	} catch (...) {
 		impl_->windows.erase(registered);
@@ -2530,11 +2545,11 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
 	Impl::WindowState& window = impl_->requireWindow(id);
-	if (desc.frameSlot >= window.frames.size()) storageError("beginFrame frame slot is out of range");
+	if (desc.frameSlot >= window.frames.size()) storageError("beginFrame frame slot is out of range", ErrorCode::StorageFrameProtocolViolation);
 	Impl::FrameState& frame = *window.frames[desc.frameSlot];
-	if (frame.active) storageError("frame slot is already active; completion/reuse protocol was violated");
+	if (frame.active) storageError("frame slot is already active; completion/reuse protocol was violated", ErrorCode::StorageFrameProtocolViolation);
 	if (frame.inFlightSerial != 0) {
-		storageError("frame slot cannot be reused before its exact submission token completes");
+		storageError("frame slot cannot be reused before its exact submission token completes", ErrorCode::StorageFrameProtocolViolation);
 	}
 #if FLOW_UI_DEV_MODE
 	auto arenaValidation = std::make_shared<ArenaLeaseState>();
@@ -2549,7 +2564,7 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 	Impl::invalidateArena(frame);
 	frame.frameNumber = desc.frameNumber;
 	if (impl_->nextFrameEpoch == 0 || impl_->nextFrameEpoch == std::numeric_limits<FrameEpoch>::max()) {
-		storageError("frame epoch space exhausted");
+		storageError("frame epoch space exhausted", ErrorCode::StorageGenerationExhausted);
 	}
 	frame.epoch = impl_->nextFrameEpoch++;
 	frame.currentBindingBatch = 0;
@@ -2571,14 +2586,14 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 FrameReadLease FlowStorageSystem::sealFrame(const FrameToken& frame) {
 	std::scoped_lock lock(impl_->mutex);
 	Impl::FrameState& state = impl_->requireFrame(frame, false);
-	if (!state.pendingBufferWrites.empty()) storageError("all buffer writes must be committed before sealing a frame");
+	if (!state.pendingBufferWrites.empty()) storageError("all buffer writes must be committed before sealing a frame", ErrorCode::StorageFrameProtocolViolation);
 	const Impl::WindowState& window = impl_->requireWindow(frame.window);
 	if (window.activeDescriptorBundle) {
 		impl_->addUse(state, ResourceKind::WindowDescriptorBundle,
 			window.activeDescriptorBundle.packed());
 	}
 	if (impl_->nextReadLeaseId == 0 || impl_->nextReadLeaseId == std::numeric_limits<uint64_t>::max()) {
-		storageError("frame read lease id space exhausted");
+		storageError("frame read lease id space exhausted", ErrorCode::StorageGenerationExhausted);
 	}
 #if FLOW_UI_DEV_MODE
 	auto leaseValidation = std::make_shared<ReadLeaseState>();
@@ -3245,14 +3260,14 @@ void FlowStorageSystem::releaseBlob(BlobHandle handle, SubmissionSerial lastUse)
 BufferHandle FlowStorageSystem::createBuffer(const BufferDesc& desc) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
-	if (desc.size == 0 || toVkBufferUsage(desc.usage) == 0) storageError("invalid buffer description");
+	if (desc.size == 0 || toVkBufferUsage(desc.usage) == 0) storageError("invalid buffer description", ErrorCode::ResourceCreationFailed);
 	impl_->validateSharingAttribution(desc.sharing, desc.window, desc.frameSlot, "buffer");
 	if (desc.persistentlyMapped && desc.access != AccessMode::CpuWrite && desc.access != AccessMode::CpuAndGpuWrite) {
 		storageError("persistently mapped buffers require CPU-write access");
 	}
 	if (desc.size > impl_->gpuSoftBudgetBytes ||
 		impl_->gpuLiveBytes + impl_->gpuRetiredBytes > impl_->gpuSoftBudgetBytes - desc.size)
-		storageError("GPU soft budget exceeded while creating buffer");
+		storageError("GPU soft budget exceeded while creating buffer", ErrorCode::StorageBudgetExceeded);
 
 	const uint32_t index = Impl::acquireIndex(impl_->buffers, impl_->freeBuffers);
 	Impl::BufferRecord& record = impl_->buffers[index];
@@ -3277,7 +3292,7 @@ BufferHandle FlowStorageSystem::createBuffer(const BufferDesc& desc) {
 	if (vmaCreateBuffer(impl_->vk.allocator, &bufferInfo, &allocationInfo, &record.buffer, &record.allocation, &resultInfo) != VK_SUCCESS) {
 		record.state = ResourceState::Invalid;
 		impl_->freeBuffers.push_back(index);
-		storageError("failed to allocate Vulkan buffer");
+		storageError("failed to allocate Vulkan buffer", ErrorCode::ResourceCreationFailed);
 	}
 	record.mapped = resultInfo.pMappedData;
 	vmaGetAllocationMemoryProperties(impl_->vk.allocator, record.allocation, &record.memoryProperties);
@@ -3288,7 +3303,7 @@ BufferHandle FlowStorageSystem::createBuffer(const BufferDesc& desc) {
 		vmaDestroyBuffer(impl_->vk.allocator, record.buffer, record.allocation);
 		record = Impl::BufferRecord{.generation = record.generation};
 		impl_->freeBuffers.push_back(index);
-		storageError("actual Vulkan buffer allocation exceeds the GPU soft budget");
+		storageError("actual Vulkan buffer allocation exceeds the GPU soft budget", ErrorCode::StorageBudgetExceeded);
 	}
 	record.state = ResourceState::Ready;
 	impl_->gpuLiveBytes += record.allocationBytes;
@@ -3305,12 +3320,12 @@ ImageHandle FlowStorageSystem::createImage(const ImageDesc& desc) {
 	impl_->requireInitialized();
 	const VkFormat format = toVkFormat(desc.format);
 	if (desc.width == 0 || desc.height == 0 || desc.depth == 0 || desc.layers == 0 || desc.mipLevels == 0 ||
-		format == VK_FORMAT_UNDEFINED || toVkImageUsage(desc.usage) == 0) storageError("invalid image description");
+		format == VK_FORMAT_UNDEFINED || toVkImageUsage(desc.usage) == 0) storageError("invalid image description", ErrorCode::ResourceCreationFailed);
 	const uint64_t estimatedBytes = estimateImageBytes(desc);
 	impl_->validateSharingAttribution(desc.sharing, desc.window, desc.frameSlot, "image");
 	if (estimatedBytes > impl_->gpuSoftBudgetBytes ||
 		impl_->gpuLiveBytes + impl_->gpuRetiredBytes > impl_->gpuSoftBudgetBytes - estimatedBytes)
-		storageError("GPU soft budget exceeded while creating image");
+		storageError("GPU soft budget exceeded while creating image", ErrorCode::StorageBudgetExceeded);
 
 	const uint32_t index = Impl::acquireIndex(impl_->images, impl_->freeImages);
 	Impl::ImageRecord& record = impl_->images[index];
@@ -3340,7 +3355,7 @@ ImageHandle FlowStorageSystem::createImage(const ImageDesc& desc) {
 	if (vmaCreateImage(impl_->vk.allocator, &imageInfo, &allocationInfo, &record.image, &record.allocation, &resultInfo) != VK_SUCCESS) {
 		record.state = ResourceState::Invalid;
 		impl_->freeImages.push_back(index);
-		storageError("failed to allocate Vulkan image");
+		storageError("failed to allocate Vulkan image", ErrorCode::ResourceCreationFailed);
 	}
 	if (resultInfo.size > 0) record.byteSize = resultInfo.size;
 	record.memoryTypeIndex = resultInfo.memoryType;
@@ -3351,7 +3366,7 @@ ImageHandle FlowStorageSystem::createImage(const ImageDesc& desc) {
 		vmaDestroyImage(impl_->vk.allocator, record.image, record.allocation);
 		record = Impl::ImageRecord{.generation = record.generation};
 		impl_->freeImages.push_back(index);
-		storageError("actual Vulkan image allocation exceeds the GPU soft budget");
+		storageError("actual Vulkan image allocation exceeds the GPU soft budget", ErrorCode::StorageBudgetExceeded);
 	}
 	impl_->gpuLiveBytes += record.byteSize;
 #if FLOW_UI_DEV_MODE
@@ -3366,7 +3381,7 @@ ImageViewHandle FlowStorageSystem::createImageView(ImageHandle image, const Imag
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();
 	impl_->requireSharedMutationPhase();
-	if (!impl_->usableImage(image)) storageError("createImageView received an invalid or retiring image handle");
+	if (!impl_->usableImage(image)) storageError("createImageView received an invalid or retiring image handle", ErrorCode::ResourceHandleInvalid);
 	Impl::ImageRecord& imageRecord = impl_->images[image.index];
 	if (desc.mipLevelCount == 0 || desc.arrayLayerCount == 0 ||
 		desc.baseMipLevel > imageRecord.desc.mipLevels ||
@@ -3407,7 +3422,7 @@ ImageViewHandle FlowStorageSystem::createImageView(ImageHandle image, const Imag
 		record = Impl::ImageViewRecord{.generation = record.generation};
 		impl_->imageViewHot[index] = ImageViewHotRecord{.generation = record.generation};
 		impl_->freeImageViews.push_back(index);
-		storageError("failed to create Vulkan image view");
+		storageError("failed to create Vulkan image view", ErrorCode::ResourceCreationFailed);
 	}
 	record.state = ResourceState::Ready;
 	impl_->imageViewHot[index] = ImageViewHotRecord{
@@ -3454,7 +3469,7 @@ SamplerHandle FlowStorageSystem::acquireSampler(const SamplerDesc& desc) {
 		record = Impl::SamplerRecord{.generation = record.generation};
 		impl_->samplerHot[index] = SamplerHotRecord{.generation = record.generation};
 		impl_->freeSamplers.push_back(index);
-		storageError("failed to create Vulkan sampler");
+		storageError("failed to create Vulkan sampler", ErrorCode::ResourceCreationFailed);
 	}
 	record.state = ResourceState::Ready;
 	const SamplerHandle handle{index, record.generation};
@@ -3496,7 +3511,7 @@ TextureHandle FlowStorageSystem::publishTexture(ResourceKey key, const TextureVi
 	impl_->requireInitialized();
 	impl_->requireSharedMutationPhase();
 	if (!impl_->usableImageView(desc.imageView) || !impl_->usableSampler(desc.sampler))
-		storageError("texture publication requires valid image-view and sampler handles");
+		storageError("texture publication requires valid image-view and sampler handles", ErrorCode::ResourceHandleInvalid);
 	impl_->validateTextureOwnership(key, desc);
 	if (const auto found = impl_->textureByKey.find(key); found != impl_->textureByKey.end()) {
 		if (inserted) *inserted = false;
@@ -3537,7 +3552,7 @@ TextureHandle FlowStorageSystem::publishTexture(ResourceKey key, const TextureVi
 	const TextureHandle handle{index, hot.generation};
 	try {
 		if (!impl_->textureByKey.emplace(key, handle).second) {
-			storageError("texture key publication collided with a stale entry");
+			storageError("texture key publication collided with a stale entry", ErrorCode::ResourcePublicationFailed);
 		}
 	} catch (...) {
 		impl_->releaseImageViewReference(desc.imageView, 0);
@@ -3556,7 +3571,7 @@ TextureHandle FlowStorageSystem::createAnonymousTexture(const TextureViewDesc& d
 	impl_->requireInitialized();
 	impl_->requireSharedMutationPhase();
 	if (!impl_->usableImageView(desc.imageView) || !impl_->usableSampler(desc.sampler)) {
-		storageError("anonymous texture creation requires valid image-view and sampler handles");
+		storageError("anonymous texture creation requires valid image-view and sampler handles", ErrorCode::ResourceHandleInvalid);
 	}
 	const ImageHandle backingImage = impl_->imageViews[desc.imageView.index].image;
 	const ImageDesc& imageDesc = impl_->images[backingImage.index].desc;
@@ -3607,12 +3622,12 @@ TextureHandle FlowStorageSystem::replaceTexture(ResourceKey key, const TextureVi
 	impl_->requireInitialized();
 	impl_->requireSharedMutationPhase();
 	if (!impl_->usableImageView(desc.imageView) || !impl_->usableSampler(desc.sampler))
-		storageError("texture replacement requires valid image-view and sampler handles");
+		storageError("texture replacement requires valid image-view and sampler handles", ErrorCode::ResourceHandleInvalid);
 	const auto found = impl_->textureByKey.find(key);
 	if (found == impl_->textureByKey.end()) return publishTexture(key, desc, nullptr);
 	impl_->validateTextureOwnership(key, desc);
 	const TextureHandle handle = found->second;
-	if (!impl_->validTexture(handle)) storageError("texture key points to an invalid handle");
+	if (!impl_->validTexture(handle)) storageError("texture key points to an invalid handle", ErrorCode::ResourceHandleInvalid);
 	const ImageHandle newBackingImage = impl_->imageViews[desc.imageView.index].image;
 	if (handle == impl_->fallbackTexture &&
 		(!impl_->usableImage(newBackingImage) || impl_->images[newBackingImage.index].state != ResourceState::Ready)) {
@@ -3809,7 +3824,7 @@ PreparedTextureBindings FlowStorageSystem::prepareTextureBindings(
 	const uint64_t reusable = window.freeDescriptorIndices.size();
 	const uint64_t unassigned = requiredNewBindings > reusable ? requiredNewBindings - reusable : 0u;
 	if (static_cast<uint64_t>(window.nextDescriptorIndex) + unassigned > window.desc.maxTextureBindings) {
-		storageError("window texture descriptor capacity was exhausted");
+		storageError("window texture descriptor capacity was exhausted", ErrorCode::StorageCapacityExceeded);
 	}
 
 	if (state.currentBindingBatch == std::numeric_limits<uint32_t>::max()) {
@@ -4953,10 +4968,10 @@ bool FlowStorageSystem::validateHandle(ResourceKind kind, uint32_t index, uint32
 
 void FlowStorageSystem::setBudget(uint64_t cpuBytes, uint64_t gpuBytes) {
 	std::scoped_lock lock(impl_->mutex);
-	if (cpuBytes == 0 || gpuBytes == 0) storageError("storage budgets must be non-zero");
+	if (cpuBytes == 0 || gpuBytes == 0) storageError("storage budgets must be non-zero", ErrorCode::StorageConfigurationInvalid);
 	if (impl_->persistentPool.liveBytes() + impl_->stringPool.liveBytes() > cpuBytes ||
 		impl_->gpuLiveBytes + impl_->gpuRetiredBytes > gpuBytes) {
-		storageError("new storage budget is below current committed usage");
+		storageError("new storage budget is below current committed usage", ErrorCode::StorageBudgetExceeded);
 	}
 	impl_->cpuSoftBudgetBytes = cpuBytes;
 	impl_->gpuSoftBudgetBytes = gpuBytes;

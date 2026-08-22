@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace FlowUi {
@@ -115,6 +116,9 @@ struct FrameInput {
 	 * such as navigation, deletion, copy, and paste.
 	 */
 	std::vector<char32_t> text;
+
+	/** Text codepoints discarded by the bounded platform queue since the prior frame. */
+	std::uint64_t droppedTextInputCount = 0;
 };
 
 /** @} */

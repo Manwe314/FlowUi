@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Error.hpp"
 #include "FlowUi/FontResources.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
@@ -131,8 +132,8 @@ struct FontManager {
 	 *
 	 * @see @ref md_docs_2tutorials_2fonts__and__text "Fonts and Text"
 	 */
-	FontFamilyId createFamily(const FontFamilyCreateInfo& createInfo);
-	FontFamilyId createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo);
+	Result<FontFamilyId> createFamily(const FontFamilyCreateInfo& createInfo);
+	Result<FontFamilyId> createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo);
 
 	/**
 	 * @brief Return a family id by name.
@@ -185,7 +186,7 @@ struct FontManager {
 	 *     });
 	 * @endcode
 	 */
-	FontId addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo);
+	Result<FontId> addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo);
 
 	/**
 	 * @brief Add a concrete face to a named family.
@@ -216,8 +217,8 @@ struct FontManager {
 	 *     });
 	 * @endcode
 	 */
-	FontId addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo);
-	FontId addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo);
+	Result<FontId> addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo);
+	Result<FontId> addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo);
 
 	/**
 	 * @brief Resolve a concrete Clay font id for a family, weight, and style.

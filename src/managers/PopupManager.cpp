@@ -357,8 +357,11 @@ void PopupManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) co
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;
 
-void PopupManager::init(storage::IStorageSystem& storageSystem, WindowId window) {
-	if (storage_) throw std::logic_error("PopupManager is already initialized.");
+void PopupManager::init(
+	storage::IStorageSystem& storageSystem,
+	WindowId window,
+	const ErrorPolicy& policy) {
+	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized));
 	const storage::StringId name = storageSystem.intern("flowui.popup.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<PopupManagerState>(
@@ -366,6 +369,9 @@ void PopupManager::init(storage::IStorageSystem& storageSystem, WindowId window)
 	storage_ = &storageSystem;
 	window_ = window;
 	stateHandle_ = handle.packed();
+	duplicatePolicy_ = policy.duplicatePopup;
+	missingAnchorPolicy_ = policy.missingPopupAnchor;
+	capacityPolicy_ = policy.popupCapacity;
 }
 
 void PopupManager::destroy() noexcept {
@@ -380,13 +386,16 @@ void PopupManager::destroy() noexcept {
 	storage_ = nullptr;
 	window_ = InvalidWindowId;
 	stateHandle_ = 0;
+	duplicatePolicy_ = PopupDuplicatePolicy::FirstSubmissionWins;
+	missingAnchorPolicy_ = PopupMissingAnchorPolicy::SkipPopup;
+	capacityPolicy_ = PopupCapacityPolicy::ClampLayer;
 }
 
 PopupManagerState& PopupManager::state() {
 	auto* result = manager_storage::state<PopupManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::PopupManager);
-	if (!result) throw std::logic_error("PopupManager is not attached to a live window storage scope.");
+	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	return *result;
 }
 
@@ -394,7 +403,7 @@ const PopupManagerState& PopupManager::state() const {
 	const auto* result = manager_storage::state<PopupManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::PopupManager);
-	if (!result) throw std::logic_error("PopupManager is not attached to a live window storage scope.");
+	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	return *result;
 }
 
@@ -405,7 +414,7 @@ void PopupManager::beginFrame(
 	float viewportHeight) {
 	auto& current = state();
 	if (current.frameActive) {
-		throw std::logic_error("PopupManager beginFrame called while a popup frame is already active.");
+		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive));
 	}
 	current.workingRecords = current.committedRecords;
 	current.currentSubmissions.clear();
@@ -479,27 +488,33 @@ uint32_t PopupManager::suppressedAnchorClayId() const {
 	return state().suppressedAnchorClayIdThisFrame;
 }
 
-PopupFrame PopupManager::request(FlowElementID popupId, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::request(FlowElementID popupId, const PopupRequest& requestValue) {
 	return requestImpl(popupId.value, requestValue);
 }
 
-PopupFrame PopupManager::request(GlobalFlowID popupId, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::request(GlobalFlowID popupId, const PopupRequest& requestValue) {
 	return requestImpl(popupId.value, requestValue);
 }
 
-PopupFrame PopupManager::request(FlowElementPartID popupId, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::request(FlowElementPartID popupId, const PopupRequest& requestValue) {
 	return requestImpl(popupId.value, requestValue);
 }
 
-PopupFrame PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requestValue) {
+Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requestValue) {
 	auto& current = state();
 	if (!current.frameActive) {
-		throw std::logic_error("PopupManager::request requires an active UiManager frame.");
+		return unexpectedError(makeError(ErrorCode::PopupFrameInactive));
 	}
 	if (popupKey == 0) return {};
 
 	if (const auto duplicate = current.currentSubmissionByKey.find(popupKey);
 		duplicate != current.currentSubmissionByKey.end()) {
+		if (duplicatePolicy_ == PopupDuplicatePolicy::RejectDuplicate) {
+			return unexpectedError(makeError(
+				ErrorCode::PopupDuplicateSubmission,
+				ErrorSubjectKind::Popup,
+				popupKey));
+		}
 #if FLOW_UI_DEV_MODE
 		std::fprintf(stderr, "[FlowUi] Warning: duplicate popup submission for id %llu.\n",
 			static_cast<unsigned long long>(popupKey));
@@ -516,56 +531,67 @@ PopupFrame PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requ
 
 	PopupFrame frame{};
 	if (!record.dismissed) {
-		const ResolvedAnchor anchor = resolveAnchor(requestValue.anchor, record, current);
+		ResolvedAnchor anchor = resolveAnchor(requestValue.anchor, record, current);
+		if (!anchor.valid && missingAnchorPolicy_ == PopupMissingAnchorPolicy::AnchorToViewport) {
+			anchor = resolveAnchor(PopupAnchor::viewport(), record, current);
+		}
 		if (anchor.valid) {
-			record.anchorClayId = anchor.parentId.id;
-			const uint32_t offset = std::min(current.nextPopupOffset, kPopupLayerCapacity - 1u);
-			if (current.nextPopupOffset < std::numeric_limits<uint32_t>::max()) {
-				++current.nextPopupOffset;
-			}
-			if (offset == kPopupLayerCapacity - 1u &&
-				current.nextPopupOffset > kPopupLayerCapacity && !current.capacityWarningIssued) {
-#if FLOW_UI_DEV_MODE
-				std::fprintf(stderr,
-					"[FlowUi] Warning: popup z-index capacity exceeded for this window frame.\n");
-#endif
+			if (current.nextPopupOffset >= kPopupLayerCapacity &&
+				capacityPolicy_ == PopupCapacityPolicy::SkipOverflowingPopup) {
 				current.capacityWarningIssued = true;
-			}
-			record.zIndex = static_cast<int16_t>(
-				kPopupLayerBase[layerIndex(requestValue.layer)] + offset);
-
-			const bool hasMeasuredSize = record.measured;
-			const bool hasExpectedSize = validExpectedSize(requestValue.expectedSize);
-			const bool hasKnownSize = hasMeasuredSize || hasExpectedSize;
-			const Clay_Dimensions knownSize = hasMeasuredSize
-				? record.measuredSize
-				: (hasExpectedSize ? *requestValue.expectedSize : Clay_Dimensions{});
-
-			if (!hasKnownSize &&
-				requestValue.firstFrame == PopupFirstFramePolicy::DeferUntilMeasured) {
-				frame.measureOnly = true;
-				frame.floating = makeMeasurementFloating(
-					anchor, requestValue.placement, record.zIndex, current);
 			} else {
-				PopupPlacement placement = requestValue.placement;
-				if (hasKnownSize && anchor.hasGeometry) {
-					const Clay_BoundingBox viewport{
-						.x = 0.0f,
-						.y = 0.0f,
-						.width = current.viewport.width,
-						.height = current.viewport.height,
-					};
-					placement = resolveOverflow(
-						placement, requestValue.overflow, anchor.bounds, knownSize, viewport);
+				record.anchorClayId = anchor.parentId.id;
+				const uint32_t offset = std::min(current.nextPopupOffset, kPopupLayerCapacity - 1u);
+				if (current.nextPopupOffset < std::numeric_limits<uint32_t>::max()) {
+					++current.nextPopupOffset;
 				}
-				frame.visible = true;
-				frame.floating = makeFloating(
-					anchor,
-					placement,
-					record.zIndex,
-					requestValue.pointerCaptureMode,
-					requestValue.clipTo);
+				if (offset == kPopupLayerCapacity - 1u &&
+					current.nextPopupOffset > kPopupLayerCapacity && !current.capacityWarningIssued) {
+#if FLOW_UI_DEV_MODE
+					std::fprintf(stderr,
+						"[FlowUi] Warning: popup z-index capacity exceeded for this window frame.\n");
+#endif
+					current.capacityWarningIssued = true;
+				}
+				record.zIndex = static_cast<int16_t>(
+					kPopupLayerBase[layerIndex(requestValue.layer)] + offset);
+
+				const bool hasMeasuredSize = record.measured;
+				const bool hasExpectedSize = validExpectedSize(requestValue.expectedSize);
+				const bool hasKnownSize = hasMeasuredSize || hasExpectedSize;
+				const Clay_Dimensions knownSize = hasMeasuredSize
+					? record.measuredSize
+					: (hasExpectedSize ? *requestValue.expectedSize : Clay_Dimensions{});
+
+				if (!hasKnownSize &&
+					requestValue.firstFrame == PopupFirstFramePolicy::DeferUntilMeasured) {
+					frame.measureOnly = true;
+					frame.floating = makeMeasurementFloating(
+						anchor, requestValue.placement, record.zIndex, current);
+				} else {
+					PopupPlacement placement = requestValue.placement;
+					if (hasKnownSize && anchor.hasGeometry) {
+						const Clay_BoundingBox viewport{
+							.x = 0.0f,
+							.y = 0.0f,
+							.width = current.viewport.width,
+							.height = current.viewport.height,
+						};
+						placement = resolveOverflow(
+							placement, requestValue.overflow, anchor.bounds, knownSize, viewport);
+					}
+					frame.visible = true;
+					frame.floating = makeFloating(
+						anchor,
+						placement,
+						record.zIndex,
+						requestValue.pointerCaptureMode,
+						requestValue.clipTo);
+				}
 			}
+		} else if (missingAnchorPolicy_ == PopupMissingAnchorPolicy::SkipPopup) {
+			record.measured = false;
+			record.hasBounds = false;
 		}
 #if FLOW_UI_DEV_MODE
 		else if (requestValue.anchor.kind == PopupAnchorKind::Element) {

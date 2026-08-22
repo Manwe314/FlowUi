@@ -237,7 +237,7 @@ void InputFieldManager::init(
 	const InputManagerConfig& config,
 	float pointsToPixelsScale,
 	detail::text::TextLayoutService& textLayoutService) {
-	if (storage_) throw std::logic_error("InputFieldManager is already initialized.");
+	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized));
 	const storage::StringId name = storageSystem.intern("flowui.input.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::InputFieldManagerState>(
@@ -249,7 +249,7 @@ void InputFieldManager::init(
 		storage_, handle, storage::ResourceKind::InputField);
 	if (!state_) {
 		destroy();
-		throw std::runtime_error("InputFieldManager storage record publication failed.");
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 	state_->config = config;
 	state_->pointsToPixelsScale = std::max(pointsToPixelsScale, 1.0e-6f);
@@ -274,7 +274,7 @@ void InputFieldManager::destroy() noexcept {
 }
 
 const detail::InputFieldFrameOverrides& InputFieldManager::frameOverrides() const {
-	if (!state_) throw std::logic_error("InputFieldManager is not attached to window storage.");
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	return state_->frameOverrides;
 }
 

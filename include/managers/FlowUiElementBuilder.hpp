@@ -249,7 +249,7 @@ public:
 
 	/** Replace the builder identity with an already resolved local ID. */
 	ElementBuilder& withID(FlowElementID id) {
-		if (!id) throw std::invalid_argument("FlowUi ElementBuilder requires a valid ID.");
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		elementId_ = id;
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
@@ -259,7 +259,7 @@ public:
 
 	/** Replace the builder identity with an explicitly global address. */
 	ElementBuilder& withID(GlobalFlowID id) {
-		if (!id) throw std::invalid_argument("FlowUi ElementBuilder requires a valid global ID.");
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		elementId_ = uiManager_.normalizeGlobalElementID(id);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
@@ -269,7 +269,7 @@ public:
 
 	/** Replace the builder identity with a part address already bound to its owner. */
 	ElementBuilder& withID(FlowElementPartID id) {
-		if (!id) throw std::invalid_argument("FlowUi ElementBuilder requires a bound part ID.");
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		elementId_ = uiManager_.normalizePartElementID(id);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
@@ -470,8 +470,7 @@ private:
 				declaration = ElementType::constructElement(buildContext);
 			}
 			if (uiManager_.constructedElementDepth() != constructedDepth.baseline) {
-				throw std::logic_error(
-					"FlowUi constructElement left a nested constructed element open.");
+				detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 			}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 1
 			invocationTiming.end();

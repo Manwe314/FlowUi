@@ -52,12 +52,17 @@ public:
 	 * @param makeActive If true, sets this variant as the active theme for type T.
 	 */
 	template <typename T>
-	void registerTheme(std::string_view variantName, T themeData, bool makeActive = true) {
+	Status registerTheme(std::string_view variantName, T themeData, bool makeActive = true) {
 		if (!controller_) {
-			throw std::runtime_error("ThemeManager is not initialized.");
+			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
 		}
-		const auto variantId = controller_->internString(variantName);
-		controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive);
+		try {
+			const auto variantId = controller_->internString(variantName);
+			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive);
+			return {};
+		} catch (const FlowUiException& exception) {
+			return unexpectedError(exception.error());
+		}
 	}
 
 	/**
@@ -68,8 +73,8 @@ public:
 	 * @param makeActive If true, sets this variant as the active theme for type T.
 	 */
 	template <typename T>
-	void registerTheme(T themeData, bool makeActive = true) {
-		registerTheme<T>("default", std::move(themeData), makeActive);
+	Status registerTheme(T themeData, bool makeActive = true) {
+		return registerTheme<T>("default", std::move(themeData), makeActive);
 	}
 
 	/**
@@ -80,10 +85,16 @@ public:
 	 * @return true if the variant exists and was set active, false otherwise.
 	 */
 	template <typename T>
-	bool setActiveVariant(std::string_view variantName) {
-		if (!controller_) return false;
+	Status setActiveVariant(std::string_view variantName) {
+		if (!controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
 		const auto variantId = controller_->internString(variantName);
-		return controller_->setActiveVariant<T>(variantId);
+		if (!controller_->hasThemeType<T>()) {
+			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound));
+		}
+		if (!controller_->setActiveVariant<T>(variantId)) {
+			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound));
+		}
+		return {};
 	}
 
 	/**
@@ -96,11 +107,11 @@ public:
 	template <typename T>
 	[[nodiscard]] const T& getActiveTheme() const {
 		if (!controller_) {
-			throw std::runtime_error("ThemeManager is not initialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		const T* ptr = controller_->getActiveThemeVariant<T>();
 		if (!ptr) {
-			throw std::runtime_error("No active theme variant registered for requested type.");
+			throw FlowUiException(makeError(ErrorCode::ThemeActiveVariantMissing));
 		}
 		return *ptr;
 	}
@@ -116,12 +127,12 @@ public:
 	template <typename T>
 	[[nodiscard]] const T& getTheme(std::string_view variantName) const {
 		if (!controller_) {
-			throw std::runtime_error("ThemeManager is not initialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		const auto variantId = controller_->internString(variantName);
 		const T* ptr = controller_->getThemeVariant<T>(variantId);
 		if (!ptr) {
-			throw std::runtime_error("Requested theme variant is not registered.");
+			throw FlowUiException(makeError(ErrorCode::ThemeVariantNotFound));
 		}
 		return *ptr;
 	}
@@ -134,12 +145,18 @@ public:
 	 * @param mutator Callback receiving reference to the theme struct.
 	 */
 	template <typename T>
-	void updateTheme(std::string_view variantName, std::function<void(T&)> mutator) {
+	Status updateTheme(std::string_view variantName, std::function<void(T&)> mutator) {
 		if (!controller_) {
-			throw std::runtime_error("ThemeManager is not initialized.");
+			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		const auto variantId = controller_->internString(variantName);
-		controller_->queueThemeMutation<T>(variantId, std::move(mutator));
+		if (!controller_->hasThemeType<T>()) {
+			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound));
+		}
+		if (!controller_->queueThemeMutation<T>(variantId, std::move(mutator))) {
+			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound));
+		}
+		return {};
 	}
 
 	/**
@@ -149,11 +166,17 @@ public:
 	 * @param mutator Callback receiving reference to the active theme struct.
 	 */
 	template <typename T>
-	void updateActiveTheme(std::function<void(T&)> mutator) {
+	Status updateActiveTheme(std::function<void(T&)> mutator) {
 		if (!controller_) {
-			throw std::runtime_error("ThemeManager is not initialized.");
+			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
 		}
-		controller_->queueActiveThemeMutation<T>(std::move(mutator));
+		if (!controller_->hasThemeType<T>()) {
+			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound));
+		}
+		if (!controller_->queueActiveThemeMutation<T>(std::move(mutator))) {
+			return unexpectedError(makeError(ErrorCode::ThemeActiveVariantMissing));
+		}
+		return {};
 	}
 
 	/**

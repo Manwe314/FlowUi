@@ -7,6 +7,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -56,7 +57,7 @@ public:
 		bool makeActive) {
 		std::lock_guard<std::mutex> lock(mutex_);
 		if (!storage_) {
-			throw std::runtime_error("ThemeStorageController: storage system uninitialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 
 		const uint64_t typeHash = detail::typeHash<T>();
@@ -150,6 +151,12 @@ public:
 	}
 
 	template <typename T>
+	[[nodiscard]] bool hasThemeType() const {
+		std::lock_guard<std::mutex> lock(mutex_);
+		return typeRegistry_.contains(detail::typeHash<T>());
+	}
+
+	template <typename T>
 	bool setActiveVariant(storage::StringId variantNameId) {
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
@@ -201,36 +208,56 @@ public:
 	}
 
 	template <typename T>
-	void queueThemeMutation(storage::StringId variantNameId, std::function<void(T&)> mutator) {
+	bool queueThemeMutation(storage::StringId variantNameId, std::function<void(T&)> mutator) {
+		static_assert(std::is_copy_constructible_v<T> && std::is_nothrow_move_assignable_v<T>,
+			"Staged FlowUi themes must support an allocation-safe rollback copy.");
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
+		const auto typeIt = typeRegistry_.find(typeHash);
+		if (typeIt == typeRegistry_.end() || !typeIt->second.variants.contains(variantNameId)) return false;
 
 		stagedMutations_.push_back(StagedThemeMutation{
 			.typeHash = typeHash,
 			.variantNameId = variantNameId,
 			.mutator = [userMutator = std::move(mutator)](void* rawPayload) {
 				auto* typedPayload = reinterpret_cast<T*>(rawPayload);
-				userMutator(*typedPayload);
+				T rollback(*typedPayload);
+				try {
+					userMutator(*typedPayload);
+				} catch (...) {
+					*typedPayload = std::move(rollback);
+					throw;
+				}
 			}
 		});
+		return true;
 	}
 
 	template <typename T>
-	void queueActiveThemeMutation(std::function<void(T&)> mutator) {
+	bool queueActiveThemeMutation(std::function<void(T&)> mutator) {
+		static_assert(std::is_copy_constructible_v<T> && std::is_nothrow_move_assignable_v<T>,
+			"Staged FlowUi themes must support an allocation-safe rollback copy.");
 		std::lock_guard<std::mutex> lock(mutex_);
 		const uint64_t typeHash = detail::typeHash<T>();
 
 		auto it = typeRegistry_.find(typeHash);
-		if (it == typeRegistry_.end() || it->second.activeVariantNameId == 0) return;
+		if (it == typeRegistry_.end() || it->second.activeVariantNameId == 0) return false;
 
 		stagedMutations_.push_back(StagedThemeMutation{
 			.typeHash = typeHash,
 			.variantNameId = it->second.activeVariantNameId,
 			.mutator = [userMutator = std::move(mutator)](void* rawPayload) {
 				auto* typedPayload = reinterpret_cast<T*>(rawPayload);
-				userMutator(*typedPayload);
+				T rollback(*typedPayload);
+				try {
+					userMutator(*typedPayload);
+				} catch (...) {
+					*typedPayload = std::move(rollback);
+					throw;
+				}
 			}
 		});
+		return true;
 	}
 
 	void applyStagedMutations();

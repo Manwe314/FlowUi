@@ -10,13 +10,21 @@ namespace {
 
 static void vkCheck(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error(message);
+		(void)message;
+		FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
+			? FlowUi::ErrorCode::VulkanDeviceLost : FlowUi::ErrorCode::VulkanNativeCallFailed;
+		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+			code = FlowUi::ErrorCode::AllocationFailed;
+		}
+		throw FlowUi::FlowUiException(FlowUi::makeError(
+			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			static_cast<std::uint32_t>(result)));
 	}
 }
 
 static VkSurfaceFormatKHR chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats, bool preferSrgb) {
 	if (formats.empty()) {
-		throw std::runtime_error("No surface formats available.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::SwapchainUnavailable));
 	}
 
 	const VkColorSpaceKHR desiredColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
@@ -133,7 +141,7 @@ void Swapchain::create(
 	VkExtent2D preferredExtent,
 	VkSwapchainKHR oldSwapchain) {
 	if (vk.device == VK_NULL_HANDLE || vk.phys == VK_NULL_HANDLE || surface == VK_NULL_HANDLE) {
-		throw std::runtime_error("Swapchain creation requires valid Vulkan device, physical device, and surface.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
 	}
 
 	VkSurfaceCapabilitiesKHR caps{};
@@ -159,7 +167,7 @@ void Swapchain::create(
 	}
 
 	if (formats.empty() || presentModes.empty()) {
-		throw std::runtime_error("Surface does not support required formats or present modes.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::SwapchainUnavailable));
 	}
 
 	VkSurfaceFormatKHR chosenFormat = chooseSurfaceFormat(formats, vulkanConfig.srgbBackbuffer);
@@ -336,7 +344,7 @@ void SwapchainGeneration::waitForPresentCompletion(VulkanContext& vk) const {
 			"Failed waiting for exact swapchain presentation completion.");
 		return;
 	}
-	throw std::runtime_error("Exact independent swapchain presentation completion is unavailable.");
+	throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::WindowPresentationUnsupported));
 }
 
 void SwapchainGeneration::destroy(VulkanContext& vk) {

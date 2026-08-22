@@ -76,7 +76,7 @@ steps:
 	- move some configuration struct of Storage system into PublicHeaders
 	- clean managers folder to only have public FlowUi namespace
 	- clean doxy comments
-	- change for(;;) -> while(true)
+	
 
 Element System:
 	- Theme lookup speedup
@@ -95,7 +95,7 @@ things i want to do:
 		- add Decorations [[]] to older code.
 		- Move all Non FlowUi namespcae things out of /include/managers
 		- Clean UP /include/FlowUi move internals and maybe move files / add folders
-		- change For(;;) into While(True)
+		- change For(;;) into While(True) 																	[Done]
 		- Remove Doxy comments on internals and update doxy comments on new API
 	- Lock in Configuration Structs
 		- Move internal Config Structs to Public config Structs
@@ -133,6 +133,8 @@ things i want to do:
 		- Tabs and TAb bar elements
 		- Menu items a Menu elements
 		- Dedicated Scrolling Area with scroll indicator
+	- Hard code in Fallback/Default Textures / fonts?
+	- Dev Mode Tooling to auto Train PGO.
 		
 
 

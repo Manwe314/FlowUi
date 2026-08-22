@@ -54,7 +54,7 @@ struct PopupSurface {
 		const FSELPopupSurfaceTheme& theme =
 			context.uiManager.theme<FSELTheme>().popupSurfaceTheme;
 		const PopupFrame frame = context.uiManager.popups().request(
-			context.id, context.params.popupRequest);
+			context.id, context.params.popupRequest).value_or(PopupFrame{});
 
 		Clay_ElementDeclaration declaration{};
 		declaration.layout = {

@@ -61,7 +61,7 @@ public:
 		requires HasState<E> && std::same_as<E, ElementType>
 	[[nodiscard]] StateOf<E>& state() {
 		if (!statePayload_) {
-			throw std::logic_error("FlowUi: stateful element invocation has no resolved state.");
+			throw FlowUiException(makeError(ErrorCode::ElementStateUnavailable));
 		}
 		return *static_cast<StateOf<E>*>(statePayload_);
 	}
@@ -71,7 +71,7 @@ public:
 		requires HasState<E> && std::same_as<E, ElementType>
 	[[nodiscard]] const StateOf<E>& state() const {
 		if (!statePayload_) {
-			throw std::logic_error("FlowUi: stateful element invocation has no resolved state.");
+			throw FlowUiException(makeError(ErrorCode::ElementStateUnavailable));
 		}
 		return *static_cast<const StateOf<E>*>(statePayload_);
 	}
@@ -85,7 +85,7 @@ public:
 				elementDescriptor<ElementType>, false);
 		}
 		if (!resourcePayload_) {
-			throw std::logic_error("FlowUi: element invocation resources were not resolved.");
+			throw FlowUiException(makeError(ErrorCode::ElementResourceUnavailable));
 		}
 		return *static_cast<const ResourcesOf<E>*>(resourcePayload_);
 	}

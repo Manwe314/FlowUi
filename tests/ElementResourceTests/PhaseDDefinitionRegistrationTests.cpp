@@ -106,10 +106,9 @@ void testIncompatibleDefinitionIdCollisionIsRejected() {
 
 	try {
 		(void)registry.ensureDefinition(FlowUi::detail::element::elementDescriptor<CollidingDefinition>);
-	} catch (const std::logic_error& error) {
-		const std::string_view message = error.what();
-		FLOWUI_CHECK(message.find("already registered") != std::string_view::npos);
-		FLOWUI_CHECK(message.find(std::to_string(kSharedDefinitionId.value)) != std::string_view::npos);
+	} catch (const FlowUi::FlowUiException& error) {
+		FLOWUI_CHECK(error.error().code == FlowUi::ErrorCode::ElementDefinitionConflict);
+		FLOWUI_CHECK(error.error().subject == kSharedDefinitionId.value);
 		FLOWUI_CHECK(registry.size() == 1);
 		return;
 	}

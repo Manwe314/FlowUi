@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdexcept>
-#include <string>
-
+#include "FlowUi/Error.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "internal/StorageSystem/IStorageSystem.hpp"
 
@@ -25,7 +23,7 @@ enum class ResourceScope : unsigned char {
 	case ResourceDomain::Internal: return storage::ResourceDomain::Internal;
 	case ResourceDomain::Auto: break;
 	}
-	throw std::invalid_argument("ResourceDomain::Auto must be resolved by a manager.");
+	throw FlowUiException(makeError(ErrorCode::InvalidResourceKey));
 }
 
 [[nodiscard]] inline storage::ResourceKey normalizeResourceKey(
@@ -35,21 +33,25 @@ enum class ResourceScope : unsigned char {
 	ResourceScope scope,
 	WindowId owningWindow = InvalidWindowId) {
 	if (key.name.empty()) {
-		throw std::invalid_argument("FlowUi resource key name must not be empty.");
+		throw FlowUiException(makeError(ErrorCode::InvalidResourceKey));
 	}
 	const ResourceDomain resolvedDomain = key.domain == ResourceDomain::Auto ? managerDomain : key.domain;
 	if (resolvedDomain != managerDomain) {
-		throw std::invalid_argument("FlowUi resource key domain does not match the receiving manager.");
+		throw FlowUiException(makeError(ErrorCode::ResourceKindMismatch));
 	}
 
 	WindowId resolvedWindow = InvalidWindowId;
 	if (scope == ResourceScope::WindowLocal) {
 		if (owningWindow == InvalidWindowId) {
-			throw std::logic_error("Window-local FlowUi manager has no owning WindowId.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		resolvedWindow = key.window == InvalidWindowId ? owningWindow : key.window;
 		if (resolvedWindow != owningWindow) {
-			throw std::invalid_argument("FlowUi resource key references a different manager window.");
+			throw FlowUiException(makeError(
+				ErrorCode::ResourceWindowMismatch,
+				ErrorSubjectKind::Window,
+				static_cast<std::uint64_t>(resolvedWindow),
+				static_cast<std::uint64_t>(owningWindow)));
 		}
 	}
 

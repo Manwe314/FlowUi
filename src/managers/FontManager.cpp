@@ -148,7 +148,7 @@ DecodedAtlasImage decodeImageToRgba8(
 	decoded.height = image.height;
 
 	if (decoded.width == 0 || decoded.height == 0) {
-		throw std::runtime_error(".arfont image has zero dimensions.");
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 	}
 
 	const auto* sourceDataBytes = static_cast<const unsigned char*>(image.data);
@@ -158,10 +158,10 @@ DecodedAtlasImage decodeImageToRgba8(
 	switch (image.encoding) {
 		case artery_font::IMAGE_PNG: {
 			if (!sourceData || sourceDataSize == 0) {
-				throw std::runtime_error(".arfont PNG image payload is empty.");
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 			}
 			if (sourceDataSize > static_cast<size_t>(std::numeric_limits<int>::max())) {
-				throw std::runtime_error(".arfont PNG payload is too large for stb_image.");
+				throw FlowUiException(makeError(ErrorCode::ImageSizeOverflow));
 			}
 
 			int decodedWidth = 0;
@@ -175,9 +175,7 @@ DecodedAtlasImage decodeImageToRgba8(
 				&decodedChannels,
 				4);
 			if (!rgbaPixels) {
-				const char* reason = stbi_failure_reason();
-				throw std::runtime_error(
-					std::string("Failed to decode .arfont PNG image: ") + (reason ? reason : "unknown error"));
+				throw FlowUiException(makeError(ErrorCode::ImageDecodeFailed));
 			}
 
 			const size_t decodedBytes = static_cast<size_t>(decodedWidth) * static_cast<size_t>(decodedHeight) * 4u;
@@ -193,17 +191,17 @@ DecodedAtlasImage decodeImageToRgba8(
 			decoded.height = static_cast<uint32_t>(decodedHeight);
 
 			if (decoded.width != image.width || decoded.height != image.height) {
-				throw std::runtime_error(".arfont PNG decoded dimensions do not match image metadata.");
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 			}
 			break;
 		}
 
 		case artery_font::IMAGE_RAW_BINARY: {
 			if (image.pixelFormat != artery_font::PIXEL_UNSIGNED8) {
-				throw std::runtime_error("Only unsigned 8-bit raw .arfont atlas images are supported.");
+				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 			}
 			if (image.channels != 1 && image.channels != 3 && image.channels != 4) {
-				throw std::runtime_error("Only 1/3/4 channel raw .arfont atlas images are supported.");
+				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 			}
 
 			const size_t pixelRowBytes = static_cast<size_t>(image.width) * static_cast<size_t>(image.channels);
@@ -212,12 +210,12 @@ DecodedAtlasImage decodeImageToRgba8(
 				: pixelRowBytes;
 
 			if (sourceRowBytes < pixelRowBytes) {
-				throw std::runtime_error(".arfont raw image row length is smaller than required.");
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 			}
 
 			const size_t requiredBytes = sourceRowBytes * static_cast<size_t>(image.height);
 			if (!sourceData || sourceDataSize < requiredBytes) {
-				throw std::runtime_error(".arfont raw image payload is too small.");
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 			}
 
 			decoded.rgbaPixels.resize(static_cast<size_t>(image.width) * static_cast<size_t>(image.height) * 4u);
@@ -253,7 +251,7 @@ DecodedAtlasImage decodeImageToRgba8(
 		}
 
 		default:
-			throw std::runtime_error("Unsupported .arfont image encoding.");
+			throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 	}
 
 	return decoded;
@@ -265,13 +263,11 @@ std::vector<uint8_t> copyAtlasIntoPage(
 	uint32_t pageHeight,
 	const std::filesystem::path& sourcePath) {
 	if (pageWidth == 0 || pageHeight == 0) {
-		throw std::runtime_error("Font atlas page size must be greater than zero.");
+		throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
 	}
 	if (source.width > pageWidth || source.height > pageHeight) {
-		throw std::runtime_error(
-			".arfont atlas " + std::to_string(source.width) + "x" + std::to_string(source.height) +
-			" is larger than configured ui.fontAtlasSize=" + std::to_string(pageWidth) +
-			" for " + sourcePath.string());
+		(void)sourcePath;
+		throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded));
 	}
 
 	const size_t pageRowBytes = static_cast<size_t>(pageWidth) * 4u;
@@ -304,7 +300,7 @@ std::string makeUniqueFontName(
 			return candidate;
 		}
 	}
-	throw std::runtime_error("Could not generate a unique font name.");
+	detail::terminateForFatalError(makeError(ErrorCode::IdentitySpaceExhausted));
 }
 
 } // namespace
@@ -322,18 +318,18 @@ void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSiz
 		storage_, handle, storage::ResourceKind::FontFamily);
 	if (!controller_) {
 		destroy();
-		throw std::runtime_error("Font catalog storage publication failed.");
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	controller_->setDevMemoryRecorder(devMemoryRecorder_);
 #endif
 }
 
-FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
-	if (!controller_ || !storage_) throw std::runtime_error("FontManager is not initialized.");
+Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
 	std::string familyName = createInfo.name.empty() ? std::string("Default") : createInfo.name;
 	if (controller_->familyIdByName.find(familyName) != controller_->familyIdByName.end()) {
-		throw std::runtime_error("Font family already exists: " + familyName);
+		return unexpectedError(makeError(ErrorCode::FontFamilyAlreadyExists));
 	}
 
 	const size_t oldFontCount = controller_->fonts.size();
@@ -349,8 +345,24 @@ FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& 
 	try {
 		controller_->familyIdByName.emplace(controller_->families.back().name, familyId);
 		controller_->familyTransaction = true;
-		for (const FontFaceCreateInfo& faceInfo : createInfo.faces) addFamilyFace(familyId, faceInfo);
+		for (const FontFaceCreateInfo& faceInfo : createInfo.faces) {
+			auto added = addFamilyFace(familyId, faceInfo);
+			if (!added) throw FlowUiException(added.error());
+		}
 		controller_->familyTransaction = false;
+	} catch (const FlowUiException& exception) {
+		controller_->familyTransaction = false;
+		for (size_t index = oldFontCount; index < controller_->fonts.size(); ++index) {
+			controller_->fontIndexById.erase(controller_->fonts[index].id);
+			controller_->fontIdByName.erase(controller_->fonts[index].name);
+		}
+		controller_->fonts.resize(oldFontCount);
+		controller_->nextFontId = oldNextFontId;
+		controller_->atlasLayerPixels.resize(oldLayerCount);
+		controller_->borrowedAtlas.layersUsed = static_cast<uint32_t>(oldLayerCount);
+		controller_->familyIdByName.erase(controller_->families.back().name);
+		controller_->families.pop_back();
+		return unexpectedError(exception.error());
 	} catch (...) {
 		controller_->familyTransaction = false;
 		for (size_t index = oldFontCount; index < controller_->fonts.size(); ++index) {
@@ -370,9 +382,15 @@ FontManager::FontFamilyId FontManager::createFamily(const FontFamilyCreateInfo& 
 	return familyId;
 }
 
-FontManager::FontFamilyId FontManager::createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) {
-	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+Result<FontManager::FontFamilyId> FontManager::createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) {
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	storage::ResourceKey normalized{};
+	try {
+		normalized = key_storage::normalizeResourceKey(
+			*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	FontFamilyCreateInfo normalizedInfo = createInfo;
 	normalizedInfo.name = std::string(storage_->string(normalized.name));
 	return createFamily(normalizedInfo);
@@ -389,13 +407,23 @@ FontManager::FontFamilyId FontManager::getFamilyId(ResourceKey key) const {
 	return getFamilyId(storage_->string(normalized.name));
 }
 
-FontManager::FontId FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) {
+Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
 	if (familyId >= controller_->families.size()) {
-		throw std::runtime_error("Font family id does not exist.");
+		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound, ErrorSubjectKind::Font, familyId));
 	}
 
 	controller_->families[familyId].faces.reserve(controller_->families[familyId].faces.size() + 1u);
-	const FontId fontId = loadFontFace(createInfo);
+	FontId fontId = 0;
+	try {
+		fontId = loadFontFace(createInfo);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	} catch (const std::bad_alloc&) {
+		throw;
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::FontBakeFailed));
+	}
 	controller_->families[familyId].faces.push_back(manager_storage::FontFamilyFaceRecord{
 		.fontId = fontId,
 		.weight = createInfo.weight,
@@ -408,17 +436,23 @@ FontManager::FontId FontManager::addFamilyFace(FontFamilyId familyId, const Font
 	return fontId;
 }
 
-FontManager::FontId FontManager::addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) {
+Result<FontManager::FontId> FontManager::addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) {
 	const FontFamilyId familyId = getFamilyId(familyName);
 	if (familyId == std::numeric_limits<FontFamilyId>::max()) {
-		throw std::runtime_error("Font family does not exist: " + std::string(familyName));
+		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound));
 	}
 	return addFamilyFace(familyId, createInfo);
 }
 
-FontManager::FontId FontManager::addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) {
-	const storage::ResourceKey normalized = key_storage::normalizeResourceKey(
-		*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+Result<FontManager::FontId> FontManager::addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) {
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	storage::ResourceKey normalized{};
+	try {
+		normalized = key_storage::normalizeResourceKey(
+			*storage_, key, ResourceDomain::Font, key_storage::ResourceScope::AppShared);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	return addFamilyFace(storage_->string(normalized.name), createInfo);
 }
 
@@ -464,7 +498,7 @@ FontManager::FontId FontManager::resolveFont(ResourceKey key, uint32_t weight, F
 
 FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createInfo) {
 	if (createInfo.path.empty()) {
-		throw std::runtime_error("Font face path must not be empty.");
+		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty));
 	}
 	if (isArfontPath(createInfo.path)) {
 		return registerBakedFont(createInfo.path.string(), createInfo.name);
@@ -479,11 +513,11 @@ FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createIn
 FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 	(void)px;
 	if (!controller_) {
-		throw std::runtime_error("FontManager is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 	const std::filesystem::path fontPath(path);
 	if (fontPath.empty()) {
-		throw std::runtime_error("Font path must not be empty.");
+		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty));
 	}
 
 	if (isArfontPath(fontPath)) {
@@ -496,26 +530,28 @@ FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 	createInfo.pixelSize = px;
 	return registerRuntimeFont(createInfo);
 #else
-	throw std::runtime_error("Unsupported font file type: " + fontPath.string());
+	throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 #endif
 }
 
 FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& createInfo) {
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
 	if (!controller_) {
-		throw std::runtime_error("[Flow Ui]: FontManager is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 	if (createInfo.path.empty()) {
-		throw std::runtime_error("[Flow Ui]: Runtime font path must not be empty.");
+		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty));
 	}
 	if (createInfo.pixelSize <= 0.0f) {
-		throw std::runtime_error("[Flow Ui]: Runtime font pixel size must be greater than zero.");
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
 	}
-	if (!std::filesystem::is_regular_file(createInfo.path)) {
-		throw std::runtime_error("[Flow Ui]: Font file does not exist: " + createInfo.path.string());
+	std::error_code pathError;
+	if (!std::filesystem::is_regular_file(createInfo.path, pathError)) {
+		throw FlowUiException(makeError(
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
 	}
 	if (controller_->atlasSizeHint == 0 || controller_->atlasSizeHint > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
-		throw std::runtime_error("[Flow Ui]: Runtime font atlas page size is invalid.");
+		throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
 	}
 
 	struct FreetypeGuard {
@@ -538,14 +574,14 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	FreetypeGuard freetype{};
 	freetype.handle = msdfgen::initializeFreetype();
 	if (!freetype.handle) {
-		throw std::runtime_error("Failed to initialize FreeType for runtime font baking.");
+		throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable));
 	}
 
 	FontGuard font{};
 	const std::string pathString = createInfo.path.string();
 	font.handle = msdfgen::loadFont(freetype.handle, pathString.c_str());
 	if (!font.handle) {
-		throw std::runtime_error("Failed to load runtime font file: " + pathString);
+		throw FlowUiException(makeError(ErrorCode::AssetOpenFailed));
 	}
 
 	std::vector<msdf_atlas::GlyphGeometry> glyphs;
@@ -558,10 +594,10 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		true);
 
 	if (glyphsLoaded < 0) {
-		throw std::runtime_error("Failed to load glyph geometry from runtime font: " + pathString);
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
 	}
 	if (glyphsLoaded == 0 || glyphs.empty()) {
-		throw std::runtime_error("No glyphs were loaded from runtime font: " + pathString);
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
 	}
 
 	unsigned long long glyphSeed = 0;
@@ -582,13 +618,10 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 
 	const int remaining = packer.pack(glyphs.data(), static_cast<int>(glyphs.size()));
 	if (remaining < 0) {
-		throw std::runtime_error("Failed to pack runtime font glyphs into atlas: " + pathString);
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
 	}
 	if (remaining > 0) {
-		throw std::runtime_error(
-			"Could not fit " + std::to_string(remaining) +
-			" runtime font glyphs into configured ui.fontAtlasSize=" + std::to_string(pageWidth) +
-			" for " + pathString);
+		throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded));
 	}
 
 	msdf_atlas::GeneratorAttributes attributes;
@@ -623,7 +656,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 
 	Font::FontFaceData fontFace{};
 	if (controller_->nextFontId == std::numeric_limits<FontId>::max()) {
-		throw std::runtime_error("FlowUi font id limit exceeded.");
+		throw FlowUiException(makeError(ErrorCode::FontIdSpaceExhausted));
 	}
 	fontFace.id = controller_->nextFontId;
 	fontFace.sourcePath = createInfo.path;
@@ -732,38 +765,40 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	return controller_->fonts.back().id;
 #else
 	(void)createInfo;
-	throw std::runtime_error("Runtime font baking is not enabled.");
+	throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable));
 #endif
 }
 
 FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
 	if (!controller_) {
-		throw std::runtime_error("FontManager is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 
 	const std::filesystem::path path(arfontPath);
 	if (!isArfontPath(path)) {
-		throw std::runtime_error("Unsupported baked font file type: " + path.string());
+		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 	}
-	if (!std::filesystem::is_regular_file(path)) {
-		throw std::runtime_error("Font file does not exist: " + path.string());
+	std::error_code pathError;
+	if (!std::filesystem::is_regular_file(path, pathError)) {
+		throw FlowUiException(makeError(
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
 	}
 
 	artery_font::StdArteryFont<float> arteryFont{};
 	const std::string pathString = path.string();
 	if (!artery_font::readFile(arteryFont, pathString.c_str())) {
-		throw std::runtime_error("Failed to read .arfont file: " + path.string());
+		throw FlowUiException(makeError(ErrorCode::AssetReadFailed));
 	}
 	if (arteryFont.variants.length() <= 0) {
-		throw std::runtime_error(".arfont file has no font variants: " + path.string());
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 	}
 	if (arteryFont.images.length() <= 0) {
-		throw std::runtime_error(".arfont file has no atlas images: " + path.string());
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
 	}
 
 	const int imageIndex = pickAtlasImageIndex(arteryFont);
 	if (imageIndex < 0) {
-		throw std::runtime_error(".arfont file has no supported atlas image encoding.");
+		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 	}
 
 	const auto* images = listData(arteryFont.images);
@@ -792,7 +827,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	const auto* variants = listData(arteryFont.variants);
 	Font::FontFaceData fontFace{};
 	if (controller_->nextFontId == std::numeric_limits<FontId>::max()) {
-		throw std::runtime_error("FlowUi font id limit exceeded.");
+		throw FlowUiException(makeError(ErrorCode::FontIdSpaceExhausted));
 	}
 	fontFace.id = controller_->nextFontId;
 	fontFace.sourcePath = path;
@@ -831,8 +866,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 		for (int glyphIndex = 0; glyphIndex < sourceVariant.glyphs.length(); ++glyphIndex) {
 			const auto& sourceGlyph = sourceGlyphs[glyphIndex];
 			if (sourceGlyph.image != static_cast<uint32_t>(imageIndex)) {
-				throw std::runtime_error(
-					".arfont references multiple atlas images per variant, which is not supported yet.");
+				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
 			}
 
 			Font::GlyphData glyph{};
@@ -914,12 +948,12 @@ const Font::FontFaceData* FontManager::getFontById(FontId fontId) const {
 }
 
 const Font::AtlasArrayResource& FontManager::getAtlasResource() const {
-	if (!controller_) throw std::logic_error("FontManager is not initialized.");
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	return controller_->borrowedAtlas;
 }
 
 manager_storage::FontFrameView FontManager::frameView(const storage::FrameToken& frame) const {
-	if (!controller_ || !storage_) throw std::logic_error("FontManager is not initialized.");
+	if (!controller_ || !storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	std::array<storage::ResourceUse, 3> uses{};
 	size_t count = 0;
 	if (controller_->atlasImage) uses[count++] = storage::useOf(controller_->atlasImage);

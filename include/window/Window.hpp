@@ -103,7 +103,7 @@ struct GlfwLibrary {
 			glfwSetErrorCallback(glfwErrorCallback);
 			if (!glfwInit()) {
 				refCount = 0;
-				throw std::runtime_error("Failed to initialize GLFW.");
+				throw FlowUiException(makeError(ErrorCode::PlatformInitializationFailed));
 			}
 		}
 	}
@@ -140,7 +140,7 @@ public:
 		if (config.fullscreen) {
 			monitor = glfwGetPrimaryMonitor();
 			if (!monitor) {
-				throw std::runtime_error("Failed to acquire primary monitor for fullscreen mode.");
+				throw FlowUiException(makeError(ErrorCode::PlatformMonitorUnavailable));
 			}
 			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 			if (mode) {
@@ -151,7 +151,7 @@ public:
 
 		window = glfwCreateWindow(width, height, config.title.c_str(), monitor, nullptr);
 		if (!window) {
-			throw std::runtime_error("Failed to create GLFW window.");
+			throw FlowUiException(makeError(ErrorCode::WindowCreationFailed));
 		}
 
 		glfwSetWindowUserPointer(window, this);
@@ -211,18 +211,24 @@ public:
 		uint32_t count = 0;
 		const char** extensions = glfwGetRequiredInstanceExtensions(&count);
 		if (!extensions || count == 0) {
-			throw std::runtime_error("GLFW did not provide required Vulkan extensions.");
+			throw FlowUiException(makeError(ErrorCode::PlatformRequiredExtensionMissing));
 		}
 		return std::vector<const char*>(extensions, extensions + count);
 	}
 
 	VkSurfaceKHR createSurface(VkInstance instance) override {
 		if (!window) {
-			throw std::runtime_error("GLFW window not initialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		VkSurfaceKHR surface = VK_NULL_HANDLE;
-		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create Vulkan surface via GLFW.");
+		const VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+		if (result != VK_SUCCESS) {
+			throw FlowUiException(makeError(
+				ErrorCode::PlatformSurfaceCreationFailed,
+				ErrorSubjectKind::None,
+				0u,
+				0u,
+				static_cast<std::uint32_t>(result)));
 		}
 		return surface;
 	}
@@ -356,14 +362,14 @@ private:
 	}
 
 	void installCallbacks() {
-		glfwSetCursorPosCallback(window, [](GLFWwindow* win, double x, double y) {
+		glfwSetCursorPosCallback(window, [](GLFWwindow* win, double x, double y) noexcept {
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
 			if (self && self->input) {
 				self->input->setMousePos(static_cast<float>(x), static_cast<float>(y));
 			}
 		});
 
-		glfwSetMouseButtonCallback(window, [](GLFWwindow* win, int button, int action, int mods) {
+		glfwSetMouseButtonCallback(window, [](GLFWwindow* win, int button, int action, int mods) noexcept {
 			(void)mods;
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
 			if (self && self->input) {
@@ -371,14 +377,14 @@ private:
 			}
 		});
 
-		glfwSetScrollCallback(window, [](GLFWwindow* win, double dx, double dy) {
+		glfwSetScrollCallback(window, [](GLFWwindow* win, double dx, double dy) noexcept {
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
 			if (self && self->input) {
 				self->input->pushScroll(static_cast<float>(dx), static_cast<float>(dy));
 			}
 		});
 
-		glfwSetKeyCallback(window, [](GLFWwindow* win, int key, int scancode, int action, int mods) {
+		glfwSetKeyCallback(window, [](GLFWwindow* win, int key, int scancode, int action, int mods) noexcept {
 			(void)scancode;
 			(void)mods;
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
@@ -387,14 +393,14 @@ private:
 			}
 		});
 
-		glfwSetCharCallback(window, [](GLFWwindow* win, unsigned int codepoint) {
+		glfwSetCharCallback(window, [](GLFWwindow* win, unsigned int codepoint) noexcept {
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
 			if (self && self->input) {
 				self->input->pushChar(static_cast<char32_t>(codepoint));
 			}
 		});
 
-		glfwSetWindowFocusCallback(window, [](GLFWwindow* win, int focused) {
+		glfwSetWindowFocusCallback(window, [](GLFWwindow* win, int focused) noexcept {
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
 			if (!self || !self->input || focused == GLFW_TRUE) {
 				return;

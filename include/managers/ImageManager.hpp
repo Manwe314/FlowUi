@@ -70,8 +70,8 @@ public:
 	 * (void)inserted;
 	 * @endcode
 	 */
-	bool registerImage(ResourceKey key, std::string_view filePath);
-	bool registerImage(std::string_view key, std::string_view filePath) {
+	Result<bool> registerImage(ResourceKey key, std::string_view filePath);
+	Result<bool> registerImage(std::string_view key, std::string_view filePath) {
 		return registerImage(ResourceKey{.name = key}, filePath);
 	}
 
@@ -95,8 +95,8 @@ public:
 	 * }
 	 * @endcode
 	 */
-	bool removeImage(ResourceKey key);
-	bool removeImage(std::string_view key) { return removeImage(ResourceKey{.name = key}); }
+	Result<bool> removeImage(ResourceKey key);
+	Result<bool> removeImage(std::string_view key) { return removeImage(ResourceKey{.name = key}); }
 
 	/**
 	 * @brief Return whether an image key is registered.
@@ -145,10 +145,11 @@ public:
 private:
 	friend class App;
 
-	void init(detail::storage::IStorageSystem& storageSystem);
+	void init(detail::storage::IStorageSystem& storageSystem, MissingVisualPolicy missingPolicy);
 	void destroy() noexcept;
 
 	detail::storage::IStorageSystem* storage_ = nullptr;
+	MissingVisualPolicy missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	devSystems::DevMemoryRecorder* devMemoryRecorder_ = nullptr;
 #endif

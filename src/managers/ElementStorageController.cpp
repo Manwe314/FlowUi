@@ -49,9 +49,10 @@ void requireStateDescriptor(const element::ElementRegistrationDescriptor& descri
 	if (!descriptor.hasState || descriptor.stateSize == 0 || descriptor.stateAlignment == 0 ||
 		descriptor.stateOperations.defaultConstruct == nullptr ||
 		descriptor.stateOperations.destroy == nullptr) {
-		throw std::logic_error(
-			"FlowUi element " + descriptorName(descriptor) +
-			" does not provide valid state metadata.");
+		throw FlowUiException(makeError(
+			ErrorCode::ElementDefinitionConflict,
+			ErrorSubjectKind::ElementDefinition,
+			descriptor.definitionId.value));
 	}
 }
 
@@ -61,9 +62,10 @@ void requireResourcesDescriptor(const element::ElementRegistrationDescriptor& de
 		(descriptor.resourceOperations.constructWithApp == nullptr &&
 			descriptor.resourceOperations.defaultConstruct == nullptr) ||
 		descriptor.resourceOperations.destroy == nullptr) {
-		throw std::logic_error(
-			"FlowUi element " + descriptorName(descriptor) +
-			" does not provide valid resource metadata.");
+		throw FlowUiException(makeError(
+			ErrorCode::ElementDefinitionConflict,
+			ErrorSubjectKind::ElementDefinition,
+			descriptor.definitionId.value));
 	}
 }
 
@@ -83,9 +85,10 @@ void validateResourceRecord(
 		reinterpret_cast<uintptr_t>(payload) % descriptor.resourcesAlignment == 0;
 	if (matches) return;
 
-	throw std::logic_error(
-		"FlowUi resource metadata mismatch for element definition " +
-		descriptorName(descriptor) + ".");
+	::FlowUi::detail::terminateForFatalError(makeError(
+		ErrorCode::ElementStorageStale,
+		ErrorSubjectKind::ElementDefinition,
+		descriptor.definitionId.value));
 }
 
 struct ResourceAllocation {
@@ -166,14 +169,6 @@ ResourceAllocation createResourceRecord(
 	return {.block = block, .payload = payload};
 }
 
-[[noreturn]] void throwResourceConstructionFailure(
-	const element::ElementRegistrationDescriptor& descriptor) {
-	std::throw_with_nested(std::runtime_error(
-		"FlowUi failed to construct app-wide resources for " + descriptorName(descriptor) +
-		". If its constructor mutates app-wide managers, call "
-		"app.elements().prepare(element) or prepare(elementSet) before beginFrame()."));
-}
-
 void validateStateRecord(
 	const ElementStateRecordHeader& header,
 	const storage::PersistentRecordView& view,
@@ -191,10 +186,11 @@ void validateStateRecord(
 		reinterpret_cast<uintptr_t>(view.payload) % descriptor.stateAlignment == 0;
 	if (matches) return;
 
-	throw std::logic_error(
-		"FlowUi state metadata mismatch for Flow ID " + std::to_string(instanceKey.value) +
-		": existing state belongs to " + std::string(storedDefinitionName(header)) +
-		", requested by " + descriptorName(descriptor) + ".");
+	::FlowUi::detail::terminateForFatalError(makeError(
+		ErrorCode::ElementStorageStale,
+		ErrorSubjectKind::ElementInstance,
+		instanceKey.value,
+		descriptor.definitionId.value));
 }
 
 storage::PersistentRecordView stateRecordView(
@@ -266,7 +262,10 @@ ResolvedElementState createStateRecord(
 	storage::PersistentRecordView view = stateRecordView(storage, handle);
 	if (!view) {
 		(void)storage.removePersistentRecord(handle, storage::ResourceKind::UiElementState);
-		throw std::runtime_error("FlowUi state record publication failed.");
+		::FlowUi::detail::terminateForFatalError(makeError(
+			ErrorCode::ElementStorageStale,
+			ErrorSubjectKind::ElementInstance,
+			instanceKey.value));
 	}
 	validateStateRecord(
 		*static_cast<ElementStateRecordHeader*>(view.header), view, instanceKey, descriptor);
@@ -361,10 +360,10 @@ ElementDefinitionRecord& ElementDefinitionRegistry::ensureDefinition(
 	auto existing = definitions_.find(descriptor.definitionId);
 	if (existing != definitions_.end()) {
 		if (!descriptorsMatch(existing->second->descriptor, descriptor)) {
-			throw std::logic_error(
-				"FlowUi element definition id " + std::to_string(descriptor.definitionId.value) +
-				" is already registered for " + descriptorName(existing->second->descriptor) +
-				" with incompatible metadata requested by " + descriptorName(descriptor) + ".");
+			throw FlowUiException(makeError(
+				ErrorCode::ElementDefinitionConflict,
+				ErrorSubjectKind::ElementDefinition,
+				descriptor.definitionId.value));
 		}
 		return *existing->second;
 	}
@@ -413,12 +412,12 @@ ElementStorageController::~ElementStorageController() {
 
 void ElementStorageController::registerWindow(WindowId window) {
 	if (window == InvalidWindowId) {
-		throw std::invalid_argument("ElementStorageController requires a valid window id.");
+		throw FlowUiException(makeError(ErrorCode::InvalidWindowId));
 	}
 
 	std::lock_guard<std::mutex> lock(windowsMutex_);
 	if (!storage_) {
-		throw std::runtime_error("ElementStorageController is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 	if (windows_.contains(window)) return;
 	(void)windows_.try_emplace(
@@ -474,13 +473,14 @@ const void* ElementStorageController::resolveOrCreateResources(
 			if (const void* ready = resources.payload.load(std::memory_order_acquire)) {
 				return ready;
 			} else {
-				throw std::logic_error("FlowUi element resource slot is ready without a payload.");
+				::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ElementStorageStale));
 			}
 		case ElementResourceState::Constructing:
 			if (resources.constructingThread == std::this_thread::get_id()) {
-				throw std::logic_error(
-					"FlowUi recursively requested resources while constructing " +
-					descriptorName(descriptor) + ".");
+				throw FlowUiException(makeError(
+					ErrorCode::ElementResourceRecursiveConstruction,
+					ErrorSubjectKind::ElementDefinition,
+					descriptor.definitionId.value));
 			}
 			resources.ready.wait(lock, [&resources] {
 				return resources.state != ElementResourceState::Constructing;
@@ -489,7 +489,10 @@ const void* ElementStorageController::resolveOrCreateResources(
 		case ElementResourceState::Failed:
 			if (!retryFailed) {
 				if (resources.failure) std::rethrow_exception(resources.failure);
-				throw std::runtime_error("FlowUi element resource construction previously failed.");
+				throw FlowUiException(makeError(
+					ErrorCode::ElementResourceConstructionFailed,
+					ErrorSubjectKind::ElementDefinition,
+					descriptor.definitionId.value));
 			}
 			resources.failure = nullptr;
 			[[fallthrough]];
@@ -498,7 +501,7 @@ const void* ElementStorageController::resolveOrCreateResources(
 			resources.constructingThread = std::this_thread::get_id();
 			break;
 		case ElementResourceState::Destroying:
-			throw std::runtime_error("FlowUi element resources are being destroyed.");
+			throw FlowUiException(makeError(ErrorCode::ElementResourceDestroying));
 		}
 		break;
 	}
@@ -506,15 +509,10 @@ const void* ElementStorageController::resolveOrCreateResources(
 
 	ResourceAllocation created{};
 	try {
-		if (!storage_) throw std::runtime_error("ElementStorageController is not initialized.");
+		if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		created = createResourceRecord(*storage_, descriptor, app);
 	} catch (...) {
-		std::exception_ptr focusedFailure;
-		try {
-			throwResourceConstructionFailure(descriptor);
-		} catch (...) {
-			focusedFailure = std::current_exception();
-		}
+		const std::exception_ptr focusedFailure = std::current_exception();
 		lock.lock();
 		resources.state = ElementResourceState::Failed;
 		resources.constructingThread = {};
@@ -542,21 +540,23 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 	ElementStatePolicy policy) {
 	requireStateDescriptor(descriptor);
 	if (window == InvalidWindowId || !instanceKey) {
-		throw std::invalid_argument("FlowUi element state requires valid window and Flow IDs.");
+		throw FlowUiException(makeError(
+			ErrorCode::InvalidElementId,
+			ErrorSubjectKind::ElementInstance,
+			instanceKey.value));
 	}
 
 	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
-	if (!storage_) throw std::runtime_error("ElementStorageController is not initialized.");
+	if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	const auto windowEntry = windows_.find(window);
 	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) {
-		throw std::invalid_argument("FlowUi element state requested for an unknown or closing window.");
+		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSubjectKind::Window, window));
 	}
 
 	WindowElementStateRegistry& registry = *windowEntry->second;
 	std::lock_guard<std::mutex> registryLock(registry.mutex);
 	if (!registry.transaction.active) {
-		throw std::logic_error(
-			"FlowUi element state resolution requires an active window frame transaction.");
+		throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, window));
 	}
 	ResolvedElementState resolved{};
 	bool created = false;
@@ -573,7 +573,12 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 			registry.byInstance.emplace(instanceKey, resolved.handle);
 			auto* header = static_cast<ElementStateRecordHeader*>(
 				stateRecordView(*storage_, resolved.handle).header);
-			if (!header) throw std::runtime_error("FlowUi state record became stale during publication.");
+			if (!header) {
+				::FlowUi::detail::terminateForFatalError(makeError(
+					ErrorCode::ElementStorageStale,
+					ErrorSubjectKind::ElementInstance,
+					instanceKey.value));
+			}
 			if (policy.retention == ElementStateRetention::Transient) {
 				registry.gcCandidates.push_back(instanceKey);
 				header->gcIndex = registry.gcCandidates.size() - 1;
@@ -669,25 +674,21 @@ void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 
 void ElementStorageController::beginWindowFrame(WindowId window, uint64_t epoch) {
 	if (window == InvalidWindowId || epoch == 0) {
-		throw std::invalid_argument(
-			"FlowUi element frame transaction requires valid window and epoch values.");
+		throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, window));
 	}
 	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
-	if (!storage_) throw std::runtime_error("ElementStorageController is not initialized.");
+	if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	const auto windowEntry = windows_.find(window);
 	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) {
-		throw std::invalid_argument(
-			"FlowUi element frame transaction requested for an unknown or closing window.");
+		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSubjectKind::Window, window));
 	}
 	WindowElementStateRegistry& registry = *windowEntry->second;
 	std::lock_guard<std::mutex> registryLock(registry.mutex);
 	if (registry.transaction.active || registry.activeInvocations != 0) {
-		throw std::logic_error(
-			"FlowUi element frame transaction is already active for this window.");
+		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSubjectKind::Window, window));
 	}
 	if (!registry.deferredErases.empty()) {
-		throw std::logic_error(
-			"FlowUi element frame cannot begin while deferred erasures remain pending.");
+		::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ElementStorageStale));
 	}
 	registry.transaction.clear();
 	registry.transaction.epoch = epoch;

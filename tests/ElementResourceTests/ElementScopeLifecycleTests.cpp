@@ -118,6 +118,11 @@ constexpr FlowUi::FlowElementID localID(
 
 bool environmentUnavailable(std::string_view message) {
 	constexpr std::string_view reasons[] = {
+		"The platform window system could not be initialized.",
+		"The FlowUi window could not be created.",
+		"No compatible Vulkan device is available.",
+		"A required Vulkan extension is unavailable.",
+		"The selected Vulkan device lacks a required feature.",
 		"Failed to initialize GLFW",
 		"Failed to create GLFW window",
 		"No Vulkan-capable GPU",
@@ -133,8 +138,8 @@ bool environmentUnavailable(std::string_view message) {
 }
 
 void finishFrame(FlowUi::App& app) {
-	app.endFrame();
-	app.drawFrame();
+	FLOWUI_CHECK(app.endFrame());
+	FLOWUI_CHECK(app.drawFrame());
 }
 
 void testScopeLifecycle() {
@@ -147,7 +152,7 @@ void testScopeLifecycle() {
 	FlowUi::UiManager& ui = app.ui();
 
 	SeenIDs seen;
-	app.beginFrame();
+	FLOWUI_CHECK(app.beginFrame());
 
 	ui.createElement(kNestedDraw, "parent")
 		.setParameters(NestedDrawParameters{.seen = &seen})
@@ -255,7 +260,7 @@ void testScopeLifecycle() {
 	finishFrame(app);
 
 	seen.clear();
-	app.beginFrame();
+	FLOWUI_CHECK(app.beginFrame());
 	ui.createElement(kProbe, "next-frame")
 		.setParameters(ProbeParameters{.seen = &seen})
 		.draw();

@@ -5,12 +5,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <new>
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
+#include "FlowUi/Error.hpp"
 #include "internal/ActionBinding.hpp"
 #include "internal/StorageSystem/PersistentRecord.hpp"
 #include "internal/UiActionBinding.hpp"
@@ -42,13 +44,13 @@ struct ActionManagerAccess;
 class AppActions {
 public:
 	template <typename Callable, typename... Resources>
-	AppActionCall bind(
+	Result<AppActionCall> bind(
 		AppActionID id,
 		Callable&& callable,
 		Resources&&... resources);
 
 	template <typename Callable, typename... Resources>
-	AppActionCall bind(
+	Result<AppActionCall> bind(
 		AppActionDescriptor descriptor,
 		Callable&& callable,
 		Resources&&... resources);
@@ -59,7 +61,7 @@ public:
 	bool unbind(AppActionID id);
 
 	template <typename Callable, typename... Resources>
-	AppActionCall rebind(
+	Result<AppActionCall> rebind(
 		AppActionDescriptor descriptor,
 		Callable&& callable,
 		Resources&&... resources);
@@ -162,7 +164,7 @@ private:
 
 	[[nodiscard]] detail::manager_storage::ActionManagerState& state();
 	[[nodiscard]] const detail::manager_storage::ActionManagerState& state() const;
-	void validateBindingRequest(AppActionID id, bool replacement) const;
+	[[nodiscard]] Status validateBindingRequest(AppActionID id, bool replacement) const;
 	void publishBinding(
 		AppActionID id,
 		detail::storage::PersistentRecordHandle handle,
@@ -185,7 +187,7 @@ private:
 #endif
 
 	template <typename Callable, typename... Resources>
-	AppActionCall bindTyped(
+	Result<AppActionCall> bindTyped(
 		AppActionDescriptor descriptor,
 		bool replacement,
 		Callable&& callable,
@@ -239,7 +241,7 @@ UiActionCall UiActions::make(
 }
 
 template <typename Callable, typename... Resources>
-AppActionCall AppActions::bind(
+Result<AppActionCall> AppActions::bind(
 	AppActionID id,
 	Callable&& callable,
 	Resources&&... resources) {
@@ -254,7 +256,7 @@ AppActionCall AppActions::bind(
 }
 
 template <typename Callable, typename... Resources>
-AppActionCall AppActions::bind(
+Result<AppActionCall> AppActions::bind(
 	AppActionDescriptor descriptor,
 	Callable&& callable,
 	Resources&&... resources) {
@@ -266,7 +268,7 @@ AppActionCall AppActions::bind(
 }
 
 template <typename Callable, typename... Resources>
-AppActionCall AppActions::rebind(
+Result<AppActionCall> AppActions::rebind(
 	AppActionDescriptor descriptor,
 	Callable&& callable,
 	Resources&&... resources) {
@@ -278,7 +280,7 @@ AppActionCall AppActions::rebind(
 }
 
 template <typename Callable, typename... Resources>
-AppActionCall ActionManager::bindTyped(
+Result<AppActionCall> ActionManager::bindTyped(
 	AppActionDescriptor descriptor,
 	bool replacement,
 	Callable&& callable,
@@ -291,19 +293,22 @@ AppActionCall ActionManager::bindTyped(
 	using Payload = detail::action::AppActionBindingPayload<
 		StoredCallable,
 		std::decay_t<Resources>...>;
-	using Result = detail::action::PayloadResult<Payload>;
-	static_assert(!std::is_reference_v<Result> && !std::is_array_v<Result>,
+	using PayloadResult = detail::action::PayloadResult<Payload>;
+	static_assert(!std::is_reference_v<PayloadResult> && !std::is_array_v<PayloadResult>,
 		"FlowUi app action results cannot be references or arrays; return a pointer or reference_wrapper.");
-	static_assert(std::is_void_v<Result> || std::is_move_constructible_v<Result>,
+	static_assert(std::is_void_v<PayloadResult> || std::is_move_constructible_v<PayloadResult>,
 		"FlowUi app action results must be move constructible.");
 
-	if (!storage_) throw std::logic_error("FlowUi ActionManager is not initialized.");
-	validateBindingRequest(descriptor.id, replacement);
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	auto validation = validateBindingRequest(descriptor.id, replacement);
+	if (!validation) return unexpectedError(validation.error());
 	const std::string_view effectiveName = descriptor.debugName.empty()
 		? std::string_view{"flowui.app_action.binding"}
 		: descriptor.debugName;
 	const detail::storage::StringId debugName = storage_->intern(effectiveName);
-	const auto handle = detail::storage::createTypedPersistentRecord<
+	detail::storage::PersistentRecordHandle handle{};
+	try {
+		handle = detail::storage::createTypedPersistentRecord<
 		detail::action::AppActionBindingHeader,
 		Payload>(
 		*storage_,
@@ -320,19 +325,37 @@ AppActionCall ActionManager::bindTyped(
 			header.resultTypeHash = detail::action::resultTypeHash<Payload>();
 			header.debugName = debugName;
 			header.invokeDiscard = &detail::action::invokeDiscard<Payload>;
-			if constexpr (!std::is_void_v<Result>) {
+			if constexpr (!std::is_void_v<PayloadResult>) {
 				header.invokeResult = &detail::action::invokeResult<Payload>;
 			}
 		},
 		StoredCallable(std::forward<Callable>(callable)),
 		std::decay_t<Resources>(std::forward<Resources>(resources))...);
+	} catch (const std::bad_alloc&) {
+		throw;
+	} catch (const FlowUiException& exception) {
+		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
+			detail::terminateForFatalError(exception.error());
+		}
+		if (exception.error().descriptor().category != ErrorCategory::Local) throw;
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::ResourceCreationFailed));
+	}
 
 	try {
 		publishBinding(descriptor.id, handle, replacement);
+	} catch (const FlowUiException&) {
+		(void)storage_->removePersistentRecord(
+			handle, detail::storage::ResourceKind::AppActionBinding);
+		detail::terminateForFatalError(makeError(
+			ErrorCode::ActionPublicationConflict,
+			ErrorSubjectKind::Action,
+			descriptor.id.value));
 	} catch (...) {
 		(void)storage_->removePersistentRecord(
 			handle, detail::storage::ResourceKind::AppActionBinding);
-		throw;
+		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 	return AppActionCall{descriptor.id};
 }

@@ -105,7 +105,7 @@ namespace FlowUi
 		if (!clayContext) {
 			storageSystem.releasePersistent(clayMemory);
 			clayMemory = {};
-			throw std::runtime_error("FlowUi: Clay_Initialize failed. Increase ui.clayArenaCapacityBytes.");
+			throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
 		}
 
 		const float configuredDpi = std::max(1.0f, appConfig.ui.dpi);
@@ -127,7 +127,7 @@ namespace FlowUi
 	}
 
 	void UiManager::initStorage(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config) {
-		if (storage_) throw std::logic_error("UiManager is already initialized.");
+		if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized));
 		const storage::StringId name = storageSystem.intern("flowui.ui.root");
 		const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
 		const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::UiManagerState>(
@@ -138,7 +138,7 @@ namespace FlowUi
 		stateHandle_ = handle.packed();
 		state_ = manager_storage::state<manager_storage::UiManagerState>(
 			storage_, handle, storage::ResourceKind::UiContext);
-		if (!state_) throw std::runtime_error("UiManager storage record publication failed.");
+		if (!state_) throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
 
 		Clay_SetCurrentContext(state_->clayContext);
 		Clay_SetMeasureTextFunction(
@@ -162,7 +162,7 @@ namespace FlowUi
 			throw;
 		}
 		try {
-			popupManager_.init(storageSystem, window);
+			popupManager_.init(storageSystem, window, config.errors);
 		} catch (...) {
 			destroyStorage();
 			throw;
@@ -190,7 +190,7 @@ namespace FlowUi
 					if (!state_->devToolsConfig.enabled) return false;
 					state_->devPanelVisible = !state_->devPanelVisible;
 					return true;
-				});
+				}).value_or(0u);
 		}
 #endif
 	}
@@ -218,28 +218,28 @@ namespace FlowUi
 
 	ElementManager& UiManager::elements() {
 		if (!elementManager_) {
-			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		return *elementManager_;
 	}
 
 	const ElementManager& UiManager::elements() const {
 		if (!elementManager_) {
-			throw std::runtime_error("FlowUi: UiManager is not connected to ElementManager.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		return *elementManager_;
 	}
 
 	ActionManager& UiManager::actions() {
 		if (!actionManager_) {
-			throw std::runtime_error("FlowUi: UiManager is not connected to ActionManager.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		return *actionManager_;
 	}
 
 	const ActionManager& UiManager::actions() const {
 		if (!actionManager_) {
-			throw std::runtime_error("FlowUi: UiManager is not connected to ActionManager.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		return *actionManager_;
 	}
@@ -366,14 +366,14 @@ namespace FlowUi
 			devSystems::TimingZoneRole::Work, "flowui.ui.begin_frame");
 #endif
 		if (!state_->clayContext) {
-			throw std::runtime_error("FlowUi: Clay context is not initialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		state_->activeFrame = frame;
 		state_->frameArena = storage_->frameArena(frame, storage::MemoryClass::FrameTransient);
 		state_->fontView = fontView;
 		inputFieldManager_.setFontFrameView(fontView, state_->pointsToPixelsScale);
 		if (!state_->frameArena.context) {
-			throw std::runtime_error("FlowUi: window frame arena is unavailable.");
+			throw FlowUiException(makeError(ErrorCode::FrameNotReady));
 		}
 
 		{
@@ -483,7 +483,7 @@ namespace FlowUi
 			devSystems::TimingZoneRole::Work, "flowui.ui.end_frame");
 #endif
 		if (!state_->clayContext) {
-			throw std::runtime_error("FlowUi: Clay context is not initialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 
 		Clay_SetCurrentContext(state_->clayContext);
@@ -588,10 +588,10 @@ namespace FlowUi
 	char* UiManager::allocBytes(size_t nBytes, size_t align)
 	{
 		if (!state_ || !state_->activeFrame) {
-			throw std::logic_error("FlowUi frame storage is not active.");
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation));
 		}
 		void* memory = state_->frameArena.allocate(nBytes, align);
-		if (!memory) throw std::runtime_error("FlowUi window frame arena allocation failed.");
+		if (!memory) throw FlowUiException(makeError(ErrorCode::FrameCapacityExceeded));
 		return static_cast<char*>(memory);
 	}
 	
@@ -893,10 +893,10 @@ namespace devMode::elementCapture {
 
 	void UiManager::drawConstructed() {
 		if (!state_->clayContext) {
-			throw std::runtime_error("FlowUi: Clay context is not initialized.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		if (state_->constructedElementStack.empty()) {
-			throw std::runtime_error("FlowUi: drawConstructed called without a matching construct call.");
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation));
 		}
 
 		Clay_SetCurrentContext(state_->clayContext);
@@ -930,7 +930,7 @@ namespace devMode::elementCapture {
 		const auto [indexEnd, error] = std::to_chars(
 			indexBuffer, indexBuffer + sizeof(indexBuffer), name.index);
 		if (error != std::errc{}) {
-			throw std::runtime_error("FlowUi could not format an indexed element debug name.");
+			detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 		}
 		const size_t indexBytes = static_cast<size_t>(indexEnd - indexBuffer);
 		const size_t totalBytes = name.debugName.size() + indexBytes + 2;
@@ -953,7 +953,7 @@ namespace devMode::elementCapture {
 		const auto [columnEnd, columnError] = std::to_chars(
 			columnBuffer, columnBuffer + sizeof(columnBuffer), name.column);
 		if (lineError != std::errc{} || columnError != std::errc{}) {
-			throw std::runtime_error("FlowUi could not format an automatic element debug name.");
+			detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 		}
 		constexpr std::string_view prefix = "@auto/";
 		const size_t lineBytes = static_cast<size_t>(lineEnd - lineBuffer);
@@ -989,7 +989,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		LocalElementName name) {
 		if (!parent || !definition || !name) {
-			throw std::invalid_argument("FlowUi local element IDs require valid parent, definition, and name values.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return detail::element_id::resolveLocal(
 			parent,
@@ -1006,7 +1006,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		RuntimeElementName name) {
 		if (!parent || !definition || !name) {
-			throw std::invalid_argument("FlowUi runtime element IDs require valid parent, definition, and name values.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return detail::element_id::resolveLocal(
 			parent,
@@ -1023,7 +1023,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		IndexedElementName name) {
 		if (!parent || !definition || !name) {
-			throw std::invalid_argument("FlowUi indexed element IDs require valid parent, definition, and name values.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return detail::element_id::resolveLocal(
 			parent,
@@ -1040,7 +1040,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		AutoElementName name) {
 		if (!parent || !definition || !name) {
-			throw std::invalid_argument("FlowUi automatic element IDs require valid parent, definition, and callsite values.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return detail::element_id::resolveAutomatic(
 			parent,
@@ -1053,7 +1053,7 @@ namespace devMode::elementCapture {
 	}
 
 	FlowElementID UiManager::normalizeGlobalElementID(GlobalFlowID id) {
-		if (!id) throw std::invalid_argument("FlowUi requires a valid global element ID.");
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		return FlowElementID{
 			.value = id.value,
 #if FLOW_UI_DEV_MODE
@@ -1076,8 +1076,7 @@ namespace devMode::elementCapture {
 		FlowElementID owner,
 		FlowElementPart part) {
 		if (!ownerDefinition || !owner || !part) {
-			throw std::invalid_argument(
-				"FlowUi semantic parts require valid owner definition, owner ID, and declaration values.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return FlowElementPartID{
 			.value = detail::identity_hash::compose(
@@ -1093,7 +1092,8 @@ namespace devMode::elementCapture {
 
 	size_t UiManager::pushFlowScope(FlowElementID id) {
 		if (!state_ || !state_->activeFrame || !id) {
-			throw std::logic_error("FlowUi cannot enter an element scope outside an active frame.");
+			throw FlowUiException(makeError(
+				!id ? ErrorCode::InvalidElementId : ErrorCode::FramePhaseViolation));
 		}
 		return state_->flowScopes.push(id);
 	}
@@ -1186,7 +1186,7 @@ namespace devMode::elementCapture {
 
 	const ThemeManager& UiManager::appThemes() const {
 		if (!themeManager_) {
-			throw std::runtime_error("UiManager: ThemeManager is not connected.");
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 		}
 		return *themeManager_;
 	}

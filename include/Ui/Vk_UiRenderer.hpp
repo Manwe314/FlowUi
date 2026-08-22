@@ -181,6 +181,7 @@ struct VulkanUiRenderer {
 	FlowUi::detail::storage::IStorageSystem* storage_ = nullptr;
 	FlowUi::WindowId windowId_ = FlowUi::InvalidWindowId;
 	uint64_t initialInstanceBytes_ = 1024u * 1024u;
+	bool allowInstanceGrowth_ = true;
 
 	VkFormat targetFormat_ = VK_FORMAT_UNDEFINED;
 	uint32_t maxUiImageDescriptors_ = 256;
@@ -198,7 +199,8 @@ struct VulkanUiRenderer {
 		FlowUi::WindowId windowId,
 		const SharedUiByteResources& sharedResources,
 		uint64_t initialInstanceBytes,
-		uint32_t textureDescriptorCapacity);
+		uint32_t textureDescriptorCapacity,
+		bool allowInstanceGrowth);
 	void destroy(
 		VulkanContext& vk,
 		FlowUi::detail::storage::IStorageSystem& storage,

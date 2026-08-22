@@ -49,7 +49,7 @@ void ThemeStorageController::shutdown() noexcept {
 
 storage::StringId ThemeStorageController::internString(std::string_view str) {
 	if (!storage_) {
-		throw std::runtime_error("ThemeStorageController: storage is null during internString.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 	return storage_->intern(str);
 }
@@ -58,7 +58,7 @@ storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
 	uint64_t typeHash,
 	storage::StringId variantNameId) const {
 	if (!storage_) {
-		throw std::runtime_error("ThemeStorageController: storage is null while creating a theme resource key.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 
 	const std::string_view variantName = storage_->string(variantNameId);
@@ -75,25 +75,37 @@ storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
 }
 
 void ThemeStorageController::applyStagedMutations() {
-	std::lock_guard<std::mutex> lock(mutex_);
-	if (stagedMutations_.empty()) return;
+	std::vector<StagedThemeMutation> pending;
+	{
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (stagedMutations_.empty()) return;
+		pending.swap(stagedMutations_);
+	}
 
-	for (const auto& mutation : stagedMutations_) {
-		auto it = typeRegistry_.find(mutation.typeHash);
-		if (it == typeRegistry_.end()) continue;
+	for (const auto& mutation : pending) {
+		storage::ManagerRecordHandle handle{};
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			auto it = typeRegistry_.find(mutation.typeHash);
+			if (it == typeRegistry_.end()) continue;
+			auto varIt = it->second.variants.find(mutation.variantNameId);
+			if (varIt == it->second.variants.end()) continue;
+			handle = varIt->second.handle;
+		}
 
-		auto varIt = it->second.variants.find(mutation.variantNameId);
-		if (varIt == it->second.variants.end()) continue;
-
-		void* rawRecord = storage_->managerRecordData(varIt->second.handle, storage::ResourceKind::UiTheme);
-		if (rawRecord) {
-			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
-			mutation.mutator(header->payload());
-			header->revision++;
+		void* rawRecord = storage_->managerRecordData(handle, storage::ResourceKind::UiTheme);
+		if (!rawRecord) continue;
+		auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
+		mutation.mutator(header->payload());
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			void* current = storage_->managerRecordData(handle, storage::ResourceKind::UiTheme);
+			if (current == rawRecord) {
+				reinterpret_cast<storage::ThemeRecordHeader*>(current)->revision++;
+			}
 		}
 	}
 
-	stagedMutations_.clear();
 }
 
 } // namespace FlowUi::detail::manager_storage

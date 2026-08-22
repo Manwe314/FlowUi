@@ -396,7 +396,7 @@ private:
 			request.expectedSize = Clay_Dimensions{expectedWidth, popupHeight};
 		}
 		const FlowElementPartID popupId = context.part(Parts::popup);
-		const PopupFrame frame = context.uiManager.popups().request(popupId, request);
+		const PopupFrame frame = context.uiManager.popups().request(popupId, request).value_or(PopupFrame{});
 		if (!frame.visible && !frame.measureOnly) return;
 
 		Clay_ElementDeclaration popup{};

@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <limits>
+#include <new>
 #include <stdexcept>
 
 #include <stb_image.h>
@@ -57,22 +58,31 @@ struct CandidateImage {
 
 } // namespace
 
-void ImageManager::init(storage::IStorageSystem& storageSystem) {
+void ImageManager::init(storage::IStorageSystem& storageSystem, MissingVisualPolicy missingPolicy) {
 	storage_ = &storageSystem;
+	missingPolicy_ = missingPolicy;
 }
 
 void ImageManager::destroy() noexcept {
 	storage_ = nullptr;
+	missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 }
 
-bool ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
-	if (!storage_) throw std::runtime_error("ImageManager is not initialized.");
-	const storage::ResourceKey normalized = imageKey(*storage_, key);
-	if (filePath.empty()) throw std::invalid_argument("Image file path must not be empty.");
+Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	storage::ResourceKey normalized{};
+	try {
+		normalized = imageKey(*storage_, key);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
+	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty));
 
 	const std::filesystem::path path(filePath);
-	if (!std::filesystem::is_regular_file(path)) {
-		throw std::runtime_error("Image file does not exist: " + path.string());
+	std::error_code pathError;
+	if (!std::filesystem::is_regular_file(path, pathError)) {
+		return unexpectedError(makeError(
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
 	}
 
 	int width = 0;
@@ -80,15 +90,14 @@ bool ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
 	int channels = 0;
 	stbi_uc* decoded = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!decoded || width <= 0 || height <= 0) {
-		const std::string reason = stbi_failure_reason() ? stbi_failure_reason() : "unknown decode error";
 		if (decoded) stbi_image_free(decoded);
-		throw std::runtime_error("Failed to decode image: " + path.string() + " (" + reason + ")");
+		return unexpectedError(makeError(ErrorCode::ImageDecodeFailed));
 	}
 
 	const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
 	if (pixelCount > std::numeric_limits<size_t>::max() / 4u) {
 		stbi_image_free(decoded);
-		throw std::overflow_error("Decoded image byte size exceeds the host address space.");
+		return unexpectedError(makeError(ErrorCode::ImageSizeOverflow));
 	}
 	const size_t byteCount = static_cast<size_t>(pixelCount * 4u);
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -147,15 +156,25 @@ bool ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
 		});
 		storage_->clearDiagnosticMark(normalized, MissingImageDiagnostic);
 		return inserted;
-	} catch (...) {
+	} catch (const std::bad_alloc&) {
 		if (decoded) stbi_image_free(decoded);
 		throw;
+	} catch (const FlowUiException& exception) {
+		if (decoded) stbi_image_free(decoded);
+		return unexpectedError(exception.error());
+	} catch (...) {
+		if (decoded) stbi_image_free(decoded);
+		return unexpectedError(makeError(ErrorCode::ImagePublicationFailed));
 	}
 }
 
-bool ImageManager::removeImage(ResourceKey key) {
-	if (!storage_) throw std::runtime_error("ImageManager is not initialized.");
-	return storage_->removeTexture(imageKey(*storage_, key));
+Result<bool> ImageManager::removeImage(ResourceKey key) {
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	try {
+		return storage_->removeTexture(imageKey(*storage_, key));
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 }
 
 bool ImageManager::contains(ResourceKey key) const {
@@ -168,10 +187,13 @@ TextureRef ImageManager::getTexture(ResourceKey key) const {
 	const storage::ResourceKey normalized = imageKey(*storage_, key);
 	result.handle = storage_->findTexture(normalized);
 	if (!result.handle) {
+		result.skipIfUnavailable = missingPolicy_ == MissingVisualPolicy::SkipVisual;
 		if (storage_->markDiagnosticOnce(normalized, MissingImageDiagnostic)) {
 			std::fprintf(
 				stderr,
-				"[FlowUi] Warning: texture key '%.*s' was not found, using the fallback texture.\n",
+				missingPolicy_ == MissingVisualPolicy::SkipVisual
+					? "[FlowUi] Warning: texture key '%.*s' was not found, skipping the visual.\n"
+					: "[FlowUi] Warning: texture key '%.*s' was not found, using the fallback texture.\n",
 				static_cast<int>(key.name.size()),
 				key.name.data());
 		}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Error.hpp"
 
 #include <cstdint>
 #include <clay.h>
@@ -97,14 +98,14 @@ public:
 	 *
 	 * @see @ref md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 	 */
-	ShortcutId registerShortcut(
+	Result<ShortcutId> registerShortcut(
 		const ShortcutChord& chord,
 		ShortcutScope scope,
 		int32_t priority,
 		ShortcutCallback callback);
 
 	/** Register a retained semantic app action for this window's shortcut scope. */
-	ShortcutId registerShortcut(
+	Result<ShortcutId> registerShortcut(
 		const ShortcutChord& chord,
 		ShortcutScope scope,
 		int32_t priority,
