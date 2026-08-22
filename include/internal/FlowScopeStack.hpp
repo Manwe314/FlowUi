@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "FlowUi/ElementID.hpp"
+#include "FlowUi/Error.hpp"
 
 namespace FlowUi::detail::manager_storage {
 
@@ -27,7 +28,7 @@ public:
 	[[nodiscard]] size_t depth() const noexcept { return scopes_.size(); }
 
 	[[nodiscard]] size_t push(FlowElementID id) {
-		if (!id) throw std::invalid_argument("FlowUi cannot enter an invalid element scope.");
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		const size_t priorDepth = scopes_.size();
 		scopes_.push_back(id);
 		return priorDepth;

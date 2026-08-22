@@ -8,6 +8,7 @@
 #include <string>
 
 #include "Ui/Vk_UiRenderer.hpp"
+#include "internal/InputQueue.hpp"
 
 namespace {
 
@@ -171,6 +172,37 @@ void testLogicalTextureBindingConversion() {
 		1.0f, 1.0f, 1.0f, instances, runs, scissors, bindings);
 	FLOWUI_CHECK(stale.instanceCount == 1u);
 	FLOWUI_CHECK(instances[0].texIndex == 0u);
+
+	texture.handle = {};
+	texture.skipIfUnavailable = true;
+	const auto skipped = buildUiInstancesDirect(
+		commandArray(commands), overrides, VkExtent2D{64, 64}, nullptr,
+		1.0f, 1.0f, 1.0f, instances, runs, scissors, bindings);
+	FLOWUI_CHECK(skipped.instanceCount == 0u);
+	FLOWUI_CHECK(skipped.imageCommandCount == 1u);
+}
+
+void testBoundedTextInputPolicies() {
+	FlowUi::detail::InputQueue dropNewest(2u, FlowUi::InputQueueOverflowPolicy::DropNewest);
+	dropNewest.pushChar(U'a');
+	dropNewest.pushChar(U'b');
+	dropNewest.pushChar(U'c');
+	const FlowUi::FrameInput newestFrame = dropNewest.drain(0.01);
+	FLOWUI_CHECK(newestFrame.text == std::vector<char32_t>({U'a', U'b'}));
+	FLOWUI_CHECK(newestFrame.droppedTextInputCount == 1u);
+
+	FlowUi::detail::InputQueue dropOldest(2u, FlowUi::InputQueueOverflowPolicy::DropOldest);
+	dropOldest.pushChar(U'a');
+	dropOldest.pushChar(U'b');
+	dropOldest.pushChar(U'c');
+	const FlowUi::FrameInput oldestFrame = dropOldest.drain(0.01);
+	FLOWUI_CHECK(oldestFrame.text == std::vector<char32_t>({U'b', U'c'}));
+	FLOWUI_CHECK(oldestFrame.droppedTextInputCount == 1u);
+
+	dropOldest.pushChar(U'd');
+	const FlowUi::FrameInput reusedFrame = dropOldest.drain(0.01);
+	FLOWUI_CHECK(reusedFrame.text == std::vector<char32_t>({U'd'}));
+	FLOWUI_CHECK(reusedFrame.droppedTextInputCount == 0u);
 }
 
 void testRendererHasNoVmaOwnership() {
@@ -210,6 +242,7 @@ int main() {
 	runner.run("text fallback and empty image conversion", testTextFallbackAndEmptyImage);
 	runner.run("instance capacity growth and invalid input", testCapacityGrowthAndInvalidInput);
 	runner.run("logical texture binding direct conversion", testLogicalTextureBindingConversion);
+	runner.run("bounded text input overflow policies", testBoundedTextInputPolicies);
 	runner.run("renderer has no direct VMA ownership", testRendererHasNoVmaOwnership);
 	return runner.finish();
 }

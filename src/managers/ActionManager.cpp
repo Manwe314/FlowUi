@@ -55,7 +55,7 @@ void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
 	if (!manager_storage::state<manager_storage::ActionManagerState>(
 			&storageSystem, handle, storage::ResourceKind::ActionManager)) {
 		(void)storageSystem.removeManagerRecord(key, storage::ResourceKind::ActionManager);
-		throw std::runtime_error("FlowUi ActionManager storage root publication failed.");
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 	app_ = &app;
 	storage_ = &storageSystem;
@@ -108,7 +108,7 @@ manager_storage::ActionManagerState& ActionManager::state() {
 		storage_,
 		storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::ActionManager);
-	if (!result) throw std::logic_error("FlowUi ActionManager is not initialized.");
+	if (!result) detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 	return *result;
 }
 
@@ -117,19 +117,20 @@ const manager_storage::ActionManagerState& ActionManager::state() const {
 		storage_,
 		storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::ActionManager);
-	if (!result) throw std::logic_error("FlowUi ActionManager is not initialized.");
+	if (!result) detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 	return *result;
 }
 
-void ActionManager::validateBindingRequest(AppActionID id, bool replacement) const {
-	if (!id) throw std::invalid_argument("FlowUi app action id must be nonzero.");
+Status ActionManager::validateBindingRequest(AppActionID id, bool replacement) const {
+	if (!id) return unexpectedError(makeError(ErrorCode::InvalidActionId));
 	const bool exists = state().bindings.contains(id);
 	if (!replacement && exists) {
-		throw std::logic_error("FlowUi app action is already bound; use rebind().");
+		return unexpectedError(makeError(ErrorCode::ActionAlreadyBound, ErrorSubjectKind::Action, id.value));
 	}
 	if (replacement && !exists) {
-		throw std::logic_error("FlowUi app action rebind requires an existing binding.");
+		return unexpectedError(makeError(ErrorCode::ActionNotBound, ErrorSubjectKind::Action, id.value));
 	}
+	return {};
 }
 
 void ActionManager::publishBinding(
@@ -140,12 +141,14 @@ void ActionManager::publishBinding(
 	if (!replacement) {
 		const auto [_, inserted] = current.bindings.emplace(id, handle);
 		if (!inserted) {
-			throw std::logic_error("FlowUi app action binding changed during publication.");
+			detail::terminateForFatalError(makeError(
+				ErrorCode::ActionPublicationConflict, ErrorSubjectKind::Action, id.value));
 		}
 	} else {
 		const auto found = current.bindings.find(id);
 		if (found == current.bindings.end()) {
-			throw std::logic_error("FlowUi app action disappeared during rebind publication.");
+			detail::terminateForFatalError(makeError(
+				ErrorCode::ActionPublicationConflict, ErrorSubjectKind::Action, id.value));
 		}
 		const storage::PersistentRecordHandle previous = found->second;
 		found->second = handle;

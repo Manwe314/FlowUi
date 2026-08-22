@@ -14,6 +14,10 @@ namespace {
 using namespace FlowUi;
 using namespace FlowUi::FSEL;
 
+void requireStatus(Status status) {
+	if (!status) throw FlowUiException(status.error());
+}
+
 constexpr GlobalFlowID kAnchoredPopupTriggerId =
 	Global<FlowUi::FSEL::kButton>("demo.popup.anchor-trigger");
 constexpr GlobalFlowID kAnchoredPopupSurfaceId =
@@ -1468,14 +1472,14 @@ int main() {
 		const DemoActions actions = makeActions(app, state);
 
 		while (!app.shouldClose()) {
-			app.beginFrame();
+			requireStatus(app.beginFrame());
 			if (state.page == DemoPage::Gallery) {
 				drawGallery(app.ui(), state, actions);
 			} else {
 				drawWritingStudio(app.ui(), state, actions);
 			}
-			app.endFrame();
-			app.drawFrame();
+			requireStatus(app.endFrame());
+			requireStatus(app.drawFrame());
 		}
 		return 0;
 	} catch (const std::exception& error) {

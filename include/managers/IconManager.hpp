@@ -87,8 +87,8 @@ struct IconManager {
 	 * (void)inserted;
 	 * @endcode
 	 */
-	bool registerSvg(std::string_view key, std::string_view svgSource);
-	bool registerSvg(ResourceKey key, std::string_view svgSource);
+	Result<bool> registerSvg(std::string_view key, std::string_view svgSource);
+	Result<bool> registerSvg(ResourceKey key, std::string_view svgSource);
 
 	/**
 	 * @brief Register an SVG document from a file path.
@@ -113,8 +113,8 @@ struct IconManager {
 	 * (void)inserted;
 	 * @endcode
 	 */
-	bool registerFromFile(std::string_view key, std::string_view filePath);
-	bool registerFromFile(ResourceKey key, std::string_view filePath);
+	Result<bool> registerFromFile(std::string_view key, std::string_view filePath);
+	Result<bool> registerFromFile(ResourceKey key, std::string_view filePath);
 
 	/**
 	 * @brief Remove a registered SVG document by key.
@@ -135,8 +135,8 @@ struct IconManager {
 	 * }
 	 * @endcode
 	 */
-	bool remove(std::string_view key);
-	bool remove(ResourceKey key);
+	Result<bool> remove(std::string_view key);
+	Result<bool> remove(ResourceKey key);
 
 	/**
 	 * @brief Return whether an SVG key is registered.
@@ -190,7 +190,11 @@ struct IconManager {
 private:
 	friend class App;
 
-	void init(detail::storage::IStorageSystem& storage, const IconManagerConfig& config);
+	void init(
+		detail::storage::IStorageSystem& storage,
+		const IconManagerConfig& config,
+		IconGenerationFailurePolicy generationPolicy,
+		CapacityFailurePolicy capacityPolicy);
 	void beginAppTick();
 	void prepareFrameTextures(
 		Clay_RenderCommandArray& renderCommands,
@@ -245,6 +249,8 @@ private:
 		uint32_t requestedHeight);
 	const std::string* findRequestedKeyByTextureHandle(TextureHandle texture) const;
 	detail::storage::IStorageSystem* storage_ = nullptr;
+	IconGenerationFailurePolicy generationPolicy_ = IconGenerationFailurePolicy::UseFallbackTexture;
+	CapacityFailurePolicy capacityPolicy_ = CapacityFailurePolicy::RejectOperation;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::IconCacheController* controller_ = nullptr;
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -287,12 +293,12 @@ struct IconManager {
 	 * (void)app.icons().registerSvg("status/check", svgSource);
 	 * @endcode
 	 */
-	bool registerSvg(std::string_view key, std::string_view svgSource) {
+	Result<bool> registerSvg(std::string_view key, std::string_view svgSource) {
 		(void)key;
 		(void)svgSource;
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature));
 	}
-	bool registerSvg(ResourceKey key, std::string_view svgSource) {
+	Result<bool> registerSvg(ResourceKey key, std::string_view svgSource) {
 		return registerSvg(key.name, svgSource);
 	}
 
@@ -308,12 +314,12 @@ struct IconManager {
 	 * (void)app.icons().registerFromFile("toolbar/open", "assets/icons/open.svg");
 	 * @endcode
 	 */
-	bool registerFromFile(std::string_view key, std::string_view filePath) {
+	Result<bool> registerFromFile(std::string_view key, std::string_view filePath) {
 		(void)key;
 		(void)filePath;
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature));
 	}
-	bool registerFromFile(ResourceKey key, std::string_view filePath) {
+	Result<bool> registerFromFile(ResourceKey key, std::string_view filePath) {
 		return registerFromFile(key.name, filePath);
 	}
 
@@ -328,11 +334,11 @@ struct IconManager {
 	 * (void)app.icons().remove("toolbar/open");
 	 * @endcode
 	 */
-	bool remove(std::string_view key) {
+	Result<bool> remove(std::string_view key) {
 		(void)key;
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature));
 	}
-	bool remove(ResourceKey key) { return remove(key.name); }
+	Result<bool> remove(ResourceKey key) { return remove(key.name); }
 
 	/**
 	 * @brief Throws because icon support is disabled.
@@ -348,7 +354,7 @@ struct IconManager {
 	 */
 	bool contains(std::string_view key) const {
 		(void)key;
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
+		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature));
 	}
 	bool contains(ResourceKey key) const { return contains(key.name); }
 
@@ -365,7 +371,7 @@ struct IconManager {
 	 */
 	TextureRef textureRef(std::string_view key) {
 		(void)key;
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
+		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature));
 	}
 	TextureRef textureRef(ResourceKey key) { return textureRef(key.name); }
 
@@ -373,7 +379,7 @@ private:
 	friend class App;
 
 	void init(detail::storage::IStorageSystem&, const IconManagerConfig&) {
-		throw std::runtime_error("FlowUi was built with FLOWUI_INCLUDE_ICON_MANAGER=OFF.");
+		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature));
 	}
 
 	void beginAppTick() {}

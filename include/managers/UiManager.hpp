@@ -321,7 +321,7 @@ public:
 #endif
 		) {
 		if (!globalId) {
-			throw std::invalid_argument("FlowUi createElement requires a valid global ID.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return ElementBuilder<Element>(
 			*this,
@@ -344,7 +344,7 @@ public:
 #endif
 		) {
 		if (!resolvedId) {
-			throw std::invalid_argument("FlowUi createElement requires a valid resolved ID.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return ElementBuilder<Element>(
 			*this,
@@ -368,7 +368,7 @@ public:
 #endif
 		) {
 		if (!partId) {
-			throw std::invalid_argument("FlowUi createElement requires a bound part ID.");
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
 		}
 		return ElementBuilder<Element>(
 			*this,

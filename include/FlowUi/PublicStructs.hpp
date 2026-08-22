@@ -11,6 +11,7 @@
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "FlowUi/MemoryCapacityProfile.hpp"
+#include "FlowUi/Error.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
 #include "managers/structs/ShortcutManagerStructs.hpp"
 
@@ -442,6 +443,12 @@ struct AppConfig {
 	/** Optional profiled startup capacities; zero fields preserve library defaults. */
 	MemoryCapacityProfile memoryCapacityProfile{};
 
+	/** Always-on error resolution choices selected for the lifetime of the App. */
+	ErrorPolicy errors{};
+
+	/** Evidence-only observer called immediately before an unrecoverable halt. */
+	FatalErrorSink fatalErrors{};
+
 	/**
 	 * @brief Developer tooling and capture defaults.
 	 *
@@ -516,6 +523,9 @@ struct TextureRef {
 	 * Application code may change this after obtaining the TextureRef.
 	 */
 	bool tintEnabled = false;
+
+	/** Manager-owned signal that an unavailable optional visual emits no draw. */
+	bool skipIfUnavailable = false;
 
 	/** @brief Manager-owned source texture width in pixels; do not edit manually. */
 	int32_t sourceWidth = 0;

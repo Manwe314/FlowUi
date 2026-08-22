@@ -53,8 +53,9 @@ void testBindSelectInvokeAndAvailability(FlowUi::test::HeadlessVulkanFixture& vu
 	ActionStore store(vulkan);
 	auto& actions = store.manager().appActions();
 	int value = 0;
-	const auto bound = actions.bind(kIncrement, &increment, &value);
-	FLOWUI_CHECK(bound);
+	const auto boundResult = actions.bind(kIncrement, &increment, &value);
+	FLOWUI_CHECK(boundResult);
+	const auto bound = boundResult.value();
 	FLOWUI_CHECK(actions.isBound(kIncrement));
 	FLOWUI_CHECK(actions.select(kIncrement).id == bound.id);
 	FLOWUI_CHECK(store.manager().invoke(FlowUi::ActionCall{bound}) ==
@@ -78,20 +79,26 @@ void testResultsReplacementAndFailures(FlowUi::test::HeadlessVulkanFixture& vulk
 	auto& actions = store.manager().appActions();
 	int left = 20;
 	int right = 22;
-	const auto selected = actions.bind(
+	const auto selectedResult = actions.bind(
 		{.id = kCompute, .debugName = "Compute answer"}, &add, &left, &right);
+	FLOWUI_CHECK(selectedResult);
+	const auto selected = selectedResult.value();
 	const auto result = actions.invokeFor<int>(selected);
 	FLOWUI_CHECK(result);
 	FLOWUI_CHECK(result.value() == 42);
 	const auto mismatch = actions.invokeFor<float>(selected);
 	FLOWUI_CHECK(!mismatch);
 	FLOWUI_CHECK(mismatch.error() == FlowUi::ActionInvokeError::ResultTypeMismatch);
-	FLOWUI_CHECK_THROWS(actions.bind(kCompute, &add, &left, &right));
+	const auto duplicate = actions.bind(kCompute, &add, &left, &right);
+	FLOWUI_CHECK(!duplicate);
+	FLOWUI_CHECK(duplicate.error().code == FlowUi::ErrorCode::ActionAlreadyBound);
 
 	left = 1;
 	right = 2;
-	const auto rebound = actions.rebind(
+	const auto reboundResult = actions.rebind(
 		{.id = kCompute, .debugName = "Compute replacement"}, &add, &left, &right);
+	FLOWUI_CHECK(reboundResult);
+	const auto rebound = reboundResult.value();
 	FLOWUI_CHECK(rebound.id == selected.id);
 	FLOWUI_CHECK(actions.invokeFor<int>(selected).value() == 3);
 	FLOWUI_CHECK(actions.invoke(selected) == FlowUi::ActionInvocationStatus::Invoked);
@@ -103,13 +110,17 @@ void testReentrantUnbindAndExceptions(FlowUi::test::HeadlessVulkanFixture& vulka
 	int count = 0;
 	auto* actionSurface = &actions;
 	FlowUi::AppActionID id = kReentrant;
-	const auto self = actions.bind(kReentrant, &unbindSelf, actionSurface, &id, &count);
+	const auto selfResult = actions.bind(kReentrant, &unbindSelf, actionSurface, &id, &count);
+	FLOWUI_CHECK(selfResult);
+	const auto self = selfResult.value();
 	FLOWUI_CHECK(actions.invoke(self) == FlowUi::ActionInvocationStatus::Invoked);
 	FLOWUI_CHECK(count == 1);
 	FLOWUI_CHECK(!actions.isBound(self));
 	FLOWUI_CHECK(actions.invoke(self) == FlowUi::ActionInvocationStatus::Unbound);
 
-	const auto throwing = actions.bind(kThrow, &throwAction);
+	const auto throwingResult = actions.bind(kThrow, &throwAction);
+	FLOWUI_CHECK(throwingResult);
+	const auto throwing = throwingResult.value();
 	FLOWUI_CHECK_THROWS(actions.invoke(throwing));
 	FLOWUI_CHECK(actions.isBound(throwing));
 }
@@ -120,13 +131,16 @@ void testStorageFailureRollsBack(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	int value = 0;
 	for (uint32_t checkpoint = 1; checkpoint <= 4; ++checkpoint) {
 		store.storage().setRecordFailureCountdown(checkpoint);
-		FLOWUI_CHECK_THROWS(actions.bind(kFailure, &increment, &value));
+		const auto failed = actions.bind(kFailure, &increment, &value);
+		FLOWUI_CHECK(!failed);
 		FLOWUI_CHECK(!actions.isBound(kFailure));
 		FLOWUI_CHECK(store.storage().resourceStats(
 			FlowUi::detail::storage::ResourceKind::AppActionBinding).live == 0);
 	}
 	store.storage().setRecordFailureCountdown(0);
-	const auto call = actions.bind(kFailure, &increment, &value);
+	const auto callResult = actions.bind(kFailure, &increment, &value);
+	FLOWUI_CHECK(callResult);
+	const auto call = callResult.value();
 	FLOWUI_CHECK(actions.invoke(call) == FlowUi::ActionInvocationStatus::Invoked);
 	FLOWUI_CHECK(value == 1);
 }

@@ -296,7 +296,7 @@ void testFailedConstructionCanBeRetriedByPreparation(
 		static_cast<void>(store.resolve<FlakyDefinition>(app, false));
 	} catch (const std::runtime_error& error) {
 		const std::string_view message = error.what();
-		FLOWUI_CHECK(message.find("prepare(element)") != std::string_view::npos);
+		FLOWUI_CHECK(message == "intentional resource construction failure");
 		FlakyResources::fail = false;
 		static_cast<void>(store.resolve<FlakyDefinition>(app, true));
 		FLOWUI_CHECK(FlakyResources::attempts == 2);
@@ -314,9 +314,8 @@ void testActiveStorageFrameProducesPreparationDiagnostic(
 	[[maybe_unused]] const auto lease = store.sealStorageFrame(frame);
 	try {
 		static_cast<void>(store.resolve<ResourceDefinition>(app, false));
-	} catch (const std::runtime_error& error) {
-		FLOWUI_CHECK(std::string_view(error.what()).find("before beginFrame") !=
-			std::string_view::npos);
+	} catch (const FlowUi::FlowUiException& error) {
+		FLOWUI_CHECK(error.error().code == FlowUi::ErrorCode::StorageMutationSealed);
 		store.cancelStorageFrame(frame);
 		static_cast<void>(store.resolve<ResourceDefinition>(app, true));
 		FLOWUI_CHECK(AppResources::constructions.load(std::memory_order_relaxed) == 1);
@@ -361,9 +360,9 @@ void testRecursiveConstructionIsRejected(
 	gRecursiveController = &store.controller();
 	try {
 		static_cast<void>(store.resolve<RecursiveDefinition>(app, false));
-	} catch (const std::exception& error) {
+	} catch (const FlowUi::FlowUiException& error) {
 		gRecursiveController = nullptr;
-		FLOWUI_CHECK(exceptionChainContains(error, "recursively requested"));
+		FLOWUI_CHECK(error.error().code == FlowUi::ErrorCode::ElementResourceRecursiveConstruction);
 		FLOWUI_CHECK(RecursiveResources::attempts == 1);
 		return;
 	}

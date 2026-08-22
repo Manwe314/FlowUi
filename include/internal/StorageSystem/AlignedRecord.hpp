@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "FlowUi/Error.hpp"
+
 namespace FlowUi::detail::storage {
 
 struct AlignedRecordLayout {
@@ -43,18 +45,18 @@ struct AlignedRecordLayout {
 	size_t payloadBytes,
 	size_t payloadAlignment) {
 	if (headerBytes == 0 || payloadBytes == 0) {
-		throw std::invalid_argument("aligned record header and payload sizes must be non-zero");
+		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid));
 	}
 	if (!std::has_single_bit(headerAlignment) || !std::has_single_bit(payloadAlignment)) {
-		throw std::invalid_argument("aligned record alignments must be non-zero powers of two");
+		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid));
 	}
 	if (headerBytes > std::numeric_limits<size_t>::max() - (payloadAlignment - 1u)) {
-		throw std::overflow_error("aligned record payload offset overflow");
+		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow));
 	}
 	const size_t payloadOffset =
 		(headerBytes + payloadAlignment - 1u) & ~(payloadAlignment - 1u);
 	if (payloadBytes > std::numeric_limits<size_t>::max() - payloadOffset) {
-		throw std::overflow_error("aligned record allocation size overflow");
+		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow));
 	}
 	return AlignedRecordLayout{
 		.headerBytes = headerBytes,
@@ -84,7 +86,7 @@ Header* constructAlignedRecord(
 		layout.payloadAlignment < alignof(Payload) ||
 		reinterpret_cast<uintptr_t>(allocation) % alignof(Header) != 0 ||
 		reinterpret_cast<uintptr_t>(layout.payload(allocation)) % alignof(Payload) != 0) {
-		throw std::invalid_argument("aligned record layout does not fit its object types");
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 	}
 
 	Header* header = ::new (allocation) Header();

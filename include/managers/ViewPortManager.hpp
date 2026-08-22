@@ -184,7 +184,7 @@ public:
 	template <typename T, typename Fn>
 	void setRenderCallback(std::shared_ptr<T> userData, Fn&& callback) {
 		if (!userData) {
-			throw std::runtime_error("ViewPort::setRenderCallback requires a non-null shared_ptr payload.");
+			throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid));
 		}
 		using CallbackType = std::decay_t<Fn>;
 		setRenderCallback([payload = std::move(userData), typedCallback = CallbackType(std::forward<Fn>(callback))](
@@ -314,8 +314,8 @@ public:
 	 * }
 	 * @endcode
 	 */
-	bool create(std::string_view key, const ViewPortCreateInfo& createInfo = {});
-	bool create(ResourceKey key, const ViewPortCreateInfo& createInfo = {});
+	Result<bool> create(std::string_view key, const ViewPortCreateInfo& createInfo = {});
+	Result<bool> create(ResourceKey key, const ViewPortCreateInfo& createInfo = {});
 
 	/**
 	 * @brief Remove a viewport by key.
@@ -334,8 +334,8 @@ public:
 	 * (void)app.viewPorts().remove("scene");
 	 * @endcode
 	 */
-	bool remove(std::string_view key);
-	bool remove(ResourceKey key);
+	Result<bool> remove(std::string_view key);
+	Result<bool> remove(ResourceKey key);
 
 	/**
 	 * @brief Return whether a viewport exists.
@@ -434,7 +434,12 @@ public:
 private:
 	friend class App;
 
-	void init(detail::storage::IStorageSystem& storage, VulkanContext& vk, WindowId window, uint32_t framesInFlight);
+	void init(
+		detail::storage::IStorageSystem& storage,
+		VulkanContext& vk,
+		WindowId window,
+		uint32_t framesInFlight,
+		MissingVisualPolicy missingPolicy);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
 	void prepareFrameTargets(
 		const Clay_RenderCommandArray& renderCommands,
@@ -457,6 +462,7 @@ private:
 	void resetFrameTracking();
 	bool resizeRequired() const;
 	detail::storage::IStorageSystem* storage_ = nullptr;
+	MissingVisualPolicy missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 	WindowId windowId_ = InvalidWindowId;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::ViewportStorageController* controller_ = nullptr;

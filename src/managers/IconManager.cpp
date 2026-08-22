@@ -9,12 +9,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <limits>
+#include <new>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -60,6 +62,9 @@ namespace key_storage = detail::managerStorage;
 namespace storage = detail::storage;
 
 namespace {
+
+constexpr uint32_t MissingIconDiagnostic = 1u;
+constexpr uint32_t IconGenerationDiagnostic = 2u;
 
 storage::ResourceKey iconKey(storage::IStorageSystem& storageSystem, ResourceKey key) {
 	return key_storage::normalizeResourceKey(
@@ -156,7 +161,7 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 {
 	(void)pageIndex;
 	if (!storage_ || !controller_ || !controller_->atlasSampler) {
-		throw std::runtime_error("IconManager storage is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 
 	AtlasPage page{};
@@ -368,19 +373,19 @@ void IconManager::uploadRasterToAtlasPage(
 	const TransientRasterResult& raster,
 	const AtlasRect& contentRect) {
 	if (!storage_) {
-		throw std::runtime_error("IconManager is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 	if (!page.image) {
-		throw std::runtime_error("IconManager atlas page image is invalid.");
+		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid));
 	}
 	if (!raster.rgbaPixels || raster.width == 0u || raster.height == 0u || raster.strideBytes < raster.width * 4u) {
-		throw std::runtime_error("IconManager raster payload is invalid.");
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
 	}
 	if ((raster.strideBytes % 4u) != 0u) {
-		throw std::runtime_error("IconManager raster stride is not a multiple of pixel size.");
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
 	}
 	if (contentRect.x + raster.width > page.width || contentRect.y + raster.height > page.height) {
-		throw std::runtime_error("IconManager atlas upload is out of bounds.");
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 	}
 
 	const size_t tightRowBytes = static_cast<size_t>(raster.width) * 4u;
@@ -462,7 +467,8 @@ bool IconManager::tryAllocateAtlasRegion(
 		return false;
 	}
 
-	while (evictLeastRecentlyUsedVariant()) {
+	while (capacityPolicy_ == CapacityFailurePolicy::EvictAndRetry &&
+		evictLeastRecentlyUsedVariant()) {
 		if (tryAcrossPages(false)) {
 			return true;
 		}
@@ -588,10 +594,10 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	TransientRasterResult raster = rasterizeForAtlas(nameKey, requestKey.requestedWidth, requestKey.requestedHeight);
 	AtlasAllocation allocation{};
 	if (!tryAllocateAtlasRegion(raster.width, raster.height, allocation)) {
-		throw std::runtime_error("IconManager atlas is full and no evictable entries are available.");
+		throw FlowUiException(makeError(ErrorCode::IconAtlasCapacityExceeded));
 	}
 	if (allocation.pageIndex >= controller_->atlasPages.size()) {
-		throw std::runtime_error("IconManager produced an invalid atlas allocation.");
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
 	}
 
 	AtlasPage& page = controller_->atlasPages[allocation.pageIndex];
@@ -637,7 +643,7 @@ void IconManager::prepareFrameTextures(
 	float uiToFramebufferScaleY)
 {
 	if (!storage_ || !controller_) {
-		throw std::runtime_error("IconManager is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
@@ -664,7 +670,30 @@ void IconManager::prepareFrameTextures(
 		const uint32_t requestedWidth = std::max<uint32_t>(1u, static_cast<uint32_t>(std::ceil(scaledWidth)));
 		const uint32_t requestedHeight = std::max<uint32_t>(1u, static_cast<uint32_t>(std::ceil(scaledHeight)));
 
-		VariantEntry& variant = ensureVariantForRequest(*requestedKey, requestedWidth, requestedHeight);
+		VariantEntry* variantPointer = nullptr;
+		try {
+			variantPointer = &ensureVariantForRequest(*requestedKey, requestedWidth, requestedHeight);
+		} catch (const FlowUiException& error) {
+			const ErrorCode code = error.error().code;
+			if (generationPolicy_ == IconGenerationFailurePolicy::FailRequest ||
+				(code != ErrorCode::IconNotFound &&
+				 code != ErrorCode::IconRasterizationFailed &&
+				 code != ErrorCode::IconRasterInvalid &&
+				 code != ErrorCode::IconAtlasCapacityExceeded)) {
+				throw;
+			}
+			textureRef->handle = {};
+			textureRef->skipIfUnavailable =
+				generationPolicy_ == IconGenerationFailurePolicy::SkipVisual;
+			const storage::ResourceKey diagnosticKey = iconKey(
+				*storage_, ResourceKey{.name = *requestedKey});
+			if (storage_->markDiagnosticOnce(diagnosticKey, IconGenerationDiagnostic)) {
+				std::fprintf(stderr, "[FlowUi] Warning: icon '%s' could not be generated (%s).\n",
+					requestedKey->c_str(), error.what());
+			}
+			continue;
+		}
+		VariantEntry& variant = *variantPointer;
 		touchVariant(variant, controller_->frameCounter);
 		if (variant.pageIndex < controller_->atlasPages.size()) {
 			controller_->atlasPages[variant.pageIndex].lastUsedFrame = controller_->frameCounter;
@@ -698,8 +727,14 @@ void IconManager::beginAppTick() {
 	resetVariantFrameMarks();
 }
 
-void IconManager::init(storage::IStorageSystem& storageSystem, const IconManagerConfig& config) {
+void IconManager::init(
+	storage::IStorageSystem& storageSystem,
+	const IconManagerConfig& config,
+	IconGenerationFailurePolicy generationPolicy,
+	CapacityFailurePolicy capacityPolicy) {
 	destroy();
+	generationPolicy_ = generationPolicy;
+	capacityPolicy_ = capacityPolicy;
 	const storage::StringId name = storageSystem.intern("flowui.icon.cache");
 	const storage::ResourceKey key{storage::ResourceDomain::Icon, name, InvalidWindowId};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::IconCacheController>(
@@ -711,7 +746,7 @@ void IconManager::init(storage::IStorageSystem& storageSystem, const IconManager
 		storage_, handle, storage::ResourceKind::IconVariant);
 	if (!controller_) {
 		destroy();
-		throw std::runtime_error("IconManager cache storage publication failed.");
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 	try {
 		controller_->atlasPages.push_back(createAtlasPage(0u));
@@ -721,18 +756,23 @@ void IconManager::init(storage::IStorageSystem& storageSystem, const IconManager
 	}
 }
 
-bool IconManager::registerSvg(std::string_view key, std::string_view svgSource) {
+Result<bool> IconManager::registerSvg(std::string_view key, std::string_view svgSource) {
 	return registerSvg(ResourceKey{.name = key}, svgSource);
 }
 
-bool IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
-	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
-	const storage::ResourceKey normalized = iconKey(*storage_, key);
+Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	storage::ResourceKey normalized{};
+	try {
+		normalized = iconKey(*storage_, key);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	if (svgSource.empty()) {
-		throw std::runtime_error("IconManager SVG source must not be empty.");
+		return unexpectedError(makeError(ErrorCode::IconSourceInvalid));
 	}
 	if (svgSource.size() > static_cast<size_t>(std::numeric_limits<int>::max())) {
-		throw std::runtime_error("IconManager SVG source is too large.");
+		return unexpectedError(makeError(ErrorCode::IconSourceInvalid));
 	}
 
 	const std::string keyString(key.name);
@@ -742,7 +782,7 @@ bool IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
 
 	char* ownedSource = static_cast<char*>(std::malloc(svgSource.size() + 1u));
 	if (!ownedSource) {
-		throw std::runtime_error("IconManager failed to allocate memory for SVG source.");
+		throw std::bad_alloc{};
 	}
 
 	std::memcpy(ownedSource, svgSource.data(), svgSource.size());
@@ -757,16 +797,22 @@ bool IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
 		ownedSource);
 	if (!document) {
 		std::free(ownedSource);
-		throw std::runtime_error("IconManager failed to parse SVG source.");
+		return unexpectedError(makeError(ErrorCode::IconSourceInvalid));
 	}
 
 	storage::BlobHandle source{};
 	try {
 		source = storage_->createBlob(
 			std::as_bytes(std::span(svgSource.data(), svgSource.size())), normalized.name);
-	} catch (...) {
+	} catch (const std::bad_alloc&) {
 		plutosvg_document_destroy(document);
 		throw;
+	} catch (const FlowUiException& exception) {
+		plutosvg_document_destroy(document);
+		return unexpectedError(exception.error());
+	} catch (...) {
+		plutosvg_document_destroy(document);
+		return unexpectedError(makeError(ErrorCode::ResourceCreationFailed));
 	}
 
 	DocumentRecord record{};
@@ -775,7 +821,18 @@ bool IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
 	record.intrinsicWidth = std::max(0.0f, plutosvg_document_get_width(document));
 	record.intrinsicHeight = std::max(0.0f, plutosvg_document_get_height(document));
 
-	auto [it, inserted] = controller_->documentsByKey.emplace(keyString, record);
+	bool inserted = false;
+	try {
+		inserted = controller_->documentsByKey.emplace(keyString, record).second;
+	} catch (const std::bad_alloc&) {
+		plutosvg_document_destroy(document);
+		storage_->releaseBlob(source);
+		throw;
+	} catch (...) {
+		plutosvg_document_destroy(document);
+		storage_->releaseBlob(source);
+		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed));
+	}
 	if (!inserted) {
 		plutosvg_document_destroy(document);
 		storage_->releaseBlob(source);
@@ -785,37 +842,51 @@ bool IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
 	return true;
 }
 
-bool IconManager::registerFromFile(std::string_view key, std::string_view filePath) {
+Result<bool> IconManager::registerFromFile(std::string_view key, std::string_view filePath) {
 	return registerFromFile(ResourceKey{.name = key}, filePath);
 }
 
-bool IconManager::registerFromFile(ResourceKey key, std::string_view filePath) {
-	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
-	(void)iconKey(*storage_, key);
+Result<bool> IconManager::registerFromFile(ResourceKey key, std::string_view filePath) {
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	try {
+		(void)iconKey(*storage_, key);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
+	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty));
 
 	const std::filesystem::path path(filePath);
-	if (!std::filesystem::is_regular_file(path)) {
-		throw std::runtime_error("SVG file does not exist: " + path.string());
+	std::error_code pathError;
+	if (!std::filesystem::is_regular_file(path, pathError)) {
+		return unexpectedError(makeError(
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
 	}
 
 	std::ifstream stream(path, std::ios::binary);
-	if (!stream) throw std::runtime_error("Could not open SVG file: " + path.string());
+	if (!stream) return unexpectedError(makeError(ErrorCode::AssetOpenFailed));
 	const std::string source((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-	if (!stream.eof() && stream.fail()) throw std::runtime_error("Could not read SVG file: " + path.string());
+	if (!stream.eof() && stream.fail()) return unexpectedError(makeError(ErrorCode::AssetReadFailed));
 	return registerSvg(key, source);
 }
 
-bool IconManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
+Result<bool> IconManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
 
-bool IconManager::remove(ResourceKey key) {
-	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
-	const storage::ResourceKey normalized = iconKey(*storage_, key);
+Result<bool> IconManager::remove(ResourceKey key) {
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	storage::ResourceKey normalized{};
+	try {
+		normalized = iconKey(*storage_, key);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	const std::string keyString(key.name);
 	auto it = controller_->documentsByKey.find(keyString);
 	if (it == controller_->documentsByKey.end()) {
 		return false;
 	}
 
+	controller_->retiredRegions.reserve(
+		controller_->retiredRegions.size() + controller_->variantsByKeyAndSize.size());
 	const auto requestIdIt = controller_->requestTextureByKey.find(keyString);
 	if (requestIdIt != controller_->requestTextureByKey.end()) {
 		(void)storage_->removeTexture(normalized);
@@ -855,16 +926,24 @@ bool IconManager::contains(ResourceKey key) const {
 TextureRef IconManager::textureRef(std::string_view key) { return textureRef(ResourceKey{.name = key}); }
 
 TextureRef IconManager::textureRef(ResourceKey key) {
-	if (!storage_ || !controller_) throw std::runtime_error("IconManager is not initialized.");
+	if (!storage_ || !controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	const storage::ResourceKey normalized = iconKey(*storage_, key);
 	if (controller_->atlasPages.empty() || !controller_->atlasPages.front().view || !controller_->atlasSampler) {
-		throw std::runtime_error("IconManager atlas pages are not initialized.");
+		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid));
 	}
 
 	const std::string keyString(key.name);
 	const auto documentIt = controller_->documentsByKey.find(keyString);
 	if (documentIt == controller_->documentsByKey.end()) {
-		throw std::runtime_error("IconManager textureRef requested an unknown SVG key: " + keyString);
+		if (generationPolicy_ == IconGenerationFailurePolicy::FailRequest) {
+			throw FlowUiException(makeError(ErrorCode::IconNotFound));
+		}
+		if (storage_->markDiagnosticOnce(normalized, MissingIconDiagnostic)) {
+			std::fprintf(stderr, "[FlowUi] Warning: icon key '%s' was not found.\n", keyString.c_str());
+		}
+		return TextureRef{
+			.skipIfUnavailable = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual,
+		};
 	}
 
 	auto requestIdIt = controller_->requestTextureByKey.find(keyString);
@@ -877,7 +956,7 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 			.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight))),
 		}, &inserted);
 		if (!inserted) {
-			throw std::runtime_error("IconManager request namespaced key collision.");
+			detail::terminateForFatalError(makeError(ErrorCode::IconKeyCollision));
 		}
 		requestIdIt = controller_->requestTextureByKey.emplace(keyString, requestTexture).first;
 		controller_->requestedKeyByTexture.emplace(requestTexture.packed(), keyString);
@@ -894,15 +973,15 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const
 {
 	if (!storage_ || !controller_) {
-		throw std::runtime_error("IconManager is not initialized.");
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	}
 	if (key.empty()) {
-		throw std::runtime_error("IconManager raster key must not be empty.");
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
 	}
 
 	const auto recordIt = controller_->documentsByKey.find(std::string(key));
 	if (recordIt == controller_->documentsByKey.end() || !recordIt->second.document) {
-		throw std::runtime_error("IconManager raster request references an unknown SVG key.");
+		throw FlowUiException(makeError(ErrorCode::IconNotFound));
 	}
 
 	const uint32_t targetWidth = std::max<uint32_t>(1u, requestedWidth);
@@ -926,7 +1005,7 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 	const double scaleY = static_cast<double>(targetHeight) / intrinsicHeight;
 	const double scale = std::max(0.0, std::min(scaleX, scaleY));
 	if (!(scale > 0.0)) {
-		throw std::runtime_error("IconManager could not determine a valid SVG raster scale.");
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
 	}
 
 	uint32_t rasterWidth = static_cast<uint32_t>(std::llround(intrinsicWidth * scale));
@@ -943,7 +1022,7 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 		nullptr,
 		nullptr));
 	if (!owner.surface) {
-		throw std::runtime_error("IconManager failed to rasterize SVG document.");
+		throw FlowUiException(makeError(ErrorCode::IconRasterizationFailed));
 	}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	devSystems::DevExternalMemoryScope rasterMemory(
@@ -956,7 +1035,7 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 	const int surfaceStride = plutovg_surface_get_stride(owner.surface);
 	unsigned char* surfaceData = plutovg_surface_get_data(owner.surface);
 	if (!surfaceData || surfaceWidth <= 0 || surfaceHeight <= 0 || surfaceStride <= 0) {
-		throw std::runtime_error("IconManager rasterization returned invalid surface data.");
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
 	}
 
 	convertArgbPremultipliedToRgbaStraight(
@@ -988,6 +1067,8 @@ void IconManager::destroy() noexcept {
 	controller_ = nullptr;
 	controllerHandle_ = 0;
 	storage_ = nullptr;
+	generationPolicy_ = IconGenerationFailurePolicy::UseFallbackTexture;
+	capacityPolicy_ = CapacityFailurePolicy::RejectOperation;
 }
 
 } // namespace FlowUi

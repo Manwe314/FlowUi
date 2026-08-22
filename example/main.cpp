@@ -11,6 +11,10 @@
 
 namespace {
 
+void requireStatus(FlowUi::Status status) {
+	if (!status) throw FlowUi::FlowUiException(status.error());
+}
+
 struct DemoState {
 	std::string text = "Hello from the main window";
 	std::string status = "Type some text, then open a window.";
@@ -106,7 +110,7 @@ void closeRequestedTextWindows(FlowUi::App& app, DemoState& state) {
 			++index;
 			continue;
 		}
-		app.destroyWindow(window);
+		requireStatus(app.destroyWindow(window));
 		state.textWindows.erase(state.textWindows.begin() + static_cast<std::ptrdiff_t>(index));
 	}
 }
@@ -121,7 +125,13 @@ void createRequestedTextWindow(FlowUi::App& app, DemoState& state) {
 	config.title = "FlowUi text window " + std::to_string(state.nextWindowNumber++);
 
 	try {
-		const FlowUi::WindowId window = app.createWindow(config);
+		auto created = app.createWindow(config);
+		if (!created) {
+			state.status = std::string("Could not create the window: ") +
+				std::string(FlowUi::errorName(created.error().code));
+			return;
+		}
+		const FlowUi::WindowId window = created.value();
 		state.textWindows.push_back(window);
 		state.status = "Opened " + config.title + ".";
 	} catch (const std::exception& error) {
@@ -143,28 +153,28 @@ int main() {
 		DemoState state{};
 
 		while (true) {
-			app.pollEvents();
+			requireStatus(app.pollEvents());
 			if (app.shouldClose(app.mainWindowId())) break;
 
 			closeRequestedTextWindows(app, state);
 
-			app.beginFrame(app.mainWindowId());
+			requireStatus(app.beginFrame(app.mainWindowId()));
 			drawMainWindow(app, state);
-			app.endFrame(app.mainWindowId());
-			app.drawFrame(app.mainWindowId());
+			requireStatus(app.endFrame(app.mainWindowId()));
+			requireStatus(app.drawFrame(app.mainWindowId()));
 
 			createRequestedTextWindow(app, state);
 
 			for (const FlowUi::WindowId window : state.textWindows) {
-				app.beginFrame(window);
+				requireStatus(app.beginFrame(window));
 				drawTextWindow(app, window, state);
-				app.endFrame(window);
-				app.drawFrame(window);
+				requireStatus(app.endFrame(window));
+				requireStatus(app.drawFrame(window));
 			}
 		}
 
 		for (const FlowUi::WindowId window : state.textWindows) {
-			if (app.hasWindow(window)) app.destroyWindow(window);
+			if (app.hasWindow(window)) requireStatus(app.destroyWindow(window));
 		}
 		return 0;
 	} catch (const std::exception& error) {

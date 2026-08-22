@@ -19,13 +19,18 @@
 namespace {
 
 void emptyFrame(FlowUi::App& app, FlowUi::WindowId window) {
-	app.beginFrame(window);
-	app.endFrame(window);
-	app.drawFrame(window);
+	FLOWUI_CHECK(app.beginFrame(window));
+	FLOWUI_CHECK(app.endFrame(window));
+	FLOWUI_CHECK(app.drawFrame(window));
 }
 
 bool environmentUnavailable(std::string_view message) {
 	constexpr std::string_view reasons[] = {
+		"The platform window system could not be initialized.",
+		"The FlowUi window could not be created.",
+		"No compatible Vulkan device is available.",
+		"A required Vulkan extension is unavailable.",
+		"The selected Vulkan device lacks a required feature.",
 		"Failed to initialize GLFW",
 		"Failed to create GLFW window",
 		"No Vulkan-capable GPU",
@@ -72,10 +77,16 @@ int main() {
 		secondConfig.title = "FlowUi Phase 4 secondary B";
 		FlowUi::WindowConfig invalidConfig = firstConfig;
 		invalidConfig.width = 0;
-		FLOWUI_CHECK_THROWS(app.createWindow(invalidConfig));
+		const auto invalidWindow = app.createWindow(invalidConfig);
+		FLOWUI_CHECK(!invalidWindow);
+		FLOWUI_CHECK(invalidWindow.error().code == FlowUi::ErrorCode::InvalidWindowConfiguration);
 		FLOWUI_CHECK(app.hasWindow(app.mainWindowId()));
-		const FlowUi::WindowId first = app.createWindow(firstConfig);
-		const FlowUi::WindowId second = app.createWindow(secondConfig);
+		const auto firstResult = app.createWindow(firstConfig);
+		const auto secondResult = app.createWindow(secondConfig);
+		FLOWUI_CHECK(firstResult);
+		FLOWUI_CHECK(secondResult);
+		const FlowUi::WindowId first = firstResult.value();
+		const FlowUi::WindowId second = secondResult.value();
 		FLOWUI_CHECK(first > app.mainWindowId());
 		FLOWUI_CHECK(second > first);
 		FLOWUI_CHECK(app.hasWindow(first));
@@ -101,18 +112,18 @@ int main() {
 		}));
 
 		stage = "lifecycle gate";
-		app.pollEvents();
-		app.beginFrame(app.mainWindowId());
-		FLOWUI_CHECK_THROWS(app.beginFrame(first));
-		FLOWUI_CHECK_THROWS(app.pollEvents());
-		FLOWUI_CHECK_THROWS(app.destroyWindow(first));
-		app.endFrame(app.mainWindowId());
-		app.drawFrame(app.mainWindowId());
-		FLOWUI_CHECK_THROWS(app.endFrame(first));
+		FLOWUI_CHECK(app.pollEvents());
+		FLOWUI_CHECK(app.beginFrame(app.mainWindowId()));
+		FLOWUI_CHECK(!app.beginFrame(first));
+		FLOWUI_CHECK(!app.pollEvents());
+		FLOWUI_CHECK(!app.destroyWindow(first));
+		FLOWUI_CHECK(app.endFrame(app.mainWindowId()));
+		FLOWUI_CHECK(app.drawFrame(app.mainWindowId()));
+		FLOWUI_CHECK(!app.endFrame(first));
 
 		stage = "different-rate frames";
 		for (int tick = 0; tick < 4; ++tick) {
-			app.pollEvents();
+			FLOWUI_CHECK(app.pollEvents());
 			emptyFrame(app, app.mainWindowId());
 			emptyFrame(app, first);
 			if ((tick % 2) == 0) emptyFrame(app, second);
@@ -130,46 +141,50 @@ int main() {
 		stage = "independent resize";
 		auto* firstNative = static_cast<GLFWwindow*>(app.nativeWindowHandle(first));
 		glfwSetWindowSize(firstNative, 360, 220);
-		app.pollEvents();
+		FLOWUI_CHECK(app.pollEvents());
 		emptyFrame(app, first);
 		emptyFrame(app, app.mainWindowId());
 		stage = "minimized isolation";
 		glfwIconifyWindow(firstNative);
-		app.pollEvents();
+		FLOWUI_CHECK(app.pollEvents());
 		emptyFrame(app, first);
 		emptyFrame(app, app.mainWindowId());
 		glfwRestoreWindow(firstNative);
-		app.pollEvents();
+		FLOWUI_CHECK(app.pollEvents());
 
 		stage = "secondary close";
 		app.setShouldClose(second, 1);
 		FLOWUI_CHECK(app.shouldClose(second));
-		app.destroyWindow(second);
+		FLOWUI_CHECK(app.destroyWindow(second));
 		FLOWUI_CHECK(!app.hasWindow(second));
 		FLOWUI_CHECK_THROWS(app.shouldClose(second));
-		FLOWUI_CHECK_THROWS(app.destroyWindow(app.mainWindowId()));
+		const auto mainDestroy = app.destroyWindow(app.mainWindowId());
+		FLOWUI_CHECK(!mainDestroy);
+		FLOWUI_CHECK(mainDestroy.error().code == FlowUi::ErrorCode::MainWindowDestructionForbidden);
 		stage = "non-reused ID";
 		FlowUi::WindowConfig replacementConfig = firstConfig;
 		replacementConfig.title = "FlowUi Phase 4 non-reused ID";
-		const FlowUi::WindowId replacement = app.createWindow(replacementConfig);
+		const auto replacementResult = app.createWindow(replacementConfig);
+		FLOWUI_CHECK(replacementResult);
+		const FlowUi::WindowId replacement = replacementResult.value();
 		FLOWUI_CHECK(replacement > second);
-		app.destroyWindow(replacement);
+		FLOWUI_CHECK(app.destroyWindow(replacement));
 
 		// Destroy immediately after submission to exercise target-window drain and
 		// exact present completion while another public window remains alive.
 		stage = "in-flight close";
-		app.pollEvents();
+		FLOWUI_CHECK(app.pollEvents());
 		stage = "in-flight frame";
-		app.beginFrame(first);
+		FLOWUI_CHECK(app.beginFrame(first));
 		stage = "in-flight end";
-		app.endFrame(first);
+		FLOWUI_CHECK(app.endFrame(first));
 		stage = "in-flight draw";
-		app.drawFrame(first);
+		FLOWUI_CHECK(app.drawFrame(first));
 		stage = "in-flight destroy";
-		app.destroyWindow(first);
+		FLOWUI_CHECK(app.destroyWindow(first));
 		FLOWUI_CHECK(!app.hasWindow(first));
 		stage = "remaining main frame";
-		app.pollEvents();
+		FLOWUI_CHECK(app.pollEvents());
 		emptyFrame(app, app.mainWindowId());
 		return 0;
 	} catch (const std::exception& error) {

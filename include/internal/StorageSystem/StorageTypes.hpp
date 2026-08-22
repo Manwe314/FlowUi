@@ -516,6 +516,8 @@ struct StorageConfig {
 	float growthFactor = 1.5f;
 	BufferWriteMode defaultBufferWriteMode = BufferWriteMode::DirectMapped;
 	bool allowRuntimeGrowth = true;
+	bool allowPersistentGrowth = true;
+	bool allowTransientGrowth = true;
 	bool detailedTracking = false;
 };
 
@@ -566,6 +568,8 @@ inline uint32_t applyMemoryCapacityProfile(
 	for (const auto& setting : profile.settings) if (applyMemoryCapacitySetting(config, setting)) ++applied;
 	config.growthFactor = std::max(1.1f, profile.growthFactor);
 	config.allowRuntimeGrowth = profile.allowRuntimeGrowth;
+	config.allowPersistentGrowth = profile.allowRuntimeGrowth;
+	config.allowTransientGrowth = profile.allowRuntimeGrowth;
 	return applied;
 }
 

@@ -24,7 +24,17 @@
 namespace {
 
 void vkCheck(VkResult result, const char* message) {
-	if (result != VK_SUCCESS) throw std::runtime_error(message);
+	if (result == VK_SUCCESS) return;
+	(void)message;
+	FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
+		? FlowUi::ErrorCode::VulkanDeviceLost
+		: FlowUi::ErrorCode::VulkanNativeCallFailed;
+	if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		code = FlowUi::ErrorCode::AllocationFailed;
+	}
+	throw FlowUi::FlowUiException(FlowUi::makeError(
+		code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+		static_cast<std::uint32_t>(result)));
 }
 
 void transitionViewportImageLayout(
@@ -46,7 +56,9 @@ void transitionViewportImageLayout(
 		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		srcAccess = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		dstAccess = VK_ACCESS_SHADER_READ_BIT;
-	} else throw std::runtime_error("Unsupported viewport image layout transition.");
+	} else {
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ViewportRecordingFailed));
+	}
 	VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
 	barrier.oldLayout = oldLayout;
 	barrier.newLayout = newLayout;
@@ -113,14 +125,14 @@ TextureRef ViewPort::textureRef() const {
 		.handle = state_->texture, .sourceWidth = state_->width, .sourceHeight = state_->height} : TextureRef{};
 }
 void ViewPort::setRenderCallback(RenderCallback callback) {
-	if (!state_) throw std::logic_error("ViewPort is detached from storage.");
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ViewportDetached));
 	state_->renderCallback = std::move(callback);
 	state_->storage->noteManagerMutation(state_->window);
 }
 void ViewPort::clearRenderCallback() { setRenderCallback({}); }
 bool ViewPort::hasRenderCallback() const { return state_ && static_cast<bool>(state_->renderCallback); }
 void ViewPort::setClearColor(float r, float g, float b, float a) {
-	if (!state_) throw std::logic_error("ViewPort is detached from storage.");
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ViewportDetached));
 	state_->clearColor = {r, g, b, a};
 	state_->storage->noteManagerMutation(state_->window);
 }
@@ -128,7 +140,7 @@ std::array<float, 4> ViewPort::clearColor() const {
 	return state_ ? state_->clearColor : std::array<float, 4>{0, 0, 0, 0};
 }
 void ViewPort::setClearEveryFrame(bool enabled) {
-	if (!state_) throw std::logic_error("ViewPort is detached from storage.");
+	if (!state_) throw FlowUiException(makeError(ErrorCode::ViewportDetached));
 	state_->clearEveryFrame = enabled;
 	state_->storage->noteManagerMutation(state_->window);
 }
@@ -138,10 +150,14 @@ void ViewPortManager::init(
 	storage::IStorageSystem& storageSystem,
 	VulkanContext& vk,
 	WindowId window,
-	uint32_t framesInFlight) {
+	uint32_t framesInFlight,
+	MissingVisualPolicy missingPolicy) {
 	destroyDrained(vk);
 	if (!window || vk.device == VK_NULL_HANDLE || vk.graphicsQFamily == UINT32_MAX || vk.graphicsQ == VK_NULL_HANDLE) {
-		throw std::runtime_error("ViewPortManager init requires a registered window and valid Vulkan graphics device.");
+		throw FlowUiException(makeError(
+			!window ? ErrorCode::InvalidWindowId : ErrorCode::ObjectNotInitialized,
+			!window ? ErrorSubjectKind::Window : ErrorSubjectKind::None,
+			window));
 	}
 	const storage::StringId name = storageSystem.intern("flowui.viewport.controller");
 	const storage::ResourceKey key{storage::ResourceDomain::Viewport, name, window};
@@ -149,32 +165,51 @@ void ViewPortManager::init(
 		storageSystem, key, storage::ResourceKind::Viewport, name,
 		std::ref(storageSystem), std::ref(vk), window, framesInFlight);
 	storage_ = &storageSystem;
+	missingPolicy_ = missingPolicy;
 	windowId_ = window;
 	controllerHandle_ = handle.packed();
 	controller_ = manager_storage::state<manager_storage::ViewportStorageController>(
 		storage_, handle, storage::ResourceKind::Viewport);
 	if (!controller_) {
 		destroyDrained(vk);
-		throw std::runtime_error("ViewPortManager storage publication failed.");
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 }
 
-bool ViewPortManager::create(std::string_view key, const ViewPortCreateInfo& createInfo) {
+Result<bool> ViewPortManager::create(std::string_view key, const ViewPortCreateInfo& createInfo) {
 	return create(ResourceKey{.name = key}, createInfo);
 }
 
-bool ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createInfo) {
-	if (!controller_ || !storage_) throw std::runtime_error("ViewPortManager is not initialized.");
-	(void)viewportKey(*storage_, key, windowId_);
+Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createInfo) {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	try {
+		(void)viewportKey(*storage_, key, windowId_);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	const std::string keyString(key.name);
-	if (controller_->records.contains(keyString)) return false;
+	if (controller_->records.contains(keyString)) {
+		return unexpectedError(makeError(ErrorCode::ViewportKeyCollision));
+	}
 	const VkFormat format = createInfo.colorFormat == VK_FORMAT_UNDEFINED
 		? VK_FORMAT_R8G8B8A8_UNORM : createInfo.colorFormat;
-	manager_storage::ViewportTargetGeneration targets = controller_->buildTargets(1, 1, format);
+	manager_storage::ViewportTargetGeneration targets{};
+	try {
+		targets = controller_->buildTargets(1, 1, format);
+	} catch (const std::bad_alloc&) {
+		throw;
+	} catch (const FlowUiException& exception) {
+		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
+			detail::terminateForFatalError(exception.error());
+		}
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::ViewportConfigurationInvalid));
+	}
 	bool facadeInserted = false;
 	try {
 		auto [facadeIt, inserted] = controller_->facades.emplace(keyString, ViewPort{});
-		if (!inserted) throw std::runtime_error("ViewPortManager facade key collision.");
+		if (!inserted) throw FlowUiException(makeError(ErrorCode::InternalInvariantBroken));
 		facadeInserted = true;
 		manager_storage::ViewportRecord record{};
 		record.state = manager_storage::ViewportFacadeState{
@@ -184,7 +219,7 @@ bool ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createIn
 		};
 		record.active = std::move(targets);
 		auto [recordIt, recordInserted] = controller_->records.emplace(keyString, std::move(record));
-		if (!recordInserted) throw std::runtime_error("ViewPortManager record key collision.");
+		if (!recordInserted) throw FlowUiException(makeError(ErrorCode::InternalInvariantBroken));
 		facadeIt->second.state_ = &recordIt->second.state;
 		recordIt->second.facadeAddress = &facadeIt->second;
 		const uint32_t activeSlot = controller_->currentFrameIndex % recordIt->second.active.textures.size();
@@ -197,7 +232,7 @@ bool ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createIn
 		storage_->clearDiagnosticMark(viewportKey(*storage_, key, windowId_), 1u);
 		storage_->noteManagerMutation(windowId_);
 		return true;
-	} catch (...) {
+	} catch (const std::bad_alloc&) {
 		if (facadeInserted) controller_->facades.erase(keyString);
 		if (const auto it = controller_->records.find(keyString); it != controller_->records.end()) {
 			targets = std::move(it->second.active);
@@ -206,13 +241,38 @@ bool ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& createIn
 		for (TextureHandle texture : targets.textures) controller_->textureOwners.erase(texture.packed());
 		controller_->discardUnpublished(std::move(targets));
 		throw;
+	} catch (const FlowUiException& exception) {
+		if (facadeInserted) controller_->facades.erase(keyString);
+		if (const auto it = controller_->records.find(keyString); it != controller_->records.end()) {
+			targets = std::move(it->second.active);
+			controller_->records.erase(it);
+		}
+		for (TextureHandle texture : targets.textures) controller_->textureOwners.erase(texture.packed());
+		controller_->discardUnpublished(std::move(targets));
+		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
+			detail::terminateForFatalError(exception.error());
+		}
+		return unexpectedError(exception.error());
+	} catch (...) {
+		if (facadeInserted) controller_->facades.erase(keyString);
+		if (const auto it = controller_->records.find(keyString); it != controller_->records.end()) {
+			targets = std::move(it->second.active);
+			controller_->records.erase(it);
+		}
+		for (TextureHandle texture : targets.textures) controller_->textureOwners.erase(texture.packed());
+		controller_->discardUnpublished(std::move(targets));
+		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed));
 	}
 }
 
-bool ViewPortManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
-bool ViewPortManager::remove(ResourceKey key) {
-	if (!controller_ || !storage_) throw std::runtime_error("ViewPortManager is not initialized.");
-	(void)viewportKey(*storage_, key, windowId_);
+Result<bool> ViewPortManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
+Result<bool> ViewPortManager::remove(ResourceKey key) {
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	try {
+		(void)viewportKey(*storage_, key, windowId_);
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	}
 	const std::string keyString(key.name);
 	const auto it = controller_->records.find(keyString);
 	if (it == controller_->records.end()) return false;
@@ -256,16 +316,21 @@ TextureRef ViewPortManager::getTexture(ResourceKey key) const {
 	const auto it = controller_->records.find(std::string(key.name));
 	if (it == controller_->records.end()) {
 		if (storage_->markDiagnosticOnce(normalized, 1u)) {
-			std::fprintf(stderr, "[FlowUi] Warning: viewport key '%.*s' was not found, using the fallback texture.\n",
+			std::fprintf(stderr,
+				missingPolicy_ == MissingVisualPolicy::SkipVisual
+					? "[FlowUi] Warning: viewport key '%.*s' was not found, skipping the visual.\n"
+					: "[FlowUi] Warning: viewport key '%.*s' was not found, using the fallback texture.\n",
 				static_cast<int>(key.name.size()), key.name.data());
 		}
-		return {};
+		return TextureRef{
+			.skipIfUnavailable = missingPolicy_ == MissingVisualPolicy::SkipVisual,
+		};
 	}
 	return it->second.facadeAddress ? it->second.facadeAddress->textureRef() : TextureRef{};
 }
 
 const ViewPortVulkanInterop& ViewPortManager::getVulkanInterop() const {
-	if (!controller_) throw std::runtime_error("ViewPortManager is not initialized.");
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	return controller_->interop;
 }
 
@@ -292,7 +357,7 @@ void ViewPortManager::resetFrameTracking() {
 
 void ViewPortManager::prepareFrameTargets(
 	const Clay_RenderCommandArray& commands, float scaleX, float scaleY) {
-	if (!controller_) throw std::runtime_error("ViewPortManager is not initialized.");
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
 	resetFrameTracking();
 	const float sx = std::max(scaleX, 1.0e-6f);
 	const float sy = std::max(scaleY, 1.0e-6f);
@@ -397,7 +462,10 @@ void ViewPortManager::recordFramePasses(
 			timingRecorder, devSystems::TimingCategory::RendererCpu,
 			devSystems::TimingZoneRole::Work, "flowui.viewport.record");
 		if (slot >= record.active.commands.size() || slot >= record.active.images.size()) {
-			throw std::runtime_error("ViewPortManager active target generation is incomplete.");
+			detail::terminateForFatalError(makeError(
+				ErrorCode::ViewportGenerationIncomplete,
+				ErrorSubjectKind::Viewport,
+				std::hash<std::string_view>{}(key)));
 		}
 		manager_storage::ViewportFrameCommands& frame = record.active.commands[slot];
 		manager_storage::ViewportImageResource& image = record.active.images[slot];
@@ -456,6 +524,7 @@ void ViewPortManager::destroyDrained(VulkanContext&) {
 		} catch (...) {}
 	}
 	controller_ = nullptr; controllerHandle_ = 0; windowId_ = InvalidWindowId; storage_ = nullptr;
+	missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 }
 
 } // namespace FlowUi

@@ -16,7 +16,15 @@ namespace {
 
 static void vkCheck(VkResult result, const char* message) {
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error(message);
+		(void)message;
+		FlowUi::ErrorCode code = FlowUi::ErrorCode::VulkanNativeCallFailed;
+		if (result == VK_ERROR_DEVICE_LOST) code = FlowUi::ErrorCode::VulkanDeviceLost;
+		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+			code = FlowUi::ErrorCode::AllocationFailed;
+		}
+		throw FlowUi::FlowUiException(FlowUi::makeError(
+			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			static_cast<std::uint32_t>(result)));
 	}
 }
 
@@ -164,7 +172,7 @@ static SwapchainSupport querySwapchainSupport(VkPhysicalDevice device, VkSurface
 
 void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts) {
 	if (instance != VK_NULL_HANDLE) {
-		throw std::runtime_error("Vulkan instance already created.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectAlreadyInitialized));
 	}
 
 	uint32_t instanceVersion = VK_API_VERSION_1_0;
@@ -174,7 +182,7 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 		vkCheck(enumerateInstanceVersion(&instanceVersion), "Failed to query Vulkan instance version.");
 	}
 	if (instanceVersion < VK_API_VERSION_1_3) {
-		throw std::runtime_error("Vulkan 1.3 is required but not supported by the loader.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanVersionUnsupported));
 	}
 
 	uint32_t extCount = 0;
@@ -215,7 +223,7 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 
 	for (const char* ext : extensions) {
 		if (!hasExtension(ext, availableExts)) {
-			throw std::runtime_error(std::string("Missing required instance extension: ") + ext);
+			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanExtensionMissing));
 		}
 	}
 
@@ -269,28 +277,28 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 
 VkSurfaceKHR VulkanContext::createSurface(FlowUi::detail::IWindowBackend& window) const {
 	if (instance == VK_NULL_HANDLE) {
-		throw std::runtime_error("Vulkan instance must be created before surface.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
 	}
 	const VkSurfaceKHR surface = window.createSurface(instance);
 	if (surface == VK_NULL_HANDLE) {
-		throw std::runtime_error("Failed to create Vulkan surface.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed));
 	}
 	return surface;
 }
 
 void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfaceKHR mainSurface) {
 	if (instance == VK_NULL_HANDLE) {
-		throw std::runtime_error("Vulkan instance must be created before picking a device.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
 	}
 	if (mainSurface == VK_NULL_HANDLE) {
-		throw std::runtime_error("Vulkan surface must be created before picking a device.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed));
 	}
 
 	uint32_t deviceCount = 0;
 	vkCheck(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr),
 		"Failed to enumerate Vulkan physical devices.");
 	if (deviceCount == 0) {
-		throw std::runtime_error("No Vulkan-capable GPU found.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable));
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -352,7 +360,7 @@ void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfac
 	}
 
 	if (selected == VK_NULL_HANDLE) {
-		throw std::runtime_error("Failed to find a suitable Vulkan 1.3 GPU.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable));
 	}
 
 	phys = selected;
@@ -370,10 +378,10 @@ bool VulkanContext::supportsPresentation(VkSurfaceKHR surface) const noexcept {
 void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	(void)config;
 	if (phys == VK_NULL_HANDLE) {
-		throw std::runtime_error("Physical device must be selected before creating logical device.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
 	}
 	if (graphicsQFamily == UINT32_MAX || presentQFamily == UINT32_MAX) {
-		throw std::runtime_error("Queue family indices not set.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable));
 	}
 
 	std::vector<uint32_t> uniqueFamilies;
@@ -468,7 +476,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	if (!enabled12.descriptorIndexing || !enabled12.runtimeDescriptorArray ||
 		!enabled12.shaderSampledImageArrayNonUniformIndexing || !enabled12.descriptorBindingPartiallyBound ||
 		!enabled12.descriptorBindingSampledImageUpdateAfterBind) {
-		throw std::runtime_error("Selected device does not support descriptor indexing features required by UI renderer.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing));
 	}
 
 	VkPhysicalDeviceVulkan13Features enabled13{};
@@ -494,7 +502,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	}
 
 	if (!enabled13.dynamicRendering) {
-		throw std::runtime_error("Selected device does not support dynamic rendering.");
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing));
 	}
 
 	VkDeviceCreateInfo createInfo{};

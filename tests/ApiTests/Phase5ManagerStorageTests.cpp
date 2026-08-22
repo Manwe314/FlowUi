@@ -44,8 +44,8 @@ void testResourceKeySurface() {
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 	using Viewports = FlowUi::ViewPortManager;
 	static_assert(std::is_same_v<
-		decltype(static_cast<bool (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&)>(&Viewports::create)),
-		bool (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&)>);
+		decltype(static_cast<FlowUi::Result<bool> (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&)>(&Viewports::create)),
+		FlowUi::Result<bool> (Viewports::*)(ResourceKey, const FlowUi::ViewPortCreateInfo&)>);
 #endif
 }
 

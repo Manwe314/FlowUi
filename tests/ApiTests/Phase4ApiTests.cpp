@@ -14,11 +14,11 @@ using FlowUi::App;
 using FlowUi::WindowId;
 
 void testPublicOverloads() {
-	static_assert(std::is_same_v<decltype(static_cast<WindowId (App::*)(const FlowUi::WindowConfig&)>(&App::createWindow)),
-		WindowId (App::*)(const FlowUi::WindowConfig&)>);
-	static_assert(std::is_same_v<decltype(static_cast<void (App::*)(WindowId)>(&App::beginFrame)),
-		void (App::*)(WindowId)>);
-	static_assert(std::is_same_v<decltype(static_cast<void (App::*)()>(&App::beginFrame)), void (App::*)()>);
+	static_assert(std::is_same_v<decltype(static_cast<FlowUi::Result<WindowId> (App::*)(const FlowUi::WindowConfig&)>(&App::createWindow)),
+		FlowUi::Result<WindowId> (App::*)(const FlowUi::WindowConfig&)>);
+	static_assert(std::is_same_v<decltype(static_cast<FlowUi::Status (App::*)(WindowId)>(&App::beginFrame)),
+		FlowUi::Status (App::*)(WindowId)>);
+	static_assert(std::is_same_v<decltype(static_cast<FlowUi::Status (App::*)()>(&App::beginFrame)), FlowUi::Status (App::*)()>);
 	static_assert(std::is_same_v<decltype(static_cast<FlowUi::UiManager& (App::*)(WindowId)>(&App::ui)),
 		FlowUi::UiManager& (App::*)(WindowId)>);
 	static_assert(!std::is_copy_constructible_v<Swapchain>);

@@ -69,7 +69,7 @@ void testMultipleVariantsAndSwitching(FlowUi::test::HeadlessVulkanFixture& vulka
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 6.0f);
 	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("light").cornerRadius == 14.0f);
 
-	bool switched = themes.setActiveVariant<TestAppTheme>("light");
+	auto switched = themes.setActiveVariant<TestAppTheme>("light");
 	FLOWUI_CHECK(switched);
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 14.0f);
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().spacing == 20);
@@ -144,6 +144,14 @@ void testStagedMutations(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 
 	themes.applyStagedMutations();
 
+	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 15.0f);
+	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().spacing == 30);
+
+	FLOWUI_CHECK(themes.updateActiveTheme<TestAppTheme>([](TestAppTheme& t) {
+		t.cornerRadius = 99.0f;
+		throw std::runtime_error("theme callback failure");
+	}));
+	FLOWUI_CHECK_THROWS(themes.applyStagedMutations());
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 15.0f);
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().spacing == 30);
 }
