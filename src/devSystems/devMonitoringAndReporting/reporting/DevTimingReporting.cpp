@@ -382,6 +382,7 @@ TimingReportingStatus DevTimingReporting::status() const noexcept {
 		.lateRecordsAfterEviction = impl_->lateRecordsAfterEviction,
 		.ingestionFailures = impl_->ingestionFailures.load(std::memory_order_relaxed),
 		.mutationSequence = impl_->mutationSequence,
+		.quality = impl_->currentCpuQuality,
 		.hasRetainedTicks = impl_->hasTicks,
 	};
 }

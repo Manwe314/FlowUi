@@ -1,14 +1,12 @@
 #include "managers/ActionManager.hpp"
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #endif
 
 #include <algorithm>
 #include <stdexcept>
-#if FLOW_UI_DEV_MODE
-#include <iostream>
-#endif
 
 #include "FlowUi/App.hpp"
 #include "internal/ManagerStorage/ActionManagerState.hpp"
@@ -55,7 +53,7 @@ void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
 	if (!manager_storage::state<manager_storage::ActionManagerState>(
 			&storageSystem, handle, storage::ResourceKind::ActionManager)) {
 		(void)storageSystem.removeManagerRecord(key, storage::ResourceKind::ActionManager);
-		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::ActionManagerInitialize));
 	}
 	app_ = &app;
 	storage_ = &storageSystem;
@@ -108,7 +106,7 @@ manager_storage::ActionManagerState& ActionManager::state() {
 		storage_,
 		storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::ActionManager);
-	if (!result) detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+	if (!result) detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::ActionInvoke));
 	return *result;
 }
 
@@ -117,18 +115,18 @@ const manager_storage::ActionManagerState& ActionManager::state() const {
 		storage_,
 		storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::ActionManager);
-	if (!result) detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+	if (!result) detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::ActionInvoke));
 	return *result;
 }
 
 Status ActionManager::validateBindingRequest(AppActionID id, bool replacement) const {
-	if (!id) return unexpectedError(makeError(ErrorCode::InvalidActionId));
+	if (!id) return unexpectedError(makeError(ErrorCode::InvalidActionId, ErrorSite::ActionBind));
 	const bool exists = state().bindings.contains(id);
 	if (!replacement && exists) {
-		return unexpectedError(makeError(ErrorCode::ActionAlreadyBound, ErrorSubjectKind::Action, id.value));
+		return unexpectedError(makeError(ErrorCode::ActionAlreadyBound, ErrorSite::ActionBind, id.value));
 	}
 	if (replacement && !exists) {
-		return unexpectedError(makeError(ErrorCode::ActionNotBound, ErrorSubjectKind::Action, id.value));
+		return unexpectedError(makeError(ErrorCode::ActionNotBound, ErrorSite::ActionRebind, id.value));
 	}
 	return {};
 }
@@ -142,13 +140,13 @@ void ActionManager::publishBinding(
 		const auto [_, inserted] = current.bindings.emplace(id, handle);
 		if (!inserted) {
 			detail::terminateForFatalError(makeError(
-				ErrorCode::ActionPublicationConflict, ErrorSubjectKind::Action, id.value));
+				ErrorCode::ActionPublicationConflict, ErrorSite::ActionPublish, id.value));
 		}
 	} else {
 		const auto found = current.bindings.find(id);
 		if (found == current.bindings.end()) {
 			detail::terminateForFatalError(makeError(
-				ErrorCode::ActionPublicationConflict, ErrorSubjectKind::Action, id.value));
+				ErrorCode::ActionPublicationConflict, ErrorSite::ActionPublish, id.value));
 		}
 		const storage::PersistentRecordHandle previous = found->second;
 		found->second = handle;
@@ -323,15 +321,23 @@ void ActionManager::reportInvocationError(
 		};
 		const uint32_t diagnosticCode = 0xA000u + static_cast<uint32_t>(error);
 		if (!storage_->markDiagnosticOnce(key, diagnosticCode)) return;
-		const char* reason = "unknown";
+		ErrorCode code = ErrorCode::ActionNotBound;
 		switch (error) {
-		case ActionInvokeError::Unbound: reason = "unbound"; break;
-		case ActionInvokeError::Disabled: reason = "disabled"; break;
-		case ActionInvokeError::ResultTypeMismatch: reason = "result type mismatch"; break;
+		case ActionInvokeError::Unbound: code = ErrorCode::ActionNotBound; break;
+		case ActionInvokeError::Disabled: code = ErrorCode::ActionDisabled; break;
+		case ActionInvokeError::ResultTypeMismatch:
+			code = ErrorCode::ActionResultTypeMismatch;
+			break;
 		case ActionInvokeError::Empty: return;
 		}
-		std::cerr << "FlowUi action diagnostic: '" << name
-			<< "' invocation was " << reason << ".\n";
+		static constexpr auto source =
+			devSystems::makeDevErrorSource("flowui.action.invocation_diagnostic");
+		static constexpr auto breadcrumb =
+			devSystems::makeDevErrorBreadcrumb("flowui.action.callback.failed");
+		devSystems::recordGlobalDevBreadcrumb(
+			breadcrumb, call.id.value, static_cast<uint64_t>(error));
+		devSystems::recordGlobalDevDiagnostic(
+			makeError(code, ErrorSite::ActionInvoke, call.id.value), source, name);
 	} catch (...) {
 	}
 }

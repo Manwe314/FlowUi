@@ -14,7 +14,7 @@ static void vkCheck(VkResult result, const char* message) {
 			code = FlowUi::ErrorCode::AllocationFailed;
 		}
 		throw FlowUi::FlowUiException(FlowUi::makeError(
-			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			code, FlowUi::ErrorSite::VulkanFramesInitialize, 0u, 0u,
 			static_cast<std::uint32_t>(result)));
 	}
 }
@@ -23,7 +23,8 @@ static void vkCheck(VkResult result, const char* message) {
 
 void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk) {
 	if (vk.device == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(
+			FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::VulkanFramesInitialize));
 	}
 
 	uint32_t frameCount = std::max<uint32_t>(1u, framesInFlight);

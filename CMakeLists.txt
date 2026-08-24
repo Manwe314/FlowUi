@@ -20,6 +20,12 @@ set_property(CACHE FLOWUI_DEV_MEMORY_LEVEL PROPERTY STRINGS 0 1 2 3 4)
 if(NOT FLOWUI_DEV_MEMORY_LEVEL MATCHES "^[0-4]$")
     message(FATAL_ERROR "FLOWUI_DEV_MEMORY_LEVEL must be 0, 1, 2, 3, or 4.")
 endif()
+set(FLOWUI_DEV_ERROR_LEVEL "2" CACHE STRING
+    "Maximum compiled development error detail: 0=disabled, 1=summary, 2=causal, 3=stack/state, 4=deep.")
+set_property(CACHE FLOWUI_DEV_ERROR_LEVEL PROPERTY STRINGS 0 1 2 3 4)
+if(NOT FLOWUI_DEV_ERROR_LEVEL MATCHES "^[0-4]$")
+    message(FATAL_ERROR "FLOWUI_DEV_ERROR_LEVEL must be 0, 1, 2, 3, or 4.")
+endif()
 option(COMPILE_FSELI "Include the Flow Standard Element Library in FlowUi/Flow.hpp." ON)
 set(FLOWUI_COMPILE_FSELI_ENABLED ${COMPILE_FSELI})
 if(FLOW_UI_DEV_MODE AND NOT FLOWUI_COMPILE_FSELI_ENABLED)
@@ -338,12 +344,18 @@ if(FLOW_UI_DEV_MODE)
 		PRIVATE
 			src/devSystems/devFunctionality/DevFunctionality.cpp
 			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
+			src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
+			src/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.cpp
+			src/devSystems/devMonitoringAndReporting/errors/DevErrorStackProvider.cpp
 			src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp
 			src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
 			src/devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.cpp
 			src/devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.cpp
 			src/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdvice.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdviceCatalogue.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevGpuTiming.cpp
@@ -354,6 +366,10 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devFunctionality/DevFunctionality.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevError.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevErrorStackProvider.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevErrorTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemory.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.hpp>
@@ -363,6 +379,8 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevErrorAdvice.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTiming.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp>

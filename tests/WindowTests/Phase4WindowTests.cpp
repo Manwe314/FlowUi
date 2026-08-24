@@ -18,6 +18,17 @@
 
 namespace {
 
+struct ErrorCapture {
+	FlowUi::ErrorEventView event{};
+	std::uint32_t count = 0u;
+};
+
+void captureError(void* userData, const FlowUi::ErrorEventView& event) noexcept {
+	auto& capture = *static_cast<ErrorCapture*>(userData);
+	capture.event = event;
+	++capture.count;
+}
+
 void emptyFrame(FlowUi::App& app, FlowUi::WindowId window) {
 	FLOWUI_CHECK(app.beginFrame(window));
 	FLOWUI_CHECK(app.endFrame(window));
@@ -55,12 +66,29 @@ int main() {
 	try {
 		stage = "main creation";
 		FlowUi::AppConfig config{};
+		ErrorCapture errorCapture{};
+		config.errors.observer.mode = FlowUi::ErrorReportingMode::SinkOnly;
+		config.errors.observer.sink = FlowUi::ErrorSink{
+			.userData = &errorCapture,
+			.callback = &captureError,
+		};
 		config.window.title = "FlowUi Phase 4 main";
 		config.window.width = 320;
 		config.window.height = 240;
 		config.vk.enableValidation = true;
 		config.vk.framesInFlight = 2;
 		FlowUi::App app = FlowUi::makeApplication(config);
+		errorCapture = {};
+		const FlowUi::FlowUiError reportedError = FlowUi::makeError(
+			FlowUi::ErrorCode::InvalidWindowId,
+			FlowUi::ErrorSite::AppAccessWindow,
+			42u);
+		app.reportError(reportedError);
+		FLOWUI_CHECK(errorCapture.count == 1u);
+		FLOWUI_CHECK(errorCapture.event.kind == FlowUi::ErrorEventKind::Reported);
+		FLOWUI_CHECK(errorCapture.event.error.code == reportedError.code);
+		FLOWUI_CHECK(errorCapture.event.error.site == reportedError.site);
+		FLOWUI_CHECK(errorCapture.event.error.subject == reportedError.subject);
 		FLOWUI_CHECK(app.mainWindowId() == FlowUi::MainWindowId);
 		FLOWUI_CHECK(app.hasWindow(app.mainWindowId()));
 		FLOWUI_CHECK(!app.hasWindow(FlowUi::InvalidWindowId));

@@ -443,11 +443,8 @@ struct AppConfig {
 	/** Optional profiled startup capacities; zero fields preserve library defaults. */
 	MemoryCapacityProfile memoryCapacityProfile{};
 
-	/** Always-on error resolution choices selected for the lifetime of the App. */
-	ErrorPolicy errors{};
-
-	/** Evidence-only observer called immediately before an unrecoverable halt. */
-	FatalErrorSink fatalErrors{};
+	/** Resolution and centralized reporting choices used for the App lifetime. */
+	ErrorContract errors{};
 
 	/**
 	 * @brief Developer tooling and capture defaults.

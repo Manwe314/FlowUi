@@ -61,7 +61,7 @@ public:
 		requires HasState<E> && std::same_as<E, ElementType>
 	[[nodiscard]] StateOf<E>& state() {
 		if (!statePayload_) {
-			throw FlowUiException(makeError(ErrorCode::ElementStateUnavailable));
+			throw FlowUiException(makeError(ErrorCode::ElementStateUnavailable, ErrorSite::ElementInvoke));
 		}
 		return *static_cast<StateOf<E>*>(statePayload_);
 	}
@@ -71,7 +71,7 @@ public:
 		requires HasState<E> && std::same_as<E, ElementType>
 	[[nodiscard]] const StateOf<E>& state() const {
 		if (!statePayload_) {
-			throw FlowUiException(makeError(ErrorCode::ElementStateUnavailable));
+			throw FlowUiException(makeError(ErrorCode::ElementStateUnavailable, ErrorSite::ElementInvoke));
 		}
 		return *static_cast<const StateOf<E>*>(statePayload_);
 	}
@@ -85,7 +85,7 @@ public:
 				elementDescriptor<ElementType>, false);
 		}
 		if (!resourcePayload_) {
-			throw FlowUiException(makeError(ErrorCode::ElementResourceUnavailable));
+			throw FlowUiException(makeError(ErrorCode::ElementResourceUnavailable, ErrorSite::ElementInvoke));
 		}
 		return *static_cast<const ResourcesOf<E>*>(resourcePayload_);
 	}

@@ -361,7 +361,7 @@ void PopupManager::init(
 	storage::IStorageSystem& storageSystem,
 	WindowId window,
 	const ErrorPolicy& policy) {
-	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized));
+	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::PopupManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.popup.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<PopupManagerState>(
@@ -395,7 +395,7 @@ PopupManagerState& PopupManager::state() {
 	auto* result = manager_storage::state<PopupManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::PopupManager);
-	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::PopupRequest));
 	return *result;
 }
 
@@ -403,7 +403,7 @@ const PopupManagerState& PopupManager::state() const {
 	const auto* result = manager_storage::state<PopupManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::PopupManager);
-	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::PopupRequest));
 	return *result;
 }
 
@@ -414,7 +414,7 @@ void PopupManager::beginFrame(
 	float viewportHeight) {
 	auto& current = state();
 	if (current.frameActive) {
-		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive));
+		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSite::PopupBeginFrame));
 	}
 	current.workingRecords = current.committedRecords;
 	current.currentSubmissions.clear();
@@ -503,7 +503,7 @@ Result<PopupFrame> PopupManager::request(FlowElementPartID popupId, const PopupR
 Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requestValue) {
 	auto& current = state();
 	if (!current.frameActive) {
-		return unexpectedError(makeError(ErrorCode::PopupFrameInactive));
+		return unexpectedError(makeError(ErrorCode::PopupFrameInactive, ErrorSite::PopupRequest));
 	}
 	if (popupKey == 0) return {};
 
@@ -511,14 +511,16 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 		duplicate != current.currentSubmissionByKey.end()) {
 		if (duplicatePolicy_ == PopupDuplicatePolicy::RejectDuplicate) {
 			return unexpectedError(makeError(
-				ErrorCode::PopupDuplicateSubmission,
-				ErrorSubjectKind::Popup,
+				ErrorCode::PopupDuplicateSubmission, ErrorSite::PopupRequest,
 				popupKey));
 		}
-#if FLOW_UI_DEV_MODE
-		std::fprintf(stderr, "[FlowUi] Warning: duplicate popup submission for id %llu.\n",
-			static_cast<unsigned long long>(popupKey));
-#endif
+		detail::reportErrorEvent(ErrorEventView{
+			.error = makeError(
+				ErrorCode::PopupDuplicateSubmission, ErrorSite::PopupRequest,
+				popupKey),
+			.kind = ErrorEventKind::Resolved,
+			.resolution = ErrorResolution::Rejected,
+		});
 		return current.currentSubmissions[duplicate->second].frame;
 	}
 
@@ -538,6 +540,15 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 		if (anchor.valid) {
 			if (current.nextPopupOffset >= kPopupLayerCapacity &&
 				capacityPolicy_ == PopupCapacityPolicy::SkipOverflowingPopup) {
+				if (!current.capacityWarningIssued) {
+					detail::reportErrorEvent(ErrorEventView{
+						.error = makeError(
+							ErrorCode::PopupCapacityExceeded, ErrorSite::PopupRequest,
+							popupKey, current.nextPopupOffset),
+						.kind = ErrorEventKind::Resolved,
+						.resolution = ErrorResolution::Skipped,
+					});
+				}
 				current.capacityWarningIssued = true;
 			} else {
 				record.anchorClayId = anchor.parentId.id;
@@ -547,10 +558,13 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 				}
 				if (offset == kPopupLayerCapacity - 1u &&
 					current.nextPopupOffset > kPopupLayerCapacity && !current.capacityWarningIssued) {
-#if FLOW_UI_DEV_MODE
-					std::fprintf(stderr,
-						"[FlowUi] Warning: popup z-index capacity exceeded for this window frame.\n");
-#endif
+					detail::reportErrorEvent(ErrorEventView{
+						.error = makeError(
+							ErrorCode::PopupCapacityExceeded, ErrorSite::PopupRequest,
+							popupKey, current.nextPopupOffset),
+						.kind = ErrorEventKind::Resolved,
+						.resolution = ErrorResolution::UsedFallback,
+					});
 					current.capacityWarningIssued = true;
 				}
 				record.zIndex = static_cast<int16_t>(
@@ -592,13 +606,22 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 		} else if (missingAnchorPolicy_ == PopupMissingAnchorPolicy::SkipPopup) {
 			record.measured = false;
 			record.hasBounds = false;
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::PopupAnchorNotFound, ErrorSite::PopupResolveAnchor,
+					popupKey, requestValue.anchor.elementValue),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = ErrorResolution::Skipped,
+			});
+		} else if (!anchor.valid && requestValue.anchor.kind == PopupAnchorKind::Element) {
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::PopupAnchorNotFound, ErrorSite::PopupResolveAnchor,
+					popupKey, requestValue.anchor.elementValue),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = ErrorResolution::Skipped,
+			});
 		}
-#if FLOW_UI_DEV_MODE
-		else if (requestValue.anchor.kind == PopupAnchorKind::Element) {
-			std::fprintf(stderr, "[FlowUi] Warning: popup anchor %llu was not found.\n",
-				static_cast<unsigned long long>(requestValue.anchor.elementValue));
-		}
-#endif
 	}
 
 	const size_t submissionIndex = current.currentSubmissions.size();

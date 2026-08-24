@@ -19,7 +19,7 @@ void vkCheck(VkResult result, const char* message) {
 			code = ErrorCode::AllocationFailed;
 		}
 		throw FlowUiException(makeError(
-			code, ErrorSubjectKind::None, 0u, 0u,
+			code, ErrorSite::ViewportManagerInitialize, 0u, 0u,
 			static_cast<std::uint32_t>(result)));
 	}
 }
@@ -31,7 +31,7 @@ storage::PixelFormat storageFormat(VkFormat format) {
 	case VK_FORMAT_B8G8R8A8_UNORM: return storage::PixelFormat::Bgra8Unorm;
 	case VK_FORMAT_B8G8R8A8_SRGB: return storage::PixelFormat::Bgra8Srgb;
 	case VK_FORMAT_R16G16B16A16_SFLOAT: return storage::PixelFormat::Rgba16Float;
-	default: throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid));
+	default: throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportCreate));
 	}
 }
 
@@ -106,7 +106,7 @@ void ViewportStorageController::destroyCommands(std::vector<ViewportFrameCommand
 
 ViewportImageResource ViewportStorageController::createImage(
 	uint32_t width, uint32_t height, VkFormat format) const {
-	if (!width || !height) throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid));
+	if (!width || !height) throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportCreate));
 	const storage::PixelFormat pixelFormat = storageFormat(format);
 	const storage::StringId name = storage->intern("flowui.viewport.target");
 	ViewportImageResource result{};
@@ -146,7 +146,8 @@ ViewportTargetGeneration ViewportStorageController::buildTargets(
 	uint32_t width, uint32_t height, VkFormat format) {
 	(void)storageFormat(format);
 	if (nextGeneration == std::numeric_limits<uint64_t>::max()) {
-		::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ViewportGenerationExhausted));
+		::FlowUi::detail::terminateForFatalError(makeError(
+			ErrorCode::ViewportGenerationExhausted, ErrorSite::ViewportCreate));
 	}
 	ViewportTargetGeneration result{};
 	result.generation = nextGeneration++;

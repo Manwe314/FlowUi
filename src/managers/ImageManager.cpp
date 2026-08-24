@@ -69,20 +69,21 @@ void ImageManager::destroy() noexcept {
 }
 
 Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageRegister));
 	storage::ResourceKey normalized{};
 	try {
 		normalized = imageKey(*storage_, key);
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
-	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty));
+	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty, ErrorSite::ImageLoad));
 
 	const std::filesystem::path path(filePath);
 	std::error_code pathError;
 	if (!std::filesystem::is_regular_file(path, pathError)) {
 		return unexpectedError(makeError(
-			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound,
+			ErrorSite::ImageLoad));
 	}
 
 	int width = 0;
@@ -91,13 +92,13 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 	stbi_uc* decoded = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!decoded || width <= 0 || height <= 0) {
 		if (decoded) stbi_image_free(decoded);
-		return unexpectedError(makeError(ErrorCode::ImageDecodeFailed));
+		return unexpectedError(makeError(ErrorCode::ImageDecodeFailed, ErrorSite::ImageDecode));
 	}
 
 	const uint64_t pixelCount = static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
 	if (pixelCount > std::numeric_limits<size_t>::max() / 4u) {
 		stbi_image_free(decoded);
-		return unexpectedError(makeError(ErrorCode::ImageSizeOverflow));
+		return unexpectedError(makeError(ErrorCode::ImageSizeOverflow, ErrorSite::ImageDecode));
 	}
 	const size_t byteCount = static_cast<size_t>(pixelCount * 4u);
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -164,12 +165,12 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 		return unexpectedError(exception.error());
 	} catch (...) {
 		if (decoded) stbi_image_free(decoded);
-		return unexpectedError(makeError(ErrorCode::ImagePublicationFailed));
+		return unexpectedError(makeError(ErrorCode::ImagePublicationFailed, ErrorSite::ImagePublish));
 	}
 }
 
 Result<bool> ImageManager::removeImage(ResourceKey key) {
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageRemove));
 	try {
 		return storage_->removeTexture(imageKey(*storage_, key));
 	} catch (const FlowUiException& exception) {
@@ -189,13 +190,15 @@ TextureRef ImageManager::getTexture(ResourceKey key) const {
 	if (!result.handle) {
 		result.skipIfUnavailable = missingPolicy_ == MissingVisualPolicy::SkipVisual;
 		if (storage_->markDiagnosticOnce(normalized, MissingImageDiagnostic)) {
-			std::fprintf(
-				stderr,
-				missingPolicy_ == MissingVisualPolicy::SkipVisual
-					? "[FlowUi] Warning: texture key '%.*s' was not found, skipping the visual.\n"
-					: "[FlowUi] Warning: texture key '%.*s' was not found, using the fallback texture.\n",
-				static_cast<int>(key.name.size()),
-				key.name.data());
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::ResourceNotFound, ErrorSite::ImageLookup,
+					normalized.name),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = missingPolicy_ == MissingVisualPolicy::SkipVisual
+					? ErrorResolution::Skipped
+					: ErrorResolution::UsedFallback,
+			});
 		}
 		return result;
 	}

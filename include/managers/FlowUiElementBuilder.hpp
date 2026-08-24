@@ -249,7 +249,7 @@ public:
 
 	/** Replace the builder identity with an already resolved local ID. */
 	ElementBuilder& withID(FlowElementID id) {
-		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		elementId_ = id;
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
@@ -259,7 +259,7 @@ public:
 
 	/** Replace the builder identity with an explicitly global address. */
 	ElementBuilder& withID(GlobalFlowID id) {
-		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		elementId_ = uiManager_.normalizeGlobalElementID(id);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
@@ -269,7 +269,7 @@ public:
 
 	/** Replace the builder identity with a part address already bound to its owner. */
 	ElementBuilder& withID(FlowElementPartID id) {
-		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		elementId_ = uiManager_.normalizePartElementID(id);
 #if FLOW_UI_DEV_MODE
 		automaticIdentity_ = false;
@@ -470,7 +470,7 @@ private:
 				declaration = ElementType::constructElement(buildContext);
 			}
 			if (uiManager_.constructedElementDepth() != constructedDepth.baseline) {
-				detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+				detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::ElementInvoke));
 			}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 1
 			invocationTiming.end();

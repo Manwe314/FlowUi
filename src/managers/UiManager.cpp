@@ -5,6 +5,7 @@
 
 #if FLOW_UI_DEV_MODE
 #include <charconv>
+#include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
@@ -105,7 +106,7 @@ namespace FlowUi
 		if (!clayContext) {
 			storageSystem.releasePersistent(clayMemory);
 			clayMemory = {};
-			throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
+			throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid, ErrorSite::UiManagerInitialize));
 		}
 
 		const float configuredDpi = std::max(1.0f, appConfig.ui.dpi);
@@ -127,7 +128,7 @@ namespace FlowUi
 	}
 
 	void UiManager::initStorage(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config) {
-		if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized));
+		if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::UiManagerInitialize));
 		const storage::StringId name = storageSystem.intern("flowui.ui.root");
 		const storage::ResourceKey key{storage::ResourceDomain::Layout, name, window};
 		const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::UiManagerState>(
@@ -138,7 +139,7 @@ namespace FlowUi
 		stateHandle_ = handle.packed();
 		state_ = manager_storage::state<manager_storage::UiManagerState>(
 			storage_, handle, storage::ResourceKind::UiContext);
-		if (!state_) throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
+		if (!state_) throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::UiManagerInitialize));
 
 		Clay_SetCurrentContext(state_->clayContext);
 		Clay_SetMeasureTextFunction(
@@ -162,7 +163,7 @@ namespace FlowUi
 			throw;
 		}
 		try {
-			popupManager_.init(storageSystem, window, config.errors);
+			popupManager_.init(storageSystem, window, config.errors.policy);
 		} catch (...) {
 			destroyStorage();
 			throw;
@@ -218,28 +219,28 @@ namespace FlowUi
 
 	ElementManager& UiManager::elements() {
 		if (!elementManager_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerAccessElements));
 		}
 		return *elementManager_;
 	}
 
 	const ElementManager& UiManager::elements() const {
 		if (!elementManager_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerAccessElements));
 		}
 		return *elementManager_;
 	}
 
 	ActionManager& UiManager::actions() {
 		if (!actionManager_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerAccessActions));
 		}
 		return *actionManager_;
 	}
 
 	const ActionManager& UiManager::actions() const {
 		if (!actionManager_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerAccessActions));
 		}
 		return *actionManager_;
 	}
@@ -366,14 +367,14 @@ namespace FlowUi
 			devSystems::TimingZoneRole::Work, "flowui.ui.begin_frame");
 #endif
 		if (!state_->clayContext) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerBeginFrame));
 		}
 		state_->activeFrame = frame;
 		state_->frameArena = storage_->frameArena(frame, storage::MemoryClass::FrameTransient);
 		state_->fontView = fontView;
 		inputFieldManager_.setFontFrameView(fontView, state_->pointsToPixelsScale);
 		if (!state_->frameArena.context) {
-			throw FlowUiException(makeError(ErrorCode::FrameNotReady));
+			throw FlowUiException(makeError(ErrorCode::FrameNotReady, ErrorSite::UiManagerBeginFrame));
 		}
 
 		{
@@ -483,7 +484,7 @@ namespace FlowUi
 			devSystems::TimingZoneRole::Work, "flowui.ui.end_frame");
 #endif
 		if (!state_->clayContext) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerEndFrame));
 		}
 
 		Clay_SetCurrentContext(state_->clayContext);
@@ -492,10 +493,13 @@ namespace FlowUi
 		closeConstructedToDepth(0, false);
 		restoreFlowScope(1);
 		if (autoClosedConstructedElements > 0) {
-			std::fprintf(
-				stderr,
-				"[FlowUi] Warning: auto-closed %d constructed element(s). Call ui.drawConstructed() for each ui.createElement(...).construct().\n",
-				autoClosedConstructedElements);
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::FramePhaseViolation, ErrorSite::UiManagerEndFrame,
+					0u, static_cast<std::uint64_t>(autoClosedConstructedElements)),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = ErrorResolution::UsedFallback,
+			});
 		}
 #if FLOW_UI_DEV_MODE
 		if (state_->devRootElementOpenThisFrame) {
@@ -588,10 +592,10 @@ namespace FlowUi
 	char* UiManager::allocBytes(size_t nBytes, size_t align)
 	{
 		if (!state_ || !state_->activeFrame) {
-			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation));
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::UiManagerRender));
 		}
 		void* memory = state_->frameArena.allocate(nBytes, align);
-		if (!memory) throw FlowUiException(makeError(ErrorCode::FrameCapacityExceeded));
+		if (!memory) throw FlowUiException(makeError(ErrorCode::FrameCapacityExceeded, ErrorSite::UiManagerRender));
 		return static_cast<char*>(memory);
 	}
 	
@@ -726,14 +730,15 @@ namespace FlowUi
 					.fileName = "<direct typed Clay bridge>",
 				});
 		if (!collision) return;
-		std::fprintf(
-			stderr,
-			"[FlowUi] Warning: Clay ID %u aliases distinct Flow IDs %llu ('%s') and %llu ('%s').\n",
-			collision->clayId,
-			static_cast<unsigned long long>(collision->first.instanceId.value),
-			collision->first.source.debugPath.c_str(),
-			static_cast<unsigned long long>(collision->duplicate.instanceId.value),
-			collision->duplicate.source.debugPath.c_str());
+		static constexpr auto source =
+			devSystems::makeDevErrorSource("flowui.ui.clay_bridge_collision");
+		devSystems::recordGlobalDevDiagnostic(
+			makeError(
+				ErrorCode::ElementDefinitionConflict,
+				ErrorSite::UiManagerDefineElement,
+				collision->first.instanceId.value,
+				collision->duplicate.instanceId.value),
+			source);
 	}
 #endif
 
@@ -773,50 +778,37 @@ namespace detail {
 
 		if (collision && collision->first.automaticIdentity &&
 			collision->duplicate.automaticIdentity) {
-			std::fprintf(
-				stderr,
-				"[FlowUi] Warning: automatic element ID %llu was used more than once in one window frame. A loop or repeated callsite must use FlowUi::Indexed(), FlowUi::Keyed(), or context.indexedIDs().next(). First: %s:%u:%u. Duplicate: %s:%u:%u.\n",
-				static_cast<unsigned long long>(collision->instanceId.value),
-				collision->first.fileName.c_str(),
-				collision->first.line,
-				collision->first.column,
-				collision->duplicate.fileName.c_str(),
-				collision->duplicate.line,
-				collision->duplicate.column);
+			static constexpr auto source =
+				devSystems::makeDevErrorSource("flowui.ui.automatic_element_id_collision");
+			devSystems::recordGlobalDevDiagnostic(
+				makeError(
+					ErrorCode::ElementDefinitionConflict,
+					ErrorSite::UiManagerDefineElement,
+					collision->instanceId.value,
+					collision->duplicate.definitionId.value),
+				source);
 		} else if (collision) {
-			std::fprintf(
-				stderr,
-				"[FlowUi] Warning: duplicate Flow root id %llu. First: definition %llu, '%s' at %s:%u:%u. Duplicate: definition %llu, '%s' at %s:%u:%u.\n",
-				static_cast<unsigned long long>(collision->instanceId.value),
-				static_cast<unsigned long long>(collision->first.definitionId.value),
-				collision->first.debugPath.c_str(),
-				collision->first.fileName.c_str(),
-				collision->first.line,
-				collision->first.column,
-				static_cast<unsigned long long>(collision->duplicate.definitionId.value),
-				collision->duplicate.debugPath.c_str(),
-				collision->duplicate.fileName.c_str(),
-				collision->duplicate.line,
-				collision->duplicate.column);
+			static constexpr auto source =
+				devSystems::makeDevErrorSource("flowui.ui.flow_root_collision");
+			devSystems::recordGlobalDevDiagnostic(
+				makeError(
+					ErrorCode::ElementDefinitionConflict,
+					ErrorSite::UiManagerDefineElement,
+					collision->instanceId.value,
+					collision->duplicate.definitionId.value),
+				source);
 		}
 
 		if (clayCollision) {
-			std::fprintf(
-				stderr,
-				"[FlowUi] Warning: Clay ID %u aliases distinct Flow IDs. First: %llu, definition %llu, '%s' at %s:%u:%u. Duplicate: %llu, definition %llu, '%s' at %s:%u:%u.\n",
-				clayCollision->clayId,
-				static_cast<unsigned long long>(clayCollision->first.instanceId.value),
-				static_cast<unsigned long long>(clayCollision->first.source.definitionId.value),
-				clayCollision->first.source.debugPath.c_str(),
-				clayCollision->first.source.fileName.c_str(),
-				clayCollision->first.source.line,
-				clayCollision->first.source.column,
-				static_cast<unsigned long long>(clayCollision->duplicate.instanceId.value),
-				static_cast<unsigned long long>(clayCollision->duplicate.source.definitionId.value),
-				clayCollision->duplicate.source.debugPath.c_str(),
-				clayCollision->duplicate.source.fileName.c_str(),
-				clayCollision->duplicate.source.line,
-				clayCollision->duplicate.source.column);
+			static constexpr auto source =
+				devSystems::makeDevErrorSource("flowui.ui.clay_id_alias");
+			devSystems::recordGlobalDevDiagnostic(
+				makeError(
+					ErrorCode::ElementDefinitionConflict,
+					ErrorSite::UiManagerDefineElement,
+					clayCollision->first.instanceId.value,
+					clayCollision->duplicate.instanceId.value),
+				source);
 		}
 	}
 
@@ -893,10 +885,10 @@ namespace devMode::elementCapture {
 
 	void UiManager::drawConstructed() {
 		if (!state_->clayContext) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerInvokeElement));
 		}
 		if (state_->constructedElementStack.empty()) {
-			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation));
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::UiManagerInvokeElement));
 		}
 
 		Clay_SetCurrentContext(state_->clayContext);
@@ -930,7 +922,7 @@ namespace devMode::elementCapture {
 		const auto [indexEnd, error] = std::to_chars(
 			indexBuffer, indexBuffer + sizeof(indexBuffer), name.index);
 		if (error != std::errc{}) {
-			detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+			detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::UiManagerDefineElement));
 		}
 		const size_t indexBytes = static_cast<size_t>(indexEnd - indexBuffer);
 		const size_t totalBytes = name.debugName.size() + indexBytes + 2;
@@ -953,7 +945,7 @@ namespace devMode::elementCapture {
 		const auto [columnEnd, columnError] = std::to_chars(
 			columnBuffer, columnBuffer + sizeof(columnBuffer), name.column);
 		if (lineError != std::errc{} || columnError != std::errc{}) {
-			detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+			detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::UiManagerDefineElement));
 		}
 		constexpr std::string_view prefix = "@auto/";
 		const size_t lineBytes = static_cast<size_t>(lineEnd - lineBuffer);
@@ -989,7 +981,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		LocalElementName name) {
 		if (!parent || !definition || !name) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return detail::element_id::resolveLocal(
 			parent,
@@ -1006,7 +998,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		RuntimeElementName name) {
 		if (!parent || !definition || !name) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return detail::element_id::resolveLocal(
 			parent,
@@ -1023,7 +1015,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		IndexedElementName name) {
 		if (!parent || !definition || !name) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return detail::element_id::resolveLocal(
 			parent,
@@ -1040,7 +1032,7 @@ namespace devMode::elementCapture {
 		FlowDefinitionID definition,
 		AutoElementName name) {
 		if (!parent || !definition || !name) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return detail::element_id::resolveAutomatic(
 			parent,
@@ -1053,7 +1045,7 @@ namespace devMode::elementCapture {
 	}
 
 	FlowElementID UiManager::normalizeGlobalElementID(GlobalFlowID id) {
-		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		return FlowElementID{
 			.value = id.value,
 #if FLOW_UI_DEV_MODE
@@ -1076,7 +1068,7 @@ namespace devMode::elementCapture {
 		FlowElementID owner,
 		FlowElementPart part) {
 		if (!ownerDefinition || !owner || !part) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return FlowElementPartID{
 			.value = detail::identity_hash::compose(
@@ -1093,7 +1085,8 @@ namespace devMode::elementCapture {
 	size_t UiManager::pushFlowScope(FlowElementID id) {
 		if (!state_ || !state_->activeFrame || !id) {
 			throw FlowUiException(makeError(
-				!id ? ErrorCode::InvalidElementId : ErrorCode::FramePhaseViolation));
+				!id ? ErrorCode::InvalidElementId : ErrorCode::FramePhaseViolation,
+				ErrorSite::UiManagerOpenElement));
 		}
 		return state_->flowScopes.push(id);
 	}
@@ -1124,10 +1117,15 @@ namespace devMode::elementCapture {
 		}
 #if FLOW_UI_DEV_MODE
 		if (warn) {
-			std::fprintf(
-				stderr,
-				"[FlowUi] Warning: auto-closed %zu constructed element(s) left open by a draw callback.\n",
-				closedCount);
+			static constexpr auto source =
+				devSystems::makeDevErrorSource("flowui.ui.auto_closed_elements");
+			devSystems::recordGlobalDevDiagnostic(
+				makeError(
+					ErrorCode::FramePhaseViolation,
+					ErrorSite::UiManagerCloseElement,
+					0u,
+					closedCount),
+				source);
 		}
 #else
 		(void)warn;
@@ -1186,7 +1184,7 @@ namespace devMode::elementCapture {
 
 	const ThemeManager& UiManager::appThemes() const {
 		if (!themeManager_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::UiManagerAccessTheme));
 		}
 		return *themeManager_;
 	}

@@ -1,5 +1,6 @@
 #include "managers/FontManager.hpp"
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -148,7 +149,7 @@ DecodedAtlasImage decodeImageToRgba8(
 	decoded.height = image.height;
 
 	if (decoded.width == 0 || decoded.height == 0) {
-		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 	}
 
 	const auto* sourceDataBytes = static_cast<const unsigned char*>(image.data);
@@ -158,10 +159,10 @@ DecodedAtlasImage decodeImageToRgba8(
 	switch (image.encoding) {
 		case artery_font::IMAGE_PNG: {
 			if (!sourceData || sourceDataSize == 0) {
-				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 			}
 			if (sourceDataSize > static_cast<size_t>(std::numeric_limits<int>::max())) {
-				throw FlowUiException(makeError(ErrorCode::ImageSizeOverflow));
+				throw FlowUiException(makeError(ErrorCode::ImageSizeOverflow, ErrorSite::FontParse));
 			}
 
 			int decodedWidth = 0;
@@ -175,7 +176,7 @@ DecodedAtlasImage decodeImageToRgba8(
 				&decodedChannels,
 				4);
 			if (!rgbaPixels) {
-				throw FlowUiException(makeError(ErrorCode::ImageDecodeFailed));
+				throw FlowUiException(makeError(ErrorCode::ImageDecodeFailed, ErrorSite::FontParse));
 			}
 
 			const size_t decodedBytes = static_cast<size_t>(decodedWidth) * static_cast<size_t>(decodedHeight) * 4u;
@@ -191,17 +192,17 @@ DecodedAtlasImage decodeImageToRgba8(
 			decoded.height = static_cast<uint32_t>(decodedHeight);
 
 			if (decoded.width != image.width || decoded.height != image.height) {
-				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 			}
 			break;
 		}
 
 		case artery_font::IMAGE_RAW_BINARY: {
 			if (image.pixelFormat != artery_font::PIXEL_UNSIGNED8) {
-				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
 			}
 			if (image.channels != 1 && image.channels != 3 && image.channels != 4) {
-				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
 			}
 
 			const size_t pixelRowBytes = static_cast<size_t>(image.width) * static_cast<size_t>(image.channels);
@@ -210,12 +211,12 @@ DecodedAtlasImage decodeImageToRgba8(
 				: pixelRowBytes;
 
 			if (sourceRowBytes < pixelRowBytes) {
-				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 			}
 
 			const size_t requiredBytes = sourceRowBytes * static_cast<size_t>(image.height);
 			if (!sourceData || sourceDataSize < requiredBytes) {
-				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+				throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 			}
 
 			decoded.rgbaPixels.resize(static_cast<size_t>(image.width) * static_cast<size_t>(image.height) * 4u);
@@ -251,7 +252,7 @@ DecodedAtlasImage decodeImageToRgba8(
 		}
 
 		default:
-			throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+			throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
 	}
 
 	return decoded;
@@ -263,11 +264,11 @@ std::vector<uint8_t> copyAtlasIntoPage(
 	uint32_t pageHeight,
 	const std::filesystem::path& sourcePath) {
 	if (pageWidth == 0 || pageHeight == 0) {
-		throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
+		throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid, ErrorSite::FontPublishAtlas));
 	}
 	if (source.width > pageWidth || source.height > pageHeight) {
 		(void)sourcePath;
-		throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded));
+		throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded, ErrorSite::FontPublishAtlas));
 	}
 
 	const size_t pageRowBytes = static_cast<size_t>(pageWidth) * 4u;
@@ -300,7 +301,7 @@ std::string makeUniqueFontName(
 			return candidate;
 		}
 	}
-	detail::terminateForFatalError(makeError(ErrorCode::IdentitySpaceExhausted));
+	detail::terminateForFatalError(makeError(ErrorCode::IdentitySpaceExhausted, ErrorSite::FontRegisterFamily));
 }
 
 } // namespace
@@ -318,7 +319,7 @@ void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSiz
 		storage_, handle, storage::ResourceKind::FontFamily);
 	if (!controller_) {
 		destroy();
-		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::FontManagerInitialize));
 	}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	controller_->setDevMemoryRecorder(devMemoryRecorder_);
@@ -326,10 +327,10 @@ void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSiz
 }
 
 Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCreateInfo& createInfo) {
-	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	std::string familyName = createInfo.name.empty() ? std::string("Default") : createInfo.name;
 	if (controller_->familyIdByName.find(familyName) != controller_->familyIdByName.end()) {
-		return unexpectedError(makeError(ErrorCode::FontFamilyAlreadyExists));
+		return unexpectedError(makeError(ErrorCode::FontFamilyAlreadyExists, ErrorSite::FontRegisterFamily));
 	}
 
 	const size_t oldFontCount = controller_->fonts.size();
@@ -383,7 +384,7 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCrea
 }
 
 Result<FontManager::FontFamilyId> FontManager::createFamily(ResourceKey key, const FontFamilyCreateInfo& createInfo) {
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	storage::ResourceKey normalized{};
 	try {
 		normalized = key_storage::normalizeResourceKey(
@@ -408,9 +409,9 @@ FontManager::FontFamilyId FontManager::getFamilyId(ResourceKey key) const {
 }
 
 Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo) {
-	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_ || !storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	if (familyId >= controller_->families.size()) {
-		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound, ErrorSubjectKind::Font, familyId));
+		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound, ErrorSite::FontRegisterFamily, familyId));
 	}
 
 	controller_->families[familyId].faces.reserve(controller_->families[familyId].faces.size() + 1u);
@@ -422,7 +423,7 @@ Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, co
 	} catch (const std::bad_alloc&) {
 		throw;
 	} catch (...) {
-		return unexpectedError(makeError(ErrorCode::FontBakeFailed));
+		return unexpectedError(makeError(ErrorCode::FontBakeFailed, ErrorSite::FontRegisterFamily));
 	}
 	controller_->families[familyId].faces.push_back(manager_storage::FontFamilyFaceRecord{
 		.fontId = fontId,
@@ -439,13 +440,13 @@ Result<FontManager::FontId> FontManager::addFamilyFace(FontFamilyId familyId, co
 Result<FontManager::FontId> FontManager::addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo) {
 	const FontFamilyId familyId = getFamilyId(familyName);
 	if (familyId == std::numeric_limits<FontFamilyId>::max()) {
-		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound));
+		return unexpectedError(makeError(ErrorCode::FontFamilyNotFound, ErrorSite::FontRegisterFamily));
 	}
 	return addFamilyFace(familyId, createInfo);
 }
 
 Result<FontManager::FontId> FontManager::addFamilyFace(ResourceKey key, const FontFaceCreateInfo& createInfo) {
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontRegisterFamily));
 	storage::ResourceKey normalized{};
 	try {
 		normalized = key_storage::normalizeResourceKey(
@@ -498,7 +499,7 @@ FontManager::FontId FontManager::resolveFont(ResourceKey key, uint32_t weight, F
 
 FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createInfo) {
 	if (createInfo.path.empty()) {
-		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty));
+		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty, ErrorSite::FontLoad));
 	}
 	if (isArfontPath(createInfo.path)) {
 		return registerBakedFont(createInfo.path.string(), createInfo.name);
@@ -513,11 +514,11 @@ FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createIn
 FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 	(void)px;
 	if (!controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLoad));
 	}
 	const std::filesystem::path fontPath(path);
 	if (fontPath.empty()) {
-		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty));
+		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty, ErrorSite::FontLoad));
 	}
 
 	if (isArfontPath(fontPath)) {
@@ -530,28 +531,29 @@ FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
 	createInfo.pixelSize = px;
 	return registerRuntimeFont(createInfo);
 #else
-	throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+	throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontLoad));
 #endif
 }
 
 FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& createInfo) {
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
 	if (!controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontBake));
 	}
 	if (createInfo.path.empty()) {
-		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty));
+		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty, ErrorSite::FontBake));
 	}
 	if (createInfo.pixelSize <= 0.0f) {
-		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed, ErrorSite::FontBake));
 	}
 	std::error_code pathError;
 	if (!std::filesystem::is_regular_file(createInfo.path, pathError)) {
 		throw FlowUiException(makeError(
-			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound,
+			ErrorSite::FontLoad));
 	}
 	if (controller_->atlasSizeHint == 0 || controller_->atlasSizeHint > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
-		throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
+		throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid, ErrorSite::FontBake));
 	}
 
 	struct FreetypeGuard {
@@ -574,14 +576,14 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	FreetypeGuard freetype{};
 	freetype.handle = msdfgen::initializeFreetype();
 	if (!freetype.handle) {
-		throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable));
+		throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable, ErrorSite::FontBake));
 	}
 
 	FontGuard font{};
 	const std::string pathString = createInfo.path.string();
 	font.handle = msdfgen::loadFont(freetype.handle, pathString.c_str());
 	if (!font.handle) {
-		throw FlowUiException(makeError(ErrorCode::AssetOpenFailed));
+		throw FlowUiException(makeError(ErrorCode::AssetOpenFailed, ErrorSite::FontBake));
 	}
 
 	std::vector<msdf_atlas::GlyphGeometry> glyphs;
@@ -594,10 +596,10 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		true);
 
 	if (glyphsLoaded < 0) {
-		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed, ErrorSite::FontBake));
 	}
 	if (glyphsLoaded == 0 || glyphs.empty()) {
-		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed, ErrorSite::FontBake));
 	}
 
 	unsigned long long glyphSeed = 0;
@@ -618,10 +620,10 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 
 	const int remaining = packer.pack(glyphs.data(), static_cast<int>(glyphs.size()));
 	if (remaining < 0) {
-		throw FlowUiException(makeError(ErrorCode::FontBakeFailed));
+		throw FlowUiException(makeError(ErrorCode::FontBakeFailed, ErrorSite::FontBake));
 	}
 	if (remaining > 0) {
-		throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded));
+		throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded, ErrorSite::FontBake));
 	}
 
 	msdf_atlas::GeneratorAttributes attributes;
@@ -656,7 +658,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 
 	Font::FontFaceData fontFace{};
 	if (controller_->nextFontId == std::numeric_limits<FontId>::max()) {
-		throw FlowUiException(makeError(ErrorCode::FontIdSpaceExhausted));
+		throw FlowUiException(makeError(ErrorCode::FontIdSpaceExhausted, ErrorSite::FontBake));
 	}
 	fontFace.id = controller_->nextFontId;
 	fontFace.sourcePath = createInfo.path;
@@ -765,40 +767,41 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	return controller_->fonts.back().id;
 #else
 	(void)createInfo;
-	throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable));
+	throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable, ErrorSite::FontBake));
 #endif
 }
 
 FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
 	if (!controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontParse));
 	}
 
 	const std::filesystem::path path(arfontPath);
 	if (!isArfontPath(path)) {
-		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
 	}
 	std::error_code pathError;
 	if (!std::filesystem::is_regular_file(path, pathError)) {
 		throw FlowUiException(makeError(
-			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound,
+			ErrorSite::FontLoad));
 	}
 
 	artery_font::StdArteryFont<float> arteryFont{};
 	const std::string pathString = path.string();
 	if (!artery_font::readFile(arteryFont, pathString.c_str())) {
-		throw FlowUiException(makeError(ErrorCode::AssetReadFailed));
+		throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontParse));
 	}
 	if (arteryFont.variants.length() <= 0) {
-		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 	}
 	if (arteryFont.images.length() <= 0) {
-		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));
 	}
 
 	const int imageIndex = pickAtlasImageIndex(arteryFont);
 	if (imageIndex < 0) {
-		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
 	}
 
 	const auto* images = listData(arteryFont.images);
@@ -812,22 +815,30 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	const uint32_t pageHeight = controller_->atlasSizeHint;
 	std::vector<uint8_t> pagePixels = copyAtlasIntoPage(decodedImage, pageWidth, pageHeight, path);
 
+#if FLOW_UI_DEV_MODE
 	if (decodedImage.width != pageWidth || decodedImage.height != pageHeight) {
-		std::fprintf(
-			stderr,
-			"[FlowUi] Warning: .arfont atlas %ux%u was copied into configured font atlas page %ux%u.\n",
-			decodedImage.width,
-			decodedImage.height,
-			pageWidth,
-			pageHeight);
+		static constexpr auto source =
+			devSystems::makeDevErrorSource("flowui.font.atlas_size_adjusted");
+		const uint64_t decodedSize =
+			(static_cast<uint64_t>(decodedImage.width) << 32u) | decodedImage.height;
+		const uint64_t configuredSize =
+			(static_cast<uint64_t>(pageWidth) << 32u) | pageHeight;
+		devSystems::recordGlobalDevDiagnostic(
+			makeError(
+				ErrorCode::AssetPayloadInvalid,
+				ErrorSite::FontParse,
+				decodedSize,
+				configuredSize),
+			source);
 	}
+#endif
 
 	const uint32_t assignedLayer = static_cast<uint32_t>(controller_->atlasLayerPixels.size());
 
 	const auto* variants = listData(arteryFont.variants);
 	Font::FontFaceData fontFace{};
 	if (controller_->nextFontId == std::numeric_limits<FontId>::max()) {
-		throw FlowUiException(makeError(ErrorCode::FontIdSpaceExhausted));
+		throw FlowUiException(makeError(ErrorCode::FontIdSpaceExhausted, ErrorSite::FontParse));
 	}
 	fontFace.id = controller_->nextFontId;
 	fontFace.sourcePath = path;
@@ -866,7 +877,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 		for (int glyphIndex = 0; glyphIndex < sourceVariant.glyphs.length(); ++glyphIndex) {
 			const auto& sourceGlyph = sourceGlyphs[glyphIndex];
 			if (sourceGlyph.image != static_cast<uint32_t>(imageIndex)) {
-				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported));
+				throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
 			}
 
 			Font::GlyphData glyph{};
@@ -948,12 +959,12 @@ const Font::FontFaceData* FontManager::getFontById(FontId fontId) const {
 }
 
 const Font::AtlasArrayResource& FontManager::getAtlasResource() const {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
 	return controller_->borrowedAtlas;
 }
 
 manager_storage::FontFrameView FontManager::frameView(const storage::FrameToken& frame) const {
-	if (!controller_ || !storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_ || !storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLookupFamily));
 	std::array<storage::ResourceUse, 3> uses{};
 	size_t count = 0;
 	if (controller_->atlasImage) uses[count++] = storage::useOf(controller_->atlasImage);

@@ -49,7 +49,7 @@ void ThemeStorageController::shutdown() noexcept {
 
 storage::StringId ThemeStorageController::internString(std::string_view str) {
 	if (!storage_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 	}
 	return storage_->intern(str);
 }
@@ -58,7 +58,7 @@ storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
 	uint64_t typeHash,
 	storage::StringId variantNameId) const {
 	if (!storage_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
 	}
 
 	const std::string_view variantName = storage_->string(variantNameId);

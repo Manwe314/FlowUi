@@ -299,7 +299,7 @@ Result<AppActionCall> ActionManager::bindTyped(
 	static_assert(std::is_void_v<PayloadResult> || std::is_move_constructible_v<PayloadResult>,
 		"FlowUi app action results must be move constructible.");
 
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ActionBind));
 	auto validation = validateBindingRequest(descriptor.id, replacement);
 	if (!validation) return unexpectedError(validation.error());
 	const std::string_view effectiveName = descriptor.debugName.empty()
@@ -340,7 +340,7 @@ Result<AppActionCall> ActionManager::bindTyped(
 		if (exception.error().descriptor().category != ErrorCategory::Local) throw;
 		return unexpectedError(exception.error());
 	} catch (...) {
-		return unexpectedError(makeError(ErrorCode::ResourceCreationFailed));
+		return unexpectedError(makeError(ErrorCode::ResourceCreationFailed, ErrorSite::ActionBind));
 	}
 
 	try {
@@ -349,13 +349,12 @@ Result<AppActionCall> ActionManager::bindTyped(
 		(void)storage_->removePersistentRecord(
 			handle, detail::storage::ResourceKind::AppActionBinding);
 		detail::terminateForFatalError(makeError(
-			ErrorCode::ActionPublicationConflict,
-			ErrorSubjectKind::Action,
+			ErrorCode::ActionPublicationConflict, ErrorSite::ActionPublish,
 			descriptor.id.value));
 	} catch (...) {
 		(void)storage_->removePersistentRecord(
 			handle, detail::storage::ResourceKind::AppActionBinding);
-		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed));
+		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::ActionPublish));
 	}
 	return AppActionCall{descriptor.id};
 }

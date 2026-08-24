@@ -73,8 +73,7 @@ void accumulateQuality(TimingQualitySnapshot& destination, const TimingQualitySn
 
 struct DevTiming::Impl {
 	explicit Impl(const DevTimingConfig& initialConfig)
-		: epoch(TimingClock::now()),
-		  calibration(calibrateClock()),
+		: calibration(calibrateClock()),
 		  cpuLevel(static_cast<uint8_t>(clampToCompiledCpuLevel(initialConfig.cpuLevel))),
 		  categoryMask(initialConfig.enabledCategoryMask),
 		  gpuEnabled(initialConfig.gpuTimingEnabled),
@@ -84,7 +83,6 @@ struct DevTiming::Impl {
 		  selectedElementDefinition(initialConfig.selectedElementDefinition.value),
 		  selectedElementInstance(initialConfig.selectedElementInstance.value) {}
 
-	TimingClock::time_point epoch{};
 	TimingClockCalibration calibration{};
 	std::atomic<uint8_t> cpuLevel{static_cast<uint8_t>(CpuTimingLevel::Summary)};
 	std::atomic<uint32_t> categoryMask{0xFFFFFFFFu};
@@ -245,9 +243,9 @@ const TimingClockCalibration& DevTiming::clockCalibration() const noexcept {
 }
 
 uint64_t DevTiming::nowNs() const noexcept {
-	const auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
-		TimingClock::now() - impl_->epoch).count();
-	return elapsed > 0 ? static_cast<uint64_t>(elapsed) : 0u;
+	const auto timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
+		TimingClock::now().time_since_epoch()).count();
+	return timestamp > 0 ? static_cast<uint64_t>(timestamp) : 0u;
 }
 
 uint64_t DevTiming::configGeneration() const noexcept {

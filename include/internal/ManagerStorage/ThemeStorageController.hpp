@@ -57,7 +57,7 @@ public:
 		bool makeActive) {
 		std::lock_guard<std::mutex> lock(mutex_);
 		if (!storage_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 		}
 
 		const uint64_t typeHash = detail::typeHash<T>();

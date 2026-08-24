@@ -23,7 +23,7 @@ enum class ResourceScope : unsigned char {
 	case ResourceDomain::Internal: return storage::ResourceDomain::Internal;
 	case ResourceDomain::Auto: break;
 	}
-	throw FlowUiException(makeError(ErrorCode::InvalidResourceKey));
+	throw FlowUiException(makeError(ErrorCode::InvalidResourceKey, ErrorSite::ResourceNormalizeKey));
 }
 
 [[nodiscard]] inline storage::ResourceKey normalizeResourceKey(
@@ -33,23 +33,22 @@ enum class ResourceScope : unsigned char {
 	ResourceScope scope,
 	WindowId owningWindow = InvalidWindowId) {
 	if (key.name.empty()) {
-		throw FlowUiException(makeError(ErrorCode::InvalidResourceKey));
+		throw FlowUiException(makeError(ErrorCode::InvalidResourceKey, ErrorSite::ResourceNormalizeKey));
 	}
 	const ResourceDomain resolvedDomain = key.domain == ResourceDomain::Auto ? managerDomain : key.domain;
 	if (resolvedDomain != managerDomain) {
-		throw FlowUiException(makeError(ErrorCode::ResourceKindMismatch));
+		throw FlowUiException(makeError(ErrorCode::ResourceKindMismatch, ErrorSite::ResourceNormalizeKey));
 	}
 
 	WindowId resolvedWindow = InvalidWindowId;
 	if (scope == ResourceScope::WindowLocal) {
 		if (owningWindow == InvalidWindowId) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ResourceNormalizeKey));
 		}
 		resolvedWindow = key.window == InvalidWindowId ? owningWindow : key.window;
 		if (resolvedWindow != owningWindow) {
 			throw FlowUiException(makeError(
-				ErrorCode::ResourceWindowMismatch,
-				ErrorSubjectKind::Window,
+				ErrorCode::ResourceWindowMismatch, ErrorSite::ResourceNormalizeKey,
 				static_cast<std::uint64_t>(resolvedWindow),
 				static_cast<std::uint64_t>(owningWindow)));
 		}

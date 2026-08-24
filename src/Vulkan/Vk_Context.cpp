@@ -14,7 +14,7 @@
 
 namespace {
 
-static void vkCheck(VkResult result, const char* message) {
+static void vkCheck(VkResult result, const char* message, FlowUi::ErrorSite site) {
 	if (result != VK_SUCCESS) {
 		(void)message;
 		FlowUi::ErrorCode code = FlowUi::ErrorCode::VulkanNativeCallFailed;
@@ -23,7 +23,7 @@ static void vkCheck(VkResult result, const char* message) {
 			code = FlowUi::ErrorCode::AllocationFailed;
 		}
 		throw FlowUi::FlowUiException(FlowUi::makeError(
-			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			code, site, 0u, 0u,
 			static_cast<std::uint32_t>(result)));
 	}
 }
@@ -51,10 +51,17 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	VkDebugUtilsMessageTypeFlagsEXT type,
 	const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
 	void* userData) {
-	(void)severity;
-	(void)type;
 	(void)userData;
-	std::fprintf(stderr, "[Vulkan] %s\n", callbackData->pMessage);
+	FlowUi::detail::reportErrorEvent(FlowUi::ErrorEventView{
+		.error = FlowUi::makeError(
+			FlowUi::ErrorCode::None, FlowUi::ErrorSite::VulkanDebugDiagnostic,
+			0u, 0u, static_cast<std::uint32_t>(severity)),
+		.kind = FlowUi::ErrorEventKind::BackendDiagnostic,
+		.nativeMessage = callbackData && callbackData->pMessage
+			? std::string_view{callbackData->pMessage}
+			: std::string_view{},
+		.nativeCategory = static_cast<std::uint32_t>(type),
+	});
 	return VK_FALSE;
 }
 
@@ -172,25 +179,26 @@ static SwapchainSupport querySwapchainSupport(VkPhysicalDevice device, VkSurface
 
 void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts) {
 	if (instance != VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectAlreadyInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectAlreadyInitialized, FlowUi::ErrorSite::VulkanInstanceCreate));
 	}
 
 	uint32_t instanceVersion = VK_API_VERSION_1_0;
 	auto enumerateInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
 		vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
 	if (enumerateInstanceVersion) {
-		vkCheck(enumerateInstanceVersion(&instanceVersion), "Failed to query Vulkan instance version.");
+		vkCheck(enumerateInstanceVersion(&instanceVersion), "Failed to query Vulkan instance version.",
+			FlowUi::ErrorSite::VulkanInstanceCreate);
 	}
 	if (instanceVersion < VK_API_VERSION_1_3) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanVersionUnsupported));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanVersionUnsupported, FlowUi::ErrorSite::VulkanInstanceCreate));
 	}
 
 	uint32_t extCount = 0;
 	vkCheck(vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr),
-		"Failed to enumerate instance extensions.");
+		"Failed to enumerate instance extensions.", FlowUi::ErrorSite::VulkanInstanceCreate);
 	std::vector<VkExtensionProperties> availableExts(extCount);
 	vkCheck(vkEnumerateInstanceExtensionProperties(nullptr, &extCount, availableExts.data()),
-		"Failed to enumerate instance extensions.");
+		"Failed to enumerate instance extensions.", FlowUi::ErrorSite::VulkanInstanceCreate);
 
 	std::vector<const char*> extensions = requiredExts;
 	bool enableDebugUtils = config.vk.enableDebugUtils;
@@ -208,9 +216,14 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 			appendUnique(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		} else {
 			enableDebugUtils = false;
-			std::fprintf(
-				stderr,
-				"[FlowUi] VK_EXT_debug_utils requested but not available. Continuing without debug messenger.\n");
+			FlowUi::detail::reportErrorEvent(FlowUi::ErrorEventView{
+				.error = FlowUi::makeError(
+					FlowUi::ErrorCode::VulkanExtensionMissing,
+					FlowUi::ErrorSite::VulkanInstanceCreate),
+				.kind = FlowUi::ErrorEventKind::Resolved,
+				.resolution = FlowUi::ErrorResolution::Skipped,
+				.nativeMessage = "VK_EXT_debug_utils is unavailable; continuing without the debug messenger.",
+			});
 		}
 	}
 
@@ -223,7 +236,7 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 
 	for (const char* ext : extensions) {
 		if (!hasExtension(ext, availableExts)) {
-			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanExtensionMissing));
+			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanExtensionMissing, FlowUi::ErrorSite::VulkanInstanceCreate));
 		}
 	}
 
@@ -231,16 +244,21 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	if (enableValidation) {
 		uint32_t layerCount = 0;
 		vkCheck(vkEnumerateInstanceLayerProperties(&layerCount, nullptr),
-			"Failed to enumerate instance layers.");
+			"Failed to enumerate instance layers.", FlowUi::ErrorSite::VulkanInstanceCreate);
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkCheck(vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data()),
-			"Failed to enumerate instance layers.");
+			"Failed to enumerate instance layers.", FlowUi::ErrorSite::VulkanInstanceCreate);
 		if (hasLayer("VK_LAYER_KHRONOS_validation", availableLayers)) {
 			layers.push_back("VK_LAYER_KHRONOS_validation");
 		} else {
-			std::fprintf(
-				stderr,
-				"[FlowUi] VK_LAYER_KHRONOS_validation requested but not available. Continuing without validation layers.\n");
+			FlowUi::detail::reportErrorEvent(FlowUi::ErrorEventView{
+				.error = FlowUi::makeError(
+					FlowUi::ErrorCode::VulkanFeatureMissing,
+					FlowUi::ErrorSite::VulkanInstanceCreate),
+				.kind = FlowUi::ErrorEventKind::Resolved,
+				.resolution = FlowUi::ErrorResolution::Skipped,
+				.nativeMessage = "VK_LAYER_KHRONOS_validation is unavailable; continuing without validation layers.",
+			});
 		}
 	}
 
@@ -267,43 +285,44 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 		createInfo.pNext = &debugCreateInfo;
 	}
 
-	vkCheck(vkCreateInstance(&createInfo, nullptr, &instance), "Failed to create Vulkan instance.");
+	vkCheck(vkCreateInstance(&createInfo, nullptr, &instance), "Failed to create Vulkan instance.",
+		FlowUi::ErrorSite::VulkanInstanceCreate);
 
 	if (enableDebugUtils) {
 		vkCheck(CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &debugMessenger),
-			"Failed to create Vulkan debug messenger.");
+			"Failed to create Vulkan debug messenger.", FlowUi::ErrorSite::VulkanInstanceCreate);
 	}
 }
 
 VkSurfaceKHR VulkanContext::createSurface(FlowUi::detail::IWindowBackend& window) const {
 	if (instance == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::VulkanSurfaceQuery));
 	}
 	const VkSurfaceKHR surface = window.createSurface(instance);
 	if (surface == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed, FlowUi::ErrorSite::VulkanSurfaceQuery));
 	}
 	return surface;
 }
 
 void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfaceKHR mainSurface) {
 	if (instance == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::VulkanPhysicalDeviceSelect));
 	}
 	if (mainSurface == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed, FlowUi::ErrorSite::VulkanPhysicalDeviceSelect));
 	}
 
 	uint32_t deviceCount = 0;
 	vkCheck(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr),
-		"Failed to enumerate Vulkan physical devices.");
+		"Failed to enumerate Vulkan physical devices.", FlowUi::ErrorSite::VulkanPhysicalDeviceSelect);
 	if (deviceCount == 0) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable, FlowUi::ErrorSite::VulkanPhysicalDeviceSelect));
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkCheck(vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data()),
-		"Failed to enumerate Vulkan physical devices.");
+		"Failed to enumerate Vulkan physical devices.", FlowUi::ErrorSite::VulkanPhysicalDeviceSelect);
 
 	VkPhysicalDevice selected = VK_NULL_HANDLE;
 	QueueFamilyIndices selectedQueues{};
@@ -360,7 +379,7 @@ void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfac
 	}
 
 	if (selected == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable, FlowUi::ErrorSite::VulkanPhysicalDeviceSelect));
 	}
 
 	phys = selected;
@@ -378,10 +397,10 @@ bool VulkanContext::supportsPresentation(VkSurfaceKHR surface) const noexcept {
 void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	(void)config;
 	if (phys == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::VulkanLogicalDeviceCreate));
 	}
 	if (graphicsQFamily == UINT32_MAX || presentQFamily == UINT32_MAX) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable, FlowUi::ErrorSite::VulkanLogicalDeviceCreate));
 	}
 
 	std::vector<uint32_t> uniqueFamilies;
@@ -476,7 +495,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	if (!enabled12.descriptorIndexing || !enabled12.runtimeDescriptorArray ||
 		!enabled12.shaderSampledImageArrayNonUniformIndexing || !enabled12.descriptorBindingPartiallyBound ||
 		!enabled12.descriptorBindingSampledImageUpdateAfterBind) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing, FlowUi::ErrorSite::VulkanLogicalDeviceCreate));
 	}
 
 	VkPhysicalDeviceVulkan13Features enabled13{};
@@ -502,7 +521,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	}
 
 	if (!enabled13.dynamicRendering) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing, FlowUi::ErrorSite::VulkanLogicalDeviceCreate));
 	}
 
 	VkDeviceCreateInfo createInfo{};
@@ -514,7 +533,8 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	createInfo.pNext = &enabled13;
 	createInfo.pEnabledFeatures = nullptr;
 
-	vkCheck(vkCreateDevice(phys, &createInfo, nullptr, &device), "Failed to create Vulkan device.");
+	vkCheck(vkCreateDevice(phys, &createInfo, nullptr, &device), "Failed to create Vulkan device.",
+		FlowUi::ErrorSite::VulkanLogicalDeviceCreate);
 #if FLOW_UI_DEV_MODE
 	synchronization2Enabled = enabled13.synchronization2 == VK_TRUE;
 	if (enableCalibratedTimestamps) {
@@ -543,7 +563,8 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	if (enableMemoryBudget) allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 	memoryBudgetEnabled = enableMemoryBudget;
 #endif
-	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator), "Failed to create VMA allocator.");
+	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator), "Failed to create VMA allocator.",
+		FlowUi::ErrorSite::VulkanAllocatorCreate);
 }
 
 VkResult VulkanContext::waitForPresent(

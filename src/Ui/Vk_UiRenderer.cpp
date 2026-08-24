@@ -125,7 +125,7 @@ constexpr storage::RendererLayoutKey kUiRendererLayoutKey{
 constexpr uint32_t kUiPipelineStateRevision = 1u;
 constexpr uint64_t kUiShaderSetFingerprint = 0x464c4f5755490003ull;
 
-static void vkCheck(VkResult result, const char* message) {
+static void vkCheck(VkResult result, const char* message, FlowUi::ErrorSite site) {
 	if (result != VK_SUCCESS) {
 		(void)message;
 		FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
@@ -134,7 +134,7 @@ static void vkCheck(VkResult result, const char* message) {
 			code = FlowUi::ErrorCode::AllocationFailed;
 		}
 		throw FlowUi::FlowUiException(FlowUi::makeError(
-			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			code, site, 0u, 0u,
 			static_cast<std::uint32_t>(result)));
 	}
 }
@@ -142,22 +142,22 @@ static void vkCheck(VkResult result, const char* message) {
 static std::vector<char> readFile(const std::string& path) {
 	std::ifstream file(path, std::ios::ate | std::ios::binary);
 	if (!file) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable, FlowUi::ErrorSite::RendererLoadShader));
 	}
 
 	const std::streamsize size = file.tellg();
 	if (size <= 0) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderInvalid, FlowUi::ErrorSite::RendererLoadShader));
 	}
 
 	std::vector<char> buffer(static_cast<size_t>(size));
 	file.seekg(0, std::ios::beg);
 	file.read(buffer.data(), size);
 	if (!file) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderInvalid, FlowUi::ErrorSite::RendererLoadShader));
 	}
 	if ((buffer.size() % 4) != 0) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderInvalid, FlowUi::ErrorSite::RendererLoadShader));
 	}
 	return buffer;
 }
@@ -175,7 +175,7 @@ static std::vector<char> readShaderFile(const char* fileName) {
 	}
 
 	(void)fileName;
-	throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable));
+	throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable, FlowUi::ErrorSite::RendererLoadShader));
 }
 
 static VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code) {
@@ -185,7 +185,8 @@ static VkShaderModule createShaderModule(VkDevice device, const std::vector<char
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	VkShaderModule module = VK_NULL_HANDLE;
-	vkCheck(vkCreateShaderModule(device, &createInfo, nullptr, &module), "Failed to create shader module.");
+	vkCheck(vkCreateShaderModule(device, &createInfo, nullptr, &module),
+		"Failed to create shader module.", FlowUi::ErrorSite::RendererLoadShader);
 	return module;
 }
 
@@ -348,7 +349,7 @@ struct BoundedWriter {
 
 	void push(const T& value) {
 		if (count >= storage.size()) {
-			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererConvertCommands));
 		}
 		storage[count++] = value;
 	}
@@ -367,7 +368,7 @@ struct UiBuildUpperBound {
 static size_t CheckedSizeAdd(size_t lhs, size_t rhs, const char* message) {
 	if (rhs > std::numeric_limits<size_t>::max() - lhs) {
 		(void)message;
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ArithmeticOverflow));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ArithmeticOverflow, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	return lhs + rhs;
 }
@@ -377,7 +378,7 @@ static UiBuildUpperBound ComputeBuildUpperBound(
 	const FlowUi::detail::InputFieldFrameOverrides& overrides) {
 	if (commands.capacity < 0 || commands.length < 0 || commands.length > commands.capacity ||
 		(commands.length > 0 && commands.internalArray == nullptr)) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RenderCommandInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RenderCommandInvalid, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 
 	UiBuildUpperBound result{};
@@ -405,7 +406,7 @@ static UiBuildUpperBound ComputeBuildUpperBound(
 	}
 	if (result.instances > std::numeric_limits<uint32_t>::max() ||
 		result.runs > std::numeric_limits<uint32_t>::max()) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	return result;
 }
@@ -644,7 +645,7 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 	BoundedWriter<UiInstance> outInstances{instanceStorage};
 	BoundedWriter<UiRun> outRuns{runStorage};
 	if (scissorStorage.empty()) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	size_t scissorDepth = 1u;
 	UiBuildResult result{};
@@ -736,7 +737,7 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
 			const RectF clip = ScaleBoundingBox(command.boundingBox, uiToFramebufferScaleX, uiToFramebufferScaleY);
 			if (scissorDepth >= scissorStorage.size()) {
-				throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+				throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererConvertCommands));
 			}
 			scissorStorage[scissorDepth] = Intersect(scissorStorage[scissorDepth - 1u], clip);
 			currentScissor = scissorStorage[scissorDepth++];
@@ -820,7 +821,7 @@ static VkPipeline createGraphicsPipeline(
 	const char* fragmentFile,
 	bool requiresUvVertexAttribute) {
 	if (format == VK_FORMAT_UNDEFINED) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid, FlowUi::ErrorSite::RendererPublishPipeline));
 	}
 
 	const std::vector<char> vertexCode = readShaderFile(vertexFile);
@@ -954,7 +955,7 @@ static VkPipeline createGraphicsPipeline(
 
 	vkDestroyShaderModule(device, fragmentModule, nullptr);
 	vkDestroyShaderModule(device, vertexModule, nullptr);
-	vkCheck(result, "Failed to create UI graphics pipeline.");
+	vkCheck(result, "Failed to create UI graphics pipeline.", FlowUi::ErrorSite::RendererPublishPipeline);
 	return pipeline;
 }
 
@@ -1025,7 +1026,7 @@ static void DestroyDescriptorObjects(VkDevice device, VulkanUiRenderer::Descript
 
 static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	if (renderer.maxUiImageDescriptors_ == 0u) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid, FlowUi::ErrorSite::RendererPublishLayout));
 	}
 	VkDescriptorSetLayoutBinding globalsBinding{};
 	globalsBinding.binding = 0;
@@ -1037,7 +1038,8 @@ static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	set0Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	set0Info.bindingCount = 1;
 	set0Info.pBindings = &globalsBinding;
-	vkCheck(vkCreateDescriptorSetLayout(device, &set0Info, nullptr, &renderer.descriptors_.set0), "Failed to create UI set0 layout.");
+	vkCheck(vkCreateDescriptorSetLayout(device, &set0Info, nullptr, &renderer.descriptors_.set0),
+		"Failed to create UI set0 layout.", FlowUi::ErrorSite::RendererPublishLayout);
 
 	std::array<VkDescriptorSetLayoutBinding, 2> textureBindings{};
 	textureBindings[0].binding = 0;
@@ -1065,7 +1067,8 @@ static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	set1Info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 	set1Info.bindingCount = static_cast<uint32_t>(textureBindings.size());
 	set1Info.pBindings = textureBindings.data();
-	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors_.set1), "Failed to create UI set1 layout.");
+	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors_.set1),
+		"Failed to create UI set1 layout.", FlowUi::ErrorSite::RendererPublishLayout);
 
 	const std::array<VkDescriptorSetLayout, 2> setLayouts = {
 		renderer.descriptors_.set0,
@@ -1082,13 +1085,13 @@ static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushRange;
 	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines_.layout),
-		"Failed to create UI pipeline layout.");
+		"Failed to create UI pipeline layout.", FlowUi::ErrorSite::RendererPublishLayout);
 }
 
 static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	if (renderer.descriptors_.set0 == VK_NULL_HANDLE || renderer.descriptors_.set1 == VK_NULL_HANDLE) {
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererPublishDescriptors));
 	}
 	renderer.frameResourceCount_ = std::max<uint32_t>(1u, renderer.frameResourceCount_);
 
@@ -1104,7 +1107,8 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	poolInfo.maxSets = renderer.frameResourceCount_ * 2u;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	vkCheck(vkCreateDescriptorPool(device, &poolInfo, nullptr, &renderer.descriptors_.pool), "Failed to create UI descriptor pool.");
+	vkCheck(vkCreateDescriptorPool(device, &poolInfo, nullptr, &renderer.descriptors_.pool),
+		"Failed to create UI descriptor pool.", FlowUi::ErrorSite::RendererPublishDescriptors);
 
 	renderer.descriptors_.globalsSets.assign(renderer.frameResourceCount_, VK_NULL_HANDLE);
 	renderer.descriptors_.texturesSets.assign(renderer.frameResourceCount_, VK_NULL_HANDLE);
@@ -1117,7 +1121,7 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	set0AllocInfo.pSetLayouts = set0Layouts.data();
 	vkCheck(
 		vkAllocateDescriptorSets(device, &set0AllocInfo, renderer.descriptors_.globalsSets.data()),
-		"Failed to allocate UI globals sets.");
+		"Failed to allocate UI globals sets.", FlowUi::ErrorSite::RendererPublishDescriptors);
 
 	std::vector<VkDescriptorSetLayout> set1Layouts(renderer.frameResourceCount_, renderer.descriptors_.set1);
 	VkDescriptorSetAllocateInfo set1AllocInfo{};
@@ -1127,13 +1131,13 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	set1AllocInfo.pSetLayouts = set1Layouts.data();
 	vkCheck(
 		vkAllocateDescriptorSets(device, &set1AllocInfo, renderer.descriptors_.texturesSets.data()),
-		"Failed to allocate UI textures sets.");
+		"Failed to allocate UI textures sets.", FlowUi::ErrorSite::RendererPublishDescriptors);
 }
 
 static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	if (renderer.pipelines_.layout == VK_NULL_HANDLE) {
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererPublishPipeline));
 	}
 	CreatePipelines(device, renderer.pipelines_, renderer.targetFormat_);
 }
@@ -1218,18 +1222,17 @@ static void EnsureInstanceBufferCapacity(
 	uint64_t requiredBytes) {
 	if (requiredBytes == 0) return;
 	if (!renderer.storage_ || renderer.windowId_ == FlowUi::InvalidWindowId) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::RendererPublishDescriptors));
 	}
 	if (frameSlot >= renderer.frameResources_.size()) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::FramePhaseViolation));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::FramePhaseViolation, FlowUi::ErrorSite::RendererPublishDescriptors));
 	}
 
 	VulkanUiRenderer::UiFrameResources& slot = renderer.frameResources_[frameSlot];
 	if (slot.instanceBuffer && slot.nativeBuffer.nativeBuffer != 0 && slot.capacityBytes >= requiredBytes) return;
 	if (slot.capacityBytes != 0u && !renderer.allowInstanceGrowth_) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(
-			FlowUi::ErrorCode::RendererCapacityExceeded,
-			FlowUi::ErrorSubjectKind::Window,
+			FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererPublishDescriptors,
 			renderer.windowId_,
 			requiredBytes));
 	}
@@ -1253,7 +1256,7 @@ static void EnsureInstanceBufferCapacity(
 		const storage::NativeBufferView replacementNative = renderer.storage_->nativeBuffer(replacement);
 		if (replacementNative.nativeBuffer == 0 || replacementNative.size < newSize) {
 			FlowUi::detail::terminateForFatalError(
-				FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale));
+				FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale, FlowUi::ErrorSite::RendererPublishDescriptors));
 		}
 
 		const storage::BufferHandle oldHandle = slot.instanceBuffer;
@@ -1373,7 +1376,7 @@ uint64_t FlowUi::detail::growUiInstanceCapacity(
 	while (result < requiredBytes) {
 		const uint64_t increment = std::max<uint64_t>(1u, result / 2u);
 		if (increment > std::numeric_limits<uint64_t>::max() - result) {
-			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererConvertCommands));
 		}
 		result += increment;
 	}
@@ -1474,7 +1477,7 @@ void initSharedUiByteResources(
 		if (quadNative.nativeBuffer == 0 || fontViewNative.nativeImageView == 0 ||
 			uiViewNative.nativeImageView == 0 || samplerNative.nativeSampler == 0) {
 			FlowUi::detail::terminateForFatalError(
-				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererConvertCommands));
 		}
 		resources.nativeQuadBuffer = NativeHandleFromBits<VkBuffer>(quadNative.nativeBuffer);
 		resources.nativePlaceholderFontView = NativeHandleFromBits<VkImageView>(fontViewNative.nativeImageView);
@@ -1502,10 +1505,10 @@ void VulkanUiRenderer::init(
 	uint32_t textureDescriptorCapacity,
 	bool allowInstanceGrowth) {
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::RendererInitialize));
 	}
 	if (swapFormat == VK_FORMAT_UNDEFINED) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid, FlowUi::ErrorSite::RendererInitialize));
 	}
 
 	destroy(vk, storageSystem);
@@ -1518,7 +1521,7 @@ void VulkanUiRenderer::init(
 		allowInstanceGrowth_ = allowInstanceGrowth;
 		maxUiImageDescriptors_ = textureDescriptorCapacity;
 		if (maxUiImageDescriptors_ != kDefaultMaxUiImageDescriptors) {
-			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid));
+			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid, FlowUi::ErrorSite::RendererInitialize));
 		}
 		VkPhysicalDeviceDescriptorIndexingProperties indexingProperties{};
 		indexingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES;
@@ -1534,7 +1537,7 @@ void VulkanUiRenderer::init(
 			indexingProperties.maxDescriptorSetUpdateAfterBindSampledImages,
 		});
 		if (requiredSampledImages > supportedSampledImages) {
-			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing));
+			throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanFeatureMissing, FlowUi::ErrorSite::RendererInitialize));
 		}
 		targetFormat_ = swapFormat;
 		frameResourceCount_ = std::max<uint32_t>(1u, vulkanConfig.framesInFlight);
@@ -1588,7 +1591,7 @@ void VulkanUiRenderer::init(
 		if (nativeLayout_.globalsSetLayout == 0 || nativeLayout_.texturesSetLayout == 0 ||
 			nativeLayout_.pipelineLayout == 0) {
 			FlowUi::detail::terminateForFatalError(
-				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererInitialize));
 		}
 		descriptors_.set0 = NativeHandleFromBits<VkDescriptorSetLayout>(nativeLayout_.globalsSetLayout);
 		descriptors_.set1 = NativeHandleFromBits<VkDescriptorSetLayout>(nativeLayout_.texturesSetLayout);
@@ -1741,7 +1744,7 @@ void VulkanUiRenderer::onSwapchainFormatChanged(
 	}
 
 	if (!storage_ || !layoutHandle_) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::RendererCreateWindowResources));
 	}
 	const storage::RendererPipelineKey key{
 		.layout = layoutHandle_,
@@ -1785,7 +1788,7 @@ void VulkanUiRenderer::onSwapchainFormatChanged(
 		[](uint64_t handle) { return handle == 0; })) {
 		storage_->releaseRendererPipelineBundle(replacement, lastUse);
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererCreateWindowResources));
 	}
 	const storage::RendererPipelineBundleHandle previous = pipelineBundleHandle_;
 	pipelineBundleHandle_ = replacement;
@@ -1802,11 +1805,11 @@ void VulkanUiRenderer::applyTextureBindings(
 	uint32_t frameSlot,
 	const storage::PreparedTextureBindings& prepared) {
 	if (frameSlot >= descriptors_.texturesSets.size() || prepared.epoch == 0) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::FramePhaseViolation));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::FramePhaseViolation, FlowUi::ErrorSite::RendererPublishDescriptors));
 	}
 	if (prepared.requiredDescriptorCapacity > maxUiImageDescriptors_ ||
 		prepared.dirtyBindings.size() > maxUiImageDescriptors_) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererPublishDescriptors));
 	}
 	std::array<VkDescriptorImageInfo, kDefaultMaxUiImageDescriptors> infos{};
 	std::array<VkWriteDescriptorSet, kDefaultMaxUiImageDescriptors> writes{};
@@ -1815,7 +1818,7 @@ void VulkanUiRenderer::applyTextureBindings(
 		if (binding.descriptorIndex >= maxUiImageDescriptors_ ||
 			binding.nativeImageView == 0 || binding.nativeSampler == 0) {
 			FlowUi::detail::terminateForFatalError(
-				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererPublishDescriptors));
 		}
 		infos[i] = VkDescriptorImageInfo{
 			.sampler = NativeHandleFromBits<VkSampler>(binding.nativeSampler),
@@ -1860,11 +1863,11 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 #endif
 	if (!frame || frame.window != windowId_ || &storageSystem != storage_) {
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	if (textureBindings.epoch != frame.epoch) {
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	if (frameResourceCount_ == 0u || frameResources_.empty() ||
 		descriptors_.globalsSets.empty() || descriptors_.texturesSets.empty()) return {};
@@ -1874,11 +1877,11 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		frameSlot >= descriptors_.globalsSets.size() ||
 		frameSlot >= descriptors_.texturesSets.size()) {
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	if (!layoutHandle_ || !pipelineBundleHandle_ || !descriptorBundleHandle_) {
 		FlowUi::detail::terminateForFatalError(
-			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale));
+			FlowUi::makeError(FlowUi::ErrorCode::RendererGenerationStale, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	const std::array rendererUses{
 		storage::useOf(layoutHandle_),
@@ -1912,7 +1915,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		return PreparedUiFrame{.epoch = frame.epoch};
 	}
 	if (upperBound.instances > std::numeric_limits<uint64_t>::max() / sizeof(UiInstance)) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererCapacityExceeded, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	const uint64_t requiredBytes = static_cast<uint64_t>(upperBound.instances) * sizeof(UiInstance);
 	{
@@ -1975,7 +1978,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	if (built.instanceCount > 0 && built.runCount > 0) {
 		if (!sharedByteResources_) {
 			FlowUi::detail::terminateForFatalError(
-				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid));
+				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererConvertCommands));
 		}
 		const std::array sharedUses{
 			storage::ResourceUse{storage::ResourceKind::GpuBuffer, sharedByteResources_->quadBuffer.packed()},

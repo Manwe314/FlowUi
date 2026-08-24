@@ -13,6 +13,8 @@ class DevGpuTiming;
 class DevTimingReporting;
 class DevMemory;
 class DevMemoryReporting;
+class DevErrorMonitoring;
+class DevErrorReporting;
 
 /** Development-only owner for monitoring collection and derived reporting. */
 class DevMonitoringAndReporting {
@@ -35,6 +37,10 @@ public:
 	[[nodiscard]] const DevMemory& memory() const noexcept;
 	[[nodiscard]] DevMemoryReporting& memoryReporting() noexcept;
 	[[nodiscard]] const DevMemoryReporting& memoryReporting() const noexcept;
+	[[nodiscard]] DevErrorMonitoring& errors() noexcept;
+	[[nodiscard]] const DevErrorMonitoring& errors() const noexcept;
+	[[nodiscard]] DevErrorReporting& errorReporting() noexcept;
+	[[nodiscard]] const DevErrorReporting& errorReporting() const noexcept;
 
 private:
 	std::unique_ptr<DevTiming> timing_{};
@@ -42,6 +48,8 @@ private:
 	std::unique_ptr<DevTimingReporting> timingReporting_{};
 	std::unique_ptr<DevMemory> memory_{};
 	std::unique_ptr<DevMemoryReporting> memoryReporting_{};
+	std::unique_ptr<DevErrorMonitoring> errors_{};
+	std::unique_ptr<DevErrorReporting> errorReporting_{};
 };
 
 } // namespace FlowUi::devSystems

@@ -100,7 +100,7 @@ namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;
 
 void ShortcutManager::init(storage::IStorageSystem& storageSystem, WindowId window) {
-	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized));
+	if (storage_) throw FlowUiException(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::ShortcutManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.shortcut.root");
 	const storage::ResourceKey key{storage::ResourceDomain::Input, name, window};
 	const storage::ManagerRecordHandle handle = manager_storage::createState<manager_storage::ShortcutManagerState>(
@@ -186,7 +186,7 @@ manager_storage::ShortcutManagerState& ShortcutManager::state() {
 	auto* result = manager_storage::state<manager_storage::ShortcutManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::ShortcutRegistration);
-	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ShortcutResolve));
 	return *result;
 }
 
@@ -194,7 +194,7 @@ const manager_storage::ShortcutManagerState& ShortcutManager::state() const {
 	const auto* result = manager_storage::state<manager_storage::ShortcutManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),
 		storage::ResourceKind::ShortcutRegistration);
-	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!result) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ShortcutResolve));
 	return *result;
 }
 
@@ -204,12 +204,12 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	int32_t priority,
 	ShortcutCallback callback) {
 	if (!callback || chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) {
-		return unexpectedError(makeError(ErrorCode::ShortcutInvalid));
+		return unexpectedError(makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
 	}
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ShortcutRegister));
 	auto& current = state();
 	if (current.nextShortcutId == 0 || current.nextShortcutId > std::numeric_limits<ShortcutId>::max()) {
-		return unexpectedError(makeError(ErrorCode::ShortcutIdSpaceExhausted));
+		return unexpectedError(makeError(ErrorCode::ShortcutIdSpaceExhausted, ErrorSite::ShortcutRegister));
 	}
 
 	manager_storage::ShortcutManagerState candidate = current;
@@ -245,12 +245,12 @@ Result<ShortcutId> ShortcutManager::registerShortcut(
 	AppActionCall action,
 	ShortcutHandling handling) {
 	if (!action || chord.key < 0 || chord.key >= static_cast<int>(FrameInput::kKeyboardKeyCount)) {
-		return unexpectedError(makeError(ErrorCode::ShortcutInvalid));
+		return unexpectedError(makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
 	}
-	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ShortcutRegister));
 	auto& current = state();
 	if (current.nextShortcutId == 0 || current.nextShortcutId > std::numeric_limits<ShortcutId>::max()) {
-		return unexpectedError(makeError(ErrorCode::ShortcutIdSpaceExhausted));
+		return unexpectedError(makeError(ErrorCode::ShortcutIdSpaceExhausted, ErrorSite::ShortcutRegister));
 	}
 
 	manager_storage::ShortcutManagerState candidate = current;

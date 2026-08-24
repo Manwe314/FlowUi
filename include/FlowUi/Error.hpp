@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdio>
 #include <cstdint>
 #include <exception>
 #include <expected>
@@ -7,6 +8,8 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+
+#include "FlowUi/BuildConfig.hpp"
 
 namespace FlowUi {
 
@@ -124,9 +127,13 @@ enum class IconGenerationFailurePolicy : std::uint8_t {
 	FailRequest,
 };
 
-enum class CapacityFailurePolicy : std::uint8_t {
+enum class StorageCapacityPolicy : std::uint8_t {
 	GrowWithinBudget = 0,
-	EvictAndRetry,
+	RejectOperation,
+};
+
+enum class CacheCapacityPolicy : std::uint8_t {
+	EvictAndRetry = 0,
 	RejectOperation,
 };
 
@@ -160,9 +167,9 @@ struct ErrorPolicy {
 	MissingVisualPolicy missingImage = MissingVisualPolicy::UseFallbackTexture;
 	MissingVisualPolicy missingViewport = MissingVisualPolicy::UseFallbackTexture;
 	IconGenerationFailurePolicy iconGeneration = IconGenerationFailurePolicy::UseFallbackTexture;
-	CapacityFailurePolicy transientCapacity = CapacityFailurePolicy::GrowWithinBudget;
-	CapacityFailurePolicy persistentCapacity = CapacityFailurePolicy::GrowWithinBudget;
-	CapacityFailurePolicy descriptorCapacity = CapacityFailurePolicy::RejectOperation;
+	StorageCapacityPolicy transientCapacity = StorageCapacityPolicy::GrowWithinBudget;
+	StorageCapacityPolicy persistentCapacity = StorageCapacityPolicy::GrowWithinBudget;
+	CacheCapacityPolicy descriptorCapacity = CacheCapacityPolicy::RejectOperation;
 	PopupDuplicatePolicy duplicatePopup = PopupDuplicatePolicy::FirstSubmissionWins;
 	PopupMissingAnchorPolicy missingPopupAnchor = PopupMissingAnchorPolicy::SkipPopup;
 	PopupCapacityPolicy popupCapacity = PopupCapacityPolicy::ClampLayer;
@@ -191,6 +198,545 @@ enum class ErrorSubjectKind : std::uint8_t {
 	Viewport,
 	MemoryTarget,
 };
+
+/**
+ * Stable identity of the FlowUi operation that detected an error.
+ *
+ * A site is an operation-level production diagnostic, not a source location.
+ * Values are explicitly grouped and numbered because they are part of the
+ * public error contract. Published values must never be reused.
+ */
+enum class ErrorSite : std::uint16_t {
+	None = 0x0000,
+
+	AppConstruct = 0x0101,
+	AppInitialize = 0x0102,
+	AppPollEvents = 0x0103,
+	AppCreateWindow = 0x0104,
+	AppDestroyWindow = 0x0105,
+	AppBeginFrame = 0x0106,
+	AppEndFrame = 0x0107,
+	AppDrawFrame = 0x0108,
+	AppRecreateWindow = 0x0109,
+	AppAcquireFrame = 0x010a,
+	AppSubmitFrame = 0x010b,
+	AppPresent = 0x010c,
+	AppShutdown = 0x010d,
+	AppAccessFonts = 0x010e,
+	AppAccessImages = 0x010f,
+	AppAccessThemes = 0x0110,
+	AppAccessElements = 0x0111,
+	AppAccessActions = 0x0112,
+	AppAccessIcons = 0x0113,
+	AppAccessViewports = 0x0114,
+	AppAccessUi = 0x0115,
+	AppAccessWindow = 0x0116,
+	AppAccessDevMonitoring = 0x0117,
+	AppRequireQuiescent = 0x0118,
+	AppRequirePlatformThread = 0x0119,
+
+	WindowBackendInitialize = 0x0201,
+	WindowMonitorSelect = 0x0202,
+	WindowCreate = 0x0203,
+	WindowDestroy = 0x0204,
+	WindowRequiredExtensions = 0x0205,
+	WindowSurfaceCreate = 0x0206,
+	WindowPollInput = 0x0207,
+	WindowSetTitle = 0x0208,
+	WindowSetCursor = 0x0209,
+	WindowReadClipboard = 0x020a,
+	WindowWriteClipboard = 0x020b,
+	WindowBackendDiagnostic = 0x020c,
+
+	VulkanContextInitialize = 0x0301,
+	VulkanInstanceCreate = 0x0302,
+	VulkanSurfaceQuery = 0x0303,
+	VulkanPhysicalDeviceSelect = 0x0304,
+	VulkanLogicalDeviceCreate = 0x0305,
+	VulkanAllocatorCreate = 0x0306,
+	VulkanFramesInitialize = 0x0307,
+	VulkanFrameAcquire = 0x0308,
+	VulkanFrameSubmit = 0x0309,
+	VulkanSwapchainCreate = 0x030a,
+	VulkanSwapchainAcquire = 0x030b,
+	VulkanSwapchainPresent = 0x030c,
+	VulkanSwapchainRecreate = 0x030d,
+	VulkanContextShutdown = 0x030e,
+	VulkanDebugDiagnostic = 0x030f,
+
+	RendererInitialize = 0x0401,
+	RendererLoadShader = 0x0402,
+	RendererPublishLayout = 0x0403,
+	RendererPublishPipeline = 0x0404,
+	RendererCreateWindowResources = 0x0405,
+	RendererConvertCommands = 0x0406,
+	RendererRecordCommands = 0x0407,
+	RendererPublishDescriptors = 0x0408,
+	RendererDraw = 0x0409,
+	RendererDestroyWindowResources = 0x040a,
+	RendererShutdown = 0x040b,
+
+	StorageInitialize = 0x0501,
+	StorageRegisterWindow = 0x0502,
+	StorageUnregisterWindow = 0x0503,
+	StorageBeginFrame = 0x0504,
+	StorageSealFrame = 0x0505,
+	StorageCancelFrame = 0x0506,
+	StorageValidateFrame = 0x0507,
+	StorageValidateSubmission = 0x0508,
+	StorageNoteSubmission = 0x0509,
+	StorageNoteCompletion = 0x050a,
+	StorageRetire = 0x050b,
+	StorageCollect = 0x050c,
+	StorageTrim = 0x050d,
+	StorageSetBudget = 0x050e,
+	StorageShutdown = 0x050f,
+	StorageCalculateCapacity = 0x0510,
+	StorageRequireInitialized = 0x0511,
+	StorageLookupWindow = 0x0512,
+
+	ResourceNormalizeKey = 0x0601,
+	ResourceInternKey = 0x0602,
+	ResourceAllocatePersistent = 0x0603,
+	ResourceCreateManagerRecord = 0x0604,
+	ResourceLookupManagerRecord = 0x0605,
+	ResourceRemoveManagerRecord = 0x0606,
+	ResourceCreatePersistentRecord = 0x0607,
+	ResourceLookupPersistentRecord = 0x0608,
+	ResourceRemovePersistentRecord = 0x0609,
+	ResourceCreateBlob = 0x060a,
+	ResourceReadBlob = 0x060b,
+	ResourceCreateBuffer = 0x060c,
+	ResourceWriteBuffer = 0x060d,
+	ResourceCreateImage = 0x060e,
+	ResourceCreateImageView = 0x060f,
+	ResourceAcquireSampler = 0x0610,
+	ResourcePublishTexture = 0x0611,
+	ResourceReplaceTexture = 0x0612,
+	ResourceLookupTexture = 0x0613,
+	ResourceRemoveTexture = 0x0614,
+	ResourcePrepareTextureBindings = 0x0615,
+	ResourcePublishTextureBindings = 0x0616,
+	ResourceResolveTexture = 0x0617,
+	ResourceEnqueueUpload = 0x0618,
+	ResourceFlushUploads = 0x0619,
+	ResourceValidateHandle = 0x061a,
+	ResourcePublishNativeObject = 0x061b,
+	ResourceAcquireNativeObject = 0x061c,
+
+	UiManagerInitialize = 0x0701,
+	UiManagerBeginFrame = 0x0702,
+	UiManagerEndFrame = 0x0703,
+	UiManagerRender = 0x0704,
+	UiManagerReset = 0x0705,
+	UiManagerDefineElement = 0x0706,
+	UiManagerOpenElement = 0x0707,
+	UiManagerCloseElement = 0x0708,
+	UiManagerInvokeElement = 0x0709,
+	UiManagerShutdown = 0x070a,
+	UiManagerAccessElements = 0x070b,
+	UiManagerAccessActions = 0x070c,
+	UiManagerAccessTheme = 0x070d,
+
+	ElementManagerInitialize = 0x0801,
+	ElementRegisterDefinition = 0x0802,
+	ElementRegisterWindow = 0x0803,
+	ElementBeginFrame = 0x0804,
+	ElementResolveState = 0x0805,
+	ElementConstructState = 0x0806,
+	ElementEraseState = 0x0807,
+	ElementResolveResource = 0x0808,
+	ElementConstructResource = 0x0809,
+	ElementDestroyResource = 0x080a,
+	ElementCommitFrame = 0x080b,
+	ElementCancelFrame = 0x080c,
+	ElementInvoke = 0x080d,
+	ElementManagerShutdown = 0x080e,
+
+	ActionManagerInitialize = 0x0901,
+	ActionBind = 0x0902,
+	ActionRebind = 0x0903,
+	ActionUnbind = 0x0904,
+	ActionSetAvailability = 0x0905,
+	ActionPublish = 0x0906,
+	ActionInvoke = 0x0907,
+	ActionCompleteInvocation = 0x0908,
+	ActionManagerShutdown = 0x0909,
+
+	ThemeManagerInitialize = 0x0a01,
+	ThemeRegisterType = 0x0a02,
+	ThemeRegisterVariant = 0x0a03,
+	ThemeSetActiveVariant = 0x0a04,
+	ThemeLookupActiveVariant = 0x0a05,
+	ThemeMutate = 0x0a06,
+	ThemeStageMutation = 0x0a07,
+	ThemeCommitMutation = 0x0a08,
+	ThemeRollbackMutation = 0x0a09,
+	ThemeManagerShutdown = 0x0a0a,
+
+	InputManagerInitialize = 0x0b01,
+	InputRegisterField = 0x0b02,
+	InputBeginFrame = 0x0b03,
+	InputEdit = 0x0b04,
+	InputCopy = 0x0b05,
+	InputCut = 0x0b06,
+	InputPaste = 0x0b07,
+	InputFocus = 0x0b08,
+	InputBlur = 0x0b09,
+	InputSubmit = 0x0b0a,
+	InputQueueEvent = 0x0b0b,
+	InputManagerShutdown = 0x0b0c,
+
+	PopupManagerInitialize = 0x0c01,
+	PopupBeginFrame = 0x0c02,
+	PopupRequest = 0x0c03,
+	PopupResolveAnchor = 0x0c04,
+	PopupMeasure = 0x0c05,
+	PopupLayout = 0x0c06,
+	PopupDismiss = 0x0c07,
+	PopupEndFrame = 0x0c08,
+	PopupManagerShutdown = 0x0c09,
+
+	ShortcutManagerInitialize = 0x0d01,
+	ShortcutRegister = 0x0d02,
+	ShortcutUpdate = 0x0d03,
+	ShortcutRemove = 0x0d04,
+	ShortcutResolve = 0x0d05,
+	ShortcutManagerShutdown = 0x0d06,
+
+	AssetOpen = 0x0e01,
+	AssetRead = 0x0e02,
+	AssetValidatePayload = 0x0e03,
+	AssetDecode = 0x0e04,
+
+	ImageManagerInitialize = 0x0f01,
+	ImageRegister = 0x0f02,
+	ImageLoad = 0x0f03,
+	ImageDecode = 0x0f04,
+	ImageUpload = 0x0f05,
+	ImagePublish = 0x0f06,
+	ImageLookup = 0x0f07,
+	ImageRemove = 0x0f08,
+	ImageManagerShutdown = 0x0f09,
+
+	FontManagerInitialize = 0x1001,
+	FontRegisterFamily = 0x1002,
+	FontLoad = 0x1003,
+	FontParse = 0x1004,
+	FontBake = 0x1005,
+	FontPublishAtlas = 0x1006,
+	FontLookupFamily = 0x1007,
+	FontRemoveFamily = 0x1008,
+	FontManagerShutdown = 0x1009,
+
+	IconManagerInitialize = 0x1101,
+	IconRegisterSource = 0x1102,
+	IconParseSource = 0x1103,
+	IconRegisterRaster = 0x1104,
+	IconRasterize = 0x1105,
+	IconPublishAtlas = 0x1106,
+	IconLookup = 0x1107,
+	IconManagerShutdown = 0x1108,
+	IconRemove = 0x1109,
+
+	ViewportManagerInitialize = 0x1201,
+	ViewportCreate = 0x1202,
+	ViewportResize = 0x1203,
+	ViewportPrepare = 0x1204,
+	ViewportRecord = 0x1205,
+	ViewportPublish = 0x1206,
+	ViewportLookup = 0x1207,
+	ViewportDestroy = 0x1208,
+	ViewportManagerShutdown = 0x1209,
+	ViewportConfigure = 0x120a,
+
+	CallbackAction = 0x1301,
+	CallbackElementConstruct = 0x1302,
+	CallbackElementDestroy = 0x1303,
+	CallbackElementInteraction = 0x1304,
+	CallbackThemeMutation = 0x1305,
+	CallbackWindow = 0x1306,
+	CallbackViewportRender = 0x1307,
+	CleanupFrameRollback = 0x1308,
+	CleanupResourceRollback = 0x1309,
+	CleanupManagerShutdown = 0x130a,
+	CleanupAppShutdown = 0x130b,
+};
+
+/** Static catalog data associated with one ErrorSite. */
+struct ErrorSiteDescriptor {
+	ErrorSite site = ErrorSite::None;
+	ErrorSubjectKind expectedSubject = ErrorSubjectKind::None;
+	std::string_view name = "None";
+};
+
+/** Return the descriptor for a stable error site. */
+[[nodiscard]] constexpr ErrorSiteDescriptor describeErrorSite(ErrorSite site) noexcept {
+#define FLOWUI_ERROR_SITE_CASE(siteName, subjectKind) \
+	case ErrorSite::siteName: return {ErrorSite::siteName, ErrorSubjectKind::subjectKind, #siteName}
+	switch (site) {
+	FLOWUI_ERROR_SITE_CASE(None, None);
+
+	FLOWUI_ERROR_SITE_CASE(AppConstruct, App);
+	FLOWUI_ERROR_SITE_CASE(AppInitialize, App);
+	FLOWUI_ERROR_SITE_CASE(AppPollEvents, App);
+	FLOWUI_ERROR_SITE_CASE(AppCreateWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(AppDestroyWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(AppBeginFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(AppEndFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(AppDrawFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(AppRecreateWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(AppAcquireFrame, Frame);
+	FLOWUI_ERROR_SITE_CASE(AppSubmitFrame, Frame);
+	FLOWUI_ERROR_SITE_CASE(AppPresent, Window);
+	FLOWUI_ERROR_SITE_CASE(AppShutdown, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessFonts, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessImages, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessThemes, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessElements, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessActions, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessIcons, App);
+	FLOWUI_ERROR_SITE_CASE(AppAccessViewports, Window);
+	FLOWUI_ERROR_SITE_CASE(AppAccessUi, Window);
+	FLOWUI_ERROR_SITE_CASE(AppAccessWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(AppAccessDevMonitoring, App);
+	FLOWUI_ERROR_SITE_CASE(AppRequireQuiescent, Window);
+	FLOWUI_ERROR_SITE_CASE(AppRequirePlatformThread, App);
+
+	FLOWUI_ERROR_SITE_CASE(WindowBackendInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(WindowMonitorSelect, None);
+	FLOWUI_ERROR_SITE_CASE(WindowCreate, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowDestroy, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowRequiredExtensions, None);
+	FLOWUI_ERROR_SITE_CASE(WindowSurfaceCreate, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowPollInput, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowSetTitle, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowSetCursor, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowReadClipboard, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowWriteClipboard, Window);
+	FLOWUI_ERROR_SITE_CASE(WindowBackendDiagnostic, None);
+
+	FLOWUI_ERROR_SITE_CASE(VulkanContextInitialize, App);
+	FLOWUI_ERROR_SITE_CASE(VulkanInstanceCreate, App);
+	FLOWUI_ERROR_SITE_CASE(VulkanSurfaceQuery, Window);
+	FLOWUI_ERROR_SITE_CASE(VulkanPhysicalDeviceSelect, App);
+	FLOWUI_ERROR_SITE_CASE(VulkanLogicalDeviceCreate, App);
+	FLOWUI_ERROR_SITE_CASE(VulkanAllocatorCreate, App);
+	FLOWUI_ERROR_SITE_CASE(VulkanFramesInitialize, Window);
+	FLOWUI_ERROR_SITE_CASE(VulkanFrameAcquire, Frame);
+	FLOWUI_ERROR_SITE_CASE(VulkanFrameSubmit, Frame);
+	FLOWUI_ERROR_SITE_CASE(VulkanSwapchainCreate, Window);
+	FLOWUI_ERROR_SITE_CASE(VulkanSwapchainAcquire, Window);
+	FLOWUI_ERROR_SITE_CASE(VulkanSwapchainPresent, Window);
+	FLOWUI_ERROR_SITE_CASE(VulkanSwapchainRecreate, Window);
+	FLOWUI_ERROR_SITE_CASE(VulkanContextShutdown, App);
+	FLOWUI_ERROR_SITE_CASE(VulkanDebugDiagnostic, App);
+
+	FLOWUI_ERROR_SITE_CASE(RendererInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(RendererLoadShader, None);
+	FLOWUI_ERROR_SITE_CASE(RendererPublishLayout, Resource);
+	FLOWUI_ERROR_SITE_CASE(RendererPublishPipeline, Resource);
+	FLOWUI_ERROR_SITE_CASE(RendererCreateWindowResources, Window);
+	FLOWUI_ERROR_SITE_CASE(RendererConvertCommands, Frame);
+	FLOWUI_ERROR_SITE_CASE(RendererRecordCommands, Frame);
+	FLOWUI_ERROR_SITE_CASE(RendererPublishDescriptors, Window);
+	FLOWUI_ERROR_SITE_CASE(RendererDraw, Frame);
+	FLOWUI_ERROR_SITE_CASE(RendererDestroyWindowResources, Window);
+	FLOWUI_ERROR_SITE_CASE(RendererShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(StorageInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(StorageRegisterWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(StorageUnregisterWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(StorageBeginFrame, Frame);
+	FLOWUI_ERROR_SITE_CASE(StorageSealFrame, Frame);
+	FLOWUI_ERROR_SITE_CASE(StorageCancelFrame, Frame);
+	FLOWUI_ERROR_SITE_CASE(StorageValidateFrame, Frame);
+	FLOWUI_ERROR_SITE_CASE(StorageValidateSubmission, Submission);
+	FLOWUI_ERROR_SITE_CASE(StorageNoteSubmission, Submission);
+	FLOWUI_ERROR_SITE_CASE(StorageNoteCompletion, Submission);
+	FLOWUI_ERROR_SITE_CASE(StorageRetire, Resource);
+	FLOWUI_ERROR_SITE_CASE(StorageCollect, Resource);
+	FLOWUI_ERROR_SITE_CASE(StorageTrim, MemoryTarget);
+	FLOWUI_ERROR_SITE_CASE(StorageSetBudget, MemoryTarget);
+	FLOWUI_ERROR_SITE_CASE(StorageShutdown, None);
+	FLOWUI_ERROR_SITE_CASE(StorageCalculateCapacity, MemoryTarget);
+	FLOWUI_ERROR_SITE_CASE(StorageRequireInitialized, None);
+	FLOWUI_ERROR_SITE_CASE(StorageLookupWindow, Window);
+
+	FLOWUI_ERROR_SITE_CASE(ResourceNormalizeKey, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceInternKey, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceAllocatePersistent, MemoryTarget);
+	FLOWUI_ERROR_SITE_CASE(ResourceCreateManagerRecord, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceLookupManagerRecord, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceRemoveManagerRecord, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceCreatePersistentRecord, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceLookupPersistentRecord, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceRemovePersistentRecord, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceCreateBlob, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceReadBlob, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceCreateBuffer, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceWriteBuffer, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceCreateImage, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceCreateImageView, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceAcquireSampler, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourcePublishTexture, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceReplaceTexture, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceLookupTexture, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourceRemoveTexture, ResourceKey);
+	FLOWUI_ERROR_SITE_CASE(ResourcePrepareTextureBindings, Frame);
+	FLOWUI_ERROR_SITE_CASE(ResourcePublishTextureBindings, Frame);
+	FLOWUI_ERROR_SITE_CASE(ResourceResolveTexture, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceEnqueueUpload, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceFlushUploads, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceValidateHandle, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourcePublishNativeObject, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceAcquireNativeObject, Resource);
+
+	FLOWUI_ERROR_SITE_CASE(UiManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(UiManagerBeginFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(UiManagerEndFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(UiManagerRender, Window);
+	FLOWUI_ERROR_SITE_CASE(UiManagerReset, Window);
+	FLOWUI_ERROR_SITE_CASE(UiManagerDefineElement, ElementDefinition);
+	FLOWUI_ERROR_SITE_CASE(UiManagerOpenElement, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(UiManagerCloseElement, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(UiManagerInvokeElement, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(UiManagerShutdown, None);
+	FLOWUI_ERROR_SITE_CASE(UiManagerAccessElements, Window);
+	FLOWUI_ERROR_SITE_CASE(UiManagerAccessActions, Window);
+	FLOWUI_ERROR_SITE_CASE(UiManagerAccessTheme, Theme);
+
+	FLOWUI_ERROR_SITE_CASE(ElementManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(ElementRegisterDefinition, ElementDefinition);
+	FLOWUI_ERROR_SITE_CASE(ElementRegisterWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(ElementBeginFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(ElementResolveState, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementConstructState, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementEraseState, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementResolveResource, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementConstructResource, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementDestroyResource, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementCommitFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(ElementCancelFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(ElementInvoke, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(ElementManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(ActionManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(ActionBind, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionRebind, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionUnbind, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionSetAvailability, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionPublish, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionInvoke, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionCompleteInvocation, Action);
+	FLOWUI_ERROR_SITE_CASE(ActionManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(ThemeManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(ThemeRegisterType, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeRegisterVariant, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeSetActiveVariant, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeLookupActiveVariant, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeMutate, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeStageMutation, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeCommitMutation, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeRollbackMutation, Theme);
+	FLOWUI_ERROR_SITE_CASE(ThemeManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(InputManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(InputRegisterField, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputBeginFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(InputEdit, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputCopy, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputCut, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputPaste, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputFocus, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputBlur, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputSubmit, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(InputQueueEvent, Window);
+	FLOWUI_ERROR_SITE_CASE(InputManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(PopupManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(PopupBeginFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(PopupRequest, Popup);
+	FLOWUI_ERROR_SITE_CASE(PopupResolveAnchor, Popup);
+	FLOWUI_ERROR_SITE_CASE(PopupMeasure, Popup);
+	FLOWUI_ERROR_SITE_CASE(PopupLayout, Popup);
+	FLOWUI_ERROR_SITE_CASE(PopupDismiss, Popup);
+	FLOWUI_ERROR_SITE_CASE(PopupEndFrame, Window);
+	FLOWUI_ERROR_SITE_CASE(PopupManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(ShortcutManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(ShortcutRegister, Shortcut);
+	FLOWUI_ERROR_SITE_CASE(ShortcutUpdate, Shortcut);
+	FLOWUI_ERROR_SITE_CASE(ShortcutRemove, Shortcut);
+	FLOWUI_ERROR_SITE_CASE(ShortcutResolve, Shortcut);
+	FLOWUI_ERROR_SITE_CASE(ShortcutManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(AssetOpen, None);
+	FLOWUI_ERROR_SITE_CASE(AssetRead, None);
+	FLOWUI_ERROR_SITE_CASE(AssetValidatePayload, None);
+	FLOWUI_ERROR_SITE_CASE(AssetDecode, None);
+
+	FLOWUI_ERROR_SITE_CASE(ImageManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(ImageRegister, Image);
+	FLOWUI_ERROR_SITE_CASE(ImageLoad, Image);
+	FLOWUI_ERROR_SITE_CASE(ImageDecode, Image);
+	FLOWUI_ERROR_SITE_CASE(ImageUpload, Image);
+	FLOWUI_ERROR_SITE_CASE(ImagePublish, Image);
+	FLOWUI_ERROR_SITE_CASE(ImageLookup, Image);
+	FLOWUI_ERROR_SITE_CASE(ImageRemove, Image);
+	FLOWUI_ERROR_SITE_CASE(ImageManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(FontManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(FontRegisterFamily, Font);
+	FLOWUI_ERROR_SITE_CASE(FontLoad, Font);
+	FLOWUI_ERROR_SITE_CASE(FontParse, Font);
+	FLOWUI_ERROR_SITE_CASE(FontBake, Font);
+	FLOWUI_ERROR_SITE_CASE(FontPublishAtlas, Font);
+	FLOWUI_ERROR_SITE_CASE(FontLookupFamily, Font);
+	FLOWUI_ERROR_SITE_CASE(FontRemoveFamily, Font);
+	FLOWUI_ERROR_SITE_CASE(FontManagerShutdown, None);
+
+	FLOWUI_ERROR_SITE_CASE(IconManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(IconRegisterSource, Icon);
+	FLOWUI_ERROR_SITE_CASE(IconParseSource, Icon);
+	FLOWUI_ERROR_SITE_CASE(IconRegisterRaster, Icon);
+	FLOWUI_ERROR_SITE_CASE(IconRasterize, Icon);
+	FLOWUI_ERROR_SITE_CASE(IconPublishAtlas, Icon);
+	FLOWUI_ERROR_SITE_CASE(IconLookup, Icon);
+	FLOWUI_ERROR_SITE_CASE(IconManagerShutdown, None);
+	FLOWUI_ERROR_SITE_CASE(IconRemove, Icon);
+
+	FLOWUI_ERROR_SITE_CASE(ViewportManagerInitialize, None);
+	FLOWUI_ERROR_SITE_CASE(ViewportCreate, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportResize, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportPrepare, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportRecord, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportPublish, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportLookup, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportDestroy, Viewport);
+	FLOWUI_ERROR_SITE_CASE(ViewportManagerShutdown, None);
+	FLOWUI_ERROR_SITE_CASE(ViewportConfigure, Viewport);
+
+	FLOWUI_ERROR_SITE_CASE(CallbackAction, Action);
+	FLOWUI_ERROR_SITE_CASE(CallbackElementConstruct, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(CallbackElementDestroy, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(CallbackElementInteraction, ElementInstance);
+	FLOWUI_ERROR_SITE_CASE(CallbackThemeMutation, Theme);
+	FLOWUI_ERROR_SITE_CASE(CallbackWindow, Window);
+	FLOWUI_ERROR_SITE_CASE(CallbackViewportRender, Viewport);
+	FLOWUI_ERROR_SITE_CASE(CleanupFrameRollback, Frame);
+	FLOWUI_ERROR_SITE_CASE(CleanupResourceRollback, Resource);
+	FLOWUI_ERROR_SITE_CASE(CleanupManagerShutdown, None);
+	FLOWUI_ERROR_SITE_CASE(CleanupAppShutdown, App);
+	}
+#undef FLOWUI_ERROR_SITE_CASE
+	return {site, ErrorSubjectKind::None, "UnknownErrorSite"};
+}
+
+[[nodiscard]] constexpr std::string_view errorSiteName(ErrorSite site) noexcept {
+	return describeErrorSite(site).name;
+}
 
 /**
  * Initial stable code space for known FlowUi error families.
@@ -791,13 +1337,11 @@ namespace detail {
  * optional development sidecar keyed by occurrence.
  */
 struct FlowUiError final {
-	ErrorCode code = ErrorCode::None;
-	ErrorDomain domain = ErrorDomain::None;
-	ErrorSubjectKind subjectKind = ErrorSubjectKind::None;
-	std::uint32_t nativeCode = 0u;
 	std::uint64_t subject = 0u;
 	std::uint64_t auxiliary = 0u;
-	std::uint64_t occurrence = 0u;
+	std::uint32_t nativeCode = 0u;
+	ErrorCode code = ErrorCode::None;
+	ErrorSite site = ErrorSite::None;
 
 	[[nodiscard]] constexpr bool hasError() const noexcept {
 		return code != ErrorCode::None;
@@ -811,6 +1355,18 @@ struct FlowUiError final {
 		return describeError(code);
 	}
 
+	[[nodiscard]] constexpr ErrorSiteDescriptor siteDescriptor() const noexcept {
+		return describeErrorSite(site);
+	}
+
+	[[nodiscard]] constexpr ErrorDomain domain() const noexcept {
+		return detail::errorDomainFromValue(code);
+	}
+
+	[[nodiscard]] constexpr ErrorSubjectKind subjectKind() const noexcept {
+		return siteDescriptor().expectedSubject;
+	}
+
 	[[nodiscard]] constexpr std::string_view message() const noexcept {
 		return errorMessage(code);
 	}
@@ -818,24 +1374,21 @@ struct FlowUiError final {
 
 static_assert(std::is_trivially_copyable_v<FlowUiError>);
 static_assert(std::is_trivially_destructible_v<FlowUiError>);
-static_assert(sizeof(FlowUiError) <= 32u);
+static_assert(sizeof(FlowUiError) == 24u);
 
 /** Construct a production error without allocating or formatting text. */
 [[nodiscard]] constexpr FlowUiError makeError(
 	ErrorCode code,
-	ErrorSubjectKind subjectKind = ErrorSubjectKind::None,
+	ErrorSite site,
 	std::uint64_t subject = 0u,
 	std::uint64_t auxiliary = 0u,
-	std::uint32_t nativeCode = 0u,
-	std::uint64_t occurrence = 0u) noexcept {
+	std::uint32_t nativeCode = 0u) noexcept {
 	return FlowUiError{
-		.code = code,
-		.domain = detail::errorDomainFromValue(code),
-		.subjectKind = subjectKind,
-		.nativeCode = nativeCode,
 		.subject = subject,
 		.auxiliary = auxiliary,
-		.occurrence = occurrence,
+		.nativeCode = nativeCode,
+		.code = code,
+		.site = site,
 	};
 }
 
@@ -932,28 +1485,42 @@ private:
 	FlowUiError error_{};
 };
 
-enum class ErrorEventKind : std::uint8_t {
-	Raised = 0,
-	Propagated,
-	Resolved,
-	Escalated,
-	FatalHalt,
+/** What in-process evidence access remains trustworthy after a fatal error. */
+enum class FatalInspectionCapability : std::uint8_t {
+	None = 0,
+	TerminalOnly,
+	ImmutableSnapshot,
+	ReadOnlyInterface,
 };
 
-/** Allocation-free view delivered to production and development observers. */
+/** Why an error occurrence entered the centralized reporting path. */
+enum class ErrorEventKind : std::uint8_t {
+	Resolved = 0,
+	Reported = 1,
+	Fatal = 2,
+	BackendDiagnostic = 3,
+};
+
+/**
+ * Allocation-free report delivered to the configured sink and default writer.
+ * nativeMessage is borrowed and remains valid only for the duration of a sink
+ * callback. It is empty for ordinary FlowUi errors.
+ */
 struct ErrorEventView {
 	FlowUiError error{};
-	ErrorEventKind kind = ErrorEventKind::Raised;
-	ErrorBoundary boundary = ErrorBoundary::DirectCaller;
+	ErrorEventKind kind = ErrorEventKind::Reported;
 	ErrorResolution resolution = ErrorResolution::None;
+	FatalInspectionCapability inspection = FatalInspectionCapability::None;
+	std::string_view nativeMessage{};
+	std::uint32_t nativeCategory = 0u;
 };
 
-using ErrorObserverCallback = void(*)(void* userData, const ErrorEventView& event) noexcept;
+using ErrorSinkCallback = void(*)(void* userData, const ErrorEventView& event) noexcept;
 
-/** Non-owning observer plumbing. It cannot alter the error's semantics. */
-struct ErrorObserver {
+/** Non-owning application-provided destination for structured error reports. */
+struct ErrorSink {
 	void* userData = nullptr;
-	ErrorObserverCallback callback = nullptr;
+	ErrorSinkCallback callback = nullptr;
 
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return callback != nullptr;
@@ -964,44 +1531,52 @@ struct ErrorObserver {
 	}
 };
 
-/** What in-process evidence access remains trustworthy after a fatal error. */
-enum class FatalInspectionCapability : std::uint8_t {
-	None = 0,
-	TerminalOnly,
-	ImmutableSnapshot,
-	ReadOnlyInterface,
+/** How the hidden App observer routes each report. */
+enum class ErrorReportingMode : std::uint8_t {
+	/** Attempt compact default output first, then notify the sink when present. */
+	SinkAndDefault = 0,
+	/** Notify the sink when present; otherwise use compact default output. */
+	SinkOrDefault = 1,
+	/** Notify only the sink. An empty sink intentionally produces no output. */
+	SinkOnly = 2,
+	/** Ignore the sink and use only compact default output. */
+	DefaultOnly = 3,
 };
 
-/** A fatal request is terminal even when a dev build freezes before termination. */
-struct FatalErrorEvent {
-	FlowUiError error{};
-	FatalInspectionCapability inspection = FatalInspectionCapability::None;
+/** Immutable reporting configuration copied into the App-owned observer. */
+struct ErrorObserverConfig {
+	ErrorSink sink{};
+	ErrorReportingMode mode = ErrorReportingMode::SinkOrDefault;
+	/** Non-owning stream used by the compact built-in writer. */
+	std::FILE* output = stderr;
 };
 
-using FatalErrorHandler = void(*)(void* userData, const FatalErrorEvent& event) noexcept;
-
-struct FatalErrorSink {
-	void* userData = nullptr;
-	FatalErrorHandler handler = nullptr;
-
-	[[nodiscard]] constexpr explicit operator bool() const noexcept {
-		return handler != nullptr;
-	}
-
-	/** Report evidence and return to the fatal machinery, which still terminates. */
-	void notify(const FatalErrorEvent& event) const noexcept {
-		if (handler) handler(userData, event);
-	}
+/** Complete production error contract selected at App creation. */
+struct ErrorContract {
+	ErrorPolicy policy{};
+	ErrorObserverConfig observer{};
 };
 
 namespace detail {
 
-/** Notify the evidence-only sink, then enforce the no-continuation contract. */
-[[noreturn]] inline void terminateForFatalError(
-	FlowUiError error,
-	const FatalErrorSink& sink = {}) noexcept {
-	sink.notify(FatalErrorEvent{
+/** Route one occurrence through the active singleton App observer. */
+#if FLOW_UI_DEV_MODE
+void reportErrorEvent(
+	const ErrorEventView& event,
+	const char* file = __builtin_FILE(),
+	const char* function = __builtin_FUNCTION(),
+	std::uint32_t line = __builtin_LINE(),
+	std::uint32_t column = __builtin_COLUMN()) noexcept;
+#else
+void reportErrorEvent(const ErrorEventView& event) noexcept;
+#endif
+
+/** Report fatal evidence through the common observer, then prohibit continuation. */
+[[noreturn]] inline void terminateForFatalError(FlowUiError error) noexcept {
+	reportErrorEvent(ErrorEventView{
 		.error = error,
+		.kind = ErrorEventKind::Fatal,
+		.resolution = ErrorResolution::Terminated,
 		.inspection = FatalInspectionCapability::TerminalOnly,
 	});
 	std::terminate();
@@ -1009,8 +1584,10 @@ namespace detail {
 
 } // namespace detail
 
-static_assert(noexcept(makeError(ErrorCode::None)));
-static_assert(noexcept(std::declval<const ErrorObserver&>().notify(std::declval<const ErrorEventView&>())));
-static_assert(noexcept(std::declval<const FatalErrorSink&>().notify(std::declval<const FatalErrorEvent&>())));
+static_assert(noexcept(makeError(ErrorCode::None, ErrorSite::None)));
+static_assert(std::is_trivially_copyable_v<ErrorEventView>);
+static_assert(std::is_trivially_copyable_v<ErrorSink>);
+static_assert(std::is_trivially_copyable_v<ErrorObserverConfig>);
+static_assert(noexcept(std::declval<const ErrorSink&>().notify(std::declval<const ErrorEventView&>())));
 
 } // namespace FlowUi

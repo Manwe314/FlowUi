@@ -112,6 +112,14 @@ public:
 	 * @return Stable main-window identity.
 	 */
 	[[nodiscard]] WindowId mainWindowId() const noexcept;
+
+	/**
+	 * Route a caller-owned FlowUi error through this App's configured reporting
+	 * sink and/or compact default writer. Reporting does not resolve the error or
+	 * alter application control flow.
+	 */
+	void reportError(FlowUiError error) const noexcept;
+
 	/** @brief Create and fully initialize a secondary window.
 	 *
 	 * The new window uses the app's Vulkan and UI configuration together with
