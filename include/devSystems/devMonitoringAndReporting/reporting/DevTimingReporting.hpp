@@ -83,6 +83,7 @@ struct TimingReportingStatus {
 	uint64_t lateRecordsAfterEviction = 0u;
 	uint64_t ingestionFailures = 0u;
 	uint64_t mutationSequence = 0u;
+	TimingQualitySnapshot quality{};
 	bool hasRetainedTicks = false;
 };
 

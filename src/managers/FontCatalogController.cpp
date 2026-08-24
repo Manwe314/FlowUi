@@ -21,7 +21,7 @@ uint32_t nextLayerCapacity(uint32_t current, uint32_t required) {
 	uint32_t capacity = std::max(current, FontManager::kInitialAtlasLayerCapacity);
 	while (capacity < required) {
 		if (capacity > std::numeric_limits<uint32_t>::max() - FontManager::kAtlasLayerGrowthStep) {
-			throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded));
+			throw FlowUiException(makeError(ErrorCode::FontAtlasCapacityExceeded, ErrorSite::FontPublishAtlas));
 		}
 		capacity += FontManager::kAtlasLayerGrowthStep;
 	}
@@ -32,7 +32,7 @@ uint32_t nextLayerCapacity(uint32_t current, uint32_t required) {
 
 FontCatalogController::FontCatalogController(storage::IStorageSystem& storageSystem, uint32_t atlasSize)
 	: storage(&storageSystem), atlasSizeHint(atlasSize) {
-	if (atlasSize == 0) throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid));
+	if (atlasSize == 0) throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid, ErrorSite::FontManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.font.atlas.sampler");
 	atlasSampler = storageSystem.acquireSampler(storage::SamplerDesc{
 		.minFilter = storage::FilterMode::Linear,
@@ -74,10 +74,10 @@ void FontCatalogController::uploadLayerTransactional(
 	const std::vector<uint8_t>& rgbaPixels) {
 	const uint64_t layerBytes64 = static_cast<uint64_t>(atlasSizeHint) * atlasSizeHint * 4u;
 	if (layerBytes64 > std::numeric_limits<size_t>::max() || rgbaPixels.size() != layerBytes64) {
-		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid));
+		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontPublishAtlas));
 	}
 	if (layer != atlasLayerPixels.size()) {
-		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::FontPublishAtlas));
 	}
 	const uint32_t requiredLayers = layer + 1u;
 	const uint32_t currentCapacity = borrowedAtlas.layersCapacity;
@@ -113,7 +113,7 @@ void FontCatalogController::uploadLayerTransactional(
 
 	const uint32_t candidateCapacity = nextLayerCapacity(currentCapacity, requiredLayers);
 	if (layerBytes64 > std::numeric_limits<uint64_t>::max() / candidateCapacity) {
-		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow));
+		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow, ErrorSite::FontPublishAtlas));
 	}
 	const size_t candidateBytes = static_cast<size_t>(layerBytes64 * candidateCapacity);
 	std::vector<std::byte> combined(candidateBytes, std::byte{0});

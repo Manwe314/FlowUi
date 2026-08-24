@@ -2,7 +2,6 @@
 
 #include <array>
 #include <algorithm>
-#include <cstdio>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -20,8 +19,14 @@
 
 namespace FlowUi::detail {
 
-inline void glfwErrorCallback(int code, const char* description) {
-	std::fprintf(stderr, "[GLFW] (%d) %s\n", code, description ? description : "");
+inline void glfwErrorCallback(int code, const char* description) noexcept {
+	reportErrorEvent(ErrorEventView{
+		.error = makeError(
+			ErrorCode::None, ErrorSite::WindowBackendDiagnostic,
+			0u, 0u, static_cast<std::uint32_t>(code)),
+		.kind = ErrorEventKind::BackendDiagnostic,
+		.nativeMessage = description ? std::string_view{description} : std::string_view{},
+	});
 }
 
 inline int toGlfwCursorMode(FlowUi::CursorMode cursorMode) {
@@ -103,7 +108,7 @@ struct GlfwLibrary {
 			glfwSetErrorCallback(glfwErrorCallback);
 			if (!glfwInit()) {
 				refCount = 0;
-				throw FlowUiException(makeError(ErrorCode::PlatformInitializationFailed));
+				throw FlowUiException(makeError(ErrorCode::PlatformInitializationFailed, ErrorSite::WindowBackendInitialize));
 			}
 		}
 	}
@@ -140,7 +145,7 @@ public:
 		if (config.fullscreen) {
 			monitor = glfwGetPrimaryMonitor();
 			if (!monitor) {
-				throw FlowUiException(makeError(ErrorCode::PlatformMonitorUnavailable));
+				throw FlowUiException(makeError(ErrorCode::PlatformMonitorUnavailable, ErrorSite::WindowMonitorSelect));
 			}
 			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 			if (mode) {
@@ -151,7 +156,7 @@ public:
 
 		window = glfwCreateWindow(width, height, config.title.c_str(), monitor, nullptr);
 		if (!window) {
-			throw FlowUiException(makeError(ErrorCode::WindowCreationFailed));
+			throw FlowUiException(makeError(ErrorCode::WindowCreationFailed, ErrorSite::WindowCreate));
 		}
 
 		glfwSetWindowUserPointer(window, this);
@@ -211,21 +216,20 @@ public:
 		uint32_t count = 0;
 		const char** extensions = glfwGetRequiredInstanceExtensions(&count);
 		if (!extensions || count == 0) {
-			throw FlowUiException(makeError(ErrorCode::PlatformRequiredExtensionMissing));
+			throw FlowUiException(makeError(ErrorCode::PlatformRequiredExtensionMissing, ErrorSite::WindowRequiredExtensions));
 		}
 		return std::vector<const char*>(extensions, extensions + count);
 	}
 
 	VkSurfaceKHR createSurface(VkInstance instance) override {
 		if (!window) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::WindowSurfaceCreate));
 		}
 		VkSurfaceKHR surface = VK_NULL_HANDLE;
 		const VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
 		if (result != VK_SUCCESS) {
 			throw FlowUiException(makeError(
-				ErrorCode::PlatformSurfaceCreationFailed,
-				ErrorSubjectKind::None,
+				ErrorCode::PlatformSurfaceCreationFailed, ErrorSite::WindowSurfaceCreate,
 				0u,
 				0u,
 				static_cast<std::uint32_t>(result)));

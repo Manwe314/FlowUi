@@ -161,7 +161,7 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 {
 	(void)pageIndex;
 	if (!storage_ || !controller_ || !controller_->atlasSampler) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconPublishAtlas));
 	}
 
 	AtlasPage page{};
@@ -373,19 +373,19 @@ void IconManager::uploadRasterToAtlasPage(
 	const TransientRasterResult& raster,
 	const AtlasRect& contentRect) {
 	if (!storage_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconPublishAtlas));
 	}
 	if (!page.image) {
-		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid));
+		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid, ErrorSite::IconPublishAtlas));
 	}
 	if (!raster.rgbaPixels || raster.width == 0u || raster.height == 0u || raster.strideBytes < raster.width * 4u) {
-		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconPublishAtlas));
 	}
 	if ((raster.strideBytes % 4u) != 0u) {
-		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconPublishAtlas));
 	}
 	if (contentRect.x + raster.width > page.width || contentRect.y + raster.height > page.height) {
-		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::IconPublishAtlas));
 	}
 
 	const size_t tightRowBytes = static_cast<size_t>(raster.width) * 4u;
@@ -467,7 +467,7 @@ bool IconManager::tryAllocateAtlasRegion(
 		return false;
 	}
 
-	while (capacityPolicy_ == CapacityFailurePolicy::EvictAndRetry &&
+	while (capacityPolicy_ == CacheCapacityPolicy::EvictAndRetry &&
 		evictLeastRecentlyUsedVariant()) {
 		if (tryAcrossPages(false)) {
 			return true;
@@ -594,10 +594,10 @@ IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	TransientRasterResult raster = rasterizeForAtlas(nameKey, requestKey.requestedWidth, requestKey.requestedHeight);
 	AtlasAllocation allocation{};
 	if (!tryAllocateAtlasRegion(raster.width, raster.height, allocation)) {
-		throw FlowUiException(makeError(ErrorCode::IconAtlasCapacityExceeded));
+		throw FlowUiException(makeError(ErrorCode::IconAtlasCapacityExceeded, ErrorSite::IconPublishAtlas));
 	}
 	if (allocation.pageIndex >= controller_->atlasPages.size()) {
-		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::IconPublishAtlas));
 	}
 
 	AtlasPage& page = controller_->atlasPages[allocation.pageIndex];
@@ -643,7 +643,7 @@ void IconManager::prepareFrameTextures(
 	float uiToFramebufferScaleY)
 {
 	if (!storage_ || !controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconPublishAtlas));
 	}
 
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
@@ -688,8 +688,13 @@ void IconManager::prepareFrameTextures(
 			const storage::ResourceKey diagnosticKey = iconKey(
 				*storage_, ResourceKey{.name = *requestedKey});
 			if (storage_->markDiagnosticOnce(diagnosticKey, IconGenerationDiagnostic)) {
-				std::fprintf(stderr, "[FlowUi] Warning: icon '%s' could not be generated (%s).\n",
-					requestedKey->c_str(), error.what());
+				detail::reportErrorEvent(ErrorEventView{
+					.error = error.error(),
+					.kind = ErrorEventKind::Resolved,
+					.resolution = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual
+						? ErrorResolution::Skipped
+						: ErrorResolution::UsedFallback,
+				});
 			}
 			continue;
 		}
@@ -731,7 +736,7 @@ void IconManager::init(
 	storage::IStorageSystem& storageSystem,
 	const IconManagerConfig& config,
 	IconGenerationFailurePolicy generationPolicy,
-	CapacityFailurePolicy capacityPolicy) {
+	CacheCapacityPolicy capacityPolicy) {
 	destroy();
 	generationPolicy_ = generationPolicy;
 	capacityPolicy_ = capacityPolicy;
@@ -746,7 +751,7 @@ void IconManager::init(
 		storage_, handle, storage::ResourceKind::IconVariant);
 	if (!controller_) {
 		destroy();
-		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::IconManagerInitialize));
 	}
 	try {
 		controller_->atlasPages.push_back(createAtlasPage(0u));
@@ -761,7 +766,7 @@ Result<bool> IconManager::registerSvg(std::string_view key, std::string_view svg
 }
 
 Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSource) {
-	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRegisterSource));
 	storage::ResourceKey normalized{};
 	try {
 		normalized = iconKey(*storage_, key);
@@ -769,10 +774,10 @@ Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSourc
 		return unexpectedError(exception.error());
 	}
 	if (svgSource.empty()) {
-		return unexpectedError(makeError(ErrorCode::IconSourceInvalid));
+		return unexpectedError(makeError(ErrorCode::IconSourceInvalid, ErrorSite::IconRegisterSource));
 	}
 	if (svgSource.size() > static_cast<size_t>(std::numeric_limits<int>::max())) {
-		return unexpectedError(makeError(ErrorCode::IconSourceInvalid));
+		return unexpectedError(makeError(ErrorCode::IconSourceInvalid, ErrorSite::IconRegisterSource));
 	}
 
 	const std::string keyString(key.name);
@@ -797,7 +802,7 @@ Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSourc
 		ownedSource);
 	if (!document) {
 		std::free(ownedSource);
-		return unexpectedError(makeError(ErrorCode::IconSourceInvalid));
+		return unexpectedError(makeError(ErrorCode::IconSourceInvalid, ErrorSite::IconRegisterSource));
 	}
 
 	storage::BlobHandle source{};
@@ -812,7 +817,7 @@ Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSourc
 		return unexpectedError(exception.error());
 	} catch (...) {
 		plutosvg_document_destroy(document);
-		return unexpectedError(makeError(ErrorCode::ResourceCreationFailed));
+		return unexpectedError(makeError(ErrorCode::ResourceCreationFailed, ErrorSite::IconRegisterSource));
 	}
 
 	DocumentRecord record{};
@@ -831,7 +836,7 @@ Result<bool> IconManager::registerSvg(ResourceKey key, std::string_view svgSourc
 	} catch (...) {
 		plutosvg_document_destroy(document);
 		storage_->releaseBlob(source);
-		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed));
+		return unexpectedError(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::IconRegisterSource));
 	}
 	if (!inserted) {
 		plutosvg_document_destroy(document);
@@ -847,32 +852,33 @@ Result<bool> IconManager::registerFromFile(std::string_view key, std::string_vie
 }
 
 Result<bool> IconManager::registerFromFile(ResourceKey key, std::string_view filePath) {
-	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRegisterSource));
 	try {
 		(void)iconKey(*storage_, key);
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
-	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty));
+	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty, ErrorSite::IconRegisterSource));
 
 	const std::filesystem::path path(filePath);
 	std::error_code pathError;
 	if (!std::filesystem::is_regular_file(path, pathError)) {
 		return unexpectedError(makeError(
-			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound));
+			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound,
+			ErrorSite::IconRegisterSource));
 	}
 
 	std::ifstream stream(path, std::ios::binary);
-	if (!stream) return unexpectedError(makeError(ErrorCode::AssetOpenFailed));
+	if (!stream) return unexpectedError(makeError(ErrorCode::AssetOpenFailed, ErrorSite::IconRegisterSource));
 	const std::string source((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-	if (!stream.eof() && stream.fail()) return unexpectedError(makeError(ErrorCode::AssetReadFailed));
+	if (!stream.eof() && stream.fail()) return unexpectedError(makeError(ErrorCode::AssetReadFailed, ErrorSite::IconRegisterSource));
 	return registerSvg(key, source);
 }
 
 Result<bool> IconManager::remove(std::string_view key) { return remove(ResourceKey{.name = key}); }
 
 Result<bool> IconManager::remove(ResourceKey key) {
-	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRemove));
 	storage::ResourceKey normalized{};
 	try {
 		normalized = iconKey(*storage_, key);
@@ -926,20 +932,28 @@ bool IconManager::contains(ResourceKey key) const {
 TextureRef IconManager::textureRef(std::string_view key) { return textureRef(ResourceKey{.name = key}); }
 
 TextureRef IconManager::textureRef(ResourceKey key) {
-	if (!storage_ || !controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_ || !controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconLookup));
 	const storage::ResourceKey normalized = iconKey(*storage_, key);
 	if (controller_->atlasPages.empty() || !controller_->atlasPages.front().view || !controller_->atlasSampler) {
-		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid));
+		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid, ErrorSite::IconLookup));
 	}
 
 	const std::string keyString(key.name);
 	const auto documentIt = controller_->documentsByKey.find(keyString);
 	if (documentIt == controller_->documentsByKey.end()) {
 		if (generationPolicy_ == IconGenerationFailurePolicy::FailRequest) {
-			throw FlowUiException(makeError(ErrorCode::IconNotFound));
+			throw FlowUiException(makeError(ErrorCode::IconNotFound, ErrorSite::IconLookup));
 		}
 		if (storage_->markDiagnosticOnce(normalized, MissingIconDiagnostic)) {
-			std::fprintf(stderr, "[FlowUi] Warning: icon key '%s' was not found.\n", keyString.c_str());
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::IconNotFound, ErrorSite::IconLookup,
+					normalized.name),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual
+					? ErrorResolution::Skipped
+					: ErrorResolution::UsedFallback,
+			});
 		}
 		return TextureRef{
 			.skipIfUnavailable = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual,
@@ -956,7 +970,7 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 			.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight))),
 		}, &inserted);
 		if (!inserted) {
-			detail::terminateForFatalError(makeError(ErrorCode::IconKeyCollision));
+			detail::terminateForFatalError(makeError(ErrorCode::IconKeyCollision, ErrorSite::IconLookup));
 		}
 		requestIdIt = controller_->requestTextureByKey.emplace(keyString, requestTexture).first;
 		controller_->requestedKeyByTexture.emplace(requestTexture.packed(), keyString);
@@ -973,15 +987,15 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_view key, uint32_t requestedWidth, uint32_t requestedHeight) const
 {
 	if (!storage_ || !controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRasterize));
 	}
 	if (key.empty()) {
-		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconRasterize));
 	}
 
 	const auto recordIt = controller_->documentsByKey.find(std::string(key));
 	if (recordIt == controller_->documentsByKey.end() || !recordIt->second.document) {
-		throw FlowUiException(makeError(ErrorCode::IconNotFound));
+		throw FlowUiException(makeError(ErrorCode::IconNotFound, ErrorSite::IconRasterize));
 	}
 
 	const uint32_t targetWidth = std::max<uint32_t>(1u, requestedWidth);
@@ -1005,7 +1019,7 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 	const double scaleY = static_cast<double>(targetHeight) / intrinsicHeight;
 	const double scale = std::max(0.0, std::min(scaleX, scaleY));
 	if (!(scale > 0.0)) {
-		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconRasterize));
 	}
 
 	uint32_t rasterWidth = static_cast<uint32_t>(std::llround(intrinsicWidth * scale));
@@ -1022,7 +1036,7 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 		nullptr,
 		nullptr));
 	if (!owner.surface) {
-		throw FlowUiException(makeError(ErrorCode::IconRasterizationFailed));
+		throw FlowUiException(makeError(ErrorCode::IconRasterizationFailed, ErrorSite::IconRasterize));
 	}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	devSystems::DevExternalMemoryScope rasterMemory(
@@ -1035,7 +1049,7 @@ IconManager::TransientRasterResult IconManager::rasterizeForAtlas(std::string_vi
 	const int surfaceStride = plutovg_surface_get_stride(owner.surface);
 	unsigned char* surfaceData = plutovg_surface_get_data(owner.surface);
 	if (!surfaceData || surfaceWidth <= 0 || surfaceHeight <= 0 || surfaceStride <= 0) {
-		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid));
+		throw FlowUiException(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconRasterize));
 	}
 
 	convertArgbPremultipliedToRgbaStraight(
@@ -1068,7 +1082,7 @@ void IconManager::destroy() noexcept {
 	controllerHandle_ = 0;
 	storage_ = nullptr;
 	generationPolicy_ = IconGenerationFailurePolicy::UseFallbackTexture;
-	capacityPolicy_ = CapacityFailurePolicy::RejectOperation;
+	capacityPolicy_ = CacheCapacityPolicy::RejectOperation;
 }
 
 } // namespace FlowUi

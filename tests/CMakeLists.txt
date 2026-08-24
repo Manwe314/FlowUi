@@ -779,6 +779,40 @@ set_tests_properties(flowui.storage.system PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+    add_executable(flowui_dev_error_tests
+        DevMonitoringTests/DevErrorMonitoringTests.cpp
+        DevSystemsTests/DevMemoryVulkanSupport.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/errors/DevErrorStackProvider.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemory.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemoryRecorder.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdvice.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdviceCatalogue.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevGpuTiming.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevTimingRecorder.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevTimingZone.cpp
+    )
+    target_compile_features(flowui_dev_error_tests PRIVATE cxx_std_23)
+    target_include_directories(flowui_dev_error_tests PRIVATE
+        ${FLOWUI_GENERATED_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/external
+    )
+    target_link_libraries(flowui_dev_error_tests PRIVATE Vulkan::Vulkan)
+    add_test(NAME flowui.dev.errors COMMAND flowui_dev_error_tests)
+    set_tests_properties(flowui.dev.errors PROPERTIES
+        LABELS "flowui;dev;errors;unit"
+        TIMEOUT 30
+    )
+
     add_executable(flowui_dev_memory_tests
         DevSystemsTests/DevMemoryTests.cpp
         DevSystemsTests/DevMemoryVulkanSupport.cpp

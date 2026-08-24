@@ -28,7 +28,7 @@ public:
 	[[nodiscard]] size_t depth() const noexcept { return scopes_.size(); }
 
 	[[nodiscard]] size_t push(FlowElementID id) {
-		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerOpenElement));
 		const size_t priorDepth = scopes_.size();
 		scopes_.push_back(id);
 		return priorDepth;

@@ -54,7 +54,7 @@ public:
 	template <typename T>
 	Status registerTheme(std::string_view variantName, T themeData, bool makeActive = true) {
 		if (!controller_) {
-			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 		}
 		try {
 			const auto variantId = controller_->internString(variantName);
@@ -86,13 +86,13 @@ public:
 	 */
 	template <typename T>
 	Status setActiveVariant(std::string_view variantName) {
-		if (!controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+		if (!controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeSetActiveVariant));
 		const auto variantId = controller_->internString(variantName);
 		if (!controller_->hasThemeType<T>()) {
-			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound));
+			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound, ErrorSite::ThemeSetActiveVariant));
 		}
 		if (!controller_->setActiveVariant<T>(variantId)) {
-			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound));
+			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeSetActiveVariant));
 		}
 		return {};
 	}
@@ -107,11 +107,11 @@ public:
 	template <typename T>
 	[[nodiscard]] const T& getActiveTheme() const {
 		if (!controller_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
 		}
 		const T* ptr = controller_->getActiveThemeVariant<T>();
 		if (!ptr) {
-			throw FlowUiException(makeError(ErrorCode::ThemeActiveVariantMissing));
+			throw FlowUiException(makeError(ErrorCode::ThemeActiveVariantMissing, ErrorSite::ThemeLookupActiveVariant));
 		}
 		return *ptr;
 	}
@@ -127,12 +127,12 @@ public:
 	template <typename T>
 	[[nodiscard]] const T& getTheme(std::string_view variantName) const {
 		if (!controller_) {
-			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
 		}
 		const auto variantId = controller_->internString(variantName);
 		const T* ptr = controller_->getThemeVariant<T>(variantId);
 		if (!ptr) {
-			throw FlowUiException(makeError(ErrorCode::ThemeVariantNotFound));
+			throw FlowUiException(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeLookupActiveVariant));
 		}
 		return *ptr;
 	}
@@ -147,14 +147,14 @@ public:
 	template <typename T>
 	Status updateTheme(std::string_view variantName, std::function<void(T&)> mutator) {
 		if (!controller_) {
-			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeStageMutation));
 		}
 		const auto variantId = controller_->internString(variantName);
 		if (!controller_->hasThemeType<T>()) {
-			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound));
+			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound, ErrorSite::ThemeStageMutation));
 		}
 		if (!controller_->queueThemeMutation<T>(variantId, std::move(mutator))) {
-			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound));
+			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeStageMutation));
 		}
 		return {};
 	}
@@ -168,13 +168,13 @@ public:
 	template <typename T>
 	Status updateActiveTheme(std::function<void(T&)> mutator) {
 		if (!controller_) {
-			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized));
+			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeStageMutation));
 		}
 		if (!controller_->hasThemeType<T>()) {
-			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound));
+			return unexpectedError(makeError(ErrorCode::ThemeTypeNotFound, ErrorSite::ThemeStageMutation));
 		}
 		if (!controller_->queueActiveThemeMutation<T>(std::move(mutator))) {
-			return unexpectedError(makeError(ErrorCode::ThemeActiveVariantMissing));
+			return unexpectedError(makeError(ErrorCode::ThemeActiveVariantMissing, ErrorSite::ThemeStageMutation));
 		}
 		return {};
 	}

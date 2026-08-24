@@ -50,8 +50,7 @@ void requireStateDescriptor(const element::ElementRegistrationDescriptor& descri
 		descriptor.stateOperations.defaultConstruct == nullptr ||
 		descriptor.stateOperations.destroy == nullptr) {
 		throw FlowUiException(makeError(
-			ErrorCode::ElementDefinitionConflict,
-			ErrorSubjectKind::ElementDefinition,
+			ErrorCode::ElementDefinitionConflict, ErrorSite::ElementRegisterDefinition,
 			descriptor.definitionId.value));
 	}
 }
@@ -63,8 +62,7 @@ void requireResourcesDescriptor(const element::ElementRegistrationDescriptor& de
 			descriptor.resourceOperations.defaultConstruct == nullptr) ||
 		descriptor.resourceOperations.destroy == nullptr) {
 		throw FlowUiException(makeError(
-			ErrorCode::ElementDefinitionConflict,
-			ErrorSubjectKind::ElementDefinition,
+			ErrorCode::ElementDefinitionConflict, ErrorSite::ElementRegisterDefinition,
 			descriptor.definitionId.value));
 	}
 }
@@ -86,8 +84,7 @@ void validateResourceRecord(
 	if (matches) return;
 
 	::FlowUi::detail::terminateForFatalError(makeError(
-		ErrorCode::ElementStorageStale,
-		ErrorSubjectKind::ElementDefinition,
+		ErrorCode::ElementStorageStale, ErrorSite::ElementResolveResource,
 		descriptor.definitionId.value));
 }
 
@@ -187,8 +184,7 @@ void validateStateRecord(
 	if (matches) return;
 
 	::FlowUi::detail::terminateForFatalError(makeError(
-		ErrorCode::ElementStorageStale,
-		ErrorSubjectKind::ElementInstance,
+		ErrorCode::ElementStorageStale, ErrorSite::ElementResolveState,
 		instanceKey.value,
 		descriptor.definitionId.value));
 }
@@ -263,8 +259,7 @@ ResolvedElementState createStateRecord(
 	if (!view) {
 		(void)storage.removePersistentRecord(handle, storage::ResourceKind::UiElementState);
 		::FlowUi::detail::terminateForFatalError(makeError(
-			ErrorCode::ElementStorageStale,
-			ErrorSubjectKind::ElementInstance,
+			ErrorCode::ElementStorageStale, ErrorSite::ElementConstructState,
 			instanceKey.value));
 	}
 	validateStateRecord(
@@ -361,8 +356,7 @@ ElementDefinitionRecord& ElementDefinitionRegistry::ensureDefinition(
 	if (existing != definitions_.end()) {
 		if (!descriptorsMatch(existing->second->descriptor, descriptor)) {
 			throw FlowUiException(makeError(
-				ErrorCode::ElementDefinitionConflict,
-				ErrorSubjectKind::ElementDefinition,
+				ErrorCode::ElementDefinitionConflict, ErrorSite::ElementRegisterDefinition,
 				descriptor.definitionId.value));
 		}
 		return *existing->second;
@@ -412,12 +406,12 @@ ElementStorageController::~ElementStorageController() {
 
 void ElementStorageController::registerWindow(WindowId window) {
 	if (window == InvalidWindowId) {
-		throw FlowUiException(makeError(ErrorCode::InvalidWindowId));
+		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSite::ElementRegisterWindow));
 	}
 
 	std::lock_guard<std::mutex> lock(windowsMutex_);
 	if (!storage_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementRegisterWindow));
 	}
 	if (windows_.contains(window)) return;
 	(void)windows_.try_emplace(
@@ -473,13 +467,12 @@ const void* ElementStorageController::resolveOrCreateResources(
 			if (const void* ready = resources.payload.load(std::memory_order_acquire)) {
 				return ready;
 			} else {
-				::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ElementStorageStale));
+				::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ElementStorageStale, ErrorSite::ElementConstructResource));
 			}
 		case ElementResourceState::Constructing:
 			if (resources.constructingThread == std::this_thread::get_id()) {
 				throw FlowUiException(makeError(
-					ErrorCode::ElementResourceRecursiveConstruction,
-					ErrorSubjectKind::ElementDefinition,
+					ErrorCode::ElementResourceRecursiveConstruction, ErrorSite::ElementConstructResource,
 					descriptor.definitionId.value));
 			}
 			resources.ready.wait(lock, [&resources] {
@@ -490,8 +483,7 @@ const void* ElementStorageController::resolveOrCreateResources(
 			if (!retryFailed) {
 				if (resources.failure) std::rethrow_exception(resources.failure);
 				throw FlowUiException(makeError(
-					ErrorCode::ElementResourceConstructionFailed,
-					ErrorSubjectKind::ElementDefinition,
+					ErrorCode::ElementResourceConstructionFailed, ErrorSite::ElementConstructResource,
 					descriptor.definitionId.value));
 			}
 			resources.failure = nullptr;
@@ -501,7 +493,7 @@ const void* ElementStorageController::resolveOrCreateResources(
 			resources.constructingThread = std::this_thread::get_id();
 			break;
 		case ElementResourceState::Destroying:
-			throw FlowUiException(makeError(ErrorCode::ElementResourceDestroying));
+			throw FlowUiException(makeError(ErrorCode::ElementResourceDestroying, ErrorSite::ElementConstructResource));
 		}
 		break;
 	}
@@ -509,7 +501,7 @@ const void* ElementStorageController::resolveOrCreateResources(
 
 	ResourceAllocation created{};
 	try {
-		if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementConstructResource));
 		created = createResourceRecord(*storage_, descriptor, app);
 	} catch (...) {
 		const std::exception_ptr focusedFailure = std::current_exception();
@@ -541,22 +533,21 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 	requireStateDescriptor(descriptor);
 	if (window == InvalidWindowId || !instanceKey) {
 		throw FlowUiException(makeError(
-			ErrorCode::InvalidElementId,
-			ErrorSubjectKind::ElementInstance,
+			ErrorCode::InvalidElementId, ErrorSite::ElementConstructState,
 			instanceKey.value));
 	}
 
 	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
-	if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementConstructState));
 	const auto windowEntry = windows_.find(window);
 	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) {
-		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSubjectKind::Window, window));
+		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSite::ElementConstructState, window));
 	}
 
 	WindowElementStateRegistry& registry = *windowEntry->second;
 	std::lock_guard<std::mutex> registryLock(registry.mutex);
 	if (!registry.transaction.active) {
-		throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, window));
+		throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::ElementConstructState, window));
 	}
 	ResolvedElementState resolved{};
 	bool created = false;
@@ -575,8 +566,7 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 				stateRecordView(*storage_, resolved.handle).header);
 			if (!header) {
 				::FlowUi::detail::terminateForFatalError(makeError(
-					ErrorCode::ElementStorageStale,
-					ErrorSubjectKind::ElementInstance,
+					ErrorCode::ElementStorageStale, ErrorSite::ElementConstructState,
 					instanceKey.value));
 			}
 			if (policy.retention == ElementStateRetention::Transient) {
@@ -674,21 +664,21 @@ void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 
 void ElementStorageController::beginWindowFrame(WindowId window, uint64_t epoch) {
 	if (window == InvalidWindowId || epoch == 0) {
-		throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, window));
+		throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::ElementBeginFrame, window));
 	}
 	std::lock_guard<std::mutex> windowsLock(windowsMutex_);
-	if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!storage_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementBeginFrame));
 	const auto windowEntry = windows_.find(window);
 	if (windowEntry == windows_.end() || windowEntry->second->destroyRequested) {
-		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSubjectKind::Window, window));
+		throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSite::ElementBeginFrame, window));
 	}
 	WindowElementStateRegistry& registry = *windowEntry->second;
 	std::lock_guard<std::mutex> registryLock(registry.mutex);
 	if (registry.transaction.active || registry.activeInvocations != 0) {
-		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSubjectKind::Window, window));
+		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSite::ElementBeginFrame, window));
 	}
 	if (!registry.deferredErases.empty()) {
-		::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ElementStorageStale));
+		::FlowUi::detail::terminateForFatalError(makeError(ErrorCode::ElementStorageStale, ErrorSite::ElementBeginFrame));
 	}
 	registry.transaction.clear();
 	registry.transaction.epoch = epoch;

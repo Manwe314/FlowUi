@@ -51,7 +51,7 @@ void ElementManager::init(App& app, storage::IStorageSystem& storageSystem) {
 			&storageSystem, handle, storage::ResourceKind::ManagerRoot);
 	if (!controller) {
 		(void)storageSystem.removeManagerRecord(key, storage::ResourceKind::ManagerRoot);
-		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed));
+		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::ElementManagerInitialize));
 	}
 
 	app_ = &app;
@@ -89,7 +89,7 @@ void ElementManager::rebindOwner(App& app) noexcept {
 
 void ElementManager::registerWindow(WindowId window) {
 	if (!controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementRegisterWindow));
 	}
 	controller_->registerWindow(window);
 }
@@ -99,7 +99,7 @@ void ElementManager::destroyWindow(WindowId window) noexcept {
 }
 
 void ElementManager::beginWindowFrame(WindowId window, uint64_t epoch) {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementBeginFrame));
 	controller_->beginWindowFrame(window, epoch);
 }
 
@@ -124,7 +124,7 @@ void ElementManager::attachTo(UiManager& uiManager) noexcept {
 const manager_storage::ElementDefinitionRecord& ElementManager::ensureRegistered(
 	const detail::element::ElementRegistrationDescriptor& descriptor) {
 	if (!controller_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementRegisterDefinition));
 	}
 	return controller_->ensureDefinition(descriptor);
 }
@@ -133,7 +133,7 @@ const void* ElementManager::readStateErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
 	detail::element::ElementInstanceKey instanceKey) const {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementResolveState));
 	(void)controller_->ensureDefinition(descriptor);
 	return controller_->readState(window, instanceKey, descriptor);
 }
@@ -142,7 +142,7 @@ void* ElementManager::modifyStateErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
 	detail::element::ElementInstanceKey instanceKey) {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementResolveState));
 	(void)controller_->ensureDefinition(descriptor);
 	return controller_->modifyState(window, instanceKey, descriptor);
 }
@@ -151,7 +151,7 @@ bool ElementManager::eraseStateErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	WindowId window,
 	detail::element::ElementInstanceKey instanceKey) {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementEraseState));
 	(void)controller_->ensureDefinition(descriptor);
 	return controller_->eraseState(window, instanceKey, descriptor);
 }
@@ -160,7 +160,7 @@ const void* ElementManager::resolveResourcesErased(
 	const detail::element::ElementRegistrationDescriptor& descriptor,
 	bool retryFailed) {
 	if (!controller_ || !app_) {
-		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementResolveResource));
 	}
 	if (!descriptor.hasResources) return nullptr;
 #if FLOW_UI_DEV_MODE
@@ -176,7 +176,7 @@ detail::element::ResolvedElementStateInvocation ElementManager::beginStateInvoca
 	WindowId window,
 	detail::element::ElementInstanceKey instanceKey,
 	ElementStatePolicy policy) {
-	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized));
+	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ElementResolveState));
 	(void)controller_->ensureDefinition(descriptor);
 	if (!descriptor.hasState) return {};
 	const manager_storage::ResolvedElementState state =

@@ -184,7 +184,7 @@ public:
 	template <typename T, typename Fn>
 	void setRenderCallback(std::shared_ptr<T> userData, Fn&& callback) {
 		if (!userData) {
-			throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid));
+			throw FlowUiException(makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportConfigure));
 		}
 		using CallbackType = std::decay_t<Fn>;
 		setRenderCallback([payload = std::move(userData), typedCallback = CallbackType(std::forward<Fn>(callback))](

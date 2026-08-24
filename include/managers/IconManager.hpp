@@ -194,7 +194,7 @@ private:
 		detail::storage::IStorageSystem& storage,
 		const IconManagerConfig& config,
 		IconGenerationFailurePolicy generationPolicy,
-		CapacityFailurePolicy capacityPolicy);
+		CacheCapacityPolicy capacityPolicy);
 	void beginAppTick();
 	void prepareFrameTextures(
 		Clay_RenderCommandArray& renderCommands,
@@ -250,7 +250,7 @@ private:
 	const std::string* findRequestedKeyByTextureHandle(TextureHandle texture) const;
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	IconGenerationFailurePolicy generationPolicy_ = IconGenerationFailurePolicy::UseFallbackTexture;
-	CapacityFailurePolicy capacityPolicy_ = CapacityFailurePolicy::RejectOperation;
+	CacheCapacityPolicy capacityPolicy_ = CacheCapacityPolicy::RejectOperation;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::IconCacheController* controller_ = nullptr;
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -296,7 +296,7 @@ struct IconManager {
 	Result<bool> registerSvg(std::string_view key, std::string_view svgSource) {
 		(void)key;
 		(void)svgSource;
-		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature));
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRegisterSource));
 	}
 	Result<bool> registerSvg(ResourceKey key, std::string_view svgSource) {
 		return registerSvg(key.name, svgSource);
@@ -317,7 +317,7 @@ struct IconManager {
 	Result<bool> registerFromFile(std::string_view key, std::string_view filePath) {
 		(void)key;
 		(void)filePath;
-		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature));
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRegisterSource));
 	}
 	Result<bool> registerFromFile(ResourceKey key, std::string_view filePath) {
 		return registerFromFile(key.name, filePath);
@@ -336,7 +336,7 @@ struct IconManager {
 	 */
 	Result<bool> remove(std::string_view key) {
 		(void)key;
-		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature));
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRemove));
 	}
 	Result<bool> remove(ResourceKey key) { return remove(key.name); }
 
@@ -354,7 +354,7 @@ struct IconManager {
 	 */
 	bool contains(std::string_view key) const {
 		(void)key;
-		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature));
+		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconLookup));
 	}
 	bool contains(ResourceKey key) const { return contains(key.name); }
 
@@ -371,7 +371,7 @@ struct IconManager {
 	 */
 	TextureRef textureRef(std::string_view key) {
 		(void)key;
-		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature));
+		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconLookup));
 	}
 	TextureRef textureRef(ResourceKey key) { return textureRef(key.name); }
 
@@ -379,7 +379,7 @@ private:
 	friend class App;
 
 	void init(detail::storage::IStorageSystem&, const IconManagerConfig&) {
-		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature));
+		throw FlowUiException(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconManagerInitialize));
 	}
 
 	void beginAppTick() {}

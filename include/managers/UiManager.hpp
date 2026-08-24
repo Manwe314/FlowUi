@@ -321,7 +321,7 @@ public:
 #endif
 		) {
 		if (!globalId) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return ElementBuilder<Element>(
 			*this,
@@ -344,7 +344,7 @@ public:
 #endif
 		) {
 		if (!resolvedId) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return ElementBuilder<Element>(
 			*this,
@@ -368,7 +368,7 @@ public:
 #endif
 		) {
 		if (!partId) {
-			throw FlowUiException(makeError(ErrorCode::InvalidElementId));
+			throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));
 		}
 		return ElementBuilder<Element>(
 			*this,

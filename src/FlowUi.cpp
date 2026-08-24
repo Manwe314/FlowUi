@@ -23,6 +23,8 @@
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
+#include "devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
@@ -39,6 +41,7 @@
 
 #include <array>
 #include <algorithm>
+#include <atomic>
 #include <cctype>
 #include <chrono>
 #include <cstdio>
@@ -54,7 +57,206 @@
 
 namespace {
 
-void vkCheck(VkResult result, const char* message, FlowUi::ErrorCode code = FlowUi::ErrorCode::VulkanNativeCallFailed) {
+#if FLOW_UI_DEV_MODE
+inline constexpr auto kDevFrameBegin =
+	FlowUi::devSystems::makeDevErrorBreadcrumb("flowui.frame.begin");
+inline constexpr auto kDevFrameComplete =
+	FlowUi::devSystems::makeDevErrorBreadcrumb("flowui.frame.complete");
+inline constexpr auto kDevFrameCancel =
+	FlowUi::devSystems::makeDevErrorBreadcrumb("flowui.frame.cancel");
+inline constexpr auto kDevStorageFrameBegin =
+	FlowUi::devSystems::makeDevErrorBreadcrumb("flowui.storage.frame.begin");
+inline constexpr auto kDevStorageFrameSeal =
+	FlowUi::devSystems::makeDevErrorBreadcrumb("flowui.storage.frame.seal");
+inline constexpr auto kDevStorageFrameCancel =
+	FlowUi::devSystems::makeDevErrorBreadcrumb("flowui.storage.frame.cancel");
+#endif
+
+const char* errorEventKindName(FlowUi::ErrorEventKind kind) noexcept {
+	switch (kind) {
+	case FlowUi::ErrorEventKind::Resolved: return "resolved";
+	case FlowUi::ErrorEventKind::Reported: return "reported";
+	case FlowUi::ErrorEventKind::Fatal: return "fatal";
+	case FlowUi::ErrorEventKind::BackendDiagnostic: return "backend";
+	}
+	return "unknown";
+}
+
+const char* errorResolutionName(FlowUi::ErrorResolution resolution) noexcept {
+	switch (resolution) {
+	case FlowUi::ErrorResolution::None: return "None";
+	case FlowUi::ErrorResolution::Rejected: return "Rejected";
+	case FlowUi::ErrorResolution::Ignored: return "Ignored";
+	case FlowUi::ErrorResolution::Retried: return "Retried";
+	case FlowUi::ErrorResolution::UsedFallback: return "UsedFallback";
+	case FlowUi::ErrorResolution::Skipped: return "Skipped";
+	case FlowUi::ErrorResolution::GrewCapacity: return "GrewCapacity";
+	case FlowUi::ErrorResolution::EvictedAndRetried: return "EvictedAndRetried";
+	case FlowUi::ErrorResolution::CanceledOperation: return "CanceledOperation";
+	case FlowUi::ErrorResolution::CanceledFrame: return "CanceledFrame";
+	case FlowUi::ErrorResolution::RecreatedWindow: return "RecreatedWindow";
+	case FlowUi::ErrorResolution::ClosedWindow: return "ClosedWindow";
+	case FlowUi::ErrorResolution::RecreatedApp: return "RecreatedApp";
+	case FlowUi::ErrorResolution::Propagated: return "Propagated";
+	case FlowUi::ErrorResolution::Halted: return "Halted";
+	case FlowUi::ErrorResolution::Terminated: return "Terminated";
+	}
+	return "Unknown";
+}
+
+template <typename... Args>
+void appendErrorFormat(
+	char* buffer,
+	std::size_t capacity,
+	std::size_t& used,
+	const char* format,
+	Args... args) noexcept {
+	if (used >= capacity - 1u) return;
+	const int written = std::snprintf(buffer + used, capacity - used, format, args...);
+	if (written <= 0) return;
+	used = std::min<std::size_t>(
+		used + static_cast<std::size_t>(written), capacity - 1u);
+}
+
+void writeDefaultErrorEvent(std::FILE* output, const FlowUi::ErrorEventView& event) noexcept {
+	if (!output) return;
+
+	char buffer[1024]{};
+	const std::string_view site = FlowUi::errorSiteName(event.error.site);
+	std::size_t used = 0u;
+	if (event.kind == FlowUi::ErrorEventKind::BackendDiagnostic) {
+		const int messageLength = static_cast<int>(
+			std::min<std::size_t>(event.nativeMessage.size(), 768u));
+		appendErrorFormat(
+			buffer, sizeof(buffer), used,
+			"[FlowUi][backend] %.*s",
+			static_cast<int>(site.size()), site.data());
+		if (event.error.nativeCode != 0u) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, " native=%u", event.error.nativeCode);
+		}
+		if (event.nativeCategory != 0u) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, " category=0x%x", event.nativeCategory);
+		}
+		if (messageLength > 0) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, ": %.*s",
+				messageLength, event.nativeMessage.data());
+		}
+	} else {
+		const std::string_view code = FlowUi::errorName(event.error.code);
+		const int messageLength = static_cast<int>(
+			std::min<std::size_t>(event.nativeMessage.size(), 512u));
+		appendErrorFormat(
+			buffer, sizeof(buffer), used, "[FlowUi][%s] %.*s @ %.*s",
+			errorEventKindName(event.kind),
+			static_cast<int>(code.size()), code.data(),
+			static_cast<int>(site.size()), site.data());
+		if (event.error.subject != 0u) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, " subject=0x%llx",
+				static_cast<unsigned long long>(event.error.subject));
+		}
+		if (event.error.auxiliary != 0u) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, " auxiliary=0x%llx",
+				static_cast<unsigned long long>(event.error.auxiliary));
+		}
+		if (event.error.nativeCode != 0u) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, " native=%u", event.error.nativeCode);
+		}
+		if (event.resolution != FlowUi::ErrorResolution::None) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, " resolution=%s",
+				errorResolutionName(event.resolution));
+		}
+		if (messageLength > 0) {
+			appendErrorFormat(
+				buffer, sizeof(buffer), used, ": %.*s",
+				messageLength, event.nativeMessage.data());
+		}
+	}
+	if (used < sizeof(buffer) - 1u) buffer[used++] = '\n';
+	if (used > 0u) (void)std::fwrite(buffer, 1u, used, output);
+	if (event.kind == FlowUi::ErrorEventKind::Fatal) {
+		(void)std::fflush(output);
+	}
+}
+
+class AppErrorObserver {
+public:
+	explicit AppErrorObserver(
+		FlowUi::ErrorObserverConfig config
+#if FLOW_UI_DEV_MODE
+		, FlowUi::devSystems::DevErrorMonitoring* devErrors
+#endif
+		) noexcept
+		: config_(config)
+#if FLOW_UI_DEV_MODE
+		, devErrors_(devErrors)
+#endif
+	{
+		active_.store(this, std::memory_order_release);
+	}
+
+	~AppErrorObserver() {
+		const AppErrorObserver* expected = this;
+		(void)active_.compare_exchange_strong(
+			expected, nullptr, std::memory_order_acq_rel);
+	}
+
+	AppErrorObserver(const AppErrorObserver&) = delete;
+	AppErrorObserver& operator=(const AppErrorObserver&) = delete;
+
+	void report(const FlowUi::ErrorEventView& event) const noexcept {
+		switch (config_.mode) {
+		case FlowUi::ErrorReportingMode::SinkAndDefault:
+			writeDefaultErrorEvent(config_.output, event);
+			config_.sink.notify(event);
+			break;
+		case FlowUi::ErrorReportingMode::SinkOrDefault:
+			if (config_.sink) config_.sink.notify(event);
+			else writeDefaultErrorEvent(config_.output, event);
+			break;
+		case FlowUi::ErrorReportingMode::SinkOnly:
+			config_.sink.notify(event);
+			break;
+		case FlowUi::ErrorReportingMode::DefaultOnly:
+			writeDefaultErrorEvent(config_.output, event);
+			break;
+		}
+	}
+
+#if FLOW_UI_DEV_MODE
+	void observeForDev(
+		const FlowUi::ErrorEventView& event,
+		const FlowUi::devSystems::DevErrorSourceDescriptor& source) const noexcept {
+		if (devErrors_) devErrors_->recordProductionEvent(0u, event, source);
+	}
+#endif
+
+	static const AppErrorObserver* active() noexcept {
+		return active_.load(std::memory_order_acquire);
+	}
+
+private:
+	FlowUi::ErrorObserverConfig config_{};
+#if FLOW_UI_DEV_MODE
+	FlowUi::devSystems::DevErrorMonitoring* devErrors_ = nullptr;
+#endif
+	static std::atomic<const AppErrorObserver*> active_;
+};
+
+std::atomic<const AppErrorObserver*> AppErrorObserver::active_{nullptr};
+thread_local bool reportingErrorEvent = false;
+
+void vkCheck(
+	VkResult result,
+	const char* message,
+	FlowUi::ErrorSite site,
+	FlowUi::ErrorCode code = FlowUi::ErrorCode::VulkanNativeCallFailed) {
 	if (result != VK_SUCCESS) {
 		(void)message;
 		if (result == VK_ERROR_DEVICE_LOST) code = FlowUi::ErrorCode::VulkanDeviceLost;
@@ -62,7 +264,7 @@ void vkCheck(VkResult result, const char* message, FlowUi::ErrorCode code = Flow
 			code = FlowUi::ErrorCode::AllocationFailed;
 		}
 		throw FlowUi::FlowUiException(FlowUi::makeError(
-			code, FlowUi::ErrorSubjectKind::None, 0u, 0u,
+			code, site, 0u, 0u,
 			static_cast<std::uint32_t>(result)));
 	}
 }
@@ -106,7 +308,7 @@ void transitionSwapchainImageLayout(
 		sourceAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		destinationAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 	} else {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RenderCommandInvalid));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RenderCommandInvalid, FlowUi::ErrorSite::AppDrawFrame));
 	}
 
 	VkImageMemoryBarrier imageBarrier{};
@@ -140,15 +342,15 @@ void transitionSwapchainImageLayout(
 void validateSecondarySurface(VulkanContext& vk, VkSurfaceKHR surface) {
 	VkSurfaceCapabilitiesKHR capabilities{};
 	vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.phys, surface, &capabilities),
-		"Failed to query secondary-window surface capabilities.");
+		"Failed to query secondary-window surface capabilities.", FlowUi::ErrorSite::AppCreateWindow);
 	uint32_t formatCount = 0;
 	vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, nullptr),
-		"Failed to query secondary-window surface formats.");
+		"Failed to query secondary-window surface formats.", FlowUi::ErrorSite::AppCreateWindow);
 	uint32_t presentModeCount = 0;
 	vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentModeCount, nullptr),
-		"Failed to query secondary-window present modes.");
+		"Failed to query secondary-window present modes.", FlowUi::ErrorSite::AppCreateWindow);
 	if (formatCount == 0 || presentModeCount == 0) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::WindowPresentationUnsupported));
+		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::WindowPresentationUnsupported, FlowUi::ErrorSite::AppCreateWindow));
 	}
 }
 
@@ -156,16 +358,56 @@ void validateSecondarySurface(VulkanContext& vk, VkSurfaceKHR surface) {
 
 namespace FlowUi {
 
+namespace detail {
+
+#if FLOW_UI_DEV_MODE
+void reportErrorEvent(
+	const ErrorEventView& event,
+	const char* file,
+	const char* function,
+	std::uint32_t line,
+	std::uint32_t column) noexcept {
+#else
+void reportErrorEvent(const ErrorEventView& event) noexcept {
+#endif
+	const AppErrorObserver* observer = AppErrorObserver::active();
+#if FLOW_UI_DEV_MODE
+	if (observer) {
+		observer->observeForDev(
+			event,
+			devSystems::makeDevErrorSource(
+				"flowui.production.error", file, function, line, column));
+	}
+#endif
+	if (reportingErrorEvent) {
+		writeDefaultErrorEvent(stderr, event);
+		return;
+	}
+
+	struct ReportingGuard {
+		ReportingGuard() noexcept { reportingErrorEvent = true; }
+		~ReportingGuard() { reportingErrorEvent = false; }
+	} guard;
+
+	if (observer) {
+		observer->report(event);
+	} else {
+		writeDefaultErrorEvent(stderr, event);
+	}
+}
+
+} // namespace detail
+
 namespace {
 
 template <typename Operation>
-Status runLocalOperation(Operation&& operation, const FatalErrorSink& fatalErrors) {
+Status runLocalOperation(Operation&& operation) {
 	try {
 		std::forward<Operation>(operation)();
 		return {};
 	} catch (const FlowUiException& exception) {
 		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
-			detail::terminateForFatalError(exception.error(), fatalErrors);
+			detail::terminateForFatalError(exception.error());
 		}
 		if (exception.error().descriptor().category != ErrorCategory::Local) throw;
 		return unexpectedError(exception.error());
@@ -200,10 +442,6 @@ AppWindowConfig makeMainWindowConfig(const AppConfig& config) {
 }
 
 storage::StorageConfig makeStorageConfig(const AppConfig& config) {
-	if (config.errors.transientCapacity == CapacityFailurePolicy::EvictAndRetry ||
-		config.errors.persistentCapacity == CapacityFailurePolicy::EvictAndRetry) {
-		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid));
-	}
 	storage::StorageConfig result{};
 	result.framesInFlight = std::max(1u, config.vk.framesInFlight);
 	result.expectedWindows = std::max(2u, result.expectedWindows);
@@ -211,9 +449,9 @@ storage::StorageConfig makeStorageConfig(const AppConfig& config) {
 	result.expectedBindingsPerWindow = kUiTextureDescriptorCapacity;
 	(void)storage::applyMemoryCapacityProfile(result, config.memoryCapacityProfile);
 	result.allowTransientGrowth = result.allowRuntimeGrowth &&
-		config.errors.transientCapacity == CapacityFailurePolicy::GrowWithinBudget;
+		config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget;
 	result.allowPersistentGrowth = result.allowRuntimeGrowth &&
-		config.errors.persistentCapacity == CapacityFailurePolicy::GrowWithinBudget;
+		config.errors.policy.persistentCapacity == StorageCapacityPolicy::GrowWithinBudget;
 	return result;
 }
 
@@ -244,7 +482,7 @@ struct AppWindow {
 	AppWindow(WindowId windowId, AppWindowConfig windowConfig, const AppConfig& appConfig)
 		: id(windowId),
 		  config(std::move(windowConfig)),
-		  inputQueue(appConfig.errors.inputTextQueueCapacity, appConfig.errors.inputQueueOverflow) {}
+		  inputQueue(appConfig.errors.policy.inputTextQueueCapacity, appConfig.errors.policy.inputQueueOverflow) {}
 
 	WindowId id = InvalidWindowId;
 	AppWindowConfig config{};
@@ -313,12 +551,14 @@ public:
 		AppWindow& window,
 		WindowId& activeWindow
 #if FLOW_UI_DEV_MODE
-		, devSystems::DevTimingRecorder& timingRecorder
+		, devSystems::DevTimingRecorder& timingRecorder,
+		devSystems::DevErrorRecorder& errorRecorder
 #endif
 		) noexcept
 		: storage_(&storageSystem), window_(&window), activeWindow_(&activeWindow)
 #if FLOW_UI_DEV_MODE
-		, timingRecorder_(&timingRecorder), uncaughtExceptions_(std::uncaught_exceptions())
+		, timingRecorder_(&timingRecorder), errorRecorder_(&errorRecorder),
+		  uncaughtExceptions_(std::uncaught_exceptions())
 #endif
 		{}
 
@@ -346,6 +586,12 @@ public:
 		window_->timingFrame = {};
 		window_->timingAppTick = 0u;
 		timingRecorder_->clearFrameContext();
+		const bool completed = finalTimingResult == devSystems::TimingRecordFlag::Completed;
+		devSystems::recordGlobalDevBreadcrumb(
+			completed ? kDevFrameComplete : kDevFrameCancel,
+			window_->id,
+			window_->frameNumber);
+		errorRecorder_->clearFrameContext();
 #endif
 	}
 
@@ -355,6 +601,7 @@ private:
 	WindowId* activeWindow_;
 #if FLOW_UI_DEV_MODE
 	devSystems::DevTimingRecorder* timingRecorder_ = nullptr;
+	devSystems::DevErrorRecorder* errorRecorder_ = nullptr;
 	devSystems::TimingRecordFlag timingResult_ = devSystems::TimingRecordFlag::Canceled;
 	int uncaughtExceptions_ = 0;
 #endif
@@ -363,6 +610,10 @@ private:
 struct App::Impl {
 #if FLOW_UI_DEV_MODE
 	devSystems::DevMonitoringAndReporting devMonitoring{};
+	devSystems::DevErrorThreadAttachment platformErrorAttachment;
+#endif
+	AppErrorObserver errorObserver;
+#if FLOW_UI_DEV_MODE
 	devSystems::DevTimingThreadAttachment platformTimingAttachment;
 	devSystems::AppTickId appTick = 0u;
 #endif
@@ -394,16 +645,22 @@ struct App::Impl {
 
 	explicit Impl(const AppConfig& initialConfig)
 #if FLOW_UI_DEV_MODE
-		: platformTimingAttachment(devMonitoring.timing().attachCurrentThread("flowui.platform")),
+		: platformErrorAttachment(devMonitoring.errors().attachCurrentThread("flowui.platform")),
+		  errorObserver(initialConfig.errors.observer, &devMonitoring.errors()),
+		  platformTimingAttachment(devMonitoring.timing().attachCurrentThread("flowui.platform")),
 		  config(initialConfig) {}
 #else
-		: config(initialConfig) {}
+		: errorObserver(initialConfig.errors.observer), config(initialConfig) {}
 #endif
 	~Impl() { cleanup(); }
 
 #if FLOW_UI_DEV_MODE
 	devSystems::DevTimingRecorder& timingRecorder() noexcept {
 		return platformTimingAttachment.recorder();
+	}
+
+	devSystems::DevErrorRecorder& errorRecorder() noexcept {
+		return platformErrorAttachment.recorder();
 	}
 
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -463,7 +720,7 @@ struct App::Impl {
 	AppWindow& requireWindow(WindowId id) {
 		const auto found = windows.find(id);
 		if (id == InvalidWindowId || found == windows.end() || !found->second) {
-			throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSubjectKind::Window, id));
+			throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, id));
 		}
 		return *found->second;
 	}
@@ -471,7 +728,7 @@ struct App::Impl {
 	const AppWindow& requireWindow(WindowId id) const {
 		const auto found = windows.find(id);
 		if (id == InvalidWindowId || found == windows.end() || !found->second) {
-			throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSubjectKind::Window, id));
+			throw FlowUiException(makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, id));
 		}
 		return *found->second;
 	}
@@ -486,15 +743,11 @@ struct App::Impl {
 			if (created) {
 				const FontManager::FontId defaultFontId = fonts.resolveFont(*created);
 				defaultFontLoaded = fonts.getFontById(defaultFontId) != nullptr;
-			} else {
-				std::fprintf(stderr, "[FlowUi] Warning: failed loading ui.defaultFontFamily (%.*s)\n",
-					static_cast<int>(errorName(created.error().code).size()),
-					errorName(created.error().code).data());
 			}
 		}
 		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr &&
-			config.errors.defaultFont == DefaultFontFailurePolicy::FailAppImmediately) {
-			throw FlowUiException(makeError(ErrorCode::DefaultFontUnavailable));
+			config.errors.policy.defaultFont == DefaultFontFailurePolicy::FailAppImmediately) {
+			throw FlowUiException(makeError(ErrorCode::DefaultFontUnavailable, ErrorSite::FontManagerInitialize));
 		}
 
 		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
@@ -524,25 +777,31 @@ struct App::Impl {
 						: config.ui.defaultFontFamily.faces.front().pixelSize;
 					auto added = fonts.addFamilyFace(fallbackFamilyName, fallbackFace);
 					if (!added) {
-						std::fprintf(stderr, "[FlowUi] Warning: failed loading fallback font %s (%.*s)\n",
-							fallbackPath.string().c_str(),
-							static_cast<int>(errorName(added.error().code).size()),
-							errorName(added.error().code).data());
 						continue;
 					}
-					std::fprintf(stderr,
-						"[FlowUi] Warning: loaded fallback font because ui.defaultFontFamily was not usable: %s\n",
-						fallbackPath.string().c_str());
+					detail::reportErrorEvent(ErrorEventView{
+						.error = makeError(
+							ErrorCode::DefaultFontUnavailable,
+							ErrorSite::FontManagerInitialize),
+						.kind = ErrorEventKind::Resolved,
+						.resolution = ErrorResolution::UsedFallback,
+					});
 					defaultFontLoaded = true;
 					break;
 			}
 		}
 
 		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
-			if (config.errors.defaultFont == DefaultFontFailurePolicy::TryFallbackThenFailApp) {
-				throw FlowUiException(makeError(ErrorCode::DefaultFontUnavailable));
+			if (config.errors.policy.defaultFont == DefaultFontFailurePolicy::TryFallbackThenFailApp) {
+				throw FlowUiException(makeError(ErrorCode::DefaultFontUnavailable, ErrorSite::FontManagerInitialize));
 			}
-			std::fprintf(stderr, "[FlowUi] Warning: no .arfont font loaded; text rendering is disabled.\n");
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::DefaultFontUnavailable,
+					ErrorSite::FontManagerInitialize),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = ErrorResolution::Skipped,
+			});
 		}
 	}
 
@@ -573,7 +832,7 @@ struct App::Impl {
 		mainPointer->surface = vk.createSurface(*mainPointer->backend);
 		vk.pickPhysicalDevice(config, mainPointer->surface);
 		if (!vk.supportsPresentation(mainPointer->surface)) {
-			throw FlowUiException(makeError(ErrorCode::WindowPresentationUnsupported));
+			throw FlowUiException(makeError(ErrorCode::WindowPresentationUnsupported, ErrorSite::AppInitialize));
 		}
 #if FLOW_UI_DEV_MODE
 		vk.devGpuTimingRequested = devMonitoring.timing().config().gpuTimingEnabled;
@@ -662,19 +921,19 @@ struct App::Impl {
 			sharedUiByteResources,
 			storageConfig.initialInstanceBytesPerFrame,
 			mainPointer->config.uiTextureDescriptorCapacity,
-			config.errors.transientCapacity == CapacityFailurePolicy::GrowWithinBudget);
+			config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget);
 		imagesInitialized = true;
-		imageManager.init(*storageSystem, config.errors.missingImage);
+		imageManager.init(*storageSystem, config.errors.policy.missingImage);
 		mainPointer->viewPorts.init(
 			*storageSystem, vk, mainPointer->id, mainPointer->config.vulkan.framesInFlight,
-			config.errors.missingViewport);
+			config.errors.policy.missingViewport);
 		fontsInitialized = true;
 		fonts.init(*storageSystem, config.ui.fontAtlasSize);
 #if FLOWUI_INCLUDE_ICON_MANAGER
 		iconsInitialized = true;
 		icons.init(
 			*storageSystem, config.iconManager,
-			config.errors.iconGeneration, config.errors.descriptorCapacity);
+			config.errors.policy.iconGeneration, config.errors.policy.descriptorCapacity);
 #if COMPILE_FSELI
 		FSEL::standard_icons::registerStandardIcons(icons);
 #endif
@@ -690,14 +949,14 @@ struct App::Impl {
 		if (activeWindowFrame != InvalidWindowId) {
 			(void)operation;
 			throw FlowUiException(makeError(
-				ErrorCode::FrameAlreadyActive, ErrorSubjectKind::Window, activeWindowFrame));
+				ErrorCode::FrameAlreadyActive, ErrorSite::AppRequireQuiescent, activeWindowFrame));
 		}
 	}
 
 	void requirePlatformThread(const char* operation) const {
 		if (std::this_thread::get_id() != platformThread) {
 			(void)operation;
-			throw FlowUiException(makeError(ErrorCode::WrongThread));
+			throw FlowUiException(makeError(ErrorCode::WrongThread, ErrorSite::AppRequirePlatformThread));
 		}
 	}
 
@@ -741,11 +1000,11 @@ struct App::Impl {
 
 	WindowId reserveWindowId() {
 		if (windowIdsExhausted) {
-			detail::terminateForFatalError(makeError(ErrorCode::WindowIdSpaceExhausted), config.fatalErrors);
+			detail::terminateForFatalError(makeError(ErrorCode::WindowIdSpaceExhausted, ErrorSite::AppCreateWindow));
 		}
 		const WindowId id = nextWindowId;
 		if (id == InvalidWindowId || id == MainWindowId) {
-			detail::terminateForFatalError(makeError(ErrorCode::WindowIdSpaceExhausted), config.fatalErrors);
+			detail::terminateForFatalError(makeError(ErrorCode::WindowIdSpaceExhausted, ErrorSite::AppCreateWindow));
 		}
 		if (id == std::numeric_limits<WindowId>::max()) {
 			windowIdsExhausted = true;
@@ -759,7 +1018,7 @@ struct App::Impl {
 		requirePlatformThread("FlowUi::App::createWindow");
 		requireQuiescent("FlowUi::App::createWindow");
 		if (nativeConfig.width <= 0 || nativeConfig.height <= 0) {
-			throw FlowUiException(makeError(ErrorCode::InvalidWindowConfiguration));
+			throw FlowUiException(makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppCreateWindow));
 		}
 		const WindowId id = reserveWindowId();
 #if FLOW_UI_DEV_MODE
@@ -776,12 +1035,12 @@ struct App::Impl {
 			pending->surface = vk.createSurface(*pending->backend);
 			if (!vk.supportsPresentation(pending->surface)) {
 				throw FlowUiException(makeError(
-					ErrorCode::WindowPresentationUnsupported, ErrorSubjectKind::Window, id));
+					ErrorCode::WindowPresentationUnsupported, ErrorSite::AppCreateWindow, id));
 			}
 			validateSecondarySurface(vk, pending->surface);
 			if (!vk.supportsExactPresentCompletion()) {
 				throw FlowUiException(makeError(
-					ErrorCode::WindowPresentationUnsupported, ErrorSubjectKind::Window, id));
+					ErrorCode::WindowPresentationUnsupported, ErrorSite::AppCreateWindow, id));
 			}
 
 			pending->storageSystem = storageSystem.get();
@@ -818,16 +1077,15 @@ struct App::Impl {
 				sharedUiByteResources,
 				storageConfig.initialInstanceBytesPerFrame,
 				pending->config.uiTextureDescriptorCapacity,
-				config.errors.transientCapacity == CapacityFailurePolicy::GrowWithinBudget);
+				config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget);
 			pending->viewPorts.init(
 				*storageSystem, vk, id, pending->config.vulkan.framesInFlight,
-				config.errors.missingViewport);
+				config.errors.policy.missingViewport);
 
 			auto [entry, inserted] = windows.try_emplace(id);
 			if (!inserted) {
 				detail::terminateForFatalError(
-					makeError(ErrorCode::WindowRegistryCollision, ErrorSubjectKind::Window, id),
-					config.fatalErrors);
+					makeError(ErrorCode::WindowRegistryCollision, ErrorSite::AppCreateWindow, id));
 			}
 			entry->second = std::move(pending);
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -850,9 +1108,10 @@ struct App::Impl {
 				devSystems::TimingZoneRole::DevToolWork, "flowui.dev.reporting.consume");
 			devMonitoring.timingReporting().consumeThrough(appTick);
 			devMonitoring.memoryReporting().consume(appTick);
+			devMonitoring.errorReporting().consumeThrough(appTick);
 		}
 		if (appTick == std::numeric_limits<devSystems::AppTickId>::max()) {
-			detail::terminateForFatalError(makeError(ErrorCode::AppTickSpaceExhausted), config.fatalErrors);
+			detail::terminateForFatalError(makeError(ErrorCode::AppTickSpaceExhausted, ErrorSite::AppPollEvents));
 		}
 		++appTick;
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
@@ -860,6 +1119,10 @@ struct App::Impl {
 		devMonitoring.memory().advanceGpuFrameIndex(static_cast<uint32_t>(appTick));
 #endif
 		timingRecorder().setFrameContext({}, appTick);
+		errorRecorder().setContext(devSystems::DevErrorContext{
+			.appTick = appTick,
+			.timingTrack = timingRecorder().trackId(),
+		});
 		TimingContextExitGuard timingContextExit(timingRecorder());
 		FLOWUI_DEV_TIMING_ZONE(
 			timingRecorder(), devSystems::TimingCategory::Lifecycle,
@@ -884,6 +1147,10 @@ struct App::Impl {
 #endif
 		) noexcept {
 		if (window.storageFrame) {
+#if FLOW_UI_DEV_MODE
+			devSystems::recordGlobalDevBreadcrumb(
+				kDevStorageFrameCancel, window.id, window.storageFrame.epoch);
+#endif
 			elementManager.cancelWindowFrame(window.id, window.storageFrame.epoch);
 			if (storageSystem) storageSystem->cancelFrame(window.storageFrame);
 		}
@@ -894,12 +1161,15 @@ struct App::Impl {
 		if (window.phase != AppWindow::Phase::Closing) window.phase = AppWindow::Phase::Idle;
 		if (activeWindowFrame == window.id) activeWindowFrame = InvalidWindowId;
 #if FLOW_UI_DEV_MODE
+		devSystems::recordGlobalDevBreadcrumb(
+			kDevFrameCancel, window.id, window.frameNumber);
 		window.preparedGapTiming.end(timingResult);
 		window.userBuildTiming.end(timingResult);
 		window.frameTotalTiming.end(timingResult);
 		window.timingFrame = {};
 		window.timingAppTick = 0u;
 		timingRecorder().clearFrameContext();
+		errorRecorder().clearFrameContext();
 #endif
 	}
 
@@ -925,7 +1195,7 @@ struct App::Impl {
 	void drainWindowGraphics(AppWindow& window) {
 		for (FrameVk::Frame& frame : window.frames.frames) {
 			vkCheck(vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
-				"Failed to drain a window frame fence.");
+				"Failed to drain a window frame fence.", ErrorSite::AppSubmitFrame);
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().resolveCompleted(vk, frame.gpuTiming);
 #endif
@@ -948,19 +1218,18 @@ struct App::Impl {
 		requirePlatformThread("FlowUi::App::beginFrame");
 		AppWindow& window = requireWindow(id);
 		if (window.phase != AppWindow::Phase::Idle) {
-			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, id));
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppBeginFrame, id));
 		}
 		if (activeWindowFrame != InvalidWindowId) {
 			throw FlowUiException(makeError(
-				ErrorCode::FrameAlreadyActive, ErrorSubjectKind::Window, activeWindowFrame));
+				ErrorCode::FrameAlreadyActive, ErrorSite::AppBeginFrame, activeWindowFrame));
 		}
 		if (!window.backend || window.frames.frames.empty()) {
-			throw FlowUiException(makeError(ErrorCode::FrameNotReady, ErrorSubjectKind::Window, id));
+			throw FlowUiException(makeError(ErrorCode::FrameNotReady, ErrorSite::AppBeginFrame, id));
 		}
 		if (window.frameNumber == std::numeric_limits<uint64_t>::max()) {
 			detail::terminateForFatalError(
-				makeError(ErrorCode::FrameNumberSpaceExhausted, ErrorSubjectKind::Window, id),
-				config.fatalErrors);
+				makeError(ErrorCode::FrameNumberSpaceExhausted, ErrorSite::AppBeginFrame, id));
 		}
 		const uint64_t nextFrameNumber = window.frameNumber + 1u;
 
@@ -968,6 +1237,14 @@ struct App::Impl {
 		window.timingFrame = devSystems::WindowFrameKey{window.id, nextFrameNumber};
 		window.timingAppTick = appTick;
 		timingRecorder().setFrameContext(window.timingFrame, window.timingAppTick);
+		errorRecorder().setContext(devSystems::DevErrorContext{
+			.appTick = window.timingAppTick,
+			.frame = window.timingFrame,
+			.primaryEntity = window.id,
+			.timingTrack = timingRecorder().trackId(),
+		});
+		devSystems::recordGlobalDevBreadcrumb(
+			kDevFrameBegin, window.id, nextFrameNumber);
 		window.frameTotalTiming.begin(
 			timingRecorder(), devSystems::timing_zones::kWindowFrameTotal,
 			devSystems::TimingEntityRef::window(window.id));
@@ -1003,7 +1280,7 @@ struct App::Impl {
 					devSystems::TimingZoneRole::Wait, "flowui.wait.frame_slot_fence");
 #endif
 				vkCheck(vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
-					"Failed to wait for in-flight fence.");
+					"Failed to wait for in-flight fence.", ErrorSite::AppAcquireFrame);
 			}
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().resolveCompleted(vk, frame.gpuTiming);
@@ -1038,6 +1315,10 @@ struct App::Impl {
 					.frameSlot = frameSlot,
 					.frameNumber = nextFrameNumber,
 				});
+#if FLOW_UI_DEV_MODE
+				devSystems::recordGlobalDevBreadcrumb(
+					kDevStorageFrameBegin, window.id, window.storageFrame.epoch);
+#endif
 				window.fontFrameView = fonts.frameView(window.storageFrame);
 			}
 			window.frameNumber = nextFrameNumber;
@@ -1059,6 +1340,17 @@ struct App::Impl {
 					devSystems::TimingZoneRole::Work, "flowui.input.drain");
 #endif
 				window.frameInput = window.inputQueue.drain(deltaTimeSeconds);
+				if (window.frameInput.droppedTextInputCount != 0u) {
+					detail::reportErrorEvent(ErrorEventView{
+						.error = makeError(
+							ErrorCode::PlatformInputQueueOverflow,
+							ErrorSite::InputQueueEvent,
+							window.id,
+							window.frameInput.droppedTextInputCount),
+						.kind = ErrorEventKind::Resolved,
+						.resolution = ErrorResolution::Ignored,
+					});
+				}
 			}
 			const float inverseClampedUiScale = 1 / std::max(1.0e-6f, window.config.ui.uiScale);
 			constexpr float kBaseScrollSensitivity = 20.0f;
@@ -1109,7 +1401,7 @@ struct App::Impl {
 		requirePlatformThread("FlowUi::App::endFrame");
 		AppWindow& window = requireWindow(id);
 		if (activeWindowFrame != id || window.phase != AppWindow::Phase::Building || !window.storageFrame) {
-			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, id));
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppEndFrame, id));
 		}
 #if FLOW_UI_DEV_MODE
 		window.userBuildTiming.end();
@@ -1206,6 +1498,10 @@ struct App::Impl {
 					devSystems::TimingZoneRole::Work, "flowui.storage.seal_frame");
 #endif
 				window.storageReadLease = storageSystem->sealFrame(window.storageFrame);
+#if FLOW_UI_DEV_MODE
+				devSystems::recordGlobalDevBreadcrumb(
+					kDevStorageFrameSeal, window.id, window.storageFrame.epoch);
+#endif
 			}
 			{
 #if FLOW_UI_DEV_MODE
@@ -1236,7 +1532,7 @@ struct App::Impl {
 		requirePlatformThread("FlowUi::App::drawFrame");
 		AppWindow& window = requireWindow(id);
 		if (activeWindowFrame != id || window.phase != AppWindow::Phase::Prepared) {
-			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSubjectKind::Window, id));
+			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppDrawFrame, id));
 		}
 #if FLOW_UI_DEV_MODE
 		window.preparedGapTiming.end();
@@ -1244,7 +1540,7 @@ struct App::Impl {
 		WindowFrameExitGuard frameExit(
 			*storageSystem, window, activeWindowFrame
 #if FLOW_UI_DEV_MODE
-			, timingRecorder()
+			, timingRecorder(), errorRecorder()
 #endif
 		);
 #if FLOW_UI_DEV_MODE
@@ -1262,14 +1558,12 @@ struct App::Impl {
 		}
 		if (!window.storageReadLease) {
 			detail::terminateForFatalError(
-				makeError(ErrorCode::PreparedFrameStale, ErrorSubjectKind::Window, id),
-				config.fatalErrors);
+				makeError(ErrorCode::PreparedFrameStale, ErrorSite::AppDrawFrame, id));
 		}
 		if (window.preparedUi.epoch == 0 ||
 			window.preparedUi.epoch != window.storageReadLease.frame.epoch) {
 			detail::terminateForFatalError(
-				makeError(ErrorCode::PreparedFrameStale, ErrorSubjectKind::Window, id),
-				config.fatalErrors);
+				makeError(ErrorCode::PreparedFrameStale, ErrorSite::AppDrawFrame, id));
 		}
 		{
 #if FLOW_UI_DEV_MODE
@@ -1297,7 +1591,16 @@ struct App::Impl {
 				, result
 #endif
 			);
-			(void)recreateSwapchainIfNeeded(window);
+			const bool recreated = recreateSwapchainIfNeeded(window);
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::SwapchainOutOfDate, ErrorSite::AppRecreateWindow,
+					id),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = recreated
+					? ErrorResolution::RecreatedWindow
+					: ErrorResolution::Skipped,
+			});
 			return;
 		}
 
@@ -1327,11 +1630,20 @@ struct App::Impl {
 				, result
 #endif
 			);
-			(void)recreateSwapchainIfNeeded(window);
+			const bool recreated = recreateSwapchainIfNeeded(window);
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::SwapchainOutOfDate, ErrorSite::AppAcquireFrame,
+					id, 0u, static_cast<std::uint32_t>(acquireResult)),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = recreated
+					? ErrorResolution::RecreatedWindow
+					: ErrorResolution::Skipped,
+			});
 			return;
 		}
 		if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
-			vkCheck(acquireResult, "Failed to acquire swapchain image.");
+			vkCheck(acquireResult, "Failed to acquire swapchain image.", ErrorSite::AppAcquireFrame);
 		}
 
 		const bool acquiredSuboptimalSwapchain = acquireResult == VK_SUBOPTIMAL_KHR;
@@ -1340,16 +1652,16 @@ struct App::Impl {
 			swapchainImageIndex >= window.swapchain.layouts.size() ||
 			swapchainImageIndex >= window.swapchain.renderFinished.size()) {
 			detail::terminateForFatalError(
-				makeError(ErrorCode::SwapchainImageInvalid, ErrorSubjectKind::Window, id,
-					swapchainImageIndex),
-				config.fatalErrors);
+				makeError(ErrorCode::SwapchainImageInvalid, ErrorSite::AppAcquireFrame, id,
+					swapchainImageIndex));
 		}
 		if (window.swapchain.imageInFlight[swapchainImageIndex] != VK_NULL_HANDLE) {
 			FLOWUI_DEV_TIMING_ZONE(
 				timingRecorder(), devSystems::TimingCategory::Wait,
 				devSystems::TimingZoneRole::Wait, "flowui.wait.swapchain_image_fence");
 			vkCheck(vkWaitForFences(vk.device, 1, &window.swapchain.imageInFlight[swapchainImageIndex],
-				VK_TRUE, UINT64_MAX), "Failed waiting for previously submitted fence for swapchain image.");
+				VK_TRUE, UINT64_MAX), "Failed waiting for previously submitted fence for swapchain image.",
+				ErrorSite::AppAcquireFrame);
 		}
 		window.swapchain.imageInFlight[swapchainImageIndex] = frame.inFlight;
 
@@ -1359,11 +1671,13 @@ struct App::Impl {
 				timingRecorder(), devSystems::TimingCategory::RendererCpu,
 				devSystems::TimingZoneRole::Work, "flowui.renderer.command_buffer_begin");
 #endif
-			vkCheck(vkResetCommandPool(vk.device, frame.pool, 0), "Failed to reset command pool.");
+			vkCheck(vkResetCommandPool(vk.device, frame.pool, 0),
+				"Failed to reset command pool.", ErrorSite::AppDrawFrame);
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			vkCheck(vkBeginCommandBuffer(frame.cmd, &beginInfo), "Failed to begin command buffer.");
+			vkCheck(vkBeginCommandBuffer(frame.cmd, &beginInfo),
+				"Failed to begin command buffer.", ErrorSite::AppDrawFrame);
 		}
 
 #if FLOW_UI_DEV_MODE
@@ -1406,7 +1720,8 @@ struct App::Impl {
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().endFrameRecording(gpuTiming, frame.cmd);
 #endif
-			vkCheck(vkEndCommandBuffer(frame.cmd), "Failed to end command buffer.");
+			vkCheck(vkEndCommandBuffer(frame.cmd),
+				"Failed to end command buffer.", ErrorSite::AppDrawFrame);
 		}
 
 		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -1421,7 +1736,8 @@ struct App::Impl {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &presentWaitSemaphore;
 
-		vkCheck(vkResetFences(vk.device, 1, &frame.inFlight), "Failed to reset in-flight fence.");
+		vkCheck(vkResetFences(vk.device, 1, &frame.inFlight),
+			"Failed to reset in-flight fence.", ErrorSite::AppSubmitFrame);
 		{
 #if FLOW_UI_DEV_MODE
 			FLOWUI_DEV_TIMING_ZONE(
@@ -1429,7 +1745,7 @@ struct App::Impl {
 				devSystems::TimingZoneRole::Work, "flowui.renderer.queue_submit");
 #endif
 			vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
-				"Failed to submit UI command buffer.");
+				"Failed to submit UI command buffer.", ErrorSite::AppSubmitFrame);
 			frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().markSubmitted(
@@ -1456,11 +1772,11 @@ struct App::Impl {
 			VkFence& presentFence = window.swapchain.presentComplete[swapchainImageIndex];
 			if (window.swapchain.presentPending[swapchainImageIndex] != 0u) {
 				vkCheck(vkWaitForFences(vk.device, 1, &presentFence, VK_TRUE, UINT64_MAX),
-					"Failed waiting to reuse a swapchain present fence.");
+					"Failed waiting to reuse a swapchain present fence.", ErrorSite::AppPresent);
 				window.swapchain.presentPending[swapchainImageIndex] = 0u;
 			}
 			vkCheck(vkResetFences(vk.device, 1, &presentFence),
-				"Failed to reset a swapchain present fence.");
+				"Failed to reset a swapchain present fence.", ErrorSite::AppPresent);
 			presentFenceInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT;
 			presentFenceInfo.swapchainCount = 1;
 			presentFenceInfo.pFences = &presentFence;
@@ -1468,8 +1784,7 @@ struct App::Impl {
 		} else if (vk.wsiRetirementMode == WsiRetirementMode::PresentWait) {
 			if (window.swapchain.lastPresentId == std::numeric_limits<uint64_t>::max()) {
 				detail::terminateForFatalError(
-					makeError(ErrorCode::PresentIdSpaceExhausted, ErrorSubjectKind::Window, id),
-					config.fatalErrors);
+					makeError(ErrorCode::PresentIdSpaceExhausted, ErrorSite::AppPresent, id));
 			}
 			presentId = window.swapchain.lastPresentId + 1u;
 			presentIdInfo.sType = VK_STRUCTURE_TYPE_PRESENT_ID_KHR;
@@ -1496,9 +1811,22 @@ struct App::Impl {
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR ||
 			acquiredSuboptimalSwapchain || window.framebufferResized) {
 			window.framebufferResized = true;
-			recreateSwapchainIfNeeded(window);
+			const bool recreated = recreateSwapchainIfNeeded(window);
+			const VkResult observedResult = presentResult != VK_SUCCESS
+				? presentResult
+				: acquireResult;
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(
+					ErrorCode::SwapchainOutOfDate, ErrorSite::AppPresent,
+					id, 0u, static_cast<std::uint32_t>(observedResult)),
+				.kind = ErrorEventKind::Resolved,
+				.resolution = recreated
+					? ErrorResolution::RecreatedWindow
+					: ErrorResolution::Skipped,
+			});
 		} else if (presentResult != VK_SUCCESS) {
-			vkCheck(presentResult, "Failed to present swapchain image.", ErrorCode::PresentationFailed);
+			vkCheck(presentResult, "Failed to present swapchain image.",
+				ErrorSite::AppPresent, ErrorCode::PresentationFailed);
 		}
 
 		window.frames.advance();
@@ -1530,12 +1858,12 @@ struct App::Impl {
 		if (!vk.supportsExactPresentCompletion()) {
 			if (windows.size() != 1u || window.id != mainWindowId) {
 				throw FlowUiException(makeError(
-					ErrorCode::WindowPresentationUnsupported,
-					ErrorSubjectKind::Window,
+					ErrorCode::WindowPresentationUnsupported, ErrorSite::AppRecreateWindow,
 					window.id));
 			}
 			vkCheck(vkDeviceWaitIdle(vk.device),
-				"Failed to wait for device idle during main-only compatibility resize.");
+				"Failed to wait for device idle during main-only compatibility resize.",
+				ErrorSite::AppRecreateWindow);
 			completeAllSubmissionsAfterIdle();
 			SwapchainGeneration replacement{};
 			try {
@@ -1597,7 +1925,7 @@ struct App::Impl {
 		requirePlatformThread("FlowUi::App::destroyWindow");
 		if (id == mainWindowId) {
 			throw FlowUiException(makeError(
-				ErrorCode::MainWindowDestructionForbidden, ErrorSubjectKind::Window, id));
+				ErrorCode::MainWindowDestructionForbidden, ErrorSite::AppDestroyWindow, id));
 		}
 		AppWindow& window = requireWindow(id);
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
@@ -1605,7 +1933,7 @@ struct App::Impl {
 #endif
 		if (activeWindowFrame != InvalidWindowId && activeWindowFrame != id) {
 			throw FlowUiException(makeError(
-				ErrorCode::FrameAlreadyActive, ErrorSubjectKind::Window, activeWindowFrame));
+				ErrorCode::FrameAlreadyActive, ErrorSite::AppDestroyWindow, activeWindowFrame));
 		}
 		if (activeWindowFrame == id) cancelStorageFrame(window);
 #if FLOW_UI_DEV_MODE
@@ -1718,6 +2046,7 @@ struct App::Impl {
 		shutdownTiming.end();
 		devMonitoring.timingReporting().consumeThrough(appTick);
 		devMonitoring.memoryReporting().consume(appTick);
+		devMonitoring.errorReporting().consumeThrough(appTick);
 #endif
 	}
 };
@@ -1748,21 +2077,29 @@ WindowId App::mainWindowId() const noexcept {
 	return impl_ ? impl_->mainWindowId : MainWindowId;
 }
 
+void App::reportError(FlowUiError error) const noexcept {
+	if (!impl_) return;
+	detail::reportErrorEvent(ErrorEventView{
+		.error = error,
+		.kind = ErrorEventKind::Reported,
+	});
+}
+
 Result<WindowId> App::createWindow(const WindowConfig& config) {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppCreateWindow));
 	try {
 		return impl_->createWindow(config);
 	} catch (const FlowUiException& exception) {
 		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
-			detail::terminateForFatalError(exception.error(), impl_->config.fatalErrors);
+			detail::terminateForFatalError(exception.error());
 		}
 		return unexpectedError(exception.error());
 	}
 }
 
 Status App::destroyWindow(WindowId id) {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->destroyWindow(id); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDestroyWindow));
+	return runLocalOperation([&] { impl_->destroyWindow(id); });
 }
 
 bool App::hasWindow(WindowId id) const noexcept {
@@ -1770,8 +2107,8 @@ bool App::hasWindow(WindowId id) const noexcept {
 }
 
 Status App::pollEvents() {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->pollEventsAndAdvanceSharedManagers(); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return runLocalOperation([&] { impl_->pollEventsAndAdvanceSharedManagers(); });
 }
 
 bool App::shouldClose() const {
@@ -1780,7 +2117,7 @@ bool App::shouldClose() const {
 }
 
 bool App::shouldClose(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
 	return !window.backend || window.backend->shouldClose();
 }
@@ -1791,114 +2128,114 @@ void App::setShouldClose(int value) {
 }
 
 void App::setShouldClose(WindowId id, int value) {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	AppWindow& window = impl_->requireWindow(id);
 	if (window.backend) window.backend->setShouldClose(value);
 }
 
 Status App::beginFrame() {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
 	return runLocalOperation([&] {
 		impl_->pollEventsAndAdvanceSharedManagers();
 		impl_->beginFrame(impl_->mainWindowId);
-	}, impl_->config.fatalErrors);
+	});
 }
 
 Status App::beginFrame(WindowId id) {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->beginFrame(id); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
+	return runLocalOperation([&] { impl_->beginFrame(id); });
 }
 
 Status App::endFrame() {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->endFrame(impl_->mainWindowId); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppEndFrame));
+	return runLocalOperation([&] { impl_->endFrame(impl_->mainWindowId); });
 }
 
 Status App::endFrame(WindowId id) {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->endFrame(id); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppEndFrame));
+	return runLocalOperation([&] { impl_->endFrame(id); });
 }
 
 Status App::drawFrame() {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->drawFrame(impl_->mainWindowId); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDrawFrame));
+	return runLocalOperation([&] { impl_->drawFrame(impl_->mainWindowId); });
 }
 
 Status App::drawFrame(WindowId id) {
-	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable));
-	return runLocalOperation([&] { impl_->drawFrame(id); }, impl_->config.fatalErrors);
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDrawFrame));
+	return runLocalOperation([&] { impl_->drawFrame(id); });
 }
 
 FontManager& App::fonts() {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessFonts));
 	}
 	return impl_->fonts;
 }
 
 const FontManager& App::fonts() const {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessFonts));
 	}
 	return impl_->fonts;
 }
 
 ImageManager& App::images() {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessImages));
 	}
 	return impl_->imageManager;
 }
 
 const ImageManager& App::images() const {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessImages));
 	}
 	return impl_->imageManager;
 }
 
 ThemeManager& App::themes() {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessThemes));
 	}
 	return impl_->themeManager;
 }
 
 const ThemeManager& App::themes() const {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessThemes));
 	}
 	return impl_->themeManager;
 }
 
 ElementManager& App::elements() {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessElements));
 	return impl_->elementManager;
 }
 
 const ElementManager& App::elements() const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessElements));
 	return impl_->elementManager;
 }
 
 ActionManager& App::actions() {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessActions));
 	return impl_->actionManager;
 }
 
 const ActionManager& App::actions() const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessActions));
 	return impl_->actionManager;
 }
 
 #if FLOW_UI_DEV_MODE
 devSystems::DevMonitoringAndReporting& App::devMonitoring() {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
 	return impl_->devMonitoring;
 }
 
 const devSystems::DevMonitoringAndReporting& App::devMonitoring() const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
 	return impl_->devMonitoring;
 }
 #endif
@@ -1906,14 +2243,14 @@ const devSystems::DevMonitoringAndReporting& App::devMonitoring() const {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 IconManager& App::icons() {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessIcons));
 	}
 	return impl_->icons;
 }
 
 const IconManager& App::icons() const {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessIcons));
 	}
 	return impl_->icons;
 }
@@ -1922,50 +2259,50 @@ const IconManager& App::icons() const {
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 ViewPortManager& App::viewPorts() {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
 	}
 	return impl_->mainWindow().viewPorts;
 }
 
 ViewPortManager& App::viewPorts(WindowId id) {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
 	return impl_->requireWindow(id).viewPorts;
 }
 
 const ViewPortManager& App::viewPorts() const {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
 	}
 	return impl_->mainWindow().viewPorts;
 }
 
 const ViewPortManager& App::viewPorts(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessViewports));
 	return impl_->requireWindow(id).viewPorts;
 }
 #endif
 
 UiManager& App::ui() {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
 	}
 	return impl_->mainWindow().ui;
 }
 
 UiManager& App::ui(WindowId id) {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
 	return impl_->requireWindow(id).ui;
 }
 
 const UiManager& App::ui() const {
 	if (!impl_) {
-		throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
 	}
 	return impl_->mainWindow().ui;
 }
 
 const UiManager& App::ui(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessUi));
 	return impl_->requireWindow(id).ui;
 }
 
@@ -1975,7 +2312,7 @@ void App::setWindowTitle(std::string_view title) {
 }
 
 void App::setWindowTitle(WindowId id, std::string_view title) {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowSetTitle));
 	AppWindow& window = impl_->requireWindow(id);
 	window.config.native.title.assign(title);
 	if (window.backend) window.backend->setTitle(title);
@@ -1987,7 +2324,7 @@ void* App::nativeWindowHandle() const {
 }
 
 void* App::nativeWindowHandle(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend ? window.backend->nativeHandle() : nullptr;
 }
@@ -1998,7 +2335,7 @@ void App::setWindowInputConfig(const WindowInputConfig& config) {
 }
 
 void App::setWindowInputConfig(WindowId id, const WindowInputConfig& config) {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	AppWindow& window = impl_->requireWindow(id);
 	window.config.native.input = config;
 	if (window.backend) window.backend->setInputConfig(config);
@@ -2010,7 +2347,7 @@ WindowInputConfig App::windowInputConfig() const {
 }
 
 WindowInputConfig App::windowInputConfig(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend ? window.backend->getInputConfig() : WindowInputConfig{};
 }
@@ -2021,7 +2358,7 @@ bool App::supportsRawMouseMotion() const {
 }
 
 bool App::supportsRawMouseMotion(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend && window.backend->supportsRawMouseMotion();
 }
@@ -2032,7 +2369,7 @@ void App::setClipboardText(std::string_view text) {
 }
 
 void App::setClipboardText(WindowId id, std::string_view text) {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowWriteClipboard));
 	AppWindow& window = impl_->requireWindow(id);
 	if (window.backend) window.backend->setClipboardText(text);
 }
@@ -2043,7 +2380,7 @@ std::string App::clipboardText() const {
 }
 
 std::string App::clipboardText(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowReadClipboard));
 	const AppWindow& window = impl_->requireWindow(id);
 	return window.backend ? window.backend->getClipboardText() : std::string{};
 }
@@ -2054,7 +2391,7 @@ std::pair<int, int> App::windowSize() const {
 }
 
 std::pair<int, int> App::windowSize(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
 	if (!window.backend) return {0, 0};
 	const VkExtent2D extent = window.backend->windowExtent();
@@ -2067,7 +2404,7 @@ std::pair<int, int> App::framebufferSize() const {
 }
 
 std::pair<int, int> App::framebufferSize(WindowId id) const {
-	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable));
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
 	if (!window.backend) return {0, 0};
 	const VkExtent2D extent = window.backend->framebufferExtent();

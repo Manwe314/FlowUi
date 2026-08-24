@@ -45,18 +45,18 @@ struct AlignedRecordLayout {
 	size_t payloadBytes,
 	size_t payloadAlignment) {
 	if (headerBytes == 0 || payloadBytes == 0) {
-		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid));
+		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid, ErrorSite::ResourceCreatePersistentRecord));
 	}
 	if (!std::has_single_bit(headerAlignment) || !std::has_single_bit(payloadAlignment)) {
-		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid));
+		throw FlowUiException(makeError(ErrorCode::StorageConfigurationInvalid, ErrorSite::ResourceCreatePersistentRecord));
 	}
 	if (headerBytes > std::numeric_limits<size_t>::max() - (payloadAlignment - 1u)) {
-		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow));
+		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow, ErrorSite::ResourceCreatePersistentRecord));
 	}
 	const size_t payloadOffset =
 		(headerBytes + payloadAlignment - 1u) & ~(payloadAlignment - 1u);
 	if (payloadBytes > std::numeric_limits<size_t>::max() - payloadOffset) {
-		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow));
+		throw FlowUiException(makeError(ErrorCode::ArithmeticOverflow, ErrorSite::ResourceCreatePersistentRecord));
 	}
 	return AlignedRecordLayout{
 		.headerBytes = headerBytes,
@@ -86,7 +86,7 @@ Header* constructAlignedRecord(
 		layout.payloadAlignment < alignof(Payload) ||
 		reinterpret_cast<uintptr_t>(allocation) % alignof(Header) != 0 ||
 		reinterpret_cast<uintptr_t>(layout.payload(allocation)) % alignof(Payload) != 0) {
-		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken));
+		detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::ResourceCreatePersistentRecord));
 	}
 
 	Header* header = ::new (allocation) Header();
