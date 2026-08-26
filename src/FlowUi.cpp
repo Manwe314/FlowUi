@@ -18,7 +18,10 @@
 #include "managers/UiManager.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if FLOW_UI_DEV_MODE
+#if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
 #include "devMode/debugView.hpp"
+#endif
+#include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -610,6 +613,7 @@ private:
 struct App::Impl {
 #if FLOW_UI_DEV_MODE
 	devSystems::DevMonitoringAndReporting devMonitoring{};
+	devSystems::DevTooling devTooling{};
 	devSystems::DevErrorThreadAttachment platformErrorAttachment;
 #endif
 	AppErrorObserver errorObserver;
@@ -681,6 +685,11 @@ struct App::Impl {
 	static void sampleThemeMemory(const void* owner, devSystems::MemoryProbeContext& context) noexcept {
 		static_cast<const ThemeManager*>(owner)->appendDevMemorySamples(context.sink);
 	}
+	static void sampleDevToolingMemory(
+		const void* owner,
+		devSystems::MemoryProbeContext& context) noexcept {
+		static_cast<const devSystems::DevTooling*>(owner)->appendDevMemorySamples(context.sink);
+	}
 	static void sampleWindowMemory(const void* owner, devSystems::MemoryProbeContext& context) noexcept {
 		const auto& window = *static_cast<const AppWindow*>(owner);
 		window.ui.appendDevMemorySamples(context.sink);
@@ -696,6 +705,8 @@ struct App::Impl {
 #endif
 		(void)memory.registerProbe({devSystems::memory_sources::kActions.id, &actionManager, &sampleActionMemory});
 		(void)memory.registerProbe({devSystems::memory_sources::kThemes.id, &themeManager, &sampleThemeMemory});
+		(void)memory.registerProbe({
+			devSystems::memory_sources::kDevTooling.id, &devTooling, &sampleDevToolingMemory});
 	}
 	void registerWindowMemoryProbe(AppWindow& window) {
 		(void)devMonitoring.memory().registerProbe({
@@ -862,6 +873,9 @@ struct App::Impl {
 #endif
 #endif
 		themeManager.init(*storageSystem);
+#if FLOW_UI_DEV_MODE
+		themeManager.setDevSchemaRegistry(&devTooling.schemas());
+#endif
 		themeManager.registerTheme<FlowUiTheme>("default", FlowUiTheme::dark(), true);
 #if COMPILE_FSELI
 		themeManager.registerTheme<FSEL::FSELTheme>("default", FSEL::FSELTheme{}, true);
@@ -870,6 +884,7 @@ struct App::Impl {
 		elementManager.init(owner, *storageSystem);
 #if FLOW_UI_DEV_MODE
 		elementManager.setDevTimingRecorder(&timingRecorder());
+		elementManager.setDevSchemaRegistry(&devTooling.schemas());
 #endif
 		mainPointer->storageSystem = storageSystem.get();
 		storageSystem->registerWindow(
@@ -880,6 +895,8 @@ struct App::Impl {
 			*storageSystem, mainPointer->id, makeUiManagerConfig(config, mainPointer->config));
 #if FLOW_UI_DEV_MODE
 		mainPointer->ui.setDevTimingRecorder(&timingRecorder());
+		mainPointer->ui.setDevSchemaRegistry(&devTooling.schemas());
+		mainPointer->ui.setDevOverrideEngine(&devTooling.overrides());
 #endif
 		mainPointer->ui.setThemeManager(&themeManager);
 		actionManager.attachTo(mainPointer->ui);
@@ -1052,6 +1069,8 @@ struct App::Impl {
 				*storageSystem, id, makeUiManagerConfig(config, pending->config));
 #if FLOW_UI_DEV_MODE
 			pending->ui.setDevTimingRecorder(&timingRecorder());
+			pending->ui.setDevSchemaRegistry(&devTooling.schemas());
+			pending->ui.setDevOverrideEngine(&devTooling.overrides());
 #endif
 			pending->ui.setThemeManager(&themeManager);
 			actionManager.attachTo(pending->ui);
@@ -1130,6 +1149,9 @@ struct App::Impl {
 #endif
 		detail::pollWindowSystemEvents();
 		themeManager.applyStagedMutations();
+#if FLOW_UI_DEV_MODE
+		devTooling.commitAtSafePoint(themeManager, &timingRecorder());
+#endif
 		if (storageSystem) storageSystem->collect();
 #if FLOWUI_INCLUDE_ICON_MANAGER
 		if (iconsInitialized) icons.beginAppTick();
@@ -2237,6 +2259,16 @@ devSystems::DevMonitoringAndReporting& App::devMonitoring() {
 const devSystems::DevMonitoringAndReporting& App::devMonitoring() const {
 	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
 	return impl_->devMonitoring;
+}
+
+devSystems::DevTooling& App::devTooling() {
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
+	return impl_->devTooling;
+}
+
+const devSystems::DevTooling& App::devTooling() const {
+	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
+	return impl_->devTooling;
 }
 #endif
 

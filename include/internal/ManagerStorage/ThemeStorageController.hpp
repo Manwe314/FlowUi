@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <stdexcept>
+#include <span>
 #include <string_view>
 #include <type_traits>
 #include <unordered_map>
@@ -17,6 +18,9 @@
 #include "internal/StorageSystem/IStorageSystem.hpp"
 #include "internal/StorageSystem/StorageTypes.hpp"
 #include "internal/TypeOperations.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/schema/DevSchemaTypes.hpp"
+#endif
 
 namespace FlowUi::devSystems { class MemorySampleSink; }
 namespace FlowUi::detail::manager_storage {
@@ -262,6 +266,24 @@ public:
 
 	void applyStagedMutations();
 	storage::StringId internString(std::string_view str);
+#if FLOW_UI_DEV_MODE
+	struct DevPayloadView {
+		std::uint64_t type = 0;
+		std::string_view variant{};
+		const void* payload = nullptr;
+		std::uint64_t revision = 0;
+		bool active = false;
+	};
+	using DevPayloadVisitor = bool (*)(void*, const DevPayloadView&) noexcept;
+
+	bool visitDevPayloads(void* userData, DevPayloadVisitor visitor) const noexcept;
+	devMode::DevValueOperationStatus assignDevField(
+		std::uint64_t type,
+		std::string_view variant,
+		std::span<const devMode::DevFieldOps* const> ownerPath,
+		const devMode::DevFieldOps& field,
+		const void* source) noexcept;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(::FlowUi::devSystems::MemorySampleSink& sink) const noexcept;
 #endif

@@ -16,6 +16,11 @@
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "internal/ElementInstanceKey.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/override/DevOverrideEngine.hpp"
+#include "devSystems/devTooling/tree/DevTreeCapture.hpp"
+#include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
+#endif
 #include "managers/InputFieldManager.hpp"
 #include "managers/PopupManager.hpp"
 #include "managers/ShortcutManager.hpp"
@@ -84,6 +89,22 @@ class UiManager {
 public:
 #if FLOW_UI_DEV_MODE
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
+	[[nodiscard]] devMode::DevSchemaRegistry* devSchemaRegistry() noexcept {
+		return devSchemaRegistry_;
+	}
+	[[nodiscard]] const devMode::DevSchemaRegistry* devSchemaRegistry() const noexcept {
+		return devSchemaRegistry_;
+	}
+	/** Latest successfully completed Flow/Clay developer tree snapshot. */
+	[[nodiscard]] const devSystems::tooling::DevTreeSnapshot& devTreeSnapshot() const noexcept;
+	[[nodiscard]] devSystems::tooling::DevTreeCapture& devTreeCapture() noexcept;
+	[[nodiscard]] const devSystems::tooling::DevTreeCapture& devTreeCapture() const noexcept;
+	[[nodiscard]] devSystems::tooling::DevOverrideEngine* devOverrideEngine() noexcept {
+		return devOverrideEngine_;
+	}
+	[[nodiscard]] const devSystems::tooling::DevOverrideEngine* devOverrideEngine() const noexcept {
+		return devOverrideEngine_;
+	}
 #endif
 	/**
 	 * @brief Store a string in the current frame arena and return a Clay string.
@@ -719,6 +740,13 @@ private:
 	void setDevTimingRecorder(devSystems::DevTimingRecorder* recorder) noexcept {
 		devTimingRecorder_ = recorder;
 	}
+	void setDevSchemaRegistry(devMode::DevSchemaRegistry* registry) noexcept {
+		devSchemaRegistry_ = registry;
+	}
+	void setDevOverrideEngine(
+		devSystems::tooling::DevOverrideEngine* engine) noexcept {
+		devOverrideEngine_ = engine;
+	}
 	[[nodiscard]] devSystems::DevTimingRecorder* devTimingRecorder() const noexcept {
 		return devTimingRecorder_;
 	}
@@ -766,11 +794,15 @@ private:
 	[[nodiscard]] size_t pushFlowScope(FlowElementID id);
 	void restoreFlowScope(size_t depth) noexcept;
 	[[nodiscard]] size_t constructedElementDepth() const noexcept;
-	void closeConstructedToDepth(size_t depth, bool warn) noexcept;
+	void closeConstructedToDepth(
+		size_t depth, bool warn, bool autoClosedAtFrameEnd = false) noexcept;
 	void retainConstructedElement(
 		Clay_ElementId clayId,
 		FlowElementID flowId,
 		size_t priorFlowScopeDepth
+#if FLOW_UI_DEV_MODE
+		, devSystems::tooling::DevTreeCapture::Token treeToken
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 		, FlowDefinitionID definitionId
 #endif
@@ -801,6 +833,8 @@ private:
 	ActionManager* actionManager_ = nullptr;
 #if FLOW_UI_DEV_MODE
 	devSystems::DevTimingRecorder* devTimingRecorder_ = nullptr;
+	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;
+	devSystems::tooling::DevOverrideEngine* devOverrideEngine_ = nullptr;
 #endif
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;

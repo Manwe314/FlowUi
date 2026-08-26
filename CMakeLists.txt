@@ -8,6 +8,9 @@ option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generat
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+option(FLOW_UI_DEV_CAPTURE_CLAY
+    "Capture Clay's post-layout element forest for developer tooling. Requires FLOW_UI_DEV_MODE."
+    OFF)
 set(FLOWUI_DEV_TIMING_LEVEL "2" CACHE STRING
     "Maximum compiled development CPU timing detail: 0=frame, 1=summary, 2=balanced, 3=deep.")
 set_property(CACHE FLOWUI_DEV_TIMING_LEVEL PROPERTY STRINGS 0 1 2 3)
@@ -90,6 +93,12 @@ if(FLOW_UI_DEV_MODE)
     set(FLOW_UI_DEV_MODE_VALUE 1)
 else()
     set(FLOW_UI_DEV_MODE_VALUE 0)
+endif()
+
+if(FLOW_UI_DEV_CAPTURE_CLAY)
+    set(FLOW_UI_DEV_CAPTURE_CLAY_VALUE 1)
+else()
+    set(FLOW_UI_DEV_CAPTURE_CLAY_VALUE 0)
 endif()
 
 if(FLOWUI_COMPILE_FSELI_ENABLED)
@@ -340,8 +349,15 @@ target_sources(flowui
 )
 
 if(FLOW_UI_DEV_MODE)
+	target_compile_definitions(flowui PRIVATE FLOWUI_SKIP_LEGACY_DEV_ELEMENTS=1)
 	target_sources(flowui
 		PRIVATE
+			src/devSystems/devTooling/override/DevOverrideApply.cpp
+			src/devSystems/devTooling/override/DevOverrideCapture.cpp
+			src/devSystems/devTooling/override/DevOverrideEngine.cpp
+			src/devSystems/devTooling/override/DevOverrideTypes.cpp
+			src/devSystems/devTooling/tree/DevTreeCapture.cpp
+			src/devSystems/devTooling/schema/DevSchemaRegistry.cpp
 			src/devSystems/devFunctionality/DevFunctionality.cpp
 			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
@@ -363,6 +379,18 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devMonitoringAndReporting/timing/DevTimingZone.cpp
 			src/devSystems/devTooling/DevTooling.cpp
 		PUBLIC
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideApply.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideCapture.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideEngine.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/schema/DevClayTypeAdapters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/schema/DevSchemaDescriptor.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/schema/DevSchemaRegistry.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/schema/DevSchemaTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/tree/DevTreeCapture.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/tree/DevTreeTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ClayDevTreeBridge.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devFunctionality/DevFunctionality.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>

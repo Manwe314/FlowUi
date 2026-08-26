@@ -7,6 +7,9 @@
 #include "FlowUi/WindowId.hpp"
 #include "internal/ElementInstanceKey.hpp"
 #include "managers/structs/ElementManagerStructs.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
+#endif
 
 namespace FlowUi {
 
@@ -224,6 +227,13 @@ private:
 	void setDevTimingRecorder(devSystems::DevTimingRecorder* recorder) noexcept {
 		devTimingRecorder_ = recorder;
 	}
+	void setDevSchemaRegistry(devMode::DevSchemaRegistry* registry) noexcept {
+		devSchemaRegistry_ = registry;
+	}
+	template <FlowElement Element>
+	void ensureDevSchemaElement() {
+		if (devSchemaRegistry_) devSchemaRegistry_->ensureElement<Element>();
+	}
 #endif
 	const detail::manager_storage::ElementDefinitionRecord& ensureRegistered(
 		const detail::element::ElementRegistrationDescriptor& descriptor);
@@ -258,6 +268,7 @@ private:
 	uint32_t controllerName_ = 0;
 #if FLOW_UI_DEV_MODE
 	devSystems::DevTimingRecorder* devTimingRecorder_ = nullptr;
+	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;
 #endif
 };
 

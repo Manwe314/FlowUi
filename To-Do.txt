@@ -137,6 +137,10 @@ things i want to do:
 	- Dev Mode Tooling to auto Train PGO.
 	- CancelFrame silently catches. cleanUp Falure operations need strengthening.
 	- Upgrade Flow_Color
+	- AA Pass
+		- Configurations for Primitives AA
+		- correct SDF AA qued edge boundry collision
+		
 		
 
 

@@ -40,6 +40,78 @@ FlowUi::ShortcutTrigger toShortcutTrigger(FlowUi::DevShortcutTrigger trigger) {
 		return FlowUi::ShortcutTrigger::Press;
 	}
 }
+
+void adaptDevTreeToLegacy(FlowUi::detail::manager_storage::UiManagerState& state) {
+	using namespace FlowUi;
+	using namespace FlowUi::devSystems::tooling;
+	devMode::ElementTreePlaceholder& target = state.devRuntime.elementTreePlaceholder();
+	target.clear();
+	const DevTreeSnapshot& snapshot = state.devTreeCapture.current();
+	target.flatNodes.reserve(snapshot.flow.nodes.size());
+	const devMode::DevRegistry& registry = devMode::DevRegistry::instance();
+	for (size_t index = 0; index < snapshot.flow.nodes.size(); ++index) {
+		const DevFlowNode& source = snapshot.flow.nodes[index];
+		devMode::ElementTreePlaceholder::FlatNode node{};
+		node.captureOrder = index;
+		node.depth = source.depth;
+		node.kind = devMode::ElementTreePlaceholder::ElementKind::FlowElement;
+		node.definitionId = source.definition;
+		node.instanceId = source.instance;
+		node.debugPath = snapshot.string(source.debugName);
+		node.definitionDisplayName = snapshot.string(source.definitionName);
+		node.definitionTypeToken = snapshot.string(source.definitionTypeToken);
+		node.sourceFile = snapshot.string(source.sourceFile);
+		node.sourceFunction = snapshot.string(source.sourceFunction);
+		node.sourceLine = source.sourceLine;
+		node.sourceColumn = source.sourceColumn;
+		node.isInternalToDevMode = hasFlag(source.flags, DevFlowNodeFlag::InternalDev);
+#if FLOW_UI_DEV_CAPTURE_CLAY
+		node.isFloating = hasFlag(source.flags, DevFlowNodeFlag::FloatingClayRoot);
+#endif
+		if (const devMode::ElementDescriptor* descriptor =
+			registry.findElementByDefinitionId(source.definition)) {
+			node.hasRegisteredDefinition = true;
+			node.hasRegisteredParamsStruct =
+				registry.findStructByTypeHash(descriptor->paramsStructTypeHash) != nullptr;
+			node.hasRegisteredStateStruct =
+				registry.findStructByTypeHash(descriptor->stateStructTypeHash) != nullptr;
+			node.hasRegisteredResourcesStruct =
+				registry.findStructByTypeHash(descriptor->resourcesStructTypeHash) != nullptr;
+		}
+		target.flatNodes.push_back(std::move(node));
+	}
+}
+
+void reportDevTreeDiagnostics(
+	const FlowUi::devSystems::tooling::DevTreeCapture& capture) noexcept {
+	using namespace FlowUi;
+	static constexpr auto source =
+		devSystems::makeDevErrorSource("flowui.dev_tree.capture_contract");
+	if (capture.lastFinishFailed()) {
+		devSystems::recordGlobalDevDiagnostic(
+			makeError(ErrorCode::InternalInvariantBroken, ErrorSite::UiManagerEndFrame),
+			source,
+			"DevTreeCapture could not traverse the completed Clay forest; the prior snapshot was retained.");
+		return;
+	}
+	for (const devSystems::tooling::DevTreeDiagnostic& diagnostic :
+		capture.current().diagnostics) {
+		const bool internalFailure =
+			diagnostic.code == devSystems::tooling::DevTreeDiagnosticCode::FlowCaptureUnbalanced
+#if FLOW_UI_DEV_CAPTURE_CLAY
+			|| diagnostic.code == devSystems::tooling::DevTreeDiagnosticCode::ClayBridgeTraversalFailed
+#endif
+			;
+		devSystems::recordGlobalDevDiagnostic(
+			makeError(
+				internalFailure ? ErrorCode::InternalInvariantBroken : ErrorCode::ElementDefinitionConflict,
+				ErrorSite::UiManagerEndFrame,
+				diagnostic.expected,
+				diagnostic.observed),
+			source,
+			"The completed developer UI tree contains a Flow/Clay capture contract violation.");
+	}
+}
 #endif
 
 } // namespace
@@ -67,6 +139,7 @@ namespace FlowUi
 			memory.capacityBytes += state_->clayBridgeIdTracker.retainedBytesForDev();
 			devSystems::appendManagerSample(
 				sink, devSystems::memory_sources::kUiLayout.id, memory, window_);
+			state_->devTreeCapture.appendDevMemorySamples(sink);
 			inputFieldManager_.appendDevMemorySamples(sink);
 			popupManager_.appendDevMemorySamples(sink);
 			shortcutManager_.appendDevMemorySamples(sink);
@@ -452,6 +525,7 @@ namespace FlowUi
 		state_->flowRootIdTracker.beginFrame();
 		state_->clayBridgeIdTracker.beginFrame();
 		state_->devRuntime.beginFrame();
+		adaptDevTreeToLegacy(*state_); // Previous completed tree for the in-frame legacy panel.
 		state_->devRootElementOpenThisFrame = false;
 #endif
 		{
@@ -463,6 +537,12 @@ namespace FlowUi
 			Clay_BeginLayout();
 		}
 #if FLOW_UI_DEV_MODE
+		state_->devTreeCapture.beginFrame(
+			window_, state_->devRuntime.frameCounter(), *state_->clayContext, devTimingRecorder_);
+		if (devOverrideEngine_) {
+			devOverrideEngine_->beginWindowFrame(
+				window_, state_->devRuntime.frameCounter());
+		}
 		if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
 			Clay_ElementDeclaration devRoot{};
 			const Clay_ElementId devRootId = toClaySID("_Flow_Dev_root_");
@@ -490,7 +570,7 @@ namespace FlowUi
 		Clay_SetCurrentContext(state_->clayContext);
 		const int32_t autoClosedConstructedElements =
 			static_cast<int32_t>(state_->constructedElementStack.size());
-		closeConstructedToDepth(0, false);
+		closeConstructedToDepth(0, false, true);
 		restoreFlowScope(1);
 		if (autoClosedConstructedElements > 0) {
 			detail::reportErrorEvent(ErrorEventView{
@@ -518,6 +598,9 @@ namespace FlowUi
 		}
 #endif
 		Clay_RenderCommandArray renderCommands{};
+#if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
+		state_->devTreeCapture.noteAuthoredClayEnd();
+#endif
 		{
 #if FLOW_UI_DEV_MODE
 			FLOWUI_DEV_TIMING_ZONE_IF(
@@ -526,6 +609,18 @@ namespace FlowUi
 #endif
 			renderCommands = Clay_EndLayout(static_cast<float>(state_->frameInputForCurrentLayout.dt));
 		}
+#if FLOW_UI_DEV_MODE
+		state_->devTreeCapture.finishAfterLayout();
+		reportDevTreeDiagnostics(state_->devTreeCapture);
+		if (devOverrideEngine_) {
+			if (state_->devTreeCapture.lastFinishFailed()) {
+				devOverrideEngine_->cancelWindowFrame(window_);
+			} else {
+				devOverrideEngine_->endWindowFrame(window_);
+			}
+		}
+		adaptDevTreeToLegacy(*state_);
+#endif
 
 		{
 #if FLOW_UI_DEV_MODE
@@ -575,6 +670,7 @@ namespace FlowUi
 		}
 #if FLOW_UI_DEV_MODE
 		state_->devRuntime.endFrame();
+		if (devSchemaRegistry_) devSchemaRegistry_->publishPendingAtSafePoint();
 		state_->flowRootIdTracker.discardFrame();
 		state_->clayBridgeIdTracker.discardFrame();
 #endif
@@ -708,6 +804,16 @@ namespace FlowUi
 	}
 
 #if FLOW_UI_DEV_MODE
+	const devSystems::tooling::DevTreeSnapshot& UiManager::devTreeSnapshot() const noexcept {
+		return state_->devTreeCapture.current();
+	}
+	devSystems::tooling::DevTreeCapture& UiManager::devTreeCapture() noexcept {
+		return state_->devTreeCapture;
+	}
+	const devSystems::tooling::DevTreeCapture& UiManager::devTreeCapture() const noexcept {
+		return state_->devTreeCapture;
+	}
+
 	devMode::DevRuntime& UiManager::devRuntime() { return state_->devRuntime; }
 	const devMode::DevRuntime& UiManager::devRuntime() const { return state_->devRuntime; }
 	DevToolsConfig& UiManager::devToolsConfig() { return state_->devToolsConfig; }
@@ -814,58 +920,42 @@ namespace detail {
 
 namespace devModeBridge {
 
-	std::size_t beginCapturedFlowElement(
+	devSystems::tooling::DevTreeCapture::Token beginCapturedFlowElement(
 		UiManager& uiManager,
 		FlowDefinitionID definitionId,
 		uint64_t definitionTypeHash,
 		std::string_view definitionTypeToken,
 		FlowElementID elementId,
-		bool isInternalToDevMode) {
-		if (isInternalToDevMode && uiManager.devToolsConfig().excludeInternalDevElementsFromCapture) {
-			return devMode::DevRuntime::kInvalidCaptureIndex;
-		}
-
-		devMode::DevRuntime& runtime = uiManager.devRuntime();
-		const std::size_t captureIndex = runtime.beginCapturedFlowElement(
-			definitionId,
-			definitionTypeHash,
-			elementId,
-			{},
-			definitionTypeToken,
-			isInternalToDevMode);
-
-		if (captureIndex == devMode::DevRuntime::kInvalidCaptureIndex) {
-			return captureIndex;
-		}
-
+		bool isInternalToDevMode,
+		bool constructed,
+		std::string_view sourceFile,
+		uint32_t sourceLine,
+		uint32_t sourceColumn,
+		std::string_view sourceFunction) {
+		(void)definitionTypeHash;
 		const devMode::DevRegistry& registry = devMode::DevRegistry::instance();
 		const devMode::ElementDescriptor* descriptor = registry.findElementByDefinitionId(definitionId);
-		const bool hasRegisteredDefinition = descriptor != nullptr;
-		const bool hasRegisteredParamsStruct =
-			(descriptor != nullptr) && (registry.findStructByTypeHash(descriptor->paramsStructTypeHash) != nullptr);
-		const bool hasRegisteredStateStruct =
-			(descriptor != nullptr) && (registry.findStructByTypeHash(descriptor->stateStructTypeHash) != nullptr);
-		const bool hasRegisteredResourcesStruct =
-			(descriptor != nullptr) && (registry.findStructByTypeHash(descriptor->resourcesStructTypeHash) != nullptr);
-
-		runtime.setCapturedElementRegistrationMetadata(
-			captureIndex,
-			hasRegisteredDefinition,
-			hasRegisteredParamsStruct,
-			hasRegisteredStateStruct,
-			hasRegisteredResourcesStruct,
-			descriptor ? descriptor->definitionName : std::string_view{},
-			descriptor ? descriptor->definitionTypeToken : definitionTypeToken);
-
-		runtime.setCapturedElementAuthoringKeys(
-			captureIndex,
-			elementId.debugName,
-			descriptor ? descriptor->definitionName : std::string_view{});
-		return captureIndex;
+		return uiManager.devTreeCapture().beginFlow({
+			.definition = definitionId,
+			.instance = elementId,
+			.definitionName = descriptor ? descriptor->definitionName : std::string_view{},
+			.definitionTypeToken = descriptor ? descriptor->definitionTypeToken : definitionTypeToken,
+			.sourceFile = sourceFile,
+			.sourceFunction = sourceFunction,
+			.sourceLine = sourceLine,
+			.sourceColumn = sourceColumn,
+			.constructed = constructed,
+			.internalDev = isInternalToDevMode,
+			.suppress = isInternalToDevMode &&
+				uiManager.devToolsConfig().excludeInternalDevElementsFromCapture,
+		});
 	}
 
-	bool endCapturedFlowElement(UiManager& uiManager) {
-		return uiManager.devRuntime().endCapturedElement();
+	void endCapturedFlowElement(
+		UiManager& uiManager,
+		devSystems::tooling::DevTreeCapture::Token token,
+		bool autoClosed) noexcept {
+		uiManager.devTreeCapture().endFlow(token, autoClosed);
 	}
 
 } // namespace devModeBridge
@@ -1099,7 +1189,8 @@ namespace devMode::elementCapture {
 		return state_ ? state_->constructedElementStack.size() : 0;
 	}
 
-	void UiManager::closeConstructedToDepth(size_t depth, bool warn) noexcept {
+	void UiManager::closeConstructedToDepth(
+		size_t depth, bool warn, bool autoClosedAtFrameEnd) noexcept {
 		if (!state_ || depth >= state_->constructedElementStack.size()) return;
 		const size_t closedCount = state_->constructedElementStack.size() - depth;
 		while (state_->constructedElementStack.size() > depth) {
@@ -1109,7 +1200,7 @@ namespace devMode::elementCapture {
 			state_->constructedElementStack.pop_back();
 			restoreFlowScope(frame.priorFlowScopeDepth);
 #if FLOW_UI_DEV_MODE
-			(void)state_->devRuntime.endCapturedElement();
+			state_->devTreeCapture.endFlow(frame.treeToken, warn || autoClosedAtFrameEnd);
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 			frame.subtreeTiming.end();
@@ -1137,6 +1228,9 @@ namespace devMode::elementCapture {
 		Clay_ElementId clayId,
 		FlowElementID flowId,
 		size_t priorFlowScopeDepth
+#if FLOW_UI_DEV_MODE
+		, devSystems::tooling::DevTreeCapture::Token treeToken
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 		, FlowDefinitionID definitionId
 #endif
@@ -1145,6 +1239,9 @@ namespace devMode::elementCapture {
 			.clayId = clayId,
 			.flowId = flowId,
 			.priorFlowScopeDepth = priorFlowScopeDepth,
+#if FLOW_UI_DEV_MODE
+			.treeToken = treeToken,
+#endif
 		};
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 		if (devTimingRecorder_) {
@@ -1177,6 +1274,8 @@ namespace devMode::elementCapture {
 		state_->frameArena = {};
 		state_->activeFrame = {};
 #if FLOW_UI_DEV_MODE
+		state_->devTreeCapture.cancelFrame();
+		if (devOverrideEngine_) devOverrideEngine_->cancelWindowFrame(window_);
 		state_->flowRootIdTracker.discardFrame();
 		state_->clayBridgeIdTracker.discardFrame();
 #endif

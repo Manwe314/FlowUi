@@ -100,6 +100,9 @@ private:
 		  uiManager_(uiManager),
 		  window_(window),
 		  elementId_(elementId) {
+#if FLOW_UI_DEV_MODE
+		elements_.ensureDevSchemaElement<ElementType>();
+#endif
 		if constexpr (HasState<ElementType>) {
 			const ResolvedElementStateInvocation state =
 				elements_.beginStateInvocation(

@@ -22,4 +22,13 @@
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingTypes.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
+#include "devSystems/devTooling/override/DevOverrideApply.hpp"
+#include "devSystems/devTooling/override/DevOverrideCapture.hpp"
+#include "devSystems/devTooling/override/DevOverrideEngine.hpp"
+#include "devSystems/devTooling/override/DevOverrideTypes.hpp"
+#include "devSystems/devTooling/schema/DevClayTypeAdapters.hpp"
+#include "devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp"
+#include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
+#include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
+#include "devSystems/devTooling/schema/DevSchemaTypes.hpp"
 #endif

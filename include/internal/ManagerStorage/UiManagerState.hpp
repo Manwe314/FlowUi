@@ -23,6 +23,7 @@
 #include "internal/ManagerStorage/FontCatalogController.hpp"
 #include "internal/Text/TextLayoutService.hpp"
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/tree/DevTreeCapture.hpp"
 #include "devMode/devRuntime.hpp"
 #include "devMode/performanceDiagnostics.hpp"
 #if FLOWUI_DEV_TIMING_LEVEL >= 2
@@ -170,6 +171,9 @@ struct ConstructedElementFrame {
 	Clay_ElementId clayId{};
 	FlowElementID flowId{};
 	size_t priorFlowScopeDepth = 0;
+#if FLOW_UI_DEV_MODE
+	devSystems::tooling::DevTreeCapture::Token treeToken{};
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 	devSystems::ManualTimingZone subtreeTiming{};
 #endif
@@ -196,6 +200,7 @@ struct UiManagerState {
 	FlowRootIdTrackerForDev flowRootIdTracker{};
 	ClayBridgeIdTrackerForDev clayBridgeIdTracker{};
 	devMode::DevRuntime devRuntime{};
+	devSystems::tooling::DevTreeCapture devTreeCapture{};
 	devMode::PerformanceDiagnostics performanceDiagnostics{};
 	DevToolsConfig devToolsConfig{};
 	bool devPanelVisible = false;

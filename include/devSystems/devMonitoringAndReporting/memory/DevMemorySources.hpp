@@ -19,9 +19,18 @@ inline constexpr auto kStorageTransient = makeMemorySourceDescriptor(
 inline constexpr auto kStorageGpu = makeMemorySourceDescriptor(
 	"flowui.memory.storage.gpu", MemoryDomain::GpuAllocation, MemorySourceKind::Resource,
 	MemoryAccuracy::AllocatorRequested);
+inline constexpr auto kDevelopment = makeMemorySourceDescriptor(
+	"flowui.memory.development", MemoryDomain::ManagerCpu,
+	MemorySourceKind::Development, MemoryAccuracy::Estimate);
 inline constexpr auto kMonitoring = makeMemorySourceDescriptor(
 	"flowui.memory.development.monitoring", MemoryDomain::ManagerCpu,
-	MemorySourceKind::Development, MemoryAccuracy::AllocatorRequested);
+	MemorySourceKind::Development, MemoryAccuracy::AllocatorRequested, kDevelopment.id);
+inline constexpr auto kDevTooling = makeMemorySourceDescriptor(
+	"flowui.memory.development.tooling", MemoryDomain::ManagerCpu,
+	MemorySourceKind::Development, MemoryAccuracy::Estimate, kDevelopment.id);
+inline constexpr auto kDevTreeCapture = makeMemorySourceDescriptor(
+	"flowui.memory.development.tooling.tree_capture", MemoryDomain::ManagerCpu,
+	MemorySourceKind::Development, MemoryAccuracy::AllocatorRequested, kDevTooling.id);
 
 #define FLOWUI_STORAGE_CLASS_SOURCE(Name, Stable, Parent, Target) \
 	inline constexpr auto Name = makeMemorySourceDescriptor(Stable, MemoryDomain::StorageCpu, \
@@ -124,7 +133,8 @@ inline constexpr auto kVulkanHeaps = makeMemorySourceDescriptor(
 	MemoryAccuracy::AllocatorRequested);
 
 inline constexpr StaticMemorySourceDescriptor kAll[] = {
-	kStorageCpu, kStorageMetadata, kStorageTransient, kStorageGpu, kMonitoring,
+	kStorageCpu, kStorageMetadata, kStorageTransient, kStorageGpu,
+	kDevelopment, kMonitoring, kDevTooling, kDevTreeCapture,
 	kStoragePersistent, kStorageStringPool, kStorageFrameTransient, kStorageWorkerTransient,
 	kStorageDecodeTransient, kStorageUploadStaging,
 	kManagers, kElements, kInputFields, kInputTextPayload, kFonts, kFontAtlasCpuPixels,

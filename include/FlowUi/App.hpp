@@ -70,7 +70,7 @@ class ThemeManager;
 class ElementManager;
 class ActionManager;
 #if FLOW_UI_DEV_MODE
-namespace devSystems { class DevMonitoringAndReporting; }
+namespace devSystems { class DevMonitoringAndReporting; class DevTooling; }
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 class IconManager;
@@ -380,6 +380,9 @@ public:
 	/** Development-only access to timing monitoring and retained reports. */
 	devSystems::DevMonitoringAndReporting& devMonitoring();
 	const devSystems::DevMonitoringAndReporting& devMonitoring() const;
+	/** Development-only schema catalogue, discovery, and publication service. */
+	devSystems::DevTooling& devTooling();
+	const devSystems::DevTooling& devTooling() const;
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.
