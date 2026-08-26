@@ -40,12 +40,16 @@ struct DevElementOverrideTarget {
 	FlowDefinitionID definition{};
 	WindowId window = InvalidWindowId;
 	::FlowUi::detail::element::ElementInstanceKey instance{};
+	std::string instanceDebugLabel{};
 	DevOverrideScope scope = DevOverrideScope::Definition;
 	bool bakeable = true;
 
-	friend constexpr bool operator==(
-		const DevElementOverrideTarget&,
-		const DevElementOverrideTarget&) noexcept = default;
+	friend bool operator==(
+		const DevElementOverrideTarget& left,
+		const DevElementOverrideTarget& right) noexcept {
+		return left.definition == right.definition && left.window == right.window &&
+			left.instance == right.instance && left.scope == right.scope;
+	}
 };
 
 struct DevThemeOverrideTarget {
@@ -161,6 +165,9 @@ enum class DevCommandStatus : std::uint8_t {
 	ConstraintRejected,
 	ThemeVariantUnavailable,
 	ValueCopyFailed,
+	NothingToBake,
+	BakeManifestInvalid,
+	BakeWriteFailed,
 	InternalFailure,
 };
 

@@ -406,10 +406,10 @@ private:
 	DevTypeId resolveType(std::uint16_t depth, bool diagnoseMissingSchema) {
 		using Type = std::remove_cvref_t<T>;
 		const DevTypeId id = ::FlowUi::detail::typeHash<Type>();
-		const std::string_view token = ::FlowUi::detail::typeToken<Type>();
+		const std::string_view cppName = ::FlowUi::detail::cppTypeName<Type>();
 		if (const auto found = mutableTypeIndex_.find(id); found != mutableTypeIndex_.end()) {
 			MutableType& existing = mutableTypes_[found->second];
-			if (existing.cppTypeName != token) {
+			if (existing.cppTypeName != cppName) {
 				addDiagnostic(DevDiagnosticSeverity::Error,
 					DevDiagnosticCode::TypeIdentityCollision, id, 0,
 					"Two complete C++ type tokens produced the same DevTypeId.");
@@ -434,8 +434,8 @@ private:
 		mutableTypeIndex_.emplace(id, index);
 		mutableTypes_.push_back(MutableType{
 			.id = id,
-			.displayName = std::string(token),
-			.cppTypeName = std::string(token),
+			.displayName = std::string(cppName),
+			.cppTypeName = std::string(cppName),
 			.size = static_cast<std::uint32_t>(sizeof(Type)),
 			.alignment = static_cast<std::uint32_t>(alignof(Type)),
 			.operations = &TypeOperations<Type>::operations,

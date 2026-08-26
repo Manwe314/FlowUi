@@ -16,6 +16,7 @@
 #include "managers/UiManager.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
+#include "devSystems/devTooling/bake/DevBakedChanges.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devMode/elementDevCapture.hpp"
 #include "internal/FlowUiElementBridge.hpp"
@@ -394,6 +395,11 @@ private:
 			return detail::element::ElementInvocation<ElementType>::begin(
 				elementManager_, uiManager_, window_, elementId_);
 		}();
+
+#if FLOW_UI_HAS_BAKED_CHANGES
+		baked::applyBakedElementDefaults<ElementType>(
+			detail::element::toInstanceKey(elementId_), params_);
+#endif
 
 #if FLOW_UI_DEV_MODE
 		if (auto* overrides = uiManager_.devOverrideEngine()) {

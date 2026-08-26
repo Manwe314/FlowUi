@@ -25,6 +25,9 @@ enum class UiType : uint8_t {
 };
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE
+namespace devSystems { namespace tooling { struct DevOverlayCommandBuffer; } }
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 namespace devSystems { class DevTimingRecorder; class MemorySampleSink; struct GpuTimingCommandContext; }
 #endif
@@ -226,6 +229,7 @@ struct VulkanUiRenderer {
 		float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
 		,
+		const FlowUi::devSystems::tooling::DevOverlayCommandBuffer* devOverlay = nullptr,
 		FlowUi::devSystems::DevTimingRecorder* timingRecorder = nullptr
 #endif
 		);
