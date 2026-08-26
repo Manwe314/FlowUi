@@ -104,9 +104,13 @@ void DevOverrideApply::set(
 	DevOverrideLayer layer,
 	DevOwnedValue value,
 	std::uint64_t transaction) {
+	std::erase_if(bakeTombstones_, [&](const Record& record) {
+		return sameStoredKey(record, target, field, layer);
+	});
 	const auto found = std::find_if(records_.begin(), records_.end(),
 		[&](const Record& record) { return sameStoredKey(record, target, field, layer); });
 	if (found != records_.end()) {
+		found->target = target;
 		found->fieldIndex = fieldIndex;
 		found->ownerPath = std::move(ownerPath);
 		found->value = std::move(value);
@@ -130,12 +134,21 @@ void DevOverrideApply::clear(
 	const DevElementOverrideTarget& target,
 	DevOverrideFieldKey field,
 	DevOverrideLayer layer) noexcept {
+	for (const Record& record : records_) {
+		if (sameStoredKey(record, target, field, layer)) bakeTombstones_.push_back(record);
+	}
 	std::erase_if(records_, [&](const Record& record) {
 		return sameStoredKey(record, target, field, layer);
 	});
 }
 
 void DevOverrideApply::resetDefinition(FlowDefinitionID definition) noexcept {
+	for (const Record& record : records_) {
+		if (record.target.definition == definition &&
+			record.target.scope == DevOverrideScope::Definition) {
+			bakeTombstones_.push_back(record);
+		}
+	}
 	std::erase_if(records_, [&](const Record& record) {
 		return record.target.definition == definition &&
 			record.target.scope == DevOverrideScope::Definition;
@@ -143,6 +156,13 @@ void DevOverrideApply::resetDefinition(FlowDefinitionID definition) noexcept {
 }
 
 void DevOverrideApply::resetInstance(const DevElementOverrideTarget& target) noexcept {
+	for (const Record& record : records_) {
+		if (record.target.definition == target.definition &&
+			record.target.scope == DevOverrideScope::ExactInstance &&
+			record.target.window == target.window && record.target.instance == target.instance) {
+			bakeTombstones_.push_back(record);
+		}
+	}
 	std::erase_if(records_, [&](const Record& record) {
 		return record.target.definition == target.definition &&
 			record.target.scope == DevOverrideScope::ExactInstance &&
@@ -152,6 +172,7 @@ void DevOverrideApply::resetInstance(const DevElementOverrideTarget& target) noe
 }
 
 void DevOverrideApply::clearAll() noexcept {
+	bakeTombstones_.insert(bakeTombstones_.end(), records_.begin(), records_.end());
 	records_.clear();
 	compiled_.clear();
 }
@@ -232,8 +253,14 @@ bool DevOverrideApply::winningLayer(
 
 std::size_t DevOverrideApply::memoryFootprintBytes() const noexcept {
 	std::size_t bytes = records_.capacity() * sizeof(Record) +
+		bakeTombstones_.capacity() * sizeof(Record) +
 		compiled_.bucket_count() * sizeof(void*);
 	for (const Record& record : records_) {
+		bytes += record.value.heapBytes() +
+			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
+			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);
+	}
+	for (const Record& record : bakeTombstones_) {
 		bytes += record.value.heapBytes() +
 			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
 			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);

@@ -4,6 +4,9 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "FlowUi/WindowId.hpp"
+#include "devSystems/devTooling/bake/DevBakePipeline.hpp"
+#include "devSystems/devTooling/overlay/DevOverlayService.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
 
@@ -29,6 +32,26 @@ public:
 	[[nodiscard]] const devMode::DevSchemaRegistry& schemas() const noexcept { return schemas_; }
 	[[nodiscard]] tooling::DevOverrideEngine& overrides() noexcept { return overrides_; }
 	[[nodiscard]] const tooling::DevOverrideEngine& overrides() const noexcept { return overrides_; }
+	[[nodiscard]] tooling::DevBakePipeline& bakePipeline() noexcept { return bakePipeline_; }
+	[[nodiscard]] const tooling::DevBakePipeline& bakePipeline() const noexcept {
+		return bakePipeline_;
+	}
+	[[nodiscard]] tooling::DevOverlayService& overlays() noexcept { return overlays_; }
+	[[nodiscard]] const tooling::DevOverlayService& overlays() const noexcept { return overlays_; }
+
+	/** Attachment surface for a future interface or picking controller. */
+	void setOverlaySelection(
+		WindowId window,
+		const tooling::DevOverlaySelectionSpec& selection) noexcept;
+	void clearOverlaySelection(WindowId window) noexcept;
+	[[nodiscard]] bool overlaySelection(
+		WindowId window,
+		tooling::DevOverlaySelectionSpec& outSelection) const noexcept;
+
+	/** Persist the current bakeable live edits to the active .flowchanges manifest. */
+	tooling::DevCommandResult bakeActiveEdits() noexcept;
+	[[nodiscard]] tooling::DevBakeStatusSnapshot queryBakeStatus() const noexcept;
+	[[nodiscard]] std::vector<tooling::DevBakeDiffEntry> queryBakeDiff() const noexcept;
 
 	void commitAtSafePoint(
 		ThemeManager& themes,
@@ -38,8 +61,16 @@ public:
 #endif
 
 private:
+	struct WindowOverlaySelection {
+		WindowId window = InvalidWindowId;
+		tooling::DevOverlaySelectionSpec selection{};
+	};
+
 	devMode::DevSchemaRegistry schemas_{};
 	tooling::DevOverrideEngine overrides_;
+	tooling::DevBakePipeline bakePipeline_;
+	tooling::DevOverlayService overlays_{};
+	std::vector<WindowOverlaySelection> overlaySelections_{};
 };
 
 } // namespace FlowUi::devSystems

@@ -10,6 +10,7 @@
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
+#include "devSystems/devTooling/bake/DevBakedChanges.hpp"
 #include "internal/ManagerStorage/ThemeStorageController.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
@@ -77,6 +78,9 @@ public:
 		if (devSchemaRegistry_) devSchemaRegistry_->ensureTheme<T>();
 #endif
 		try {
+#if FLOW_UI_HAS_BAKED_CHANGES
+			baked::applyBakedThemeDefaults<T>(variantName, themeData);
+#endif
 			const auto variantId = controller_->internString(variantName);
 			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive);
 			return {};

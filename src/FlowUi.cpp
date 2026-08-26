@@ -519,6 +519,7 @@ struct AppWindow {
 	devSystems::ManualTimingZone frameTotalTiming{};
 	devSystems::ManualTimingZone userBuildTiming{};
 	devSystems::ManualTimingZone preparedGapTiming{};
+	devSystems::tooling::DevOverlayCommandBuffer devOverlay{};
 #endif
 
 	std::chrono::steady_clock::time_point previousBeginFrameTimestamp{};
@@ -1498,6 +1499,32 @@ struct App::Impl {
 				storageSystem->acknowledgeTextureBindings(
 					window.storageFrame, preparedBindings.dirtyBindings);
 			}
+#if FLOW_UI_DEV_MODE
+			window.devOverlay.clear();
+			devSystems::tooling::DevOverlaySelectionSpec overlaySelection{};
+			if (devTooling.overlaySelection(window.id, overlaySelection)) {
+				const float scaleX = std::max(window.uiToFramebufferScaleX, 1.0e-6f);
+				const float scaleY = std::max(window.uiToFramebufferScaleY, 1.0e-6f);
+				devTooling.overlays().generateOverlayCommands(
+					overlaySelection,
+					window.ui.devTreeSnapshot(),
+					static_cast<float>(window.swapchain.swapchain.extent.width) / scaleX,
+					static_cast<float>(window.swapchain.swapchain.extent.height) / scaleY,
+					window.devOverlay,
+					&window.renderCommands);
+				const float configuredDpi = std::max(1.0f, window.config.ui.dpi);
+				float pointsToPixelsScale = std::max(0.0f, window.config.ui.fontScale) * (configuredDpi / 72.0f);
+				if (pointsToPixelsScale <= 0.0f) pointsToPixelsScale = configuredDpi / 72.0f;
+				devTooling.overlays().buildUiRendererInstances(
+					window.devOverlay,
+					window.fontFrameView,
+					pointsToPixelsScale,
+					scaleX,
+					scaleY,
+					static_cast<float>(window.swapchain.swapchain.extent.width),
+					static_cast<float>(window.swapchain.swapchain.extent.height));
+			}
+#endif
 			window.preparedUi = window.renderer.prepareFrame(
 				vk,
 				*storageSystem,
@@ -1510,7 +1537,7 @@ struct App::Impl {
 				window.uiToFramebufferScaleX,
 				window.uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
-				, &timingRecorder()
+				, &window.devOverlay, &timingRecorder()
 #endif
 				);
 			{
@@ -1986,6 +2013,9 @@ struct App::Impl {
 			window.surface = VK_NULL_HANDLE;
 		}
 		window.backend.reset();
+#if FLOW_UI_DEV_MODE
+		devTooling.clearOverlaySelection(id);
+#endif
 		windows.erase(id);
 		activeWindowFrame = InvalidWindowId;
 	}

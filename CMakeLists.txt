@@ -8,9 +8,12 @@ option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generat
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+option(FLOW_UI_ENABLE_BAKED_CHANGES "Enable automatic compilation of baked FlowUi changes." ON)
+set(FLOW_UI_DEV_CAPTURE_CLAY_DEFAULT ${FLOW_UI_DEV_MODE})
 option(FLOW_UI_DEV_CAPTURE_CLAY
     "Capture Clay's post-layout element forest for developer tooling. Requires FLOW_UI_DEV_MODE."
-    OFF)
+    ${FLOW_UI_DEV_CAPTURE_CLAY_DEFAULT})
+unset(FLOW_UI_DEV_CAPTURE_CLAY_DEFAULT)
 set(FLOWUI_DEV_TIMING_LEVEL "2" CACHE STRING
     "Maximum compiled development CPU timing detail: 0=frame, 1=summary, 2=balanced, 3=deep.")
 set_property(CACHE FLOWUI_DEV_TIMING_LEVEL PROPERTY STRINGS 0 1 2 3)
@@ -93,6 +96,12 @@ if(FLOW_UI_DEV_MODE)
     set(FLOW_UI_DEV_MODE_VALUE 1)
 else()
     set(FLOW_UI_DEV_MODE_VALUE 0)
+endif()
+
+if(FLOW_UI_ENABLE_BAKED_CHANGES)
+    set(FLOW_UI_HAS_BAKED_CHANGES_VALUE 1)
+else()
+    set(FLOW_UI_HAS_BAKED_CHANGES_VALUE 0)
 endif()
 
 if(FLOW_UI_DEV_CAPTURE_CLAY)
@@ -207,6 +216,10 @@ if(FLOWUI_BUILD_FONT_BAKER)
     add_executable(flowui_font_baker tools/flowui_font_baker/main.cpp)
     target_link_libraries(flowui_font_baker PRIVATE msdf-atlas-gen::msdf-atlas-gen)
     target_compile_features(flowui_font_baker PRIVATE cxx_std_23)
+endif()
+
+if(FLOW_UI_ENABLE_BAKED_CHANGES)
+    add_subdirectory(tools/flowui-dev-generate)
 endif()
 
 if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
@@ -352,6 +365,8 @@ if(FLOW_UI_DEV_MODE)
 	target_compile_definitions(flowui PRIVATE FLOWUI_SKIP_LEGACY_DEV_ELEMENTS=1)
 	target_sources(flowui
 		PRIVATE
+			src/devSystems/devTooling/bake/DevBakePipeline.cpp
+			src/devSystems/devTooling/overlay/DevOverlayService.cpp
 			src/devSystems/devTooling/override/DevOverrideApply.cpp
 			src/devSystems/devTooling/override/DevOverrideCapture.cpp
 			src/devSystems/devTooling/override/DevOverrideEngine.cpp
@@ -379,6 +394,12 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devMonitoringAndReporting/timing/DevTimingZone.cpp
 			src/devSystems/devTooling/DevTooling.cpp
 		PUBLIC
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakedChanges.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakePipeline.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakeTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayService.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideApply.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideCapture.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideEngine.hpp>
@@ -503,6 +524,9 @@ target_compile_definitions(flowui
 
 target_compile_features(flowui PUBLIC cxx_std_23)
 
+include(cmake/FlowUiBaking.cmake)
+flowui_configure_baking(flowui)
+
 if(FLOWUI_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
@@ -530,6 +554,11 @@ if(FLOWUI_INSTALL)
         install(TARGETS flowui_font_baker
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         )
+    endif()
+
+    if(FLOW_UI_ENABLE_BAKED_CHANGES)
+        install(TARGETS flowui-dev-generate RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+        install(FILES "${FLOWUI_BAKED_GENERATED_HPP}" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     endif()
 
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

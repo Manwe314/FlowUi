@@ -63,6 +63,10 @@ public:
 		devMode::DevFieldId field,
 		DevOverrideLayer& result) const noexcept;
 	[[nodiscard]] const std::vector<Record>& records() const noexcept { return records_; }
+	[[nodiscard]] const std::vector<Record>& bakeTombstones() const noexcept {
+		return bakeTombstones_;
+	}
+	void clearBakeTombstones() noexcept { bakeTombstones_.clear(); }
 	[[nodiscard]] std::uint64_t appliedFieldCount() const noexcept {
 		return appliedFieldCount_;
 	}
@@ -93,6 +97,7 @@ private:
 
 	devMode::DevSchemaView schema_{};
 	std::vector<Record> records_{};
+	std::vector<Record> bakeTombstones_{};
 	std::unordered_map<std::uint64_t, CompiledDefinition> compiled_{};
 	mutable std::uint64_t appliedFieldCount_ = 0;
 };

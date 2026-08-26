@@ -30,6 +30,18 @@ struct DevOverrideEngineConfig {
 
 class DevOverrideEngine {
 public:
+	struct ThemeBakeRecord {
+		DevThemeOverrideTarget target{};
+		DevOverrideFieldKey field{};
+		devMode::DevFieldIndex fieldIndex{};
+		DevOwnedValue original{};
+		DevOwnedValue value{};
+		std::vector<const devMode::DevFieldOps*> ownerPath{};
+		std::uint64_t transaction = 0;
+		bool schemaValid = false;
+		bool dirty = false;
+	};
+
 	explicit DevOverrideEngine(
 		devMode::DevSchemaRegistry& schemas,
 		DevOverrideEngineConfig config = {}) noexcept;
@@ -78,6 +90,14 @@ public:
 	[[nodiscard]] const DevOverrideApply& appliedOverrides() const noexcept {
 		return apply_;
 	}
+	[[nodiscard]] DevOverrideApply& appliedOverrides() noexcept { return apply_; }
+	[[nodiscard]] const std::vector<ThemeBakeRecord>& themeBakeRecords() const noexcept {
+		return themeRecords_;
+	}
+	[[nodiscard]] const std::vector<ThemeBakeRecord>& themeBakeTombstones() const noexcept {
+		return themeBakeTombstones_;
+	}
+	void clearThemeBakeTombstones() noexcept { themeBakeTombstones_.clear(); }
 	[[nodiscard]] const DevElementCaptureSnapshot& elementSnapshot(
 		WindowId window) const noexcept {
 		return capture_.elements(window);
@@ -98,18 +118,6 @@ private:
 		std::vector<const devMode::DevFieldOps*> ownerPath{};
 		DevOwnedValue originalThemeValue{};
 	};
-	struct ThemeRecord {
-		DevThemeOverrideTarget target{};
-		DevOverrideFieldKey field{};
-		devMode::DevFieldIndex fieldIndex{};
-		DevOwnedValue original{};
-		DevOwnedValue value{};
-		std::vector<const devMode::DevFieldOps*> ownerPath{};
-		std::uint64_t transaction = 0;
-		bool schemaValid = false;
-		bool dirty = false;
-	};
-
 	void syncSchema();
 	[[nodiscard]] DevCommandStatus validate(
 		const DevOverrideCommand& command,
@@ -148,7 +156,8 @@ private:
 	devMode::DevSchemaView schema_{};
 	DevOverrideApply apply_{};
 	DevOverrideCapture capture_{};
-	std::vector<ThemeRecord> themeRecords_{};
+	std::vector<ThemeBakeRecord> themeRecords_{};
+	std::vector<ThemeBakeRecord> themeBakeTombstones_{};
 	mutable std::mutex ingressMutex_{};
 	std::deque<DevChangeSet> ingress_{};
 	std::size_t pendingCommandCount_ = 0;

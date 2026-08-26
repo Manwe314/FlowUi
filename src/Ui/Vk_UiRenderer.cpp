@@ -1,4 +1,7 @@
 #include "Ui/Vk_UiRenderer.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp"
+#endif
 #include "managers/InputFieldManager.hpp"
 
 #include <algorithm>
@@ -1852,6 +1855,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	float uiToFramebufferScaleY
 #if FLOW_UI_DEV_MODE
 	,
+	const FlowUi::devSystems::tooling::DevOverlayCommandBuffer* devOverlay,
 	FlowUi::devSystems::DevTimingRecorder* timingRecorder
 #endif
 	)
@@ -1911,6 +1915,22 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 #endif
 		upperBound = ComputeBuildUpperBound(renderCommands, inputFieldOverrides);
 	}
+#if FLOW_UI_DEV_MODE
+	const UiBuildUpperBound appUpperBound = upperBound;
+	const bool hasDevOverlay = devOverlay && !devOverlay->instances.empty() && !devOverlay->runs.empty();
+	if (hasDevOverlay) {
+		upperBound.instances = CheckedSizeAdd(
+			upperBound.instances, devOverlay->instances.size(), "Dev overlay instance upper bound overflow.");
+		upperBound.runs = CheckedSizeAdd(
+			upperBound.runs, devOverlay->runs.size(), "Dev overlay run upper bound overflow.");
+	}
+	if (upperBound.instances > std::numeric_limits<uint32_t>::max() ||
+		upperBound.runs > std::numeric_limits<uint32_t>::max()) {
+		throw FlowUi::FlowUiException(FlowUi::makeError(
+			FlowUi::ErrorCode::RendererCapacityExceeded,
+			FlowUi::ErrorSite::RendererConvertCommands));
+	}
+#endif
 	if (upperBound.instances == 0 || upperBound.runs == 0) {
 		return PreparedUiFrame{.epoch = frame.epoch};
 	}
@@ -1949,6 +1969,40 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 			timingRecorder, FlowUi::devSystems::TimingCategory::RendererCpu,
 			FlowUi::devSystems::TimingZoneRole::Work, "flowui.renderer.build_instances_runs");
 #endif
+#if FLOW_UI_DEV_MODE
+		if (appUpperBound.instances != 0u && appUpperBound.runs != 0u) {
+			built = BuildInstancesAndRunsFromClay(
+				renderCommands,
+				inputFieldOverrides,
+				extent,
+				&fontView,
+				textLayoutService_,
+				pointsToPixelsScale_,
+				clampedScaleX,
+				clampedScaleY,
+				textureBindings.bindingsByTextureIndex,
+				instances.first(appUpperBound.instances),
+				runs.first(appUpperBound.runs),
+				scissorStack);
+		}
+		if (hasDevOverlay) {
+			const uint32_t overlayBase = built.instanceCount;
+			for (const UiInstance& instance : devOverlay->instances) {
+				instances[built.instanceCount++] = instance;
+			}
+			for (const UiRun& sourceRun : devOverlay->runs) {
+				const uint64_t sourceEnd = static_cast<uint64_t>(sourceRun.firstInstance) + sourceRun.instanceCount;
+				if (sourceEnd > devOverlay->instances.size()) {
+					throw FlowUi::FlowUiException(FlowUi::makeError(
+						FlowUi::ErrorCode::RendererCapacityExceeded,
+						FlowUi::ErrorSite::RendererConvertCommands));
+				}
+				UiRun run = sourceRun;
+				run.firstInstance += overlayBase;
+				runs[built.runCount++] = run;
+			}
+		}
+#else
 		built = BuildInstancesAndRunsFromClay(
 			renderCommands,
 			inputFieldOverrides,
@@ -1962,6 +2016,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 			instances,
 			runs,
 			scissorStack);
+#endif
 	}
 	{
 #if FLOW_UI_DEV_MODE

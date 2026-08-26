@@ -896,6 +896,9 @@ if(FLOW_UI_DEV_MODE)
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/external
     )
+    # This suite exercises stack/state snapshots even when the library's
+    # configured default capture level is lower.
+    target_compile_definitions(flowui_dev_error_tests PRIVATE FLOWUI_DEV_ERROR_LEVEL=4)
     target_link_libraries(flowui_dev_error_tests PRIVATE Vulkan::Vulkan)
     add_test(NAME flowui.dev.errors COMMAND flowui_dev_error_tests)
     set_tests_properties(flowui.dev.errors PROPERTIES
@@ -929,6 +932,7 @@ if(FLOW_UI_DEV_MODE)
 
     add_executable(flowui_storage_memory_dev_tests
         DevSystemsTests/DevMemoryStorageTests.cpp
+        DevSystemsTests/ErrorReportingStub.cpp
         HeadlessVulkanFixture.cpp
         DevSystemsTests/DevMemoryVulkanSupport.cpp
         ${PROJECT_SOURCE_DIR}/src/Storagesystem/FlowStorageSystem.cpp

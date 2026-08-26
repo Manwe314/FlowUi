@@ -189,9 +189,16 @@ DevOverrideStats DevOverrideEngine::stats() const noexcept {
 
 std::size_t DevOverrideEngine::memoryFootprintBytes() const noexcept {
 	std::size_t bytes = apply_.memoryFootprintBytes() + capture_.memoryFootprintBytes() +
-		themeRecords_.capacity() * sizeof(ThemeRecord) +
+		themeRecords_.capacity() * sizeof(ThemeBakeRecord) +
+		themeBakeTombstones_.capacity() * sizeof(ThemeBakeRecord) +
 		results_.capacity() * sizeof(DevCommandResult);
-	for (const ThemeRecord& record : themeRecords_) {
+	for (const ThemeBakeRecord& record : themeRecords_) {
+		bytes += record.target.variant.capacity() + record.original.heapBytes() +
+			record.value.heapBytes() +
+			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
+			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);
+	}
+	for (const ThemeBakeRecord& record : themeBakeTombstones_) {
 		bytes += record.target.variant.capacity() + record.original.heapBytes() +
 			record.value.heapBytes() +
 			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
@@ -249,7 +256,7 @@ DevCommandStatus DevOverrideEngine::validate(
 		const DevCommandStatus valueStatus = validateValue(command, resolved);
 		if (valueStatus != DevCommandStatus::Applied) return valueStatus;
 		const bool alreadyRetained = std::any_of(
-			themeRecords_.begin(), themeRecords_.end(), [&](const ThemeRecord& record) {
+			themeRecords_.begin(), themeRecords_.end(), [&](const ThemeBakeRecord& record) {
 				return record.target == command.theme && record.field == command.field;
 			});
 		if (!alreadyRetained && !captureOriginalThemeField(
@@ -439,13 +446,16 @@ void DevOverrideEngine::applyCommand(
 			std::move(command.value), transaction);
 		break;
 	case DevOverrideCommandKind::SetThemeField: {
+		std::erase_if(themeBakeTombstones_, [&](const ThemeBakeRecord& record) {
+			return record.target == command.theme && record.field == command.field;
+		});
 		auto found = std::find_if(themeRecords_.begin(), themeRecords_.end(),
-			[&](const ThemeRecord& record) {
+			[&](const ThemeBakeRecord& record) {
 				return record.target == command.theme && record.field == command.field;
 			});
 		if (found == themeRecords_.end()) {
 			if (!resolved.originalThemeValue) throw std::bad_alloc{};
-			themeRecords_.push_back(ThemeRecord{
+			themeRecords_.push_back(ThemeBakeRecord{
 				.target = std::move(command.theme),
 				.field = std::move(command.field),
 				.fieldIndex = resolved.index,
@@ -468,10 +478,11 @@ void DevOverrideEngine::applyCommand(
 	}
 	case DevOverrideCommandKind::ClearThemeField: {
 		const auto found = std::find_if(themeRecords_.begin(), themeRecords_.end(),
-			[&](const ThemeRecord& record) {
+			[&](const ThemeBakeRecord& record) {
 				return record.target == command.theme && record.field == command.field;
 			});
 		if (found != themeRecords_.end() && found->schemaValid && found->fieldIndex) {
+			themeBakeTombstones_.push_back(*found);
 			const std::uint32_t index = found->fieldIndex.value - 1u;
 			if (index < schema_->fields.size()) {
 				const devMode::DevFieldSchema& field = schema_->fields[index];
@@ -494,10 +505,10 @@ void DevOverrideEngine::applyCommand(
 
 void DevOverrideEngine::bindThemeRecords() {
 	if (!schema_) {
-		for (ThemeRecord& record : themeRecords_) record.schemaValid = false;
+	for (ThemeBakeRecord& record : themeRecords_) record.schemaValid = false;
 		return;
 	}
-	for (ThemeRecord& record : themeRecords_) {
+	for (ThemeBakeRecord& record : themeRecords_) {
 		record.schemaValid = false;
 		const devMode::DevThemeSchema* theme = schema_->findTheme(record.target.themeType);
 		if (!theme) continue;
@@ -514,7 +525,7 @@ void DevOverrideEngine::bindThemeRecords() {
 
 void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 	if (!schema_) return;
-	for (ThemeRecord& record : themeRecords_) {
+	for (ThemeBakeRecord& record : themeRecords_) {
 		if (!record.schemaValid || !record.dirty || !record.fieldIndex || !record.value) continue;
 		const std::uint32_t index = record.fieldIndex.value - 1u;
 		if (index >= schema_->fields.size()) continue;
@@ -591,7 +602,7 @@ bool DevOverrideEngine::themeFieldIsOverridden(
 	devMode::DevFieldId field,
 	DevOverrideLayer& layer) noexcept {
 	const auto& engine = *static_cast<const DevOverrideEngine*>(owner);
-	for (const ThemeRecord& record : engine.themeRecords_) {
+	for (const ThemeBakeRecord& record : engine.themeRecords_) {
 		if (record.schemaValid && record.target.themeType == themeType &&
 			record.target.variant == variant &&
 			(record.field.field == field ||
