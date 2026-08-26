@@ -6,6 +6,9 @@
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/ElementID.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/tree/DevTreeCapture.hpp"
+#endif
 namespace FlowUi {
 
 class UiManager;
@@ -27,15 +30,23 @@ void claimFlowRootForDev(
 
 namespace devModeBridge {
 
-std::size_t beginCapturedFlowElement(
+devSystems::tooling::DevTreeCapture::Token beginCapturedFlowElement(
 	UiManager& uiManager,
 	FlowDefinitionID definitionId,
 	uint64_t definitionTypeHash,
 	std::string_view definitionTypeToken,
 	FlowElementID elementId,
-	bool isInternalToDevMode);
+	bool isInternalToDevMode,
+	bool constructed,
+	std::string_view sourceFile,
+	uint32_t sourceLine,
+	uint32_t sourceColumn,
+	std::string_view sourceFunction);
 
-bool endCapturedFlowElement(UiManager& uiManager);
+void endCapturedFlowElement(
+	UiManager& uiManager,
+	devSystems::tooling::DevTreeCapture::Token token,
+	bool autoClosed = false) noexcept;
 
 } // namespace devModeBridge
 #endif

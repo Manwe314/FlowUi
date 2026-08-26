@@ -108,4 +108,69 @@ void ThemeStorageController::applyStagedMutations() {
 
 }
 
+#if FLOW_UI_DEV_MODE
+bool ThemeStorageController::visitDevPayloads(
+	void* userData,
+	DevPayloadVisitor visitor) const noexcept {
+	if (!visitor) return false;
+	try {
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (!storage_) return false;
+		for (const auto& [typeHash, type] : typeRegistry_) {
+			for (const auto& [variantId, variant] : type.variants) {
+				void* rawRecord = storage_->managerRecordData(
+					variant.handle, storage::ResourceKind::UiTheme);
+				if (!rawRecord) continue;
+				const auto* header =
+					reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
+				if (!visitor(userData, DevPayloadView{
+					.type = typeHash,
+					.variant = storage_->string(variantId),
+					.payload = header->payload(),
+					.revision = header->revision,
+					.active = type.activeVariantNameId == variantId,
+				})) return false;
+			}
+		}
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+devMode::DevValueOperationStatus ThemeStorageController::assignDevField(
+	std::uint64_t type,
+	std::string_view variant,
+	std::span<const devMode::DevFieldOps* const> ownerPath,
+	const devMode::DevFieldOps& field,
+	const void* source) noexcept {
+	if (!field.assignMemberFromCopy) return devMode::DevValueOperationStatus::Unsupported;
+	try {
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (!storage_) return devMode::DevValueOperationStatus::NullDestination;
+		const auto typeIt = typeRegistry_.find(type);
+		if (typeIt == typeRegistry_.end()) return devMode::DevValueOperationStatus::Unsupported;
+		for (const auto& [variantId, registration] : typeIt->second.variants) {
+			if (storage_->string(variantId) != variant) continue;
+			void* rawRecord = storage_->managerRecordData(
+				registration.handle, storage::ResourceKind::UiTheme);
+			if (!rawRecord) return devMode::DevValueOperationStatus::NullDestination;
+			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
+			void* owner = header->payload();
+			for (const devMode::DevFieldOps* path : ownerPath) {
+				owner = path && path->mutableAddress ? path->mutableAddress(owner) : nullptr;
+				if (!owner) return devMode::DevValueOperationStatus::NullDestination;
+			}
+			const devMode::DevValueOperationStatus status =
+				field.assignMemberFromCopy(owner, source);
+			if (status == devMode::DevValueOperationStatus::Success) ++header->revision;
+			return status;
+		}
+		return devMode::DevValueOperationStatus::Unsupported;
+	} catch (...) {
+		return devMode::DevValueOperationStatus::Failed;
+	}
+}
+#endif
+
 } // namespace FlowUi::detail::manager_storage

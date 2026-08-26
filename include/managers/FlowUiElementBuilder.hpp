@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <string_view>
 #include <type_traits>
@@ -350,11 +351,12 @@ private:
 #if FLOW_UI_DEV_MODE
 	struct DevCaptureScope {
 		UiManager* uiManager = nullptr;
+		devSystems::tooling::DevTreeCapture::Token token{};
 		bool closeOnDestruction = true;
 
 		~DevCaptureScope() {
 			if (closeOnDestruction && uiManager) {
-				(void)detail::devModeBridge::endCapturedFlowElement(*uiManager);
+				detail::devModeBridge::endCapturedFlowElement(*uiManager, token);
 			}
 		}
 
@@ -393,29 +395,22 @@ private:
 				elementManager_, uiManager_, window_, elementId_);
 		}();
 
+#if FLOW_UI_DEV_MODE
+		if (auto* overrides = uiManager_.devOverrideEngine()) {
+			overrides->applyElement(
+				ElementType::definitionId,
+				window_,
+				detail::element::toInstanceKey(elementId_),
+				std::addressof(params_),
+				uiManager_.devTimingRecorder());
+		}
+#endif
+
 		Clay_ElementId rootElementId{};
 		if constexpr (Mode == OutputMode::Construct) {
 			rootElementId = uiManager_.toClayEID(elementId_);
 		}
 
-#if FLOW_UI_DEV_MODE
-		const std::size_t captureIndex = detail::devModeBridge::beginCapturedFlowElement(
-			uiManager_,
-			ElementType::definitionId,
-			devMode::typeHash<ElementType>(),
-			devMode::typeToken<ElementType>(),
-			elementId_,
-			captureAsDevInternal_);
-		if (captureIndex != devMode::DevRuntime::kInvalidCaptureIndex) {
-			(void)devMode::elementCapture::runtime(uiManager_).setCapturedElementSource(
-				captureIndex,
-				sourceLocation_.file_name(),
-				static_cast<uint32_t>(sourceLocation_.line()),
-				static_cast<uint32_t>(sourceLocation_.column()),
-				sourceLocation_.function_name());
-		}
-		DevCaptureScope devCapture{&uiManager_};
-#endif
 		ConstructedDepthGuard constructedDepth{uiManager_};
 
 		{
@@ -435,21 +430,22 @@ private:
 				return;
 			}
 		}
-
-#if FLOW_UI_DEV_MODE
-		{
-			FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
-				uiManager_.devTimingRecorder(), devSystems::TimingCategory::Element,
-				devSystems::TimingZoneRole::Work, "flowui.element.apply_effective_params");
-			devMode::elementCapture::applyParameterOverrides<ParametersType>(
-				uiManager_,
-				ElementType::definitionId,
-				elementId_,
-				params_);
-		}
-#endif
-
 		BuildContext buildContext{invocation, params_};
+#if FLOW_UI_DEV_MODE
+		const auto treeToken = detail::devModeBridge::beginCapturedFlowElement(
+			uiManager_,
+			ElementType::definitionId,
+			devMode::typeHash<ElementType>(),
+			devMode::typeToken<ElementType>(),
+			elementId_,
+			captureAsDevInternal_,
+			Mode == OutputMode::Construct,
+			sourceLocation_.file_name(),
+			static_cast<uint32_t>(sourceLocation_.line()),
+			static_cast<uint32_t>(sourceLocation_.column()),
+			sourceLocation_.function_name());
+		DevCaptureScope devCapture{&uiManager_, treeToken};
+#endif
 		if constexpr (Mode == OutputMode::Draw) {
 			{
 #if FLOW_UI_DEV_MODE
@@ -459,6 +455,9 @@ private:
 #endif
 				ElementType::buildElement(buildContext);
 			}
+#if FLOW_UI_DEV_MODE
+			captureEffectiveParameters(treeToken);
+#endif
 		} else {
 			Clay_ElementDeclaration declaration{};
 			{
@@ -469,6 +468,9 @@ private:
 #endif
 				declaration = ElementType::constructElement(buildContext);
 			}
+#if FLOW_UI_DEV_MODE
+			captureEffectiveParameters(treeToken);
+#endif
 			if (uiManager_.constructedElementDepth() != constructedDepth.baseline) {
 				detail::terminateForFatalError(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::ElementInvoke));
 			}
@@ -477,6 +479,9 @@ private:
 #endif
 			uiManager_.retainConstructedElement(
 				rootElementId, elementId_, flowScope.priorDepth
+#if FLOW_UI_DEV_MODE
+				, treeToken
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 				, ElementType::definitionId
 #endif
@@ -493,6 +498,22 @@ private:
 		if constexpr (Mode == OutputMode::Draw) invocationTiming.end();
 #endif
 	}
+
+#if FLOW_UI_DEV_MODE
+	void captureEffectiveParameters(
+		devSystems::tooling::DevTreeCapture::Token treeToken) noexcept {
+		if (!treeToken || treeToken.node == devSystems::tooling::InvalidFlowNode) return;
+		if (auto* overrides = uiManager_.devOverrideEngine()) {
+			overrides->captureElement(
+				ElementType::definitionId,
+				window_,
+				detail::element::toInstanceKey(elementId_),
+				treeToken.node,
+				std::addressof(params_),
+				uiManager_.devTimingRecorder());
+		}
+	}
+#endif
 
 	void invokeInteractionHooks(
 		detail::element::ElementInvocation<ElementType>& invocation,

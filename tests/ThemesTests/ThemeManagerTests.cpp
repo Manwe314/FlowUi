@@ -10,6 +10,9 @@
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
 #include "managers/ThemeManager.hpp"
 #include "managers/UiManager.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/DevTooling.hpp"
+#endif
 
 namespace {
 
@@ -18,6 +21,14 @@ struct TestAppTheme {
 	float cornerRadius = 8.0f;
 	int spacing = 12;
 };
+
+#if FLOW_UI_DEV_MODE
+FLOWUI_DEV_SCHEMA(
+	TestAppTheme,
+	FLOWUI_DEV_FIELD(TestAppTheme, brandColor),
+	FLOWUI_DEV_FIELD(TestAppTheme, cornerRadius),
+	FLOWUI_DEV_FIELD(TestAppTheme, spacing))
+#endif
 
 struct TestEditorTheme {
 	int rowHeight = 24;
@@ -176,6 +187,104 @@ void testFlowUiThemeDefaultRegistration(FlowUi::test::HeadlessVulkanFixture& vul
 	FLOWUI_CHECK(lightTheme.background.b == 1.0f);
 }
 
+#if FLOW_UI_DEV_MODE
+void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	using namespace FlowUi;
+	using namespace FlowUi::devSystems::tooling;
+	detail::storage::FlowStorageSystem storage(vulkan.context());
+	detail::storage::StorageConfig config{};
+	storage.initialize(config);
+
+	ThemeManager themes;
+	themes.init(storage);
+	themes.registerTheme<TestAppTheme>(
+		"default", TestAppTheme{.cornerRadius = 5.0f, .spacing = 12}, true);
+
+	devSystems::DevTooling tooling;
+	tooling.schemas().ensureTheme<TestAppTheme>();
+	FLOWUI_CHECK(tooling.schemas().publishPendingAtSafePoint());
+	const devMode::DevSchemaView schema = tooling.schemas().view();
+	const devMode::DevTypeId type = detail::typeHash<TestAppTheme>();
+	const devMode::DevThemeSchema* themeSchema = schema->findTheme(type);
+	FLOWUI_CHECK(themeSchema != nullptr);
+	const devMode::DevTypeSchema* themeType = schema->type(themeSchema->themeType);
+	FLOWUI_CHECK(themeType != nullptr);
+	DevOverrideFieldKey spacingField{};
+	DevOverrideFieldKey redField{};
+	for (const devMode::DevFieldSchema& field : schema->fieldsOf(themeSchema->themeType)) {
+		if (schema->string(field.name) == "spacing") {
+			spacingField = {themeType->id, field.id};
+		} else if (schema->string(field.name) == "brandColor") {
+			for (const devMode::DevFieldSchema& colorField :
+				schema->fieldsOf(field.valueType)) {
+				if (schema->string(colorField.name) == "r") {
+					redField = {themeType->id, colorField.id, {field.id}};
+					break;
+				}
+			}
+		}
+	}
+	FLOWUI_CHECK(spacingField.field != 0);
+	FLOWUI_CHECK(redField.field != 0);
+
+	DevOwnedValue overrideValue;
+	const int replacement = 27;
+	FLOWUI_CHECK(tooling.overrides().copyValue(replacement, overrideValue) ==
+		devMode::DevValueOperationStatus::Success);
+	DevChangeSet set{.transaction = 700};
+	set.commands.push_back(DevOverrideCommand{
+		.kind = DevOverrideCommandKind::SetThemeField,
+		.theme = {.themeType = type, .variant = "default"},
+		.field = spacingField,
+		.value = std::move(overrideValue),
+	});
+	DevOwnedValue redValue;
+	const float red = 0.9f;
+	FLOWUI_CHECK(tooling.overrides().copyValue(red, redValue) ==
+		devMode::DevValueOperationStatus::Success);
+	set.commands.push_back(DevOverrideCommand{
+		.kind = DevOverrideCommandKind::SetThemeField,
+		.theme = {.themeType = type, .variant = "default"},
+		.field = redField,
+		.value = std::move(redValue),
+	});
+	FLOWUI_CHECK(tooling.overrides().submit(std::move(set)));
+	tooling.commitAtSafePoint(themes);
+	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().spacing == 27);
+	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().brandColor.r == 0.9f);
+	const DevThemeCaptureSnapshot& snapshot = tooling.overrides().themeSnapshot();
+	FLOWUI_CHECK(snapshot.themes.size() == 1);
+	FLOWUI_CHECK(snapshot.variant(snapshot.themes.front()) == "default");
+	bool capturedSpacing = false;
+	for (const DevCapturedField& field : snapshot.fields) {
+		const devMode::DevFieldSchema& fieldSchema =
+			snapshot.schema->fields[field.field.value - 1u];
+		if (snapshot.schema->string(fieldSchema.name) != "spacing") continue;
+		capturedSpacing = true;
+		FLOWUI_CHECK(field.overridden);
+		FLOWUI_CHECK(*static_cast<const int*>(field.value.data()) == 27);
+	}
+	FLOWUI_CHECK(capturedSpacing);
+
+	DevChangeSet clear{.transaction = 701};
+	clear.commands.push_back(DevOverrideCommand{
+		.kind = DevOverrideCommandKind::ClearThemeField,
+		.theme = {.themeType = type, .variant = "default"},
+		.field = spacingField,
+	});
+	clear.commands.push_back(DevOverrideCommand{
+		.kind = DevOverrideCommandKind::ClearThemeField,
+		.theme = {.themeType = type, .variant = "default"},
+		.field = redField,
+	});
+	FLOWUI_CHECK(tooling.overrides().submit(std::move(clear)));
+	tooling.commitAtSafePoint(themes);
+	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().spacing == 12);
+	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().brandColor.r == 0.2f);
+	FLOWUI_CHECK(tooling.overrides().stats().activeThemeOverrides == 0);
+}
+#endif
+
 } // namespace
 
 int main() {
@@ -192,6 +301,11 @@ int main() {
 		});
 		runner.run("staged frame boundary theme mutations", [&] { testStagedMutations(vulkan); });
 		runner.run("built-in FlowUiTheme dark/light variants", [&] { testFlowUiThemeDefaultRegistration(vulkan); });
+#if FLOW_UI_DEV_MODE
+		runner.run("developer theme override and capture", [&] {
+			testDevThemeOverrideAndCapture(vulkan);
+		});
+#endif
 		return runner.finish();
 	} catch (const FlowUi::test::VulkanUnavailable& error) {
 #ifdef FLOWUI_TEST_REQUIRE_VULKAN_DEVICE

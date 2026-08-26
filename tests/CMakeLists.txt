@@ -16,6 +16,96 @@ set_tests_properties(flowui.storage.types PROPERTIES
     TIMEOUT 30
 )
 
+# Self-contained DEV tree tests deliberately compile the optional Clay bridge
+# independently of the top-level DEV setting.
+add_executable(flowui_dev_tree_capture_tests
+	DevSystemsTests/DevTreeCaptureTests.cpp
+	${PROJECT_SOURCE_DIR}/src/devSystems/devTooling/tree/DevTreeCapture.cpp
+	${PROJECT_SOURCE_DIR}/src/clay.cpp
+)
+target_compile_features(flowui_dev_tree_capture_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_dev_tree_capture_tests PRIVATE
+	FLOW_UI_DEV_MODE=1
+	FLOW_UI_DEV_CAPTURE_CLAY=1
+	FLOWUI_DEV_TIMING_LEVEL=0
+	FLOWUI_DEV_MEMORY_LEVEL=0
+	FLOWUI_DEV_ERROR_LEVEL=0
+)
+target_include_directories(flowui_dev_tree_capture_tests PRIVATE
+	${FLOWUI_GENERATED_INCLUDE_DIR}
+	${PROJECT_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/external
+)
+add_test(NAME flowui.dev.tree_capture COMMAND flowui_dev_tree_capture_tests)
+set_tests_properties(flowui.dev.tree_capture PROPERTIES
+	LABELS "flowui;dev;tree;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_dev_tree_capture_flow_only_tests
+	DevSystemsTests/DevTreeCaptureFlowOnlyTests.cpp
+	${PROJECT_SOURCE_DIR}/src/devSystems/devTooling/tree/DevTreeCapture.cpp
+	${PROJECT_SOURCE_DIR}/src/clay.cpp
+)
+target_compile_features(flowui_dev_tree_capture_flow_only_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_dev_tree_capture_flow_only_tests PRIVATE
+	FLOW_UI_DEV_MODE=1
+	FLOW_UI_DEV_CAPTURE_CLAY=0
+	FLOWUI_DEV_TIMING_LEVEL=0
+	FLOWUI_DEV_MEMORY_LEVEL=0
+	FLOWUI_DEV_ERROR_LEVEL=0
+)
+target_include_directories(flowui_dev_tree_capture_flow_only_tests PRIVATE
+	${FLOWUI_GENERATED_INCLUDE_DIR}
+	${PROJECT_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/external
+)
+add_test(NAME flowui.dev.tree_capture_flow_only COMMAND flowui_dev_tree_capture_flow_only_tests)
+set_tests_properties(flowui.dev.tree_capture_flow_only PROPERTIES
+	LABELS "flowui;dev;tree;unit"
+	TIMEOUT 30
+)
+
+add_executable(flowui_dev_schema_registry_tests
+	DevSystemsTests/DevSchemaRegistryTests.cpp
+	${PROJECT_SOURCE_DIR}/src/devSystems/devTooling/schema/DevSchemaRegistry.cpp
+)
+target_compile_features(flowui_dev_schema_registry_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_dev_schema_registry_tests PRIVATE
+	FLOW_UI_DEV_MODE=1
+	FLOWUI_DEV_TIMING_LEVEL=0
+	FLOWUI_DEV_MEMORY_LEVEL=0
+	FLOWUI_DEV_ERROR_LEVEL=0
+)
+target_include_directories(flowui_dev_schema_registry_tests PRIVATE
+	${FLOWUI_GENERATED_INCLUDE_DIR}
+	${PROJECT_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/external
+)
+add_test(NAME flowui.dev.schema_registry COMMAND flowui_dev_schema_registry_tests)
+set_tests_properties(flowui.dev.schema_registry PROPERTIES
+	LABELS "flowui;dev;schema;unit"
+	TIMEOUT 30
+)
+
+if(FLOW_UI_DEV_MODE)
+	add_executable(flowui_dev_override_engine_tests
+		DevSystemsTests/DevOverrideEngineTests.cpp
+	)
+	target_compile_features(flowui_dev_override_engine_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_dev_override_engine_tests PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+	)
+	target_link_libraries(flowui_dev_override_engine_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.dev.override_engine COMMAND flowui_dev_override_engine_tests)
+	set_tests_properties(flowui.dev.override_engine PROPERTIES
+		LABELS "flowui;dev;override;unit"
+		TIMEOUT 30
+	)
+endif()
+
 add_executable(flowui_text_layout_service_tests
 	TextTests/TextLayoutServiceTests.cpp
 )

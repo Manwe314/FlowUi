@@ -38,4 +38,44 @@ void ThemeManager::applyStagedMutations() {
 	}
 }
 
+#if FLOW_UI_DEV_MODE
+namespace {
+struct DevThemeVisitBridge {
+	void* userData = nullptr;
+	ThemeManager::DevThemePayloadVisitor visitor = nullptr;
+};
+
+bool visitDevThemePayload(
+	void* userData,
+	const detail::manager_storage::ThemeStorageController::DevPayloadView& view) noexcept {
+	auto& bridge = *static_cast<DevThemeVisitBridge*>(userData);
+	return bridge.visitor(bridge.userData, ThemeManager::DevThemePayloadView{
+		.type = view.type,
+		.variant = view.variant,
+		.payload = view.payload,
+		.revision = view.revision,
+		.active = view.active,
+	});
+}
+} // namespace
+
+bool ThemeManager::visitDevThemePayloads(
+	void* userData,
+	DevThemePayloadVisitor visitor) const noexcept {
+	if (!controller_ || !visitor) return false;
+	DevThemeVisitBridge bridge{.userData = userData, .visitor = visitor};
+	return controller_->visitDevPayloads(&bridge, &visitDevThemePayload);
+}
+
+devMode::DevValueOperationStatus ThemeManager::assignDevThemeField(
+	devMode::DevTypeId type,
+	std::string_view variant,
+	std::span<const devMode::DevFieldOps* const> ownerPath,
+	const devMode::DevFieldOps& field,
+	const void* source) noexcept {
+	if (!controller_) return devMode::DevValueOperationStatus::NullDestination;
+	return controller_->assignDevField(type, variant, ownerPath, field, source);
+}
+#endif
+
 } // namespace FlowUi

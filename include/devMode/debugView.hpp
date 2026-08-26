@@ -29,7 +29,7 @@ struct DebugViewState {
 
 struct DebugViewResources {};
 
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE && !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
 void drawDebugView(UiManager& uiManager);
 #else
 inline void drawDebugView(UiManager&) {}

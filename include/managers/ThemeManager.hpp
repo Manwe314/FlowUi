@@ -5,11 +5,15 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
+#include <span>
 #include <string_view>
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/PublicStructs.hpp"
 #include "internal/ManagerStorage/ThemeStorageController.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
+#endif
 
 namespace FlowUi {
 
@@ -18,6 +22,9 @@ class UiManager;
 
 namespace detail::storage { class IStorageSystem; }
 namespace devSystems { class MemorySampleSink; }
+#if FLOW_UI_DEV_MODE
+namespace devSystems::tooling { class DevOverrideCapture; class DevOverrideEngine; }
+#endif
 
 /**
  * @defgroup flowui_theme_manager Theme Manager
@@ -34,6 +41,16 @@ namespace devSystems { class MemorySampleSink; }
  */
 class ThemeManager {
 public:
+#if FLOW_UI_DEV_MODE
+	struct DevThemePayloadView {
+		devMode::DevTypeId type = 0;
+		std::string_view variant{};
+		const void* payload = nullptr;
+		std::uint64_t revision = 0;
+		bool active = false;
+	};
+	using DevThemePayloadVisitor = bool (*)(void*, const DevThemePayloadView&) noexcept;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
@@ -56,6 +73,9 @@ public:
 		if (!controller_) {
 			return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
 		}
+#if FLOW_UI_DEV_MODE
+		if (devSchemaRegistry_) devSchemaRegistry_->ensureTheme<T>();
+#endif
 		try {
 			const auto variantId = controller_->internString(variantName);
 			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive);
@@ -199,10 +219,29 @@ public:
 private:
 	friend class App;
 	friend class UiManager;
+#if FLOW_UI_DEV_MODE
+	friend class devSystems::tooling::DevOverrideEngine;
+	friend class devSystems::tooling::DevOverrideCapture;
+	void setDevSchemaRegistry(devMode::DevSchemaRegistry* registry) noexcept {
+		devSchemaRegistry_ = registry;
+	}
+	bool visitDevThemePayloads(
+		void* userData,
+		DevThemePayloadVisitor visitor) const noexcept;
+	devMode::DevValueOperationStatus assignDevThemeField(
+		devMode::DevTypeId type,
+		std::string_view variant,
+		std::span<const devMode::DevFieldOps* const> ownerPath,
+		const devMode::DevFieldOps& field,
+		const void* source) noexcept;
+#endif
 
 private:
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	std::unique_ptr<detail::manager_storage::ThemeStorageController> controller_{};
+#if FLOW_UI_DEV_MODE
+	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;
+#endif
 };
 
 /** @} */
