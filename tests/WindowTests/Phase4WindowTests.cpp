@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <GLFW/glfw3.h>
 
@@ -138,6 +139,48 @@ int main() {
 		FLOWUI_CHECK_THROWS(app.fonts().getFamilyId(FlowUi::ResourceKey{
 			.name = "Default", .domain = FlowUi::ResourceDomain::Image,
 		}));
+
+		stage = "managed window dispatch";
+		std::vector<FlowUi::WindowId> managedOrder;
+		const auto throwingManaged = app.createWindow(
+			FlowUi::WindowConfigOverrides{
+				.width = 240,
+				.height = 160,
+				.title = "FlowUi managed throwing",
+			},
+			[&](FlowUi::UiManager&, FlowUi::WindowId id) {
+				managedOrder.push_back(id);
+				throw std::runtime_error("managed callback failure");
+			});
+		const auto healthyManaged = app.createWindow(
+			FlowUi::WindowConfigOverrides{
+				.width = 240,
+				.height = 160,
+				.title = "FlowUi managed healthy",
+			},
+			[&](FlowUi::UiManager&, FlowUi::WindowId id) {
+				managedOrder.push_back(id);
+			});
+		FLOWUI_CHECK(throwingManaged);
+		FLOWUI_CHECK(healthyManaged);
+		errorCapture = {};
+		FLOWUI_CHECK(app.pollEvents());
+		FLOWUI_CHECK(app.beginFrame(app.mainWindowId()));
+		FLOWUI_CHECK(app.endFrame(app.mainWindowId()));
+		const FlowUi::Status managedStatus = app.drawFrame();
+		FLOWUI_CHECK(!managedStatus);
+		FLOWUI_CHECK(managedStatus.error().code == FlowUi::ErrorCode::UiBuildCallbackFailed);
+		FLOWUI_CHECK(errorCapture.count == 1u);
+		FLOWUI_CHECK(errorCapture.event.error.code == FlowUi::ErrorCode::UiBuildCallbackFailed);
+		FLOWUI_CHECK(managedOrder.size() == 2u);
+		FLOWUI_CHECK(managedOrder[0] == *throwingManaged);
+		FLOWUI_CHECK(managedOrder[1] == *healthyManaged);
+
+		app.removeWindowUiCallback(*throwingManaged);
+		FLOWUI_CHECK(app.destroyWindow(*throwingManaged));
+		app.setShouldClose(*healthyManaged, 1);
+		FLOWUI_CHECK(app.dispatchManagedWindows());
+		FLOWUI_CHECK(!app.hasWindow(*healthyManaged));
 
 		stage = "lifecycle gate";
 		FLOWUI_CHECK(app.pollEvents());

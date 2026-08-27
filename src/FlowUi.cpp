@@ -18,9 +18,7 @@
 #include "managers/UiManager.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if FLOW_UI_DEV_MODE
-#if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
-#include "devMode/debugView.hpp"
-#endif
+#include "devSystems/devInterface/DevInterface.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"
@@ -257,11 +255,9 @@ thread_local bool reportingErrorEvent = false;
 
 void vkCheck(
 	VkResult result,
-	const char* message,
 	FlowUi::ErrorSite site,
 	FlowUi::ErrorCode code = FlowUi::ErrorCode::VulkanNativeCallFailed) {
 	if (result != VK_SUCCESS) {
-		(void)message;
 		if (result == VK_ERROR_DEVICE_LOST) code = FlowUi::ErrorCode::VulkanDeviceLost;
 		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
 			code = FlowUi::ErrorCode::AllocationFailed;
@@ -345,13 +341,13 @@ void transitionSwapchainImageLayout(
 void validateSecondarySurface(VulkanContext& vk, VkSurfaceKHR surface) {
 	VkSurfaceCapabilitiesKHR capabilities{};
 	vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.phys, surface, &capabilities),
-		"Failed to query secondary-window surface capabilities.", FlowUi::ErrorSite::AppCreateWindow);
+		FlowUi::ErrorSite::AppCreateWindow);
 	uint32_t formatCount = 0;
 	vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, nullptr),
-		"Failed to query secondary-window surface formats.", FlowUi::ErrorSite::AppCreateWindow);
+		FlowUi::ErrorSite::AppCreateWindow);
 	uint32_t presentModeCount = 0;
 	vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentModeCount, nullptr),
-		"Failed to query secondary-window present modes.", FlowUi::ErrorSite::AppCreateWindow);
+		FlowUi::ErrorSite::AppCreateWindow);
 	if (formatCount == 0 || presentModeCount == 0) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::WindowPresentationUnsupported, FlowUi::ErrorSite::AppCreateWindow));
 	}
@@ -429,6 +425,22 @@ struct AppWindowConfig {
 	UiConfig ui{};
 	uint32_t uiTextureDescriptorCapacity = kUiTextureDescriptorCapacity;
 };
+
+WindowConfig mergeWindowConfig(
+	const WindowConfig& base,
+	const WindowConfigOverrides& overrides) {
+	WindowConfig result = base;
+	if (overrides.width) result.width = *overrides.width;
+	if (overrides.height) result.height = *overrides.height;
+	if (overrides.title) result.title = *overrides.title;
+	if (overrides.resizable) result.resizable = *overrides.resizable;
+	if (overrides.decorated) result.decorated = *overrides.decorated;
+	if (overrides.maximized) result.maximized = *overrides.maximized;
+	if (overrides.fullscreen) result.fullscreen = *overrides.fullscreen;
+	if (overrides.highDPI) result.highDPI = *overrides.highDPI;
+	if (overrides.input) result.input = *overrides.input;
+	return result;
+}
 
 AppWindowConfig makeWindowConfig(const AppConfig& config, const WindowConfig& native) {
 	AppWindowConfig result{
@@ -615,6 +627,7 @@ struct App::Impl {
 #if FLOW_UI_DEV_MODE
 	devSystems::DevMonitoringAndReporting devMonitoring{};
 	devSystems::DevTooling devTooling{};
+	devSystems::DevInterface devInterface{};
 	devSystems::DevErrorThreadAttachment platformErrorAttachment;
 #endif
 	AppErrorObserver errorObserver;
@@ -638,6 +651,12 @@ struct App::Impl {
 #endif
 
 	std::unordered_map<WindowId, std::unique_ptr<AppWindow>> windows;
+	struct ManagedWindowEntry {
+		WindowId id = InvalidWindowId;
+		UiBuildCallback buildUi;
+		ManagedWindowFlags flags{};
+	};
+	std::vector<ManagedWindowEntry> managedWindows;
 	WindowId mainWindowId = MainWindowId;
 	WindowId nextWindowId = MainWindowId + 1;
 	WindowId activeWindowFrame = InvalidWindowId;
@@ -972,19 +991,21 @@ struct App::Impl {
 		registerWindowMemoryProbe(*mainPointer);
 #endif
 		initializeDefaultFont();
+#if FLOW_UI_DEV_MODE
+		Status devInterfaceStatus = devInterface.initialize(mainPointer->ui, config.dev);
+		if (!devInterfaceStatus) throw FlowUiException(devInterfaceStatus.error());
+#endif
 	}
 
-	void requireQuiescent(const char* operation) const {
+	void requireQuiescent() const {
 		if (activeWindowFrame != InvalidWindowId) {
-			(void)operation;
 			throw FlowUiException(makeError(
 				ErrorCode::FrameAlreadyActive, ErrorSite::AppRequireQuiescent, activeWindowFrame));
 		}
 	}
 
-	void requirePlatformThread(const char* operation) const {
+	void requirePlatformThread() const {
 		if (std::this_thread::get_id() != platformThread) {
-			(void)operation;
 			throw FlowUiException(makeError(ErrorCode::WrongThread, ErrorSite::AppRequirePlatformThread));
 		}
 	}
@@ -1044,8 +1065,8 @@ struct App::Impl {
 	}
 
 	WindowId createWindow(const WindowConfig& nativeConfig) {
-		requirePlatformThread("FlowUi::App::createWindow");
-		requireQuiescent("FlowUi::App::createWindow");
+		requirePlatformThread();
+		requireQuiescent();
 		if (nativeConfig.width <= 0 || nativeConfig.height <= 0) {
 			throw FlowUiException(makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppCreateWindow));
 		}
@@ -1087,6 +1108,10 @@ struct App::Impl {
 			pending->ui.setThemeManager(&themeManager);
 			actionManager.attachTo(pending->ui);
 			elementManager.attachTo(pending->ui);
+#if FLOW_UI_DEV_MODE
+			Status devInterfaceStatus = devInterface.attachWindow(pending->ui);
+			if (!devInterfaceStatus) throw FlowUiException(devInterfaceStatus.error());
+#endif
 			pending->swapchain.create(
 				pending->config.native,
 				pending->config.vulkan,
@@ -1130,8 +1155,8 @@ struct App::Impl {
 	}
 
 	void pollEventsAndAdvanceSharedManagers() {
-		requirePlatformThread("FlowUi::App::pollEvents");
-		requireQuiescent("FlowUi::App::pollEvents");
+		requirePlatformThread();
+		requireQuiescent();
 #if FLOW_UI_DEV_MODE
 		{
 			FLOWUI_DEV_TIMING_ZONE(
@@ -1229,7 +1254,7 @@ struct App::Impl {
 	void drainWindowGraphics(AppWindow& window) {
 		for (FrameVk::Frame& frame : window.frames.frames) {
 			vkCheck(vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
-				"Failed to drain a window frame fence.", ErrorSite::AppSubmitFrame);
+				ErrorSite::AppSubmitFrame);
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().resolveCompleted(vk, frame.gpuTiming);
 #endif
@@ -1249,7 +1274,7 @@ struct App::Impl {
 	}
 
 	void beginFrame(WindowId id) {
-		requirePlatformThread("FlowUi::App::beginFrame");
+		requirePlatformThread();
 		AppWindow& window = requireWindow(id);
 		if (window.phase != AppWindow::Phase::Idle) {
 			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppBeginFrame, id));
@@ -1314,7 +1339,7 @@ struct App::Impl {
 					devSystems::TimingZoneRole::Wait, "flowui.wait.frame_slot_fence");
 #endif
 				vkCheck(vkWaitForFences(vk.device, 1, &frame.inFlight, VK_TRUE, UINT64_MAX),
-					"Failed to wait for in-flight fence.", ErrorSite::AppAcquireFrame);
+					ErrorSite::AppAcquireFrame);
 			}
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().resolveCompleted(vk, frame.gpuTiming);
@@ -1432,7 +1457,7 @@ struct App::Impl {
 	}
 
 	void endFrame(WindowId id) {
-		requirePlatformThread("FlowUi::App::endFrame");
+		requirePlatformThread();
 		AppWindow& window = requireWindow(id);
 		if (activeWindowFrame != id || window.phase != AppWindow::Phase::Building || !window.storageFrame) {
 			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppEndFrame, id));
@@ -1589,7 +1614,7 @@ struct App::Impl {
 	}
 
 	void drawFrame(WindowId id) {
-		requirePlatformThread("FlowUi::App::drawFrame");
+		requirePlatformThread();
 		AppWindow& window = requireWindow(id);
 		if (activeWindowFrame != id || window.phase != AppWindow::Phase::Prepared) {
 			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppDrawFrame, id));
@@ -1703,7 +1728,7 @@ struct App::Impl {
 			return;
 		}
 		if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
-			vkCheck(acquireResult, "Failed to acquire swapchain image.", ErrorSite::AppAcquireFrame);
+			vkCheck(acquireResult, ErrorSite::AppAcquireFrame);
 		}
 
 		const bool acquiredSuboptimalSwapchain = acquireResult == VK_SUBOPTIMAL_KHR;
@@ -1720,7 +1745,7 @@ struct App::Impl {
 				timingRecorder(), devSystems::TimingCategory::Wait,
 				devSystems::TimingZoneRole::Wait, "flowui.wait.swapchain_image_fence");
 			vkCheck(vkWaitForFences(vk.device, 1, &window.swapchain.imageInFlight[swapchainImageIndex],
-				VK_TRUE, UINT64_MAX), "Failed waiting for previously submitted fence for swapchain image.",
+				VK_TRUE, UINT64_MAX),
 				ErrorSite::AppAcquireFrame);
 		}
 		window.swapchain.imageInFlight[swapchainImageIndex] = frame.inFlight;
@@ -1732,12 +1757,12 @@ struct App::Impl {
 				devSystems::TimingZoneRole::Work, "flowui.renderer.command_buffer_begin");
 #endif
 			vkCheck(vkResetCommandPool(vk.device, frame.pool, 0),
-				"Failed to reset command pool.", ErrorSite::AppDrawFrame);
+				ErrorSite::AppDrawFrame);
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 			vkCheck(vkBeginCommandBuffer(frame.cmd, &beginInfo),
-				"Failed to begin command buffer.", ErrorSite::AppDrawFrame);
+				ErrorSite::AppDrawFrame);
 		}
 
 #if FLOW_UI_DEV_MODE
@@ -1781,7 +1806,7 @@ struct App::Impl {
 			devMonitoring.gpuTiming().endFrameRecording(gpuTiming, frame.cmd);
 #endif
 			vkCheck(vkEndCommandBuffer(frame.cmd),
-				"Failed to end command buffer.", ErrorSite::AppDrawFrame);
+				ErrorSite::AppDrawFrame);
 		}
 
 		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -1797,7 +1822,7 @@ struct App::Impl {
 		submitInfo.pSignalSemaphores = &presentWaitSemaphore;
 
 		vkCheck(vkResetFences(vk.device, 1, &frame.inFlight),
-			"Failed to reset in-flight fence.", ErrorSite::AppSubmitFrame);
+			ErrorSite::AppSubmitFrame);
 		{
 #if FLOW_UI_DEV_MODE
 			FLOWUI_DEV_TIMING_ZONE(
@@ -1805,7 +1830,7 @@ struct App::Impl {
 				devSystems::TimingZoneRole::Work, "flowui.renderer.queue_submit");
 #endif
 			vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
-				"Failed to submit UI command buffer.", ErrorSite::AppSubmitFrame);
+				ErrorSite::AppSubmitFrame);
 			frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().markSubmitted(
@@ -1832,11 +1857,11 @@ struct App::Impl {
 			VkFence& presentFence = window.swapchain.presentComplete[swapchainImageIndex];
 			if (window.swapchain.presentPending[swapchainImageIndex] != 0u) {
 				vkCheck(vkWaitForFences(vk.device, 1, &presentFence, VK_TRUE, UINT64_MAX),
-					"Failed waiting to reuse a swapchain present fence.", ErrorSite::AppPresent);
+					ErrorSite::AppPresent);
 				window.swapchain.presentPending[swapchainImageIndex] = 0u;
 			}
 			vkCheck(vkResetFences(vk.device, 1, &presentFence),
-				"Failed to reset a swapchain present fence.", ErrorSite::AppPresent);
+				ErrorSite::AppPresent);
 			presentFenceInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT;
 			presentFenceInfo.swapchainCount = 1;
 			presentFenceInfo.pFences = &presentFence;
@@ -1885,7 +1910,7 @@ struct App::Impl {
 					: ErrorResolution::Skipped,
 			});
 		} else if (presentResult != VK_SUCCESS) {
-			vkCheck(presentResult, "Failed to present swapchain image.",
+			vkCheck(presentResult,
 				ErrorSite::AppPresent, ErrorCode::PresentationFailed);
 		}
 
@@ -1922,7 +1947,6 @@ struct App::Impl {
 					window.id));
 			}
 			vkCheck(vkDeviceWaitIdle(vk.device),
-				"Failed to wait for device idle during main-only compatibility resize.",
 				ErrorSite::AppRecreateWindow);
 			completeAllSubmissionsAfterIdle();
 			SwapchainGeneration replacement{};
@@ -1982,7 +2006,7 @@ struct App::Impl {
 	}
 
 	void destroyWindow(WindowId id) {
-		requirePlatformThread("FlowUi::App::destroyWindow");
+		requirePlatformThread();
 		if (id == mainWindowId) {
 			throw FlowUiException(makeError(
 				ErrorCode::MainWindowDestructionForbidden, ErrorSite::AppDestroyWindow, id));
@@ -2028,6 +2052,9 @@ struct App::Impl {
 		devTooling.clearOverlaySelection(id);
 #endif
 		windows.erase(id);
+		std::erase_if(managedWindows, [id](const ManagedWindowEntry& entry) {
+			return entry.id == id;
+		});
 		activeWindowFrame = InvalidWindowId;
 	}
 
@@ -2160,6 +2187,167 @@ Result<WindowId> App::createWindow(const WindowConfig& config) {
 	}
 }
 
+Result<WindowId> App::createWindowLikeMain() {
+	return createWindow(WindowConfigOverrides{});
+}
+
+Result<WindowId> App::createWindow(const WindowConfigOverrides& overrides) {
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppCreateWindow));
+	WindowConfig config = mergeWindowConfig(impl_->config.window, overrides);
+	if (!overrides.title) {
+		config.title += " - Window " + std::to_string(impl_->nextWindowId);
+	}
+	return createWindow(config);
+}
+
+Result<WindowId> App::createWindow(std::string_view title, int width, int height) {
+	WindowConfigOverrides overrides{};
+	overrides.title = std::string(title);
+	if (width != 0) overrides.width = width;
+	if (height != 0) overrides.height = height;
+	return createWindow(overrides);
+}
+
+Result<WindowId> App::createWindow(
+	const WindowConfigOverrides& overrides,
+	UiBuildCallback buildUi,
+	ManagedWindowFlags flags) {
+	if (!buildUi) {
+		return unexpectedError(makeError(
+			ErrorCode::InvalidWindowConfiguration, ErrorSite::AppCreateWindow));
+	}
+	auto created = createWindow(overrides);
+	if (!created) return created;
+	Status registered = setWindowUiCallback(*created, std::move(buildUi), flags);
+	if (!registered) {
+		(void)destroyWindow(*created);
+		return unexpectedError(registered.error());
+	}
+	return created;
+}
+
+Status App::setWindowUiCallback(
+	WindowId id,
+	UiBuildCallback buildUi,
+	ManagedWindowFlags flags) {
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppFrameDispatch));
+	return runLocalOperation([&] {
+		impl_->requirePlatformThread();
+		impl_->requireQuiescent();
+		(void)impl_->requireWindow(id);
+		if (id == impl_->mainWindowId || !buildUi) {
+			throw FlowUiException(makeError(
+				ErrorCode::InvalidWindowConfiguration, ErrorSite::AppFrameDispatch, id));
+		}
+		const auto found = std::find_if(
+			impl_->managedWindows.begin(), impl_->managedWindows.end(),
+			[id](const Impl::ManagedWindowEntry& entry) { return entry.id == id; });
+		if (found != impl_->managedWindows.end()) {
+			found->buildUi = std::move(buildUi);
+			found->flags = flags;
+			return;
+		}
+		impl_->managedWindows.push_back(Impl::ManagedWindowEntry{
+			.id = id,
+			.buildUi = std::move(buildUi),
+			.flags = flags,
+		});
+	});
+}
+
+void App::removeWindowUiCallback(WindowId id) {
+	if (!impl_) return;
+	std::erase_if(impl_->managedWindows, [id](const Impl::ManagedWindowEntry& entry) {
+		return entry.id == id;
+	});
+}
+
+Status App::dispatchManagedWindows() {
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppFrameDispatch));
+	try {
+		impl_->requirePlatformThread();
+		impl_->requireQuiescent();
+	} catch (const FlowUiException& exception) {
+		if (exception.error().descriptor().category == ErrorCategory::Fatal) {
+			detail::terminateForFatalError(exception.error());
+		}
+		if (exception.error().descriptor().category != ErrorCategory::Local) throw;
+		return unexpectedError(exception.error());
+	}
+
+	std::vector<WindowId> dispatchOrder;
+	dispatchOrder.reserve(impl_->managedWindows.size());
+	for (const Impl::ManagedWindowEntry& entry : impl_->managedWindows) {
+		dispatchOrder.push_back(entry.id);
+	}
+
+	FlowUiError firstError{};
+	const auto rememberError = [&](FlowUiError error) {
+		if (!firstError) firstError = error;
+	};
+	const auto rememberException = [&](const FlowUiException& exception) {
+		const FlowUiError error = exception.error();
+		if (error.descriptor().category == ErrorCategory::Fatal) {
+			detail::terminateForFatalError(error);
+		}
+		if (error.descriptor().category != ErrorCategory::Local) throw exception;
+		rememberError(error);
+	};
+
+	for (WindowId id : dispatchOrder) {
+		const auto managed = std::find_if(
+			impl_->managedWindows.begin(), impl_->managedWindows.end(),
+			[id](const Impl::ManagedWindowEntry& entry) { return entry.id == id; });
+		if (managed == impl_->managedWindows.end()) continue;
+		UiBuildCallback buildUi = managed->buildUi;
+		const ManagedWindowFlags flags = managed->flags;
+		const auto windowIt = impl_->windows.find(id);
+		if (windowIt == impl_->windows.end()) {
+			removeWindowUiCallback(id);
+			continue;
+		}
+		if (!windowIt->second->backend || windowIt->second->backend->shouldClose()) {
+			if (flags.autoDestroyOnClose) {
+				try {
+					impl_->destroyWindow(id);
+				} catch (const FlowUiException& exception) {
+					rememberException(exception);
+				}
+			}
+			continue;
+		}
+
+		try {
+			impl_->beginFrame(id);
+		} catch (const FlowUiException& exception) {
+			rememberException(exception);
+			continue;
+		}
+
+		try {
+			buildUi(windowIt->second->ui, id);
+		} catch (...) {
+			const auto current = impl_->windows.find(id);
+			if (current != impl_->windows.end()) impl_->cancelStorageFrame(*current->second);
+			const FlowUiError error = makeError(
+				ErrorCode::UiBuildCallbackFailed, ErrorSite::AppFrameDispatch, id);
+			reportError(error);
+			rememberError(error);
+			continue;
+		}
+
+		try {
+			impl_->endFrame(id);
+			impl_->drawFrame(id);
+		} catch (const FlowUiException& exception) {
+			rememberException(exception);
+		}
+	}
+
+	if (firstError) return unexpectedError(firstError);
+	return {};
+}
+
 Status App::destroyWindow(WindowId id) {
 	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDestroyWindow));
 	return runLocalOperation([&] { impl_->destroyWindow(id); });
@@ -2221,7 +2409,13 @@ Status App::endFrame(WindowId id) {
 
 Status App::drawFrame() {
 	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDrawFrame));
-	return runLocalOperation([&] { impl_->drawFrame(impl_->mainWindowId); });
+	Status mainStatus = drawFrame(impl_->mainWindowId);
+	if (!mainStatus) return mainStatus;
+#if FLOW_UI_DEV_MODE
+	Status devInterfaceStatus = impl_->devInterface.synchronize(*this);
+	if (!devInterfaceStatus) return devInterfaceStatus;
+#endif
+	return dispatchManagedWindows();
 }
 
 Status App::drawFrame(WindowId id) {
@@ -2493,9 +2687,6 @@ App makeApplication(const AppConfig& cfg) {
 		devSystems::TimingZoneRole::Work, "flowui.app.make");
 #endif
 	app.impl_->init(app);
-#if FLOW_UI_DEV_MODE && !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
-	devMode::initializeDevFlowElementResourcesFromApp(app);
-#endif
 	return app;
 }
 

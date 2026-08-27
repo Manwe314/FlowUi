@@ -234,6 +234,7 @@ enum class ErrorSite : std::uint16_t {
 	AppAccessDevMonitoring = 0x0117,
 	AppRequireQuiescent = 0x0118,
 	AppRequirePlatformThread = 0x0119,
+	AppFrameDispatch = 0x011a,
 
 	WindowBackendInitialize = 0x0201,
 	WindowMonitorSelect = 0x0202,
@@ -502,6 +503,7 @@ struct ErrorSiteDescriptor {
 	FLOWUI_ERROR_SITE_CASE(AppAccessDevMonitoring, App);
 	FLOWUI_ERROR_SITE_CASE(AppRequireQuiescent, Window);
 	FLOWUI_ERROR_SITE_CASE(AppRequirePlatformThread, App);
+	FLOWUI_ERROR_SITE_CASE(AppFrameDispatch, Window);
 
 	FLOWUI_ERROR_SITE_CASE(WindowBackendInitialize, None);
 	FLOWUI_ERROR_SITE_CASE(WindowMonitorSelect, None);
@@ -784,6 +786,7 @@ enum class ErrorCode : std::uint16_t {
 	FrameNumberSpaceExhausted = 0x0504,
 	PreparedFrameStale = 0x0505,
 	FrameCapacityExceeded = 0x0506,
+	UiBuildCallbackFailed = 0x0507,
 
 	VulkanVersionUnsupported = 0x0601,
 	VulkanExtensionMissing = 0x0602,
@@ -1076,6 +1079,11 @@ namespace detail {
 			ErrorResolvability::CallerResolvable, ErrorImpact::FrameCanceled,
 			ErrorResolutionPolicy::CallerDefined, ErrorResolution::Propagated,
 			"FrameCapacityExceeded", "The frame exceeded a configured FlowUi capacity."};
+	case ErrorCode::UiBuildCallbackFailed:
+		return {code, ErrorDomain::Frame, ErrorCategory::Local, ErrorBoundary::WindowFrame,
+			ErrorResolvability::AutomaticallyResolved, ErrorImpact::FrameCanceled,
+			ErrorResolutionPolicy::HardCoded, ErrorResolution::CanceledFrame,
+			"UiBuildCallbackFailed", "A managed window UI build callback threw an exception."};
 
 	case ErrorCode::VulkanVersionUnsupported:
 	case ErrorCode::VulkanExtensionMissing:

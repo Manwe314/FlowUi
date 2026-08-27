@@ -86,17 +86,18 @@ Element System:
 
 things i want to do:
 	- Work on dev:
-		- upgrade dev runtime Telemetry / measurements, Injections
-		- complete overhaul of Dev Tools 
-		- Upgrade Dev tool's ability to modify code
+		[Done]- upgrade dev runtime Telemetry / measurements, Injections
+		[Done]- complete overhaul of Dev Tools
+		[Done]- Upgrade Dev tool's ability to modify code
 	- Clean things UP:
 		- Remove StoreTexture() and other Legacy functions
 		- Wire in MSAA and Potentially upgrade some configuration about it.
 		- add Decorations [[]] to older code.
 		- Move all Non FlowUi namespcae things out of /include/managers
 		- Clean UP /include/FlowUi move internals and maybe move files / add folders
-		- change For(;;) into While(True) 																	[Done]
+		[Done]- change For(;;) into While(True)
 		- Remove Doxy comments on internals and update doxy comments on new API
+		[Done]- Clean up legacy error functions that (void) strings and literals
 	- Lock in Configuration Structs
 		- Move internal Config Structs to Public config Structs
 		- Give concrete shape and single AppConfig umbrela
@@ -106,16 +107,16 @@ things i want to do:
 		- optimize lookups
 		- Implement level 1 and 2 Multi threading (single thread / internal Worker threads)
 	- Window APIs
-		- API to make a window with auto copied AppConfig + local overrides.
-		- API to define "window Operation" from another windows Build code and have it run after this windows execution
-		- API to provide a single FlowElement with Build callback as the entire UI tree and be serviced in another window automatically
+		[Done]- API to make a window with auto copied AppConfig + local overrides.
+		[Done]- API to define "window Operation" from another windows Build code and have it run after this windows execution
+		[Done]- API to provide a single FlowElement with Build callback as the entire UI tree and be serviced in another window automatically
     - App bundles
 		- Define AppConfig a single Element + provide Variables to Bind and a single call is the entire application
     - Complete defaults
-		- Complete Input Field Operations (ctrl / home / end / delete / ...)
+		[Done]- Complete Input Field Operations (ctrl / home / end / delete / ...)
 		- Make a standart Set of Shortcuts (opt in with configuration)
-		- Elements Standart library
-	- Move shortcut Manager to be App shared
+		[Done]- Elements Standart library
+	[Done]- Move shortcut Manager to be App shared
 	- Make element Assers Descriptive maybe.
 	- Interactions Upgrade
 		- Overlapping interaction Resolution Needs care 
@@ -134,6 +135,7 @@ things i want to do:
 		- Menu items a Menu elements
 		- Dedicated Scrolling Area with scroll indicator
 	- Hard code in Fallback/Default Textures / fonts?
+	- Default Icons For Dev Interface
 	- Dev Mode Tooling to auto Train PGO.
 	- CancelFrame silently catches. cleanUp Falure operations need strengthening.
 	- Upgrade Flow_Color

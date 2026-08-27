@@ -1466,6 +1466,9 @@ int main() {
 		config.window.width = 1280;
 		config.window.height = 840;
 		config.ui.fontAtlasSize = 1024;
+#if FLOW_UI_DEV_MODE
+		config.dev.enabled = true;
+#endif
 
 		App app = makeApplication(config);
 		DemoState state{};

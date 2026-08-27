@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 #include <clay.h>
@@ -139,6 +140,19 @@ struct WindowConfig {
 
 	/** @brief Initial low-level input behavior for the window. */
 	WindowInputConfig input{};
+};
+
+/** Partial overrides for a secondary window cloned from AppConfig::window. */
+struct WindowConfigOverrides {
+	std::optional<int> width;
+	std::optional<int> height;
+	std::optional<std::string> title;
+	std::optional<bool> resizable;
+	std::optional<bool> decorated;
+	std::optional<bool> maximized;
+	std::optional<bool> fullscreen;
+	std::optional<bool> highDPI;
+	std::optional<WindowInputConfig> input;
 };
 
 /**
@@ -364,20 +378,14 @@ struct DevToolsConfig {
 	/** @brief Enable developer tooling at runtime. */
 	bool enabled = false;
 
-	/** @brief Open the developer panel during UI manager initialization. */
-	bool panelOpenByDefault = false;
-
-	/** @brief Initial developer panel width in pixels. */
-	float panelWidthPx = 420.0f;
-
 	/**
-	 * @brief Register the panel toggle chord with FlowUi's ShortcutManager.
+	 * @brief Register the developer-interface toggle chord with ShortcutManager.
 	 *
 	 * Disable this when the application wants to own panel toggling itself.
 	 */
 	bool useShortcutManagerForPanelToggle = true;
 
-	/** @brief Keyboard chord used to toggle the developer panel. */
+	/** @brief Keyboard chord used to toggle the developer-interface window. */
 	DevShortcutChord panelToggleChord{};
 
 	/**

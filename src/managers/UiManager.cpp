@@ -9,9 +9,6 @@
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
-#if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
-#include "devMode/debugView.hpp"
-#endif
 #include "devMode/registry.hpp"
 #endif
 #include "managers/FontManager.hpp"
@@ -28,60 +25,6 @@ namespace {
 constexpr float kPointsPerInch = 72.0f;
 
 #if FLOW_UI_DEV_MODE
-FlowUi::ShortcutTrigger toShortcutTrigger(FlowUi::DevShortcutTrigger trigger) {
-	switch (trigger) {
-	case FlowUi::DevShortcutTrigger::Press:
-		return FlowUi::ShortcutTrigger::Press;
-	case FlowUi::DevShortcutTrigger::Release:
-		return FlowUi::ShortcutTrigger::Release;
-	case FlowUi::DevShortcutTrigger::Down:
-		return FlowUi::ShortcutTrigger::Down;
-	default:
-		return FlowUi::ShortcutTrigger::Press;
-	}
-}
-
-void adaptDevTreeToLegacy(FlowUi::detail::manager_storage::UiManagerState& state) {
-	using namespace FlowUi;
-	using namespace FlowUi::devSystems::tooling;
-	devMode::ElementTreePlaceholder& target = state.devRuntime.elementTreePlaceholder();
-	target.clear();
-	const DevTreeSnapshot& snapshot = state.devTreeCapture.current();
-	target.flatNodes.reserve(snapshot.flow.nodes.size());
-	const devMode::DevRegistry& registry = devMode::DevRegistry::instance();
-	for (size_t index = 0; index < snapshot.flow.nodes.size(); ++index) {
-		const DevFlowNode& source = snapshot.flow.nodes[index];
-		devMode::ElementTreePlaceholder::FlatNode node{};
-		node.captureOrder = index;
-		node.depth = source.depth;
-		node.kind = devMode::ElementTreePlaceholder::ElementKind::FlowElement;
-		node.definitionId = source.definition;
-		node.instanceId = source.instance;
-		node.debugPath = snapshot.string(source.debugName);
-		node.definitionDisplayName = snapshot.string(source.definitionName);
-		node.definitionTypeToken = snapshot.string(source.definitionTypeToken);
-		node.sourceFile = snapshot.string(source.sourceFile);
-		node.sourceFunction = snapshot.string(source.sourceFunction);
-		node.sourceLine = source.sourceLine;
-		node.sourceColumn = source.sourceColumn;
-		node.isInternalToDevMode = hasFlag(source.flags, DevFlowNodeFlag::InternalDev);
-#if FLOW_UI_DEV_CAPTURE_CLAY
-		node.isFloating = hasFlag(source.flags, DevFlowNodeFlag::FloatingClayRoot);
-#endif
-		if (const devMode::ElementDescriptor* descriptor =
-			registry.findElementByDefinitionId(source.definition)) {
-			node.hasRegisteredDefinition = true;
-			node.hasRegisteredParamsStruct =
-				registry.findStructByTypeHash(descriptor->paramsStructTypeHash) != nullptr;
-			node.hasRegisteredStateStruct =
-				registry.findStructByTypeHash(descriptor->stateStructTypeHash) != nullptr;
-			node.hasRegisteredResourcesStruct =
-				registry.findStructByTypeHash(descriptor->resourcesStructTypeHash) != nullptr;
-		}
-		target.flatNodes.push_back(std::move(node));
-	}
-}
-
 void reportDevTreeDiagnostics(
 	const FlowUi::devSystems::tooling::DevTreeCapture& capture) noexcept {
 	using namespace FlowUi;
@@ -192,7 +135,6 @@ namespace FlowUi
 		constructedElementStack.reserve(16);
 #if FLOW_UI_DEV_MODE
 		devToolsConfig = appConfig.dev;
-		devPanelVisible = devToolsConfig.enabled && devToolsConfig.panelOpenByDefault;
 #endif
 	}
 
@@ -248,25 +190,6 @@ namespace FlowUi
 			destroyStorage();
 			throw;
 		}
-#if FLOW_UI_DEV_MODE
-		if (state_->devToolsConfig.enabled && state_->devToolsConfig.useShortcutManagerForPanelToggle) {
-			const ShortcutChord toggleChord{
-				.key = state_->devToolsConfig.panelToggleChord.key,
-				.ctrl = state_->devToolsConfig.panelToggleChord.ctrl,
-				.shift = state_->devToolsConfig.panelToggleChord.shift,
-				.alt = state_->devToolsConfig.panelToggleChord.alt,
-				.super = state_->devToolsConfig.panelToggleChord.super,
-				.trigger = toShortcutTrigger(state_->devToolsConfig.panelToggleChord.trigger),
-			};
-			state_->devPanelToggleShortcutId = shortcutManager_.registerShortcut(
-				toggleChord, ShortcutScope::Global, 1000,
-				[this](ShortcutContext&) {
-					if (!state_->devToolsConfig.enabled) return false;
-					state_->devPanelVisible = !state_->devPanelVisible;
-					return true;
-				}).value_or(0u);
-		}
-#endif
 	}
 
 	void UiManager::destroyStorage() noexcept {
@@ -525,8 +448,6 @@ namespace FlowUi
 		state_->flowRootIdTracker.beginFrame();
 		state_->clayBridgeIdTracker.beginFrame();
 		state_->devRuntime.beginFrame();
-		adaptDevTreeToLegacy(*state_); // Previous completed tree for the in-frame legacy panel.
-		state_->devRootElementOpenThisFrame = false;
 #endif
 		{
 #if FLOW_UI_DEV_MODE
@@ -542,16 +463,6 @@ namespace FlowUi
 		if (devOverrideEngine_) {
 			devOverrideEngine_->beginWindowFrame(
 				window_, state_->devRuntime.frameCounter());
-		}
-		if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
-			Clay_ElementDeclaration devRoot{};
-			const Clay_ElementId devRootId = toClaySID("_Flow_Dev_root_");
-			devRoot.layout.sizing.width = CLAY_SIZING_GROW(0);
-			devRoot.layout.sizing.height = CLAY_SIZING_GROW(0);
-			devRoot.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-			Clay__OpenElementWithId(devRootId);
-			Clay__ConfigureOpenElement(devRoot);
-			state_->devRootElementOpenThisFrame = true;
 		}
 #endif
 	}
@@ -581,22 +492,6 @@ namespace FlowUi
 				.resolution = ErrorResolution::UsedFallback,
 			});
 		}
-#if FLOW_UI_DEV_MODE
-		if (state_->devRootElementOpenThisFrame) {
-			if (state_->devToolsConfig.enabled && state_->devPanelVisible) {
-#if !defined(FLOWUI_SKIP_LEGACY_DEV_ELEMENTS)
-				{
-					FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
-						devTimingRecorder_, devSystems::TimingCategory::DevTool,
-						devSystems::TimingZoneRole::DevToolWork, "flowui.dev_tool.build");
-					devMode::drawDebugView(*this);
-				}
-#endif
-			}
-			Clay__CloseElement();
-			state_->devRootElementOpenThisFrame = false;
-		}
-#endif
 		Clay_RenderCommandArray renderCommands{};
 #if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
 		state_->devTreeCapture.noteAuthoredClayEnd();
@@ -619,7 +514,6 @@ namespace FlowUi
 				devOverrideEngine_->endWindowFrame(window_);
 			}
 		}
-		adaptDevTreeToLegacy(*state_);
 #endif
 
 		{

@@ -228,6 +228,16 @@ target_compile_definitions(flowui_phase4_api_tests PRIVATE
 )
 target_link_libraries(flowui_phase4_api_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.phase4.api COMMAND flowui_phase4_api_tests)
+
+add_executable(flowui_multi_window_api_contract_tests ApiTests/MultiWindowApiContractTests.cpp)
+target_compile_features(flowui_multi_window_api_contract_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_multi_window_api_contract_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_multi_window_api_contract_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.multi_window.api_contract COMMAND flowui_multi_window_api_contract_tests)
+set_tests_properties(flowui.multi_window.api_contract PROPERTIES
+	LABELS "flowui;window;api;unit"
+	TIMEOUT 30
+)
 set_tests_properties(flowui.phase4.api PROPERTIES LABELS "flowui;phase4;unit" TIMEOUT 30)
 
 add_executable(flowui_phase5_manager_storage_tests ApiTests/Phase5ManagerStorageTests.cpp)

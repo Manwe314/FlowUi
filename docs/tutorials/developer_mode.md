@@ -70,7 +70,7 @@ Developer mode works in a few stages:
 
 1. Registration macros describe structs, fields, enums, and element definitions.
 2. `ElementBuilder` captures Flow element instances while the UI is built.
-3. The dev panel uses the registry and runtime capture data to show editable fields.
+3. The dedicated developer-interface window uses captured tooling data.
 4. Runtime edits become overrides stored in `DevRuntime`.
 5. Export writes those overrides to `.flowui/overrides.v1.json` or another configured path.
 6. The updater tool reads that JSON and patches source defaults where it can resolve a source location.
@@ -84,26 +84,24 @@ Developer tooling is configured through `FlowUi::DevToolsConfig` inside `AppConf
 ```cpp
 FlowUi::AppConfig config{};
 config.dev.enabled = true;
-config.dev.panelOpenByDefault = true;
-config.dev.panelWidthPx = 460.0f;
 config.dev.overridesPath = ".flowui/dashboard-card-overrides.json";
 
 FlowUi::App app = FlowUi::makeApplication(config);
 ```
 
-The runtime config is still available from `UiManager`.
+The runtime capture config is still available from `UiManager`.
 
 ```cpp
-app.ui().devToolsConfig().panelOpenByDefault = true;
+app.ui().devToolsConfig().excludeInternalDevElementsFromCapture = true;
 ```
 
-Most applications should keep `excludeInternalDevElementsFromCapture` enabled. The dev panel itself is made from Flow elements, and hiding those internal nodes keeps the hierarchy focused on user-authored UI.
+Most applications should keep `excludeInternalDevElementsFromCapture` enabled. The developer interface itself is made from Flow elements, and hiding those internal nodes keeps the hierarchy focused on user-authored UI.
 
 `autoSave` is present on the config, but in the current V1 workflow exports are explicit. Treat the export button or `exportOverridesAsJson()` call as the point where runtime edits become a file on disk.
 
 ### Panel Toggle
 
-By default, developer mode can register its panel toggle with `ShortcutManager`.
+By default, developer mode registers its dedicated-window toggle with `ShortcutManager`.
 
 ```cpp
 config.dev.useShortcutManagerForPanelToggle = true;
@@ -112,7 +110,7 @@ config.dev.panelToggleChord.shift = true;
 config.dev.panelToggleChord.key = GLFW_KEY_D;
 ```
 
-If the application owns all global shortcuts, disable this and toggle the panel through app code instead.
+If the application owns all global shortcuts, disable this registration.
 
 ```cpp
 config.dev.useShortcutManagerForPanelToggle = false;
@@ -441,7 +439,6 @@ FLOWUI_DEV_REGISTER_ELEMENT(DashboardCardDefinition, "Dashboard Card");
 ```cpp
 FlowUi::AppConfig config{};
 config.dev.enabled = true;
-config.dev.panelOpenByDefault = true;
 config.dev.overridesPath = ".flowui/overrides.v1.json";
 
 FlowUi::App app = FlowUi::makeApplication(config);
