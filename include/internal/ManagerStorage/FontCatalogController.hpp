@@ -101,6 +101,9 @@ public:
 	storage::ImageHandle atlasImage{};
 	storage::ImageViewHandle atlasView{};
 	storage::SamplerHandle atlasSampler{};
+#if FLOW_UI_DEV_MODE
+	TextureHandle devAtlasTexture{};
+#endif
 	Font::AtlasArrayResource borrowedAtlas{};
 };
 

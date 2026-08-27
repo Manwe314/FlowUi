@@ -3728,6 +3728,46 @@ bool FlowStorageSystem::textureRetirementComplete(TextureHandle texture) const n
 	return !impl_->validTexture(texture);
 }
 
+#if FLOW_UI_DEV_MODE
+DevTextureMetadata FlowStorageSystem::devTextureMetadata(TextureHandle texture) const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->validTexture(texture)) return {};
+	const TextureHotRecord& hot = impl_->textureHot[texture.index];
+	const Impl::TextureColdRecord& cold = impl_->textureCold[texture.index];
+	DevTextureMetadata result{
+		.texture = TextureMetadata{hot.state, hot.sourceWidth, hot.sourceHeight, hot.revision},
+		.key = cold.key,
+		.published = cold.published,
+	};
+	if (impl_->validImageView(cold.desc.imageView)) {
+		const ImageHandle image = impl_->imageViews[cold.desc.imageView.index].image;
+		if (impl_->validImage(image)) {
+			const Impl::ImageRecord& record = impl_->images[image.index];
+			result.formatVulkan = static_cast<uint32_t>(toVkFormat(record.desc.format));
+			result.gpuMemoryBytes = record.byteSize;
+		}
+	}
+	return result;
+}
+
+bool FlowStorageSystem::retainTextureForDevInspection(TextureHandle texture) noexcept {
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		if (!impl_->usableTexture(texture)) return false;
+		impl_->retainTexture(texture);
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+void FlowStorageSystem::releaseTextureFromDevInspection(TextureHandle texture) {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->validTexture(texture)) return;
+	impl_->releaseTextureReference(texture, impl_->textureCold[texture.index].lastUse);
+}
+#endif
+
 void FlowStorageSystem::setFallbackTexture(TextureHandle texture) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->requireInitialized();

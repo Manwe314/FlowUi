@@ -32,6 +32,46 @@
 namespace Font = FlowUi::Font;
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE
+std::uint64_t FontManager::devRevision() const noexcept {
+	return controller_ ? controller_->catalogRevision : 0;
+}
+
+std::size_t FontManager::devFontCount() const noexcept {
+	if (!controller_) return 0;
+	std::size_t count = 0;
+	for (const auto& family : controller_->families) count += family.faces.size();
+	return count;
+}
+
+bool FontManager::visitDevFonts(void* userData, DevFontVisitor visitor) const {
+	if (!controller_ || !visitor) return false;
+	for (const auto& family : controller_->families) {
+		for (const auto& familyFace : family.faces) {
+			if (!visitor(userData, DevFontView{
+				.fontId = familyFace.fontId,
+				.familyName = family.name,
+				.weight = familyFace.weight,
+				.style = familyFace.style,
+				.face = getFontById(familyFace.fontId),
+			})) return false;
+		}
+	}
+	return true;
+}
+
+FontManager::DevAtlasView FontManager::devAtlas() const noexcept {
+	if (!controller_) return {};
+	return DevAtlasView{
+		.texture = controller_->devAtlasTexture,
+		.imageView = controller_->atlasView,
+		.width = controller_->borrowedAtlas.width,
+		.height = controller_->borrowedAtlas.height,
+		.layersUsed = controller_->borrowedAtlas.layersUsed,
+		.layersCapacity = controller_->borrowedAtlas.layersCapacity,
+	};
+}
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 void FontManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!controller_) return;

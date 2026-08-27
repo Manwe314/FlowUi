@@ -3,6 +3,12 @@
 #include "FlowUi/BuildConfig.hpp"
 
 #include <string_view>
+#if FLOW_UI_DEV_MODE
+#include <cstdint>
+#include <string>
+#include <vector>
+#include "FlowUi/TextureHandle.hpp"
+#endif
 
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
@@ -41,6 +47,17 @@ class App;
  */
 class ImageManager {
 public:
+#if FLOW_UI_DEV_MODE
+	struct DevImageView {
+		std::string_view key{};
+		std::string_view sourcePath{};
+		TextureHandle texture{};
+	};
+	using DevImageVisitor = bool (*)(void*, const DevImageView&);
+	[[nodiscard]] std::uint64_t devRevision() const noexcept { return devRevision_; }
+	[[nodiscard]] std::size_t devImageCount() const noexcept { return devImages_.size(); }
+	bool visitDevImages(void* userData, DevImageVisitor visitor) const;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept { devMemoryRecorder_ = recorder; }
 #endif
@@ -150,6 +167,15 @@ private:
 
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	MissingVisualPolicy missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
+#if FLOW_UI_DEV_MODE
+	struct DevImageRecord {
+		std::string key{};
+		std::string sourcePath{};
+		TextureHandle texture{};
+	};
+	std::vector<DevImageRecord> devImages_{};
+	std::uint64_t devRevision_ = 1;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	devSystems::DevMemoryRecorder* devMemoryRecorder_ = nullptr;
 #endif

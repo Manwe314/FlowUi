@@ -678,6 +678,16 @@ struct TextureMetadata {
 	uint32_t revision = 0;
 };
 
+#if FLOW_UI_DEV_MODE
+struct DevTextureMetadata {
+	TextureMetadata texture{};
+	ResourceKey key{};
+	uint32_t formatVulkan = 0;
+	uint64_t gpuMemoryBytes = 0;
+	bool published = false;
+};
+#endif
+
 struct BufferWriteView {
 	BufferHandle buffer{};
 	std::byte* data = nullptr;

@@ -956,6 +956,17 @@ struct App::Impl {
 		FSEL::standard_icons::registerStandardIcons(icons);
 #endif
 #endif
+#if FLOW_UI_DEV_MODE
+		devTooling.catalogues().bindManagers(
+			storageSystem.get(), &themeManager, &actionManager, &fonts,
+#if FLOWUI_INCLUDE_ICON_MANAGER
+			&icons,
+#else
+			nullptr,
+#endif
+			&imageManager, &devTooling.schemas());
+		devTooling.catalogues().setDevTimingRecorder(&timingRecorder());
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 		registerAppMemoryProbes();
 		registerWindowMemoryProbe(*mainPointer);

@@ -78,6 +78,7 @@ void DevTooling::appendDevMemorySamples(MemorySampleSink& sink) const noexcept {
 		DevContainerMemoryAccumulator memory{};
 		const std::size_t bytes = overrides_.memoryFootprintBytes() +
 			overlays_.memoryFootprintBytes() +
+			catalogues_.memoryFootprintBytes() +
 			overlaySelections_.capacity() * sizeof(WindowOverlaySelection);
 		memory.liveBytes = bytes;
 		memory.capacityBytes = bytes;

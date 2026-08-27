@@ -6,6 +6,7 @@
 
 #include "FlowUi/WindowId.hpp"
 #include "devSystems/devTooling/bake/DevBakePipeline.hpp"
+#include "devSystems/devTooling/catalogue/DevCatalogues.hpp"
 #include "devSystems/devTooling/overlay/DevOverlayService.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
@@ -38,6 +39,8 @@ public:
 	}
 	[[nodiscard]] tooling::DevOverlayService& overlays() noexcept { return overlays_; }
 	[[nodiscard]] const tooling::DevOverlayService& overlays() const noexcept { return overlays_; }
+	[[nodiscard]] devMode::DevCatalogues& catalogues() noexcept { return catalogues_; }
+	[[nodiscard]] const devMode::DevCatalogues& catalogues() const noexcept { return catalogues_; }
 
 	/** Attachment surface for a future interface or picking controller. */
 	void setOverlaySelection(
@@ -70,6 +73,7 @@ private:
 	tooling::DevOverrideEngine overrides_;
 	tooling::DevBakePipeline bakePipeline_;
 	tooling::DevOverlayService overlays_{};
+	devMode::DevCatalogues catalogues_{};
 	std::vector<WindowOverlaySelection> overlaySelections_{};
 };
 

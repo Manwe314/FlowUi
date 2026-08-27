@@ -1,5 +1,6 @@
 #include "managers/ImageManager.hpp"
 
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <limits>
@@ -64,6 +65,10 @@ void ImageManager::init(storage::IStorageSystem& storageSystem, MissingVisualPol
 }
 
 void ImageManager::destroy() noexcept {
+#if FLOW_UI_DEV_MODE
+	devImages_.clear();
+	++devRevision_;
+#endif
 	storage_ = nullptr;
 	missingPolicy_ = MissingVisualPolicy::UseFallbackTexture;
 }
@@ -149,12 +154,26 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 		storage_->flushUploads();
 		candidate.uploadFlushed = true;
 
-		(void)storage_->publishTexture(normalized, storage::TextureViewDesc{
+		const TextureHandle texture = storage_->publishTexture(normalized, storage::TextureViewDesc{
 			.imageView = candidate.view,
 			.sampler = candidate.sampler,
 			.sourceWidth = width,
 			.sourceHeight = height,
 		});
+#if FLOW_UI_DEV_MODE
+		try {
+			auto existing = std::find_if(devImages_.begin(), devImages_.end(),
+				[key](const DevImageRecord& record) { return record.key == key.name; });
+			DevImageRecord record{
+				.key = std::string(key.name),
+				.sourcePath = path.string(),
+				.texture = texture,
+			};
+			if (existing == devImages_.end()) devImages_.push_back(std::move(record));
+			else *existing = std::move(record);
+		} catch (...) {}
+		++devRevision_;
+#endif
 		storage_->clearDiagnosticMark(normalized, MissingImageDiagnostic);
 		return inserted;
 	} catch (const std::bad_alloc&) {
@@ -172,11 +191,34 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 Result<bool> ImageManager::removeImage(ResourceKey key) {
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageRemove));
 	try {
-		return storage_->removeTexture(imageKey(*storage_, key));
+		const bool removed = storage_->removeTexture(imageKey(*storage_, key));
+#if FLOW_UI_DEV_MODE
+		if (removed) {
+			std::erase_if(devImages_, [key](const DevImageRecord& record) {
+				return record.key == key.name;
+			});
+			++devRevision_;
+		}
+#endif
+		return removed;
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
 }
+
+#if FLOW_UI_DEV_MODE
+bool ImageManager::visitDevImages(void* userData, DevImageVisitor visitor) const {
+	if (!visitor) return false;
+	for (const DevImageRecord& record : devImages_) {
+		if (!visitor(userData, DevImageView{
+			.key = record.key,
+			.sourcePath = record.sourcePath,
+			.texture = record.texture,
+		})) return false;
+	}
+	return true;
+}
+#endif
 
 bool ImageManager::contains(ResourceKey key) const {
 	return storage_ && static_cast<bool>(storage_->findTexture(imageKey(*storage_, key)));

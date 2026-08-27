@@ -1,5 +1,5 @@
 #include "managers/ActionManager.hpp"
-#if FLOW_UI_DEV_MODE
+	#if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -23,6 +23,7 @@ void ActionManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) c
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.addNodeContainer(current.bindings);
 		memory.add(current.deferredRemovals);
+		memory.add(devUiRecipes_);
 		devSystems::appendManagerSample(sink, devSystems::memory_sources::kActions.id, memory);
 	} catch (...) {}
 }
@@ -31,6 +32,76 @@ void ActionManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) c
 namespace action = detail::action;
 namespace manager_storage = detail::manager_storage;
 namespace storage = detail::storage;
+
+#if FLOW_UI_DEV_MODE
+std::uint64_t ActionManager::devRevision() const noexcept {
+	return devRevision_;
+}
+
+std::size_t ActionManager::devActionCount() const noexcept {
+	try { return (storage_ && stateHandle_ ? state().bindings.size() : 0) + devUiRecipes_.size(); }
+	catch (...) { return 0; }
+}
+
+bool ActionManager::visitDevActions(void* userData, DevActionVisitor visitor) const {
+	if (!storage_ || !stateHandle_ || !visitor) return false;
+	for (const auto& [id, handle] : state().bindings) {
+		const storage::ConstPersistentRecordView record =
+			std::as_const(*storage_).persistentRecord(
+				handle, storage::ResourceKind::AppActionBinding);
+		if (!record || record.headerBytes < sizeof(action::AppActionBindingHeader)) continue;
+		const auto& header = *static_cast<const action::AppActionBindingHeader*>(record.header);
+		ActionDebugInfo debug{};
+		debug.kind = ActionCallKind::App;
+		debug.appId = id;
+		debug.debugName = storage_->string(header.debugName);
+		debug.availability.enabled = header.availability.enabled;
+		debug.bound = !header.tombstoned;
+		debug.invocationCount = header.invocationCount;
+		debug.discardedResultCount = header.discardedResultCount;
+		debug.lastStatus = header.lastStatus;
+		debug.lastSource = header.lastSource;
+		debug.lastInvocationThrew = header.lastInvocationThrew;
+		if (!visitor(userData, DevActionView{
+			.debug = debug,
+			.callableTypeHash = header.callableTypeHash,
+			.resultTypeHash = header.resultTypeHash,
+		})) return false;
+	}
+	for (const DevUiRecipeRecord& recipe : devUiRecipes_) {
+		ActionDebugInfo debug{};
+		debug.kind = ActionCallKind::Ui;
+		debug.uiRecipeId = recipe.id;
+		debug.debugName = recipe.debugName;
+		debug.availability.enabled = true;
+		debug.bound = true;
+		debug.definitionSource = recipe.source;
+		if (!visitor(userData, DevActionView{
+			.debug = debug,
+			.callableTypeHash = recipe.id,
+		})) return false;
+	}
+	return true;
+}
+
+void ActionManager::noteUiRecipe(
+	std::uint64_t recipeId,
+	std::string_view debugName,
+	ActionSourceLocation source) noexcept {
+	if (recipeId == 0) return;
+	for (const DevUiRecipeRecord& recipe : devUiRecipes_) {
+		if (recipe.id == recipeId) return;
+	}
+	try {
+		devUiRecipes_.push_back(DevUiRecipeRecord{
+			.id = recipeId,
+			.debugName = debugName,
+			.source = source,
+		});
+		++devRevision_;
+	} catch (...) {}
+}
+#endif
 
 ActionManager::~ActionManager() {
 	destroy();
@@ -62,6 +133,10 @@ void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
 }
 
 void ActionManager::destroy() noexcept {
+#if FLOW_UI_DEV_MODE
+	devUiRecipes_.clear();
+	++devRevision_;
+#endif
 	if (storage_ && stateHandle_ != 0) {
 		if (auto* current = manager_storage::state<manager_storage::ActionManagerState>(
 				storage_,
@@ -153,6 +228,9 @@ void ActionManager::publishBinding(
 		retireBinding(previous);
 	}
 	storage_->noteManagerMutation(InvalidWindowId);
+#if FLOW_UI_DEV_MODE
+	++devRevision_;
+#endif
 }
 
 void ActionManager::retireBinding(storage::PersistentRecordHandle handle) noexcept {
@@ -209,6 +287,7 @@ void ActionManager::InvocationLease::noteSuccess(bool discardedResult) noexcept 
 	header_->lastStatus = ActionInvocationStatus::Invoked;
 	header_->lastInvocationThrew = false;
 	if (discardedResult && header_->resultTypeHash != 0) ++header_->discardedResultCount;
+	if (owner_) ++owner_->devRevision_;
 #else
 	(void)discardedResult;
 #endif
@@ -216,7 +295,10 @@ void ActionManager::InvocationLease::noteSuccess(bool discardedResult) noexcept 
 
 void ActionManager::InvocationLease::noteException() noexcept {
 #if FLOW_UI_DEV_MODE
-	if (header_) header_->lastInvocationThrew = true;
+	if (header_) {
+		header_->lastInvocationThrew = true;
+		if (owner_) ++owner_->devRevision_;
+	}
 #endif
 }
 
@@ -294,8 +376,9 @@ ActionManager::InvocationLease ActionManager::beginInvocation(
 		}
 	}
 	++header.activeInvocations;
-#if FLOW_UI_DEV_MODE
+	#if FLOW_UI_DEV_MODE
 	++header.invocationCount;
+	++devRevision_;
 	header.lastSource = source;
 	header.lastInvocationThrew = false;
 #else
@@ -462,6 +545,9 @@ bool AppActions::unbind(AppActionID id) {
 	current.bindings.erase(found);
 	owner_->retireBinding(handle);
 	owner_->storage_->noteManagerMutation(InvalidWindowId);
+#if FLOW_UI_DEV_MODE
+	++owner_->devRevision_;
+#endif
 	return true;
 }
 
@@ -502,6 +588,9 @@ bool AppActions::setAvailability(
 	if (header.availability.enabled == availabilityValue.enabled) return true;
 	header.availability = availabilityValue;
 	owner_->storage_->noteManagerMutation(InvalidWindowId);
+#if FLOW_UI_DEV_MODE
+	++owner_->devRevision_;
+#endif
 	return true;
 }
 
