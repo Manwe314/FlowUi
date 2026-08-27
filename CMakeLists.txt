@@ -280,7 +280,6 @@ target_sources(flowui
 		src/internal/Text/TextLineBreaker.cpp
 		src/internal/Text/TextLayoutService.cpp
 		src/internal/Text/TextStorage.cpp
-        src/devMode/debugView.cpp
         src/devMode/devJson.cpp
         src/devMode/devRuntime.cpp
         src/Ui/Vk_UiRenderer.cpp
@@ -334,7 +333,6 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ViewportStorageController.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/elementDevCapture.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/debugView.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devJson.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
@@ -374,7 +372,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devTooling/override/DevOverrideTypes.cpp
 			src/devSystems/devTooling/tree/DevTreeCapture.cpp
 			src/devSystems/devTooling/schema/DevSchemaRegistry.cpp
-			src/devSystems/devFunctionality/DevFunctionality.cpp
+			src/devSystems/devInterface/DevInterface.cpp
 			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.cpp
@@ -417,7 +415,8 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/tree/DevTreeTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ClayDevTreeBridge.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devFunctionality/DevFunctionality.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterface.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevRoot.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevError.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.hpp>

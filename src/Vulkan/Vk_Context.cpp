@@ -14,9 +14,8 @@
 
 namespace {
 
-static void vkCheck(VkResult result, const char* message, FlowUi::ErrorSite site) {
+static void vkCheck(VkResult result, FlowUi::ErrorSite site) {
 	if (result != VK_SUCCESS) {
-		(void)message;
 		FlowUi::ErrorCode code = FlowUi::ErrorCode::VulkanNativeCallFailed;
 		if (result == VK_ERROR_DEVICE_LOST) code = FlowUi::ErrorCode::VulkanDeviceLost;
 		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -186,7 +185,7 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	auto enumerateInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
 		vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
 	if (enumerateInstanceVersion) {
-		vkCheck(enumerateInstanceVersion(&instanceVersion), "Failed to query Vulkan instance version.",
+		vkCheck(enumerateInstanceVersion(&instanceVersion),
 			FlowUi::ErrorSite::VulkanInstanceCreate);
 	}
 	if (instanceVersion < VK_API_VERSION_1_3) {
@@ -195,10 +194,10 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 
 	uint32_t extCount = 0;
 	vkCheck(vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr),
-		"Failed to enumerate instance extensions.", FlowUi::ErrorSite::VulkanInstanceCreate);
+		FlowUi::ErrorSite::VulkanInstanceCreate);
 	std::vector<VkExtensionProperties> availableExts(extCount);
 	vkCheck(vkEnumerateInstanceExtensionProperties(nullptr, &extCount, availableExts.data()),
-		"Failed to enumerate instance extensions.", FlowUi::ErrorSite::VulkanInstanceCreate);
+		FlowUi::ErrorSite::VulkanInstanceCreate);
 
 	std::vector<const char*> extensions = requiredExts;
 	bool enableDebugUtils = config.vk.enableDebugUtils;
@@ -244,10 +243,10 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	if (enableValidation) {
 		uint32_t layerCount = 0;
 		vkCheck(vkEnumerateInstanceLayerProperties(&layerCount, nullptr),
-			"Failed to enumerate instance layers.", FlowUi::ErrorSite::VulkanInstanceCreate);
+			FlowUi::ErrorSite::VulkanInstanceCreate);
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkCheck(vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data()),
-			"Failed to enumerate instance layers.", FlowUi::ErrorSite::VulkanInstanceCreate);
+			FlowUi::ErrorSite::VulkanInstanceCreate);
 		if (hasLayer("VK_LAYER_KHRONOS_validation", availableLayers)) {
 			layers.push_back("VK_LAYER_KHRONOS_validation");
 		} else {
@@ -285,12 +284,12 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 		createInfo.pNext = &debugCreateInfo;
 	}
 
-	vkCheck(vkCreateInstance(&createInfo, nullptr, &instance), "Failed to create Vulkan instance.",
+	vkCheck(vkCreateInstance(&createInfo, nullptr, &instance),
 		FlowUi::ErrorSite::VulkanInstanceCreate);
 
 	if (enableDebugUtils) {
 		vkCheck(CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &debugMessenger),
-			"Failed to create Vulkan debug messenger.", FlowUi::ErrorSite::VulkanInstanceCreate);
+			FlowUi::ErrorSite::VulkanInstanceCreate);
 	}
 }
 
@@ -315,14 +314,14 @@ void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfac
 
 	uint32_t deviceCount = 0;
 	vkCheck(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr),
-		"Failed to enumerate Vulkan physical devices.", FlowUi::ErrorSite::VulkanPhysicalDeviceSelect);
+		FlowUi::ErrorSite::VulkanPhysicalDeviceSelect);
 	if (deviceCount == 0) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::VulkanDeviceUnavailable, FlowUi::ErrorSite::VulkanPhysicalDeviceSelect));
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkCheck(vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data()),
-		"Failed to enumerate Vulkan physical devices.", FlowUi::ErrorSite::VulkanPhysicalDeviceSelect);
+		FlowUi::ErrorSite::VulkanPhysicalDeviceSelect);
 
 	VkPhysicalDevice selected = VK_NULL_HANDLE;
 	QueueFamilyIndices selectedQueues{};
@@ -533,7 +532,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	createInfo.pNext = &enabled13;
 	createInfo.pEnabledFeatures = nullptr;
 
-	vkCheck(vkCreateDevice(phys, &createInfo, nullptr, &device), "Failed to create Vulkan device.",
+	vkCheck(vkCreateDevice(phys, &createInfo, nullptr, &device),
 		FlowUi::ErrorSite::VulkanLogicalDeviceCreate);
 #if FLOW_UI_DEV_MODE
 	synchronization2Enabled = enabled13.synchronization2 == VK_TRUE;
@@ -563,7 +562,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	if (enableMemoryBudget) allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 	memoryBudgetEnabled = enableMemoryBudget;
 #endif
-	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator), "Failed to create VMA allocator.",
+	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator),
 		FlowUi::ErrorSite::VulkanAllocatorCreate);
 }
 

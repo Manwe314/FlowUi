@@ -30,21 +30,23 @@ void testPublicOverloads() {
 }
 
 void testFlowColorRgbAndRgbaForms() {
-	const Clay_Color rgb = FlowUi::Flow_Color("#12aBcD");
+	constexpr Clay_Color rgb = FlowUi::Flow_Color("#12aBcD");
+	static_assert(rgb.r == 0x12 && rgb.g == 0xab && rgb.b == 0xcd && rgb.a == 0xff);
 	FLOWUI_CHECK(rgb.r == 0x12);
 	FLOWUI_CHECK(rgb.g == 0xab);
 	FLOWUI_CHECK(rgb.b == 0xcd);
 	FLOWUI_CHECK(rgb.a == 0xff);
 
-	const Clay_Color rgba = FlowUi::Flow_Color("#12abcd34");
+	const std::string_view runtimeHex = "#12abcd34";
+	const Clay_Color rgba = FlowUi::Flow_Color(runtimeHex);
 	FLOWUI_CHECK(rgba.r == 0x12);
 	FLOWUI_CHECK(rgba.g == 0xab);
 	FLOWUI_CHECK(rgba.b == 0xcd);
 	FLOWUI_CHECK(rgba.a == 0x34);
 
-	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color("#12345"));
-	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color("123456"));
-	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color("#12345g"));
+	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color(std::string_view{"#12345"}));
+	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color(std::string_view{"123456"}));
+	FLOWUI_CHECK_THROWS(FlowUi::Flow_Color(std::string_view{"#12345g"}));
 }
 
 std::string readSource(const char* path) {

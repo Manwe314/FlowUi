@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -13,6 +14,7 @@
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "clay.h"
+#include "managers/structs/FlowUiElementConcepts.hpp"
 
 namespace FlowUi {
 
@@ -22,22 +24,9 @@ struct FontManager;
  * @{
  */
 
-/**
- * @brief Convert a \#RRGGBB or \#RRGGBBAA color string into a Clay_Color.
- *
- * Example:
- * @code{.cpp}
- * Clay_Color color = FlowUi::Flow_Color("\#fff3e8ff");
- * Clay_Color opaque = FlowUi::Flow_Color("\#fff3e8");
- * @endcode
- *
- * Six-digit RGB input receives an implicit `ff` alpha channel.
- *
- * @param hexRgba String view of a \#RRGGBB or \#RRGGBBAA hex color code.
- * @return Clay_Color decoded from the hex color input.
- * @throws std::invalid_argument if the string is not valid \#RRGGBB or \#RRGGBBAA.
- */
-inline Clay_Color Flow_Color(std::string_view hexRgba)
+namespace detail {
+
+constexpr Clay_Color decodeFlowColor(std::string_view hexRgba)
 {
 	if ((hexRgba.size() != 7 && hexRgba.size() != 9) || hexRgba[0] != '#') {
 		throw std::invalid_argument("Flow_Color expects #RRGGBB or #RRGGBBAA.");
@@ -64,7 +53,42 @@ inline Clay_Color Flow_Color(std::string_view hexRgba)
 	};
 }
 
+} // namespace detail
+
+/**
+ * @brief Convert a literal \#RRGGBB or \#RRGGBBAA color into a Clay_Color at compile time.
+ *
+ * Example:
+ * @code{.cpp}
+ * Clay_Color color = FlowUi::Flow_Color("\#fff3e8ff");
+ * Clay_Color opaque = FlowUi::Flow_Color("\#fff3e8");
+ * @endcode
+ *
+ * Invalid literals are rejected during compilation. Six-digit RGB input receives
+ * an implicit `ff` alpha channel.
+ *
+ * @param hexRgba String literal containing a \#RRGGBB or \#RRGGBBAA hex color code.
+ * @return Clay_Color decoded from the hex color input.
+ */
+template <std::size_t Size>
+consteval Clay_Color Flow_Color(const char (&hexRgba)[Size])
+{
+	return detail::decodeFlowColor(std::string_view{hexRgba, Size - 1u});
+}
+
+/**
+ * @brief Convert a runtime \#RRGGBB or \#RRGGBBAA string into a Clay_Color.
+ *
+ * @throws std::invalid_argument if the string is not valid \#RRGGBB or \#RRGGBBAA.
+ */
+inline Clay_Color Flow_Color(std::string_view hexRgba)
+{
+	return detail::decodeFlowColor(hexRgba);
+}
+
 class UiManager;
+template <FlowElement Element>
+class ElementBuilder;
 class ImageManager;
 class ThemeManager;
 class ElementManager;
@@ -78,6 +102,14 @@ class IconManager;
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 class ViewPortManager;
 #endif
+
+/** Callback used to construct one managed window's UI each frame. */
+using UiBuildCallback = std::function<void(UiManager&, WindowId)>;
+
+/** Lifecycle policy for a window registered with a managed UI callback. */
+struct ManagedWindowFlags {
+	bool autoDestroyOnClose = true;
+};
 
 /**
  * @brief Main FlowUi application object and owner of runtime managers.
@@ -132,6 +164,58 @@ public:
 	 * be created on the selected device.
 	 */
 	[[nodiscard]] Result<WindowId> createWindow(const WindowConfig& config);
+	/** Create a secondary window by cloning the main window configuration. */
+	[[nodiscard]] Result<WindowId> createWindowLikeMain();
+	/** Create a secondary window by applying partial overrides to the main config. */
+	[[nodiscard]] Result<WindowId> createWindow(const WindowConfigOverrides& overrides);
+	/** Create a secondary window with a concise title and optional dimensions. */
+	[[nodiscard]] Result<WindowId> createWindow(
+		std::string_view title,
+		int width = 0,
+		int height = 0);
+	/** Create and register a synchronously managed secondary window. */
+	[[nodiscard]] Result<WindowId> createWindow(
+		const WindowConfigOverrides& overrides,
+		UiBuildCallback buildUi,
+		ManagedWindowFlags flags = {});
+	/** Attach or replace the managed UI callback for a secondary window.
+	 *
+	 * The semantic main window is not eligible because its frame remains under
+	 * the no-argument frame API's control.
+	 */
+	[[nodiscard]] Status setWindowUiCallback(
+		WindowId id,
+		UiBuildCallback buildUi,
+		ManagedWindowFlags flags = {});
+	/** Return a managed window to explicit/manual frame control. */
+	void removeWindowUiCallback(WindowId id);
+	/** Execute all managed secondary-window frame triads in registration order.
+	 *
+	 * Dispatch is synchronous on the platform thread. Closed windows with
+	 * autoDestroyOnClose enabled are drained and destroyed before returning.
+	 */
+	[[nodiscard]] Status dispatchManagedWindows();
+
+	template <FlowElement Element>
+	[[nodiscard]] Result<WindowId> createWindow(
+		const WindowConfigOverrides& overrides,
+		const Element& element,
+		ParametersOf<Element> params = {},
+		LocalElementName localName = LocalElementName{"window/root-element"});
+
+	template <FlowElement Element>
+	[[nodiscard]] Result<WindowId> createWindow(
+		const WindowConfigOverrides& overrides,
+		const Element& element,
+		std::function<void(ElementBuilder<Element>&, WindowId)> configurator,
+		LocalElementName localName = LocalElementName{"window/root-element"});
+
+	template <FlowElement Element>
+	[[nodiscard]] Result<WindowId> createWindowWithState(
+		const WindowConfigOverrides& overrides,
+		const Element& element,
+		std::shared_ptr<ParametersOf<Element>> sharedParams,
+		LocalElementName localName = LocalElementName{"window/root-element"});
 	/** @brief Destroy a secondary window after draining its outstanding work.
 	 *
 	 * The semantic main window cannot be explicitly destroyed.
@@ -281,6 +365,9 @@ public:
 	 * @pre FlowUi::App::endFrame() was called successfully.
 	 * @post This frame is rendered and presented.
 	 * @note This function should be called exactly once per frame.
+	 * @note After presenting the main window, this overload synchronously calls
+	 * dispatchManagedWindows(). The WindowId overload never dispatches managed
+	 * windows implicitly.
 	 */
 	[[nodiscard]] Status drawFrame();
 	/** @brief Submit and present a specific prepared window frame.

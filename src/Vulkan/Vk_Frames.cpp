@@ -5,9 +5,8 @@
 
 namespace {
 
-static void vkCheck(VkResult result, const char* message) {
+static void vkCheck(VkResult result) {
 	if (result != VK_SUCCESS) {
-		(void)message;
 		FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
 			? FlowUi::ErrorCode::VulkanDeviceLost : FlowUi::ErrorCode::VulkanNativeCallFailed;
 		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -36,27 +35,23 @@ void FrameVk::create(uint32_t framesInFlight, VulkanContext& vk) {
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.queueFamilyIndex = vk.graphicsQFamily;
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		vkCheck(vkCreateCommandPool(vk.device, &poolInfo, nullptr, &frame.pool),
-			"Failed to create command pool.");
+		vkCheck(vkCreateCommandPool(vk.device, &poolInfo, nullptr, &frame.pool));
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = frame.pool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = 1;
-		vkCheck(vkAllocateCommandBuffers(vk.device, &allocInfo, &frame.cmd),
-			"Failed to allocate command buffer.");
+		vkCheck(vkAllocateCommandBuffers(vk.device, &allocInfo, &frame.cmd));
 
 		VkSemaphoreCreateInfo semInfo{};
 		semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &frame.imageAvailable),
-			"Failed to create image available semaphore.");
+		vkCheck(vkCreateSemaphore(vk.device, &semInfo, nullptr, &frame.imageAvailable));
 
 		VkFenceCreateInfo fenceInfo{};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-		vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &frame.inFlight),
-			"Failed to create in-flight fence.");
+		vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &frame.inFlight));
 	}
 
 }

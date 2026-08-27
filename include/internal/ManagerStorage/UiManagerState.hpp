@@ -203,9 +203,6 @@ struct UiManagerState {
 	devSystems::tooling::DevTreeCapture devTreeCapture{};
 	devMode::PerformanceDiagnostics performanceDiagnostics{};
 	DevToolsConfig devToolsConfig{};
-	bool devPanelVisible = false;
-	bool devRootElementOpenThisFrame = false;
-	ShortcutId devPanelToggleShortcutId = 0;
 #endif
 	CursorType cursor = CursorType::Arrow;
 	CursorType previousCursor = CursorType::Arrow;

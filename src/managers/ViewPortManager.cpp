@@ -23,9 +23,8 @@
 
 namespace {
 
-void vkCheck(VkResult result, const char* message) {
+void vkCheck(VkResult result) {
 	if (result == VK_SUCCESS) return;
-	(void)message;
 	FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
 		? FlowUi::ErrorCode::VulkanDeviceLost
 		: FlowUi::ErrorCode::VulkanNativeCallFailed;
@@ -472,7 +471,7 @@ void ViewPortManager::recordFramePasses(
 		}
 		manager_storage::ViewportFrameCommands& frame = record.active.commands[slot];
 		manager_storage::ViewportImageResource& image = record.active.images[slot];
-		vkCheck(vkResetCommandPool(vk.device, frame.pool, 0), "Failed to reset viewport command pool.");
+		vkCheck(vkResetCommandPool(vk.device, frame.pool, 0));
 		VkCommandBufferInheritanceRenderingInfo inheritanceRendering{VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO};
 		inheritanceRendering.colorAttachmentCount = 1;
 		inheritanceRendering.pColorAttachmentFormats = &record.state.colorFormat;
@@ -482,7 +481,7 @@ void ViewPortManager::recordFramePasses(
 		VkCommandBufferBeginInfo begin{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
 		begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 		begin.pInheritanceInfo = &inheritance;
-		vkCheck(vkBeginCommandBuffer(frame.commandBuffer, &begin), "Failed to begin viewport command buffer.");
+		vkCheck(vkBeginCommandBuffer(frame.commandBuffer, &begin));
 		if (record.state.renderCallback) {
 			const ViewPortRenderContext context{
 				.commandBuffer = frame.commandBuffer, .extent = {image.width, image.height},
@@ -494,7 +493,7 @@ void ViewPortManager::recordFramePasses(
 				devSystems::TimingZoneRole::Work, "flowui.viewport.callback");
 			record.state.renderCallback(context);
 		}
-		vkCheck(vkEndCommandBuffer(frame.commandBuffer), "Failed to end viewport command buffer.");
+		vkCheck(vkEndCommandBuffer(frame.commandBuffer));
 		const VkImageLayout previousLayout = image.layout;
 		transitionViewportImageLayout(primary, image.nativeImage, image.layout, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 		image.layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;

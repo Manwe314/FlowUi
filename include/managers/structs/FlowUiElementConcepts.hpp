@@ -6,11 +6,12 @@
 #include <string_view>
 #include <type_traits>
 
-#include "FlowUi/App.hpp"
 #include "clay.h"
 #include "managers/structs/ElementStatePolicy.hpp"
 
 namespace FlowUi {
+
+class App;
 
 /** Empty builder parameter object used when an element omits Parameters. */
 struct NoElementParameters {};

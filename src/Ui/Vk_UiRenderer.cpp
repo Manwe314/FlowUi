@@ -128,9 +128,8 @@ constexpr storage::RendererLayoutKey kUiRendererLayoutKey{
 constexpr uint32_t kUiPipelineStateRevision = 1u;
 constexpr uint64_t kUiShaderSetFingerprint = 0x464c4f5755490003ull;
 
-static void vkCheck(VkResult result, const char* message, FlowUi::ErrorSite site) {
+static void vkCheck(VkResult result, FlowUi::ErrorSite site) {
 	if (result != VK_SUCCESS) {
-		(void)message;
 		FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
 			? FlowUi::ErrorCode::VulkanDeviceLost : FlowUi::ErrorCode::VulkanNativeCallFailed;
 		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -189,7 +188,7 @@ static VkShaderModule createShaderModule(VkDevice device, const std::vector<char
 
 	VkShaderModule module = VK_NULL_HANDLE;
 	vkCheck(vkCreateShaderModule(device, &createInfo, nullptr, &module),
-		"Failed to create shader module.", FlowUi::ErrorSite::RendererLoadShader);
+		FlowUi::ErrorSite::RendererLoadShader);
 	return module;
 }
 
@@ -368,9 +367,8 @@ struct UiBuildUpperBound {
 	size_t scissorDepth = 1;
 };
 
-static size_t CheckedSizeAdd(size_t lhs, size_t rhs, const char* message) {
+static size_t CheckedSizeAdd(size_t lhs, size_t rhs) {
 	if (rhs > std::numeric_limits<size_t>::max() - lhs) {
-		(void)message;
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ArithmeticOverflow, FlowUi::ErrorSite::RendererConvertCommands));
 	}
 	return lhs + rhs;
@@ -388,7 +386,7 @@ static UiBuildUpperBound ComputeBuildUpperBound(
 	result.instances = overrides.rects.size();
 	result.runs = overrides.rects.size();
 	result.scissorDepth = CheckedSizeAdd(
-		static_cast<size_t>(commands.length), 1u, "UI scissor upper bound overflow.");
+		static_cast<size_t>(commands.length), 1u);
 	for (int32_t i = 0; i < commands.length; ++i) {
 		const Clay_RenderCommand& command = commands.internalArray[i];
 		size_t commandInstances = 0;
@@ -404,8 +402,8 @@ static UiBuildUpperBound ComputeBuildUpperBound(
 			default:
 				break;
 		}
-		result.instances = CheckedSizeAdd(result.instances, commandInstances, "UI instance upper bound overflow.");
-		if (commandInstances > 0) result.runs = CheckedSizeAdd(result.runs, 1u, "UI run upper bound overflow.");
+		result.instances = CheckedSizeAdd(result.instances, commandInstances);
+		if (commandInstances > 0) result.runs = CheckedSizeAdd(result.runs, 1u);
 	}
 	if (result.instances > std::numeric_limits<uint32_t>::max() ||
 		result.runs > std::numeric_limits<uint32_t>::max()) {
@@ -958,7 +956,7 @@ static VkPipeline createGraphicsPipeline(
 
 	vkDestroyShaderModule(device, fragmentModule, nullptr);
 	vkDestroyShaderModule(device, vertexModule, nullptr);
-	vkCheck(result, "Failed to create UI graphics pipeline.", FlowUi::ErrorSite::RendererPublishPipeline);
+	vkCheck(result, FlowUi::ErrorSite::RendererPublishPipeline);
 	return pipeline;
 }
 
@@ -1042,7 +1040,7 @@ static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	set0Info.bindingCount = 1;
 	set0Info.pBindings = &globalsBinding;
 	vkCheck(vkCreateDescriptorSetLayout(device, &set0Info, nullptr, &renderer.descriptors_.set0),
-		"Failed to create UI set0 layout.", FlowUi::ErrorSite::RendererPublishLayout);
+		FlowUi::ErrorSite::RendererPublishLayout);
 
 	std::array<VkDescriptorSetLayoutBinding, 2> textureBindings{};
 	textureBindings[0].binding = 0;
@@ -1071,7 +1069,7 @@ static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	set1Info.bindingCount = static_cast<uint32_t>(textureBindings.size());
 	set1Info.pBindings = textureBindings.data();
 	vkCheck(vkCreateDescriptorSetLayout(device, &set1Info, nullptr, &renderer.descriptors_.set1),
-		"Failed to create UI set1 layout.", FlowUi::ErrorSite::RendererPublishLayout);
+		FlowUi::ErrorSite::RendererPublishLayout);
 
 	const std::array<VkDescriptorSetLayout, 2> setLayouts = {
 		renderer.descriptors_.set0,
@@ -1088,7 +1086,7 @@ static void CreateLayoutObjects(VkDevice device, VulkanUiRenderer& renderer) {
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushRange;
 	vkCheck(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &renderer.pipelines_.layout),
-		"Failed to create UI pipeline layout.", FlowUi::ErrorSite::RendererPublishLayout);
+		FlowUi::ErrorSite::RendererPublishLayout);
 }
 
 static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer) {
@@ -1111,7 +1109,7 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
 	vkCheck(vkCreateDescriptorPool(device, &poolInfo, nullptr, &renderer.descriptors_.pool),
-		"Failed to create UI descriptor pool.", FlowUi::ErrorSite::RendererPublishDescriptors);
+		FlowUi::ErrorSite::RendererPublishDescriptors);
 
 	renderer.descriptors_.globalsSets.assign(renderer.frameResourceCount_, VK_NULL_HANDLE);
 	renderer.descriptors_.texturesSets.assign(renderer.frameResourceCount_, VK_NULL_HANDLE);
@@ -1124,7 +1122,7 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	set0AllocInfo.pSetLayouts = set0Layouts.data();
 	vkCheck(
 		vkAllocateDescriptorSets(device, &set0AllocInfo, renderer.descriptors_.globalsSets.data()),
-		"Failed to allocate UI globals sets.", FlowUi::ErrorSite::RendererPublishDescriptors);
+		FlowUi::ErrorSite::RendererPublishDescriptors);
 
 	std::vector<VkDescriptorSetLayout> set1Layouts(renderer.frameResourceCount_, renderer.descriptors_.set1);
 	VkDescriptorSetAllocateInfo set1AllocInfo{};
@@ -1134,7 +1132,7 @@ static void CreateDescriptorObjects(VkDevice device, VulkanUiRenderer& renderer)
 	set1AllocInfo.pSetLayouts = set1Layouts.data();
 	vkCheck(
 		vkAllocateDescriptorSets(device, &set1AllocInfo, renderer.descriptors_.texturesSets.data()),
-		"Failed to allocate UI textures sets.", FlowUi::ErrorSite::RendererPublishDescriptors);
+		FlowUi::ErrorSite::RendererPublishDescriptors);
 }
 
 static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
@@ -1920,9 +1918,9 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	const bool hasDevOverlay = devOverlay && !devOverlay->instances.empty() && !devOverlay->runs.empty();
 	if (hasDevOverlay) {
 		upperBound.instances = CheckedSizeAdd(
-			upperBound.instances, devOverlay->instances.size(), "Dev overlay instance upper bound overflow.");
+			upperBound.instances, devOverlay->instances.size());
 		upperBound.runs = CheckedSizeAdd(
-			upperBound.runs, devOverlay->runs.size(), "Dev overlay run upper bound overflow.");
+			upperBound.runs, devOverlay->runs.size());
 	}
 	if (upperBound.instances > std::numeric_limits<uint32_t>::max() ||
 		upperBound.runs > std::numeric_limits<uint32_t>::max()) {

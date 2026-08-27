@@ -435,12 +435,12 @@ See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab
 - **Returns:** `DevToolsConfig&`
 - **Arguments:** none.
 
-Returns mutable developer tooling configuration when `FLOW_UI_DEV_MODE` is enabled. This allows runtime updates to developer panel and capture behavior.
+Returns mutable developer tooling configuration when `FLOW_UI_DEV_MODE` is enabled. This allows runtime updates to capture behavior.
 
 **Example:**
 
 ```cpp
-app.ui().devToolsConfig().panelOpenByDefault = true;
+app.ui().devToolsConfig().excludeInternalDevElementsFromCapture = true;
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d).
@@ -458,7 +458,7 @@ Returns immutable developer tooling configuration when `FLOW_UI_DEV_MODE` is ena
 **Example:**
 
 ```cpp
-app.ui().devToolsConfig().panelOpenByDefault = true;
+const bool excludesInternal = app.ui().devToolsConfig().excludeInternalDevElementsFromCapture;
 ```
 
 See: [Full Doxygen reference](classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9).

@@ -26,6 +26,7 @@
 #include "managers/IconManager.hpp"
 #endif
 #include "managers/UiManager.hpp"
+#include "FlowUi/AppElementWindows.hpp"
 #include "clay.h"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 #include "managers/ViewPortManager.hpp"

@@ -8,9 +8,8 @@
 
 namespace {
 
-static void vkCheck(VkResult result, const char* message, FlowUi::ErrorSite site) {
+static void vkCheck(VkResult result, FlowUi::ErrorSite site) {
 	if (result != VK_SUCCESS) {
-		(void)message;
 		FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
 			? FlowUi::ErrorCode::VulkanDeviceLost : FlowUi::ErrorCode::VulkanNativeCallFailed;
 		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -148,24 +147,24 @@ void Swapchain::create(
 
 	VkSurfaceCapabilitiesKHR caps{};
 	vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.phys, surface, &caps),
-		"Failed to query surface capabilities.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+		FlowUi::ErrorSite::VulkanSwapchainCreate);
 
 	uint32_t formatCount = 0;
 	vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, nullptr),
-		"Failed to query surface formats.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+		FlowUi::ErrorSite::VulkanSwapchainCreate);
 	std::vector<VkSurfaceFormatKHR> formats(formatCount);
 	if (formatCount > 0) {
 		vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(vk.phys, surface, &formatCount, formats.data()),
-			"Failed to query surface formats.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+			FlowUi::ErrorSite::VulkanSwapchainCreate);
 	}
 
 	uint32_t presentCount = 0;
 	vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentCount, nullptr),
-		"Failed to query present modes.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+		FlowUi::ErrorSite::VulkanSwapchainCreate);
 	std::vector<VkPresentModeKHR> presentModes(presentCount);
 	if (presentCount > 0) {
 		vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(vk.phys, surface, &presentCount, presentModes.data()),
-			"Failed to query present modes.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+			FlowUi::ErrorSite::VulkanSwapchainCreate);
 	}
 
 	if (formats.empty() || presentModes.empty()) {
@@ -208,14 +207,14 @@ void Swapchain::create(
 	createInfo.oldSwapchain = oldSwapchain;
 
 	vkCheck(vkCreateSwapchainKHR(vk.device, &createInfo, nullptr, &swapchain),
-		"Failed to create swapchain.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+		FlowUi::ErrorSite::VulkanSwapchainCreate);
 
 	uint32_t swapImageCount = 0;
 	vkCheck(vkGetSwapchainImagesKHR(vk.device, swapchain, &swapImageCount, nullptr),
-		"Failed to query swapchain images.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+		FlowUi::ErrorSite::VulkanSwapchainCreate);
 	images.resize(swapImageCount);
 	vkCheck(vkGetSwapchainImagesKHR(vk.device, swapchain, &swapImageCount, images.data()),
-		"Failed to query swapchain images.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+		FlowUi::ErrorSite::VulkanSwapchainCreate);
 
 	views.resize(images.size(), VK_NULL_HANDLE);
 	for (size_t i = 0; i < images.size(); ++i) {
@@ -237,7 +236,7 @@ void Swapchain::create(
 		viewInfo.subresourceRange.layerCount = 1;
 
 		vkCheck(vkCreateImageView(vk.device, &viewInfo, nullptr, &views[i]),
-			"Failed to create swapchain image view.", FlowUi::ErrorSite::VulkanSwapchainCreate);
+			FlowUi::ErrorSite::VulkanSwapchainCreate);
 	}
 
 	format = chosenFormat.format;
@@ -313,7 +312,6 @@ void SwapchainGeneration::create(
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		for (VkSemaphore& semaphore : candidate.renderFinished) {
 			vkCheck(vkCreateSemaphore(vk.device, &semaphoreInfo, nullptr, &semaphore),
-				"Failed to create swapchain-generation render-finished semaphore.",
 				FlowUi::ErrorSite::VulkanSwapchainCreate);
 		}
 		if (vk.wsiRetirementMode == WsiRetirementMode::PresentFence) {
@@ -322,7 +320,6 @@ void SwapchainGeneration::create(
 			fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 			for (VkFence& fence : candidate.presentComplete) {
 				vkCheck(vkCreateFence(vk.device, &fenceInfo, nullptr, &fence),
-					"Failed to create swapchain-generation present-complete fence.",
 					FlowUi::ErrorSite::VulkanSwapchainCreate);
 			}
 		}
@@ -339,7 +336,6 @@ void SwapchainGeneration::waitForPresentCompletion(VulkanContext& vk) const {
 		for (size_t i = 0; i < presentComplete.size(); ++i) {
 			if (i >= presentPending.size() || presentPending[i] == 0u) continue;
 			vkCheck(vkWaitForFences(vk.device, 1, &presentComplete[i], VK_TRUE, UINT64_MAX),
-				"Failed waiting for exact swapchain present fence completion.",
 				FlowUi::ErrorSite::VulkanSwapchainPresent);
 		}
 		return;
@@ -347,7 +343,6 @@ void SwapchainGeneration::waitForPresentCompletion(VulkanContext& vk) const {
 	if (lastPresentId == 0) return;
 	if (vk.wsiRetirementMode == WsiRetirementMode::PresentWait) {
 		vkCheck(vk.waitForPresent(swapchain.swapchain, lastPresentId, UINT64_MAX),
-			"Failed waiting for exact swapchain presentation completion.",
 			FlowUi::ErrorSite::VulkanSwapchainPresent);
 		return;
 	}

@@ -10,9 +10,8 @@ namespace FlowUi::detail::manager_storage {
 
 namespace {
 
-void vkCheck(VkResult result, const char* message) {
+void vkCheck(VkResult result) {
 	if (result != VK_SUCCESS) {
-		(void)message;
 		ErrorCode code = result == VK_ERROR_DEVICE_LOST
 			? ErrorCode::VulkanDeviceLost : ErrorCode::VulkanNativeCallFailed;
 		if (result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -81,14 +80,12 @@ std::vector<ViewportFrameCommands> ViewportStorageController::createCommands() c
 			VkCommandPoolCreateInfo info{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
 			info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 			info.queueFamilyIndex = vk->graphicsQFamily;
-			vkCheck(vkCreateCommandPool(vk->device, &info, nullptr, &entry.pool),
-				"Failed to create viewport command pool.");
+			vkCheck(vkCreateCommandPool(vk->device, &info, nullptr, &entry.pool));
 			VkCommandBufferAllocateInfo allocate{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
 			allocate.commandPool = entry.pool;
 			allocate.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 			allocate.commandBufferCount = 1;
-			vkCheck(vkAllocateCommandBuffers(vk->device, &allocate, &entry.commandBuffer),
-				"Failed to allocate viewport command buffer.");
+			vkCheck(vkAllocateCommandBuffers(vk->device, &allocate, &entry.commandBuffer));
 		}
 		return resources;
 	} catch (...) {
