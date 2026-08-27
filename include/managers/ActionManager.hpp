@@ -95,6 +95,17 @@ private:
 
 class ActionManager {
 public:
+#if FLOW_UI_DEV_MODE
+	struct DevActionView {
+		ActionDebugInfo debug{};
+		std::uint64_t callableTypeHash = 0;
+		std::uint64_t resultTypeHash = 0;
+	};
+	using DevActionVisitor = bool (*)(void*, const DevActionView&);
+	[[nodiscard]] std::uint64_t devRevision() const noexcept;
+	[[nodiscard]] std::size_t devActionCount() const noexcept;
+	bool visitDevActions(void* userData, DevActionVisitor visitor) const;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
@@ -126,6 +137,7 @@ private:
 	friend class App;
 	friend class UiManager;
 	friend class AppActions;
+	friend class UiActions;
 	friend struct detail::action::ActionManagerAccess;
 
 	class InvocationLease {
@@ -184,6 +196,10 @@ private:
 		ActionInvocationSource source);
 #if FLOW_UI_DEV_MODE
 	void reportInvocationError(AppActionCall call, ActionInvokeError error) noexcept;
+	void noteUiRecipe(
+		std::uint64_t recipeId,
+		std::string_view debugName,
+		ActionSourceLocation source) noexcept;
 #endif
 
 	template <typename Callable, typename... Resources>
@@ -199,6 +215,15 @@ private:
 	uint32_t stateName_ = 0;
 	AppActions appActions_;
 	UiActions uiActions_;
+#if FLOW_UI_DEV_MODE
+	struct DevUiRecipeRecord {
+		std::uint64_t id = 0;
+		std::string_view debugName{};
+		ActionSourceLocation source{};
+	};
+	std::vector<DevUiRecipeRecord> devUiRecipes_{};
+	std::uint64_t devRevision_ = 1;
+#endif
 };
 
 template <typename Operation, typename... Resources>
@@ -231,6 +256,7 @@ UiActionCall UiActions::make(
 		call.recipeId_ = recipe.recipeId;
 		call.recipeName_ = recipe.debugName;
 		call.definitionSource_ = recipe.definitionSource;
+		owner_->noteUiRecipe(recipe.recipeId, recipe.debugName, recipe.definitionSource);
 #else
 		(void)recipe;
 #endif

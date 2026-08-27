@@ -51,8 +51,10 @@ bool visitDevThemePayload(
 	auto& bridge = *static_cast<DevThemeVisitBridge*>(userData);
 	return bridge.visitor(bridge.userData, ThemeManager::DevThemePayloadView{
 		.type = view.type,
+		.typeName = view.typeName,
 		.variant = view.variant,
 		.payload = view.payload,
+		.payloadSize = view.payloadSize,
 		.revision = view.revision,
 		.active = view.active,
 	});
@@ -65,6 +67,20 @@ bool ThemeManager::visitDevThemePayloads(
 	if (!controller_ || !visitor) return false;
 	DevThemeVisitBridge bridge{.userData = userData, .visitor = visitor};
 	return controller_->visitDevPayloads(&bridge, &visitDevThemePayload);
+}
+
+std::uint64_t ThemeManager::devRevision() const noexcept {
+	return storage_ ? storage_->managerSharedRevision() : 0;
+}
+
+std::size_t ThemeManager::devThemeCount() const noexcept {
+	return controller_ ? controller_->devPayloadCount() : 0;
+}
+
+bool ThemeManager::visitDevCatalogueThemes(
+	void* userData,
+	DevThemePayloadVisitor visitor) const noexcept {
+	return visitDevThemePayloads(userData, visitor);
 }
 
 devMode::DevValueOperationStatus ThemeManager::assignDevThemeField(

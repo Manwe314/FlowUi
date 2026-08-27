@@ -366,6 +366,7 @@ if(FLOW_UI_DEV_MODE)
 	target_sources(flowui
 		PRIVATE
 			src/devSystems/devTooling/bake/DevBakePipeline.cpp
+			src/devSystems/devTooling/catalogue/DevCatalogues.cpp
 			src/devSystems/devTooling/overlay/DevOverlayService.cpp
 			src/devSystems/devTooling/override/DevOverrideApply.cpp
 			src/devSystems/devTooling/override/DevOverrideCapture.cpp
@@ -397,6 +398,9 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakedChanges.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakePipeline.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakeTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogLease.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogues.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayService.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayTypes.hpp>

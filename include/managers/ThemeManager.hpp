@@ -45,12 +45,17 @@ public:
 #if FLOW_UI_DEV_MODE
 	struct DevThemePayloadView {
 		devMode::DevTypeId type = 0;
+		std::string_view typeName{};
 		std::string_view variant{};
 		const void* payload = nullptr;
+		std::size_t payloadSize = 0;
 		std::uint64_t revision = 0;
 		bool active = false;
 	};
 	using DevThemePayloadVisitor = bool (*)(void*, const DevThemePayloadView&) noexcept;
+	[[nodiscard]] std::uint64_t devRevision() const noexcept;
+	[[nodiscard]] std::size_t devThemeCount() const noexcept;
+	bool visitDevCatalogueThemes(void* userData, DevThemePayloadVisitor visitor) const noexcept;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
@@ -83,6 +88,7 @@ public:
 #endif
 			const auto variantId = controller_->internString(variantName);
 			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive);
+			storage_->noteManagerMutation(InvalidWindowId);
 			return {};
 		} catch (const FlowUiException& exception) {
 			return unexpectedError(exception.error());
@@ -118,6 +124,7 @@ public:
 		if (!controller_->setActiveVariant<T>(variantId)) {
 			return unexpectedError(makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeSetActiveVariant));
 		}
+		storage_->noteManagerMutation(InvalidWindowId);
 		return {};
 	}
 

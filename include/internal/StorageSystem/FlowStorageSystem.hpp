@@ -108,6 +108,11 @@ public:
 	[[nodiscard]] TextureMetadata textureMetadata(TextureHandle texture) const noexcept override;
 	[[nodiscard]] bool textureRetirementComplete(TextureHandle texture) const noexcept override;
 	void setFallbackTexture(TextureHandle texture) override;
+#if FLOW_UI_DEV_MODE
+	[[nodiscard]] DevTextureMetadata devTextureMetadata(TextureHandle texture) const noexcept override;
+	[[nodiscard]] bool retainTextureForDevInspection(TextureHandle texture) noexcept override;
+	void releaseTextureFromDevInspection(TextureHandle texture) override;
+#endif
 
 	[[nodiscard]] PreparedTextureBindings prepareTextureBindings(
 		const FrameToken& frame,

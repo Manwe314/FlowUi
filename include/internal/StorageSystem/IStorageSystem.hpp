@@ -11,7 +11,7 @@ namespace FlowUi::detail::storage {
 
 class IStorageSystem {
 public:
-	static constexpr uint32_t CurrentInterfaceVersion = 7u;
+	static constexpr uint32_t CurrentInterfaceVersion = 8u;
 
 	virtual ~IStorageSystem() = default;
 
@@ -110,6 +110,11 @@ public:
 	[[nodiscard]] virtual TextureMetadata textureMetadata(TextureHandle texture) const noexcept = 0;
 	[[nodiscard]] virtual bool textureRetirementComplete(TextureHandle texture) const noexcept = 0;
 	virtual void setFallbackTexture(TextureHandle texture) = 0;
+#if FLOW_UI_DEV_MODE
+	[[nodiscard]] virtual DevTextureMetadata devTextureMetadata(TextureHandle texture) const noexcept = 0;
+	[[nodiscard]] virtual bool retainTextureForDevInspection(TextureHandle texture) noexcept = 0;
+	virtual void releaseTextureFromDevInspection(TextureHandle texture) = 0;
+#endif
 
 	[[nodiscard]] virtual PreparedTextureBindings prepareTextureBindings(
 		const FrameToken& frame,

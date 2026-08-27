@@ -10,6 +10,9 @@
 #include "FlowUi/FontResources.hpp"
 #include "FlowUi/ResourceKey.hpp"
 #include "managers/structs/FontManagerStructs.hpp"
+#if FLOW_UI_DEV_MODE
+#include "internal/StorageSystem/StorageTypes.hpp"
+#endif
 
 namespace FlowUi {
 class App;
@@ -59,6 +62,28 @@ struct FontFrameView;
  * @see @ref md_docs_2concepts_2managers "Managers"
  */
 struct FontManager {
+#if FLOW_UI_DEV_MODE
+	struct DevFontView {
+		FontId fontId = 0;
+		std::string_view familyName{};
+		std::uint32_t weight = 400;
+		FontStyle style = FontStyle::Normal;
+		const Font::FontFaceData* face = nullptr;
+	};
+	struct DevAtlasView {
+		TextureHandle texture{};
+		detail::storage::ImageViewHandle imageView{};
+		std::uint32_t width = 0;
+		std::uint32_t height = 0;
+		std::uint32_t layersUsed = 0;
+		std::uint32_t layersCapacity = 0;
+	};
+	using DevFontVisitor = bool (*)(void*, const DevFontView&);
+	[[nodiscard]] std::uint64_t devRevision() const noexcept;
+	[[nodiscard]] std::size_t devFontCount() const noexcept;
+	bool visitDevFonts(void* userData, DevFontVisitor visitor) const;
+	[[nodiscard]] DevAtlasView devAtlas() const noexcept;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept;

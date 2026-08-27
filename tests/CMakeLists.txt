@@ -89,6 +89,22 @@ set_tests_properties(flowui.dev.schema_registry PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+	add_executable(flowui_dev_catalogues_tests
+		DevSystemsTests/DevCataloguesTests.cpp
+	)
+	target_compile_features(flowui_dev_catalogues_tests PRIVATE cxx_std_23)
+	target_include_directories(flowui_dev_catalogues_tests PRIVATE
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+	)
+	target_link_libraries(flowui_dev_catalogues_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.dev.catalogues COMMAND flowui_dev_catalogues_tests)
+	set_tests_properties(flowui.dev.catalogues PROPERTIES
+		LABELS "flowui;dev;catalogue;unit"
+		TIMEOUT 30
+	)
+
 	add_executable(flowui_dev_override_engine_tests
 		DevSystemsTests/DevOverrideEngineTests.cpp
 	)

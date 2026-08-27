@@ -47,6 +47,9 @@ FontCatalogController::FontCatalogController(storage::IStorageSystem& storageSys
 
 FontCatalogController::~FontCatalogController() noexcept {
 	if (!storage) return;
+#if FLOW_UI_DEV_MODE
+	try { if (devAtlasTexture) storage->releaseAnonymousTexture(devAtlasTexture); } catch (...) {}
+#endif
 	try { if (atlasView) storage->releaseImageView(atlasView); } catch (...) {}
 	try { if (atlasImage) storage->releaseImage(atlasImage); } catch (...) {}
 	try { if (atlasSampler) storage->releaseSampler(atlasSampler); } catch (...) {}
@@ -131,6 +134,9 @@ void FontCatalogController::uploadLayerTransactional(
 	storage::ImageHandle candidateImage{};
 	storage::ImageViewHandle candidateView{};
 	storage::BlobHandle candidateBlob{};
+#if FLOW_UI_DEV_MODE
+	TextureHandle candidateDevTexture{};
+#endif
 	const storage::StringId name = storage->intern("flowui.font.atlas");
 	try {
 		candidateImage = storage->createImage(storage::ImageDesc{
@@ -165,7 +171,18 @@ void FontCatalogController::uploadLayerTransactional(
 		});
 		storage->flushUploads();
 		candidateBlob = {};
+#if FLOW_UI_DEV_MODE
+		candidateDevTexture = storage->createAnonymousTexture(storage::TextureViewDesc{
+			.imageView = candidateView,
+			.sampler = atlasSampler,
+			.sourceWidth = static_cast<std::int32_t>(atlasSizeHint),
+			.sourceHeight = static_cast<std::int32_t>(atlasSizeHint),
+		});
+#endif
 	} catch (...) {
+#if FLOW_UI_DEV_MODE
+		if (candidateDevTexture) storage->releaseAnonymousTexture(candidateDevTexture);
+#endif
 		if (candidateBlob) storage->releaseBlob(candidateBlob);
 		if (candidateView) storage->releaseImageView(candidateView);
 		if (candidateImage) storage->releaseImage(candidateImage);
@@ -174,6 +191,10 @@ void FontCatalogController::uploadLayerTransactional(
 
 	const storage::ImageViewHandle oldView = atlasView;
 	const storage::ImageHandle oldImage = atlasImage;
+#if FLOW_UI_DEV_MODE
+	const TextureHandle oldDevTexture = devAtlasTexture;
+	devAtlasTexture = candidateDevTexture;
+#endif
 	atlasView = candidateView;
 	atlasImage = candidateImage;
 	atlasLayerPixels.push_back(rgbaPixels);
@@ -181,6 +202,9 @@ void FontCatalogController::uploadLayerTransactional(
 	refreshBorrowedAtlas();
 	borrowedAtlas.layersCapacity = candidateCapacity;
 	borrowedAtlas.bindingRevision = nextRevision;
+#if FLOW_UI_DEV_MODE
+	if (oldDevTexture) storage->releaseAnonymousTexture(oldDevTexture);
+#endif
 	if (oldView) storage->releaseImageView(oldView);
 	if (oldImage) storage->releaseImage(oldImage);
 }

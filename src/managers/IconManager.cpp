@@ -27,6 +27,68 @@
 #include <plutosvg.h>
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE
+std::uint64_t IconManager::devRevision() const noexcept {
+	return storage_ ? storage_->managerSharedRevision() : 0;
+}
+
+std::size_t IconManager::devIconCount() const noexcept {
+	return controller_ ? controller_->documentsByKey.size() + controller_->variantsByKeyAndSize.size() : 0;
+}
+
+std::size_t IconManager::devAtlasCount() const noexcept {
+	return controller_ ? controller_->atlasPages.size() : 0;
+}
+
+bool IconManager::visitDevIcons(void* userData, DevIconVisitor visitor) const {
+	if (!controller_ || !visitor) return false;
+	for (const auto& [key, document] : controller_->documentsByKey) {
+		bool materialized = false;
+		for (const auto& [variantKey, variant] : controller_->variantsByKeyAndSize) {
+			if (variantKey.nameKey != key) continue;
+			materialized = true;
+			if (!visitor(userData, DevIconView{
+				.key = key,
+				.targetWidth = variant.key.requestedWidth,
+				.targetHeight = variant.key.requestedHeight,
+				.texture = variant.texture,
+				.uv0x = variant.uv0x, .uv0y = variant.uv0y,
+				.uv1x = variant.uv1x, .uv1y = variant.uv1y,
+				.atlasPage = variant.pageIndex,
+			})) return false;
+		}
+		if (!materialized && !visitor(userData, DevIconView{
+			.key = key,
+			.targetWidth = static_cast<std::uint32_t>(std::max(0.0f, document.intrinsicWidth)),
+			.targetHeight = static_cast<std::uint32_t>(std::max(0.0f, document.intrinsicHeight)),
+		})) return false;
+	}
+	return true;
+}
+
+bool IconManager::visitDevAtlases(void* userData, DevAtlasVisitor visitor) const {
+	if (!controller_ || !visitor) return false;
+	for (std::uint32_t pageIndex = 0; pageIndex < controller_->atlasPages.size(); ++pageIndex) {
+		const AtlasPage& page = controller_->atlasPages[pageIndex];
+		TextureHandle texture{};
+		std::uint32_t regions = 0;
+		for (const auto& [_, variant] : controller_->variantsByKeyAndSize) {
+			if (variant.pageIndex != pageIndex) continue;
+			if (!texture) texture = variant.texture;
+			++regions;
+		}
+		if (!visitor(userData, DevAtlasView{
+			.texture = texture,
+			.page = pageIndex,
+			.width = page.width,
+			.height = page.height,
+			.usedArea = page.usedArea,
+			.allocatedRegions = regions,
+		})) return false;
+	}
+	return true;
+}
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 void IconManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!controller_) return;

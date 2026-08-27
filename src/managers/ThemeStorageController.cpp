@@ -104,6 +104,7 @@ void ThemeStorageController::applyStagedMutations() {
 				reinterpret_cast<storage::ThemeRecordHeader*>(current)->revision++;
 			}
 		}
+		storage_->noteManagerMutation(InvalidWindowId);
 	}
 
 }
@@ -125,8 +126,10 @@ bool ThemeStorageController::visitDevPayloads(
 					reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
 				if (!visitor(userData, DevPayloadView{
 					.type = typeHash,
+					.typeName = storage_->string(type.typeNameId),
 					.variant = storage_->string(variantId),
 					.payload = header->payload(),
+					.payloadSize = header->dataSize,
 					.revision = header->revision,
 					.active = type.activeVariantNameId == variantId,
 				})) return false;
@@ -135,6 +138,17 @@ bool ThemeStorageController::visitDevPayloads(
 		return true;
 	} catch (...) {
 		return false;
+	}
+}
+
+std::size_t ThemeStorageController::devPayloadCount() const noexcept {
+	try {
+		std::lock_guard<std::mutex> lock(mutex_);
+		std::size_t count = 0;
+		for (const auto& [_, type] : typeRegistry_) count += type.variants.size();
+		return count;
+	} catch (...) {
+		return 0;
 	}
 }
 
@@ -163,7 +177,10 @@ devMode::DevValueOperationStatus ThemeStorageController::assignDevField(
 			}
 			const devMode::DevValueOperationStatus status =
 				field.assignMemberFromCopy(owner, source);
-			if (status == devMode::DevValueOperationStatus::Success) ++header->revision;
+			if (status == devMode::DevValueOperationStatus::Success) {
+				++header->revision;
+				storage_->noteManagerMutation(InvalidWindowId);
+			}
 			return status;
 		}
 		return devMode::DevValueOperationStatus::Unsupported;

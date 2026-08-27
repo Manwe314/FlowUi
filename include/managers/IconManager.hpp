@@ -56,6 +56,31 @@ struct IconVariantEntry; struct IconAtlasPage; struct IconRetiredRegion; class I
  * @see @ref md_docs_2concepts_2managers "Managers"
  */
 struct IconManager {
+#if FLOW_UI_DEV_MODE
+	struct DevIconView {
+		std::string_view key{};
+		std::uint32_t targetWidth = 0;
+		std::uint32_t targetHeight = 0;
+		TextureHandle texture{};
+		float uv0x = 0.0f, uv0y = 0.0f, uv1x = 1.0f, uv1y = 1.0f;
+		std::uint32_t atlasPage = 0;
+	};
+	struct DevAtlasView {
+		TextureHandle texture{};
+		std::uint32_t page = 0;
+		std::uint32_t width = 0;
+		std::uint32_t height = 0;
+		std::uint64_t usedArea = 0;
+		std::uint32_t allocatedRegions = 0;
+	};
+	using DevIconVisitor = bool (*)(void*, const DevIconView&);
+	using DevAtlasVisitor = bool (*)(void*, const DevAtlasView&);
+	[[nodiscard]] std::uint64_t devRevision() const noexcept;
+	[[nodiscard]] std::size_t devIconCount() const noexcept;
+	[[nodiscard]] std::size_t devAtlasCount() const noexcept;
+	bool visitDevIcons(void* userData, DevIconVisitor visitor) const;
+	bool visitDevAtlases(void* userData, DevAtlasVisitor visitor) const;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder* recorder) noexcept { devMemoryRecorder_ = recorder; }
@@ -277,6 +302,31 @@ namespace detail::storage { class IStorageSystem; }
  * icon support fail explicitly.
  */
 struct IconManager {
+#if FLOW_UI_DEV_MODE
+	struct DevIconView {
+		std::string_view key{};
+		std::uint32_t targetWidth = 0;
+		std::uint32_t targetHeight = 0;
+		TextureHandle texture{};
+		float uv0x = 0.0f, uv0y = 0.0f, uv1x = 1.0f, uv1y = 1.0f;
+		std::uint32_t atlasPage = 0;
+	};
+	struct DevAtlasView {
+		TextureHandle texture{};
+		std::uint32_t page = 0;
+		std::uint32_t width = 0;
+		std::uint32_t height = 0;
+		std::uint64_t usedArea = 0;
+		std::uint32_t allocatedRegions = 0;
+	};
+	using DevIconVisitor = bool (*)(void*, const DevIconView&);
+	using DevAtlasVisitor = bool (*)(void*, const DevAtlasView&);
+	[[nodiscard]] std::uint64_t devRevision() const noexcept { return 0; }
+	[[nodiscard]] std::size_t devIconCount() const noexcept { return 0; }
+	[[nodiscard]] std::size_t devAtlasCount() const noexcept { return 0; }
+	bool visitDevIcons(void*, DevIconVisitor) const { return true; }
+	bool visitDevAtlases(void*, DevAtlasVisitor) const { return true; }
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink&) const noexcept {}
 	void setDevMemoryRecorder(devSystems::DevMemoryRecorder*) noexcept {}

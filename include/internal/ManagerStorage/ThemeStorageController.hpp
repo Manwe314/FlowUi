@@ -269,14 +269,17 @@ public:
 #if FLOW_UI_DEV_MODE
 	struct DevPayloadView {
 		std::uint64_t type = 0;
+		std::string_view typeName{};
 		std::string_view variant{};
 		const void* payload = nullptr;
+		std::size_t payloadSize = 0;
 		std::uint64_t revision = 0;
 		bool active = false;
 	};
 	using DevPayloadVisitor = bool (*)(void*, const DevPayloadView&) noexcept;
 
 	bool visitDevPayloads(void* userData, DevPayloadVisitor visitor) const noexcept;
+	[[nodiscard]] std::size_t devPayloadCount() const noexcept;
 	devMode::DevValueOperationStatus assignDevField(
 		std::uint64_t type,
 		std::string_view variant,
