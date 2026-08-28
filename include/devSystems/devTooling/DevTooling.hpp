@@ -4,6 +4,7 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "devSystems/devTooling/bake/DevBakePipeline.hpp"
 #include "devSystems/devTooling/catalogue/DevCatalogues.hpp"
@@ -21,7 +22,7 @@ class MemorySampleSink;
 /** Development-only shell for live and offline developer-tool surfaces. */
 class DevTooling {
 public:
-	DevTooling() noexcept;
+	explicit DevTooling(const DevToolingConfig& config = {}) noexcept;
 	~DevTooling();
 
 	DevTooling(const DevTooling&) = delete;

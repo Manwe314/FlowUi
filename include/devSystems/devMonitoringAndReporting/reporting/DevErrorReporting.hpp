@@ -19,28 +19,6 @@ class DevErrorMonitoring;
 
 using DevErrorCaptureId = uint64_t;
 
-struct DevErrorTrigger {
-	ErrorCode code = ErrorCode::None;
-	ErrorSite site = ErrorSite::None;
-	uint32_t nativeCode = 0u;
-	bool matchNativeCode = false;
-	uint32_t preOccurrenceTicks = 2u;
-	uint32_t postOccurrenceTicks = 2u;
-};
-
-struct DevErrorReportingConfig {
-	uint32_t retainedOccurrenceCapacity = 512u;
-	uint64_t retainedByteBudget = 4u * 1024u * 1024u;
-	uint32_t retainedBreadcrumbCapacity = 4096u;
-	uint32_t postOccurrenceTicks = 2u;
-	uint32_t maxStepsPerOccurrence = 64u;
-	uint32_t maximumAdvicePerOccurrence = 4u;
-	uint32_t retainedCaptureCapacity = 32u;
-	uint32_t maximumPinnedTimingTicks = 16u;
-	uint32_t maximumPinnedMemoryEvents = 128u;
-	std::vector<DevErrorTrigger> triggers{};
-};
-
 enum class DevErrorCorrelationState : uint8_t {
 	Available = 0u,
 	Evicted,

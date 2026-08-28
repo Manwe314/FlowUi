@@ -1,20 +1,23 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
-#include <string>
 #include <filesystem>
+#include <cstddef>
+#include <cstdio>
+#include <cstdint>
 #include <optional>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <clay.h>
 
+#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/ElementID.hpp"
+#include "FlowUi/Error.hpp"
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
-#include "FlowUi/MemoryCapacityProfile.hpp"
-#include "FlowUi/Error.hpp"
-#include "managers/structs/FontManagerStructs.hpp"
-#include "managers/structs/ShortcutManagerStructs.hpp"
 
 namespace FlowUi {
 
@@ -49,6 +52,161 @@ enum class CursorType : uint8_t {
 	Grab,
 	Grabbing,
 	Custom,
+};
+
+/** Error resolutions and reporting behavior selected for the App lifetime. */
+struct ErrorPolicy {
+	DefaultFontFailurePolicy defaultFont = DefaultFontFailurePolicy::TryFallbackThenDisableText;
+	MissingVisualPolicy missingImage = MissingVisualPolicy::UseFallbackTexture;
+	MissingVisualPolicy missingViewport = MissingVisualPolicy::UseFallbackTexture;
+	IconGenerationFailurePolicy iconGeneration = IconGenerationFailurePolicy::UseFallbackTexture;
+	StorageCapacityPolicy transientCapacity = StorageCapacityPolicy::GrowWithinBudget;
+	StorageCapacityPolicy persistentCapacity = StorageCapacityPolicy::GrowWithinBudget;
+	CacheCapacityPolicy descriptorCapacity = CacheCapacityPolicy::RejectOperation;
+	PopupDuplicatePolicy duplicatePopup = PopupDuplicatePolicy::FirstSubmissionWins;
+	PopupMissingAnchorPolicy missingPopupAnchor = PopupMissingAnchorPolicy::SkipPopup;
+	PopupCapacityPolicy popupCapacity = PopupCapacityPolicy::ClampLayer;
+	InputQueueOverflowPolicy inputQueueOverflow = InputQueueOverflowPolicy::DropNewest;
+	std::uint32_t inputTextQueueCapacity = 4096;
+};
+
+/** Non-owning application-provided destination for structured error reports. */
+struct ErrorSink {
+	void* userData = nullptr;
+	ErrorSinkCallback callback = nullptr;
+
+	[[nodiscard]] constexpr explicit operator bool() const noexcept {
+		return callback != nullptr;
+	}
+
+	void notify(const ErrorEventView& event) const noexcept {
+		if (callback) callback(userData, event);
+	}
+};
+
+enum class ErrorReportingMode : std::uint8_t {
+	SinkAndDefault = 0,
+	SinkOrDefault = 1,
+	SinkOnly = 2,
+	DefaultOnly = 3,
+};
+
+struct ErrorObserverConfig {
+	ErrorSink sink{};
+	ErrorReportingMode mode = ErrorReportingMode::SinkOrDefault;
+	std::FILE* output = stderr;
+};
+
+struct ErrorContract {
+	ErrorPolicy policy{};
+	ErrorObserverConfig observer{};
+};
+
+static_assert(std::is_trivially_copyable_v<ErrorSink>);
+static_assert(std::is_trivially_copyable_v<ErrorObserverConfig>);
+static_assert(noexcept(std::declval<const ErrorSink&>().notify(
+	std::declval<const ErrorEventView&>())));
+
+using FontId = uint16_t;
+using FontFamilyId = uint32_t;
+
+enum class FontStyle : uint8_t {
+	Normal,
+	Italic,
+};
+
+struct FontFaceCreateInfo {
+	std::filesystem::path path{};
+	float pixelSize = 18.0f;
+	uint32_t weight = 400;
+	FontStyle style = FontStyle::Normal;
+	std::string name{};
+};
+
+struct FontFamilyCreateInfo {
+	std::string name = "Default";
+	std::vector<FontFaceCreateInfo> faces{
+		FontFaceCreateInfo{
+			.path = "assets/fonts/Inter.arfont",
+			.pixelSize = 18.0f,
+			.weight = 400,
+			.style = FontStyle::Normal,
+		},
+	};
+};
+
+enum class PlatformShortcutStyle : uint8_t {
+	Auto = 0,
+	Control,
+	Command,
+};
+
+struct DefaultTextShortcutConfig {
+	bool enabled = true;
+	PlatformShortcutStyle platform = PlatformShortcutStyle::Auto;
+	int32_t priority = 0;
+	bool selectAll = true;
+	bool clipboard = true;
+	bool undoRedoRequests = true;
+	bool wordNavigation = true;
+};
+
+struct ShortcutManagerConfig {
+	DefaultTextShortcutConfig textEditing{};
+};
+
+using MemoryCapacityTargetId = uint64_t;
+
+[[nodiscard]] consteval MemoryCapacityTargetId makeMemoryCapacityTargetId(
+	std::string_view stableName) {
+	uint64_t hash = 14695981039346656037ull;
+	for (const char character : stableName) {
+		hash ^= static_cast<uint64_t>(static_cast<unsigned char>(character));
+		hash *= 1099511628211ull;
+	}
+	return hash == 0u ? 1u : hash;
+}
+
+struct MemoryCapacitySetting {
+	MemoryCapacityTargetId target = 0u;
+	uint64_t value = 0u;
+};
+
+struct MemoryCapacityProfileMetadata {
+	std::string platform{};
+	std::string build{};
+	std::string gpu{};
+	uint32_t framesInFlight = 0u;
+	uint64_t captureBeginTick = 0u;
+	uint64_t captureEndTickExclusive = 0u;
+	uint64_t warmUpTicks = 0u;
+	bool complete = false;
+};
+
+struct StorageMemoryCapacities {
+	uint64_t initialPersistentCpuBytes = 0u;
+	uint64_t initialStringBytes = 0u;
+	uint64_t transientBytesPerFramePerWindow = 0u;
+	uint64_t transientBytesPerWorker = 0u;
+	uint64_t initialDecodeScratchBytes = 0u;
+	uint64_t initialUploadStagingBytes = 0u;
+	uint64_t initialInstanceBytesPerFrame = 0u;
+};
+
+struct ManagerMemoryCapacities {
+	uint64_t elements = 0u, inputFields = 0u, inputTextBytes = 0u, fonts = 0u,
+		fontAtlasCpuPixelBytes = 0u, icons = 0u, iconDocuments = 0u,
+		iconAtlasMetadata = 0u, viewports = 0u, popups = 0u, shortcuts = 0u,
+		actions = 0u, themes = 0u, uiLayout = 0u, renderer = 0u;
+};
+
+struct MemoryCapacityProfile {
+	StorageMemoryCapacities storage{};
+	ManagerMemoryCapacities managers{};
+	std::vector<MemoryCapacitySetting> settings{};
+	float growthFactor = 1.5f;
+	bool allowRuntimeGrowth = true;
+	MemoryCapacityProfileMetadata metadata{};
 };
 
 /**
@@ -338,6 +496,171 @@ struct IconManagerConfig {
 	uint32_t atlasPadding = 1;
 };
 
+#if FLOW_UI_DEV_MODE
+
+namespace devMode {
+
+struct DevSchemaLimits {
+	std::uint16_t maxDepth = 16;
+	std::uint32_t maxTypes = 2048;
+	std::uint32_t maxFields = 16384;
+	std::uint32_t maxEnumValues = 8192;
+	std::uint32_t maxConstraints = 16384;
+	std::uint32_t maxStringBytes = 2u * 1024u * 1024u;
+};
+
+} // namespace devMode
+
+namespace devSystems {
+
+enum class CpuTimingLevel : uint8_t {
+	OnlyFrameTime = 0,
+	Summary = 1,
+	Balanced = 2,
+	Deep = 3,
+};
+
+struct DevTimingConfig {
+	CpuTimingLevel cpuLevel = CpuTimingLevel::Summary;
+	uint32_t enabledCategoryMask = 0xFFFFFFFFu;
+	bool gpuTimingEnabled = true;
+	uint32_t gpuQueryCapacityPerFrame = 512u;
+	uint32_t producerRecordCapacity = 8192u;
+	uint64_t balancedElementRetentionThresholdNs = 50'000u;
+	FlowDefinitionID selectedElementDefinition{};
+	FlowElementID selectedElementInstance{};
+};
+
+struct TimingReportingConfig {
+	uint32_t retainedAppTickCapacity = 4096u;
+	uint32_t minimumFramesInFlightMultiplier = 20u;
+	uint32_t rollingSampleCapacity = 2048u;
+	std::vector<double> percentilePoints{0.50, 0.90, 0.95, 0.99};
+};
+
+enum class MemoryMonitoringLevel : uint8_t {
+	Disabled = 0,
+	StorageSummary = 1,
+	SubsystemCapacity = 2,
+	DetailedLifetimes = 3,
+	DeepAllocations = 4,
+};
+
+struct DevMemoryConfig {
+	MemoryMonitoringLevel level = MemoryMonitoringLevel::SubsystemCapacity;
+	uint32_t producerEventCapacity = 8192u;
+	bool gpuMemory = true;
+	bool processMemory = true;
+	bool detailedVmaStatistics = false;
+	bool trackTemporaryResources = true;
+	uint64_t processSampleIntervalNs = 500'000'000ull;
+	uint64_t gpuBudgetSampleIntervalNs = 250'000'000ull;
+	uint32_t detailedGpuStatsEverySamples = 0u;
+};
+
+struct MemoryReportingConfig {
+	uint32_t segmentCapacity = 100'000u;
+	uint64_t eventByteCapacity = 16ull * 1024ull * 1024ull;
+	uint32_t managerSampleEveryTicks = 8u;
+	uint32_t quantileWindowSegments = 20'000u;
+	bool retainLifetimeEvents = false;
+	uint64_t consumeWarningThresholdNs = 2'000'000u;
+};
+
+class DevErrorStackProvider;
+
+enum class DevErrorCaptureLevel : uint8_t {
+	Disabled = 0,
+	Summary = 1,
+	Causal = 2,
+	StackAndState = 3,
+	Deep = 4,
+};
+
+inline constexpr size_t kDevErrorNativeTextCapacity = 160u;
+
+struct DevErrorConfig {
+	DevErrorCaptureLevel level = DevErrorCaptureLevel::Causal;
+	uint32_t producerRecordCapacity = 256u;
+	uint32_t breadcrumbCapacity = 512u;
+	uint32_t recentBreadcrumbCount = 32u;
+	uint32_t nativeTextLimit = static_cast<uint32_t>(kDevErrorNativeTextCapacity);
+	uint32_t threadRecorderCapacity = 16u;
+	uint32_t sourceDescriptorCapacity = 1024u;
+	uint32_t breadcrumbDescriptorCapacity = 256u;
+	uint32_t stackTraceCapacity = 256u;
+	uint32_t maximumStackFrames = 32u;
+	uint32_t snapshotProviderCapacity = 64u;
+	uint32_t pendingSnapshotCapacity = 128u;
+	uint32_t retainedSnapshotCapacity = 256u;
+	DevErrorStackProvider* stackProvider = nullptr;
+};
+
+struct DevErrorTrigger {
+	ErrorCode code = ErrorCode::None;
+	ErrorSite site = ErrorSite::None;
+	uint32_t nativeCode = 0u;
+	bool matchNativeCode = false;
+	uint32_t preOccurrenceTicks = 2u;
+	uint32_t postOccurrenceTicks = 2u;
+};
+
+struct DevErrorReportingConfig {
+	uint32_t retainedOccurrenceCapacity = 512u;
+	uint64_t retainedByteBudget = 4u * 1024u * 1024u;
+	uint32_t retainedBreadcrumbCapacity = 4096u;
+	uint32_t postOccurrenceTicks = 2u;
+	uint32_t maxStepsPerOccurrence = 64u;
+	uint32_t maximumAdvicePerOccurrence = 4u;
+	uint32_t retainedCaptureCapacity = 32u;
+	uint32_t maximumPinnedTimingTicks = 16u;
+	uint32_t maximumPinnedMemoryEvents = 128u;
+	std::vector<DevErrorTrigger> triggers{};
+};
+
+namespace tooling {
+
+struct DevOverrideEngineConfig {
+	std::uint32_t maximumPendingTransactions = 256;
+	std::uint32_t maximumCommandsPerTransaction = 4096;
+	std::uint32_t maximumPendingCommands = 16384;
+};
+
+struct DevTreeCaptureConfig {
+	uint32_t flowNodeReserve = 512;
+	uint32_t stringByteReserve = 64u * 1024u;
+	uint32_t diagnosticReserve = 64;
+	uint32_t maximumFlowNodes = 1u << 20u;
+	uint32_t maximumStringBytes = 64u * 1024u * 1024u;
+#if FLOW_UI_DEV_CAPTURE_CLAY
+	uint32_t clayNodeReserve = 2048;
+	uint32_t clayRootReserve = 32;
+	uint32_t directLinkReserve = 2048;
+	uint32_t maximumClayNodes = 1u << 22u;
+#endif
+};
+
+} // namespace tooling
+
+struct DevMonitoringConfig {
+	DevTimingConfig timing{};
+	TimingReportingConfig timingReporting{};
+	DevMemoryConfig memory{};
+	MemoryReportingConfig memoryReporting{};
+	DevErrorConfig errors{};
+	DevErrorReportingConfig errorReporting{};
+};
+
+struct DevToolingConfig {
+	devMode::DevSchemaLimits schema{};
+	tooling::DevOverrideEngineConfig overrides{};
+	tooling::DevTreeCaptureConfig treeCapture{};
+};
+
+} // namespace devSystems
+
+#endif
+
 /** @brief Developer panel shortcut trigger mode. 
  * 
  * @see DevShortcutchord
@@ -411,6 +734,14 @@ struct DevToolsConfig {
 	 * paths, so this value has no effect.
 	 */
 	bool autoSave = true;
+
+#if FLOW_UI_DEV_MODE
+	/** Capture, retention, and sampling controls for developer monitoring. */
+	devSystems::DevMonitoringConfig monitoring{};
+
+	/** Schema, override, and per-window tree-capture capacity controls. */
+	devSystems::DevToolingConfig tooling{};
+#endif
 };
 
 /**

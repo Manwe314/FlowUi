@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "FlowUi/PublicStructs.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 #if FLOW_UI_DEV_CAPTURE_CLAY
 #include "internal/ClayDevTreeBridge.hpp"
@@ -19,20 +20,6 @@ class MemorySampleSink;
 }
 
 namespace FlowUi::devSystems::tooling {
-
-struct DevTreeCaptureConfig {
-	uint32_t flowNodeReserve = 512;
-	uint32_t stringByteReserve = 64u * 1024u;
-	uint32_t diagnosticReserve = 64;
-	uint32_t maximumFlowNodes = 1u << 20u;
-	uint32_t maximumStringBytes = 64u * 1024u * 1024u;
-#if FLOW_UI_DEV_CAPTURE_CLAY
-	uint32_t clayNodeReserve = 2048;
-	uint32_t clayRootReserve = 32;
-	uint32_t directLinkReserve = 2048;
-	uint32_t maximumClayNodes = 1u << 22u;
-#endif
-};
 
 class DevTreeCapture {
 public:

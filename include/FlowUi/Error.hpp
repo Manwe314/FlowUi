@@ -162,21 +162,6 @@ enum class InputQueueOverflowPolicy : std::uint8_t {
  * Error resolutions selected once at App creation. Development mode may observe
  * these decisions but never changes them.
  */
-struct ErrorPolicy {
-	DefaultFontFailurePolicy defaultFont = DefaultFontFailurePolicy::TryFallbackThenDisableText;
-	MissingVisualPolicy missingImage = MissingVisualPolicy::UseFallbackTexture;
-	MissingVisualPolicy missingViewport = MissingVisualPolicy::UseFallbackTexture;
-	IconGenerationFailurePolicy iconGeneration = IconGenerationFailurePolicy::UseFallbackTexture;
-	StorageCapacityPolicy transientCapacity = StorageCapacityPolicy::GrowWithinBudget;
-	StorageCapacityPolicy persistentCapacity = StorageCapacityPolicy::GrowWithinBudget;
-	CacheCapacityPolicy descriptorCapacity = CacheCapacityPolicy::RejectOperation;
-	PopupDuplicatePolicy duplicatePopup = PopupDuplicatePolicy::FirstSubmissionWins;
-	PopupMissingAnchorPolicy missingPopupAnchor = PopupMissingAnchorPolicy::SkipPopup;
-	PopupCapacityPolicy popupCapacity = PopupCapacityPolicy::ClampLayer;
-	InputQueueOverflowPolicy inputQueueOverflow = InputQueueOverflowPolicy::DropNewest;
-	std::uint32_t inputTextQueueCapacity = 4096;
-};
-
 /** Kind of stable numeric subject carried by FlowUiError::subject. */
 enum class ErrorSubjectKind : std::uint8_t {
 	None = 0,
@@ -1525,46 +1510,6 @@ struct ErrorEventView {
 
 using ErrorSinkCallback = void(*)(void* userData, const ErrorEventView& event) noexcept;
 
-/** Non-owning application-provided destination for structured error reports. */
-struct ErrorSink {
-	void* userData = nullptr;
-	ErrorSinkCallback callback = nullptr;
-
-	[[nodiscard]] constexpr explicit operator bool() const noexcept {
-		return callback != nullptr;
-	}
-
-	void notify(const ErrorEventView& event) const noexcept {
-		if (callback) callback(userData, event);
-	}
-};
-
-/** How the hidden App observer routes each report. */
-enum class ErrorReportingMode : std::uint8_t {
-	/** Attempt compact default output first, then notify the sink when present. */
-	SinkAndDefault = 0,
-	/** Notify the sink when present; otherwise use compact default output. */
-	SinkOrDefault = 1,
-	/** Notify only the sink. An empty sink intentionally produces no output. */
-	SinkOnly = 2,
-	/** Ignore the sink and use only compact default output. */
-	DefaultOnly = 3,
-};
-
-/** Immutable reporting configuration copied into the App-owned observer. */
-struct ErrorObserverConfig {
-	ErrorSink sink{};
-	ErrorReportingMode mode = ErrorReportingMode::SinkOrDefault;
-	/** Non-owning stream used by the compact built-in writer. */
-	std::FILE* output = stderr;
-};
-
-/** Complete production error contract selected at App creation. */
-struct ErrorContract {
-	ErrorPolicy policy{};
-	ErrorObserverConfig observer{};
-};
-
 namespace detail {
 
 /** Route one occurrence through the active singleton App observer. */
@@ -1594,8 +1539,4 @@ void reportErrorEvent(const ErrorEventView& event) noexcept;
 
 static_assert(noexcept(makeError(ErrorCode::None, ErrorSite::None)));
 static_assert(std::is_trivially_copyable_v<ErrorEventView>);
-static_assert(std::is_trivially_copyable_v<ErrorSink>);
-static_assert(std::is_trivially_copyable_v<ErrorObserverConfig>);
-static_assert(noexcept(std::declval<const ErrorSink&>().notify(std::declval<const ErrorEventView&>())));
-
 } // namespace FlowUi

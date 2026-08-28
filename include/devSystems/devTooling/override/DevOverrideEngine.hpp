@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "FlowUi/PublicStructs.hpp"
 #include "devSystems/devTooling/override/DevOverrideApply.hpp"
 #include "devSystems/devTooling/override/DevOverrideCapture.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
@@ -21,12 +22,6 @@ namespace FlowUi { class ThemeManager; }
 namespace FlowUi::devSystems { class DevTimingRecorder; }
 
 namespace FlowUi::devSystems::tooling {
-
-struct DevOverrideEngineConfig {
-	std::uint32_t maximumPendingTransactions = 256;
-	std::uint32_t maximumCommandsPerTransaction = 4096;
-	std::uint32_t maximumPendingCommands = 16384;
-};
 
 class DevOverrideEngine {
 public:

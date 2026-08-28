@@ -373,6 +373,12 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devTooling/tree/DevTreeCapture.cpp
 			src/devSystems/devTooling/schema/DevSchemaRegistry.cpp
 			src/devSystems/devInterface/DevInterface.cpp
+			src/devSystems/devInterface/Elements/DevContent.cpp
+			src/devSystems/devInterface/Elements/DevContentAreas.cpp
+			src/devSystems/devInterface/Elements/DevContentHeader.cpp
+			src/devSystems/devInterface/Elements/DevInterface.cpp
+			src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp
+			src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp
 			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.cpp
@@ -416,7 +422,15 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ClayDevTreeBridge.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterface.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevRoot.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterfaceIcons.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterfaceState.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevTheme.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContentAreas.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContentHeader.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterface.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceFooter.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceHeader.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevError.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.hpp>

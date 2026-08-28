@@ -10,8 +10,10 @@
 
 namespace FlowUi::devSystems {
 
-DevTooling::DevTooling() noexcept
-	: overrides_(schemas_), bakePipeline_(schemas_, overrides_) {
+DevTooling::DevTooling(const DevToolingConfig& config) noexcept
+	: schemas_(config.schema),
+	  overrides_(schemas_, config.overrides),
+	  bakePipeline_(schemas_, overrides_) {
 #if defined(FLOWUI_BAKE_MANIFEST_PATH)
 	try { bakePipeline_.setManifestPath(FLOWUI_BAKE_MANIFEST_PATH); } catch (...) {}
 #endif

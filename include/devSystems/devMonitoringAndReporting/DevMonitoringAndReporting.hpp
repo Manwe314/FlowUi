@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "FlowUi/PublicStructs.hpp"
+
 namespace FlowUi::devSystems {
 
 class DevTiming;
@@ -19,7 +21,7 @@ class DevErrorReporting;
 /** Development-only owner for monitoring collection and derived reporting. */
 class DevMonitoringAndReporting {
 public:
-	DevMonitoringAndReporting();
+	explicit DevMonitoringAndReporting(const DevMonitoringConfig& config = {});
 	~DevMonitoringAndReporting();
 
 	DevMonitoringAndReporting(const DevMonitoringAndReporting&) = delete;

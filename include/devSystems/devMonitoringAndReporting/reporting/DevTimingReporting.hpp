@@ -18,13 +18,6 @@ namespace FlowUi::devSystems {
 class DevTiming;
 class DevGpuTiming;
 
-struct TimingReportingConfig {
-	uint32_t retainedAppTickCapacity = 4096u;
-	uint32_t minimumFramesInFlightMultiplier = 20u;
-	uint32_t rollingSampleCapacity = 2048u;
-	std::vector<double> percentilePoints{0.50, 0.90, 0.95, 0.99};
-};
-
 struct TimingFrameReport {
 	WindowFrameKey key{};
 	std::vector<CpuTimingRecord> cpuZones{};

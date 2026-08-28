@@ -202,6 +202,10 @@ struct ComboBox {
 		trigger.backgroundColor = appearance.backgroundColor;
 		trigger.cornerRadius = theme.cornerRadius;
 		trigger.border = {.color = appearance.borderColor, .width = theme.borderWidth};
+		trigger.clip = {
+			.horizontal = true,
+			.vertical = true,
+		};
 
 		const Clay_TextElementConfig textConfig = makeTextConfig(
 			context, selected ? appearance.textColor : theme.placeholderColor);
@@ -214,6 +218,10 @@ struct ComboBox {
 			labelRoot.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_FIT(0),
+			};
+			labelRoot.clip = {
+				.horizontal = true,
+				.vertical = false,
 			};
 			CLAY(context.clayID("label"), labelRoot) {
 				CLAY_TEXT(

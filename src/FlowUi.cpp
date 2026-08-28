@@ -625,8 +625,8 @@ private:
 
 struct App::Impl {
 #if FLOW_UI_DEV_MODE
-	devSystems::DevMonitoringAndReporting devMonitoring{};
-	devSystems::DevTooling devTooling{};
+	devSystems::DevMonitoringAndReporting devMonitoring;
+	devSystems::DevTooling devTooling;
 	devSystems::DevInterface devInterface{};
 	devSystems::DevErrorThreadAttachment platformErrorAttachment;
 #endif
@@ -669,7 +669,9 @@ struct App::Impl {
 
 	explicit Impl(const AppConfig& initialConfig)
 #if FLOW_UI_DEV_MODE
-		: platformErrorAttachment(devMonitoring.errors().attachCurrentThread("flowui.platform")),
+		: devMonitoring(initialConfig.dev.monitoring),
+		  devTooling(initialConfig.dev.tooling),
+		  platformErrorAttachment(devMonitoring.errors().attachCurrentThread("flowui.platform")),
 		  errorObserver(initialConfig.errors.observer, &devMonitoring.errors()),
 		  platformTimingAttachment(devMonitoring.timing().attachCurrentThread("flowui.platform")),
 		  config(initialConfig) {}
@@ -1330,6 +1332,9 @@ struct App::Impl {
 			}
 			window.previousBeginFrameTimestamp = now;
 			window.hasPreviousBeginFrameTimestamp = true;
+#if FLOW_UI_DEV_MODE
+			window.ui.performanceDiagnostics().beginFrame(nextFrameNumber, deltaTimeSeconds);
+#endif
 
 			FrameVk::Frame& frame = window.frames.getCurrentFrame();
 			{
@@ -1916,6 +1921,7 @@ struct App::Impl {
 
 		window.frames.advance();
 #if FLOW_UI_DEV_MODE
+		window.ui.performanceDiagnostics().endCompletedFrame();
 		drawTiming.end();
 		window.frameTotalTiming.end();
 		window.timingFrame = {};
@@ -2504,6 +2510,22 @@ devSystems::DevTooling& App::devTooling() {
 const devSystems::DevTooling& App::devTooling() const {
 	if (!impl_) throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessDevMonitoring));
 	return impl_->devTooling;
+}
+
+std::vector<DevWindowInfo> App::devWindowSnapshot() const {
+	if (!impl_) return {};
+	std::vector<DevWindowInfo> result;
+	result.reserve(impl_->windows.size());
+	for (const auto& [id, window] : impl_->windows) {
+		if (!window) continue;
+		result.push_back(DevWindowInfo{
+			.id = id,
+			.title = window->config.native.title,
+			.framesInFlight = window->config.vulkan.framesInFlight,
+		});
+	}
+	std::ranges::sort(result, {}, &DevWindowInfo::id);
+	return result;
 }
 #endif
 

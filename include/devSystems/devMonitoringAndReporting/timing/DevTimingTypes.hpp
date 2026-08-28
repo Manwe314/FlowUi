@@ -9,16 +9,10 @@
 #include <string_view>
 
 #include "FlowUi/ElementID.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/WindowId.hpp"
 
 namespace FlowUi::devSystems {
-
-enum class CpuTimingLevel : uint8_t {
-	OnlyFrameTime = 0,
-	Summary = 1,
-	Balanced = 2,
-	Deep = 3,
-};
 
 enum class TimingCategory : uint8_t {
 	Lifecycle = 0,
@@ -195,17 +189,6 @@ struct ElementDefinitionTimingAggregate {
 	uint64_t totalInclusiveNs = 0u;
 	uint64_t maximumInclusiveNs = 0u;
 	uint64_t canceledInvocationCount = 0u;
-};
-
-struct DevTimingConfig {
-	CpuTimingLevel cpuLevel = CpuTimingLevel::Summary;
-	uint32_t enabledCategoryMask = 0xFFFFFFFFu;
-	bool gpuTimingEnabled = true;
-	uint32_t gpuQueryCapacityPerFrame = 512u;
-	uint32_t producerRecordCapacity = 8192u;
-	uint64_t balancedElementRetentionThresholdNs = 50'000u;
-	FlowDefinitionID selectedElementDefinition{};
-	FlowElementID selectedElementInstance{};
 };
 
 struct TimingClockCalibration {

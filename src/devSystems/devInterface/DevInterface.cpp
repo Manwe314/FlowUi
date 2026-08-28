@@ -2,8 +2,10 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include <functional>
+
 #include "FlowUi/AppElementWindows.hpp"
-#include "devSystems/devInterface/Elements/DevRoot.hpp"
+#include "devSystems/devInterface/Elements/DevInterface.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/UiManager.hpp"
 
@@ -67,7 +69,23 @@ Status DevInterface::synchronize(App& app) {
 	overrides.title = "FlowUi Developer Interface";
 	overrides.width = 1100;
 	overrides.height = 720;
-	auto created = app.createWindow(overrides, interface_elements::kDevRoot);
+	App* const application = &app;
+	const WindowId mainWindowId = app.mainWindowId();
+	auto created = app.createWindow(
+		overrides,
+		interface_elements::kDevInterface,
+		std::function<void(
+			ElementBuilder<interface_elements::DevInterface>&,
+			WindowId)>{
+			[application, mainWindowId](
+				ElementBuilder<interface_elements::DevInterface>& builder,
+				WindowId interfaceWindowId) {
+				builder.setParameters(interface_elements::DevInterfaceParameters{
+					.app = application,
+					.interfaceWindowId = interfaceWindowId,
+					.mainWindowId = mainWindowId,
+				});
+			}});
 	if (!created) return unexpectedError(created.error());
 	windowId_ = *created;
 	return {};

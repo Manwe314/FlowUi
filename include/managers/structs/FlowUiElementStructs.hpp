@@ -15,6 +15,10 @@
 
 namespace FlowUi {
 
+#if FLOW_UI_DEV_MODE
+namespace devSystems { class DevTimingRecorder; }
+#endif
+
 /** @addtogroup flowui_element_system
  * @{
  */
@@ -241,6 +245,11 @@ struct ElementBuildContext
 	[[nodiscard]] const ResourcesOf<E>& resources() const {
 		return invocation_.template resources<E>();
 	}
+
+#if FLOW_UI_DEV_MODE
+	/** Return the active window frame's development timing recorder, if any. */
+	[[nodiscard]] devSystems::DevTimingRecorder* devTimingRecorder() const noexcept;
+#endif
 
 	/** Return this element's numeric Clay root ID. */
 	[[nodiscard]] Clay_ElementId clayID() const;

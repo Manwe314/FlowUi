@@ -5,7 +5,7 @@
 #include <cstdint>
 
 #include "FlowUi/ElementID.hpp"
-#include "FlowUi/Error.hpp"
+#include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "managers/structs/PopupManagerStructs.hpp"
 
