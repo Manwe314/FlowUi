@@ -37,14 +37,6 @@ enum class MemoryReportFlag : uint32_t {
 }
 constexpr MemoryReportFlag& operator|=(MemoryReportFlag& a, MemoryReportFlag b) noexcept { return a = a | b; }
 
-struct MemoryReportingConfig {
-	uint32_t segmentCapacity = 100'000u;
-	uint64_t eventByteCapacity = 16ull * 1024ull * 1024ull;
-	uint32_t managerSampleEveryTicks = 8u;
-	uint32_t quantileWindowSegments = 20'000u;
-	bool retainLifetimeEvents = false;
-	uint64_t consumeWarningThresholdNs = 2'000'000u;
-};
 struct MemorySourceKey {
 	MemorySourceId source = 0u;
 	WindowId window = InvalidWindowId;

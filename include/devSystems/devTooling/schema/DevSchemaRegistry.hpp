@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "FlowUi/PublicStructs.hpp"
 #include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
 #include "devSystems/devTooling/schema/DevClayTypeAdapters.hpp"
 #include "devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp"
@@ -24,15 +25,6 @@
 #include "managers/structs/FlowUiElementConcepts.hpp"
 
 namespace FlowUi::devMode {
-
-struct DevSchemaLimits {
-	std::uint16_t maxDepth = 16;
-	std::uint32_t maxTypes = 2048;
-	std::uint32_t maxFields = 16384;
-	std::uint32_t maxEnumValues = 8192;
-	std::uint32_t maxConstraints = 16384;
-	std::uint32_t maxStringBytes = 2u * 1024u * 1024u;
-};
 
 class DevSchemaRegistry {
 public:

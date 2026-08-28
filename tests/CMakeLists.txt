@@ -5,9 +5,10 @@ add_executable(flowui_storage_types_tests
 target_compile_features(flowui_storage_types_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_storage_types_tests
     PRIVATE
-        ${FLOWUI_GENERATED_INCLUDE_DIR}
-        ${PROJECT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}
+		${FLOWUI_GENERATED_INCLUDE_DIR}
+		${PROJECT_SOURCE_DIR}/include
+		${PROJECT_SOURCE_DIR}/external
+		${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_test(NAME flowui.storage.types COMMAND flowui_storage_types_tests)

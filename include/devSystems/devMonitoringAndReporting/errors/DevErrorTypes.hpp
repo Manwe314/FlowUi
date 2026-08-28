@@ -22,14 +22,6 @@ using DevErrorSnapshotSourceId = uint64_t;
 
 class DevErrorStackProvider;
 
-enum class DevErrorCaptureLevel : uint8_t {
-	Disabled = 0,
-	Summary = 1,
-	Causal = 2,
-	StackAndState = 3,
-	Deep = 4,
-};
-
 enum class DevErrorStepKind : uint8_t {
 	Raised = 0,
 	Boundary,
@@ -265,8 +257,6 @@ struct DevErrorSnapshotProvider {
 	DevErrorSnapshotCapture capture = nullptr;
 };
 
-inline constexpr size_t kDevErrorNativeTextCapacity = 160u;
-
 struct DevErrorRecord {
 	DevErrorRecordSequence sequence = 0u;
 	uint64_t timestampNs = 0u;
@@ -398,23 +388,6 @@ struct DevErrorOverheadSnapshot {
 	uint64_t capturedStackFrames = 0u;
 	uint64_t fatalCaptureCalls = 0u;
 	uint64_t fatalCaptureTimeNs = 0u;
-};
-
-struct DevErrorConfig {
-	DevErrorCaptureLevel level = DevErrorCaptureLevel::Causal;
-	uint32_t producerRecordCapacity = 256u;
-	uint32_t breadcrumbCapacity = 512u;
-	uint32_t recentBreadcrumbCount = 32u;
-	uint32_t nativeTextLimit = static_cast<uint32_t>(kDevErrorNativeTextCapacity);
-	uint32_t threadRecorderCapacity = 16u;
-	uint32_t sourceDescriptorCapacity = 1024u;
-	uint32_t breadcrumbDescriptorCapacity = 256u;
-	uint32_t stackTraceCapacity = 256u;
-	uint32_t maximumStackFrames = 32u;
-	uint32_t snapshotProviderCapacity = 64u;
-	uint32_t pendingSnapshotCapacity = 128u;
-	uint32_t retainedSnapshotCapacity = 256u;
-	DevErrorStackProvider* stackProvider = nullptr;
 };
 
 struct DevErrorQualitySnapshot {

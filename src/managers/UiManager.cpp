@@ -94,7 +94,11 @@ namespace FlowUi
 		storage::IStorageSystem& storageSystem,
 		WindowId window,
 		const AppConfig& appConfig)
-		: storage(&storageSystem) {
+		: storage(&storageSystem)
+#if FLOW_UI_DEV_MODE
+		, devTreeCapture(appConfig.dev.tooling.treeCapture)
+#endif
+	{
 		const size_t minimumClayArenaCapacityBytes = static_cast<size_t>(Clay_MinMemorySize());
 		const size_t configuredClayArenaCapacityBytes = appConfig.ui.clayArenaCapacityBytes;
 		const size_t clayArenaCapacityBytes = (configuredClayArenaCapacityBytes == 0)

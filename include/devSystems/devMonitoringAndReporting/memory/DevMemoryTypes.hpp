@@ -9,18 +9,11 @@
 #include <string_view>
 #include <vector>
 
+#include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingTypes.hpp"
 
 namespace FlowUi::devSystems {
-
-enum class MemoryMonitoringLevel : uint8_t {
-	Disabled = 0,
-	StorageSummary = 1,
-	SubsystemCapacity = 2,
-	DetailedLifetimes = 3,
-	DeepAllocations = 4,
-};
 
 enum class MemoryDomain : uint8_t {
 	StorageCpu = 0,
@@ -184,18 +177,6 @@ struct MemoryOperationRecord {
 	uint64_t bytesChanged = 0u;
 	uint32_t threadTrack = 0u;
 	uint32_t debugName = 0u;
-};
-
-struct DevMemoryConfig {
-	MemoryMonitoringLevel level = MemoryMonitoringLevel::SubsystemCapacity;
-	uint32_t producerEventCapacity = 8192u;
-	bool gpuMemory = true;
-	bool processMemory = true;
-	bool detailedVmaStatistics = false;
-	bool trackTemporaryResources = true;
-	uint64_t processSampleIntervalNs = 500'000'000ull;
-	uint64_t gpuBudgetSampleIntervalNs = 250'000'000ull;
-	uint32_t detailedGpuStatsEverySamples = 0u;
 };
 
 enum class ProcessMemoryFieldBit : uint32_t {

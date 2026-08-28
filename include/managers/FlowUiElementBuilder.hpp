@@ -33,6 +33,13 @@ Clay_ElementId ElementBuildContext<Element>::clayID() const {
 	return uiManager.toClayEID(id);
 }
 
+#if FLOW_UI_DEV_MODE
+template <typename Element>
+devSystems::DevTimingRecorder* ElementBuildContext<Element>::devTimingRecorder() const noexcept {
+	return uiManager.devTimingRecorder();
+}
+#endif
+
 template <typename Element>
 FlowElementID ElementBuildContext<Element>::childID(LocalElementName name) const {
 	return uiManager.resolveLocalElementID(id, ElementType::definitionId, name);

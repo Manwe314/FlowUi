@@ -7,7 +7,13 @@
 
 #include "FlowUi/Flow.hpp"
 #if FLOW_UI_DEV_MODE
-#include "devSystems/devInterface/Elements/DevRoot.hpp"
+#include "devSystems/devInterface/DevInterfaceState.hpp"
+#include "devSystems/devInterface/Elements/DevContent.hpp"
+#include "devSystems/devInterface/Elements/DevContentAreas.hpp"
+#include "devSystems/devInterface/Elements/DevContentHeader.hpp"
+#include "devSystems/devInterface/Elements/DevInterface.hpp"
+#include "devSystems/devInterface/Elements/DevInterfaceFooter.hpp"
+#include "devSystems/devInterface/Elements/DevInterfaceHeader.hpp"
 #endif
 
 namespace {
@@ -72,7 +78,57 @@ void testPublicSurface() {
 		FlowUi::ErrorImpact::FrameCanceled);
 #if FLOW_UI_DEV_MODE
 	static_assert(FlowUi::DrawableFlowElement<
-		FlowUi::devSystems::interface_elements::DevRoot>);
+		FlowUi::devSystems::interface_elements::DevInterface>);
+	static_assert(FlowUi::HasState<
+		FlowUi::devSystems::interface_elements::DevInterface>);
+	static_assert(std::same_as<
+		FlowUi::StateOf<FlowUi::devSystems::interface_elements::DevInterface>,
+		FlowUi::devSystems::DevInterfaceState>);
+	static_assert(std::same_as<
+		FlowUi::ParametersOf<FlowUi::devSystems::interface_elements::DevInterface>,
+		FlowUi::devSystems::interface_elements::DevInterfaceParameters>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevInterfaceHeader>);
+	static_assert(FlowUi::ConstructibleFlowElement<
+		FlowUi::devSystems::interface_elements::DevContent>);
+	static_assert(!FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevContent>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevSelectorArea>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevWorkbenchArea>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevInspectorArea>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevContentHeader>);
+	static_assert(std::same_as<
+		FlowUi::ParametersOf<FlowUi::devSystems::interface_elements::DevContentHeader>,
+		FlowUi::devSystems::interface_elements::DevContentHeaderParameters>);
+	static_assert(std::same_as<
+		FlowUi::ParametersOf<FlowUi::devSystems::interface_elements::DevInterfaceHeader>,
+		FlowUi::devSystems::interface_elements::DevInterfaceHeaderParameters>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevInterfaceFooter>);
+	static_assert(FlowUi::HasResources<
+		FlowUi::devSystems::interface_elements::DevInterfaceFooter>);
+	static_assert(std::same_as<
+		FlowUi::ParametersOf<FlowUi::devSystems::interface_elements::DevInterfaceFooter>,
+		FlowUi::devSystems::interface_elements::DevInterfaceFooterParameters>);
+	static_assert(std::same_as<
+		decltype(std::declval<const App&>().devWindowSnapshot()),
+		std::vector<FlowUi::DevWindowInfo>>);
+	static_assert(std::same_as<
+		decltype(std::declval<FlowUi::AppConfig&>().dev.monitoring.timing),
+		FlowUi::devSystems::DevTimingConfig>);
+	static_assert(std::same_as<
+		decltype(std::declval<FlowUi::AppConfig&>().dev.monitoring.memory),
+		FlowUi::devSystems::DevMemoryConfig>);
+	static_assert(std::same_as<
+		decltype(std::declval<FlowUi::AppConfig&>().dev.monitoring.errors),
+		FlowUi::devSystems::DevErrorConfig>);
+	static_assert(std::same_as<
+		decltype(std::declval<FlowUi::AppConfig&>().dev.tooling.treeCapture),
+		FlowUi::devSystems::tooling::DevTreeCaptureConfig>);
 #endif
 	(void)&instantiateDeclarativeOverloads;
 }

@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/ElementID.hpp"
@@ -95,6 +96,13 @@ class ElementManager;
 class ActionManager;
 #if FLOW_UI_DEV_MODE
 namespace devSystems { class DevMonitoringAndReporting; class DevTooling; }
+
+/** Immutable metadata for one window exposed to development tooling. */
+struct DevWindowInfo {
+	WindowId id = InvalidWindowId;
+	std::string title{};
+	uint32_t framesInFlight = 1u;
+};
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 class IconManager;
@@ -470,6 +478,8 @@ public:
 	/** Development-only schema catalogue, discovery, and publication service. */
 	devSystems::DevTooling& devTooling();
 	const devSystems::DevTooling& devTooling() const;
+	/** Snapshot registered windows in stable identity order for development UI. */
+	[[nodiscard]] std::vector<DevWindowInfo> devWindowSnapshot() const;
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.

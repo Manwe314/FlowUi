@@ -12,15 +12,19 @@
 
 namespace FlowUi::devSystems {
 
-DevMonitoringAndReporting::DevMonitoringAndReporting()
-	: timing_(std::make_unique<DevTiming>()),
+DevMonitoringAndReporting::DevMonitoringAndReporting(
+	const DevMonitoringConfig& config)
+	: timing_(std::make_unique<DevTiming>(config.timing)),
 	  gpuTiming_(std::make_unique<DevGpuTiming>(*timing_)),
 	  timingReporting_(std::make_unique<DevTimingReporting>(*timing_, *gpuTiming_)),
-	  memory_(std::make_unique<DevMemory>()),
-	  memoryReporting_(std::make_unique<DevMemoryReporting>(*memory_)),
-	  errors_(std::make_unique<DevErrorMonitoring>()),
+	  memory_(std::make_unique<DevMemory>(config.memory)),
+	  memoryReporting_(std::make_unique<DevMemoryReporting>(
+		  *memory_, config.memoryReporting)),
+	  errors_(std::make_unique<DevErrorMonitoring>(config.errors)),
 	  errorReporting_(std::make_unique<DevErrorReporting>(
-		  *errors_, DevErrorReportingConfig{}, timingReporting_.get(), memoryReporting_.get())) {}
+		  *errors_, config.errorReporting, timingReporting_.get(), memoryReporting_.get())) {
+	timingReporting_->setConfig(config.timingReporting);
+}
 
 DevMonitoringAndReporting::~DevMonitoringAndReporting() = default;
 
