@@ -183,12 +183,14 @@ struct DevFloatingElementConfigValue {
 struct DevClipElementConfigValue {
 	bool horizontal = false;
 	bool vertical = false;
+	bool scrollInputDisabled = false;
 	DevFloat2Value childOffset{};
 
 	bool operator==(const DevClipElementConfigValue& other) const {
 		return
 			horizontal == other.horizontal &&
 			vertical == other.vertical &&
+			scrollInputDisabled == other.scrollInputDisabled &&
 			childOffset == other.childOffset;
 	}
 };

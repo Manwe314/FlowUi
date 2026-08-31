@@ -10,6 +10,12 @@
 #include "devSystems/devInterface/DevInterfaceState.hpp"
 #include "devSystems/devInterface/Elements/DevContent.hpp"
 #include "devSystems/devInterface/Elements/DevContentAreas.hpp"
+#include "devSystems/devInterface/Elements/DevCatalogueContent.hpp"
+#include "devSystems/devInterface/Elements/DevChangesContent.hpp"
+#include "devSystems/devInterface/Elements/DevDiagnosticsContent.hpp"
+#include "devSystems/devInterface/Elements/DevInspectContent.hpp"
+#include "devSystems/devInterface/Elements/DevMemoryContent.hpp"
+#include "devSystems/devInterface/Elements/DevPerformanceContent.hpp"
 #include "devSystems/devInterface/Elements/DevContentHeader.hpp"
 #include "devSystems/devInterface/Elements/DevInterface.hpp"
 #include "devSystems/devInterface/Elements/DevInterfaceFooter.hpp"
@@ -99,6 +105,42 @@ void testPublicSurface() {
 		FlowUi::devSystems::interface_elements::DevWorkbenchArea>);
 	static_assert(FlowUi::DrawableFlowElement<
 		FlowUi::devSystems::interface_elements::DevInspectorArea>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevInspectSelector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevInspectWorkbench>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevInspectInspector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevPerformanceSelector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevPerformanceWorkbench>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevPerformanceInspector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevMemorySelector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevMemoryWorkbench>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevMemoryInspector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevDiagnosticsSelector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevDiagnosticsWorkbench>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevDiagnosticsInspector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevChangesSelector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevChangesWorkbench>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevChangesInspector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevCatalogueSelector>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevCatalogueWorkbench>);
+	static_assert(FlowUi::DrawableFlowElement<
+		FlowUi::devSystems::interface_elements::DevCatalogueInspector>);
 	static_assert(FlowUi::DrawableFlowElement<
 		FlowUi::devSystems::interface_elements::DevContentHeader>);
 	static_assert(std::same_as<

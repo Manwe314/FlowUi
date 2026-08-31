@@ -360,6 +360,7 @@ inline bool tryCaptureDevClipElementConfigValue(const Clay_ClipElementConfig& so
 	outValue = DevClipElementConfigValue{
 		.horizontal = source.horizontal,
 		.vertical = source.vertical,
+		.scrollInputDisabled = source.scrollInputDisabled,
 		.childOffset = childOffset,
 	};
 	return true;
@@ -375,6 +376,7 @@ inline bool tryApplyDevClipElementConfigValue(const DevClipElementConfigValue& s
 	outValue = Clay_ClipElementConfig{
 		.horizontal = source.horizontal,
 		.vertical = source.vertical,
+		.scrollInputDisabled = source.scrollInputDisabled,
 		.childOffset = childOffset,
 	};
 	return true;

@@ -532,6 +532,9 @@ CLAY__WRAPPER_STRUCT(Clay_CustomElementConfig);
 typedef struct Clay_ClipElementConfig {
     bool horizontal; // Clip overflowing elements on the X axis.
     bool vertical; // Clip overflowing elements on the Y axis.
+    // Keep clipping and childOffset behavior, but opt this element out of
+    // Clay-managed wheel, touch-drag, and momentum scrolling.
+    bool scrollInputDisabled;
     Clay_Vector2 childOffset; // Offsets the x,y positions of all child elements. Used primarily for scrolling containers.
 } Clay_ClipElementConfig;
 
@@ -4241,6 +4244,10 @@ CLAY_WASM_EXPORT("Clay_UpdateScrollContainers")
 void Clay_UpdateScrollContainers(bool enableDragScrolling, Clay_Vector2 scrollDelta, float deltaTime) {
     Clay_Context* context = Clay_GetCurrentContext();
     bool isPointerActive = enableDragScrolling && (context->pointerInfo.state == CLAY_POINTER_DATA_PRESSED || context->pointerInfo.state == CLAY_POINTER_DATA_PRESSED_THIS_FRAME);
+    bool scrollOccurred = scrollDelta.x != 0 || scrollDelta.y != 0;
+    float absoluteScrollX = scrollDelta.x < 0 ? -scrollDelta.x : scrollDelta.x;
+    float absoluteScrollY = scrollDelta.y < 0 ? -scrollDelta.y : scrollDelta.y;
+    bool verticalScrollDominant = absoluteScrollY >= absoluteScrollX;
     // Don't apply scroll events to ancestors of the inner element
     int32_t highestPriorityElementIndex = -1;
     Clay__ScrollContainerDataInternal *highestPriorityScrollData = CLAY__NULL;
@@ -4256,6 +4263,14 @@ void Clay_UpdateScrollContainers(bool enableDragScrolling, Clay_Vector2 scrollDe
         if (!hashMapItem) {
             Clay__ScrollContainerDataInternalArray_RemoveSwapback(&context->scrollContainerDatas, i);
             continue;
+        }
+        bool scrollInputDisabled = scrollData->layoutElement->config.clip.scrollInputDisabled;
+        if (scrollInputDisabled) {
+            scrollData->pointerScrollActive = false;
+            scrollData->pointerOrigin = CLAY__INIT(Clay_Vector2){0,0};
+            scrollData->scrollOrigin = CLAY__INIT(Clay_Vector2){0,0};
+            scrollData->scrollMomentum = CLAY__INIT(Clay_Vector2){0,0};
+            scrollData->momentumTime = 0;
         }
 
         // Touch / click is released
@@ -4278,7 +4293,6 @@ void Clay_UpdateScrollContainers(bool enableDragScrolling, Clay_Vector2 scrollDe
         // Apply existing momentum
         scrollData->scrollPosition.x += scrollData->scrollMomentum.x;
         scrollData->scrollMomentum.x *= 0.95f;
-        bool scrollOccurred = scrollDelta.x != 0 || scrollDelta.y != 0;
         if ((scrollData->scrollMomentum.x > -0.1f && scrollData->scrollMomentum.x < 0.1f) || scrollOccurred) {
             scrollData->scrollMomentum.x = 0;
         }
@@ -4291,6 +4305,19 @@ void Clay_UpdateScrollContainers(bool enableDragScrolling, Clay_Vector2 scrollDe
         }
         scrollData->scrollPosition.y = CLAY__MIN(CLAY__MAX(scrollData->scrollPosition.y, -(CLAY__MAX(scrollData->contentSize.height - scrollData->layoutElement->dimensions.height, 0))), 0);
 
+        Clay_ClipElementConfig *candidateClipConfig = &scrollData->layoutElement->config.clip;
+        bool candidateCanScrollVertically = candidateClipConfig->vertical && scrollData->contentSize.height > scrollData->layoutElement->dimensions.height;
+        bool candidateCanScrollHorizontally = candidateClipConfig->horizontal && scrollData->contentSize.width > scrollData->layoutElement->dimensions.width;
+        // A clip-only descendant on the other axis must not consume wheel input
+        // intended for an ancestor. With no wheel delta (touch/drag and momentum),
+        // preserve Clay's existing deepest-scroll-container behavior.
+        bool candidateAcceptsInput = !candidateClipConfig->scrollInputDisabled &&
+            (!scrollOccurred || (verticalScrollDominant
+                ? candidateCanScrollVertically
+                : candidateCanScrollHorizontally));
+        if (!candidateAcceptsInput) {
+            continue;
+        }
         for (int32_t j = 0; j < context->pointerOverIds.length; ++j) { // TODO n & m are small here but this being n*m gives me the creeps
             if (scrollData->layoutElement->id == Clay_ElementIdArray_Get(&context->pointerOverIds, j)->id) {
                 highestPriorityElementIndex = j;

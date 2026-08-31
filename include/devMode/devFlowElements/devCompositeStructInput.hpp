@@ -1014,6 +1014,27 @@ inline const DevCompositeStructInputDef kDevCompositeStructInput = {
 						.draw();
 				});
 
+				drawLabeledField("scroll-input-disabled", "Disable Scroll Input:", [&](){
+					devBasicToggleParams toggleParams{};
+					toggleParams.defaultEnabled = normalizedValue.clipElementConfig.scrollInputDisabled;
+					toggleParams.sizing = {
+						.width = CLAY_SIZING_FIXED(22),
+						.height = CLAY_SIZING_FIXED(22),
+					};
+					toggleParams.fontId = context.params.fontId;
+					toggleParams.fontSize = context.params.fontSize;
+					toggleParams.onValueChangedCallback = [emitChanged, normalizedValue](DevBasicToggleInteractionContext, bool disabled) {
+						DevCompositeStructValue updated = normalizedValue;
+						updated.clipElementConfig.scrollInputDisabled = disabled;
+						emitChanged(updated);
+					};
+
+					context.uiManager
+						.createElement(kDevBasicToggle, context.createChildElementId("scroll-input-disabled/input"))
+						.setParameters(toggleParams)
+						.draw();
+				});
+
 				drawLabeledField("child-offset", "Child Offset:", [&](){
 					devFloat2InputParams float2Params{};
 					float2Params.fieldIdPrefix = makeFieldIdPrefix("child-offset");

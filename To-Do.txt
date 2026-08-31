@@ -92,6 +92,7 @@ things i want to do:
 	- Clean things UP:
 		- Remove StoreTexture() and other Legacy functions
 		- Wire in MSAA and Potentially upgrade some configuration about it.
+		- Constrain Integer bit counts. use minimal
 		- add Decorations [[]] to older code.
 		- Move all Non FlowUi namespcae things out of /include/managers
 		- Clean UP /include/FlowUi move internals and maybe move files / add folders
@@ -146,6 +147,7 @@ things i want to do:
 		- Combo Box Icon Overflow
 		- Permanent Header Button Visual hardening.
 		- Match Sepperator border side colors to left right Areas
+		- DevInspectInspectors Main content Width overflow issues As always.
 		
 		
 
