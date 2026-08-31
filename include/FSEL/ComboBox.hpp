@@ -340,18 +340,30 @@ private:
 		bool open,
 		Clay_Color color,
 		const FSELComboBoxTheme& theme) {
-		const TextureRef icon = open
-			? context.params.openIcon.value_or(context.resources().openIcon)
-			: context.params.closedIcon.value_or(context.resources().closedIcon);
-		if (icon.handle) {
-			drawIcon(context, context.clayID("disclosure-icon"), icon, color,
-				resolvedIconSize(context, theme));
-			return;
+		const float iconSize = resolvedIconSize(context, theme);
+		Clay_ElementDeclaration slot{};
+		slot.layout.sizing = {
+			.width = CLAY_SIZING_FIXED(iconSize),
+			.height = CLAY_SIZING_GROW(0),
+		};
+		slot.layout.childAlignment = {
+			.x = CLAY_ALIGN_X_CENTER,
+			.y = CLAY_ALIGN_Y_CENTER,
+		};
+		CLAY(context.clayID("disclosure-slot"), slot) {
+			const TextureRef icon = open
+				? context.params.openIcon.value_or(context.resources().openIcon)
+				: context.params.closedIcon.value_or(context.resources().closedIcon);
+			if (icon.handle) {
+				drawIcon(context, context.clayID("disclosure-icon"), icon, color,
+					iconSize);
+			} else {
+				Clay_TextElementConfig fallback = makeTextConfig(context, color);
+				fallback.textAlignment = CLAY_TEXT_ALIGN_CENTER;
+				CLAY_TEXT(context.uiManager.toClayString(open ? "^" : "v"),
+					CLAY_TEXT_CONFIG(fallback));
+			}
 		}
-		Clay_TextElementConfig fallback = makeTextConfig(context, color);
-		fallback.textAlignment = CLAY_TEXT_ALIGN_CENTER;
-		CLAY_TEXT(context.uiManager.toClayString(open ? "^" : "v"),
-			CLAY_TEXT_CONFIG(fallback));
 	}
 
 	static void drawPopup(BuildContext& context, const FSELComboBoxTheme& theme) {
@@ -442,7 +454,11 @@ private:
 				.height = CLAY_SIZING_GROW(0),
 			};
 			viewport.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-			viewport.clip = {.vertical = true};
+			viewport.clip = {
+				.vertical = true,
+				.childOffset = scroll.found && scroll.scrollPosition
+					? *scroll.scrollPosition : Clay_Vector2{},
+			};
 			CLAY(scrollId, viewport) {
 				Clay_ElementDeclaration options{};
 				options.layout.sizing = {

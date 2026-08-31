@@ -375,6 +375,14 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/DevInterface.cpp
 			src/devSystems/devInterface/Elements/DevContent.cpp
 			src/devSystems/devInterface/Elements/DevContentAreas.cpp
+			src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp
+			src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp
+			src/devSystems/devInterface/Elements/DevInspectContent.cpp
+			src/devSystems/devInterface/Elements/DevPerformanceContent.cpp
+			src/devSystems/devInterface/Elements/DevMemoryContent.cpp
+			src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp
+			src/devSystems/devInterface/Elements/DevChangesContent.cpp
+			src/devSystems/devInterface/Elements/DevCatalogueContent.cpp
 			src/devSystems/devInterface/Elements/DevContentHeader.cpp
 			src/devSystems/devInterface/Elements/DevInterface.cpp
 			src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp
@@ -427,6 +435,13 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevTheme.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContent.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContentAreas.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceSelectorElements.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInspectContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevPerformanceContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevMemoryContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevDiagnosticsContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevChangesContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevCatalogueContent.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContentHeader.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterface.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceFooter.hpp>

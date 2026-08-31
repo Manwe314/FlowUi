@@ -89,7 +89,10 @@ void DevInterface::buildContent(BuildContext& context) {
 		.construct();
 	{
 		context.uiManager.createElement(kDevSelectorArea, kSelectorArea)
-			.setParameters(DevContentAreaParameters{.interfaceState = &state})
+			.setParameters(DevContentAreaParameters{
+				.app = context.params.app,
+				.interfaceState = &state,
+			})
 			.draw();
 
 		FSEL::SplitterHandleParameters selectorSplitter{};
@@ -109,7 +112,10 @@ void DevInterface::buildContent(BuildContext& context) {
 			.draw();
 
 		context.uiManager.createElement(kDevWorkbenchArea, kWorkbenchArea)
-			.setParameters(DevContentAreaParameters{.interfaceState = &state})
+			.setParameters(DevContentAreaParameters{
+				.app = context.params.app,
+				.interfaceState = &state,
+			})
 			.draw();
 
 		FSEL::SplitterHandleParameters inspectorSplitter{};
@@ -129,7 +135,10 @@ void DevInterface::buildContent(BuildContext& context) {
 			.draw();
 
 		context.uiManager.createElement(kDevInspectorArea, kInspectorArea)
-			.setParameters(DevContentAreaParameters{.interfaceState = &state})
+			.setParameters(DevContentAreaParameters{
+				.app = context.params.app,
+				.interfaceState = &state,
+			})
 			.draw();
 	}
 	context.uiManager.drawConstructed();

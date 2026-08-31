@@ -343,6 +343,8 @@ void appendJsonClipElementConfigPayload(std::string& out, const DevClipElementCo
 	out += (value.horizontal ? "true" : "false");
 	out += ",\"vertical\":";
 	out += (value.vertical ? "true" : "false");
+	out += ",\"scrollInputDisabled\":";
+	out += (value.scrollInputDisabled ? "true" : "false");
 	out += ",\"childOffset\":";
 	appendJsonVector2Payload(out, value.childOffset);
 	out += "}";

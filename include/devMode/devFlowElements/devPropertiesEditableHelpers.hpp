@@ -829,7 +829,9 @@ inline std::string devValueToEditableTextForField(
 				std::string("horizontal=") +
 				(compositeValue.clipElementConfig.horizontal ? "true" : "false") +
 				", vertical=" +
-				(compositeValue.clipElementConfig.vertical ? "true" : "false");
+				(compositeValue.clipElementConfig.vertical ? "true" : "false") +
+				", scrollInputDisabled=" +
+				(compositeValue.clipElementConfig.scrollInputDisabled ? "true" : "false");
 		}
 
 		if (fieldTypeHash == FlowUi::devMode::typeHash<Clay_BorderElementConfig>())

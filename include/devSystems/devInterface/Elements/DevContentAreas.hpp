@@ -6,12 +6,14 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "FlowUi/App.hpp"
 #include "devSystems/devInterface/DevInterfaceState.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
 struct DevContentAreaParameters {
+	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
 };
 

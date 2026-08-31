@@ -9,6 +9,8 @@
 
 #include <FlowUi/Flow.hpp>
 
+#include "DemoElementSchemas.hpp"
+
 namespace {
 
 using namespace FlowUi;

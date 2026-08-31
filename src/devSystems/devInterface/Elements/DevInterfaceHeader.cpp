@@ -13,6 +13,7 @@
 #include "FSEL/ComboBox.hpp"
 #include "devMode/performanceDiagnostics.hpp"
 #include "devSystems/devInterface/DevTheme.hpp"
+#include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
 #include "managers/UiManager.hpp"
@@ -30,6 +31,45 @@ inline constexpr LocalElementName kUndoAction{"undo"};
 inline constexpr LocalElementName kHistoryAction{"history"};
 inline constexpr LocalElementName kRedoAction{"redo"};
 inline constexpr LocalElementName kConfigurationsAction{"configurations"};
+
+bool submitHistoryCommands(
+	App& app,
+	DevInterfaceState& state,
+	const std::vector<tooling::DevOverrideCommand>& commands) {
+	if (commands.empty()) return true;
+	return app.devTooling().overrides().submit(tooling::DevChangeSet{
+		.transaction = state.nextEditTransaction++,
+		.commands = commands,
+	});
+}
+
+constexpr auto kUndoEditorTransaction = UiAction(
+	"flowui.dev_interface.editor.undo",
+	[](App& app, DevInterfaceState& state) {
+		if (state.editUndoStack.empty()) return;
+		DevInterfaceEditTransaction transaction = state.editUndoStack.back();
+		if (!submitHistoryCommands(app, state, transaction.inverse)) return;
+		state.editUndoStack.pop_back();
+		if (transaction.changesClipboard) {
+			state.editorClipboard = transaction.clipboardBefore;
+		}
+		state.lastActionMessage = "Undo: " + transaction.description;
+		state.editRedoStack.push_back(std::move(transaction));
+	});
+
+constexpr auto kRedoEditorTransaction = UiAction(
+	"flowui.dev_interface.editor.redo",
+	[](App& app, DevInterfaceState& state) {
+		if (state.editRedoStack.empty()) return;
+		DevInterfaceEditTransaction transaction = state.editRedoStack.back();
+		if (!submitHistoryCommands(app, state, transaction.forward)) return;
+		state.editRedoStack.pop_back();
+		if (transaction.changesClipboard) {
+			state.editorClipboard = transaction.clipboardAfter;
+		}
+		state.lastActionMessage = "Redo: " + transaction.description;
+		state.editUndoStack.push_back(std::move(transaction));
+	});
 
 Clay_TextElementConfig textConfig(Clay_Color color, uint16_t fontSize) {
 	Clay_TextElementConfig config{};
@@ -111,8 +151,12 @@ void drawInsetSeparator(DevInterfaceHeader::BuildContext& context) {
 void drawActionButton(
 	DevInterfaceHeader::BuildContext& context,
 	LocalElementName id,
-	std::string_view label) {
+	std::string_view label,
+	ActionCall action = {},
+	bool enabled = true) {
 	FSEL::ButtonParameters parameters{};
+	parameters.onActivate = action;
+	parameters.enabled = enabled;
 	parameters.contentMode = FSEL::ButtonContentMode::TextOnly;
 	parameters.text = label;
 	parameters.sizing = {
@@ -131,6 +175,9 @@ void drawActionButton(
 	parameters.pressedOverrides.backgroundColor = interface_theme::kSelectedRow;
 	parameters.pressedOverrides.labelColor = interface_theme::kTextCanvas;
 	parameters.pressedOverrides.borderColor = interface_theme::kAccentCurrent;
+	parameters.disabledOverrides.backgroundColor = interface_theme::kDepth2Ink;
+	parameters.disabledOverrides.labelColor = interface_theme::kTextMuted;
+	parameters.disabledOverrides.borderColor = interface_theme::kBorderPrimary;
 	parameters.labelFontSize = 12;
 
 	context.uiManager.createElement(FSEL::kButton, id)
@@ -203,9 +250,21 @@ void drawHeaderContents(
 	};
 	actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	CLAY(context.clayID(kHeaderActions), actions) {
-		drawActionButton(context, kUndoAction, "Undo");
+		ActionCall undo{};
+		ActionCall redo{};
+		if (app && state) {
+			undo = ActionCall{app->actions().uiActions().make(
+				kUndoEditorTransaction, *app, *state)};
+			redo = ActionCall{app->actions().uiActions().make(
+				kRedoEditorTransaction, *app, *state)};
+		}
+		drawActionButton(
+			context, kUndoAction, "Undo", undo,
+			state && !state->editUndoStack.empty());
 		drawActionButton(context, kHistoryAction, "History");
-		drawActionButton(context, kRedoAction, "Redo");
+		drawActionButton(
+			context, kRedoAction, "Redo", redo,
+			state && !state->editRedoStack.empty());
 		drawActionButton(context, kConfigurationsAction, "Configurations");
 	}
 }

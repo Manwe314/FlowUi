@@ -507,20 +507,21 @@ private:
 			type.edit = DevEditCapability::ViewOnly;
 			type.reason = DevCapabilityReason::NoEditAdapter;
 			type.state = ResolutionState::Complete;
-			return;
+		} else {
+			constexpr auto descriptor = schema_detail::declaredEnumSchema<Enum>();
+			type.displayName = std::string(descriptor.name);
+			type.editor = DevEditorKind::EnumChoice;
+			type.edit = DevEditCapability::Editable;
+			std::apply([&](const auto&... value) {
+				(appendEnumValue(
+					type,
+					value.name,
+					static_cast<std::uint64_t>(static_cast<Unsigned>(value.value))), ...);
+			}, descriptor.values);
+			if (type.state != ResolutionState::Failed) {
+				type.state = ResolutionState::Complete;
+			}
 		}
-
-		constexpr auto descriptor = schema_detail::declaredEnumSchema<Enum>();
-		type.displayName = std::string(descriptor.name);
-		type.editor = DevEditorKind::EnumChoice;
-		type.edit = DevEditCapability::Editable;
-		std::apply([&](const auto&... value) {
-			(appendEnumValue(
-				type,
-				value.name,
-				static_cast<std::uint64_t>(static_cast<Unsigned>(value.value))), ...);
-		}, descriptor.values);
-		if (type.state != ResolutionState::Failed) type.state = ResolutionState::Complete;
 	}
 
 	void appendEnumValue(MutableType& type, std::string_view name, std::uint64_t bits) {
