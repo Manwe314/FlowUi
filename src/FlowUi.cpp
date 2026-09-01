@@ -18,7 +18,7 @@
 #include "managers/UiManager.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if FLOW_UI_DEV_MODE
-#include "devSystems/devInterface/DevInterface.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryProbe.hpp"

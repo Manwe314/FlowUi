@@ -223,7 +223,18 @@ struct DevTypeOps {
 		const void* value, std::size_t index) noexcept = nullptr;
 	void* (*sequenceMutableElementAddress)(
 		void* value, std::size_t index) noexcept = nullptr;
+	DevValueOperationStatus (*sequenceAppendDefault)(void* value) noexcept = nullptr;
+	DevValueOperationStatus (*sequenceErase)(
+		void* value, std::size_t index) noexcept = nullptr;
+	DevValueOperationStatus (*sequenceMove)(
+		void* value, std::size_t from, std::size_t to) noexcept = nullptr;
 	bool (*numericValue)(const void* value, long double& result) noexcept = nullptr;
+	DevValueOperationStatus (*assignNumericValue)(
+		void* value, long double candidate) noexcept = nullptr;
+	DevValueOperationStatus (*assignTextValue)(
+		void* value, std::string_view candidate) noexcept = nullptr;
+	DevValueOperationStatus (*setOptionalPresence)(
+		void* value, bool present) noexcept = nullptr;
 };
 
 struct DevTypeSchema {

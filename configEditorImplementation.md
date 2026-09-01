@@ -438,7 +438,7 @@ std::string formatJsonValueToCpp(const JsonValue& val) {
 | Subsystem | Feature / Mechanism | Implementation Target |
 | :--- | :--- | :--- |
 | **Reflection** | `AppConfig` struct field registration | [`include/FlowUi/AppConfigReflection.hpp`](file:///home/lkukhale/kodi/FlowUi/include/FlowUi/PublicStructs.hpp#L422) |
-| **Dev UI** | Interactive App Config property editor tab | [`include/devSystems/devInterface/DevInterface.hpp`](file:///home/lkukhale/kodi/FlowUi/include/devSystems/devInterface/DevInterface.hpp) |
+| **Dev UI** | Interactive App Config property editor tab | [`include/devSystems/devInterface/Permanents/Backend/DevInterface.hpp`](file:///home/lkukhale/kodi/FlowUi/include/devSystems/devInterface/Permanents/Backend/DevInterface.hpp) |
 | **Runtime Restart** | In-process clean App teardown & re-creation | [`include/FlowUi/AppRunner.hpp`](file:///home/lkukhale/kodi/FlowUi/include/FlowUi/App.hpp#L722) |
 | **Persistence** | Fast JSON serialization of edits | `.flowui/overrides.v1.json` |
 | **Manifest Export** | `dev_changes.json` extension with `"config"` schema | [`include/devSystems/devTooling/DevTooling.hpp`](file:///home/lkukhale/kodi/FlowUi/include/devSystems/devTooling/DevTooling.hpp) |

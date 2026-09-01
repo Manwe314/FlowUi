@@ -164,14 +164,9 @@ struct DragValue {
 		if (state.mode != DragValueInteractionMode::Pending) {
 			return;
 		}
-		const FrameInput& input = context.uiManager.getCurrentFrameInput();
-		if (canDrag(context.params) &&
-			detail::drag_value::crossedThreshold(
-				input.mouseX - state.pointerXAtPress,
-				context.params.dragThreshold)) {
-			state.mode = DragValueInteractionMode::Dragging;
-			return;
-		}
+		// A drag transitions out of Pending while the button is held. If the
+		// gesture is still pending at release, classify it as a click so small
+		// pointer jitter cannot prevent click-to-edit.
 		if (canEditText(context.params)) {
 			state.mode = DragValueInteractionMode::Editing;
 			state.forceTextSynchronization = true;
@@ -198,7 +193,9 @@ struct DragValue {
 		const float horizontalDelta = input.mouseX - state.pointerXAtPress;
 		if (state.mode == DragValueInteractionMode::Pending) {
 			if (!input.mouseDown[0]) {
-				state.mode = DragValueInteractionMode::Idle;
+				// Keep the press pending until onReleased classifies it as a
+				// click-to-edit gesture. Clearing it here races the release
+				// callback and makes every short click behave like a cancelled drag.
 				return;
 			}
 			if (!canDrag(context.params) ||
@@ -606,6 +603,14 @@ private:
 			.width = CLAY_SIZING_FIXED(std::max(theme.width, 1.0f)),
 			.height = CLAY_SIZING_FIXED(std::max(theme.height, 1.0f)),
 		});
+		// Keep the content box itself inset. Editing lines are floating children
+		// of that box, so padding the content element would only affect the
+		// normal-flow display text and make it jump when editing begins.
+		root.layout.padding = padding;
+		root.layout.childAlignment = {
+			.x = CLAY_ALIGN_X_LEFT,
+			.y = CLAY_ALIGN_Y_TOP,
+		};
 		root.backgroundColor = appearance.backgroundColor;
 		root.cornerRadius = context.params.cornerRadius.value_or(
 			theme.cornerRadius);
@@ -615,9 +620,8 @@ private:
 			.width = context.params.borderWidth.value_or(theme.borderWidth),
 		};
 
-		Clay_ElementDeclaration content =
+		const Clay_ElementDeclaration content =
 			detail::text_field::makeContentDeclaration();
-		content.layout.padding = padding;
 		const bool editing =
 			context.state().mode == DragValueInteractionMode::Editing;
 		CLAY(context.clayID(), root) {

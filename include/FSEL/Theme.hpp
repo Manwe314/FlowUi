@@ -66,10 +66,10 @@ struct FSELButtonTheme {
 		.borderColor = Flow_Color("#007accff"),
 	};
 	FSELButtonStateTheme disabled = {
-		.backgroundColor = Flow_Color("#252526ff"),
-		.labelColor = Flow_Color("#6c6c6cff"),
-		.iconColor = Flow_Color("#6c6c6cff"),
-		.borderColor = Flow_Color("#3e3e42ff"),
+		.backgroundColor = Flow_Color("#252526b8"),
+		.labelColor = Flow_Color("#6c6c6cb8"),
+		.iconColor = Flow_Color("#6c6c6cb8"),
+		.borderColor = Flow_Color("#3e3e42b8"),
 	};
 
 	Clay_Padding padding = CLAY_PADDING_ALL(10);
@@ -111,9 +111,9 @@ struct FSELCheckboxValueTheme {
 		.borderColor = Flow_Color("#7a7a7eff"),
 	};
 	FSELCheckboxStateTheme disabled = {
-		.backgroundColor = Flow_Color("#252526ff"),
-		.borderColor = Flow_Color("#3e3e42ff"),
-		.iconColor = Flow_Color("#6c6c6cff"),
+		.backgroundColor = Flow_Color("#252526b8"),
+		.borderColor = Flow_Color("#3e3e42b8"),
+		.iconColor = Flow_Color("#6c6c6cb8"),
 	};
 };
 
@@ -133,9 +133,9 @@ struct FSELCheckboxTheme {
 			.borderColor = Flow_Color("#005fb8ff"),
 		},
 		.disabled = {
-			.backgroundColor = Flow_Color("#094771ff"),
-			.borderColor = Flow_Color("#094771ff"),
-			.iconColor = Flow_Color("#6c6c6cff"),
+			.backgroundColor = Flow_Color("#094771b8"),
+			.borderColor = Flow_Color("#094771b8"),
+			.iconColor = Flow_Color("#6c6c6cb8"),
 		},
 	};
 
@@ -167,9 +167,9 @@ struct FSELSwitchValueTheme {
 		.knobColor = Flow_Color("#ffffffff"),
 	};
 	FSELSwitchStateTheme disabled = {
-		.trackColor = Flow_Color("#2d2d30ff"),
-		.trackBorderColor = Flow_Color("#3e3e42ff"),
-		.knobColor = Flow_Color("#6c6c6cff"),
+		.trackColor = Flow_Color("#2d2d30b8"),
+		.trackBorderColor = Flow_Color("#3e3e42b8"),
+		.knobColor = Flow_Color("#6c6c6cb8"),
 	};
 };
 
@@ -192,9 +192,9 @@ struct FSELSwitchTheme {
 			.knobColor = Flow_Color("#ffffffff"),
 		},
 		.disabled = {
-			.trackColor = Flow_Color("#094771ff"),
-			.trackBorderColor = Flow_Color("#094771ff"),
-			.knobColor = Flow_Color("#6c6c6cff"),
+			.trackColor = Flow_Color("#094771b8"),
+			.trackBorderColor = Flow_Color("#094771b8"),
+			.knobColor = Flow_Color("#6c6c6cb8"),
 		},
 	};
 
@@ -234,11 +234,11 @@ struct FSELSliderTheme {
 		.thumbColor = Flow_Color("#ffffffff"),
 	};
 	FSELSliderStateTheme disabled = {
-		.trackColor = Flow_Color("#2d2d30ff"),
-		.trackBorderColor = Flow_Color("#3e3e42ff"),
-		.fillColor = Flow_Color("#094771ff"),
-		.fillBorderColor = Flow_Color("#094771ff"),
-		.thumbColor = Flow_Color("#6c6c6cff"),
+		.trackColor = Flow_Color("#2d2d30b8"),
+		.trackBorderColor = Flow_Color("#3e3e42b8"),
+		.fillColor = Flow_Color("#094771b8"),
+		.fillBorderColor = Flow_Color("#094771b8"),
+		.thumbColor = Flow_Color("#6c6c6cb8"),
 	};
 
 	float length = 140.0f;
@@ -311,10 +311,10 @@ struct FSELTextFieldTheme {
 		.borderColor = Flow_Color("#f14c4cff"),
 	};
 	FSELTextFieldStateTheme disabled = {
-		.backgroundColor = Flow_Color("#252526ff"),
-		.textColor = Flow_Color("#6c6c6cff"),
-		.placeholderColor = Flow_Color("#5f5f5fff"),
-		.borderColor = Flow_Color("#3e3e42ff"),
+		.backgroundColor = Flow_Color("#252526b8"),
+		.textColor = Flow_Color("#6c6c6cb8"),
+		.placeholderColor = Flow_Color("#5f5f5fb8"),
+		.borderColor = Flow_Color("#3e3e42b8"),
 	};
 
 	float width = 240.0f;
@@ -353,7 +353,7 @@ struct FSELNumberInputTheme {
 	};
 	FSELNumberInputStepButtonStateTheme stepDisabled = {
 		.backgroundColor = Flow_Color("#00000000"),
-		.foregroundColor = Flow_Color("#6c6c6cff"),
+		.foregroundColor = Flow_Color("#6c6c6cb8"),
 	};
 	Clay_Color stepSeparatorColor = Flow_Color("#454545ff");
 	float stepButtonWidth = 22.0f;
@@ -399,8 +399,8 @@ struct FSELSelectableSurfaceTheme {
 	};
 	FSELSelectableSurfaceStateTheme disabled{};
 	FSELSelectableSurfaceStateTheme selectedDisabled = {
-		.backgroundColor = Flow_Color("#09477180"),
-		.borderColor = Flow_Color("#007acc80"),
+		.backgroundColor = Flow_Color("#09477168"),
+		.borderColor = Flow_Color("#007acc68"),
 	};
 
 	Clay_Padding padding = CLAY_PADDING_ALL(8);
@@ -438,10 +438,10 @@ struct FSELComboBoxTheme {
 		.borderColor = Flow_Color("#007accff"),
 	};
 	FSELComboBoxStateTheme disabled = {
-		.backgroundColor = Flow_Color("#252526ff"),
-		.textColor = Flow_Color("#6c6c6cff"),
-		.iconColor = Flow_Color("#6c6c6cff"),
-		.borderColor = Flow_Color("#3e3e42ff"),
+		.backgroundColor = Flow_Color("#252526b8"),
+		.textColor = Flow_Color("#6c6c6cb8"),
+		.iconColor = Flow_Color("#6c6c6cb8"),
+		.borderColor = Flow_Color("#3e3e42b8"),
 	};
 	FSELComboBoxOptionStateTheme optionIdle{};
 	FSELComboBoxOptionStateTheme optionHovered = {
@@ -454,8 +454,8 @@ struct FSELComboBoxTheme {
 		.backgroundColor = Flow_Color("#094771a0"),
 	};
 	FSELComboBoxOptionStateTheme optionDisabled = {
-		.textColor = Flow_Color("#6c6c6cff"),
-		.iconColor = Flow_Color("#6c6c6cff"),
+		.textColor = Flow_Color("#6c6c6cb8"),
+		.iconColor = Flow_Color("#6c6c6cb8"),
 	};
 	Clay_Color placeholderColor = Flow_Color("#858585ff");
 	Clay_Color scrollTrackColor = Flow_Color("#ffffff12");

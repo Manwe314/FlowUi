@@ -143,7 +143,7 @@ The `DevInterface` root element is structured top-to-bottom into **3 First-Gener
 
 All driving data lives inside a non-transient, persistent `DevInterfaceState` struct held within `StateOf<DevInterface>`.
 
-### 3.1 C++ Theme Constants (`include/devSystems/devInterface/DevTheme.hpp`)
+### 3.1 C++ Theme Constants (`include/devSystems/devInterface/Permanents/Backend/DevTheme.hpp`)
 
 ```cpp
 #pragma once
@@ -304,8 +304,8 @@ struct DevInterfaceState {
 
 #include "FlowUi/App.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
-#include "devSystems/devInterface/DevInterfaceState.hpp"
-#include "devSystems/devInterface/DevTheme.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 

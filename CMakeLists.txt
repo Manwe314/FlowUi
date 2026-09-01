@@ -372,21 +372,33 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devTooling/override/DevOverrideTypes.cpp
 			src/devSystems/devTooling/tree/DevTreeCapture.cpp
 			src/devSystems/devTooling/schema/DevSchemaRegistry.cpp
-			src/devSystems/devInterface/DevInterface.cpp
-			src/devSystems/devInterface/Elements/DevContent.cpp
-			src/devSystems/devInterface/Elements/DevContentAreas.cpp
-			src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp
-			src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp
-			src/devSystems/devInterface/Elements/DevInspectContent.cpp
-			src/devSystems/devInterface/Elements/DevPerformanceContent.cpp
-			src/devSystems/devInterface/Elements/DevMemoryContent.cpp
-			src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp
-			src/devSystems/devInterface/Elements/DevChangesContent.cpp
-			src/devSystems/devInterface/Elements/DevCatalogueContent.cpp
-			src/devSystems/devInterface/Elements/DevContentHeader.cpp
-			src/devSystems/devInterface/Elements/DevInterface.cpp
-			src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp
-			src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp
+			src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevContent.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp
+			src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp
+			src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp
+			src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp
+			src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp
+			src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp
+			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp
+			src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp
+			src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp
+			src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp
+			src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp
+			src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp
+			src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp
+			src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp
+			src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp
+			src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp
+			src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp
+			src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp
+			src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp
+			src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp
 			src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevError.cpp
 			src/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.cpp
@@ -429,23 +441,42 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/tree/DevTreeTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ClayDevTreeBridge.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterface.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterfaceIcons.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevInterfaceState.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/DevTheme.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContentAreas.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceSelectorElements.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInspectContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevPerformanceContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevMemoryContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevDiagnosticsContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevChangesContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevCatalogueContent.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevContentHeader.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterface.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceFooter.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Elements/DevInterfaceHeader.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevInterface.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevTheme.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevContent.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevContentAreas.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevInspectContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/DevPerformanceContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/DevMemoryContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Selector/DevMemorySelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/DevChangesContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/Selector/DevChangesSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/Inspector/DevChangesInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/DevCatalogueContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevContentHeader.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevInterface.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevError.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/errors/DevErrorRecorder.hpp>

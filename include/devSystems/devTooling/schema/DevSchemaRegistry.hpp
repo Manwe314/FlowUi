@@ -5,8 +5,10 @@
 #if FLOW_UI_DEV_MODE
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -164,6 +166,9 @@ private:
 		static constexpr bool hasAddressableSequenceElements =
 			schema_detail::IsArray<T>::value ||
 			(schema_detail::IsVector<T>::value && !schema_detail::IsVectorBool<T>::value);
+		static constexpr bool hasAssignableText = requires(T& value, std::string_view text) {
+			value.assign(text);
+		};
 
 		static DevValueOperationStatus copyConstruct(
 			const void* source,
@@ -224,7 +229,7 @@ private:
 
 		static std::string_view textView(const void* value) noexcept {
 			if (value == nullptr) return {};
-			if constexpr (schema_detail::isString<T>) {
+			if constexpr (hasAssignableText) {
 				return *static_cast<const T*>(value);
 			} else {
 				return {};
@@ -287,6 +292,50 @@ private:
 			}
 		}
 
+		static DevValueOperationStatus sequenceAppendDefault(void* value) noexcept {
+			if (value == nullptr) return DevValueOperationStatus::NullDestination;
+			if constexpr (schema_detail::IsVector<T>::value &&
+				!schema_detail::IsVectorBool<T>::value) {
+				using Value = typename schema_detail::IsVector<T>::Value;
+				if constexpr (std::is_default_constructible_v<Value>) {
+					try {
+						static_cast<T*>(value)->emplace_back();
+						return DevValueOperationStatus::Success;
+					} catch (...) { return DevValueOperationStatus::Failed; }
+				}
+			}
+			return DevValueOperationStatus::Unsupported;
+		}
+
+		static DevValueOperationStatus sequenceErase(
+			void* value, std::size_t index) noexcept {
+			if (value == nullptr) return DevValueOperationStatus::NullDestination;
+			if constexpr (schema_detail::IsVector<T>::value &&
+				!schema_detail::IsVectorBool<T>::value) {
+				try {
+					auto& sequence = *static_cast<T*>(value);
+					if (index >= sequence.size()) return DevValueOperationStatus::Failed;
+					sequence.erase(sequence.begin() + static_cast<std::ptrdiff_t>(index));
+					return DevValueOperationStatus::Success;
+				} catch (...) { return DevValueOperationStatus::Failed; }
+			} else { return DevValueOperationStatus::Unsupported; }
+		}
+
+		static DevValueOperationStatus sequenceMove(
+			void* value, std::size_t from, std::size_t to) noexcept {
+			if (value == nullptr) return DevValueOperationStatus::NullDestination;
+			if constexpr (schema_detail::IsVector<T>::value &&
+				!schema_detail::IsVectorBool<T>::value) {
+				try {
+					auto& sequence = *static_cast<T*>(value);
+					if (from >= sequence.size() || to >= sequence.size()) return DevValueOperationStatus::Failed;
+					if (from < to) std::rotate(sequence.begin() + from, sequence.begin() + from + 1, sequence.begin() + to + 1);
+					else if (to < from) std::rotate(sequence.begin() + to, sequence.begin() + from, sequence.begin() + from + 1);
+					return DevValueOperationStatus::Success;
+				} catch (...) { return DevValueOperationStatus::Failed; }
+			} else { return DevValueOperationStatus::Unsupported; }
+		}
+
 		static bool numericValue(const void* value, long double& result) noexcept {
 			if (value == nullptr) return false;
 			if constexpr (std::is_arithmetic_v<T>) {
@@ -299,6 +348,69 @@ private:
 				return true;
 			} else {
 				return false;
+			}
+		}
+
+		static DevValueOperationStatus assignNumericValue(
+			void* value,
+			long double candidate) noexcept {
+			if (value == nullptr) return DevValueOperationStatus::NullDestination;
+			if constexpr (std::is_arithmetic_v<T>) {
+				if (!std::isfinite(candidate)) return DevValueOperationStatus::Failed;
+				if (candidate < static_cast<long double>(std::numeric_limits<T>::lowest()) ||
+					candidate > static_cast<long double>(std::numeric_limits<T>::max())) {
+					return DevValueOperationStatus::Failed;
+				}
+				if constexpr (std::is_integral_v<T>) {
+					if (std::trunc(candidate) != candidate) return DevValueOperationStatus::Failed;
+				}
+				*static_cast<T*>(value) = static_cast<T>(candidate);
+				return DevValueOperationStatus::Success;
+			} else if constexpr (std::is_enum_v<T>) {
+				using Underlying = std::underlying_type_t<T>;
+				if (!std::isfinite(candidate) || std::trunc(candidate) != candidate ||
+					candidate < static_cast<long double>(std::numeric_limits<Underlying>::lowest()) ||
+					candidate > static_cast<long double>(std::numeric_limits<Underlying>::max())) {
+					return DevValueOperationStatus::Failed;
+				}
+				*static_cast<T*>(value) = static_cast<T>(static_cast<Underlying>(candidate));
+				return DevValueOperationStatus::Success;
+			} else {
+				return DevValueOperationStatus::Unsupported;
+			}
+		}
+
+		static DevValueOperationStatus assignTextValue(
+			void* value,
+			std::string_view candidate) noexcept {
+			if (value == nullptr) return DevValueOperationStatus::NullDestination;
+			if constexpr (hasAssignableText) {
+				try {
+					static_cast<T*>(value)->assign(candidate);
+					return DevValueOperationStatus::Success;
+				} catch (...) {
+					return DevValueOperationStatus::Failed;
+				}
+			} else {
+				return DevValueOperationStatus::Unsupported;
+			}
+		}
+
+		static DevValueOperationStatus setOptionalPresence(
+			void* value,
+			bool present) noexcept {
+			if (value == nullptr) return DevValueOperationStatus::NullDestination;
+			if constexpr (schema_detail::IsOptional<T>::value) {
+				try {
+					T& optional = *static_cast<T*>(value);
+					if (present && !optional.has_value()) optional.emplace();
+					if (!present) optional.reset();
+					return DevValueOperationStatus::Success;
+				} catch (...) {
+					return DevValueOperationStatus::Failed;
+				}
+			} else {
+				return DevValueOperationStatus::Unsupported;
 			}
 		}
 
@@ -319,8 +431,17 @@ private:
 				hasAddressableSequenceElements ? &sequenceElementAddress : nullptr,
 			.sequenceMutableElementAddress =
 				hasAddressableSequenceElements ? &sequenceMutableElementAddress : nullptr,
+			.sequenceAppendDefault = schema_detail::IsVector<T>::value
+				? &sequenceAppendDefault : nullptr,
+			.sequenceErase = schema_detail::IsVector<T>::value ? &sequenceErase : nullptr,
+			.sequenceMove = schema_detail::IsVector<T>::value ? &sequenceMove : nullptr,
 			.numericValue = (std::is_arithmetic_v<T> || std::is_enum_v<T>)
 				? &numericValue : nullptr,
+			.assignNumericValue = (std::is_arithmetic_v<T> || std::is_enum_v<T>)
+				? &assignNumericValue : nullptr,
+			.assignTextValue = hasAssignableText ? &assignTextValue : nullptr,
+			.setOptionalPresence = schema_detail::IsOptional<T>::value
+				? &setOptionalPresence : nullptr,
 		};
 	};
 
@@ -450,8 +571,14 @@ private:
 			configureLeaf(index, DevTypeKind::FloatingPoint, DevEditorKind::FloatingNumber,
 				DevCaptureCapability::Value, DevEditCapability::Editable);
 		} else if constexpr (schema_detail::isString<Type>) {
-			configureLeaf(index, DevTypeKind::Text, DevEditorKind::Text,
-				DevCaptureCapability::Value, DevEditCapability::Editable);
+			if constexpr (TypeOperations<Type>::hasAssignableText) {
+				configureLeaf(index, DevTypeKind::Text, DevEditorKind::Text,
+					DevCaptureCapability::Value, DevEditCapability::Editable);
+			} else {
+				configureLeaf(index, DevTypeKind::Text, DevEditorKind::Text,
+					DevCaptureCapability::Value, DevEditCapability::ViewOnly,
+					DevCapabilityReason::NoEditAdapter);
+			}
 		} else if constexpr (std::is_enum_v<Type>) {
 			resolveEnum<Type>(index);
 		} else if constexpr (schema_detail::IsOptional<Type>::value) {
