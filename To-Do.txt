@@ -148,6 +148,22 @@ things i want to do:
 		- Permanent Header Button Visual hardening.
 		- Match Sepperator border side colors to left right Areas
 		- DevInspectInspectors Main content Width overflow issues As always.
+	- DevInterface functionality
+		- Reexplore value captures what / how  are thigns displayed.
+	- DevInspectInspectors
+		- enum chociec for Fonts / action calls / texture Refresh
+		- expand texture Ref to carry more than enum chociec
+		- Quick View Value not configured on every Parameter including unregistered/unddefineds
+		- Coral accent and revert button dont always algin, sometimes color reports changes Revert does not work
+		- sizing Quick text needs better visuals.
+		- Padding Quick Text need better visuals
+		- Color Quick Text needs the swatch color box as well.
+		- Color Needs better Editor based on old Swatch + hex + swatch opening to 4 Drag values maybe
+		- Padding and Border widths need nine Split editors
+		- Attachment points might need 9 split like Radio choice element
+		- Changes Tab needs its own thing after ReExploring Value captures
+		- CLAY element Selection Needs its own ENTIRE DevInspectInspector area element.
+
 		
 		
 

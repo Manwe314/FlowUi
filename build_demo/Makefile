@@ -1191,365 +1191,653 @@ src/devMode/devRuntime.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devMode/devRuntime.cpp.s
 .PHONY : src/devMode/devRuntime.cpp.s
 
-src/devSystems/devInterface/DevInterface.o: src/devSystems/devInterface/DevInterface.cpp.o
-.PHONY : src/devSystems/devInterface/DevInterface.o
+src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.o: src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.o
 
 # target to build an object file
-src/devSystems/devInterface/DevInterface.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/DevInterface.cpp.o
-.PHONY : src/devSystems/devInterface/DevInterface.cpp.o
+src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.o
 
-src/devSystems/devInterface/DevInterface.i: src/devSystems/devInterface/DevInterface.cpp.i
-.PHONY : src/devSystems/devInterface/DevInterface.i
+src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.i: src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/DevInterface.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/DevInterface.cpp.i
-.PHONY : src/devSystems/devInterface/DevInterface.cpp.i
+src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.i
 
-src/devSystems/devInterface/DevInterface.s: src/devSystems/devInterface/DevInterface.cpp.s
-.PHONY : src/devSystems/devInterface/DevInterface.s
+src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.s: src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/DevInterface.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/DevInterface.cpp.s
-.PHONY : src/devSystems/devInterface/DevInterface.cpp.s
+src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp.s
 
-src/devSystems/devInterface/Elements/DevCatalogueContent.o: src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevCatalogueContent.o
+src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.o: src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.o
+src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.o
 
-src/devSystems/devInterface/Elements/DevCatalogueContent.i: src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevCatalogueContent.i
+src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.i: src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.i
+src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.i
 
-src/devSystems/devInterface/Elements/DevCatalogueContent.s: src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevCatalogueContent.s
+src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.s: src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevCatalogueContent.cpp.s
+src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp.s
 
-src/devSystems/devInterface/Elements/DevChangesContent.o: src/devSystems/devInterface/Elements/DevChangesContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevChangesContent.o
+src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.o: src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevChangesContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevChangesContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevChangesContent.cpp.o
+src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.o
 
-src/devSystems/devInterface/Elements/DevChangesContent.i: src/devSystems/devInterface/Elements/DevChangesContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevChangesContent.i
+src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.i: src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevChangesContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevChangesContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevChangesContent.cpp.i
+src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.i
 
-src/devSystems/devInterface/Elements/DevChangesContent.s: src/devSystems/devInterface/Elements/DevChangesContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevChangesContent.s
+src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.s: src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevChangesContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevChangesContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevChangesContent.cpp.s
+src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp.s
 
-src/devSystems/devInterface/Elements/DevContent.o: src/devSystems/devInterface/Elements/DevContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevContent.o
+src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.o: src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevContent.cpp.o
+src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.o
 
-src/devSystems/devInterface/Elements/DevContent.i: src/devSystems/devInterface/Elements/DevContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevContent.i
+src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.i: src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevContent.cpp.i
+src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.i
 
-src/devSystems/devInterface/Elements/DevContent.s: src/devSystems/devInterface/Elements/DevContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevContent.s
+src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.s: src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevContent.cpp.s
+src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp.s
 
-src/devSystems/devInterface/Elements/DevContentAreas.o: src/devSystems/devInterface/Elements/DevContentAreas.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevContentAreas.o
+src/devSystems/devInterface/Changes/Selector/DevChangesSelector.o: src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Changes/Selector/DevChangesSelector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevContentAreas.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContentAreas.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevContentAreas.cpp.o
+src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.o
 
-src/devSystems/devInterface/Elements/DevContentAreas.i: src/devSystems/devInterface/Elements/DevContentAreas.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevContentAreas.i
+src/devSystems/devInterface/Changes/Selector/DevChangesSelector.i: src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Changes/Selector/DevChangesSelector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevContentAreas.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContentAreas.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevContentAreas.cpp.i
+src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.i
 
-src/devSystems/devInterface/Elements/DevContentAreas.s: src/devSystems/devInterface/Elements/DevContentAreas.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevContentAreas.s
+src/devSystems/devInterface/Changes/Selector/DevChangesSelector.s: src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Changes/Selector/DevChangesSelector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevContentAreas.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContentAreas.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevContentAreas.cpp.s
+src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp.s
 
-src/devSystems/devInterface/Elements/DevContentHeader.o: src/devSystems/devInterface/Elements/DevContentHeader.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevContentHeader.o
+src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.o: src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevContentHeader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContentHeader.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevContentHeader.cpp.o
+src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.o
 
-src/devSystems/devInterface/Elements/DevContentHeader.i: src/devSystems/devInterface/Elements/DevContentHeader.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevContentHeader.i
+src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.i: src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevContentHeader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContentHeader.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevContentHeader.cpp.i
+src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.i
 
-src/devSystems/devInterface/Elements/DevContentHeader.s: src/devSystems/devInterface/Elements/DevContentHeader.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevContentHeader.s
+src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.s: src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevContentHeader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevContentHeader.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevContentHeader.cpp.s
+src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp.s
 
-src/devSystems/devInterface/Elements/DevDiagnosticsContent.o: src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevDiagnosticsContent.o
+src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.o: src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.o
+src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.o
 
-src/devSystems/devInterface/Elements/DevDiagnosticsContent.i: src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevDiagnosticsContent.i
+src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.i: src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.i
+src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.i
 
-src/devSystems/devInterface/Elements/DevDiagnosticsContent.s: src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevDiagnosticsContent.s
+src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.s: src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevDiagnosticsContent.cpp.s
+src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp.s
 
-src/devSystems/devInterface/Elements/DevInspectContent.o: src/devSystems/devInterface/Elements/DevInspectContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInspectContent.o
+src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.o: src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevInspectContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInspectContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInspectContent.cpp.o
+src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.o
 
-src/devSystems/devInterface/Elements/DevInspectContent.i: src/devSystems/devInterface/Elements/DevInspectContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInspectContent.i
+src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.i: src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevInspectContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInspectContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInspectContent.cpp.i
+src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.i
 
-src/devSystems/devInterface/Elements/DevInspectContent.s: src/devSystems/devInterface/Elements/DevInspectContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInspectContent.s
+src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.s: src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevInspectContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInspectContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInspectContent.cpp.s
+src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp.s
 
-src/devSystems/devInterface/Elements/DevInterface.o: src/devSystems/devInterface/Elements/DevInterface.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterface.o
+src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.o: src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevInterface.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterface.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterface.cpp.o
+src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.o
 
-src/devSystems/devInterface/Elements/DevInterface.i: src/devSystems/devInterface/Elements/DevInterface.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterface.i
+src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.i: src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevInterface.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterface.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterface.cpp.i
+src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.i
 
-src/devSystems/devInterface/Elements/DevInterface.s: src/devSystems/devInterface/Elements/DevInterface.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterface.s
+src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.s: src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevInterface.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterface.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterface.cpp.s
+src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp.s
 
-src/devSystems/devInterface/Elements/DevInterfaceFooter.o: src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceFooter.o
+src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.o: src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.o
+src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.o
 
-src/devSystems/devInterface/Elements/DevInterfaceFooter.i: src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceFooter.i
+src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.i: src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.i
+src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.i
 
-src/devSystems/devInterface/Elements/DevInterfaceFooter.s: src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceFooter.s
+src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.s: src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceFooter.cpp.s
+src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp.s
 
-src/devSystems/devInterface/Elements/DevInterfaceHeader.o: src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceHeader.o
+src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.o: src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.o
+src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.o
 
-src/devSystems/devInterface/Elements/DevInterfaceHeader.i: src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceHeader.i
+src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.i: src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.i
+src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.i
 
-src/devSystems/devInterface/Elements/DevInterfaceHeader.s: src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceHeader.s
+src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.s: src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceHeader.cpp.s
+src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp.s
 
-src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.o: src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.o
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.o: src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.o
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.o
 
-src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.i: src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.i
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.i: src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.i
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.i
 
-src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.s: src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.s
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.s: src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.cpp.s
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp.s
 
-src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.o: src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.o
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.o: src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.o
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.o
 
-src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.i: src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.i
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.i: src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.i
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.i
 
-src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.s: src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.s
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.s: src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.cpp.s
+src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp.s
 
-src/devSystems/devInterface/Elements/DevMemoryContent.o: src/devSystems/devInterface/Elements/DevMemoryContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevMemoryContent.o
+src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.o: src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevMemoryContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevMemoryContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevMemoryContent.cpp.o
+src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.o
 
-src/devSystems/devInterface/Elements/DevMemoryContent.i: src/devSystems/devInterface/Elements/DevMemoryContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevMemoryContent.i
+src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.i: src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevMemoryContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevMemoryContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevMemoryContent.cpp.i
+src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.i
 
-src/devSystems/devInterface/Elements/DevMemoryContent.s: src/devSystems/devInterface/Elements/DevMemoryContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevMemoryContent.s
+src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.s: src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevMemoryContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevMemoryContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevMemoryContent.cpp.s
+src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s
 
-src/devSystems/devInterface/Elements/DevPerformanceContent.o: src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevPerformanceContent.o
+src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.o: src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.o
 
 # target to build an object file
-src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.o
-.PHONY : src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.o
+src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.o
 
-src/devSystems/devInterface/Elements/DevPerformanceContent.i: src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevPerformanceContent.i
+src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.i: src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.i
 
 # target to preprocess a source file
-src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.i
-.PHONY : src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.i
+src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.i
 
-src/devSystems/devInterface/Elements/DevPerformanceContent.s: src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevPerformanceContent.s
+src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.s: src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.s
 
 # target to generate assembly for a file
-src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.s
-.PHONY : src/devSystems/devInterface/Elements/DevPerformanceContent.cpp.s
+src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.s
+
+src/devSystems/devInterface/Memory/Selector/DevMemorySelector.o: src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.o
+.PHONY : src/devSystems/devInterface/Memory/Selector/DevMemorySelector.o
+
+# target to build an object file
+src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.o
+.PHONY : src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.o
+
+src/devSystems/devInterface/Memory/Selector/DevMemorySelector.i: src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.i
+.PHONY : src/devSystems/devInterface/Memory/Selector/DevMemorySelector.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.i
+.PHONY : src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.i
+
+src/devSystems/devInterface/Memory/Selector/DevMemorySelector.s: src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.s
+.PHONY : src/devSystems/devInterface/Memory/Selector/DevMemorySelector.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.s
+.PHONY : src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp.s
+
+src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.o: src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.o
+
+# target to build an object file
+src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.o
+
+src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.i: src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.i
+
+src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.s: src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp.s
+
+src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.o: src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.o
+
+# target to build an object file
+src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.o
+.PHONY : src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.o
+
+src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.i: src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.i
+.PHONY : src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.i
+
+src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.s: src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.s
+.PHONY : src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp.s
+
+src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.o: src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.o
+
+# target to build an object file
+src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.o
+.PHONY : src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.o
+
+src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.i: src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.i
+.PHONY : src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.i
+
+src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.s: src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.s
+.PHONY : src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp.s
+
+src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.o: src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.o
+
+# target to build an object file
+src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.o
+.PHONY : src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.o
+
+src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.i: src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.i
+.PHONY : src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.i
+
+src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.s: src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.s
+.PHONY : src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp.s
+
+src/devSystems/devInterface/Permanents/Backend/DevInterface.o: src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Backend/DevInterface.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.o
+
+src/devSystems/devInterface/Permanents/Backend/DevInterface.i: src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Backend/DevInterface.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.i
+
+src/devSystems/devInterface/Permanents/Backend/DevInterface.s: src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Backend/DevInterface.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp.s
+
+src/devSystems/devInterface/Permanents/Elements/DevContent.o: src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContent.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.o
+
+src/devSystems/devInterface/Permanents/Elements/DevContent.i: src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContent.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.i
+
+src/devSystems/devInterface/Permanents/Elements/DevContent.s: src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContent.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContent.cpp.s
+
+src/devSystems/devInterface/Permanents/Elements/DevContentAreas.o: src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentAreas.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.o
+
+src/devSystems/devInterface/Permanents/Elements/DevContentAreas.i: src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentAreas.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.i
+
+src/devSystems/devInterface/Permanents/Elements/DevContentAreas.s: src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentAreas.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp.s
+
+src/devSystems/devInterface/Permanents/Elements/DevContentHeader.o: src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentHeader.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.o
+
+src/devSystems/devInterface/Permanents/Elements/DevContentHeader.i: src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentHeader.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.i
+
+src/devSystems/devInterface/Permanents/Elements/DevContentHeader.s: src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentHeader.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp.s
+
+src/devSystems/devInterface/Permanents/Elements/DevInterface.o: src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterface.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.o
+
+src/devSystems/devInterface/Permanents/Elements/DevInterface.i: src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterface.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.i
+
+src/devSystems/devInterface/Permanents/Elements/DevInterface.s: src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterface.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterface.cpp.s
+
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.o: src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.o
+
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.i: src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.i
+
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.s: src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.cpp.s
+
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.o: src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.o
+
+# target to build an object file
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.o
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.o
+
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.i: src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.i
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.i
+
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.s: src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.s
+.PHONY : src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.cpp.s
 
 src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.o: src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.cpp.o
 .PHONY : src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.o
@@ -2854,51 +3142,87 @@ help:
 	@echo "... src/devMode/devRuntime.o"
 	@echo "... src/devMode/devRuntime.i"
 	@echo "... src/devMode/devRuntime.s"
-	@echo "... src/devSystems/devInterface/DevInterface.o"
-	@echo "... src/devSystems/devInterface/DevInterface.i"
-	@echo "... src/devSystems/devInterface/DevInterface.s"
-	@echo "... src/devSystems/devInterface/Elements/DevCatalogueContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevCatalogueContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevCatalogueContent.s"
-	@echo "... src/devSystems/devInterface/Elements/DevChangesContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevChangesContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevChangesContent.s"
-	@echo "... src/devSystems/devInterface/Elements/DevContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevContent.s"
-	@echo "... src/devSystems/devInterface/Elements/DevContentAreas.o"
-	@echo "... src/devSystems/devInterface/Elements/DevContentAreas.i"
-	@echo "... src/devSystems/devInterface/Elements/DevContentAreas.s"
-	@echo "... src/devSystems/devInterface/Elements/DevContentHeader.o"
-	@echo "... src/devSystems/devInterface/Elements/DevContentHeader.i"
-	@echo "... src/devSystems/devInterface/Elements/DevContentHeader.s"
-	@echo "... src/devSystems/devInterface/Elements/DevDiagnosticsContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevDiagnosticsContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevDiagnosticsContent.s"
-	@echo "... src/devSystems/devInterface/Elements/DevInspectContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevInspectContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevInspectContent.s"
-	@echo "... src/devSystems/devInterface/Elements/DevInterface.o"
-	@echo "... src/devSystems/devInterface/Elements/DevInterface.i"
-	@echo "... src/devSystems/devInterface/Elements/DevInterface.s"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceFooter.o"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceFooter.i"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceFooter.s"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceHeader.o"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceHeader.i"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceHeader.s"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.o"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.i"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceInspectorElements.s"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.o"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.i"
-	@echo "... src/devSystems/devInterface/Elements/DevInterfaceSelectorElements.s"
-	@echo "... src/devSystems/devInterface/Elements/DevMemoryContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevMemoryContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevMemoryContent.s"
-	@echo "... src/devSystems/devInterface/Elements/DevPerformanceContent.o"
-	@echo "... src/devSystems/devInterface/Elements/DevPerformanceContent.i"
-	@echo "... src/devSystems/devInterface/Elements/DevPerformanceContent.s"
+	@echo "... src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.o"
+	@echo "... src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.i"
+	@echo "... src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.s"
+	@echo "... src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.o"
+	@echo "... src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.i"
+	@echo "... src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.s"
+	@echo "... src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.o"
+	@echo "... src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.i"
+	@echo "... src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.s"
+	@echo "... src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.o"
+	@echo "... src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.i"
+	@echo "... src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.s"
+	@echo "... src/devSystems/devInterface/Changes/Selector/DevChangesSelector.o"
+	@echo "... src/devSystems/devInterface/Changes/Selector/DevChangesSelector.i"
+	@echo "... src/devSystems/devInterface/Changes/Selector/DevChangesSelector.s"
+	@echo "... src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.o"
+	@echo "... src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.i"
+	@echo "... src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.s"
+	@echo "... src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.o"
+	@echo "... src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.i"
+	@echo "... src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.s"
+	@echo "... src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.o"
+	@echo "... src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.i"
+	@echo "... src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.s"
+	@echo "... src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.o"
+	@echo "... src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.i"
+	@echo "... src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.s"
+	@echo "... src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.o"
+	@echo "... src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.i"
+	@echo "... src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.s"
+	@echo "... src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.o"
+	@echo "... src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.i"
+	@echo "... src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.s"
+	@echo "... src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.o"
+	@echo "... src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.i"
+	@echo "... src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.s"
+	@echo "... src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.o"
+	@echo "... src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.i"
+	@echo "... src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.s"
+	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.o"
+	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.i"
+	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.s"
+	@echo "... src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.o"
+	@echo "... src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.i"
+	@echo "... src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.s"
+	@echo "... src/devSystems/devInterface/Memory/Selector/DevMemorySelector.o"
+	@echo "... src/devSystems/devInterface/Memory/Selector/DevMemorySelector.i"
+	@echo "... src/devSystems/devInterface/Memory/Selector/DevMemorySelector.s"
+	@echo "... src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.o"
+	@echo "... src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.i"
+	@echo "... src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.s"
+	@echo "... src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.o"
+	@echo "... src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.i"
+	@echo "... src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.s"
+	@echo "... src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.o"
+	@echo "... src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.i"
+	@echo "... src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.s"
+	@echo "... src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.o"
+	@echo "... src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.i"
+	@echo "... src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.s"
+	@echo "... src/devSystems/devInterface/Permanents/Backend/DevInterface.o"
+	@echo "... src/devSystems/devInterface/Permanents/Backend/DevInterface.i"
+	@echo "... src/devSystems/devInterface/Permanents/Backend/DevInterface.s"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContent.o"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContent.i"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContent.s"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContentAreas.o"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContentAreas.i"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContentAreas.s"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContentHeader.o"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContentHeader.i"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevContentHeader.s"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterface.o"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterface.i"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterface.s"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.o"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.i"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.s"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.o"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.i"
+	@echo "... src/devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.s"
 	@echo "... src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.o"
 	@echo "... src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.i"
 	@echo "... src/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.s"
