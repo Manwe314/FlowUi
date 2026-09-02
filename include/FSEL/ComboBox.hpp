@@ -4,9 +4,11 @@
 #include <cstdint>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
 
 #include "FSEL/StandardIcons.hpp"
+#include "FSEL/TextInput.hpp"
 #include "FSEL/Theme.hpp"
 #include "FSEL/internal/ScrollIndicatorMath.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
@@ -39,6 +41,12 @@ struct ComboBoxParameters {
 	ActionCall onChanged{};
 	ActionCall onOpened{};
 	ActionCall onClosed{};
+	/** Optional popup-local search model. When present, a fixed search header is
+	 * rendered above the independently scrollable option viewport. Filtering is
+	 * owned by the caller so catalogue-specific matching remains possible. */
+	std::string* popupSearchValue = nullptr;
+	std::string_view popupSearchPlaceholder = "Filter options...";
+	std::optional<float> popupSearchHeight = std::nullopt;
 
 	std::optional<Clay_Sizing> sizing = std::nullopt;
 	ComboBoxPopupWidthPolicy popupWidthPolicy = ComboBoxPopupWidthPolicy::MatchTrigger;
@@ -379,9 +387,13 @@ private:
 			optionHeight * static_cast<float>(context.params.options.size()) +
 			static_cast<float>(theme.optionGap) *
 				static_cast<float>(context.params.options.size() - 1u);
+		const float searchHeight = context.params.popupSearchValue
+			? std::max(context.params.popupSearchHeight.value_or(30.0f), 1.0f) : 0.0f;
+		const float searchGap = context.params.popupSearchValue
+			? static_cast<float>(theme.scrollGap) : 0.0f;
 		const float popupHeight = std::min(
 			contentHeight + static_cast<float>(surface.padding.top + surface.padding.bottom),
-			maximumHeight);
+			maximumHeight) + searchHeight + searchGap;
 
 		const Clay_ElementData triggerData = Clay_GetElementData(context.clayID());
 		const float triggerWidth = triggerData.found && triggerData.boundingBox.width > 0.0f
@@ -425,9 +437,9 @@ private:
 			.height = CLAY_SIZING_FIXED(popupHeight),
 		};
 		popup.layout.padding = surface.padding;
-		popup.layout.childGap = theme.scrollGap;
+		popup.layout.childGap = context.params.popupSearchValue ? theme.scrollGap : 0;
 		popup.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_TOP};
-		popup.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+		popup.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		popup.backgroundColor = surface.backgroundColor;
 		popup.cornerRadius = surface.cornerRadius;
 		popup.border = {.color = surface.borderColor, .width = surface.borderWidth};
@@ -436,7 +448,8 @@ private:
 		const Clay_ElementId scrollId = context.clayID("scroll-viewport");
 		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(scrollId);
 		const float trackHeight = std::max(
-			popupHeight - static_cast<float>(surface.padding.top + surface.padding.bottom),
+			popupHeight - searchHeight - searchGap -
+				static_cast<float>(surface.padding.top + surface.padding.bottom),
 			0.0f);
 		const auto thumb = scroll.found && scroll.scrollPosition
 			? detail::scroll_indicator::calculate(
@@ -448,6 +461,32 @@ private:
 			: detail::scroll_indicator::ThumbGeometry{};
 
 		CLAY(context.uiManager.toClayEID(popupId), popup) {
+			if (context.params.popupSearchValue) {
+				Clay_ElementDeclaration searchSlot{};
+				searchSlot.layout.sizing = {
+					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(searchHeight)};
+				searchSlot.clip = {.horizontal = true, .vertical = true};
+				CLAY(context.clayID("popup-search-slot"), searchSlot) {
+					TextInputParameters search{};
+					search.value = context.params.popupSearchValue;
+					search.syncPolicy = TextFieldSyncPolicy::Live;
+					search.placeholder = context.params.popupSearchPlaceholder;
+					search.enabled = context.params.enabled;
+					search.readOnly = !context.params.enabled;
+					search.maxBytes = 96u;
+					search.sizing = Clay_Sizing{
+						.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+					search.fontSize = context.params.fontSize.value_or(theme.fontSize);
+					context.uiManager.createElement(kTextInput, "popup-search")
+						.setParameters(std::move(search)).setDevInternalCapture(true).draw();
+				}
+			}
+			Clay_ElementDeclaration contentRow{};
+			contentRow.layout.sizing = {
+				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+			contentRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+			contentRow.layout.childGap = theme.scrollGap;
+			CLAY(context.clayID("popup-content"), contentRow) {
 			Clay_ElementDeclaration viewport{};
 			viewport.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
@@ -475,6 +514,7 @@ private:
 			}
 			if (context.params.showScrollIndicator && thumb.visible) {
 				drawScrollIndicator(context, thumb, trackHeight, theme);
+			}
 			}
 		}
 	}
@@ -517,8 +557,14 @@ private:
 				drawIcon(context, context.clayID(Keyed("option-icon", option.value)),
 					option.icon, appearance.iconColor, resolvedIconSize(context, theme));
 			}
-			CLAY_TEXT(context.uiManager.toClayString(option.text),
-				CLAY_TEXT_CONFIG(makeTextConfig(context, appearance.textColor)));
+			Clay_ElementDeclaration labelSlot{};
+			labelSlot.layout.sizing = {
+				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+			labelSlot.clip = {.horizontal = true, .vertical = true};
+			CLAY(context.clayID(Keyed("option-label", option.value)), labelSlot) {
+				CLAY_TEXT(context.uiManager.toClayString(option.text),
+					CLAY_TEXT_CONFIG(makeTextConfig(context, appearance.textColor)));
+			}
 		}
 	}
 

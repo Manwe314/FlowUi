@@ -228,6 +228,8 @@ TextureRef ImageManager::getTexture(ResourceKey key) const {
 	TextureRef result{};
 	if (!storage_) return result;
 	const storage::ResourceKey normalized = imageKey(*storage_, key);
+	result.sourceDomain = ResourceDomain::Image;
+	result.sourceKey = storage_->string(normalized.name);
 	result.handle = storage_->findTexture(normalized);
 	if (!result.handle) {
 		result.skipIfUnavailable = missingPolicy_ == MissingVisualPolicy::SkipVisual;

@@ -295,6 +295,7 @@ std::shared_ptr<const DevSchemaGeneration> DevSchemaRegistry::buildGeneration() 
 				.valueType = field.valueType == 0 ? DevTypeIndex{} : indices.at(field.valueType),
 				.declaredAccess = field.declaredAccess,
 				.editor = field.editor,
+				.choiceDomain = field.choiceDomain,
 				.effectiveEdit = field.effectiveEdit,
 				.reason = field.reason,
 				.constraint = constraintIndex,

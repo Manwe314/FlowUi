@@ -11,6 +11,14 @@
 #include "managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
+namespace {
+
+std::string_view localDebugName(std::string_view name) {
+	const std::size_t separator = name.find_last_of('/');
+	return separator == std::string_view::npos ? name : name.substr(separator + 1u);
+}
+
+} // namespace
 
 void DevInspectInspector::buildElement(BuildContext& context) {
 	DevInterfaceState* state = context.params.interfaceState;
@@ -84,7 +92,7 @@ void DevInspectInspector::buildElement(BuildContext& context) {
 		} else {
 			context.uiManager.createElement(kDevInterfaceInspectorIdentity, "identity")
 				.setParameters(DevInterfaceInspectorIdentityParameters{
-					.instanceName = instanceName,
+					.instanceName = localDebugName(instanceName),
 					.definitionName = definitionName,
 				})
 				.setDevInternalCapture(true)

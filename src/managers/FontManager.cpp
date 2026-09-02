@@ -46,10 +46,12 @@ std::size_t FontManager::devFontCount() const noexcept {
 
 bool FontManager::visitDevFonts(void* userData, DevFontVisitor visitor) const {
 	if (!controller_ || !visitor) return false;
-	for (const auto& family : controller_->families) {
+	for (FontFamilyId familyId = 0; familyId < controller_->families.size(); ++familyId) {
+		const auto& family = controller_->families[familyId];
 		for (const auto& familyFace : family.faces) {
 			if (!visitor(userData, DevFontView{
 				.fontId = familyFace.fontId,
+				.familyId = familyId,
 				.familyName = family.name,
 				.weight = familyFace.weight,
 				.style = familyFace.style,

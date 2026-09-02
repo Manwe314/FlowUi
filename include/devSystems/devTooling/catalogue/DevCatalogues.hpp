@@ -52,6 +52,12 @@ public:
 	[[nodiscard]] std::span<const DevThemeCatalogEntry> queryThemes() noexcept;
 	[[nodiscard]] std::span<const DevElementCatalogEntry> queryElements(
 		const devSystems::tooling::DevTreeSnapshot* currentTree) noexcept;
+	[[nodiscard]] const DevCatalogueRevisions& revisions() const noexcept {
+		return cachedRevisions_;
+	}
+	[[nodiscard]] std::uint64_t imageRevision() const noexcept { return imageRevision_; }
+	[[nodiscard]] std::uint64_t iconRevision() const noexcept { return iconRevision_; }
+	[[nodiscard]] std::uint64_t actionRevision() const noexcept { return actionRevision_; }
 
 	[[nodiscard]] DevCatalogLease acquireInspectionLease() noexcept;
 	void invalidateAllCaches() noexcept;

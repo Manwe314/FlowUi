@@ -66,6 +66,7 @@ bool ActionManager::visitDevActions(void* userData, DevActionVisitor visitor) co
 			.debug = debug,
 			.callableTypeHash = header.callableTypeHash,
 			.resultTypeHash = header.resultTypeHash,
+			.reconstructable = !header.tombstoned,
 		})) return false;
 	}
 	for (const DevUiRecipeRecord& recipe : devUiRecipes_) {
@@ -74,31 +75,86 @@ bool ActionManager::visitDevActions(void* userData, DevActionVisitor visitor) co
 		debug.uiRecipeId = recipe.id;
 		debug.debugName = recipe.debugName;
 		debug.availability.enabled = true;
-		debug.bound = true;
+		debug.bound = recipe.reconstructable;
 		debug.definitionSource = recipe.source;
 		if (!visitor(userData, DevActionView{
 			.debug = debug,
 			.callableTypeHash = recipe.id,
+			.reconstructable = recipe.reconstructable,
 		})) return false;
 	}
 	return true;
 }
 
+std::optional<ActionCall> ActionManager::makeDevActionCall(
+	ActionCallKind kind,
+	std::uint64_t stableId,
+	std::uint64_t expectedCallableTypeHash,
+	std::uint64_t expectedResultTypeHash) const noexcept {
+	if (kind == ActionCallKind::None && stableId == 0u) return ActionCall{};
+	if (kind == ActionCallKind::Ui && stableId != 0u) {
+		const auto found = std::ranges::find_if(devUiRecipes_,
+			[stableId](const DevUiRecipeRecord& recipe) {
+				return recipe.id == stableId && recipe.reconstructable;
+			});
+		return found == devUiRecipes_.end()
+			? std::nullopt : std::optional<ActionCall>{ActionCall{found->prototype}};
+	}
+	if (kind != ActionCallKind::App || stableId == 0u || !storage_ || !stateHandle_) {
+		return std::nullopt;
+	}
+	try {
+		const auto found = std::ranges::find_if(state().bindings,
+			[stableId](const auto& binding) { return binding.first.value == stableId; });
+		if (found == state().bindings.end()) return std::nullopt;
+		const storage::ConstPersistentRecordView record = std::as_const(*storage_).persistentRecord(
+			found->second, storage::ResourceKind::AppActionBinding);
+		if (!record || record.headerBytes < sizeof(action::AppActionBindingHeader)) return std::nullopt;
+		const auto& header = *static_cast<const action::AppActionBindingHeader*>(record.header);
+		if (header.tombstoned ||
+			(expectedCallableTypeHash != 0u && header.callableTypeHash != expectedCallableTypeHash) ||
+			(expectedResultTypeHash != 0u && header.resultTypeHash != expectedResultTypeHash)) {
+			return std::nullopt;
+		}
+		return ActionCall{appActions_.select(found->first)};
+	} catch (...) {
+		return std::nullopt;
+	}
+}
+
+#endif
+
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
 void ActionManager::noteUiRecipe(
 	std::uint64_t recipeId,
-	std::string_view debugName,
-	ActionSourceLocation source) noexcept {
+	const UiActionCall* reconstructable
+#if FLOW_UI_DEV_MODE
+	, std::string_view debugName,
+	ActionSourceLocation source
+#endif
+	) noexcept {
 	if (recipeId == 0) return;
-	for (const DevUiRecipeRecord& recipe : devUiRecipes_) {
-		if (recipe.id == recipeId) return;
+	for (DevUiRecipeRecord& recipe : devUiRecipes_) {
+		if (recipe.id != recipeId) continue;
+		if (reconstructable && !recipe.reconstructable) {
+			recipe.prototype = *reconstructable;
+			recipe.reconstructable = true;
+		}
+		return;
 	}
 	try {
 		devUiRecipes_.push_back(DevUiRecipeRecord{
 			.id = recipeId,
+			.prototype = reconstructable ? *reconstructable : UiActionCall{},
+			.reconstructable = reconstructable != nullptr,
+#if FLOW_UI_DEV_MODE
 			.debugName = debugName,
 			.source = source,
+#endif
 		});
+#if FLOW_UI_DEV_MODE
 		++devRevision_;
+#endif
 	} catch (...) {}
 }
 #endif
@@ -133,8 +189,10 @@ void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
 }
 
 void ActionManager::destroy() noexcept {
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
 	devUiRecipes_.clear();
+#endif
+#if FLOW_UI_DEV_MODE
 	++devRevision_;
 #endif
 	if (storage_ && stateHandle_ != 0) {
@@ -462,6 +520,19 @@ ActionInvocationStatus ActionManager::invoke(
 		if (!call.payload_.ui.invokeThunk_) return ActionInvocationStatus::Empty;
 		call.payload_.ui.invokeThunk_(call.payload_.ui.payload_.data());
 		return ActionInvocationStatus::Invoked;
+	case ActionCallKind::UiRecipe: {
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
+		const auto found = std::ranges::find_if(devUiRecipes_,
+			[&call](const DevUiRecipeRecord& recipe) {
+				return recipe.id == call.payload_.stableId && recipe.reconstructable;
+			});
+		if (found == devUiRecipes_.end()) return ActionInvocationStatus::Unbound;
+		found->prototype.invokeThunk_(found->prototype.payload_.data());
+		return ActionInvocationStatus::Invoked;
+#else
+		return ActionInvocationStatus::Unbound;
+#endif
+	}
 	default:
 		return ActionInvocationStatus::Empty;
 	}
@@ -471,6 +542,15 @@ ActionAvailability ActionManager::availability(ActionCall call) const noexcept {
 	switch (call.kind_) {
 	case ActionCallKind::Ui:
 		return ActionAvailability{.enabled = static_cast<bool>(call.payload_.ui)};
+	case ActionCallKind::UiRecipe:
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
+		return ActionAvailability{.enabled = std::ranges::any_of(devUiRecipes_,
+			[&call](const DevUiRecipeRecord& recipe) {
+				return recipe.id == call.payload_.stableId && recipe.reconstructable;
+			})};
+#else
+		return {};
+#endif
 	case ActionCallKind::App: {
 		const AppActionAvailability appAvailability = appActions_.availability(call.payload_.app);
 		return ActionAvailability{.enabled = appAvailability.enabled};
@@ -492,6 +572,20 @@ std::optional<ActionDebugInfo> ActionManager::debugInfo(ActionCall call) const n
 		info.debugName = call.payload_.ui.recipeName_;
 		info.definitionSource = call.payload_.ui.definitionSource_;
 		info.bound = static_cast<bool>(call.payload_.ui);
+		return info;
+	}
+	if (call.kind_ == ActionCallKind::UiRecipe) {
+		info.kind = ActionCallKind::Ui;
+		info.uiRecipeId = call.payload_.stableId;
+		const auto found = std::ranges::find_if(devUiRecipes_,
+			[&call](const DevUiRecipeRecord& recipe) {
+				return recipe.id == call.payload_.stableId;
+			});
+		if (found != devUiRecipes_.end()) {
+			info.debugName = found->debugName;
+			info.definitionSource = found->source;
+			info.bound = found->reconstructable;
+		}
 		return info;
 	}
 	if (call.kind_ != ActionCallKind::App) return info;

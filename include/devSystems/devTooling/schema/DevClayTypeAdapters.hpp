@@ -190,7 +190,7 @@ template <> struct DevTypeAdapter<Clay_ChildAlignment> {
 };
 template <> struct DevTypeAdapter<Clay_FloatingAttachPoints> {
 	static constexpr bool enabled = true;
-	static consteval auto schema() { return devSemanticStruct("Clay_FloatingAttachPoints", DevEditorKind::Custom,
+	static consteval auto schema() { return devSemanticStruct("Clay_FloatingAttachPoints", DevEditorKind::AttachmentPoints,
 		devField<&Clay_FloatingAttachPoints::element>("element"), devField<&Clay_FloatingAttachPoints::parent>("parent")); }
 };
 template <> struct DevTypeAdapter<Clay_AspectRatioElementConfig> {
@@ -208,7 +208,9 @@ template <> struct DevTypeAdapter<Clay_LayoutConfig> {
 template <> struct DevTypeAdapter<Clay_TextElementConfig> {
 	static constexpr bool enabled = true;
 	static consteval auto schema() { return devSemanticStruct("Clay_TextElementConfig", DevEditorKind::Custom,
-		devField<&Clay_TextElementConfig::textColor>("textColor"), devField<&Clay_TextElementConfig::fontId>("fontId"),
+		devField<&Clay_TextElementConfig::textColor>("textColor"),
+		devField<&Clay_TextElementConfig::fontId>("fontId", DevFieldOptions{}
+			.withEditor(DevEditorKind::FontChoice).withChoiceDomain(DevChoiceDomain::FontFace)),
 		devField<&Clay_TextElementConfig::fontSize>("fontSize"), devField<&Clay_TextElementConfig::letterSpacing>("letterSpacing"),
 		devField<&Clay_TextElementConfig::lineHeight>("lineHeight"), devField<&Clay_TextElementConfig::wrapMode>("wrapMode"),
 		devField<&Clay_TextElementConfig::textAlignment>("textAlignment"),

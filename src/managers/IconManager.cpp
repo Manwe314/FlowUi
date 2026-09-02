@@ -996,6 +996,7 @@ TextureRef IconManager::textureRef(std::string_view key) { return textureRef(Res
 TextureRef IconManager::textureRef(ResourceKey key) {
 	if (!storage_ || !controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconLookup));
 	const storage::ResourceKey normalized = iconKey(*storage_, key);
+	const std::string_view stableKey = storage_->string(normalized.name);
 	if (controller_->atlasPages.empty() || !controller_->atlasPages.front().view || !controller_->atlasSampler) {
 		detail::terminateForFatalError(makeError(ErrorCode::RendererNativeResourceInvalid, ErrorSite::IconLookup));
 	}
@@ -1018,6 +1019,8 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 			});
 		}
 		return TextureRef{
+			.sourceDomain = ResourceDomain::Icon,
+			.sourceKey = stableKey,
 			.skipIfUnavailable = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual,
 		};
 	}
@@ -1040,6 +1043,8 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 	}
 
 	TextureRef texture{};
+	texture.sourceDomain = ResourceDomain::Icon;
+	texture.sourceKey = stableKey;
 	texture.handle = requestIdIt->second;
 	texture.sourceWidth = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicWidth)));
 	texture.sourceHeight = static_cast<int32_t>(std::max(1.0f, std::round(documentIt->second.intrinsicHeight)));

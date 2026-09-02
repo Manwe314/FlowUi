@@ -139,7 +139,7 @@ things i want to do:
 	- Default Icons For Dev Interface
 	- Dev Mode Tooling to auto Train PGO.
 	- CancelFrame silently catches. cleanUp Falure operations need strengthening.
-	- Upgrade Flow_Color
+	[Done]- Upgrade Flow_Color
 	- AA Pass
 		- Configurations for Primitives AA
 		- correct SDF AA qued edge boundry collision
@@ -149,20 +149,14 @@ things i want to do:
 		- Match Sepperator border side colors to left right Areas
 		- DevInspectInspectors Main content Width overflow issues As always.
 	- DevInterface functionality
-		- Reexplore value captures what / how  are thigns displayed.
+		- Authored Code value capture should be made explicit
 	- DevInspectInspectors
-		- enum chociec for Fonts / action calls / texture Refresh
-		- expand texture Ref to carry more than enum chociec
-		- Quick View Value not configured on every Parameter including unregistered/unddefineds
-		- Coral accent and revert button dont always algin, sometimes color reports changes Revert does not work
-		- sizing Quick text needs better visuals.
-		- Padding Quick Text need better visuals
-		- Color Quick Text needs the swatch color box as well.
-		- Color Needs better Editor based on old Swatch + hex + swatch opening to 4 Drag values maybe
-		- Padding and Border widths need nine Split editors
-		- Attachment points might need 9 split like Radio choice element
-		- Changes Tab needs its own thing after ReExploring Value captures
 		- CLAY element Selection Needs its own ENTIRE DevInspectInspector area element.
+		- enum chociec for Fonts 
+		- Quick View Value not configured on every Parameter including unregistered/unddefineds
+		- Search Bars text does not fit correctly. 
+		- Elevated Definition changes remove the hint on parameters box. 
+
 
 		
 		

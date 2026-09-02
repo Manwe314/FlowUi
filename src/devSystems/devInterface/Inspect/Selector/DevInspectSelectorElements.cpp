@@ -40,6 +40,11 @@ inline constexpr LocalElementName kNodeLabel{"label"};
 inline constexpr LocalElementName kNodeSpacer{"spacer"};
 inline constexpr LocalElementName kNodeStatus{"status"};
 
+std::string_view localDebugName(std::string_view name) {
+	const std::size_t separator = name.find_last_of('/');
+	return separator == std::string_view::npos ? name : name.substr(separator + 1u);
+}
+
 Clay_TextElementConfig textConfig(Clay_Color color, uint16_t size) {
 	Clay_TextElementConfig config{};
 	config.textColor = color;
@@ -566,6 +571,7 @@ void DevInterfaceSelectorForest::buildElement(BuildContext& context) {
 						std::string_view name = snapshot.string(node.debugName);
 						if (name.empty()) name = snapshot.string(node.definitionName);
 						if (name.empty()) name = "Unnamed Flow Element";
+						name = localDebugName(name);
 						const uint64_t rowKey = stableNodeKey(node.instance.value, kDevInterfaceFlowNodeKind);
 						bool rowExpanded = true;
 						context.uiManager.createElement(kDevNode, Keyed(kNodeRow, rowKey))

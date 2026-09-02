@@ -58,11 +58,13 @@ public:
 private:
 	friend class UiActions;
 	friend class ActionManager;
+	friend class ActionCall;
 
 	InvokeThunk invokeThunk_ = nullptr;
 	std::array<std::byte, InlineBytes> payload_{};
 #if FLOW_UI_DEV_MODE
 	uint64_t recipeId_ = 0;
+	bool reconstructable_ = false;
 	std::string_view recipeName_{};
 	ActionSourceLocation definitionSource_{};
 #endif
@@ -72,6 +74,12 @@ enum class ActionCallKind : uint8_t {
 	None = 0,
 	App,
 	Ui,
+	UiRecipe,
+};
+
+struct ActionStableReference {
+	ActionCallKind kind = ActionCallKind::None;
+	uint64_t id = 0;
 };
 
 class ActionCall {
@@ -86,6 +94,40 @@ public:
 		: payload_(call), kind_(call ? ActionCallKind::Ui : ActionCallKind::None) {}
 
 	[[nodiscard]] constexpr ActionCallKind kind() const noexcept { return kind_; }
+	[[nodiscard]] constexpr ActionStableReference stableReference() const noexcept {
+		if (kind_ == ActionCallKind::App) {
+			return {ActionCallKind::App, payload_.app.id.value};
+		}
+		if (kind_ == ActionCallKind::UiRecipe) {
+			return {ActionCallKind::Ui, payload_.stableId};
+		}
+#if FLOW_UI_DEV_MODE
+		if (kind_ == ActionCallKind::Ui) {
+			return payload_.ui.reconstructable_
+				? ActionStableReference{ActionCallKind::Ui, payload_.ui.recipeId_}
+				: ActionStableReference{};
+		}
+#endif
+		return {};
+	}
+
+	[[nodiscard]] static constexpr ActionCall fromStable(
+		ActionCallKind kind, uint64_t stableId) noexcept {
+		if (kind == ActionCallKind::App && stableId != 0u) {
+			return ActionCall{AppActionCall{AppActionID{
+				.value = stableId
+#if FLOW_UI_DEV_MODE
+				, .debugName = {}
+#endif
+			}}};
+		}
+		ActionCall result{};
+		if (kind == ActionCallKind::Ui && stableId != 0u) {
+			result.payload_.stableId = stableId;
+			result.kind_ = ActionCallKind::UiRecipe;
+		}
+		return result;
+	}
 
 	[[nodiscard]] constexpr explicit operator bool() const noexcept {
 		return kind_ != ActionCallKind::None;
@@ -97,6 +139,7 @@ private:
 	union Payload {
 		AppActionCall app;
 		UiActionCall ui;
+		uint64_t stableId;
 
 		constexpr Payload() noexcept : app{} {}
 		constexpr Payload(AppActionCall call) noexcept : app(call) {}
@@ -269,8 +312,8 @@ concept ConcreteRecipeCallable = requires {
 template <typename Fn>
 struct UiActionRecipe {
 	[[no_unique_address]] Fn operation;
-#if FLOW_UI_DEV_MODE
 	uint64_t recipeId = 0;
+#if FLOW_UI_DEV_MODE
 	std::string_view debugName{};
 	ActionSourceLocation definitionSource{};
 #endif
@@ -297,8 +340,8 @@ template <typename Fn>
 		"FlowUi UiAction recipes must return void.");
 	return UiActionRecipe<Operation>{
 		.operation = fn,
-#if FLOW_UI_DEV_MODE
 		.recipeId = detail::ui_action::callableTypeId<Operation>(),
+#if FLOW_UI_DEV_MODE
 		.debugName = {},
 		.definitionSource = source,
 #endif
@@ -320,8 +363,8 @@ template <std::size_t N, typename Fn>
 		, source
 #endif
 	);
-#if FLOW_UI_DEV_MODE
 	recipe.recipeId = detail::ui_action::recipeHash(std::string_view{name, N - 1});
+#if FLOW_UI_DEV_MODE
 	recipe.debugName = std::string_view{name, N - 1};
 #endif
 	return recipe;

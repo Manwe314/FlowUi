@@ -921,6 +921,10 @@ struct App::Impl {
 		mainPointer->ui.setDevOverrideEngine(&devTooling.overrides());
 #endif
 		mainPointer->ui.setThemeManager(&themeManager);
+		mainPointer->ui.setImageManager(&imageManager);
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		mainPointer->ui.setIconManager(&icons);
+#endif
 		actionManager.attachTo(mainPointer->ui);
 		elementManager.attachTo(mainPointer->ui);
 		initSharedUiByteResources(*storageSystem, sharedUiByteResources);
@@ -1108,6 +1112,10 @@ struct App::Impl {
 			pending->ui.setDevOverrideEngine(&devTooling.overrides());
 #endif
 			pending->ui.setThemeManager(&themeManager);
+			pending->ui.setImageManager(&imageManager);
+#if FLOWUI_INCLUDE_ICON_MANAGER
+			pending->ui.setIconManager(&icons);
+#endif
 			actionManager.attachTo(pending->ui);
 			elementManager.attachTo(pending->ui);
 #if FLOW_UI_DEV_MODE

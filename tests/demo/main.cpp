@@ -90,6 +90,41 @@ struct DemoState {
 	uint64_t comboChanges = 0;
 };
 
+struct DemoParameters {
+	Clay_Color backgroundColor = Flow_Color("#0c111bff");
+	Clay_Padding galleryPadding = CLAY_PADDING_ALL(22);
+	Clay_Padding writingPadding = CLAY_PADDING_ALL(22);
+	uint16_t pageGap = 18;
+};
+
+struct DemoResources {
+	TextureRef incrementIcon{};
+	TextureRef decrementIcon{};
+	TextureRef comboOpenIcon{};
+	TextureRef comboClosedIcon{};
+
+	DemoResources() = default;
+	explicit DemoResources(App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		auto& icons = app.icons();
+		if (icons.contains(standard_icons::kIncrementKey)) {
+			incrementIcon = icons.textureRef(standard_icons::kIncrementKey);
+		}
+		if (icons.contains(standard_icons::kDecrementKey)) {
+			decrementIcon = icons.textureRef(standard_icons::kDecrementKey);
+		}
+		if (icons.contains(standard_icons::kComboBoxOpenKey)) {
+			comboOpenIcon = icons.textureRef(standard_icons::kComboBoxOpenKey);
+		}
+		if (icons.contains(standard_icons::kComboBoxClosedKey)) {
+			comboClosedIcon = icons.textureRef(standard_icons::kComboBoxClosedKey);
+		}
+#else
+		(void)app;
+#endif
+	}
+};
+
 constexpr auto kIncrement = UiAction(
 	"fsel.demo.increment",
 	[](uint64_t& value) { ++value; });
@@ -142,8 +177,8 @@ struct DemoActions {
 	ActionCall reset{};
 };
 
-DemoActions makeActions(App& app, DemoState& state) {
-	auto& actions = app.actions().uiActions();
+DemoActions makeActions(UiManager& ui, DemoState& state) {
+	auto& actions = ui.actions().uiActions();
 	return {
 		.activateButton = ActionCall{actions.make(kIncrement, state.buttonActivations)},
 		.selectSurface = ActionCall{actions.make(kSelect, state.surfaceSelected)},
@@ -272,7 +307,7 @@ void drawCardHeading(UiManager& ui, std::string_view title, std::string_view det
 }
 
 void drawButtonsCard(UiManager& ui, const DemoState& state, const DemoActions& actions) {
-	ui.createElement(kBox, "buttons-card")
+	ui.createElement(kBox, "buttons")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -281,7 +316,7 @@ void drawButtonsCard(UiManager& ui, const DemoState& state, const DemoActions& a
 		"One control supports a built label or caller-authored constructed children.");
 
 	CLAY(ui.toClaySID("demo/buttons/row"), row()) {
-		ui.createElement(FlowUi::FSEL::kButton, "built-button")
+		ui.createElement(FlowUi::FSEL::kButton, "built")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.activateButton,
 				.contentMode = ButtonContentMode::TextOnly,
@@ -289,7 +324,7 @@ void drawButtonsCard(UiManager& ui, const DemoState& state, const DemoActions& a
 			})
 			.draw();
 
-		ui.createElement(FlowUi::FSEL::kButton, "constructed-button")
+		ui.createElement(FlowUi::FSEL::kButton, "constructed")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.activateButton,
 				.contentMode = ButtonContentMode::None,
@@ -308,7 +343,7 @@ void drawButtonsCard(UiManager& ui, const DemoState& state, const DemoActions& a
 			ui,
 			"Activations: " + std::to_string(state.buttonActivations),
 			textStyle(ui, 13, kWarm, 600, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(FlowUi::FSEL::kButton, "disabled-button")
+		ui.createElement(FlowUi::FSEL::kButton, "disabled")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.activateButton,
 				.enabled = false,
@@ -325,7 +360,7 @@ void drawSelectableCard(
 	UiManager& ui,
 	const DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "selectable-card")
+	ui.createElement(kBox, "selectable")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -333,7 +368,7 @@ void drawSelectableCard(
 		"SelectableSurface",
 		"A controlled, construct-only surface. It reports selection once and then becomes selected.");
 
-	ui.createElement(kSelectableSurface, "sample-surface")
+	ui.createElement(kSelectableSurface, "surface")
 		.setParameters(SelectableSurfaceParameters{
 			.selected = state.surfaceSelected,
 			.onSelected = actions.selectSurface,
@@ -349,7 +384,7 @@ void drawSelectableCard(
 		ui,
 		state.surfaceSelected ? "Selected surface" : "Select this surface",
 		textStyle(ui, 14, kText, 550));
-	ui.createElement(kSpacer, "surface-spacer")
+	ui.createElement(kSpacer, "spacer")
 		.setParameters(SpacerParameters{
 			.sizing = {
 				.width = CLAY_SIZING_GROW(0),
@@ -368,7 +403,7 @@ void drawSelectableCard(
 	}
 	ui.drawConstructed();
 
-	ui.createElement(FlowUi::FSEL::kButton, "clear-surface")
+	ui.createElement(FlowUi::FSEL::kButton, "clear")
 		.setParameters(FlowUi::FSEL::ButtonParameters{
 			.onActivate = actions.clearSurface,
 			.enabled = state.surfaceSelected,
@@ -385,7 +420,7 @@ void drawRadioOption(
 	DemoState& state,
 	uint64_t value,
 	std::string_view label) {
-	ui.createElement(kRadioChoice, Indexed("tool-option", value))
+	ui.createElement(kRadioChoice, Indexed("option", value))
 		.setParameters(RadioChoiceParameters{
 			.choiceValue = value,
 			.selectedValue = &state.selectedTool,
@@ -399,7 +434,7 @@ void drawRadioOption(
 }
 
 void drawRadioCard(UiManager& ui, DemoState& state) {
-	ui.createElement(kBox, "radio-card")
+	ui.createElement(kBox, "radio")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -425,7 +460,7 @@ void drawTextInputCard(
 	UiManager& ui,
 	DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "text-input-card")
+	ui.createElement(kBox, "text")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -433,7 +468,7 @@ void drawTextInputCard(
 		"TextInput",
 		"Single-line editing with live binding. Press Enter to submit and release focus.");
 
-	ui.createElement(kTextInput, "quick-note-input")
+	ui.createElement(kTextInput, "input")
 		.setParameters(TextInputParameters{
 			.value = &state.quickNote,
 			.syncPolicy = TextFieldSyncPolicy::Live,
@@ -471,7 +506,7 @@ void drawTextInputCard(
 }
 
 void drawNumberInputCard(UiManager& ui, DemoState& state) {
-	ui.createElement(kBox, "number-input-card")
+	ui.createElement(kBox, "numbers")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -481,7 +516,7 @@ void drawNumberInputCard(UiManager& ui, DemoState& state) {
 
 	CLAY(ui.toClaySID("demo/number-input/retry"), row(12)) {
 		drawText(ui, "Retries", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kNumberInputInt, "retry-count")
+		ui.createElement(kNumberInputInt, "retries")
 			.setParameters(NumberInputParameters<int>{
 				.value = &state.retryCount,
 				.minimum = 0,
@@ -498,7 +533,7 @@ void drawNumberInputCard(UiManager& ui, DemoState& state) {
 
 	CLAY(ui.toClaySID("demo/number-input/batch"), row(12)) {
 		drawText(ui, "Batch", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kNumberInputUInt, "batch-size")
+		ui.createElement(kNumberInputUInt, "batch")
 			.setParameters(NumberInputParameters<unsigned int>{
 				.value = &state.batchSize,
 				.minimum = 1u,
@@ -538,7 +573,7 @@ void drawNumberInputCard(UiManager& ui, DemoState& state) {
 }
 
 void drawDragValueCard(UiManager& ui, DemoState& state) {
-	ui.createElement(kBox, "drag-value-card")
+	ui.createElement(kBox, "drag-values")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -548,7 +583,7 @@ void drawDragValueCard(UiManager& ui, DemoState& state) {
 
 	CLAY(ui.toClaySID("demo/drag-value/retry"), row(12)) {
 		drawText(ui, "Retries", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kDragValueInt, "retry-count-drag")
+		ui.createElement(kDragValueInt, "retries")
 			.setParameters(DragValueParameters<int>{
 				.value = &state.retryCount,
 				.minimum = 0,
@@ -565,7 +600,7 @@ void drawDragValueCard(UiManager& ui, DemoState& state) {
 
 	CLAY(ui.toClaySID("demo/drag-value/exposure"), row(12)) {
 		drawText(ui, "Exposure", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kDragValueFloat, "exposure-drag")
+		ui.createElement(kDragValueFloat, "exposure")
 			.setParameters(DragValueParameters<float>{
 				.value = &state.exposure,
 				.minimum = -2.0f,
@@ -586,7 +621,7 @@ void drawDragValueCard(UiManager& ui, DemoState& state) {
 
 	CLAY(ui.toClaySID("demo/drag-value/batch"), row(12)) {
 		drawText(ui, "Drag only", textStyle(ui, 12, kMuted, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kDragValueUInt, "batch-size-drag")
+		ui.createElement(kDragValueUInt, "batch")
 			.setParameters(DragValueParameters<unsigned int>{
 				.value = &state.batchSize,
 				.minimum = 1u,
@@ -608,7 +643,7 @@ void drawBooleanCard(
 	UiManager& ui,
 	const DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "boolean-card")
+	ui.createElement(kBox, "booleans")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -649,7 +684,7 @@ void drawSlidersCard(
 	UiManager& ui,
 	DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "sliders-card")
+	ui.createElement(kBox, "sliders")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -659,7 +694,7 @@ void drawSlidersCard(
 
 	CLAY(ui.toClaySID("demo/sliders/volume-row"), row(14)) {
 		drawText(ui, "Volume", textStyle(ui, 13, kText, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kSlider, "volume-slider")
+		ui.createElement(kSlider, "volume")
 			.setParameters(SliderParameters{
 				.value = &state.volume,
 				.minimum = 0.0,
@@ -691,7 +726,7 @@ void drawSlidersCard(
 		};
 		CLAY(ui.toClaySID("demo/sliders/vertical"), verticalGroup) {
 			drawText(ui, "100", textStyle(ui, 11, kMuted, 500));
-			ui.createElement(kSlider, "temperature-slider")
+			ui.createElement(kSlider, "temperature")
 				.setParameters(SliderParameters{
 					.axis = SliderAxis::Vertical,
 					.value = &state.temperature,
@@ -737,7 +772,7 @@ void drawSlidersCard(
 				.width = {1, 1, 1, 1, 0},
 			};
 			CLAY(ui.toClaySID("demo/sliders/invisible-lane"), invisibleLane) {
-				ui.createElement(kSlider, "invisible-slider")
+				ui.createElement(kSlider, "invisible")
 					.setParameters(SliderParameters{
 						.pressBehavior = SliderPressBehavior::DragFromCurrent,
 						.value = &state.invisibleValue,
@@ -767,7 +802,7 @@ void drawSlidersCard(
 }
 
 void drawProgressBarsCard(UiManager& ui, const DemoState& state) {
-	ui.createElement(kBox, "progress-bars-card")
+	ui.createElement(kBox, "progress")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -777,7 +812,7 @@ void drawProgressBarsCard(UiManager& ui, const DemoState& state) {
 
 	CLAY(ui.toClaySID("demo/progress/horizontal-row"), row(14)) {
 		drawText(ui, "Volume", textStyle(ui, 13, kText, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kProgressBar, "volume-progress")
+		ui.createElement(kProgressBar, "volume")
 			.setParameters(ProgressBarParameters{
 				.value = state.volume,
 				.sizing = Clay_Sizing{
@@ -800,7 +835,7 @@ void drawProgressBarsCard(UiManager& ui, const DemoState& state) {
 			ui,
 			"Temperature",
 			textStyle(ui, 13, kText, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kProgressBar, "temperature-progress")
+		ui.createElement(kProgressBar, "temperature")
 			.setParameters(ProgressBarParameters{
 				.axis = ProgressBarAxis::Vertical,
 				.value = state.temperature,
@@ -822,7 +857,7 @@ void drawProgressBarsCard(UiManager& ui, const DemoState& state) {
 }
 
 void drawLayoutCard(UiManager& ui, const DemoState& state) {
-	ui.createElement(kBox, "layout-card")
+	ui.createElement(kBox, "layout")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -840,7 +875,7 @@ void drawPopupSurfaceCard(
 	UiManager& ui,
 	const DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "popup-surface-card")
+	ui.createElement(kBox, "popups")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
@@ -849,7 +884,7 @@ void drawPopupSurfaceCard(
 		"The same construct-only surface can anchor to an element, snapshot the pointer, or attach to the viewport.");
 
 	CLAY(ui.toClaySID("demo/popup/anchor-row"), row(10)) {
-		ui.createElement(FlowUi::FSEL::kButton, "anchored-popup-trigger")
+		ui.createElement(FlowUi::FSEL::kButton, "anchor-trigger")
 			.withID(kAnchoredPopupTriggerId)
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.openAnchoredPopup,
@@ -860,7 +895,7 @@ void drawPopupSurfaceCard(
 			.draw();
 
 		if (state.anchoredPopupOpen) {
-			ui.createElement(kPopupSurface, "anchored-popup")
+			ui.createElement(kPopupSurface, "anchor")
 				.withID(kAnchoredPopupSurfaceId)
 				.setParameters(PopupSurfaceParameters{
 					.popupRequest = PopupRequest{
@@ -887,7 +922,7 @@ void drawPopupSurfaceCard(
 	}
 
 	CLAY(ui.toClaySID("demo/popup/free-row"), row(10)) {
-		ui.createElement(FlowUi::FSEL::kButton, "pointer-popup-trigger")
+		ui.createElement(FlowUi::FSEL::kButton, "pointer-trigger")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.openPointerPopup,
 				.enabled = !state.pointerPopupOpen,
@@ -897,7 +932,7 @@ void drawPopupSurfaceCard(
 			.draw();
 
 		if (state.pointerPopupOpen) {
-			ui.createElement(kPopupSurface, "pointer-popup")
+			ui.createElement(kPopupSurface, "pointer")
 				.withID(kPointerPopupSurfaceId)
 				.setParameters(PopupSurfaceParameters{
 					.popupRequest = PopupRequest{
@@ -922,7 +957,7 @@ void drawPopupSurfaceCard(
 			ui.drawConstructed();
 		}
 
-		ui.createElement(FlowUi::FSEL::kButton, "heads-up-popup-trigger")
+		ui.createElement(FlowUi::FSEL::kButton, "notice-trigger")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.openHeadsUpPopup,
 				.enabled = !state.headsUpPopupOpen,
@@ -932,7 +967,7 @@ void drawPopupSurfaceCard(
 			.draw();
 
 		if (state.headsUpPopupOpen) {
-			ui.createElement(kPopupSurface, "heads-up-popup")
+			ui.createElement(kPopupSurface, "notice")
 				.withID(kHeadsUpPopupSurfaceId)
 				.setParameters(PopupSurfaceParameters{
 					.popupRequest = PopupRequest{
@@ -960,7 +995,7 @@ void drawPopupSurfaceCard(
 		}
 	}
 
-	ui.createElement(kBox, "hover-popup-area")
+	ui.createElement(kBox, "hover-area")
 		.withID(kHoverPopupAreaId)
 		.setParameters(BoxParameters{
 			.sizing = {
@@ -979,7 +1014,7 @@ void drawPopupSurfaceCard(
 	ui.drawConstructed();
 
 	if (ui.getPreviousFramesInteraction().isHovered(kHoverPopupAreaId)) {
-		ui.createElement(kPopupSurface, "hover-follow-popup")
+		ui.createElement(kPopupSurface, "hover-follow")
 			.withID(kHoverPopupSurfaceId)
 			.setParameters(PopupSurfaceParameters{
 				.popupRequest = PopupRequest{
@@ -1021,14 +1056,14 @@ void drawComboBoxCard(UiManager& ui, DemoState& state, const DemoActions& action
 		{.value = 9, .text = "Final review"},
 	};
 
-	ui.createElement(kBox, "combo-box-card")
+	ui.createElement(kBox, "combo")
 		.setParameters(cardParameters())
 		.construct();
 	drawCardHeading(
 		ui,
 		"ComboBox",
 		"The standard element owns the common text/icon option contract; arbitrary option rows remain a custom composition.");
-	ui.createElement(kComboBox, "workflow-combo")
+	ui.createElement(kComboBox, "workflow")
 		.setParameters(ComboBoxParameters{
 			.options = kOptions,
 			.selectedValue = &state.comboSelection,
@@ -1072,7 +1107,7 @@ void drawHeader(
 				textStyle(ui, 12, kMuted));
 		}
 
-		ui.createElement(kSpacer, "header-spacer")
+		ui.createElement(kSpacer, "spacer")
 			.setParameters(SpacerParameters{
 				.sizing = {
 					.width = CLAY_SIZING_GROW(0),
@@ -1081,7 +1116,7 @@ void drawHeader(
 			})
 			.draw();
 
-		ui.createElement(FlowUi::FSEL::kButton, "page-navigation")
+		ui.createElement(FlowUi::FSEL::kButton, "navigate")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = isGallery
 					? actions.showWritingStudio
@@ -1103,7 +1138,7 @@ void drawHeader(
 				isGallery ? "GALLERY" : "EDITOR",
 				textStyle(ui, 11, kAccent, 750, CLAY_TEXT_WRAP_NONE));
 		}
-		ui.createElement(FlowUi::FSEL::kButton, "reset-demo")
+		ui.createElement(FlowUi::FSEL::kButton, "reset")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.reset,
 				.contentMode = ButtonContentMode::TextOnly,
@@ -1114,22 +1149,26 @@ void drawHeader(
 	}
 }
 
-void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
-	ui.createElement(kBox, "gallery-page")
+void drawGallery(
+	UiManager& ui,
+	DemoState& state,
+	const DemoActions& actions,
+	const DemoParameters& parameters) {
+	ui.createElement(kBox, "gallery")
 		.setParameters(BoxParameters{
 			.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_GROW(0),
 			},
-			.padding = CLAY_PADDING_ALL(22),
-			.childGap = 18,
+			.padding = parameters.galleryPadding,
+			.childGap = parameters.pageGap,
 			.childAlignment = {
 				.x = CLAY_ALIGN_X_LEFT,
 				.y = CLAY_ALIGN_Y_TOP,
 			},
 			.layoutDirection = CLAY_TOP_TO_BOTTOM,
 			.clipConfig = Clay_ClipElementConfig{.vertical = true},
-			.backgroundColor = Flow_Color("#0c111bff"),
+			.backgroundColor = parameters.backgroundColor,
 		})
 		.construct();
 
@@ -1146,7 +1185,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 	};
 	panes.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	CLAY(ui.toClaySID("demo/panes"), panes) {
-		ui.createElement(kBox, "left-pane")
+		ui.createElement(kBox, "left")
 			.setParameters(BoxParameters{
 				.sizing = {
 					.width = CLAY_SIZING_FIXED(state.leftPaneWidth),
@@ -1170,7 +1209,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 		drawNumberInputCard(ui, state);
 		ui.drawConstructed();
 
-		ui.createElement(kSplitterHandle, "gallery-splitter")
+		ui.createElement(kSplitterHandle, "splitter")
 			.setParameters(SplitterHandleParameters{
 				.axis = SplitterAxis::Horizontal,
 				.position = SplitterPosition::Trailing,
@@ -1186,7 +1225,7 @@ void drawGallery(UiManager& ui, DemoState& state, const DemoActions& actions) {
 			})
 			.draw();
 
-		ui.createElement(kBox, "right-pane")
+		ui.createElement(kBox, "right")
 			.setParameters(BoxParameters{
 				.sizing = {
 					.width = CLAY_SIZING_GROW(0),
@@ -1216,7 +1255,7 @@ void drawEditorSidebar(
 	UiManager& ui,
 	DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "editor-sidebar")
+	ui.createElement(kBox, "sidebar")
 		.setParameters(BoxParameters{
 			.sizing = {
 				.width = CLAY_SIZING_FIXED(255),
@@ -1242,7 +1281,7 @@ void drawEditorSidebar(
 		"The surrounding chrome is ordinary Box, Button, Switch, Spacer, and text composition.");
 
 	CLAY(ui.toClaySID("demo/editor/wrap-row"), row(10)) {
-		ui.createElement(kSwitch, "editor-soft-wrap")
+		ui.createElement(kSwitch, "wrap")
 			.setParameters(SwitchParameters{
 				.isOn = state.editorSoftWrap,
 				.onToggle = actions.toggleEditorWrap,
@@ -1268,7 +1307,7 @@ void drawEditorSidebar(
 		"• click to place the caret\n• Shift + arrows to select\n• Ctrl/Cmd + A to select all\n• wheel over the editor to scroll",
 		textStyle(ui, 11, kMuted));
 
-	ui.createElement(kSpacer, "editor-sidebar-spacer")
+	ui.createElement(kSpacer, "spacer")
 		.setParameters(SpacerParameters{
 			.sizing = {
 				.width = CLAY_SIZING_GROW(0),
@@ -1304,7 +1343,7 @@ void drawDocumentEditor(
 	UiManager& ui,
 	DemoState& state,
 	const DemoActions& actions) {
-	ui.createElement(kBox, "document-editor")
+	ui.createElement(kBox, "document")
 		.setParameters(BoxParameters{
 			.sizing = {
 				.width = CLAY_SIZING_GROW(0),
@@ -1326,7 +1365,7 @@ void drawDocumentEditor(
 
 	Clay_ElementDeclaration titleRow = row(12);
 	CLAY(ui.toClaySID("demo/editor/title-row"), titleRow) {
-		ui.createElement(kTextInput, "document-title")
+		ui.createElement(kTextInput, "title")
 			.setParameters(TextInputParameters{
 				.value = &state.documentTitle,
 				.syncPolicy = TextFieldSyncPolicy::OnCommit,
@@ -1359,7 +1398,7 @@ void drawDocumentEditor(
 		"The title uses OnCommit synchronization; the document body below uses Live synchronization.",
 		textStyle(ui, 11, kMuted));
 
-	ui.createElement(kTextArea, "main-document")
+	ui.createElement(kTextArea, "body")
 		.setParameters(TextAreaParameters{
 			.value = &state.document,
 			.syncPolicy = TextFieldSyncPolicy::Live,
@@ -1406,7 +1445,7 @@ void drawDocumentEditor(
 			std::to_string(lineCount(state.document)) + " lines  ·  " +
 				std::to_string(state.document.size()) + " UTF-8 bytes",
 			textStyle(ui, 11, kMuted, 550, CLAY_TEXT_WRAP_NONE));
-		ui.createElement(kSpacer, "editor-status-spacer")
+		ui.createElement(kSpacer, "spacer")
 			.setParameters(SpacerParameters{
 				.sizing = {
 					.width = CLAY_SIZING_GROW(0),
@@ -1428,21 +1467,22 @@ void drawDocumentEditor(
 void drawWritingStudio(
 	UiManager& ui,
 	DemoState& state,
-	const DemoActions& actions) {
-	ui.createElement(kBox, "writing-studio-page")
+	const DemoActions& actions,
+	const DemoParameters& parameters) {
+	ui.createElement(kBox, "writing")
 		.setParameters(BoxParameters{
 			.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_GROW(0),
 			},
-			.padding = CLAY_PADDING_ALL(22),
-			.childGap = 18,
+			.padding = parameters.writingPadding,
+			.childGap = parameters.pageGap,
 			.childAlignment = {
 				.x = CLAY_ALIGN_X_LEFT,
 				.y = CLAY_ALIGN_Y_TOP,
 			},
 			.layoutDirection = CLAY_TOP_TO_BOTTOM,
-			.backgroundColor = Flow_Color("#0c111bff"),
+			.backgroundColor = parameters.backgroundColor,
 		})
 		.construct();
 
@@ -1459,6 +1499,89 @@ void drawWritingStudio(
 	ui.drawConstructed();
 }
 
+struct Demo {
+	using Parameters = DemoParameters;
+	using State = DemoState;
+	using Resources = DemoResources;
+	using BuildContext = ElementBuildContext<Demo>;
+
+	static constexpr FlowDefinitionID definitionId =
+		DefinitionID("flowui.demo.root");
+	static constexpr ElementStatePolicy statePolicy =
+		ElementStatePolicy::windowLifetime();
+	static constexpr std::string_view debugName = "Demo";
+
+	static void buildElement(BuildContext& context) {
+		auto& state = context.state();
+		const DemoActions actions = makeActions(context.uiManager, state);
+		static_cast<void>(context.resources());
+		if (state.page == DemoPage::Gallery) {
+			drawGallery(context.uiManager, state, actions, context.params);
+		} else {
+			drawWritingStudio(context.uiManager, state, actions, context.params);
+		}
+	}
+};
+
+inline constexpr Demo kDemo{};
+
+#if FLOW_UI_DEV_MODE
+FLOWUI_DEV_ENUM_SCHEMA(
+	DemoPage,
+	FLOWUI_DEV_ENUM_VALUE(DemoPage, DemoPage::Gallery),
+	FLOWUI_DEV_ENUM_VALUE(DemoPage, DemoPage::WritingStudio))
+
+FLOWUI_DEV_SCHEMA(
+	DemoState,
+	FLOWUI_DEV_FIELD(DemoState, page),
+	FLOWUI_DEV_FIELD(DemoState, buttonActivations),
+	FLOWUI_DEV_FIELD(DemoState, surfaceSelected),
+	FLOWUI_DEV_FIELD(DemoState, selectedTool),
+	FLOWUI_DEV_FIELD(DemoState, checkboxChecked),
+	FLOWUI_DEV_FIELD(DemoState, switchOn),
+	FLOWUI_DEV_FIELD(DemoState, volume),
+	FLOWUI_DEV_FIELD(DemoState, temperature),
+	FLOWUI_DEV_FIELD(DemoState, invisibleValue),
+	FLOWUI_DEV_FIELD(DemoState, sliderBegins),
+	FLOWUI_DEV_FIELD(DemoState, sliderChanges),
+	FLOWUI_DEV_FIELD(DemoState, sliderCommits),
+	FLOWUI_DEV_FIELD(DemoState, leftPaneWidth),
+	FLOWUI_DEV_FIELD(DemoState, quickNote),
+	FLOWUI_DEV_FIELD(DemoState, quickNoteChanges),
+	FLOWUI_DEV_FIELD(DemoState, quickNoteCommits),
+	FLOWUI_DEV_FIELD(DemoState, quickNoteSubmits),
+	FLOWUI_DEV_FIELD(DemoState, retryCount),
+	FLOWUI_DEV_FIELD(DemoState, batchSize),
+	FLOWUI_DEV_FIELD(DemoState, exposure),
+	FLOWUI_DEV_FIELD(DemoState, documentTitle),
+	FLOWUI_DEV_FIELD(DemoState, document),
+	FLOWUI_DEV_FIELD(DemoState, editorSoftWrap),
+	FLOWUI_DEV_FIELD(DemoState, documentChanges),
+	FLOWUI_DEV_FIELD(DemoState, documentCommits),
+	FLOWUI_DEV_FIELD(DemoState, documentFocuses),
+	FLOWUI_DEV_FIELD(DemoState, undoRequests),
+	FLOWUI_DEV_FIELD(DemoState, redoRequests),
+	FLOWUI_DEV_FIELD(DemoState, anchoredPopupOpen),
+	FLOWUI_DEV_FIELD(DemoState, pointerPopupOpen),
+	FLOWUI_DEV_FIELD(DemoState, headsUpPopupOpen),
+	FLOWUI_DEV_FIELD(DemoState, comboSelection),
+	FLOWUI_DEV_FIELD(DemoState, comboChanges))
+
+FLOWUI_DEV_SCHEMA(
+	DemoParameters,
+	FLOWUI_DEV_FIELD(DemoParameters, backgroundColor),
+	FLOWUI_DEV_FIELD(DemoParameters, galleryPadding),
+	FLOWUI_DEV_FIELD(DemoParameters, writingPadding),
+	FLOWUI_DEV_FIELD(DemoParameters, pageGap))
+
+FLOWUI_DEV_SCHEMA(
+	DemoResources,
+	FLOWUI_DEV_FIELD(DemoResources, incrementIcon),
+	FLOWUI_DEV_FIELD(DemoResources, decrementIcon),
+	FLOWUI_DEV_FIELD(DemoResources, comboOpenIcon),
+	FLOWUI_DEV_FIELD(DemoResources, comboClosedIcon))
+#endif
+
 } // namespace
 
 int main() {
@@ -1473,16 +1596,13 @@ int main() {
 #endif
 
 		App app = makeApplication(config);
-		DemoState state{};
-		const DemoActions actions = makeActions(app, state);
+		DemoParameters parameters{};
 
 		while (!app.shouldClose()) {
 			requireStatus(app.beginFrame());
-			if (state.page == DemoPage::Gallery) {
-				drawGallery(app.ui(), state, actions);
-			} else {
-				drawWritingStudio(app.ui(), state, actions);
-			}
+			app.ui().createElement(kDemo, "demo")
+				.setParameters(parameters)
+				.draw();
 			requireStatus(app.endFrame());
 			requireStatus(app.drawFrame());
 		}
