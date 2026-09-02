@@ -26,6 +26,7 @@ struct DevFieldOptions {
 	std::string_view hint{};
 	DevFieldAccess access = DevFieldAccess::Inherit;
 	DevEditorKind editor = DevEditorKind::None;
+	DevChoiceDomain choiceDomain = DevChoiceDomain::None;
 	DevNumericConstraint numeric{};
 	std::uint32_t textMaximum = 0;
 	bool hasTextMaximum = false;
@@ -48,6 +49,11 @@ struct DevFieldOptions {
 	consteval DevFieldOptions withEditor(DevEditorKind value) const {
 		auto result = *this;
 		result.editor = value;
+		return result;
+	}
+	consteval DevFieldOptions withChoiceDomain(DevChoiceDomain value) const {
+		auto result = *this;
+		result.choiceDomain = value;
 		return result;
 	}
 	consteval DevFieldOptions numericRange(double minimum, double maximum) const {

@@ -60,7 +60,7 @@ enum class NumericFloatNotation : uint8_t {
 /** Locale-independent formatting and floating text grammar policy. */
 struct NumericFormatOptions {
 	NumericFloatNotation notation = NumericFloatNotation::General;
-	std::optional<int> precision = std::nullopt;
+	std::optional<int> precision = 10;
 	bool trimTrailingZeros = true;
 	bool canonicalizeNegativeZero = true;
 	bool allowScientificInput = false;

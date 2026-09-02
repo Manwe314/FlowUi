@@ -14,14 +14,11 @@ template <>
 struct DevTypeAdapter<ActionCall> {
 	static constexpr bool enabled = true;
 	static consteval auto schema() {
-		// The action catalogue is manager-owned and is not retained in the type graph.
-		// A later binding snapshot may upgrade this to a live ActionChoice control.
 		return devSemanticLeaf(
 			"ActionCall",
 			DevEditorKind::ActionChoice,
 			DevCaptureCapability::Value,
-			DevEditCapability::ViewOnly,
-			DevCapabilityReason::NoEditAdapter);
+			DevEditCapability::SemanticCommand);
 	}
 };
 
@@ -99,7 +96,8 @@ struct DevTypeAdapter<FlowUiTheme> {
 			devField<&FlowUiTheme::radiusMedium>("radiusMedium"),
 			devField<&FlowUiTheme::radiusLarge>("radiusLarge"),
 			devField<&FlowUiTheme::radiusPill>("radiusPill"),
-			devField<&FlowUiTheme::defaultFontFamily>("defaultFontFamily"),
+			devField<&FlowUiTheme::defaultFontFamily>("defaultFontFamily", DevFieldOptions{}
+				.withEditor(DevEditorKind::FontChoice).withChoiceDomain(DevChoiceDomain::FontFamily)),
 			devField<&FlowUiTheme::fontSizeSmall>("fontSizeSmall"),
 			devField<&FlowUiTheme::fontSizeMedium>("fontSizeMedium"),
 			devField<&FlowUiTheme::fontSizeLarge>("fontSizeLarge"),

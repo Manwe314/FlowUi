@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <functional>
 #include <new>
+#include <optional>
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
@@ -100,11 +101,18 @@ public:
 		ActionDebugInfo debug{};
 		std::uint64_t callableTypeHash = 0;
 		std::uint64_t resultTypeHash = 0;
+		bool reconstructable = false;
 	};
 	using DevActionVisitor = bool (*)(void*, const DevActionView&);
 	[[nodiscard]] std::uint64_t devRevision() const noexcept;
 	[[nodiscard]] std::size_t devActionCount() const noexcept;
 	bool visitDevActions(void* userData, DevActionVisitor visitor) const;
+	/** Safely reconstruct a catalogue action. UI recipes with bound resources are rejected. */
+	[[nodiscard]] std::optional<ActionCall> makeDevActionCall(
+		ActionCallKind kind,
+		std::uint64_t stableId,
+		std::uint64_t expectedCallableTypeHash = 0,
+		std::uint64_t expectedResultTypeHash = 0) const noexcept;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
@@ -196,12 +204,17 @@ private:
 		ActionInvocationSource source);
 #if FLOW_UI_DEV_MODE
 	void reportInvocationError(AppActionCall call, ActionInvokeError error) noexcept;
+#endif
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
 	void noteUiRecipe(
 		std::uint64_t recipeId,
-		std::string_view debugName,
-		ActionSourceLocation source) noexcept;
+		const UiActionCall* reconstructable
+#if FLOW_UI_DEV_MODE
+		, std::string_view debugName,
+		ActionSourceLocation source
 #endif
-
+		) noexcept;
+#endif
 	template <typename Callable, typename... Resources>
 	Result<AppActionCall> bindTyped(
 		AppActionDescriptor descriptor,
@@ -215,14 +228,20 @@ private:
 	uint32_t stateName_ = 0;
 	AppActions appActions_;
 	UiActions uiActions_;
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
 	struct DevUiRecipeRecord {
 		std::uint64_t id = 0;
+		UiActionCall prototype{};
+		bool reconstructable = false;
+#if FLOW_UI_DEV_MODE
 		std::string_view debugName{};
 		ActionSourceLocation source{};
+#endif
 	};
 	std::vector<DevUiRecipeRecord> devUiRecipes_{};
+#if FLOW_UI_DEV_MODE
 	std::uint64_t devRevision_ = 1;
+#endif
 #endif
 };
 
@@ -254,9 +273,17 @@ UiActionCall UiActions::make(
 		call.invokeThunk_ = &detail::ui_action::invokeRecipe<Operation>;
 #if FLOW_UI_DEV_MODE
 		call.recipeId_ = recipe.recipeId;
+		call.reconstructable_ = parameterCount == 0u;
 		call.recipeName_ = recipe.debugName;
 		call.definitionSource_ = recipe.definitionSource;
-		owner_->noteUiRecipe(recipe.recipeId, recipe.debugName, recipe.definitionSource);
+#endif
+#if FLOW_UI_DEV_MODE || FLOW_UI_HAS_BAKED_CHANGES
+		owner_->noteUiRecipe(
+			recipe.recipeId, parameterCount == 0u ? &call : nullptr
+#if FLOW_UI_DEV_MODE
+			, recipe.debugName, recipe.definitionSource
+#endif
+		);
 #else
 		(void)recipe;
 #endif

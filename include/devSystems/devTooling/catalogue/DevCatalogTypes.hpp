@@ -69,6 +69,7 @@ struct DevAtlasCatalogEntry {
 
 struct DevFontCatalogEntry {
 	FontId fontHandle = 0;
+	FontFamilyId familyHandle = 0;
 	std::string_view familyName{};
 	std::string_view faceName{};
 	std::string_view sourcePath{};
@@ -84,9 +85,11 @@ struct DevFontCatalogEntry {
 
 struct DevActionCatalogEntry {
 	AppActionID actionId{};
+	std::uint64_t stableId = 0;
 	std::string_view debugName{};
 	DevActionKind kind = DevActionKind::AppActionBinding;
 	bool isBound = false;
+	bool isReconstructable = false;
 	std::uint8_t availabilityFlags = 0;
 	std::uint64_t callableTypeHash = 0;
 	std::uint64_t resultTypeHash = 0;

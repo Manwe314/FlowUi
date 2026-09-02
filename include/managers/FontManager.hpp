@@ -65,6 +65,7 @@ struct FontManager {
 #if FLOW_UI_DEV_MODE
 	struct DevFontView {
 		FontId fontId = 0;
+		FontFamilyId familyId = 0;
 		std::string_view familyName{};
 		std::uint32_t weight = 400;
 		FontStyle style = FontStyle::Normal;

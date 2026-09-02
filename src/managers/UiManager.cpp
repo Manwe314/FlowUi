@@ -14,6 +14,8 @@
 #include "managers/FontManager.hpp"
 #include "managers/ElementManager.hpp"
 #include "managers/ActionManager.hpp"
+#include "managers/ImageManager.hpp"
+#include "managers/IconManager.hpp"
 #include "managers/ThemeManager.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
@@ -213,6 +215,8 @@ namespace FlowUi
 		stateHandle_ = 0;
 		elementManager_ = nullptr;
 		actionManager_ = nullptr;
+		imageManager_ = nullptr;
+		iconManager_ = nullptr;
 		window_ = InvalidWindowId;
 		storage_ = nullptr;
 	}
@@ -620,6 +624,19 @@ namespace FlowUi
 
 	TextureRef* UiManager::imageData(TextureRef textureRef)
 	{
+		if (!textureRef.handle && !textureRef.sourceKey.empty()) {
+			const TextureFitMode fit = textureRef.fitMode;
+			const TextureSamplingMode sampling = textureRef.samplingMode;
+			const bool tint = textureRef.tintEnabled;
+			if (textureRef.sourceDomain == ResourceDomain::Image && imageManager_) {
+				textureRef = imageManager_->getTexture(textureRef.sourceKey);
+			} else if (textureRef.sourceDomain == ResourceDomain::Icon && iconManager_) {
+				textureRef = iconManager_->textureRef(textureRef.sourceKey);
+			}
+			textureRef.fitMode = fit;
+			textureRef.samplingMode = sampling;
+			textureRef.tintEnabled = tint;
+		}
 		char* dst = allocBytes(sizeof(TextureRef), alignof(TextureRef));
 		std::memcpy(dst, &textureRef, sizeof(TextureRef));
 		return reinterpret_cast<TextureRef*>(dst);

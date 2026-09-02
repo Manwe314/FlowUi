@@ -291,6 +291,7 @@ void DevCatalogues::rebuildFontCache() {
 		const Font::FontVariantData* variant = font.face ? font.face->defaultVariant() : nullptr;
 		entries.push_back(DevFontCatalogEntry{
 			.fontHandle = font.fontId,
+			.familyHandle = font.familyId,
 			.familyName = font.familyName,
 			.faceName = font.face ? std::string_view(font.face->name) : std::string_view{},
 			.sourcePath = {},
@@ -319,10 +320,13 @@ void DevCatalogues::rebuildActionCache() {
 		auto& entries = *static_cast<std::vector<DevActionCatalogEntry>*>(context);
 		entries.push_back(DevActionCatalogEntry{
 			.actionId = action.debug.appId,
+			.stableId = action.debug.kind == ActionCallKind::Ui
+				? action.debug.uiRecipeId : action.debug.appId.value,
 			.debugName = action.debug.debugName,
 			.kind = action.debug.kind == ActionCallKind::Ui
 				? DevActionKind::UiActionRecipe : DevActionKind::AppActionBinding,
 			.isBound = action.debug.bound,
+			.isReconstructable = action.reconstructable,
 			.availabilityFlags = static_cast<std::uint8_t>(
 				action.debug.availability.enabled ? 1u : 0u),
 			.callableTypeHash = action.callableTypeHash,
@@ -332,7 +336,9 @@ void DevCatalogues::rebuildActionCache() {
 		});
 		return true;
 	});
-	std::ranges::sort(cachedActions_, {}, [](const auto& entry) { return entry.actionId.value; });
+	std::ranges::sort(cachedActions_, [](const auto& left, const auto& right) {
+		return std::tie(left.kind, left.stableId) < std::tie(right.kind, right.stableId);
+	});
 }
 
 void DevCatalogues::rebuildThemeCache() {

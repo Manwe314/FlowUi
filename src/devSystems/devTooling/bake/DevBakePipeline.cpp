@@ -19,6 +19,7 @@
 
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
+#include "managers/structs/ActionManagerStructs.hpp"
 
 namespace FlowUi::devSystems::tooling {
 namespace {
@@ -238,6 +239,43 @@ std::optional<SerializedValue> serializeValue(
 	if (!type || typeIndex.value >= schema.typeOperations.size()) return std::nullopt;
 	const devMode::DevTypeOps* operations = schema.typeOperations[typeIndex.value];
 	if (!operations) return std::nullopt;
+	const std::string_view cppType = schema.string(type->cppTypeName);
+	if (cppType.ends_with("ActionCall")) {
+		const auto& action = *static_cast<const ActionCall*>(value);
+		const ActionStableReference reference =
+			action.stableReference();
+		if (action && reference.kind == ActionCallKind::None) return std::nullopt;
+		if (reference.kind == ActionCallKind::None || reference.id == 0u) {
+			return SerializedValue{"{\"kind\":0,\"id\":0}", "FlowUi::ActionCall{}"};
+		}
+		if (reference.kind != ActionCallKind::App &&
+			reference.kind != ActionCallKind::Ui) return std::nullopt;
+		const char* kindName = reference.kind == ActionCallKind::App ? "App" : "Ui";
+		return SerializedValue{
+			"{\"kind\":" + std::to_string(static_cast<unsigned>(reference.kind)) +
+				",\"id\":" + std::to_string(reference.id) + "}",
+			"FlowUi::ActionCall::fromStable(FlowUi::ActionCallKind::" +
+				std::string(kindName) + "," + std::to_string(reference.id) + "ULL)"};
+	}
+	if (cppType.ends_with("TextureRef")) {
+		const auto& texture = *static_cast<const TextureRef*>(value);
+		if (texture.sourceKey.empty() ||
+			(texture.sourceDomain != ResourceDomain::Image &&
+			 texture.sourceDomain != ResourceDomain::Icon)) return std::nullopt;
+		std::string keyLiteral;
+		appendEscaped(keyLiteral, texture.sourceKey);
+		const std::string domain = texture.sourceDomain == ResourceDomain::Image
+			? "Image" : "Icon";
+		return SerializedValue{
+			"{\"domain\":" + std::to_string(static_cast<unsigned>(texture.sourceDomain)) +
+				",\"key\":" + keyLiteral + "}",
+			"FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::" + domain +
+				"," + keyLiteral + ",static_cast<FlowUi::TextureFitMode>(" +
+				std::to_string(static_cast<unsigned>(texture.fitMode)) +
+				"),static_cast<FlowUi::TextureSamplingMode>(" +
+				std::to_string(static_cast<unsigned>(texture.samplingMode)) +
+				")," + (texture.tintEnabled ? "true" : "false") + ")"};
+	}
 	long double numeric = 0.0L;
 	if (type->kind == devMode::DevTypeKind::Boolean) {
 		if (!operations->numericValue || !operations->numericValue(value, numeric)) return std::nullopt;

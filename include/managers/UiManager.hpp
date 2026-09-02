@@ -47,6 +47,8 @@ struct AppWindow;
 class App;
 class ElementManager;
 class ActionManager;
+class ImageManager;
+class IconManager;
 template <FlowElement Element>
 class ElementBuilder;
 struct FlowUiTheme;
@@ -736,6 +738,8 @@ private:
 	void setThemeManager(const ThemeManager* themeManager) noexcept { themeManager_ = themeManager; }
 	void setElementManager(ElementManager* elementManager) noexcept { elementManager_ = elementManager; }
 	void setActionManager(ActionManager* actionManager) noexcept { actionManager_ = actionManager; }
+	void setImageManager(ImageManager* imageManager) noexcept { imageManager_ = imageManager; }
+	void setIconManager(IconManager* iconManager) noexcept { iconManager_ = iconManager; }
 #if FLOW_UI_DEV_MODE
 	void setDevTimingRecorder(devSystems::DevTimingRecorder* recorder) noexcept {
 		devTimingRecorder_ = recorder;
@@ -831,6 +835,8 @@ private:
 	const ThemeManager* themeManager_ = nullptr;
 	ElementManager* elementManager_ = nullptr;
 	ActionManager* actionManager_ = nullptr;
+	ImageManager* imageManager_ = nullptr;
+	IconManager* iconManager_ = nullptr;
 #if FLOW_UI_DEV_MODE
 	devSystems::DevTimingRecorder* devTimingRecorder_ = nullptr;
 	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;

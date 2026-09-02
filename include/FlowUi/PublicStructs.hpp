@@ -16,6 +16,7 @@
 #include "FlowUi/BuildConfig.hpp"
 #include "FlowUi/ElementID.hpp"
 #include "FlowUi/Error.hpp"
+#include "FlowUi/ResourceKey.hpp"
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
 
@@ -822,6 +823,25 @@ enum class TextureSamplingMode : uint8_t {
  * FlowUi managers and should normally be left unchanged.
  */
 struct TextureRef {
+	/** Stable manager lookup retained for overrides and baked changes. */
+	ResourceDomain sourceDomain = ResourceDomain::Auto;
+	std::string_view sourceKey{};
+
+	[[nodiscard]] static constexpr TextureRef fromStable(
+		ResourceDomain domain,
+		std::string_view key,
+		TextureFitMode fit = TextureFitMode::Contain,
+		TextureSamplingMode sampling = TextureSamplingMode::Linear,
+		bool tint = false) noexcept {
+		TextureRef result{};
+		result.sourceDomain = domain;
+		result.sourceKey = key;
+		result.fitMode = fit;
+		result.samplingMode = sampling;
+		result.tintEnabled = tint;
+		return result;
+	}
+
 	/** @brief Manager-owned logical texture handle; do not edit manually. */
 	TextureHandle handle{};
 

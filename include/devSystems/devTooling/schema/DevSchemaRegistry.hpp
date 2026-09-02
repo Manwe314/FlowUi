@@ -96,6 +96,7 @@ private:
 		DevTypeId valueType = 0;
 		DevFieldAccess declaredAccess = DevFieldAccess::Inherit;
 		DevEditorKind editor = DevEditorKind::None;
+		DevChoiceDomain choiceDomain = DevChoiceDomain::None;
 		DevEditCapability effectiveEdit = DevEditCapability::Unsupported;
 		DevCapabilityReason reason = DevCapabilityReason::None;
 		DevConstraintRecord constraint{};
@@ -351,6 +352,17 @@ private:
 			}
 		}
 
+		static bool pointerValue(const void* value, const void*& result) noexcept {
+			if constexpr (std::is_pointer_v<T>) {
+				if (value == nullptr) return false;
+				result = static_cast<const void*>(*static_cast<const T*>(value));
+				return true;
+			} else {
+				result = nullptr;
+				return false;
+			}
+		}
+
 		static DevValueOperationStatus assignNumericValue(
 			void* value,
 			long double candidate) noexcept {
@@ -437,6 +449,7 @@ private:
 			.sequenceMove = schema_detail::IsVector<T>::value ? &sequenceMove : nullptr,
 			.numericValue = (std::is_arithmetic_v<T> || std::is_enum_v<T>)
 				? &numericValue : nullptr,
+			.pointerValue = std::is_pointer_v<T> ? &pointerValue : nullptr,
 			.assignNumericValue = (std::is_arithmetic_v<T> || std::is_enum_v<T>)
 				? &assignNumericValue : nullptr,
 			.assignTextValue = hasAssignableText ? &assignTextValue : nullptr,
@@ -791,6 +804,7 @@ private:
 			.editor = field.options.editor == DevEditorKind::None
 				? (mutableType(valueId) ? mutableType(valueId)->editor : DevEditorKind::None)
 				: field.options.editor,
+			.choiceDomain = field.options.choiceDomain,
 			.effectiveEdit = effective,
 			.reason = reason,
 			.constraint = constraint,

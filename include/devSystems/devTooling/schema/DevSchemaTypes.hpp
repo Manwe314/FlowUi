@@ -88,12 +88,24 @@ enum class DevEditorKind : std::uint8_t {
 	CornerRadius,
 	Sizing,
 	SizingAxis,
+	AttachmentPoints,
 	ObjectGroup,
 	OptionalGroup,
 	Sequence,
+	FontChoice,
 	ActionChoice,
 	ResourceChoice,
 	Custom,
+};
+
+enum class DevChoiceDomain : std::uint8_t {
+	None,
+	FontFace,
+	FontFamily,
+	Action,
+	Image,
+	Icon,
+	TextureResource,
 };
 
 enum class DevCapabilityReason : std::uint16_t {
@@ -229,6 +241,7 @@ struct DevTypeOps {
 	DevValueOperationStatus (*sequenceMove)(
 		void* value, std::size_t from, std::size_t to) noexcept = nullptr;
 	bool (*numericValue)(const void* value, long double& result) noexcept = nullptr;
+	bool (*pointerValue)(const void* value, const void*& result) noexcept = nullptr;
 	DevValueOperationStatus (*assignNumericValue)(
 		void* value, long double candidate) noexcept = nullptr;
 	DevValueOperationStatus (*assignTextValue)(
@@ -264,6 +277,7 @@ struct DevFieldSchema {
 	DevTypeIndex valueType{};
 	DevFieldAccess declaredAccess = DevFieldAccess::Inherit;
 	DevEditorKind editor = DevEditorKind::None;
+	DevChoiceDomain choiceDomain = DevChoiceDomain::None;
 	DevEditCapability effectiveEdit = DevEditCapability::Unsupported;
 	DevCapabilityReason reason = DevCapabilityReason::None;
 	std::uint32_t constraint = 0;
