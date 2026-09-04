@@ -626,6 +626,7 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(TextInputParameters, fontStyle),
 	FLOWUI_DEV_FIELD(TextInputParameters, fontSize),
 	FLOWUI_DEV_FIELD(TextInputParameters, letterSpacing),
+	FLOWUI_DEV_FIELD(TextInputParameters, floatingZIndex),
 	FLOWUI_DEV_FIELD(TextInputParameters, caret),
 	FLOWUI_DEV_FIELD(TextInputParameters, cursor),
 	FLOWUI_DEV_FIELD(TextInputParameters, cursorPriority))

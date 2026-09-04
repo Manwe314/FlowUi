@@ -321,7 +321,7 @@ void verifyFlowUiSemanticAdapters() {
 	const DevTypeSchema* texture = view->findType(FlowUi::detail::typeHash<TextureRef>());
 	assert(action != nullptr && texture != nullptr);
 	assert(action->editor == DevEditorKind::ActionChoice);
-	assert(action->edit == DevEditCapability::ViewOnly);
+	assert(action->edit == DevEditCapability::SemanticCommand);
 	assert(texture->editor == DevEditorKind::ResourceChoice);
 	assert(texture->edit == DevEditCapability::PartiallyEditable);
 }

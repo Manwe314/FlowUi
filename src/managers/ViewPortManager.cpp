@@ -216,6 +216,7 @@ Result<bool> ViewPortManager::create(ResourceKey key, const ViewPortCreateInfo& 
 			.width = 1, .height = 1, .colorFormat = format,
 			.clearColor = createInfo.clearColor, .clearEveryFrame = createInfo.clearEveryFrame,
 		};
+		record.resizeHysteresisPixels = createInfo.resizeHysteresisPixels;
 		record.active = std::move(targets);
 		auto [recordIt, recordInserted] = controller_->records.emplace(keyString, std::move(record));
 		if (!recordInserted) throw FlowUiException(makeError(ErrorCode::InternalInvariantBroken, ErrorSite::ViewportCreate));
@@ -359,28 +360,70 @@ void ViewPortManager::resetFrameTracking() {
 }
 
 void ViewPortManager::prepareFrameTargets(
-	const Clay_RenderCommandArray& commands, float scaleX, float scaleY) {
+	Clay_RenderCommandArray& commands, float scaleX, float scaleY) {
 	if (!controller_) throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportPrepare));
 	resetFrameTracking();
 	const float sx = std::max(scaleX, 1.0e-6f);
 	const float sy = std::max(scaleY, 1.0e-6f);
+
+	struct ReferencedCommand {
+		TextureRef* texture = nullptr;
+		manager_storage::ViewportRecord* viewport = nullptr;
+	};
+	std::vector<ReferencedCommand> referencedCommands{};
+	referencedCommands.reserve(static_cast<size_t>(std::max(0, commands.length)));
+
 	for (int32_t i = 0; i < commands.length; ++i) {
-		const Clay_RenderCommand& command = commands.internalArray[i];
+		Clay_RenderCommand& command = commands.internalArray[i];
 		if (command.commandType != CLAY_RENDER_COMMAND_TYPE_IMAGE) continue;
-		const auto* ref = reinterpret_cast<const TextureRef*>(command.renderData.image.imageData);
+		auto* ref = reinterpret_cast<TextureRef*>(command.renderData.image.imageData);
 		if (!ref || !ref->handle) continue;
 		const auto owner = controller_->textureOwners.find(ref->handle.packed());
 		if (owner == controller_->textureOwners.end()) continue;
 		const auto record = controller_->records.find(owner->second.key);
 		if (record == controller_->records.end()) continue;
-		record->second.referencedThisFrame = true;
-		record->second.desiredWidth = std::max(record->second.desiredWidth,
-			std::max(1u, static_cast<uint32_t>(std::ceil(std::max(0.0f, command.boundingBox.width * sx)))));
-		record->second.desiredHeight = std::max(record->second.desiredHeight,
-			std::max(1u, static_cast<uint32_t>(std::ceil(std::max(0.0f, command.boundingBox.height * sy)))));
+
+		if (!record->second.referencedThisFrame) {
+			record->second.referencedThisFrame = true;
+			record->second.desiredWidth = 0;
+			record->second.desiredHeight = 0;
+		}
+
+		constexpr uint32_t kSizeQuantStep = 8u;
+		auto quantize = [](uint32_t v) -> uint32_t {
+			return ((v + kSizeQuantStep - 1u) / kSizeQuantStep) * kSizeQuantStep;
+		};
+		const uint32_t rawWidth = std::max(1u, static_cast<uint32_t>(std::ceil(std::max(0.0f, command.boundingBox.width * sx))));
+		const uint32_t rawHeight = std::max(1u, static_cast<uint32_t>(std::ceil(std::max(0.0f, command.boundingBox.height * sy))));
+		record->second.desiredWidth = std::max(record->second.desiredWidth, quantize(rawWidth));
+		record->second.desiredHeight = std::max(record->second.desiredHeight, quantize(rawHeight));
+
+		referencedCommands.emplace_back(ReferencedCommand{ref, &record->second});
 	}
+
 	for (auto& [_, record] : controller_->records) if (record.referencedThisFrame) {
+		if (!record.active.images.empty()) {
+			constexpr uint32_t kDefaultHysteresisPixels = 4u;
+			const uint32_t hysteresis = std::max(record.resizeHysteresisPixels, kDefaultHysteresisPixels);
+			const uint32_t currentWidth = record.active.images.front().width;
+			const uint32_t currentHeight = record.active.images.front().height;
+			const uint32_t widthDiff = currentWidth > record.desiredWidth
+				? currentWidth - record.desiredWidth : record.desiredWidth - currentWidth;
+			const uint32_t heightDiff = currentHeight > record.desiredHeight
+				? currentHeight - record.desiredHeight : record.desiredHeight - currentHeight;
+			if (widthDiff <= hysteresis) record.desiredWidth = currentWidth;
+			if (heightDiff <= hysteresis) record.desiredHeight = currentHeight;
+		}
 		ensureRenderTargetSize(*controller_, *storage_, windowId_, record);
+	}
+
+	const uint32_t frameSlot = controller_->currentFrameIndex % controller_->framesInFlight;
+	for (const ReferencedCommand& command : referencedCommands) {
+		if (!command.texture || !command.viewport || command.viewport->active.textures.empty()) continue;
+		const uint32_t slot = frameSlot % command.viewport->active.textures.size();
+		command.texture->handle = command.viewport->active.textures[slot];
+		command.texture->sourceWidth = static_cast<int32_t>(command.viewport->active.images[slot].width);
+		command.texture->sourceHeight = static_cast<int32_t>(command.viewport->active.images[slot].height);
 	}
 }
 

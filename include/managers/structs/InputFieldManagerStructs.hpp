@@ -100,6 +100,8 @@ struct TextLayoutDescriptor {
 	float viewportWidth = 0.0f;
 	float viewportHeight = 0.0f;
 	uint8_t tabWidth = 4;
+	/** Z-index assigned to manager-materialized floating text lines. */
+	int16_t floatingZIndex = 0;
 };
 
 struct VisibleTextLine {

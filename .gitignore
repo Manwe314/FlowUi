@@ -3,6 +3,7 @@
 # -----------------------------
 /build/
 /build-*/
+/build_*
 /FlowPlotGUI/build/
 /FlowPlotGUI/build-*/
 **/build/
@@ -59,6 +60,7 @@
 ./flowui_devChnage_updater
 ./flowui_font_baker
 *.log
+docs/architecture
 
 # -----------------------------
 # Editor / IDE files

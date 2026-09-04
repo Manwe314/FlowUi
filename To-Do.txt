@@ -154,8 +154,8 @@ things i want to do:
 		- CLAY element Selection Needs its own ENTIRE DevInspectInspector area element.
 		- enum chociec for Fonts 
 		- Quick View Value not configured on every Parameter including unregistered/unddefineds
-		- Search Bars text does not fit correctly. 
-		- Elevated Definition changes remove the hint on parameters box. 
+		- Definition changes on FSEL elements alters the DevIntefrace As well.
+		- 
 
 
 		

@@ -1958,6 +1958,9 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		reinterpret_cast<UiInstance*>(write.data),
 		upperBound.instances,
 	};
+#if FLOW_UI_DEV_MODE
+	std::span<uint32_t> instanceClayIds = arena.allocateArray<uint32_t>(upperBound.instances);
+#endif
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
 	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
 	UiBuildResult built{};
@@ -2045,8 +2048,14 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	}
 	return PreparedUiFrame{
 		.runs = runs.first(built.runCount),
+#if FLOW_UI_DEV_MODE
+		.instances = instances.first(built.instanceCount),
+		.instanceClayIds = instanceClayIds.first(built.instanceCount),
+		.frameSlot = frameSlot,
+#endif
 		.instanceCount = built.instanceCount,
 		.epoch = frame.epoch,
+		.originatingFrameSlot = frameSlot,
 	};
 }
 
@@ -2076,7 +2085,7 @@ void VulkanUiRenderer::recordPreparedFrame(
 	if (frameResourceCount_ == 0u || frameResources_.empty() ||
 		descriptors_.globalsSets.empty() || descriptors_.texturesSets.empty()) return;
 
-	const uint32_t frameSlot = frameIndex;
+	const uint32_t frameSlot = prepared.originatingFrameSlot;
 	if (frameSlot >= frameResources_.size() || frameSlot >= descriptors_.globalsSets.size() ||
 		frameSlot >= descriptors_.texturesSets.size()) return;
 	if (frameResources_[frameSlot].nativeBuffer.nativeBuffer == 0 ||

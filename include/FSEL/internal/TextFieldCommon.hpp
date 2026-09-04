@@ -360,7 +360,7 @@ inline Clay_ElementDeclaration makeContentDeclaration() {
 	return declaration;
 }
 
-inline Clay_ElementDeclaration makePlaceholderDeclaration() {
+inline Clay_ElementDeclaration makePlaceholderDeclaration(int16_t floatingZIndex = 0) {
 	Clay_ElementDeclaration declaration{};
 	declaration.floating.attachPoints = {
 		.element = CLAY_ATTACH_POINT_LEFT_TOP,
@@ -368,6 +368,7 @@ inline Clay_ElementDeclaration makePlaceholderDeclaration() {
 	};
 	declaration.floating.pointerCaptureMode =
 		CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
+	declaration.floating.zIndex = floatingZIndex;
 	declaration.floating.attachTo = CLAY_ATTACH_TO_PARENT;
 	declaration.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
 	return declaration;

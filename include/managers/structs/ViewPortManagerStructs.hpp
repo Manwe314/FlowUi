@@ -102,6 +102,9 @@ struct ViewPortCreateInfo {
 	 * initialized, allowing persistent viewport rendering patterns.
 	 */
 	bool clearEveryFrame = true;
+
+	/** @brief Minimum pixel delta required before triggering a viewport image re-allocation. */
+	uint32_t resizeHysteresisPixels = 4u;
 };
 
 /** @} */

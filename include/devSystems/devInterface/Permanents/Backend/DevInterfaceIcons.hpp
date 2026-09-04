@@ -34,6 +34,12 @@ inline constexpr std::string_view kExpandKey =
 	"flowui/dev-interface/action/expand";
 inline constexpr std::string_view kCollapseKey =
 	"flowui/dev-interface/action/collapse";
+inline constexpr std::string_view kPreviewPanKey =
+	"flowui/dev-interface/preview/pan";
+inline constexpr std::string_view kPreviewResetKey =
+	"flowui/dev-interface/preview/reset-one-to-one";
+inline constexpr std::string_view kPreviewRulerKey =
+	"flowui/dev-interface/preview/ruler";
 
 // Placeholder artwork. Keep the semantic keys when replacing these SVGs.
 inline constexpr std::string_view kErrorReporterSvg = R"svg(
@@ -105,6 +111,28 @@ inline constexpr std::string_view kCollapseSvg = R"svg(
 </svg>
 )svg";
 
+// Placeholder artwork for the preview toolbar. Keep these semantic keys when
+// final artwork replaces the raw SVG literals.
+inline constexpr std::string_view kPreviewPanSvg = R"svg(
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M5.1 7.4V4.1a1 1 0 0 1 2 0v2.4-3.2a1 1 0 0 1 2 0v3.2-2.6a1 1 0 0 1 2 0v3.3-1.7a1 1 0 0 1 2 0v4.1c0 2.5-1.8 4.4-4.4 4.4H7.4c-1.4 0-2.5-.6-3.3-1.7L2.5 10a1.1 1.1 0 0 1 1.7-1.4l.9.9V7.4Z" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+)svg";
+
+inline constexpr std::string_view kPreviewResetSvg = R"svg(
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4.5 2.5H2.25v2.25M2.6 4.4A6 6 0 1 1 2.5 11" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8 5.25v5.5M6.5 6.25 8 5.25v5.5M10.1 5.25h2.15v5.5H10.1Z" fill="none" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+)svg";
+
+inline constexpr std::string_view kPreviewRulerSvg = R"svg(
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="m3 11.75 8.75-8.75 2.25 2.25L5.25 14H3v-2.25Z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="m9.8 4.95 1.25 1.25M7.9 6.85l1.25 1.25M6 8.75 7.25 10" fill="none" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>
+</svg>
+)svg";
+
 #if FLOWUI_INCLUDE_ICON_MANAGER
 inline void registerDevInterfaceIcons(IconManager& icons) {
 	if (!icons.contains(kErrorReporterKey)) {
@@ -140,6 +168,15 @@ inline void registerDevInterfaceIcons(IconManager& icons) {
 	}
 	if (!icons.contains(kCollapseKey)) {
 		(void)icons.registerSvg(kCollapseKey, kCollapseSvg);
+	}
+	if (!icons.contains(kPreviewPanKey)) {
+		(void)icons.registerSvg(kPreviewPanKey, kPreviewPanSvg);
+	}
+	if (!icons.contains(kPreviewResetKey)) {
+		(void)icons.registerSvg(kPreviewResetKey, kPreviewResetSvg);
+	}
+	if (!icons.contains(kPreviewRulerKey)) {
+		(void)icons.registerSvg(kPreviewRulerKey, kPreviewRulerSvg);
 	}
 }
 #endif

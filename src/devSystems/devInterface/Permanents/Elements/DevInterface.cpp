@@ -93,6 +93,7 @@ void DevInterface::buildContent(BuildContext& context) {
 				.app = context.params.app,
 				.interfaceState = &state,
 			})
+			.setDevInternalCapture(true)
 			.draw();
 
 		FSEL::SplitterHandleParameters selectorSplitter{};
@@ -116,6 +117,7 @@ void DevInterface::buildContent(BuildContext& context) {
 				.app = context.params.app,
 				.interfaceState = &state,
 			})
+			.setDevInternalCapture(true)
 			.draw();
 
 		FSEL::SplitterHandleParameters inspectorSplitter{};
@@ -139,6 +141,7 @@ void DevInterface::buildContent(BuildContext& context) {
 				.app = context.params.app,
 				.interfaceState = &state,
 			})
+			.setDevInternalCapture(true)
 			.draw();
 	}
 	context.uiManager.drawConstructed();

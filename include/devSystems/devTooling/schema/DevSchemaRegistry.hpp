@@ -355,7 +355,7 @@ private:
 		static bool pointerValue(const void* value, const void*& result) noexcept {
 			if constexpr (std::is_pointer_v<T>) {
 				if (value == nullptr) return false;
-				result = static_cast<const void*>(*static_cast<const T*>(value));
+				result = reinterpret_cast<const void*>(*static_cast<const T*>(value));
 				return true;
 			} else {
 				result = nullptr;

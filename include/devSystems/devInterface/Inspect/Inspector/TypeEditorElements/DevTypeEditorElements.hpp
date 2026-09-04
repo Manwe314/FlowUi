@@ -52,6 +52,8 @@ struct DevEditorBinding {
 struct DevOverridePresence {
 	bool exactLive = false;
 	bool descendantLive = false;
+	bool instanceLive = false;
+	bool definitionLive = false;
 	bool preview = false;
 	std::size_t descendantCount = 0u;
 

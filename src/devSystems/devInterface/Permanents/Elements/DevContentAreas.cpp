@@ -44,6 +44,9 @@ Clay_ElementDeclaration areaDeclaration(
 		.height = CLAY_SIZING_GROW(0),
 	};
 	declaration.backgroundColor = background;
+	// Each column owns its hit-test region. In particular, dense workbench
+	// toolbars must never extend over either splitter or the inspector column.
+	declaration.clip = {.horizontal = true, .vertical = true};
 	return declaration;
 }
 

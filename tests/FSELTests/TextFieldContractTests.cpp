@@ -48,6 +48,9 @@ int main() {
 		FLOWUI_CHECK(parameters.caret.color.has_value());
 		FLOWUI_CHECK(!parameters.caret.selectionBoxColor.has_value());
 		FLOWUI_CHECK(parameters.caret.blinkPeriodSeconds.value() == 0.8);
+		FLOWUI_CHECK(!parameters.floatingZIndex.has_value());
+		parameters.floatingZIndex = 10000;
+		FLOWUI_CHECK(parameters.floatingZIndex.value() == 10000);
 	});
 
 	runner.run("shared binding policies remain common to both controls", [] {

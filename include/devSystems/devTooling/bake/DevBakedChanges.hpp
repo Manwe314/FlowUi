@@ -8,8 +8,29 @@
 #include <string_view>
 #include <type_traits>
 
-#include "FlowUiBakedChanges.hpp"
 #include "internal/TypeOperations.hpp"
+
+#if __has_include("FlowUiBakedChanges.hpp")
+#include "FlowUiBakedChanges.hpp"
+#else
+#include "FlowUi/ElementID.hpp"
+#include "internal/ElementInstanceKey.hpp"
+
+namespace FlowUi::baked {
+
+inline constexpr std::uint64_t schemaFingerprint = 0x0ull;
+
+[[nodiscard]] constexpr bool hasBakedDefinitionChanges(FlowDefinitionID) noexcept { return false; }
+[[nodiscard]] constexpr bool hasBakedInstanceChanges(FlowDefinitionID) noexcept { return false; }
+[[nodiscard]] constexpr bool hasBakedThemeChanges(std::uint64_t) noexcept { return false; }
+
+inline void applyBakedParametersErased(FlowDefinitionID,
+	detail::element::ElementInstanceKey, void*) noexcept {}
+inline void applyBakedThemeErased(std::uint64_t, std::string_view,
+	void*) noexcept {}
+
+} // namespace FlowUi::baked
+#endif
 
 namespace FlowUi::baked {
 

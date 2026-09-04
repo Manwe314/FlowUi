@@ -198,6 +198,19 @@ flowui/fast:
 .PHONY : flowui/fast
 
 #=============================================================================
+# Target rules for targets named flowui_baked_changes_codegen
+
+# Build rule for target.
+flowui_baked_changes_codegen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 flowui_baked_changes_codegen
+.PHONY : flowui_baked_changes_codegen
+
+# fast build rule for target.
+flowui_baked_changes_codegen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui_baked_changes_codegen.dir/build.make CMakeFiles/flowui_baked_changes_codegen.dir/build
+.PHONY : flowui_baked_changes_codegen/fast
+
+#=============================================================================
 # Target rules for targets named plutosvg
 
 # Build rule for target.
@@ -1526,6 +1539,30 @@ src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.s: src/devSyst
 src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s
 .PHONY : src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.s
+
+src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.o: src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.o
+
+# target to build an object file
+src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.o
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.o
+
+src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.i: src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.i
+
+# target to preprocess a source file
+src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.i
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.i
+
+src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.s: src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.s
+
+# target to generate assembly for a file
+src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/flowui.dir/build.make CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.s
+.PHONY : src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp.s
 
 src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.o: src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp.o
 .PHONY : src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.o
@@ -3052,6 +3089,7 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... flowui_baked_changes_codegen"
 	@echo "... flowui_shaders"
 	@echo "... flowui_storage_test_shaders"
 	@echo "... flowui"
@@ -3184,6 +3222,9 @@ help:
 	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.o"
 	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.i"
 	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.s"
+	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.o"
+	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.i"
+	@echo "... src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.s"
 	@echo "... src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.o"
 	@echo "... src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.i"
 	@echo "... src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.s"
