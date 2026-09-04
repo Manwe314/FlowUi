@@ -176,7 +176,8 @@ bool sameLayoutDescriptor(
 	const FlowUi::TextLayoutDescriptor& b) noexcept {
 	return a.fontId == b.fontId && a.fontSize == b.fontSize &&
 		a.letterSpacing == b.letterSpacing && a.viewportWidth == b.viewportWidth &&
-		a.viewportHeight == b.viewportHeight && a.tabWidth == b.tabWidth;
+		a.viewportHeight == b.viewportHeight && a.tabWidth == b.tabWidth &&
+		a.floatingZIndex == b.floatingZIndex;
 }
 
 } // namespace
@@ -2486,6 +2487,7 @@ void InputFieldManager::materializeVisibleLines(FieldState& field) {
 			CLAY_ATTACH_POINT_LEFT_TOP,
 		};
 		declaration.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
+		declaration.floating.zIndex = field.layout.floatingZIndex;
 		declaration.floating.attachTo = CLAY_ATTACH_TO_PARENT;
 		declaration.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
 		field.visibleLines.push_back(VisibleTextLine{

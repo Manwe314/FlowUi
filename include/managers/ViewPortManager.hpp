@@ -442,7 +442,7 @@ private:
 		MissingVisualPolicy missingPolicy);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
 	void prepareFrameTargets(
-		const Clay_RenderCommandArray& renderCommands,
+		Clay_RenderCommandArray& renderCommands,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY);
 	void remapRenderCommandsForFrame(Clay_RenderCommandArray& renderCommands, uint32_t frameIndex);

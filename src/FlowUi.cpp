@@ -17,6 +17,7 @@
 #include "managers/ViewPortManager.hpp"
 #include "managers/UiManager.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
+#include "Ui/Vk_UiRenderer.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
@@ -2534,6 +2535,28 @@ std::vector<DevWindowInfo> App::devWindowSnapshot() const {
 	}
 	std::ranges::sort(result, {}, &DevWindowInfo::id);
 	return result;
+}
+
+devSystems::DevUiReplaySource App::devUiReplaySource(WindowId id) noexcept {
+	if (!impl_) return {};
+	const auto found = impl_->windows.find(id);
+	if (found == impl_->windows.end() || !found->second) return {};
+	AppWindow& window = *found->second;
+	const float configuredDpi = std::max(1.0f, window.config.ui.dpi);
+	float pointsToPixelsScale =
+		std::max(0.0f, window.config.ui.fontScale) * (configuredDpi / 72.0f);
+	if (pointsToPixelsScale <= 0.0f) pointsToPixelsScale = configuredDpi / 72.0f;
+	return devSystems::DevUiReplaySource{
+		.renderer = &window.renderer,
+		.prepared = &window.preparedUi,
+		.fontFrameView = &window.fontFrameView,
+		.renderCommands = &window.renderCommands,
+		.extentWidth = window.swapchain.swapchain.extent.width,
+		.extentHeight = window.swapchain.swapchain.extent.height,
+		.pointsToPixelsScale = pointsToPixelsScale,
+		.uiToFramebufferScaleX = window.uiToFramebufferScaleX,
+		.uiToFramebufferScaleY = window.uiToFramebufferScaleY,
+	};
 }
 #endif
 

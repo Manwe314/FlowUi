@@ -378,6 +378,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp
 			src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp
 			src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp
+			src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp
 			src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp
 			src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp

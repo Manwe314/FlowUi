@@ -465,6 +465,8 @@ private:
 				Clay_ElementDeclaration searchSlot{};
 				searchSlot.layout.sizing = {
 					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(searchHeight)};
+				searchSlot.layout.childAlignment = {
+					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				searchSlot.clip = {.horizontal = true, .vertical = true};
 				CLAY(context.clayID("popup-search-slot"), searchSlot) {
 					TextInputParameters search{};
@@ -476,7 +478,11 @@ private:
 					search.maxBytes = 96u;
 					search.sizing = Clay_Sizing{
 						.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+					// Match the working 30 px inspector search fields: the default 8 px
+					// vertical padding leaves too little height for a managed text line.
+					search.padding = Clay_Padding{8, 8, 5, 5};
 					search.fontSize = context.params.fontSize.value_or(theme.fontSize);
+					search.floatingZIndex = frame.floating.zIndex;
 					context.uiManager.createElement(kTextInput, "popup-search")
 						.setParameters(std::move(search)).setDevInternalCapture(true).draw();
 				}

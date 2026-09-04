@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <limits>
 #include <optional>
 #include <string>
@@ -40,6 +41,9 @@ struct TextInputParameters {
 	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<uint16_t> fontSize = std::nullopt;
 	std::optional<uint16_t> letterSpacing = std::nullopt;
+	/** Layer for the field's floating text/placeholder nodes. Set this when the
+	 * input is nested in another floating surface such as a popup. */
+	std::optional<int16_t> floatingZIndex = std::nullopt;
 	TextFieldCaretOverrides caret{};
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
@@ -121,6 +125,7 @@ struct TextInput {
 				.viewportWidth = viewport.width,
 				.viewportHeight = viewport.height,
 				.tabWidth = theme.tabWidth,
+				.floatingZIndex = context.params.floatingZIndex.value_or(0),
 			},
 			detail::text_field::resolveOverlayStyle(theme, context.params.caret),
 			false,
@@ -164,7 +169,8 @@ struct TextInput {
 				if (field.text.empty() && !context.params.placeholder.empty()) {
 					CLAY(
 						placeholderId,
-						detail::text_field::makePlaceholderDeclaration()) {
+						detail::text_field::makePlaceholderDeclaration(
+							context.params.floatingZIndex.value_or(0))) {
 						CLAY_TEXT(
 							context.uiManager.toClayString(context.params.placeholder),
 							CLAY_TEXT_CONFIG(placeholderConfig));

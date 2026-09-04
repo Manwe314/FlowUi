@@ -58,6 +58,7 @@ struct ViewportRecord {
 	ViewportTargetGeneration active{};
 	uint32_t desiredWidth = 1;
 	uint32_t desiredHeight = 1;
+	uint32_t resizeHysteresisPixels = 4u;
 	bool referencedThisFrame = false;
 };
 

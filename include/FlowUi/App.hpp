@@ -17,6 +17,11 @@
 #include "clay.h"
 #include "managers/structs/FlowUiElementConcepts.hpp"
 
+#if FLOW_UI_DEV_MODE
+struct VulkanUiRenderer;
+struct PreparedUiFrame;
+#endif
+
 namespace FlowUi {
 
 struct FontManager;
@@ -95,7 +100,28 @@ class ThemeManager;
 class ElementManager;
 class ActionManager;
 #if FLOW_UI_DEV_MODE
-namespace devSystems { class DevMonitoringAndReporting; class DevTooling; }
+namespace detail::manager_storage { struct FontFrameView; }
+
+namespace devSystems {
+class DevMonitoringAndReporting;
+class DevTooling;
+
+struct DevUiReplaySource {
+	const ::VulkanUiRenderer* renderer = nullptr;
+	const ::PreparedUiFrame* prepared = nullptr;
+	const ::FlowUi::detail::manager_storage::FontFrameView* fontFrameView = nullptr;
+	const Clay_RenderCommandArray* renderCommands = nullptr;
+	uint32_t extentWidth = 0u;
+	uint32_t extentHeight = 0u;
+	float pointsToPixelsScale = 1.0f;
+	float uiToFramebufferScaleX = 1.0f;
+	float uiToFramebufferScaleY = 1.0f;
+
+	[[nodiscard]] explicit operator bool() const noexcept {
+		return renderer != nullptr && prepared != nullptr && fontFrameView != nullptr;
+	}
+};
+}
 
 /** Immutable metadata for one window exposed to development tooling. */
 struct DevWindowInfo {
@@ -480,6 +506,8 @@ public:
 	const devSystems::DevTooling& devTooling() const;
 	/** Snapshot registered windows in stable identity order for development UI. */
 	[[nodiscard]] std::vector<DevWindowInfo> devWindowSnapshot() const;
+	/** Return the latest prepared UI frame for development viewport replay. */
+	[[nodiscard]] devSystems::DevUiReplaySource devUiReplaySource(WindowId id) noexcept;
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.

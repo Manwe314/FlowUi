@@ -725,7 +725,10 @@ enum class OverrideRelation : std::uint8_t { None, Exact, Descendant };
 OverrideRelation overrideRelation(
 	const tooling::DevOverrideApply::Record& record,
 	const tooling::DevOverrideCommand& key) {
-	if (!(record.target == key.element) ||
+	const bool targetMatches = record.target.definition == key.element.definition &&
+		(record.target.scope == tooling::DevOverrideScope::Definition ||
+			record.target == key.element);
+	if (!targetMatches ||
 		record.field.ownerType != key.field.ownerType ||
 		record.field.nestedPath.size() < key.field.nestedPath.size() ||
 		!std::equal(key.field.nestedPath.begin(), key.field.nestedPath.end(),
@@ -751,7 +754,13 @@ DevOverridePresence overridePresence(
 		if (relation == OverrideRelation::None) continue;
 		if (record.layer == tooling::DevOverrideLayer::EphemeralPreview) {
 			result.preview = true;
-		} else if (record.layer == tooling::DevOverrideLayer::LiveInstance) {
+		} else if (record.layer == tooling::DevOverrideLayer::LiveInstance ||
+			record.layer == tooling::DevOverrideLayer::LiveDefinition) {
+			if (record.layer == tooling::DevOverrideLayer::LiveInstance) {
+				result.instanceLive = true;
+			} else {
+				result.definitionLive = true;
+			}
 			if (relation == OverrideRelation::Exact) result.exactLive = true;
 			else {
 				result.descendantLive = true;
@@ -1483,17 +1492,24 @@ constexpr auto kResetField = UiAction(
 			!card.overridePresence.exactLive
 			? "Reset nested changes in " + card.typeName
 			: "Reset " + card.typeName;
+		const tooling::DevOverrideLayer winningLayer = card.overridePresence.instanceLive
+			? tooling::DevOverrideLayer::LiveInstance
+			: tooling::DevOverrideLayer::LiveDefinition;
 		for (const tooling::DevOverrideApply::Record& record :
 			app.devTooling().overrides().appliedOverrides().records()) {
-			if (record.layer != tooling::DevOverrideLayer::LiveInstance ||
+			if (record.layer != winningLayer ||
 				overrideRelation(record, scope) == OverrideRelation::None) continue;
 			tooling::DevOverrideCommand clear = scope;
+			clear.element = record.target;
 			clear.field = record.field;
+			clear.layer = record.layer;
 			transaction.forward.push_back(std::move(clear));
-			tooling::DevOverrideCommand restore = resolvedOverrideCommand(
-				*schema, card.binding, tooling::DevOverrideCommandKind::SetElementField,
-				record.value);
+			tooling::DevOverrideCommand restore = scope;
+			restore.kind = tooling::DevOverrideCommandKind::SetElementField;
+			restore.element = record.target;
 			restore.field = record.field;
+			restore.layer = record.layer;
+			restore.value = record.value;
 			transaction.inverse.push_back(std::move(restore));
 		}
 		if (transaction.forward.empty()) return;
@@ -2039,7 +2055,8 @@ void DevEditorCard::buildElement(BuildContext& context) {
 	card.backgroundColor = interface_theme::kDepth2Ink;
 	card.clip = {.horizontal = true, .vertical = false};
 	card.border = {
-		.color = state.dirty ? interface_theme::kAccentSignalCoral
+		.color = state.overridePresence.instanceLive ? interface_theme::kAccentSignalCoral
+			: state.overridePresence.definitionLive ? interface_theme::kAccentSignalBlue
 			: state.overridePresence.preview ? interface_theme::kAccentCurrent
 			: interface_theme::kBorderPrimary,
 		.width = state.overridePresence.descendantLive && !state.overridePresence.exactLive
