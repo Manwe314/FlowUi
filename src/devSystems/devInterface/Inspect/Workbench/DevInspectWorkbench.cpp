@@ -24,6 +24,7 @@
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 #include "managers/UiManager.hpp"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
+#include "Ui/Vk_UiRenderer.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.hpp"
 #include "managers/ViewPortManager.hpp"
 #endif
@@ -46,6 +47,7 @@ inline constexpr LocalElementName kPreview{"preview"};
 inline constexpr LocalElementName kOverviewAndPerformance{"overview-and-performance"};
 inline constexpr LocalElementName kChangesAndDiagnostics{"changes-and-diagnostics"};
 inline constexpr LocalElementName kClaySubTree{"clay-sub-tree"};
+inline constexpr LocalElementName kSubtreeNode{"subtree-node"};
 inline constexpr LocalElementName kPreviewToolbar{"toolbar"};
 inline constexpr LocalElementName kPreviewZoom{"zoom"};
 inline constexpr LocalElementName kPreviewZoomReadout{"zoom-readout"};
@@ -258,6 +260,61 @@ PreviewSelection resolvePreviewSelection(const DevInspectContentParameters& para
 #endif
 	return result;
 }
+
+#if FLOW_UI_DEV_CAPTURE_CLAY
+[[nodiscard]] uint32_t previewClayDerivedId(uint32_t offset, uint32_t seed) noexcept {
+	uint32_t hash = seed;
+	hash += offset + 48u;
+	hash += hash << 10u;
+	hash ^= hash >> 6u;
+	hash += hash << 3u;
+	hash ^= hash >> 11u;
+	hash += hash << 15u;
+	return hash + 1u;
+}
+
+[[nodiscard]] uint32_t previewDirectChildCount(
+	const tooling::DevTreeSnapshot& snapshot,
+	const tooling::DevClayNode& node) noexcept {
+	uint32_t count = 0u;
+	auto child = node.firstChild;
+	while (child != tooling::InvalidClayNode && child < snapshot.clay.nodes.size()) {
+		++count;
+		child = snapshot.clay.nodes[child].nextSibling;
+	}
+	return count;
+}
+
+[[nodiscard]] std::vector<uint32_t> previewReplayCommandIds(
+	const PreviewSelection& selection) {
+	std::vector<uint32_t> commandIds{};
+	if (!selection) return commandIds;
+	const std::span<const tooling::DevClayNode> nodes =
+		tooling::fullClaySubtree(*selection.snapshot, selection.flowIndex);
+	commandIds.reserve(nodes.size() * 2u);
+	for (const tooling::DevClayNode& node : nodes) {
+		commandIds.push_back(node.clayId);
+		const uint32_t childCount = previewDirectChildCount(*selection.snapshot, node);
+		const Clay_BorderWidth& border = node.declaration.border.width;
+		if (border.left > 0u || border.right > 0u || border.top > 0u ||
+			border.bottom > 0u || border.betweenChildren > 0u) {
+			commandIds.push_back(previewClayDerivedId(node.clayId, childCount));
+		}
+		if (border.betweenChildren > 0u) {
+			for (uint32_t childIndex = 1u; childIndex < childCount; ++childIndex) {
+				commandIds.push_back(
+					previewClayDerivedId(node.clayId, childCount + 1u + childIndex));
+			}
+		}
+		if (tooling::hasFlag(node.flags, tooling::DevClayNodeFlag::Text)) {
+			for (uint32_t lineIndex = 0u; lineIndex < node.wrappedLineCount; ++lineIndex) {
+				commandIds.push_back(previewClayDerivedId(lineIndex, node.clayId));
+			}
+		}
+	}
+	return commandIds;
+}
+#endif
 
 Clay_Vector2 worldToCanvas(
 	const DevPreviewState& state, float worldX, float worldY) {
@@ -2072,33 +2129,68 @@ void DevPreviewCanvas::buildElement(BuildContext& context) {
 
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 		TextureRef texture{};
-		if (context.params.inspect.app) {
+		if (context.params.inspect.app && context.params.viewportRenderer) {
+			const WindowId selectedWindow = context.params.inspect.interfaceState
+				? context.params.inspect.interfaceState->selectedWindowId
+				: InvalidWindowId;
+			const DevUiReplaySource initialReplay = selectedWindow != InvalidWindowId
+				? context.params.inspect.app->devUiReplaySource(selectedWindow)
+				: DevUiReplaySource{};
+			const VkFormat desiredFormat = initialReplay.renderer
+				? initialReplay.renderer->devReplayTargetFormat()
+				: VK_FORMAT_R8G8B8A8_UNORM;
 			ViewPortManager& viewPorts = context.params.inspect.app->viewPorts(
 				context.uiManager.windowId());
+			if (viewPorts.contains(kPreviewViewportKey) &&
+				state->viewportColorFormat != static_cast<uint32_t>(desiredFormat)) {
+				(void)viewPorts.remove(kPreviewViewportKey);
+			}
 			if (!viewPorts.contains(kPreviewViewportKey)) {
 				(void)viewPorts.create(kPreviewViewportKey, ViewPortCreateInfo{
-					.clearColor = {0.043f, 0.071f, 0.090f, 1.0f},
+					.colorFormat = desiredFormat,
+					.clearColor = {0.0f, 0.0f, 0.0f, 1.0f},
 					.clearEveryFrame = true,
 				});
 				if (ViewPort* viewport = viewPorts.getViewPort(kPreviewViewportKey)) {
-					viewport->setRenderCallback([inspectParams = context.params.inspect, state](const ViewPortRenderContext& ctx) {
-						const PreviewSelection selection = resolvePreviewSelection(inspectParams);
-						const WindowId selectedWin = inspectParams.interfaceState ? inspectParams.interfaceState->selectedWindowId : InvalidWindowId;
-						const DevUiReplaySource replay = (inspectParams.app && selectedWin != InvalidWindowId)
-							? inspectParams.app->devUiReplaySource(selectedWin)
-							: DevUiReplaySource{};
-						recordDevPreviewViewPort(ctx, *state, selection, replay);
-					});
+					viewport->setRenderCallback(
+						context.params.viewportRenderer,
+						[inspect = context.params.inspect, state](
+							const ViewPortRenderContext& renderContext,
+							DevPreviewViewPortRenderer& renderer) {
+							const WindowId sourceWindow = inspect.interfaceState
+								? inspect.interfaceState->selectedWindowId
+								: InvalidWindowId;
+							const DevUiReplaySource replay = inspect.app && sourceWindow != InvalidWindowId
+								? inspect.app->devUiReplaySource(sourceWindow)
+								: DevUiReplaySource{};
+							renderer.record(renderContext, *state, replay);
+						});
+					state->viewportColorFormat = static_cast<uint32_t>(desiredFormat);
 				}
 			}
 			texture = viewPorts.getTexture(kPreviewViewportKey);
+			if (const ViewPort* viewport = viewPorts.getViewPort(kPreviewViewportKey);
+				viewport && viewport->hasValidSize()) {
+				const VkExtent2D activeSize = viewport->getSize();
+				state->canvasWidth = static_cast<float>(activeSize.width);
+				state->canvasHeight = static_cast<float>(activeSize.height);
+			}
 		}
+		IndexedElementIDSequence overlayIds{kPreviewOverlay};
+		drawPreviewGrid(context, *state, overlayIds);
 		Clay_ElementDeclaration image{};
 		image.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 		texture.fitMode = TextureFitMode::Stretch;
 		image.image.imageData = context.uiManager.imageData(texture);
 		CLAY(context.clayID(kPreviewViewportImage), image) {}
+#if FLOW_UI_DEV_CAPTURE_CLAY
+		const PreviewSelection selection = resolvePreviewSelection(context.params.inspect);
+		if (selection) {
+			drawPreviewSidecars(context, selection, *state, overlayIds);
+		}
+#endif
+		drawRulerTool(context, *state, overlayIds);
 #else
 		Clay_ElementDeclaration fallback{};
 		fallback.layout.sizing = {
@@ -2127,6 +2219,14 @@ void DevPreview::buildElement(BuildContext& context) {
 	if (selection.clay) {
 		state.elementWidth = std::max(0.0f, selection.clay->bounds.width);
 		state.elementHeight = std::max(0.0f, selection.clay->bounds.height);
+	}
+	if (context.params.app && context.params.interfaceState) {
+		const std::vector<uint32_t> commandIds = previewReplayCommandIds(selection);
+		context.params.app->requestDevUiReplay(
+			context.params.interfaceState->selectedWindowId,
+			selection.flow ? selection.flow->instance.value : 0u,
+			commandIds,
+			selection.clay ? selection.clay->bounds : Clay_BoundingBox{});
 	}
 #endif
 	if (selection.flow && state.lastSelectedNodeKey != selection.flow->instance.value) {
@@ -2253,7 +2353,7 @@ void DevPreview::buildElement(BuildContext& context) {
 				.inspect = context.params,
 				.preview = &state,
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-				.viewportRenderer = context.resources().viewportRenderer.get(),
+				.viewportRenderer = context.resources().viewportRenderer,
 #endif
 			})
 			.setDevInternalCapture(true).draw();
@@ -2705,7 +2805,225 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 }
 
 void DevClaySubTree::buildElement(BuildContext& context) {
-	drawStub(context, "Clay Sub Tree");
+	Clay_ElementDeclaration container{};
+	container.layout.sizing = {
+		.width = CLAY_SIZING_GROW(0),
+		.height = CLAY_SIZING_GROW(0),
+	};
+	container.backgroundColor = interface_theme::kDepth0Keel;
+	container.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+
+	CLAY(context.clayID(), container) {
+#if !FLOW_UI_DEV_CAPTURE_CLAY
+		Clay_ElementDeclaration fallback{};
+		fallback.layout.sizing = {
+			.width = CLAY_SIZING_GROW(0),
+			.height = CLAY_SIZING_GROW(0),
+		};
+		fallback.layout.padding = Clay_Padding{16, 16, 16, 16};
+		fallback.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+		CLAY(context.clayID("fallback"), fallback) {
+			CLAY_TEXT(
+				context.uiManager.toClayString(
+					"Unavailable: compile with FLOW_UI_DEV_CAPTURE_CLAY=1 to enable Clay subtree inspection."),
+				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 11)));
+		}
+#else
+		DevInterfaceState* state = context.params.interfaceState;
+		App* app = context.params.app;
+		const tooling::DevTreeSnapshot* snapshot = nullptr;
+		tooling::DevFlowNodeIndex selectedFlowIndex = tooling::InvalidFlowNode;
+
+		if (state && state->selectedElementId && app && app->hasWindow(state->selectedWindowId)) {
+			snapshot = &app->ui(state->selectedWindowId).devTreeSnapshot();
+			for (std::size_t i = 0; i < snapshot->flow.nodes.size(); ++i) {
+				if (snapshot->flow.nodes[i].instance.value == state->selectedElementId.value) {
+					selectedFlowIndex = static_cast<tooling::DevFlowNodeIndex>(i);
+					break;
+				}
+			}
+		}
+
+		if (!snapshot || selectedFlowIndex == tooling::InvalidFlowNode) {
+			Clay_ElementDeclaration empty{};
+			empty.layout.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			};
+			empty.layout.padding = Clay_Padding{16, 16, 16, 16};
+			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+			CLAY(context.clayID("no-selection"), empty) {
+				CLAY_TEXT(
+					context.uiManager.toClayString(
+						"Select an element from the left tree selector to view its Clay subtree layout primitives."),
+					CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 11)));
+			}
+			return;
+		}
+
+		const std::span<const tooling::DevClayNode> subtree =
+			tooling::fullClaySubtree(*snapshot, selectedFlowIndex);
+		const std::span<const tooling::DevClayNodeIndex> directClay =
+			tooling::directClayContribution(*snapshot, selectedFlowIndex);
+
+		if (subtree.empty()) {
+			Clay_ElementDeclaration noClay{};
+			noClay.layout.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			};
+			noClay.layout.padding = Clay_Padding{16, 16, 16, 16};
+			noClay.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+			const std::string_view nameView = localInstanceName(
+				snapshot->string(snapshot->flow.nodes[selectedFlowIndex].debugName));
+			const std::string name = std::string(nameView);
+			const std::string msg = "Flow element '" + (name.empty() ? "?" : name) +
+				"' did not emit any Clay layout nodes.";
+			CLAY(context.clayID("no-clay"), noClay) {
+				CLAY_TEXT(
+					context.uiManager.toClayString(msg),
+					CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 11)));
+			}
+			return;
+		}
+
+		// Summary Bar Header
+		Clay_ElementDeclaration summaryBar{};
+		summaryBar.layout.sizing = {
+			.width = CLAY_SIZING_GROW(0),
+			.height = CLAY_SIZING_FIXED(32.0f),
+		};
+		summaryBar.layout.padding = Clay_Padding{12, 12, 0, 0};
+		summaryBar.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+		summaryBar.layout.childGap = 12;
+		summaryBar.layout.childAlignment = {CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
+		summaryBar.backgroundColor = interface_theme::kDepth2Ink;
+		summaryBar.border = {
+			.color = interface_theme::kBorderPrimary,
+			.width = Clay_BorderWidth{0, 0, 0, 1, 0},
+		};
+
+		const std::string_view rootIdStr = snapshot->string(subtree[0].idString);
+		const std::string summaryText =
+			"Clay Root: #" + (rootIdStr.empty() ? std::to_string(subtree[0].clayId) : std::string(rootIdStr)) +
+			" (Index #" + std::to_string(snapshot->flow.nodes[selectedFlowIndex].clayRoot) + ")" +
+			"  |  Total Nodes: " + std::to_string(subtree.size()) +
+			"  |  Direct Emitted: " + std::to_string(directClay.size());
+
+		CLAY(context.clayID("summary-bar"), summaryBar) {
+			CLAY_TEXT(
+				context.uiManager.toClayString(summaryText),
+				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 11)));
+		}
+
+		// Scrollable Tree List
+		Clay_ElementDeclaration treeList{};
+		treeList.layout.sizing = {
+			.width = CLAY_SIZING_GROW(0),
+			.height = CLAY_SIZING_GROW(0),
+		};
+		treeList.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+		const Clay_ScrollContainerData scroll = Clay_GetScrollContainerData(context.clayID("tree-list"));
+		treeList.clip = {
+			.vertical = true,
+			.childOffset = scroll.found && scroll.scrollPosition
+				? *scroll.scrollPosition : Clay_Vector2{},
+		};
+
+		CLAY(context.clayID("tree-list"), treeList) {
+			Clay_ElementDeclaration treeContent{};
+			treeContent.layout.sizing = {
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_FIT(0),
+			};
+			treeContent.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+
+			CLAY(context.clayID("tree-content"), treeContent) {
+				const uint32_t rootDepth = subtree[0].depthWithinRoot;
+				uint32_t collapsedDepth = std::numeric_limits<uint32_t>::max();
+
+				for (std::size_t i = 0; i < subtree.size(); ++i) {
+					const tooling::DevClayNode& clayNode = subtree[i];
+					const uint32_t relativeDepth = (clayNode.depthWithinRoot >= rootDepth)
+						? (clayNode.depthWithinRoot - rootDepth) : 0u;
+
+					if (relativeDepth > collapsedDepth) {
+						continue;
+					}
+					collapsedDepth = std::numeric_limits<uint32_t>::max();
+
+					// Determine Kind Badge & Accent Color
+					std::string_view badgeText = "[BOX]";
+					Clay_Color badgeColor{0x2F, 0x80, 0xED, 0xFF}; // #2F80ED Blue
+
+					if (tooling::hasFlag(clayNode.flags, tooling::DevClayNodeFlag::Text)) {
+						badgeText = "[TEXT]";
+						badgeColor = Clay_Color{0x27, 0xAE, 0x60, 0xFF}; // #27AE60 Green
+					} else if (tooling::hasFlag(clayNode.flags, tooling::DevClayNodeFlag::Floating)) {
+						badgeText = "[FLOATING]";
+						badgeColor = Clay_Color{0x9B, 0x51, 0xE0, 0xFF}; // #9B51E0 Purple
+					} else if (clayNode.declaration.image.imageData != nullptr) {
+						badgeText = "[IMAGE]";
+						badgeColor = Clay_Color{0xF2, 0x99, 0x4A, 0xFF}; // #F2994A Orange
+					}
+
+					// Format Primary Line (debugName)
+					const std::string_view idStr = snapshot->string(clayNode.idString);
+					std::string nodeTitle = "#" +
+						(idStr.empty() ? std::to_string(clayNode.clayId) : std::string(idStr));
+
+					if (clayNode.directFlowOwner == selectedFlowIndex) {
+						nodeTitle += "  [Direct Owner]";
+					} else if (clayNode.directFlowOwner < snapshot->flow.nodes.size()) {
+						const std::string_view ownerName = localInstanceName(
+							snapshot->string(snapshot->flow.nodes[clayNode.directFlowOwner].debugName));
+						if (!ownerName.empty()) {
+							nodeTitle += "  [Child Flow: ";
+							nodeTitle.append(ownerName);
+							nodeTitle += "]";
+						}
+					}
+
+					// Format Secondary Line (detailText: Pos and Size ONLY)
+					char metricBuffer[80];
+					std::snprintf(
+						metricBuffer, sizeof(metricBuffer),
+						"Pos: (%.1f, %.1f) | Size: %.1f x %.1f",
+						clayNode.bounds.x, clayNode.bounds.y,
+						clayNode.bounds.width, clayNode.bounds.height);
+
+					const uint64_t selectionKey = stableNodeKey(
+						(static_cast<uint64_t>(clayNode.rootIndex) << 32u) | i,
+						clayNode.clayId);
+					const uint64_t rowKey = stableNodeKey(selectionKey, kDevInterfaceClayNodeKind);
+
+					bool isExpanded = true;
+					DevNodeParameters nodeParams{};
+					nodeParams.interfaceState = state;
+					nodeParams.expandedOutput = &isExpanded;
+					nodeParams.kind = kDevInterfaceClayNodeKind;
+					nodeParams.selectionKey = selectionKey;
+					nodeParams.depth = relativeDepth;
+					nodeParams.debugName = nodeTitle;
+					nodeParams.detailText = metricBuffer;
+					nodeParams.badgeText = badgeText;
+					nodeParams.badgeColor = badgeColor;
+					nodeParams.hasChildren = (clayNode.firstChild != tooling::InvalidClayNode);
+					nodeParams.hasChanges = false;
+
+					context.uiManager.createElement(kDevNode, Keyed(kSubtreeNode, rowKey))
+						.setParameters(std::move(nodeParams))
+						.setDevInternalCapture(true)
+						.draw();
+
+					if (!isExpanded && clayNode.firstChild != tooling::InvalidClayNode) {
+						collapsedDepth = relativeDepth;
+					}
+				}
+			}
+		}
+#endif
+	}
 }
 
 void DevWorkbenchCard::buildElement(BuildContext& context) {

@@ -3,303 +3,202 @@
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
-#include "devSystems/devTooling/overlay/DevOverlayService.hpp"
-#include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
 #include "internal/Vma.hpp"
 
 namespace FlowUi::devSystems {
-
 namespace {
 
-uint32_t packColorRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	return (static_cast<uint32_t>(r)) |
-	       (static_cast<uint32_t>(g) << 8) |
-	       (static_cast<uint32_t>(b) << 16) |
-	       (static_cast<uint32_t>(a) << 24);
-}
+constexpr float kUnconstrainedExtentDimension = 65535.0f;
 
-uint32_t packClayColor(Clay_Color c) {
-	return packColorRGBA(
-		static_cast<uint8_t>(std::clamp(c.r, 0.0f, 255.0f)),
-		static_cast<uint8_t>(std::clamp(c.g, 0.0f, 255.0f)),
-		static_cast<uint8_t>(std::clamp(c.b, 0.0f, 255.0f)),
-		static_cast<uint8_t>(std::clamp(c.a, 0.0f, 255.0f)));
-}
-
-UiInstance makeSolidRect(
-	float x, float y, float w, float h,
-	uint32_t colorRGBA,
-	float radius = 0.0f,
-	float borderL = 0.0f, float borderT = 0.0f,
-	float borderR = 0.0f, float borderB = 0.0f,
-	uint32_t solidMode = 0) {
-	UiInstance inst{};
-	inst.type = 0; // Solid
-	inst.x = x;
-	inst.y = y;
-	inst.w = w;
-	inst.h = h;
-	inst.colorRGBA = colorRGBA;
-	inst.r0 = radius;
-	inst.r1 = radius;
-	inst.r2 = radius;
-	inst.r3 = radius;
-	inst.borderL = borderL;
-	inst.borderT = borderT;
-	inst.borderR = borderR;
-	inst.borderB = borderB;
-	inst.solidMode = solidMode;
-	return inst;
-}
-
-Clay_Vector2 worldToCanvas(
-	const interface_elements::DevPreviewState& state,
-	float worldX, float worldY, float canvasW, float canvasH) {
-	const float zoom = std::max(state.camera.zoomScale, 1.0e-6f);
-	return Clay_Vector2{
-		.x = (worldX - state.camera.panX) * zoom + canvasW * 0.5f,
-		.y = (worldY - state.camera.panY) * zoom + canvasH * 0.5f,
+[[nodiscard]] RectF intersect_rects(const RectF& rect_a, const RectF& rect_b) noexcept {
+	const float min_x = std::max(rect_a.x, rect_b.x);
+	const float min_y = std::max(rect_a.y, rect_b.y);
+	const float max_x = std::min(rect_a.x + rect_a.w, rect_b.x + rect_b.w);
+	const float max_y = std::min(rect_a.y + rect_a.h, rect_b.y + rect_b.h);
+	return RectF{
+		min_x,
+		min_y,
+		std::max(0.0f, max_x - min_x),
+		std::max(0.0f, max_y - min_y),
 	};
 }
 
-void buildPreviewGridInstances(
+void transformReplayGeometry(
 	const interface_elements::DevPreviewState& state,
-	float canvasW, float canvasH,
-	std::vector<UiInstance>& outInstances) {
-	if (canvasW <= 0.0f || canvasH <= 0.0f) return;
-	float minorStep = 10.0f;
-	float majorStep = 50.0f;
-	if (minorStep * state.camera.zoomScale < 6.0f) minorStep = 50.0f;
-	if (minorStep * state.camera.zoomScale < 6.0f) minorStep = 200.0f;
-	if (majorStep < minorStep) majorStep = minorStep * 4.0f;
-
-	const float zoom = std::max(state.camera.zoomScale, 1.0e-6f);
-	const float worldMinX = state.camera.panX - (canvasW * 0.5f) / zoom;
-	const float worldMaxX = state.camera.panX + (canvasW * 0.5f) / zoom;
-	const float worldMinY = state.camera.panY - (canvasH * 0.5f) / zoom;
-	const float worldMaxY = state.camera.panY + (canvasH * 0.5f) / zoom;
-
-	const int firstX = static_cast<int>(std::floor(worldMinX / minorStep));
-	const int lastX = static_cast<int>(std::ceil(worldMaxX / minorStep));
-	const int firstY = static_cast<int>(std::floor(worldMinY / minorStep));
-	const int lastY = static_cast<int>(std::ceil(worldMaxY / minorStep));
-
-	const int maxLines = 160;
-	const uint32_t axisColor = packColorRGBA(86, 204, 242, 255);
-	const uint32_t majorColor = packColorRGBA(63, 77, 85, 160);
-	const uint32_t minorColor = packColorRGBA(38, 52, 59, 112);
-
-	for (int grid = firstX, count = 0; grid <= lastX && count < maxLines; ++grid, ++count) {
-		const float world = static_cast<float>(grid) * minorStep;
-		const float x = worldToCanvas(state, world, 0.0f, canvasW, canvasH).x;
-		if (x < 0.0f || x > canvasW) continue;
-		const bool axis = std::abs(world) < 0.01f;
-		const bool major = std::fmod(std::abs(world), majorStep) < 0.01f;
-		const uint32_t color = axis ? axisColor : major ? majorColor : minorColor;
-		outInstances.push_back(makeSolidRect(x, 0.0f, axis ? 1.5f : 1.0f, canvasH, color));
-	}
-
-	for (int grid = firstY, count = 0; grid <= lastY && count < maxLines; ++grid, ++count) {
-		const float world = static_cast<float>(grid) * minorStep;
-		const float y = worldToCanvas(state, 0.0f, world, canvasW, canvasH).y;
-		if (y < 0.0f || y > canvasH) continue;
-		const bool axis = std::abs(world) < 0.01f;
-		const bool major = std::fmod(std::abs(world), majorStep) < 0.01f;
-		const uint32_t color = axis ? axisColor : major ? majorColor : minorColor;
-		outInstances.push_back(makeSolidRect(0.0f, y, canvasW, axis ? 1.5f : 1.0f, color));
-	}
-}
-
-#if FLOW_UI_DEV_CAPTURE_CLAY
-void buildCapturedSubtreeInstances(
-	const interface_elements::DevPreviewState& state,
-	const interface_elements::PreviewSelection& selection,
 	const DevUiReplaySource& replay,
-	float canvasW, float canvasH,
-	std::vector<UiInstance>& outInstances) {
-	if (!selection.clay || !selection.snapshot) return;
-	const Clay_BoundingBox origin = selection.clay->bounds;
-	const std::span<const tooling::DevClayNode> nodes =
-		tooling::fullClaySubtree(*selection.snapshot, selection.flowIndex);
-	const float zoom = state.camera.zoomScale;
-
-	std::unordered_set<uint32_t> capturedNodeIds{};
-	capturedNodeIds.reserve(nodes.size());
-	for (const tooling::DevClayNode& node : nodes) {
-		capturedNodeIds.insert(node.clayId);
+	float canvas_width, float canvas_height,
+	std::span<UiInstance> instances,
+	std::span<UiRun> runs) noexcept {
+	const float zoom_scale = std::max(state.camera.zoomScale, 1.0e-6f);
+	const float origin_x = replay.sourceRootBounds.x;
+	const float origin_y = replay.sourceRootBounds.y;
+	const auto transform_x = [&](float source_x) noexcept {
+		return (source_x - origin_x - state.camera.panX) * zoom_scale + canvas_width * 0.5f;
+	};
+	const auto transform_y = [&](float source_y) noexcept {
+		return (source_y - origin_y - state.camera.panY) * zoom_scale + canvas_height * 0.5f;
+	};
+	for (UiInstance& instance : instances) {
+		instance.x = transform_x(instance.x);
+		instance.y = transform_y(instance.y);
+		instance.w *= zoom_scale;
+		instance.h *= zoom_scale;
+		instance.r0 *= zoom_scale;
+		instance.r1 *= zoom_scale;
+		instance.r2 *= zoom_scale;
+		instance.r3 *= zoom_scale;
+		instance.borderL *= zoom_scale;
+		instance.borderT *= zoom_scale;
+		instance.borderR *= zoom_scale;
+		instance.borderB *= zoom_scale;
 	}
-
-#if FLOW_UI_DEV_MODE
-	if (replay && replay.prepared && !replay.prepared->instances.empty() &&
-		replay.prepared->instanceClayIds.size() == replay.prepared->instances.size()) {
-		for (size_t i = 0; i < replay.prepared->instances.size(); ++i) {
-			const uint32_t ownerId = replay.prepared->instanceClayIds[i];
-			if (ownerId == 0 || !capturedNodeIds.contains(ownerId)) continue;
-
-			UiInstance inst = replay.prepared->instances[i];
-			const float worldX = inst.x - origin.x;
-			const float worldY = inst.y - origin.y;
-			const Clay_Vector2 p = worldToCanvas(state, worldX, worldY, canvasW, canvasH);
-			inst.x = p.x;
-			inst.y = p.y;
-			inst.w *= zoom;
-			inst.h *= zoom;
-			inst.r0 *= zoom;
-			inst.r1 *= zoom;
-			inst.r2 *= zoom;
-			inst.r3 *= zoom;
-			inst.borderL *= zoom;
-			inst.borderT *= zoom;
-			inst.borderR *= zoom;
-			inst.borderB *= zoom;
-			outInstances.push_back(inst);
+	const RectF viewport_bounds{0.0f, 0.0f, canvas_width, canvas_height};
+	for (UiRun& run : runs) {
+		if (run.scissor.x == 0.0f && run.scissor.y == 0.0f &&
+			run.scissor.w >= kUnconstrainedExtentDimension &&
+			run.scissor.h >= kUnconstrainedExtentDimension) {
+			run.scissor = viewport_bounds;
+			continue;
 		}
-		return;
+		const RectF transformed_scissor{
+			transform_x(run.scissor.x),
+			transform_y(run.scissor.y),
+			run.scissor.w * zoom_scale,
+			run.scissor.h * zoom_scale,
+		};
+		run.scissor = intersect_rects(transformed_scissor, viewport_bounds);
 	}
-#endif
-
-	for (const tooling::DevClayNode& node : nodes) {
-		const float worldX = node.bounds.x - origin.x;
-		const float worldY = node.bounds.y - origin.y;
-		const Clay_Vector2 p = worldToCanvas(state, worldX, worldY, canvasW, canvasH);
-		const float w = std::max(0.0f, node.bounds.width * zoom);
-		const float h = std::max(0.0f, node.bounds.height * zoom);
-		if (p.x + w < 0.0f || p.x > canvasW || p.y + h < 0.0f || p.y > canvasH) continue;
-
-		uint32_t fill = packClayColor(node.declaration.backgroundColor);
-		if (node.pointerPresence.imageData && fill == 0) {
-			fill = packColorRGBA(38, 61, 74, 255);
-		}
-		if (fill != 0) {
-			outInstances.push_back(makeSolidRect(p.x, p.y, w, h, fill));
-		}
-		const uint32_t border = packClayColor(node.declaration.border.color);
-		if (border != 0) {
-			outInstances.push_back(makeSolidRect(p.x, p.y, w, h, border, 0.0f,
-				node.declaration.border.width.left * zoom,
-				node.declaration.border.width.top * zoom,
-				node.declaration.border.width.right * zoom,
-				node.declaration.border.width.bottom * zoom, 1));
-		}
-	}
-}
-
-void buildSidecarInstances(
-	const interface_elements::DevPreviewState& state,
-	const interface_elements::PreviewSelection& selection,
-	float canvasW, float canvasH,
-	std::vector<UiInstance>& outInstances) {
-	if (!selection.clay || !selection.snapshot) return;
-	const Clay_BoundingBox origin = selection.clay->bounds;
-	const std::span<const tooling::DevClayNode> nodes =
-		tooling::fullClaySubtree(*selection.snapshot, selection.flowIndex);
-	const float zoom = state.camera.zoomScale;
-
-	if (tooling::hasFlag(state.sidecarFlags, tooling::DevOverlayModeFlags::TreeHierarchy)) {
-		const uint32_t cyan = packColorRGBA(47, 128, 237, 255);
-		for (const tooling::DevClayNode& node : nodes) {
-			const Clay_Vector2 p = worldToCanvas(state, node.bounds.x - origin.x, node.bounds.y - origin.y, canvasW, canvasH);
-			outInstances.push_back(makeSolidRect(p.x, p.y, node.bounds.width * zoom, node.bounds.height * zoom, cyan, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1));
-		}
-	}
-
-	if (tooling::hasFlag(state.sidecarFlags, tooling::DevOverlayModeFlags::BoxModel)) {
-		const Clay_Vector2 p = worldToCanvas(state, 0.0f, 0.0f, canvasW, canvasH);
-		const uint32_t amberFill = packColorRGBA(39, 174, 96, 32);
-		const uint32_t amberBorder = packColorRGBA(242, 153, 74, 255);
-		outInstances.push_back(makeSolidRect(p.x, p.y, selection.clay->bounds.width * zoom, selection.clay->bounds.height * zoom, amberFill));
-		outInstances.push_back(makeSolidRect(p.x, p.y, selection.clay->bounds.width * zoom, selection.clay->bounds.height * zoom, amberBorder, 0.0f, 2.0f, 2.0f, 2.0f, 2.0f, 1));
-	}
-
-	if (tooling::hasFlag(state.sidecarFlags, tooling::DevOverlayModeFlags::RulersAndDistance)) {
-		const Clay_Vector2 p = worldToCanvas(state, 0.0f, 0.0f, canvasW, canvasH);
-		const float right = p.x + selection.clay->bounds.width * zoom;
-		const float bottom = p.y + selection.clay->bounds.height * zoom;
-		const uint32_t lineCol = packColorRGBA(86, 204, 242, 128);
-		outInstances.push_back(makeSolidRect(p.x, 0.0f, 1.0f, canvasH, lineCol));
-		outInstances.push_back(makeSolidRect(right, 0.0f, 1.0f, canvasH, lineCol));
-		outInstances.push_back(makeSolidRect(0.0f, p.y, canvasW, 1.0f, lineCol));
-		outInstances.push_back(makeSolidRect(0.0f, bottom, canvasW, 1.0f, lineCol));
-	}
-}
-#endif
-
-void buildRulerToolInstances(
-	const interface_elements::DevPreviewState& state,
-	float canvasW, float canvasH,
-	std::vector<UiInstance>& outInstances) {
-	if (!state.ruler.pointAValid) return;
-	const Clay_Vector2 a = worldToCanvas(state, state.ruler.pointAX, state.ruler.pointAY, canvasW, canvasH);
-	const Clay_Vector2 b = worldToCanvas(state, state.ruler.pointBX, state.ruler.pointBY, canvasW, canvasH);
-	const float left = std::min(a.x, b.x);
-	const float top = std::min(a.y, b.y);
-	const uint32_t seaGlass = packColorRGBA(46, 204, 113, 255);
-	outInstances.push_back(makeSolidRect(left, a.y, std::max(1.5f, std::abs(b.x - a.x)), 1.5f, seaGlass));
-	outInstances.push_back(makeSolidRect(b.x, top, 1.5f, std::max(1.5f, std::abs(b.y - a.y)), seaGlass));
-	outInstances.push_back(makeSolidRect(a.x - 3.0f, a.y - 3.0f, 6.0f, 6.0f, seaGlass, 3.0f));
-	outInstances.push_back(makeSolidRect(b.x - 3.0f, b.y - 3.0f, 6.0f, 6.0f, seaGlass, 3.0f));
 }
 
 } // namespace
 
 struct DevPreviewViewPortRenderer::Impl {
+	struct FrameSlot {
+		VkBuffer instanceBuffer = VK_NULL_HANDLE;
+		VmaAllocation instanceAllocation = nullptr;
+		VkDeviceSize capacityBytes = 0u;
+		void* mappedData = nullptr;
+		VkDescriptorSet globalsSet = VK_NULL_HANDLE;
+		uint64_t recorded_request_key = 0u;
+		bool is_dirty = true;
+	};
+
 	VkDevice device = VK_NULL_HANDLE;
 	VmaAllocator allocator = nullptr;
 	VkFormat colorFormat = VK_FORMAT_UNDEFINED;
-
-	VkBuffer instanceBuffer = VK_NULL_HANDLE;
-	VmaAllocation instanceAllocation = nullptr;
-	VkDeviceSize instanceBufferSize = 0;
-	void* mappedData = nullptr;
-
+	VkDescriptorSetLayout globalsLayout = VK_NULL_HANDLE;
+	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+	uint64_t active_selected_node_key = 0u;
+	std::vector<FrameSlot> frameSlots{};
 	std::vector<UiInstance> cpuInstances{};
+	std::vector<UiRun> runs{};
+	std::vector<RectF> scissorStack{};
 
-	void init(const FlowUi::ViewPortVulkanInterop& interop, VkFormat format) {
-		if (interop.device == VK_NULL_HANDLE) return;
-		if (device == interop.device && colorFormat == format && instanceBuffer != VK_NULL_HANDLE) {
+	void init(
+		const FlowUi::ViewPortVulkanInterop& interop,
+		VkFormat format,
+		VkDescriptorSetLayout sourceGlobalsLayout) {
+		if (interop.device == VK_NULL_HANDLE || interop.allocator == nullptr ||
+			sourceGlobalsLayout == VK_NULL_HANDLE) return;
+		if (device == interop.device && colorFormat == format &&
+			globalsLayout == sourceGlobalsLayout && !frameSlots.empty()) {
 			return;
 		}
 		destroy();
 		device = interop.device;
 		allocator = interop.allocator;
 		colorFormat = format;
-
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = 256u * sizeof(UiInstance);
-		bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocInfo{};
-		allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-		allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-		                  VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-		VmaAllocationInfo resultInfo{};
-		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &instanceBuffer, &instanceAllocation, &resultInfo) == VK_SUCCESS) {
-			instanceBufferSize = bufferInfo.size;
-			mappedData = resultInfo.pMappedData;
+		globalsLayout = sourceGlobalsLayout;
+		frameSlots.resize(std::max(1u, interop.framesInFlight));
+		VkDescriptorPoolSize poolSize{};
+		poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		poolSize.descriptorCount = static_cast<uint32_t>(frameSlots.size());
+		VkDescriptorPoolCreateInfo poolInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+		poolInfo.maxSets = static_cast<uint32_t>(frameSlots.size());
+		poolInfo.poolSizeCount = 1u;
+		poolInfo.pPoolSizes = &poolSize;
+		if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+			destroy();
+			return;
+		}
+		std::vector<VkDescriptorSetLayout> layouts(frameSlots.size(), globalsLayout);
+		std::vector<VkDescriptorSet> sets(frameSlots.size(), VK_NULL_HANDLE);
+		VkDescriptorSetAllocateInfo allocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+		allocateInfo.descriptorPool = descriptorPool;
+		allocateInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+		allocateInfo.pSetLayouts = layouts.data();
+		if (vkAllocateDescriptorSets(device, &allocateInfo, sets.data()) != VK_SUCCESS) {
+			destroy();
+			return;
+		}
+		for (size_t frameSlot = 0u; frameSlot < frameSlots.size(); ++frameSlot) {
+			frameSlots[frameSlot].globalsSet = sets[frameSlot];
 		}
 	}
 
-	void destroy() {
-		if (allocator && instanceBuffer) {
-			vmaDestroyBuffer(allocator, instanceBuffer, instanceAllocation);
-			instanceBuffer = VK_NULL_HANDLE;
-			instanceAllocation = nullptr;
-			mappedData = nullptr;
-			instanceBufferSize = 0;
+	[[nodiscard]] bool ensureCapacity(uint32_t frameSlot, VkDeviceSize requiredBytes) {
+		if (frameSlot >= frameSlots.size() || requiredBytes == 0u) return false;
+		FrameSlot& slot = frameSlots[frameSlot];
+		if (slot.instanceBuffer != VK_NULL_HANDLE && slot.capacityBytes >= requiredBytes) return true;
+		VkDeviceSize capacity = slot.capacityBytes > 0u
+			? slot.capacityBytes : 256u * sizeof(UiInstance);
+		while (capacity < requiredBytes) capacity += std::max<VkDeviceSize>(1u, capacity / 2u);
+		VkBufferCreateInfo bufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+		bufferInfo.size = capacity;
+		bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VmaAllocationCreateInfo allocationInfo{};
+		allocationInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+		allocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+			VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		VkBuffer replacementBuffer = VK_NULL_HANDLE;
+		VmaAllocation replacementAllocation = nullptr;
+		VmaAllocationInfo replacementInfo{};
+		if (vmaCreateBuffer(
+			allocator, &bufferInfo, &allocationInfo, &replacementBuffer,
+			&replacementAllocation, &replacementInfo) != VK_SUCCESS) return false;
+		if (slot.instanceBuffer != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(allocator, slot.instanceBuffer, slot.instanceAllocation);
 		}
+		slot.instanceBuffer = replacementBuffer;
+		slot.instanceAllocation = replacementAllocation;
+		slot.capacityBytes = capacity;
+		slot.mappedData = replacementInfo.pMappedData;
+		VkDescriptorBufferInfo descriptorBuffer{};
+		descriptorBuffer.buffer = slot.instanceBuffer;
+		descriptorBuffer.range = slot.capacityBytes;
+		VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+		write.dstSet = slot.globalsSet;
+		write.dstBinding = 0u;
+		write.descriptorCount = 1u;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		write.pBufferInfo = &descriptorBuffer;
+		vkUpdateDescriptorSets(device, 1u, &write, 0u, nullptr);
+		return slot.mappedData != nullptr;
+	}
+
+	void destroy() {
+		if (allocator) {
+			for (FrameSlot& slot : frameSlots) {
+				if (slot.instanceBuffer != VK_NULL_HANDLE) {
+					vmaDestroyBuffer(allocator, slot.instanceBuffer, slot.instanceAllocation);
+				}
+			}
+		}
+		if (device != VK_NULL_HANDLE && descriptorPool != VK_NULL_HANDLE) {
+			vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+		}
+		frameSlots.clear();
+		descriptorPool = VK_NULL_HANDLE;
+		globalsLayout = VK_NULL_HANDLE;
 		device = VK_NULL_HANDLE;
 		allocator = nullptr;
 		colorFormat = VK_FORMAT_UNDEFINED;
@@ -315,77 +214,126 @@ DevPreviewViewPortRenderer::~DevPreviewViewPortRenderer() {
 	}
 }
 
-void DevPreviewViewPortRenderer::init(
-	const FlowUi::ViewPortVulkanInterop& interop, VkFormat colorFormat) {
-	if (impl_) {
-		impl_->init(interop, colorFormat);
-	}
-}
-
-void DevPreviewViewPortRenderer::destroy() {
-	if (impl_) {
-		impl_->destroy();
-	}
-}
-
 void DevPreviewViewPortRenderer::record(
 	const FlowUi::ViewPortRenderContext& ctx,
-	const interface_elements::DevPreviewState& state,
-	const interface_elements::PreviewSelection& selection,
+	interface_elements::DevPreviewState& state,
 	const DevUiReplaySource& replay) {
-	if (ctx.commandBuffer == VK_NULL_HANDLE || ctx.extent.width == 0 || ctx.extent.height == 0) {
+	if (!impl_ || !ctx.vulkan || ctx.commandBuffer == VK_NULL_HANDLE ||
+		ctx.extent.width == 0u || ctx.extent.height == 0u) {
 		return;
 	}
 
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(ctx.extent.width);
-	viewport.height = static_cast<float>(ctx.extent.height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(ctx.commandBuffer, 0, 1, &viewport);
+	state.canvasWidth = static_cast<float>(ctx.extent.width);
+	state.canvasHeight = static_cast<float>(ctx.extent.height);
 
-	VkRect2D scissor{};
-	scissor.offset = {0, 0};
-	scissor.extent = ctx.extent;
-	vkCmdSetScissor(ctx.commandBuffer, 0, 1, &scissor);
+	// Flush all frames in flight when selected node key changes
+	if (state.lastSelectedNodeKey != impl_->active_selected_node_key) {
+		impl_->active_selected_node_key = state.lastSelectedNodeKey;
+		for (Impl::FrameSlot& slot : impl_->frameSlots) {
+			slot.is_dirty = true;
+			slot.recorded_request_key = 0u;
+		}
+	}
 
-	const float canvasW = static_cast<float>(ctx.extent.width);
-	const float canvasH = static_cast<float>(ctx.extent.height);
+	if (replay && replay.renderer) {
+		impl_->init(
+			*ctx.vulkan,
+			ctx.colorFormat,
+			replay.renderer->devReplayGlobalsLayout());
+	}
+	if (ctx.frameIndex >= impl_->frameSlots.size()) return;
+	Impl::FrameSlot& frameSlot = impl_->frameSlots[ctx.frameIndex];
 
-	impl_->cpuInstances.clear();
-	buildPreviewGridInstances(state, canvasW, canvasH, impl_->cpuInstances);
-#if FLOW_UI_DEV_CAPTURE_CLAY
-	buildCapturedSubtreeInstances(state, selection, replay, canvasW, canvasH, impl_->cpuInstances);
-	buildSidecarInstances(state, selection, canvasW, canvasH, impl_->cpuInstances);
-#else
-	(void)selection;
-	(void)replay;
-#endif
-	buildRulerToolInstances(state, canvasW, canvasH, impl_->cpuInstances);
-
-	if (impl_->cpuInstances.empty() || !impl_->mappedData) {
+	// Clear frame slot and drop draw calls if replay is mismatched, missing, or mid-transition
+	if (!replay || replay.requestKey != state.lastSelectedNodeKey ||
+		!replay.renderer || ctx.colorFormat != replay.renderer->devReplayTargetFormat()) {
+		if (frameSlot.mappedData && frameSlot.capacityBytes > 0u) {
+			std::memset(frameSlot.mappedData, 0, static_cast<size_t>(frameSlot.capacityBytes));
+			if (impl_->allocator && frameSlot.instanceAllocation) {
+				(void)vmaFlushAllocation(
+					impl_->allocator, frameSlot.instanceAllocation, 0u, frameSlot.capacityBytes);
+			}
+		}
+		frameSlot.is_dirty = true;
+		frameSlot.recorded_request_key = 0u;
 		return;
 	}
 
-	const VkDeviceSize copySize = std::min(
-		static_cast<VkDeviceSize>(impl_->cpuInstances.size() * sizeof(UiInstance)),
-		impl_->instanceBufferSize);
-	std::memcpy(impl_->mappedData, impl_->cpuInstances.data(), static_cast<size_t>(copySize));
-	(void)vmaFlushAllocation(impl_->allocator, impl_->instanceAllocation, 0, copySize);
-}
-
-void recordDevPreviewViewPort(
-	const FlowUi::ViewPortRenderContext& ctx,
-	const interface_elements::DevPreviewState& state,
-	const interface_elements::PreviewSelection& selection,
-	const DevUiReplaySource& replay) {
-	static DevPreviewViewPortRenderer s_renderer;
-	if (ctx.vulkan) {
-		s_renderer.init(*ctx.vulkan, ctx.colorFormat);
+	const float canvas_width = static_cast<float>(ctx.extent.width);
+	const float canvas_height = static_cast<float>(ctx.extent.height);
+	const FlowUi::detail::InputFieldFrameOverrides no_overrides{};
+	const FlowUi::detail::UiConversionCapacity capacity =
+		FlowUi::detail::measureUiConversionCapacity(*replay.commands, no_overrides);
+	if (capacity.instances == 0u || capacity.runs == 0u) {
+		if (frameSlot.mappedData && frameSlot.capacityBytes > 0u) {
+			std::memset(frameSlot.mappedData, 0, static_cast<size_t>(frameSlot.capacityBytes));
+			if (impl_->allocator && frameSlot.instanceAllocation) {
+				(void)vmaFlushAllocation(
+					impl_->allocator, frameSlot.instanceAllocation, 0u, frameSlot.capacityBytes);
+			}
+		}
+		frameSlot.is_dirty = false;
+		frameSlot.recorded_request_key = replay.requestKey;
+		return;
 	}
-	s_renderer.record(ctx, state, selection, replay);
+
+	impl_->cpuInstances.resize(capacity.instances);
+	impl_->runs.resize(capacity.runs);
+	impl_->scissorStack.resize(capacity.scissorDepth);
+	constexpr VkExtent2D unconstrained_extent{65535u, 65535u};
+	const FlowUi::detail::UiConversionResult converted =
+		FlowUi::detail::buildUiInstancesDirect(
+			*replay.commands,
+			no_overrides,
+			unconstrained_extent,
+			replay.fontFrameView,
+			replay.pointsToPixelsScale,
+			1.0f,
+			1.0f,
+			impl_->cpuInstances,
+			impl_->runs,
+			impl_->scissorStack,
+			replay.textureBindings);
+	impl_->cpuInstances.resize(converted.instanceCount);
+	impl_->runs.resize(converted.runCount);
+	if (impl_->cpuInstances.empty() || impl_->runs.empty()) {
+		if (frameSlot.mappedData && frameSlot.capacityBytes > 0u) {
+			std::memset(frameSlot.mappedData, 0, static_cast<size_t>(frameSlot.capacityBytes));
+			if (impl_->allocator && frameSlot.instanceAllocation) {
+				(void)vmaFlushAllocation(
+					impl_->allocator, frameSlot.instanceAllocation, 0u, frameSlot.capacityBytes);
+			}
+		}
+		frameSlot.is_dirty = false;
+		frameSlot.recorded_request_key = replay.requestKey;
+		return;
+	}
+
+	transformReplayGeometry(
+		state, replay, canvas_width, canvas_height, impl_->cpuInstances, impl_->runs);
+	const VkDeviceSize copy_size = static_cast<VkDeviceSize>(
+		impl_->cpuInstances.size() * sizeof(UiInstance));
+	if (!impl_->ensureCapacity(ctx.frameIndex, copy_size)) return;
+
+	std::memcpy(frameSlot.mappedData, impl_->cpuInstances.data(), static_cast<size_t>(copy_size));
+	if (copy_size < frameSlot.capacityBytes && frameSlot.mappedData) {
+		std::memset(
+			static_cast<char*>(frameSlot.mappedData) + copy_size,
+			0,
+			static_cast<size_t>(frameSlot.capacityBytes - copy_size));
+	}
+	if (vmaFlushAllocation(
+		impl_->allocator, frameSlot.instanceAllocation, 0u, frameSlot.capacityBytes) != VK_SUCCESS) return;
+
+	replay.renderer->recordExternalReplay(
+		ctx.commandBuffer,
+		ctx.extent,
+		frameSlot.globalsSet,
+		replay.textureFrameSlot,
+		impl_->runs);
+
+	frameSlot.is_dirty = false;
+	frameSlot.recorded_request_key = replay.requestKey;
 }
 
 } // namespace FlowUi::devSystems

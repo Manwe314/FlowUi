@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <cstddef>
@@ -19,7 +20,6 @@
 
 #if FLOW_UI_DEV_MODE
 struct VulkanUiRenderer;
-struct PreparedUiFrame;
 #endif
 
 namespace FlowUi {
@@ -101,6 +101,7 @@ class ElementManager;
 class ActionManager;
 #if FLOW_UI_DEV_MODE
 namespace detail::manager_storage { struct FontFrameView; }
+namespace detail::storage { struct BindingHotRecord; }
 
 namespace devSystems {
 class DevMonitoringAndReporting;
@@ -108,17 +109,18 @@ class DevTooling;
 
 struct DevUiReplaySource {
 	const ::VulkanUiRenderer* renderer = nullptr;
-	const ::PreparedUiFrame* prepared = nullptr;
 	const ::FlowUi::detail::manager_storage::FontFrameView* fontFrameView = nullptr;
-	const Clay_RenderCommandArray* renderCommands = nullptr;
-	uint32_t extentWidth = 0u;
-	uint32_t extentHeight = 0u;
+	const Clay_RenderCommandArray* commands = nullptr;
+	std::span<const ::FlowUi::detail::storage::BindingHotRecord> textureBindings{};
+	Clay_BoundingBox sourceRootBounds{};
+	uint64_t requestKey = 0u;
+	uint64_t captureSerial = 0u;
+	uint32_t textureFrameSlot = 0u;
 	float pointsToPixelsScale = 1.0f;
-	float uiToFramebufferScaleX = 1.0f;
-	float uiToFramebufferScaleY = 1.0f;
 
 	[[nodiscard]] explicit operator bool() const noexcept {
-		return renderer != nullptr && prepared != nullptr && fontFrameView != nullptr;
+		return renderer != nullptr && fontFrameView != nullptr && commands != nullptr &&
+			commands->length > 0;
 	}
 };
 }
@@ -506,8 +508,14 @@ public:
 	const devSystems::DevTooling& devTooling() const;
 	/** Snapshot registered windows in stable identity order for development UI. */
 	[[nodiscard]] std::vector<DevWindowInfo> devWindowSnapshot() const;
-	/** Return the latest prepared UI frame for development viewport replay. */
+	/** Return the latest owned raw-command packet captured for development replay. */
 	[[nodiscard]] devSystems::DevUiReplaySource devUiReplaySource(WindowId id) noexcept;
+	/** Request capture of raw Clay commands owned by the supplied subtree IDs. */
+	void requestDevUiReplay(
+		WindowId id,
+		uint64_t requestKey,
+		std::span<const uint32_t> clayCommandIds,
+		Clay_BoundingBox sourceRootBounds);
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	/** @brief Access the icon manager.

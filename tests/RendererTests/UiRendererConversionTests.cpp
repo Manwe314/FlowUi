@@ -29,11 +29,13 @@ Clay_RenderCommandArray commandArray(std::span<Clay_RenderCommand> commands) {
 void testBoundedDirectConversion() {
 	std::array<Clay_RenderCommand, 4> commands{};
 	commands[0].commandType = CLAY_RENDER_COMMAND_TYPE_RECTANGLE;
+	commands[0].id = 11u;
 	commands[0].boundingBox = Clay_BoundingBox{10.0f, 20.0f, 30.0f, 40.0f};
 	commands[0].renderData.rectangle.backgroundColor = Clay_Color{255.0f, 0.0f, 0.0f, 255.0f};
 	commands[1].commandType = CLAY_RENDER_COMMAND_TYPE_SCISSOR_START;
 	commands[1].boundingBox = Clay_BoundingBox{5.0f, 6.0f, 70.0f, 80.0f};
 	commands[2].commandType = CLAY_RENDER_COMMAND_TYPE_BORDER;
+	commands[2].id = 22u;
 	commands[2].boundingBox = Clay_BoundingBox{12.0f, 22.0f, 32.0f, 42.0f};
 	commands[2].renderData.border.color = Clay_Color{0.0f, 255.0f, 0.0f, 255.0f};
 	commands[3].commandType = CLAY_RENDER_COMMAND_TYPE_SCISSOR_END;

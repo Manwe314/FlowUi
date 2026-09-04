@@ -1,6 +1,11 @@
 # -----------------------------
 # Build output directories
 # -----------------------------
+/Build/
+/Build-*/
+/Build_*/
+**/Build/
+**/Build-*/
 /build/
 /build-*/
 /build_*

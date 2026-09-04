@@ -35,28 +35,15 @@ public:
 	DevPreviewViewPortRenderer(const DevPreviewViewPortRenderer&) = delete;
 	DevPreviewViewPortRenderer& operator=(const DevPreviewViewPortRenderer&) = delete;
 
-	void init(const FlowUi::ViewPortVulkanInterop& interop, VkFormat colorFormat);
-	void destroy();
-
 	void record(
 		const FlowUi::ViewPortRenderContext& ctx,
-		const interface_elements::DevPreviewState& state,
-		const interface_elements::PreviewSelection& selection,
+		interface_elements::DevPreviewState& state,
 		const DevUiReplaySource& replay);
 
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 };
-
-/**
- * @brief Free function helper to record the DevPreview viewport scene.
- */
-void recordDevPreviewViewPort(
-	const FlowUi::ViewPortRenderContext& ctx,
-	const interface_elements::DevPreviewState& state,
-	const interface_elements::PreviewSelection& selection,
-	const DevUiReplaySource& replay);
 
 } // namespace FlowUi::devSystems
 

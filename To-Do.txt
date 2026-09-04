@@ -155,7 +155,9 @@ things i want to do:
 		- enum chociec for Fonts 
 		- Quick View Value not configured on every Parameter including unregistered/unddefineds
 		- Definition changes on FSEL elements alters the DevIntefrace As well.
-		- 
+	- DevInspect Workbench
+		- wining value in changes section display std::optional badly
+		- tree struct and gerometry reporting is not fiting in width nicely .
 
 
 		
