@@ -766,7 +766,6 @@ static UiBuildResult BuildInstancesAndRunsFromClay(
 
 		const UiType type = PickType(command);
 		beginRunIfNeeded(type, currentScissor);
-
 		switch (command.commandType) {
 			case CLAY_RENDER_COMMAND_TYPE_RECTANGLE:
 				EmitSolidRect(command, uiToFramebufferScaleX, uiToFramebufferScaleY, outInstances);
@@ -1958,9 +1957,6 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 		reinterpret_cast<UiInstance*>(write.data),
 		upperBound.instances,
 	};
-#if FLOW_UI_DEV_MODE
-	std::span<uint32_t> instanceClayIds = arena.allocateArray<uint32_t>(upperBound.instances);
-#endif
 	const float clampedScaleX = std::max(uiToFramebufferScaleX, 1.0e-6f);
 	const float clampedScaleY = std::max(uiToFramebufferScaleY, 1.0e-6f);
 	UiBuildResult built{};
@@ -2048,11 +2044,6 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	}
 	return PreparedUiFrame{
 		.runs = runs.first(built.runCount),
-#if FLOW_UI_DEV_MODE
-		.instances = instances.first(built.instanceCount),
-		.instanceClayIds = instanceClayIds.first(built.instanceCount),
-		.frameSlot = frameSlot,
-#endif
 		.instanceCount = built.instanceCount,
 		.epoch = frame.epoch,
 		.originatingFrameSlot = frameSlot,
@@ -2142,3 +2133,55 @@ void VulkanUiRenderer::recordPreparedFrame(
 
 	vkCmdEndRendering(cmd);
 }
+
+#if FLOW_UI_DEV_MODE
+VkFormat VulkanUiRenderer::devReplayTargetFormat() const noexcept {
+	return targetFormat_;
+}
+
+VkDescriptorSetLayout VulkanUiRenderer::devReplayGlobalsLayout() const noexcept {
+	return descriptors_.set0;
+}
+
+void VulkanUiRenderer::recordExternalReplay(
+	VkCommandBuffer commandBuffer,
+	VkExtent2D targetExtent,
+	VkDescriptorSet globalsSet,
+	uint32_t sourceTextureFrameSlot,
+	std::span<const UiRun> replayRuns) const {
+	if (commandBuffer == VK_NULL_HANDLE || globalsSet == VK_NULL_HANDLE ||
+		targetExtent.width == 0u || targetExtent.height == 0u || replayRuns.empty() ||
+		!sharedByteResources_ || pipelines_.layout == VK_NULL_HANDLE) {
+		return;
+	}
+	if (sourceTextureFrameSlot >= descriptors_.texturesSets.size()) {
+		return;
+	}
+
+	VkViewport viewport{};
+	viewport.width = static_cast<float>(targetExtent.width);
+	viewport.height = static_cast<float>(targetExtent.height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(commandBuffer, 0u, 1u, &viewport);
+	const VkBuffer vertexBuffer = sharedByteResources_->nativeQuadBuffer;
+	const VkDeviceSize vertexOffset = 0u;
+	vkCmdBindVertexBuffers(commandBuffer, 0u, 1u, &vertexBuffer, &vertexOffset);
+	const VkDescriptorSet sets[2] = {
+		globalsSet,
+		descriptors_.texturesSets[sourceTextureFrameSlot],
+	};
+	vkCmdBindDescriptorSets(
+		commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		pipelines_.layout,
+		0u,
+		2u,
+		sets,
+		0u,
+		nullptr);
+	for (const UiRun& run : replayRuns) {
+		FlushRun(commandBuffer, *this, targetExtent, run);
+	}
+}
+#endif

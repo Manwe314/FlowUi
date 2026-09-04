@@ -54,6 +54,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <stdexcept>
 
@@ -494,6 +495,154 @@ AppConfig makeUiManagerConfig(const AppConfig& appDefaults, const AppWindowConfi
 	return result;
 }
 
+#if FLOW_UI_DEV_MODE
+struct DevUiReplayRequest {
+	std::vector<uint32_t> commandIds{};
+	Clay_BoundingBox sourceRootBounds{};
+	uint64_t key = 0u;
+	uint32_t rootCommandId = 0u;
+};
+
+struct DevUiReplayPacket {
+	std::vector<Clay_RenderCommand> commands{};
+	std::vector<std::string> textByCommand{};
+	std::vector<TextureRef> textureByCommand{};
+	std::vector<storage::BindingHotRecord> textureBindings{};
+	Clay_RenderCommandArray commandArray{};
+	Clay_BoundingBox sourceRootBounds{};
+	uint64_t requestKey = 0u;
+	uint64_t captureSerial = 0u;
+	uint32_t textureFrameSlot = 0u;
+
+	void clearCommands() noexcept {
+		commands.clear();
+		textByCommand.clear();
+		textureByCommand.clear();
+		textureBindings.clear();
+		commandArray = {};
+	}
+
+	void rebindPayloads() noexcept {
+		for (size_t commandIndex = 0u; commandIndex < commands.size(); ++commandIndex) {
+			Clay_RenderCommand& command = commands[commandIndex];
+			command.userData = nullptr;
+			if (command.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT) {
+				const std::string& text = textByCommand[commandIndex];
+				command.renderData.text.stringContents = Clay_StringSlice{
+					.length = static_cast<int32_t>(text.size()),
+					.chars = text.data(),
+					.baseChars = text.data(),
+				};
+			} else if (command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE) {
+				command.renderData.image.imageData = &textureByCommand[commandIndex];
+			}
+		}
+		commandArray = Clay_RenderCommandArray{
+			.capacity = static_cast<int32_t>(commands.size()),
+			.length = static_cast<int32_t>(commands.size()),
+			.internalArray = commands.data(),
+		};
+	}
+};
+
+void captureDevUiReplayPacket(
+	const DevUiReplayRequest& request,
+	const Clay_RenderCommandArray& source,
+	const storage::PreparedTextureBindings& preparedBindings,
+	uint32_t textureFrameSlot,
+	DevUiReplayPacket& packet) {
+	packet.clearCommands();
+	packet.sourceRootBounds = request.sourceRootBounds;
+	packet.requestKey = request.key;
+	packet.textureFrameSlot = textureFrameSlot;
+	++packet.captureSerial;
+	if (request.commandIds.empty() || source.length <= 0 || !source.internalArray) return;
+
+	if (request.rootCommandId != 0u) {
+		for (int32_t commandIndex = 0; commandIndex < source.length; ++commandIndex) {
+			const Clay_RenderCommand& command = source.internalArray[commandIndex];
+			if (command.id == request.rootCommandId &&
+				(command.commandType == CLAY_RENDER_COMMAND_TYPE_RECTANGLE ||
+				 command.commandType == CLAY_RENDER_COMMAND_TYPE_BORDER ||
+				 command.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT ||
+				 command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE)) {
+				packet.sourceRootBounds = command.boundingBox;
+				break;
+			}
+		}
+	}
+
+	const std::unordered_set<uint32_t> requestedIds(
+		request.commandIds.begin(), request.commandIds.end());
+	std::vector<uint8_t> selected(static_cast<size_t>(source.length), 0u);
+	std::vector<int32_t> clipStack{};
+	clipStack.reserve(8u);
+	for (int32_t commandIndex = 0; commandIndex < source.length; ++commandIndex) {
+		const Clay_RenderCommand& command = source.internalArray[commandIndex];
+		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START) {
+			clipStack.push_back(commandIndex);
+			continue;
+		}
+		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_END) {
+			if (!clipStack.empty()) {
+				const int32_t startIndex = clipStack.back();
+				clipStack.pop_back();
+				if (selected[static_cast<size_t>(startIndex)] != 0u) {
+					selected[static_cast<size_t>(commandIndex)] = 1u;
+				}
+			}
+			continue;
+		}
+		const bool drawable = command.commandType == CLAY_RENDER_COMMAND_TYPE_RECTANGLE ||
+			command.commandType == CLAY_RENDER_COMMAND_TYPE_BORDER ||
+			command.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT ||
+			command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE;
+		if (!drawable || !requestedIds.contains(command.id)) continue;
+		selected[static_cast<size_t>(commandIndex)] = 1u;
+		for (const int32_t clipIndex : clipStack) {
+			selected[static_cast<size_t>(clipIndex)] = 1u;
+		}
+	}
+
+	size_t selectedCount = 0u;
+	for (const uint8_t isSelected : selected) selectedCount += isSelected != 0u ? 1u : 0u;
+	packet.commands.reserve(selectedCount);
+	for (int32_t commandIndex = 0; commandIndex < source.length; ++commandIndex) {
+		if (selected[static_cast<size_t>(commandIndex)] != 0u) {
+			packet.commands.push_back(source.internalArray[commandIndex]);
+		}
+	}
+	packet.textByCommand.resize(packet.commands.size());
+	packet.textureByCommand.resize(packet.commands.size());
+	uint32_t maximumTextureIndex = 0u;
+	for (size_t commandIndex = 0u; commandIndex < packet.commands.size(); ++commandIndex) {
+		Clay_RenderCommand& command = packet.commands[commandIndex];
+		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT) {
+			const Clay_StringSlice text = command.renderData.text.stringContents;
+			if (text.chars && text.length > 0) {
+				packet.textByCommand[commandIndex].assign(
+					text.chars, static_cast<size_t>(text.length));
+			}
+		} else if (command.commandType == CLAY_RENDER_COMMAND_TYPE_IMAGE &&
+			command.renderData.image.imageData) {
+			packet.textureByCommand[commandIndex] =
+				*static_cast<const TextureRef*>(command.renderData.image.imageData);
+			maximumTextureIndex = std::max(
+				maximumTextureIndex, packet.textureByCommand[commandIndex].handle.index);
+		}
+	}
+	if (!preparedBindings.bindingsByTextureIndex.empty()) {
+		const size_t bindingCount = std::min(
+			preparedBindings.bindingsByTextureIndex.size(),
+			static_cast<size_t>(maximumTextureIndex) + 1u);
+		packet.textureBindings.assign(
+			preparedBindings.bindingsByTextureIndex.begin(),
+			preparedBindings.bindingsByTextureIndex.begin() + static_cast<std::ptrdiff_t>(bindingCount));
+	}
+	packet.rebindPayloads();
+}
+#endif
+
 struct AppWindow {
 	AppWindow(WindowId windowId, AppWindowConfig windowConfig, const AppConfig& appConfig)
 		: id(windowId),
@@ -520,6 +669,10 @@ struct AppWindow {
 	FrameInput frameInput{};
 	Clay_RenderCommandArray renderCommands{};
 	PreparedUiFrame preparedUi{};
+#if FLOW_UI_DEV_MODE
+	DevUiReplayRequest devReplayRequest{};
+	DevUiReplayPacket devReplayPacket{};
+#endif
 	storage::FrameToken storageFrame{};
 	storage::FrameReadLease storageReadLease{};
 	detail::manager_storage::FontFrameView fontFrameView{};
@@ -1550,6 +1703,15 @@ struct App::Impl {
 					window.storageFrame, preparedBindings.dirtyBindings);
 			}
 #if FLOW_UI_DEV_MODE
+			if (!window.devReplayRequest.commandIds.empty()) {
+				captureDevUiReplayPacket(
+					window.devReplayRequest,
+					window.renderCommands,
+					preparedBindings,
+					window.storageFrame.frameSlot,
+					window.devReplayPacket);
+				window.devReplayRequest = {};
+			}
 			window.devOverlay.clear();
 			devSystems::tooling::DevOverlaySelectionSpec overlaySelection{};
 			if (devTooling.overlaySelection(window.id, overlaySelection)) {
@@ -2548,15 +2710,47 @@ devSystems::DevUiReplaySource App::devUiReplaySource(WindowId id) noexcept {
 	if (pointsToPixelsScale <= 0.0f) pointsToPixelsScale = configuredDpi / 72.0f;
 	return devSystems::DevUiReplaySource{
 		.renderer = &window.renderer,
-		.prepared = &window.preparedUi,
 		.fontFrameView = &window.fontFrameView,
-		.renderCommands = &window.renderCommands,
-		.extentWidth = window.swapchain.swapchain.extent.width,
-		.extentHeight = window.swapchain.swapchain.extent.height,
+		.commands = &window.devReplayPacket.commandArray,
+		.textureBindings = window.devReplayPacket.textureBindings,
+		.sourceRootBounds = window.devReplayPacket.sourceRootBounds,
+		.requestKey = window.devReplayPacket.requestKey,
+		.captureSerial = window.devReplayPacket.captureSerial,
+		.textureFrameSlot = window.devReplayPacket.textureFrameSlot,
 		.pointsToPixelsScale = pointsToPixelsScale,
-		.uiToFramebufferScaleX = window.uiToFramebufferScaleX,
-		.uiToFramebufferScaleY = window.uiToFramebufferScaleY,
 	};
+}
+
+void App::requestDevUiReplay(
+	WindowId id,
+	uint64_t requestKey,
+	std::span<const uint32_t> clayCommandIds,
+	Clay_BoundingBox sourceRootBounds) {
+	if (!impl_) return;
+	const auto found = impl_->windows.find(id);
+	if (found == impl_->windows.end() || !found->second) return;
+	AppWindow& window = *found->second;
+	if (clayCommandIds.empty() || requestKey == 0u) {
+		window.devReplayRequest = {};
+		window.devReplayPacket.clearCommands();
+		window.devReplayPacket.requestKey = 0u;
+		return;
+	}
+	if (requestKey != window.devReplayPacket.requestKey) {
+		window.devReplayPacket.clearCommands();
+		window.devReplayPacket.requestKey = 0u;
+	}
+	window.devReplayRequest.rootCommandId = clayCommandIds.front();
+	window.devReplayRequest.commandIds.assign(
+		clayCommandIds.begin(), clayCommandIds.end());
+	std::ranges::sort(window.devReplayRequest.commandIds);
+	const auto uniqueEnd = std::unique(
+		window.devReplayRequest.commandIds.begin(),
+		window.devReplayRequest.commandIds.end());
+	window.devReplayRequest.commandIds.erase(
+		uniqueEnd, window.devReplayRequest.commandIds.end());
+	window.devReplayRequest.sourceRootBounds = sourceRootBounds;
+	window.devReplayRequest.key = requestKey;
 }
 #endif
 

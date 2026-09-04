@@ -67,6 +67,8 @@ struct DevInterfaceSelectorSearch {
 	static void buildElement(BuildContext& context);
 };
 
+[[nodiscard]] uint64_t stableNodeKey(uint64_t value, uint64_t salt) noexcept;
+
 struct DevNodeParameters {
 	DevInterfaceState* interfaceState = nullptr;
 	// Optional frame-local output used by the forest after draw() completes.
@@ -76,6 +78,9 @@ struct DevNodeParameters {
 	uint64_t selectionKey = 0u;
 	uint32_t depth = 0u;
 	std::string_view debugName{};
+	std::string_view detailText{};
+	std::string_view badgeText{};
+	Clay_Color badgeColor{};
 	bool hasChildren = false;
 	bool hasChanges = false;
 };

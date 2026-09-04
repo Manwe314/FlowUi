@@ -105,6 +105,9 @@ struct DevPreviewState {
 	float elementHeight = 0.0f;
 	uint64_t lastSelectedNodeKey = 0u;
 	bool pendingAutoFit = true;
+#if FLOWUI_PUBLIC_VULKAN_INTEROP
+	uint32_t viewportColorFormat = 0u;
+#endif
 };
 
 struct PreviewSelection {
@@ -166,7 +169,7 @@ struct DevPreviewCanvasParameters {
 	DevInspectContentParameters inspect{};
 	DevPreviewState* preview = nullptr;
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-	DevPreviewViewPortRenderer* viewportRenderer = nullptr;
+	std::shared_ptr<DevPreviewViewPortRenderer> viewportRenderer{};
 #endif
 };
 

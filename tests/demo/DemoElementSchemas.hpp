@@ -4,6 +4,10 @@
 // the gallery. Production FSEL remains usable without developer tooling.
 #if FLOW_UI_DEV_MODE
 
+#include "FlowUi/Flow.hpp"
+#include "FSEL.hpp"
+#include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
+
 namespace FlowUi {
 
 FLOWUI_DEV_ENUM_SCHEMA(

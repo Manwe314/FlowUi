@@ -25,6 +25,7 @@ inline constexpr float kSearchHeight = 46.0f;
 inline constexpr float kFooterHeight = 60.0f;
 inline constexpr float kControlHeight = 28.0f;
 inline constexpr float kNodeHeight = 25.0f;
+inline constexpr float kNodeTwoLineHeight = 38.0f;
 
 inline constexpr LocalElementName kForestToggle{"forest-toggle"};
 inline constexpr LocalElementName kFlowChoice{"flow-choice"};
@@ -37,6 +38,7 @@ inline constexpr LocalElementName kNodeDisclosure{"disclosure"};
 inline constexpr LocalElementName kNodeIndicator{"selection-indicator"};
 inline constexpr LocalElementName kNodeDepth{"depth"};
 inline constexpr LocalElementName kNodeLabel{"label"};
+inline constexpr LocalElementName kNodeDetail{"detail"};
 inline constexpr LocalElementName kNodeSpacer{"spacer"};
 inline constexpr LocalElementName kNodeStatus{"status"};
 
@@ -127,9 +129,10 @@ void drawForestChoice(
 }
 
 float nodeInset(uint32_t depth) noexcept {
-	static constexpr float insets[] = {3, 11, 19, 27, 31, 35, 39, 43, 44, 45};
-	return insets[std::min<std::size_t>(depth, std::size(insets) - 1u)];
+	return static_cast<float>(depth) * 14.0f + 4.0f;
 }
+
+} // namespace
 
 uint64_t stableNodeKey(uint64_t value, uint64_t salt) noexcept {
 	value ^= salt + 0x9e3779b97f4a7c15ull + (value << 6u) + (value >> 2u);
@@ -140,6 +143,8 @@ uint64_t stableNodeKey(uint64_t value, uint64_t salt) noexcept {
 	value ^= value >> 31u;
 	return value == 0u ? 1u : value;
 }
+
+namespace {
 
 bool containsInsensitive(std::string_view text, std::string_view query) {
 	if (query.empty()) return true;
@@ -398,11 +403,15 @@ void DevNode::buildElement(BuildContext& context) {
 	const Clay_Color rowColor = selected ? interface_theme::kSelectedRow
 		: hovered ? interface_theme::kHoverSurface : interface_theme::kDepth0Keel;
 
+	const bool hasDetail = !context.params.detailText.empty();
+	const float rowHeight = hasDetail ? 44.0f : kNodeHeight;
+
 	Clay_ElementDeclaration row{};
 	row.layout.sizing = {
 		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_FIXED(kNodeHeight),
+		.height = CLAY_SIZING_FIXED(rowHeight),
 	};
+	row.layout.padding = Clay_Padding{4, 4, 3, 3};
 	row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	row.layout.childAlignment = {CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
 	row.backgroundColor = rowColor;
@@ -426,7 +435,7 @@ void DevNode::buildElement(BuildContext& context) {
 		if (context.params.hasChildren) {
 			Clay_ElementDeclaration disclosure{};
 			disclosure.layout.sizing = {
-				.width = CLAY_SIZING_FIXED(14),
+				.width = CLAY_SIZING_FIXED(18),
 				.height = CLAY_SIZING_GROW(0),
 			};
 			disclosure.layout.childAlignment = {
@@ -457,7 +466,7 @@ void DevNode::buildElement(BuildContext& context) {
 		} else {
 			Clay_ElementDeclaration disclosureSpacer{};
 			disclosureSpacer.layout.sizing = {
-				.width = CLAY_SIZING_FIXED(14),
+				.width = CLAY_SIZING_FIXED(18),
 				.height = CLAY_SIZING_GROW(0),
 			};
 			CLAY(context.clayID(kNodeDisclosure), disclosureSpacer);
@@ -468,6 +477,8 @@ void DevNode::buildElement(BuildContext& context) {
 			.width = CLAY_SIZING_FIT(0),
 			.height = CLAY_SIZING_GROW(0),
 		};
+		label.layout.layoutDirection = hasDetail ? CLAY_TOP_TO_BOTTOM : CLAY_LEFT_TO_RIGHT;
+		label.layout.childGap = hasDetail ? 3 : 0;
 		label.layout.childAlignment = {CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
 		label.clip.horizontal = true;
 		label.clip.scrollInputDisabled = true;
@@ -476,9 +487,52 @@ void DevNode::buildElement(BuildContext& context) {
 				: interface_theme::kTextSecondary,
 			11);
 		CLAY(context.clayID(kNodeLabel), label) {
-			CLAY_TEXT(
-				context.uiManager.toClayString(context.params.debugName),
-				CLAY_TEXT_CONFIG(labelStyle));
+			const bool hasBadge = !context.params.badgeText.empty();
+			if (hasBadge) {
+				Clay_ElementDeclaration titleRow{};
+				titleRow.layout.sizing = {
+					.width = CLAY_SIZING_FIT(0),
+					.height = CLAY_SIZING_FIT(0),
+				};
+				titleRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+				titleRow.layout.childGap = 6;
+				titleRow.layout.childAlignment = {CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
+
+				CLAY(context.clayID("title-row"), titleRow) {
+					Clay_ElementDeclaration badge{};
+					badge.layout.sizing = {
+						.width = CLAY_SIZING_FIT(0),
+						.height = CLAY_SIZING_FIXED(16.0f),
+					};
+					badge.layout.padding = Clay_Padding{5, 5, 1, 1};
+					badge.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+					badge.backgroundColor = context.params.badgeColor;
+					badge.cornerRadius = CLAY_CORNER_RADIUS(3);
+
+					CLAY(context.clayID("badge"), badge) {
+						CLAY_TEXT(
+							context.uiManager.toClayString(context.params.badgeText),
+							CLAY_TEXT_CONFIG(textConfig(Clay_Color{255, 255, 255, 255}, 9)));
+					}
+
+					CLAY_TEXT(
+						context.uiManager.toClayString(context.params.debugName),
+						CLAY_TEXT_CONFIG(labelStyle));
+				}
+			} else {
+				CLAY_TEXT(
+					context.uiManager.toClayString(context.params.debugName),
+					CLAY_TEXT_CONFIG(labelStyle));
+			}
+
+			if (hasDetail) {
+				const Clay_TextElementConfig detailStyle = textConfig(
+					interface_theme::kTextMuted,
+					10);
+				CLAY_TEXT(
+					context.uiManager.toClayString(context.params.detailText),
+					CLAY_TEXT_CONFIG(detailStyle));
+			}
 		}
 
 		Clay_ElementDeclaration spacer{};
