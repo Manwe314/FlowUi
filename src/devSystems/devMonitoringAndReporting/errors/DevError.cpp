@@ -100,7 +100,6 @@ void copyNativeText(
 
 struct DevErrorMonitoring::Impl {
 	struct AtomicFatalBreadcrumb {
-		std::atomic_flag writing = ATOMIC_FLAG_INIT;
 		std::atomic<uint64_t> committedSequence{0u};
 		std::atomic<uint64_t> timestampNs{0u};
 		std::atomic<uint64_t> descriptorId{0u};
@@ -108,9 +107,11 @@ struct DevErrorMonitoring::Impl {
 		std::atomic<uint64_t> secondaryValue{0u};
 		std::atomic<DevErrorOccurrenceId> occurrence{0u};
 		std::atomic<uint32_t> threadTrack{0u};
+		std::atomic_flag writing = ATOMIC_FLAG_INIT;
 	};
 
 	static constexpr size_t kFatalBreadcrumbJournalCapacity = 32u;
+	std::array<AtomicFatalBreadcrumb, kFatalBreadcrumbJournalCapacity> fatalBreadcrumbJournal{};
 
 	static DevErrorConfig normalize(DevErrorConfig config) noexcept {
 		config.level = static_cast<DevErrorCaptureLevel>(std::min(
@@ -330,25 +331,22 @@ struct DevErrorMonitoring::Impl {
 	}
 
 	mutable std::mutex mutex{};
+	DevErrorFatalCapsule fatalCapsule{};
 	DevErrorConfig monitoringConfig{};
-	std::atomic<uint8_t> captureLevel{0u};
-	std::atomic<uint32_t> nativeTextLimit{0u};
-	std::atomic<DevErrorStackProvider*> emergencyStackProvider{nullptr};
 	std::vector<std::unique_ptr<DevErrorRecorder>> recorders{};
-	std::unique_ptr<DevErrorRecorder> fallback{};
-	std::atomic<uint32_t> nextTrack{1u};
-	std::atomic<DevErrorOccurrenceId> nextOccurrence{1u};
-	std::atomic<DevErrorRecordSequence> nextRecordSequence{1u};
-	std::atomic<uint64_t> nextBreadcrumbSequence{1u};
 	std::vector<DevErrorSourceDescriptor> sources{};
 	std::vector<DevErrorBreadcrumbDescriptor> breadcrumbDescriptors{};
-	PlatformDevErrorStackProvider platformStackProvider{};
 	std::vector<DevErrorStackTrace> stacks{};
-	uint32_t stackCount = 0u;
-	std::atomic<DevErrorStackId> nextStackId{1u};
 	std::vector<DevErrorSnapshotProvider> snapshotProviders{};
 	std::vector<DevErrorSnapshotRequest> pendingSnapshots{};
 	std::vector<DevErrorSnapshot> completedSnapshots{};
+	std::atomic<DevErrorStackProvider*> emergencyStackProvider{nullptr};
+	std::unique_ptr<DevErrorRecorder> fallback{};
+	std::atomic<DevErrorOccurrenceId> nextOccurrence{1u};
+	std::atomic<DevErrorRecordSequence> nextRecordSequence{1u};
+	std::atomic<uint64_t> nextBreadcrumbSequence{1u};
+	PlatformDevErrorStackProvider platformStackProvider{};
+	std::atomic<DevErrorStackId> nextStackId{1u};
 	std::atomic<uint64_t> droppedDescriptors{0u};
 	std::atomic<uint64_t> capturedStacks{0u};
 	std::atomic<uint64_t> deduplicatedStacks{0u};
@@ -361,9 +359,6 @@ struct DevErrorMonitoring::Impl {
 	std::atomic<uint64_t> unavailableSnapshots{0u};
 	std::atomic<uint64_t> truncatedSnapshots{0u};
 	std::atomic<uint64_t> lostSnapshots{0u};
-	std::array<AtomicFatalBreadcrumb, kFatalBreadcrumbJournalCapacity> fatalBreadcrumbJournal{};
-	std::atomic<uint8_t> fatalCapsuleState{0u};
-	DevErrorFatalCapsule fatalCapsule{};
 	std::atomic<uint64_t> capturedFatalCapsules{0u};
 	std::atomic<uint64_t> lostFatalCapsules{0u};
 	std::atomic<uint64_t> producerCalls{0u};
@@ -385,6 +380,11 @@ struct DevErrorMonitoring::Impl {
 	std::atomic<uint64_t> safePointMemoryDropped{0u};
 	std::atomic<uint64_t> safePointErrorRecorded{0u};
 	std::atomic<uint64_t> safePointErrorDropped{0u};
+	std::atomic<uint32_t> nativeTextLimit{0u};
+	std::atomic<uint32_t> nextTrack{1u};
+	uint32_t stackCount = 0u;
+	std::atomic<uint8_t> captureLevel{0u};
+	std::atomic<uint8_t> fatalCapsuleState{0u};
 };
 
 DevErrorMonitoring::DevErrorMonitoring(DevErrorConfig config) {

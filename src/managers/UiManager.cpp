@@ -466,6 +466,7 @@ namespace FlowUi
 			Clay_BeginLayout();
 		}
 #if FLOW_UI_DEV_MODE
+		devInternalScopeDepth_ = 0;
 		state_->devTreeCapture.beginFrame(
 			window_, state_->devRuntime.frameCounter(), *state_->clayContext, devTimingRecorder_);
 		if (devOverrideEngine_) {
@@ -1115,6 +1116,9 @@ namespace devMode::elementCapture {
 			state_->constructedElementStack.pop_back();
 			restoreFlowScope(frame.priorFlowScopeDepth);
 #if FLOW_UI_DEV_MODE
+			if (frame.isDevInternal) {
+				leaveDevInternalScope();
+			}
 			state_->devTreeCapture.endFlow(frame.treeToken, warn || autoClosedAtFrameEnd);
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
@@ -1145,6 +1149,7 @@ namespace devMode::elementCapture {
 		size_t priorFlowScopeDepth
 #if FLOW_UI_DEV_MODE
 		, devSystems::tooling::DevTreeCapture::Token treeToken
+		, bool isDevInternal
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 		, FlowDefinitionID definitionId
@@ -1156,8 +1161,14 @@ namespace devMode::elementCapture {
 			.priorFlowScopeDepth = priorFlowScopeDepth,
 #if FLOW_UI_DEV_MODE
 			.treeToken = treeToken,
+			.isDevInternal = isDevInternal,
 #endif
 		};
+#if FLOW_UI_DEV_MODE
+		if (isDevInternal) {
+			enterDevInternalScope();
+		}
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 		if (devTimingRecorder_) {
 			frame.subtreeTiming.begin(
@@ -1189,6 +1200,7 @@ namespace devMode::elementCapture {
 		state_->frameArena = {};
 		state_->activeFrame = {};
 #if FLOW_UI_DEV_MODE
+		devInternalScopeDepth_ = 0;
 		state_->devTreeCapture.cancelFrame();
 		if (devOverrideEngine_) devOverrideEngine_->cancelWindowFrame(window_);
 		state_->flowRootIdTracker.discardFrame();

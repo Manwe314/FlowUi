@@ -23,13 +23,8 @@ template <typename T>
 struct DevSchemaTag {};
 
 struct DevFieldOptions {
-	std::string_view hint{};
-	DevFieldAccess access = DevFieldAccess::Inherit;
-	DevEditorKind editor = DevEditorKind::None;
-	DevChoiceDomain choiceDomain = DevChoiceDomain::None;
 	DevNumericConstraint numeric{};
-	std::uint32_t textMaximum = 0;
-	bool hasTextMaximum = false;
+	std::string_view hint{};
 
 	consteval DevFieldOptions withHint(std::string_view value) const {
 		auto result = *this;
@@ -76,6 +71,11 @@ struct DevFieldOptions {
 		result.hasTextMaximum = true;
 		return result;
 	}
+	std::uint32_t textMaximum = 0;
+	DevFieldAccess access = DevFieldAccess::Inherit;
+	DevEditorKind editor = DevEditorKind::None;
+	DevChoiceDomain choiceDomain = DevChoiceDomain::None;
+	bool hasTextMaximum = false;
 };
 
 template <typename>

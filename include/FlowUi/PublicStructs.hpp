@@ -178,10 +178,10 @@ struct MemoryCapacityProfileMetadata {
 	std::string platform{};
 	std::string build{};
 	std::string gpu{};
-	uint32_t framesInFlight = 0u;
 	uint64_t captureBeginTick = 0u;
 	uint64_t captureEndTickExclusive = 0u;
 	uint64_t warmUpTicks = 0u;
+	uint32_t framesInFlight = 0u;
 	bool complete = false;
 };
 
@@ -321,17 +321,9 @@ struct WindowConfigOverrides {
  * These options are consumed during renderer initialization.
  */
 struct VulkanConfig {
-	/** @brief Enable Vulkan validation layers when they are available. */
-	bool enableValidation = true;
-
-	/** @brief Enable Vulkan debug utils messenger support when available. */
-	bool enableDebugUtils = true;
 
 	/** @brief Preferred swapchain presentation mode. */
 	PresentMode presentMode = PresentMode::Fifo;
-
-	/** @brief Prefer a discrete GPU when selecting a physical device. */
-	bool preferDiscreteGPU = true;
 
 	/**
 	 * @brief Requested multisample anti-aliasing level.
@@ -340,11 +332,19 @@ struct VulkanConfig {
 	 */
 	MSAA msaa = MSAA::x1;
 
-	/** @brief Prefer an sRGB swapchain format when the surface supports one. */
-	bool srgbBackbuffer = true;
-
 	/** @brief Number of frames the renderer may keep in flight. */
 	uint32_t framesInFlight = 2;
+	/** @brief Enable Vulkan validation layers when they are available. */
+	bool enableValidation = true;
+
+	/** @brief Enable Vulkan debug utils messenger support when available. */
+	bool enableDebugUtils = true;
+
+	/** @brief Prefer a discrete GPU when selecting a physical device. */
+	bool preferDiscreteGPU = true;
+
+	/** @brief Prefer an sRGB swapchain format when the surface supports one. */
+	bool srgbBackbuffer = true;
 };
 
 /**
@@ -523,14 +523,14 @@ enum class CpuTimingLevel : uint8_t {
 };
 
 struct DevTimingConfig {
-	CpuTimingLevel cpuLevel = CpuTimingLevel::Summary;
-	uint32_t enabledCategoryMask = 0xFFFFFFFFu;
-	bool gpuTimingEnabled = true;
-	uint32_t gpuQueryCapacityPerFrame = 512u;
-	uint32_t producerRecordCapacity = 8192u;
+	FlowElementID selectedElementInstance{};
 	uint64_t balancedElementRetentionThresholdNs = 50'000u;
 	FlowDefinitionID selectedElementDefinition{};
-	FlowElementID selectedElementInstance{};
+	CpuTimingLevel cpuLevel = CpuTimingLevel::Summary;
+	uint32_t enabledCategoryMask = 0xFFFFFFFFu;
+	uint32_t gpuQueryCapacityPerFrame = 512u;
+	uint32_t producerRecordCapacity = 8192u;
+	bool gpuTimingEnabled = true;
 };
 
 struct TimingReportingConfig {
@@ -549,24 +549,24 @@ enum class MemoryMonitoringLevel : uint8_t {
 };
 
 struct DevMemoryConfig {
+	uint64_t processSampleIntervalNs = 500'000'000ull;
+	uint64_t gpuBudgetSampleIntervalNs = 250'000'000ull;
 	MemoryMonitoringLevel level = MemoryMonitoringLevel::SubsystemCapacity;
 	uint32_t producerEventCapacity = 8192u;
+	uint32_t detailedGpuStatsEverySamples = 0u;
 	bool gpuMemory = true;
 	bool processMemory = true;
 	bool detailedVmaStatistics = false;
 	bool trackTemporaryResources = true;
-	uint64_t processSampleIntervalNs = 500'000'000ull;
-	uint64_t gpuBudgetSampleIntervalNs = 250'000'000ull;
-	uint32_t detailedGpuStatsEverySamples = 0u;
 };
 
 struct MemoryReportingConfig {
-	uint32_t segmentCapacity = 100'000u;
 	uint64_t eventByteCapacity = 16ull * 1024ull * 1024ull;
+	uint64_t consumeWarningThresholdNs = 2'000'000u;
+	uint32_t segmentCapacity = 100'000u;
 	uint32_t managerSampleEveryTicks = 8u;
 	uint32_t quantileWindowSegments = 20'000u;
 	bool retainLifetimeEvents = false;
-	uint64_t consumeWarningThresholdNs = 2'000'000u;
 };
 
 class DevErrorStackProvider;
@@ -608,8 +608,9 @@ struct DevErrorTrigger {
 };
 
 struct DevErrorReportingConfig {
-	uint32_t retainedOccurrenceCapacity = 512u;
+	std::vector<DevErrorTrigger> triggers{};
 	uint64_t retainedByteBudget = 4u * 1024u * 1024u;
+	uint32_t retainedOccurrenceCapacity = 512u;
 	uint32_t retainedBreadcrumbCapacity = 4096u;
 	uint32_t postOccurrenceTicks = 2u;
 	uint32_t maxStepsPerOccurrence = 64u;
@@ -617,7 +618,6 @@ struct DevErrorReportingConfig {
 	uint32_t retainedCaptureCapacity = 32u;
 	uint32_t maximumPinnedTimingTicks = 16u;
 	uint32_t maximumPinnedMemoryEvents = 128u;
-	std::vector<DevErrorTrigger> triggers{};
 };
 
 namespace tooling {
@@ -700,6 +700,24 @@ struct DevShortcutChord {
  * These options are only used when developer mode support is compiled in.
  */
 struct DevToolsConfig {
+
+#if FLOW_UI_DEV_MODE
+#endif
+	/** Capture, retention, and sampling controls for developer monitoring. */
+	devSystems::DevMonitoringConfig monitoring{};
+
+	/**
+	 * @brief File path used when exporting developer override data.
+	 *
+	 * Explicit developer exports write to this path.
+	 */
+	std::filesystem::path overridesPath = ".flowui/overrides.v1.json";
+
+	/** Schema, override, and per-window tree-capture capacity controls. */
+	devSystems::DevToolingConfig tooling{};
+
+	/** @brief Keyboard chord used to toggle the developer-interface window. */
+	DevShortcutChord panelToggleChord{};
 	/** @brief Enable developer tooling at runtime. */
 	bool enabled = false;
 
@@ -709,9 +727,6 @@ struct DevToolsConfig {
 	 * Disable this when the application wants to own panel toggling itself.
 	 */
 	bool useShortcutManagerForPanelToggle = true;
-
-	/** @brief Keyboard chord used to toggle the developer-interface window. */
-	DevShortcutChord panelToggleChord{};
 
 	/**
 	 * @brief Hide FlowUi's internal developer elements from captured UI data.
@@ -723,27 +738,12 @@ struct DevToolsConfig {
 	bool excludeInternalDevElementsFromCapture = true;
 
 	/**
-	 * @brief File path used when exporting developer override data.
-	 *
-	 * Explicit developer exports write to this path.
-	 */
-	std::filesystem::path overridesPath = ".flowui/overrides.v1.json";
-
-	/**
 	 * @brief Request automatic saving of developer changes.
 	 *
 	 * @note Reserved. Developer data is currently written only by explicit export
 	 * paths, so this value has no effect.
 	 */
 	bool autoSave = true;
-
-#if FLOW_UI_DEV_MODE
-	/** Capture, retention, and sampling controls for developer monitoring. */
-	devSystems::DevMonitoringConfig monitoring{};
-
-	/** Schema, override, and per-window tree-capture capacity controls. */
-	devSystems::DevToolingConfig tooling{};
-#endif
 };
 
 /**
@@ -826,8 +826,6 @@ enum class TextureSamplingMode : uint8_t {
  * FlowUi managers and should normally be left unchanged.
  */
 struct TextureRef {
-	/** Stable manager lookup retained for overrides and baked changes. */
-	ResourceDomain sourceDomain = ResourceDomain::Auto;
 	std::string_view sourceKey{};
 
 	[[nodiscard]] static constexpr TextureRef fromStable(
@@ -847,6 +845,8 @@ struct TextureRef {
 
 	/** @brief Manager-owned logical texture handle; do not edit manually. */
 	TextureHandle handle{};
+	/** Stable manager lookup retained for overrides and baked changes. */
+	ResourceDomain sourceDomain = ResourceDomain::Auto;
 
 	/** @brief Manager-owned left U coordinate; do not edit manually. */
 	float uv0x = 0.0f;
@@ -876,6 +876,11 @@ struct TextureRef {
 	 */
 	TextureSamplingMode samplingMode = TextureSamplingMode::Linear;
 
+	/** @brief Manager-owned source texture width in pixels; do not edit manually. */
+	int32_t sourceWidth = 0;
+	/** @brief Manager-owned source texture height in pixels; do not edit manually. */
+	int32_t sourceHeight = 0;
+
 	/**
 	 * @brief Enable multiplication by the image command color while rendering.
 	 *
@@ -885,11 +890,6 @@ struct TextureRef {
 
 	/** Manager-owned signal that an unavailable optional visual emits no draw. */
 	bool skipIfUnavailable = false;
-
-	/** @brief Manager-owned source texture width in pixels; do not edit manually. */
-	int32_t sourceWidth = 0;
-	/** @brief Manager-owned source texture height in pixels; do not edit manually. */
-	int32_t sourceHeight = 0;
 };
 
 /**

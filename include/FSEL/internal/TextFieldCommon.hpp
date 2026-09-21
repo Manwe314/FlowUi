@@ -190,13 +190,13 @@ BuildResult requestAndSynchronize(
 	FieldRequest request{
 		.initialText = params.value ? std::string_view(*params.value) : std::string_view{},
 		.config = FieldConfig{
+			.maxBytes = params.maxBytes,
 			.mode = mode,
+			.transactionDetail = params.transactionDetail,
 			.readOnly = !editable,
 			.allowNewline = mode == TextFieldMode::MultiLine,
 			.softWrap = mode == TextFieldMode::MultiLine && softWrap,
 			.allowArrowNavigation = true,
-			.maxBytes = params.maxBytes,
-			.transactionDetail = params.transactionDetail,
 		},
 		.layout = layout,
 		.overlayStyle = overlayStyle,

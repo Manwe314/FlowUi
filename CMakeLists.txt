@@ -453,6 +453,9 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devTooling/bake/DevBakePipeline.cpp
 			src/devSystems/devTooling/catalogue/DevCatalogues.cpp
 			src/devSystems/devTooling/overlay/DevOverlayService.cpp
+			src/devSystems/devTooling/inspect/DevInspectInteractionController.cpp
+			src/devSystems/devInterface/Permanents/Backend/DevInspectSelection.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.cpp
 			src/devSystems/devTooling/override/DevOverrideApply.cpp
 			src/devSystems/devTooling/override/DevOverrideCapture.cpp
 			src/devSystems/devTooling/override/DevOverrideEngine.cpp
@@ -465,8 +468,12 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp
 			src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp
 			src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp
+			src/devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.cpp
+			src/devSystems/devInterface/Inspect/Workbench/DevClayDataDump.cpp
+			src/devSystems/devInterface/Inspect/Workbench/DevClayCodeGenerator.cpp
 			src/devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.cpp
 			src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp
+			src/devSystems/devInterface/Inspect/Inspector/DevClayInspector.cpp
 			src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp
@@ -516,6 +523,9 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayService.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/inspect/DevInspectInteractionController.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideApply.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideCapture.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/override/DevOverrideEngine.hpp>
@@ -539,7 +549,11 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevClayDataDump.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevClayCodeGenerator.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/DevClayInspector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/DevPerformanceContentParameters.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.hpp>

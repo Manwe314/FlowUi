@@ -51,18 +51,18 @@ struct InputOwnedTransaction {
 };
 
 struct InputPendingCommand {
+	std::string payload{};
 	input_field::InputFieldKey fieldId{};
 	TextCommand command = TextCommand::SelectAll;
-	std::string payload{};
 	bool extendSelection = false;
 };
 
 struct InputWrapCacheEntry {
-	uint64_t revision = 0;
-	TextRange hardLineRange{};
-	TextLayoutDescriptor layout{};
 	std::vector<TextRange> visualRanges{};
+	TextRange hardLineRange{};
+	uint64_t revision = 0;
 	size_t visualLineStart = 0;
+	TextLayoutDescriptor layout{};
 	bool hasVisualLineStart = false;
 };
 
@@ -73,32 +73,32 @@ struct InputSubmittedTextSpan {
 };
 
 struct InputFieldState {
-	text::FieldStorage storage{text::SingleLineStorage{}};
-	bool initialized = false;
-	FieldConfig config{};
-	TextLayoutDescriptor layout{};
 	InputFieldOverlayStyle overlayStyle{};
-	std::vector<InputCaretState> carets{};
+	text::FieldStorage storage{text::SingleLineStorage{}};
+	std::unordered_map<size_t, InputWrapCacheEntry> wrapCacheByHardLine{};
 	Clay_ElementId textElementId{};
 	Clay_ElementId contentElementId{};
+	FieldConfig config{};
+	std::vector<InputCaretState> carets{};
 	std::vector<Clay_ElementId> focusRetentionElementIds{};
-	InputCaretFallbackMetrics fallbackMetrics{};
+	std::vector<std::string> visibleLineStrings{};
+	std::vector<VisibleTextLine> visibleLines{};
+	std::vector<InputSubmittedTextSpan> submittedTextSpans{};
+	std::vector<InputOwnedTransaction> frameTransactions{};
+	std::vector<FieldEditTransaction> frameTransactionViews{};
+	std::vector<FieldCommandRequest> frameCommandRequests{};
 	uint64_t lastTouchedEpoch = 0;
 	uint64_t commandsAppliedEpoch = 0;
 	uint64_t revision = 0;
 	uint64_t handleValue = 0;
+	TextLayoutDescriptor layout{};
+	InputCaretFallbackMetrics fallbackMetrics{};
 	Clay_Vector2 scrollOffset{};
-	bool caretRevealPending = true;
 	float maximumScrollX = 0.0f;
 	float maximumScrollY = 0.0f;
+	bool initialized = false;
+	bool caretRevealPending = true;
 	bool modeChangeRejected = false;
-	std::vector<std::string> visibleLineStrings{};
-	std::vector<VisibleTextLine> visibleLines{};
-	std::vector<InputSubmittedTextSpan> submittedTextSpans{};
-	std::unordered_map<size_t, InputWrapCacheEntry> wrapCacheByHardLine{};
-	std::vector<InputOwnedTransaction> frameTransactions{};
-	std::vector<FieldEditTransaction> frameTransactionViews{};
-	std::vector<FieldCommandRequest> frameCommandRequests{};
 };
 
 struct InputSelectionRange {
@@ -120,15 +120,18 @@ struct InputPointerDragState {
 struct InputFieldManagerState {
 	FrameInput currentInput{};
 	FrameInput previousInput{};
-	uint32_t suppressedPrimaryPressClayId = 0;
+	FontFrameView fontView{};
+	InputFieldFrameOverrides frameOverrides{};
 	std::unordered_map<
 		input_field::InputFieldKey,
 		InputFieldState,
 		input_field::InputFieldKeyHash> fieldsById{};
+	InputPointerDragState pointerDrag{};
+	std::string selectedTextScratch{};
+	std::function<void(std::string_view)> setClipboardText{};
+	std::function<std::string()> getClipboardText{};
+	std::vector<InputPendingCommand> pendingCommands{};
 	input_field::InputFieldKey primaryFieldId{};
-	InputManagerConfig config{};
-	FontFrameView fontView{};
-	float pointsToPixelsScale = 96.0f / 72.0f;
 	InputKeyRepeatState leftKeyRepeat{};
 	InputKeyRepeatState rightKeyRepeat{};
 	InputKeyRepeatState upKeyRepeat{};
@@ -137,19 +140,16 @@ struct InputFieldManagerState {
 	InputKeyRepeatState endKeyRepeat{};
 	InputKeyRepeatState backspaceKeyRepeat{};
 	InputKeyRepeatState deleteKeyRepeat{};
-	InputPointerDragState pointerDrag{};
 	double caretBlinkElapsedSeconds = 0.0;
-	bool caretBlinkResetPending = true;
-	bool emitCaretsThisFrame = true;
 	uint64_t currentTouchEpoch = 0;
-	bool dirty = false;
-	InputFieldFrameOverrides frameOverrides{};
-	std::vector<InputPendingCommand> pendingCommands{};
-	std::string selectedTextScratch{};
 	uint64_t nextTransactionSequence = 1;
 	uint64_t nextFieldHandle = 1;
-	std::function<void(std::string_view)> setClipboardText{};
-	std::function<std::string()> getClipboardText{};
+	InputManagerConfig config{};
+	uint32_t suppressedPrimaryPressClayId = 0;
+	float pointsToPixelsScale = 96.0f / 72.0f;
+	bool caretBlinkResetPending = true;
+	bool emitCaretsThisFrame = true;
+	bool dirty = false;
 };
 
 } // namespace detail::manager_storage

@@ -9,6 +9,7 @@
 #include "devSystems/devTooling/bake/DevBakePipeline.hpp"
 #include "devSystems/devTooling/catalogue/DevCatalogues.hpp"
 #include "devSystems/devTooling/overlay/DevOverlayService.hpp"
+#include "devSystems/devTooling/inspect/DevInspectInteractionController.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
 
@@ -43,7 +44,11 @@ public:
 	[[nodiscard]] devMode::DevCatalogues& catalogues() noexcept { return catalogues_; }
 	[[nodiscard]] const devMode::DevCatalogues& catalogues() const noexcept { return catalogues_; }
 
-	/** Attachment surface for a future interface or picking controller. */
+	/** Session-owned application-window inspection controller. */
+	[[nodiscard]] tooling::DevInspectInteractionController& inspect_interaction() noexcept { return inspect_interaction_; }
+	[[nodiscard]] const tooling::DevInspectInteractionController& inspect_interaction() const noexcept { return inspect_interaction_; }
+
+	/** Attachment surface for externally supplied overlays. */
 	void setOverlaySelection(
 		WindowId window,
 		const tooling::DevOverlaySelectionSpec& selection) noexcept;
@@ -74,6 +79,7 @@ private:
 	tooling::DevOverrideEngine overrides_;
 	tooling::DevBakePipeline bakePipeline_;
 	tooling::DevOverlayService overlays_{};
+	tooling::DevInspectInteractionController inspect_interaction_{};
 	devMode::DevCatalogues catalogues_{};
 	std::vector<WindowOverlaySelection> overlaySelections_{};
 };

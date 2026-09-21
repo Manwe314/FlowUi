@@ -26,13 +26,13 @@ namespace FlowUi::devSystems::tooling {
 class DevOverrideEngine {
 public:
 	struct ThemeBakeRecord {
-		DevThemeOverrideTarget target{};
-		DevOverrideFieldKey field{};
-		devMode::DevFieldIndex fieldIndex{};
 		DevOwnedValue original{};
 		DevOwnedValue value{};
+		DevThemeOverrideTarget target{};
+		DevOverrideFieldKey field{};
 		std::vector<const devMode::DevFieldOps*> ownerPath{};
 		std::uint64_t transaction = 0;
+		devMode::DevFieldIndex fieldIndex{};
 		bool schemaValid = false;
 		bool dirty = false;
 	};

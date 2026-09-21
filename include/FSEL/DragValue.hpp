@@ -26,37 +26,16 @@ enum class DragValueInteractionMode : uint8_t {
 
 template<NumericValueType T>
 struct DragValueParameters {
-	/** Borrowed authoritative native value. Null disables interaction. */
-	T* value = nullptr;
-	std::optional<T> minimum = std::nullopt;
-	std::optional<T> maximum = std::nullopt;
-	T step = T{1};
-	float pixelsPerStep = 4.0f;
-	float dragThreshold = 4.0f;
-	bool allowTextEntry = true;
-	NumericTextSyncPolicy syncPolicy = NumericTextSyncPolicy::Live;
-	NumericTextBoundsPolicy boundsPolicy = NumericTextBoundsPolicy::SoftClamp;
-	NumericFormatOptions format{};
 	NumericEditActions edit{};
+	TextFieldCaretOverrides caret{};
 	ActionCall onSubmit{};
 	ActionCall onFocus{};
 	ActionCall onBlur{};
 	ActionCall onUndoRequested{};
 	ActionCall onRedoRequested{};
-
-	bool enabled = true;
-	bool readOnly = false;
-	bool valid = true;
-	bool clearFocusOnSubmit = true;
+	/** Borrowed authoritative native value. Null disables interaction. */
+	T* value = nullptr;
 	size_t maxBytes = 128;
-	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
-
-	std::optional<Clay_Sizing> sizing = std::nullopt;
-	std::optional<float> viewportWidth = std::nullopt;
-	std::optional<float> viewportHeight = std::nullopt;
-	std::optional<Clay_Padding> padding = std::nullopt;
-	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
-	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
 
 	TextFieldStateOverrides idleOverrides{};
 	TextFieldStateOverrides hoveredOverrides{};
@@ -66,15 +45,36 @@ struct DragValueParameters {
 	TextFieldStateOverrides invalidOverrides{};
 	TextFieldStateOverrides disabledOverrides{};
 
+	std::optional<Clay_Sizing> sizing = std::nullopt;
+	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	NumericFormatOptions format{};
+	std::optional<T> minimum = std::nullopt;
+	std::optional<T> maximum = std::nullopt;
+	std::optional<float> viewportWidth = std::nullopt;
+	std::optional<float> viewportHeight = std::nullopt;
+
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
 	std::optional<uint32_t> fontWeight = std::nullopt;
-	std::optional<FontStyle> fontStyle = std::nullopt;
+	T step = T{1};
+	float pixelsPerStep = 4.0f;
+	float dragThreshold = 4.0f;
+	NumericTextSyncPolicy syncPolicy = NumericTextSyncPolicy::Live;
+	NumericTextBoundsPolicy boundsPolicy = NumericTextBoundsPolicy::SoftClamp;
+	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	std::optional<Clay_Padding> padding = std::nullopt;
 	std::optional<uint16_t> fontSize = std::nullopt;
 	std::optional<uint16_t> letterSpacing = std::nullopt;
-	TextFieldCaretOverrides caret{};
+	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<CursorType> dragCursor = std::nullopt;
 	std::optional<CursorType> editCursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	bool allowTextEntry = true;
+
+	bool enabled = true;
+	bool readOnly = false;
+	bool valid = true;
+	bool clearFocusOnSubmit = true;
 };
 
 template<NumericValueType T>
@@ -293,13 +293,13 @@ struct DragValue {
 		FieldRequest request{
 			.initialText = formattedValue.view(),
 			.config = FieldConfig{
+				.maxBytes = context.params.maxBytes,
 				.mode = TextFieldMode::SingleLine,
+				.transactionDetail = context.params.transactionDetail,
 				.readOnly = !textEditable,
 				.allowNewline = false,
 				.softWrap = false,
 				.allowArrowNavigation = true,
-				.maxBytes = context.params.maxBytes,
-				.transactionDetail = context.params.transactionDetail,
 			},
 			.layout = TextLayoutDescriptor{
 				.fontId = textConfig.fontId,

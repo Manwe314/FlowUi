@@ -112,12 +112,24 @@ struct FontVariantData {
  * need direct access to loaded font metrics or atlas placement data.
  */
 struct FontFaceData {
-	/** @brief FlowUi font id. */
-	FontId id = 0;
-	/** @brief Font face name. */
-	std::string name;
+
+	/** @brief Return the default variant, or nullptr if unavailable. */
+	const FontVariantData* defaultVariant() const {
+		if (variants.empty() || defaultVariantIndex >= variants.size()) {
+			return nullptr;
+		}
+		return &variants[defaultVariantIndex];
+	}
 	/** @brief Source file path. */
 	std::filesystem::path sourcePath;
+	/** @brief Font face name. */
+	std::string name;
+	/** @brief Raw metadata associated with the face. */
+	std::string metadata;
+	/** @brief Baked variants for this face. */
+	std::vector<FontVariantData> variants;
+	/** @brief FlowUi font id. */
+	FontId id = 0;
 	/** @brief Atlas layer used by this font face. */
 	uint32_t atlasLayer = 0;
 	/** @brief Atlas width in pixels. */
@@ -134,20 +146,8 @@ struct FontFaceData {
 	uint32_t sourceAtlasHeight = 0;
 	/** @brief Source atlas image type from the loaded font data. */
 	uint32_t imageType = 0;
-	/** @brief Raw metadata associated with the face. */
-	std::string metadata;
 	/** @brief Default variant index. */
 	uint32_t defaultVariantIndex = 0;
-	/** @brief Baked variants for this face. */
-	std::vector<FontVariantData> variants;
-
-	/** @brief Return the default variant, or nullptr if unavailable. */
-	const FontVariantData* defaultVariant() const {
-		if (variants.empty() || defaultVariantIndex >= variants.size()) {
-			return nullptr;
-		}
-		return &variants[defaultVariantIndex];
-	}
 };
 
 /**

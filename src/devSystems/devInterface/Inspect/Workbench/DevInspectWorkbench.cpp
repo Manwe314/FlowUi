@@ -2,6 +2,8 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -239,10 +241,31 @@ tooling::DevOverlayModeFlags toggledFlag(
 PreviewSelection resolvePreviewSelection(const DevInspectContentParameters& params) {
 	PreviewSelection result{};
 	if (!params.app || !params.interfaceState ||
-		!params.interfaceState->selectedElementId ||
 		!params.app->hasWindow(params.interfaceState->selectedWindowId)) return result;
 	result.snapshot = &params.app->ui(
 		params.interfaceState->selectedWindowId).devTreeSnapshot();
+
+#if FLOW_UI_DEV_CAPTURE_CLAY
+	if (params.interfaceState->inspectSelectedNodeKind == kDevInterfaceClayNodeKind &&
+		params.interfaceState->inspectSelectedNodeKey != 0u) {
+		const uint64_t selectionKey = params.interfaceState->inspectSelectedNodeKey;
+		for (uint32_t nodeIndex = 0; nodeIndex < result.snapshot->clay.nodes.size(); ++nodeIndex) {
+			const tooling::DevClayNode& node = result.snapshot->clay.nodes[nodeIndex];
+			if (stableNodeKey((static_cast<uint64_t>(node.rootIndex) << 32u) | nodeIndex, node.clayId) ==
+				selectionKey) {
+				result.clay = &node;
+				if (node.directFlowOwner < result.snapshot->flow.nodes.size()) {
+					result.flow = &result.snapshot->flow.nodes[node.directFlowOwner];
+					result.flowIndex = node.directFlowOwner;
+				}
+				return result;
+			}
+		}
+		return {};
+	}
+#endif
+
+	if (!params.interfaceState->selectedElementId) return result;
 	const auto found = std::ranges::find_if(
 		result.snapshot->flow.nodes,
 		[params](const tooling::DevFlowNode& node) {
@@ -365,12 +388,11 @@ void drawPreviewControl(
 	TextureRef icon = {}) {
 	context.uiManager.createElement(kDevPreviewControl, id)
 		.setParameters(DevPreviewControlParameters{
+			.icon = icon,
+			.label = label,
 			.preview = &state,
 			.command = command,
-			.label = label,
-			.icon = icon,
-			.active = active,
-		})
+			.active = active,})
 		.setDevInternalCapture(true)
 		.draw();
 }
@@ -398,9 +420,6 @@ Clay_ElementDeclaration previewToolbarGroup() {
 }
 
 struct OverviewTelemetry {
-	const tooling::DevTreeSnapshot* snapshot = nullptr;
-	const tooling::DevFlowNode* flow = nullptr;
-	tooling::DevFlowNodeIndex flowIndex = tooling::InvalidFlowNode;
 #if FLOW_UI_DEV_CAPTURE_CLAY
 	const tooling::DevClayNode* clay = nullptr;
 #endif
@@ -439,6 +458,9 @@ struct OverviewTelemetry {
 	std::string engineMemory{"Unavailable"};
 	std::string residentMemory{"Unavailable"};
 	std::string gpuMemory{"Unavailable"};
+	const tooling::DevTreeSnapshot* snapshot = nullptr;
+	const tooling::DevFlowNode* flow = nullptr;
+	tooling::DevFlowNodeIndex flowIndex = tooling::InvalidFlowNode;
 	uint64_t invocationCount = 0u;
 	bool timingAvailable = false;
 };
@@ -1882,50 +1904,6 @@ void drawPreviewLabel(
 	}
 }
 
-void drawPreviewGrid(
-	DevPreviewCanvas::BuildContext& context,
-	DevPreviewState& state,
-	IndexedElementIDSequence& ids) {
-	if (state.canvasWidth <= 0.0f || state.canvasHeight <= 0.0f) return;
-	float minorStep = 10.0f;
-	float majorStep = 50.0f;
-	if (minorStep * state.camera.zoomScale < 6.0f) minorStep = 50.0f;
-	if (minorStep * state.camera.zoomScale < 6.0f) minorStep = 200.0f;
-	if (majorStep < minorStep) majorStep = minorStep * 4.0f;
-	const Clay_Vector2 worldMin = canvasPointerToWorld(state, 0.0f, 0.0f);
-	const Clay_Vector2 worldMax = canvasPointerToWorld(
-		state, state.canvasWidth, state.canvasHeight);
-	const int firstX = static_cast<int>(std::floor(worldMin.x / minorStep));
-	const int lastX = static_cast<int>(std::ceil(worldMax.x / minorStep));
-	const int firstY = static_cast<int>(std::floor(worldMin.y / minorStep));
-	const int lastY = static_cast<int>(std::ceil(worldMax.y / minorStep));
-	const int maxLines = 160;
-	for (int grid = firstX, count = 0; grid <= lastX && count < maxLines; ++grid, ++count) {
-		const float world = static_cast<float>(grid) * minorStep;
-		const float x = worldToCanvas(state, world, 0.0f).x;
-		if (x < 0.0f || x > state.canvasWidth) continue;
-		const bool axis = std::abs(world) < 0.01f;
-		const bool major = std::fmod(std::abs(world), majorStep) < 0.01f;
-		const Clay_Color color = axis
-			? interface_theme::kAccentSignalBlue
-			: major ? Flow_Color("#3F4D55A0") : Flow_Color("#26343B70");
-		drawPreviewRect(context, state, ids, x, 0.0f, axis ? 1.5f : 1.0f,
-			state.canvasHeight, color, {}, {}, {}, 0);
-	}
-	for (int grid = firstY, count = 0; grid <= lastY && count < maxLines; ++grid, ++count) {
-		const float world = static_cast<float>(grid) * minorStep;
-		const float y = worldToCanvas(state, 0.0f, world).y;
-		if (y < 0.0f || y > state.canvasHeight) continue;
-		const bool axis = std::abs(world) < 0.01f;
-		const bool major = std::fmod(std::abs(world), majorStep) < 0.01f;
-		const Clay_Color color = axis
-			? interface_theme::kAccentSignalBlue
-			: major ? Flow_Color("#3F4D55A0") : Flow_Color("#26343B70");
-		drawPreviewRect(context, state, ids, 0.0f, y, state.canvasWidth,
-			axis ? 1.5f : 1.0f, color, {}, {}, {}, 0);
-	}
-}
-
 #if FLOW_UI_DEV_CAPTURE_CLAY
 void drawCapturedSubtree(
 	DevPreviewCanvas::BuildContext& context,
@@ -2177,7 +2155,6 @@ void DevPreviewCanvas::buildElement(BuildContext& context) {
 			}
 		}
 		IndexedElementIDSequence overlayIds{kPreviewOverlay};
-		drawPreviewGrid(context, *state, overlayIds);
 		Clay_ElementDeclaration image{};
 		image.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
@@ -2238,7 +2215,7 @@ void DevPreview::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+		.width = CLAY_SIZING_PERCENT(1.0f), .height = CLAY_SIZING_PERCENT(1.0f)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth0Keel;
 	CLAY(context.clayID(), root) {
@@ -2276,20 +2253,19 @@ void DevPreview::buildElement(BuildContext& context) {
 				CLAY(context.clayID(kPreviewZoomReadout), readout) {
 					context.uiManager.createElement(FSEL::kNumberInputFloat, kPreviewZoom)
 						.setParameters(FSEL::NumberInputParameters<float>{
-							.value = &state.zoomPercent,
-							.minimum = state.camera.minZoom * 100.0f,
-							.maximum = state.camera.maxZoom * 100.0f,
-							.step = 5.0f,
-							.stepButtons = FSEL::NumberInputStepButtons::None,
-							.maxBytes = 8,
 							.placeholder = "100",
+							.value = &state.zoomPercent,
+							.maxBytes = 8,
 							.sizing = Clay_Sizing{
 								.width = CLAY_SIZING_FIXED(40),
 								.height = CLAY_SIZING_FIXED(22)},
+							.minimum = state.camera.minZoom * 100.0f,
+							.maximum = state.camera.maxZoom * 100.0f,
 							.viewportWidth = 32.0f,
 							.viewportHeight = 20.0f,
-							.padding = Clay_Padding{4, 2, 0, 0},
-							})
+							.step = 5.0f,
+							.stepButtons = FSEL::NumberInputStepButtons::None,
+							.padding = Clay_Padding{4, 2, 0, 0},})
 						.setDevInternalCapture(true).draw();
 					Clay_ElementDeclaration suffix{};
 					suffix.layout.sizing = {
@@ -2375,7 +2351,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+		.width = CLAY_SIZING_PERCENT(1.0f), .height = CLAY_SIZING_PERCENT(1.0f)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth1Panel;
 	root.clip = {.horizontal = true, .vertical = true};
@@ -2414,7 +2390,14 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 		body.layout.padding = Clay_Padding{8, 8, 8, 8};
 		body.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		body.layout.childGap = 7;
-		body.clip = {.horizontal = true, .vertical = true};
+		const Clay_ScrollContainerData scroll =
+			Clay_GetScrollContainerData(context.clayID(kOverviewBody));
+		body.clip = {
+			.horizontal = true,
+			.vertical = true,
+			.childOffset = scroll.found && scroll.scrollPosition
+				? *scroll.scrollPosition : Clay_Vector2{},
+		};
 		CLAY(context.clayID(kOverviewBody), body) {
 			IndexedElementIDSequence identityMetrics{kOverviewMetric};
 			CLAY(context.clayID(kOverviewIdentity), overviewPanel()) {
@@ -2599,7 +2582,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+		.width = CLAY_SIZING_PERCENT(1.0f), .height = CLAY_SIZING_PERCENT(1.0f)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth1Panel;
 	root.clip = {.horizontal = true, .vertical = true};
@@ -2641,7 +2624,14 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 		body.layout.padding = Clay_Padding{8, 8, 8, 8};
 		body.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		body.layout.childGap = 7;
-		body.clip = {.horizontal = true, .vertical = true};
+		const Clay_ScrollContainerData scroll =
+			Clay_GetScrollContainerData(context.clayID(kChangesBody));
+		body.clip = {
+			.horizontal = true,
+			.vertical = true,
+			.childOffset = scroll.found && scroll.scrollPosition
+				? *scroll.scrollPosition : Clay_Vector2{},
+		};
 		CLAY(context.clayID(kChangesBody), body) {
 			Clay_ElementDeclaration changes{};
 			changes.layout.sizing = {
@@ -2807,8 +2797,8 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 void DevClaySubTree::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration container{};
 	container.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1.0f),
+		.height = CLAY_SIZING_PERCENT(1.0f),
 	};
 	container.backgroundColor = interface_theme::kDepth0Keel;
 	container.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
@@ -3032,8 +3022,8 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 void DevWorkbenchCard::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration card{};
 	card.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(0.5f),
+		.height = CLAY_SIZING_PERCENT(1.0f),
 	};
 	card.backgroundColor = interface_theme::kDepth1Panel;
 	card.cornerRadius = CLAY_CORNER_RADIUS(5);
@@ -3095,7 +3085,7 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 			Clay_ElementDeclaration row{};
 			row.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
-				.height = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_PERCENT(0.5f),
 			};
 			row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 			row.layout.childGap = kWorkbenchGap;
@@ -3116,6 +3106,19 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 
 void DevInspectWorkbench::buildElement(BuildContext& context) {
 	DevInterfaceState* state = context.params.interfaceState;
+
+	if (state && state->inspectSelectedNodeKind == kDevInterfaceClayNodeKind &&
+		state->inspectSelectedNodeKey != 0u) {
+		context.uiManager.createElement(kDevClayWorkbench, "clay-workbench")
+			.setParameters(DevClayWorkbenchParameters{
+				.inspect = context.params,
+				.selectionKey = state->inspectSelectedNodeKey,
+			})
+			.setDevInternalCapture(true)
+			.draw();
+		return;
+	}
+
 	App* app = context.params.app;
 	const tooling::DevTreeSnapshot* snapshot = nullptr;
 	const tooling::DevFlowNode* selected = nullptr;
@@ -3168,7 +3171,7 @@ void DevInspectWorkbench::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1.0f), .height = CLAY_SIZING_PERCENT(1.0f),
 	};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth0Keel;

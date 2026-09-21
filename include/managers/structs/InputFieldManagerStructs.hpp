@@ -231,8 +231,20 @@ enum class CaretRequestKind : uint8_t {
  * back to InputManagerConfig) for caret and selection presentation.
  */
 struct FieldConfig {
+
+	/**
+	 * @brief Maximum stored UTF-8 byte count.
+	 *
+	 * Insertions that would make the field text exceed this byte limit are
+	 * ignored. The limit is measured in bytes, not Unicode codepoints or visible
+	 * glyphs.
+	 */
+	size_t maxBytes = std::numeric_limits<size_t>::max();
 	/** @brief Selects compact single-line or chunked multiline behavior. */
 	TextFieldMode mode = TextFieldMode::SingleLine;
+
+	/** @brief Amount of byte content retained in frame-scoped edit reports. */
+	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
 
 	/**
 	 * @brief Whether the field rejects text edits.
@@ -264,18 +276,6 @@ struct FieldConfig {
 	 * surrounding UI or application shortcuts.
 	 */
 	bool allowArrowNavigation = true;
-
-	/**
-	 * @brief Maximum stored UTF-8 byte count.
-	 *
-	 * Insertions that would make the field text exceed this byte limit are
-	 * ignored. The limit is measured in bytes, not Unicode codepoints or visible
-	 * glyphs.
-	 */
-	size_t maxBytes = std::numeric_limits<size_t>::max();
-
-	/** @brief Amount of byte content retained in frame-scoped edit reports. */
-	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
 };
 
 /**
@@ -341,8 +341,6 @@ struct FieldRequest {
  * detection from this result.
  */
 struct FieldQueryResult {
-	/** @brief Frame-scoped token for submitTextSpan(). */
-	FieldHandle field{};
 
 	/**
 	 * @brief Current text for the field.
@@ -352,18 +350,29 @@ struct FieldQueryResult {
 	 * copy()/forEachChunk() for multiline documents.
 	 */
 	FieldTextView text{};
+	/** @brief Frame-scoped token for submitTextSpan(). */
+	FieldHandle field{};
+
+	/** Visible single-line or multiline slices for this viewport. */
+	std::span<const VisibleTextLine> visibleLines{};
+
+	/** @brief Successful edits published for this field during the current frame. */
+	std::span<const FieldEditTransaction> transactions{};
+
+	/** @brief Undo, redo, submit, or cancel requests from this frame. */
+	std::span<const FieldCommandRequest> commandRequests{};
+
+	/** @brief Monotonic revision incremented once per successful atomic edit. */
+	uint64_t revision = 0;
+
+	/** Current manager-owned scroll position in layout pixels. */
+	Clay_Vector2 scrollOffset{};
 
 	/** @brief Actual retained mode after applying the requested mode migration. */
 	TextFieldMode mode = TextFieldMode::SingleLine;
 
 	/** True when a multiline-to-single-line request was rejected due to newlines. */
 	bool modeChangeRejected = false;
-
-	/** Visible single-line or multiline slices for this viewport. */
-	std::span<const VisibleTextLine> visibleLines{};
-
-	/** Current manager-owned scroll position in layout pixels. */
-	Clay_Vector2 scrollOffset{};
 
 	/**
 	 * @brief Whether this field owns the primary caret.
@@ -379,15 +388,6 @@ struct FieldQueryResult {
 	 * True when any caret in the field has different anchor and head offsets.
 	 */
 	bool hasSelection = false;
-
-	/** @brief Monotonic revision incremented once per successful atomic edit. */
-	uint64_t revision = 0;
-
-	/** @brief Successful edits published for this field during the current frame. */
-	std::span<const FieldEditTransaction> transactions{};
-
-	/** @brief Undo, redo, submit, or cancel requests from this frame. */
-	std::span<const FieldCommandRequest> commandRequests{};
 };
 
 /** @} */

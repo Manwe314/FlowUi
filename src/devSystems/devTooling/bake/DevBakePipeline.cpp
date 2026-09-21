@@ -742,16 +742,15 @@ std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const noexcept {
 			overrides_.appliedOverrides().records().size() + overrides_.themeBakeRecords().size());
 		for (const auto& entry : manifest_.entries) {
 			result.push_back({
-				.targetKind = entry.targetKind,
-				.definition = entry.definition,
-				.themeType = entry.themeType,
 				.themeVariant = entry.themeVariant,
-				.instance = entry.instanceKey,
-				.fieldId = entry.fieldId,
 				.fieldPath = entry.fieldPath,
 				.bakedValueString = entry.valueJson,
-				.isBaked = true,
-			});
+				.definition = entry.definition,
+				.themeType = entry.themeType,
+				.instance = entry.instanceKey,
+				.fieldId = entry.fieldId,
+				.targetKind = entry.targetKind,
+				.isBaked = true,});
 		}
 		const devMode::DevSchemaView schema = schemas_.view();
 		if (!schema) return result;
@@ -770,15 +769,15 @@ std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const noexcept {
 				return;
 			}
 			result.push_back({
-				.targetKind = live.targetKind,
-				.definition = live.definition,
-				.themeType = live.themeType,
 				.themeVariant = live.themeVariant,
-				.instance = live.instanceKey,
-				.fieldId = live.fieldId,
 				.fieldPath = live.fieldPath,
 				.activeValueString = live.valueJson,
 				.bakedValueString = baked == manifest_.entries.end() ? std::string{} : baked->valueJson,
+				.definition = live.definition,
+				.themeType = live.themeType,
+				.instance = live.instanceKey,
+				.fieldId = live.fieldId,
+				.targetKind = live.targetKind,
 				.isOverridden = true,
 				.isBaked = baked != manifest_.entries.end(),
 			});

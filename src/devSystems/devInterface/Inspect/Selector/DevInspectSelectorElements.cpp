@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -342,19 +343,8 @@ void DevNode::onReleased(InteractionContext& context) {
 	}
 	DevInterfaceState* state = context.params.interfaceState;
 	if (!state || context.params.selectionKey == 0u) return;
-	const bool selected = state->inspectSelectedNodeKind == context.params.kind &&
-		state->inspectSelectedNodeKey == context.params.selectionKey;
-	if (selected) {
-		state->inspectSelectedNodeKind = 0u;
-		state->inspectSelectedNodeKey = 0u;
-		state->selectedElementId = {};
-		return;
-	}
-	state->inspectSelectedNodeKind = context.params.kind;
-	state->inspectSelectedNodeKey = context.params.selectionKey;
-	state->selectedElementId = context.params.kind == kDevInterfaceFlowNodeKind
-		? FlowElementID{.value = context.params.selectionKey}
-		: FlowElementID{};
+	if (context.params.app) apply_inspect_selection(*context.params.app, *state,
+		context.params.kind, context.params.selectionKey, true);
 }
 
 DevNodeResources::DevNodeResources(App& app) {
@@ -391,6 +381,18 @@ void DevNode::runLogic(InteractionContext& context) {
 }
 
 void DevNode::buildElement(BuildContext& context) {
+	if (context.params.force_expanded) context.state().isExpanded = true;
+	if (context.params.reveal_selected) {
+		const auto row = Clay_GetElementData(context.clayID());
+		const auto viewport = Clay_GetElementData(context.params.forest_scroll_id);
+		const auto scroll = Clay_GetScrollContainerData(context.params.forest_scroll_id);
+		if (row.found && viewport.found && scroll.found && scroll.scrollPosition) {
+			if (row.boundingBox.y < viewport.boundingBox.y)
+				scroll.scrollPosition->y += viewport.boundingBox.y - row.boundingBox.y;
+			else if (row.boundingBox.y + row.boundingBox.height > viewport.boundingBox.y + viewport.boundingBox.height)
+				scroll.scrollPosition->y -= row.boundingBox.y + row.boundingBox.height - viewport.boundingBox.y - viewport.boundingBox.height;
+		}
+	}
 	if (context.params.expandedOutput) {
 		*context.params.expandedOutput = context.state().isExpanded;
 	}
@@ -604,6 +606,11 @@ void DevInterfaceSelectorForest::buildElement(BuildContext& context) {
 			bool drewNode = false;
 
 			if (state->inspectForest == kDevInterfaceFlowForest) {
+				uint32_t reveal_index = tooling::InvalidFlowNode;
+				if (state->inspect_reveal_frames) {
+					for (uint32_t index = 0; index < snapshot.flow.nodes.size(); ++index)
+						if (snapshot.flow.nodes[index].instance.value == state->inspectSelectedNodeKey) reveal_index = index;
+				}
 				const auto matches = [&](tooling::DevFlowNodeIndex index) {
 					const tooling::DevFlowNode& node = snapshot.flow.nodes[index];
 					if (state->inspectDefinitionFilter != kDevInterfaceAllDefinitions &&
@@ -630,14 +637,17 @@ void DevInterfaceSelectorForest::buildElement(BuildContext& context) {
 						bool rowExpanded = true;
 						context.uiManager.createElement(kDevNode, Keyed(kNodeRow, rowKey))
 							.setParameters(DevNodeParameters{
+								.debugName = name,
 								.interfaceState = state,
+								.app = app,
+								.forest_scroll_id = context.clayID(),
+								.force_expanded = reveal_index >= current && reveal_index < node.subtreeEnd,
+								.reveal_selected = reveal_index == current,
 								.expandedOutput = &rowExpanded,
 								.kind = kDevInterfaceFlowNodeKind,
 								.selectionKey = node.instance.value,
 								.depth = node.depth,
-								.debugName = name,
-								.hasChildren = node.firstChild != tooling::InvalidFlowNode,
-							})
+								.hasChildren = node.firstChild != tooling::InvalidFlowNode,})
 							.setDevInternalCapture(true)
 							.draw();
 						drewNode = true;
@@ -683,14 +693,14 @@ void DevInterfaceSelectorForest::buildElement(BuildContext& context) {
 						bool rowExpanded = true;
 						context.uiManager.createElement(kDevNode, Keyed(kNodeRow, rowKey))
 							.setParameters(DevNodeParameters{
+								.debugName = name,
 								.interfaceState = state,
+								.app = app,
 								.expandedOutput = &rowExpanded,
 								.kind = kDevInterfaceClayNodeKind,
 								.selectionKey = selectionKey,
 								.depth = node.depthWithinRoot,
-								.debugName = name,
-								.hasChildren = node.firstChild != tooling::InvalidClayNode,
-							})
+								.hasChildren = node.firstChild != tooling::InvalidClayNode,})
 							.setDevInternalCapture(true)
 							.draw();
 						drewNode = true;
@@ -704,6 +714,7 @@ void DevInterfaceSelectorForest::buildElement(BuildContext& context) {
 				}
 			}
 #endif
+			if (state->inspect_reveal_frames) --state->inspect_reveal_frames;
 			if (!drewNode) drawEmptyForestMessage(context, "No nodes match the filters");
 			}
 		}

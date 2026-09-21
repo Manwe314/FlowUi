@@ -70,17 +70,21 @@ struct DevInterfaceSelectorSearch {
 [[nodiscard]] uint64_t stableNodeKey(uint64_t value, uint64_t salt) noexcept;
 
 struct DevNodeParameters {
+	std::string_view debugName{};
+	std::string_view detailText{};
+	std::string_view badgeText{};
 	DevInterfaceState* interfaceState = nullptr;
+	App* app = nullptr;
+	Clay_ElementId forest_scroll_id{};
+	bool force_expanded = false;
+	bool reveal_selected = false;
 	// Optional frame-local output used by the forest after draw() completes.
 	// Expansion remains owned by DevNode's retained state.
 	bool* expandedOutput = nullptr;
 	uint64_t kind = 0u;
 	uint64_t selectionKey = 0u;
-	uint32_t depth = 0u;
-	std::string_view debugName{};
-	std::string_view detailText{};
-	std::string_view badgeText{};
 	Clay_Color badgeColor{};
+	uint32_t depth = 0u;
 	bool hasChildren = false;
 	bool hasChanges = false;
 };

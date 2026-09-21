@@ -30,11 +30,10 @@ IconCacheController::IconCacheController(
 	  atlasPadding(config.atlasPadding), sizeReuseTolerance(std::max(1u, config.sizeBucketStep)),
 	  maxAtlasPages(std::max(1u, config.maxAtlasPages)) {
 	const storage::StringId name = storageSystem.intern("flowui.icon.atlas.sampler");
-	atlasSampler = storageSystem.acquireSampler(storage::SamplerDesc{
+	atlasSampler = storageSystem.acquireSampler(storage::SamplerDesc{ .debugName = name,
 		.minFilter = storage::FilterMode::Linear, .magFilter = storage::FilterMode::Linear,
 		.addressU = storage::AddressMode::ClampToEdge, .addressV = storage::AddressMode::ClampToEdge,
-		.addressW = storage::AddressMode::ClampToEdge, .debugName = name,
-	});
+		.addressW = storage::AddressMode::ClampToEdge,});
 }
 
 IconCacheController::~IconCacheController() noexcept {

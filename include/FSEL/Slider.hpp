@@ -62,22 +62,20 @@ struct SliderStateOverrides {
 };
 
 struct SliderParameters {
-	SliderAxis axis = SliderAxis::Horizontal;
-	SliderPressBehavior pressBehavior = SliderPressBehavior::JumpToPointer;
-	bool inverted = false;
+	ActionCall onBegin{};
+	ActionCall onChanged{};
+	ActionCall onCommit{};
+	/** Optional snapping interval. For example, 0.01 produces hundredths. */
+	std::optional<double> roundingStep = std::nullopt;
 
 	/** Borrowed authoritative value. Null disables interaction. */
 	double* value = nullptr;
 	double minimum = 0.0;
 	double maximum = 1.0;
-	/** Optional snapping interval. For example, 0.01 produces hundredths. */
-	std::optional<double> roundingStep = std::nullopt;
-	bool enabled = true;
-	ActionCall onBegin{};
-	ActionCall onChanged{};
-	ActionCall onCommit{};
-
-	SliderVisualParts visualParts = SliderVisualParts::All;
+	SliderStateOverrides idleOverrides{};
+	SliderStateOverrides hoveredOverrides{};
+	SliderStateOverrides draggingOverrides{};
+	SliderStateOverrides disabledOverrides{};
 
 	// Optional theme overrides
 	std::optional<float> length = std::nullopt;
@@ -87,16 +85,18 @@ struct SliderParameters {
 	std::optional<float> thumbThickness = std::nullopt;
 	std::optional<float> trackRoundness = std::nullopt;
 	std::optional<float> thumbRoundness = std::nullopt;
+	SliderAxis axis = SliderAxis::Horizontal;
+	SliderPressBehavior pressBehavior = SliderPressBehavior::JumpToPointer;
+
+	SliderVisualParts visualParts = SliderVisualParts::All;
 	std::optional<Clay_BorderWidth> trackBorderWidth = std::nullopt;
 	std::optional<Clay_BorderWidth> fillBorderWidth = std::nullopt;
 	std::optional<Clay_BorderWidth> thumbBorderWidth = std::nullopt;
-	SliderStateOverrides idleOverrides{};
-	SliderStateOverrides hoveredOverrides{};
-	SliderStateOverrides draggingOverrides{};
-	SliderStateOverrides disabledOverrides{};
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<CursorType> draggingCursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	bool inverted = false;
+	bool enabled = true;
 };
 
 struct SliderState {

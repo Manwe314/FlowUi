@@ -80,16 +80,16 @@ struct DevBakeStatusSnapshot {
 };
 
 struct DevBakeDiffEntry {
-	DevBakeTargetKind targetKind = DevBakeTargetKind::Element;
-	FlowDefinitionID definition{};
-	devMode::DevTypeId themeType = 0;
 	std::string themeVariant{};
-	::FlowUi::detail::element::ElementInstanceKey instance{};
-	devMode::DevFieldId fieldId = 0;
 	std::string fieldPath{};
 	std::string authoredValueString{};
 	std::string activeValueString{};
 	std::string bakedValueString{};
+	FlowDefinitionID definition{};
+	devMode::DevTypeId themeType = 0;
+	::FlowUi::detail::element::ElementInstanceKey instance{};
+	devMode::DevFieldId fieldId = 0;
+	DevBakeTargetKind targetKind = DevBakeTargetKind::Element;
 	bool isOverridden = false;
 	bool isBaked = false;
 };

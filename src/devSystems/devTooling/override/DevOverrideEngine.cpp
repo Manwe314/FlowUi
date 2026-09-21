@@ -102,9 +102,8 @@ void DevOverrideEngine::commitAtSafePoint(
 			if (rejected != DevCommandStatus::Applied) {
 				results_.push_back({
 					.transaction = transaction.transaction,
-					.status = rejected,
 					.command = rejectedIndex,
-				});
+					.status = rejected,});
 				++rejectedTransactions_;
 				continue;
 			}
@@ -456,16 +455,15 @@ void DevOverrideEngine::applyCommand(
 		if (found == themeRecords_.end()) {
 			if (!resolved.originalThemeValue) throw std::bad_alloc{};
 			themeRecords_.push_back(ThemeBakeRecord{
-				.target = std::move(command.theme),
-				.field = std::move(command.field),
-				.fieldIndex = resolved.index,
 				.original = std::move(resolved.originalThemeValue),
 				.value = std::move(command.value),
+				.target = std::move(command.theme),
+				.field = std::move(command.field),
 				.ownerPath = std::move(resolved.ownerPath),
 				.transaction = transaction,
+				.fieldIndex = resolved.index,
 				.schemaValid = true,
-				.dirty = true,
-			});
+				.dirty = true,});
 		} else {
 			found->fieldIndex = resolved.index;
 			found->ownerPath = std::move(resolved.ownerPath);

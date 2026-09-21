@@ -94,8 +94,8 @@ struct SharedUiByteResources {
 
 struct PreparedUiFrame {
 	std::span<const UiRun> runs{};
-	uint32_t instanceCount = 0;
 	FlowUi::detail::storage::FrameEpoch epoch = 0;
+	uint32_t instanceCount = 0;
 	uint32_t originatingFrameSlot = 0u;
 };
 

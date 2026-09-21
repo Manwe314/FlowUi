@@ -88,13 +88,15 @@ struct DevRulerState {
 };
 
 struct DevPreviewState {
-	DevPreviewCamera camera{};
+#if FLOWUI_PUBLIC_VULKAN_INTEROP
+#endif
 	tooling::DevOverlayModeFlags sidecarFlags =
-		tooling::DevOverlayModeFlags::Default;
-	DevPreviewToolMode activeTool = DevPreviewToolMode::PanInspect;
+		tooling::DevOverlayModeFlags::None;
+	uint64_t lastSelectedNodeKey = 0u;
+	DevPreviewCamera camera{};
 	DevRulerState ruler{};
+	DevPreviewToolMode activeTool = DevPreviewToolMode::PanInspect;
 	float zoomPercent = 100.0f;
-	bool isDraggingPan = false;
 	float dragStartMouseX = 0.0f;
 	float dragStartMouseY = 0.0f;
 	float dragStartPanX = 0.0f;
@@ -103,11 +105,9 @@ struct DevPreviewState {
 	float canvasHeight = 0.0f;
 	float elementWidth = 0.0f;
 	float elementHeight = 0.0f;
-	uint64_t lastSelectedNodeKey = 0u;
-	bool pendingAutoFit = true;
-#if FLOWUI_PUBLIC_VULKAN_INTEROP
 	uint32_t viewportColorFormat = 0u;
-#endif
+	bool isDraggingPan = false;
+	bool pendingAutoFit = true;
 };
 
 struct PreviewSelection {
@@ -143,10 +143,10 @@ enum class DevPreviewControlCommand : uint8_t {
 };
 
 struct DevPreviewControlParameters {
+	TextureRef icon{};
+	std::string_view label{};
 	DevPreviewState* preview = nullptr;
 	DevPreviewControlCommand command = DevPreviewControlCommand::Fit;
-	std::string_view label{};
-	TextureRef icon{};
 	bool active = false;
 };
 

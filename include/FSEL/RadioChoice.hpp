@@ -8,13 +8,13 @@
 namespace FlowUi::FSEL {
 
 struct RadioChoiceParameters {
+	/** Optional notification invoked after selectedValue is updated. */
+	ActionCall onSelected{};
 	uint64_t choiceValue = 0;
 	/** Borrowed application-owned selection. Null disables this choice. */
 	uint64_t* selectedValue = nullptr;
-	bool enabled = true;
-	/** Optional notification invoked after selectedValue is updated. */
-	ActionCall onSelected{};
 	SelectableSurfaceStyle style{};
+	bool enabled = true;
 };
 
 using RadioChoiceState = detail::selectable_surface::State;

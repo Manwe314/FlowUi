@@ -8,10 +8,8 @@ namespace FlowUi {
 
 /** Parameters for FlowUi's reusable action-driven Button element. */
 struct ButtonParameters {
-	std::string_view label{};
 	ActionCall onActivate{};
-	bool enabled = true;
-	Clay_Padding padding = CLAY_PADDING_ALL(10);
+	std::string_view label{};
 	Clay_Sizing sizing{
 		.width = CLAY_SIZING_FIT(0),
 		.height = CLAY_SIZING_FIT(0),
@@ -23,8 +21,10 @@ struct ButtonParameters {
 	Clay_Color borderColor = Flow_Color("#8f8d8dff");
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
 	Clay_BorderWidth borderWidth{1, 1, 1, 1, 0};
+	Clay_Padding padding = CLAY_PADDING_ALL(10);
 	uint16_t fontId = 0;
 	uint16_t fontSize = 16;
+	bool enabled = true;
 };
 
 /** Stateless standard Button. All activation behavior lives in onActivate. */

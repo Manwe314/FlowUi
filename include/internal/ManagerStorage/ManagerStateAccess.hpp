@@ -20,7 +20,6 @@ storage::ManagerRecordHandle createState(
 	Arguments arguments(std::forward<Args>(args)...);
 	return storageSystem.createManagerRecord(storage::ManagerRecordDesc{
 		.key = key,
-		.kind = kind,
 		.bytes = sizeof(State),
 		.alignment = alignof(State),
 		.debugName = debugName,
@@ -32,6 +31,7 @@ storage::ManagerRecordHandle createState(
 		},
 		.destroy = +[](void* object) noexcept { static_cast<State*>(object)->~State(); },
 		.userData = &arguments,
+		.kind = kind,
 	});
 }
 

@@ -370,6 +370,26 @@ private:
 
 		void leaveOpen() noexcept { closeOnDestruction = false; }
 	};
+
+	struct DevInternalScopeGuard {
+		UiManager* uiManager = nullptr;
+		bool active = false;
+
+		DevInternalScopeGuard(UiManager& ui, bool enter) noexcept
+			: uiManager(&ui), active(enter) {
+			if (active) {
+				uiManager->enterDevInternalScope();
+			}
+		}
+
+		~DevInternalScopeGuard() {
+			if (active && uiManager) {
+				uiManager->leaveDevInternalScope();
+			}
+		}
+
+		void release() noexcept { active = false; }
+	};
 #endif
 
 	template <OutputMode Mode>
@@ -409,13 +429,19 @@ private:
 #endif
 
 #if FLOW_UI_DEV_MODE
-		if (auto* overrides = uiManager_.devOverrideEngine()) {
-			overrides->applyElement(
-				ElementType::definitionId,
-				window_,
-				detail::element::toInstanceKey(elementId_),
-				std::addressof(params_),
-				uiManager_.devTimingRecorder());
+		const bool isDevInternal =
+			captureAsDevInternal_ || uiManager_.isDevInternalScope();
+		DevInternalScopeGuard devInternalGuard{uiManager_, isDevInternal};
+
+		if (!isDevInternal) {
+			if (auto* overrides = uiManager_.devOverrideEngine()) {
+				overrides->applyElement(
+					ElementType::definitionId,
+					window_,
+					detail::element::toInstanceKey(elementId_),
+					std::addressof(params_),
+					uiManager_.devTimingRecorder());
+			}
 		}
 #endif
 
@@ -451,7 +477,7 @@ private:
 			devMode::typeHash<ElementType>(),
 			devMode::typeToken<ElementType>(),
 			elementId_,
-			captureAsDevInternal_,
+			isDevInternal,
 			Mode == OutputMode::Construct,
 			sourceLocation_.file_name(),
 			static_cast<uint32_t>(sourceLocation_.line()),
@@ -494,6 +520,7 @@ private:
 				rootElementId, elementId_, flowScope.priorDepth
 #if FLOW_UI_DEV_MODE
 				, treeToken
+				, isDevInternal
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 				, ElementType::definitionId

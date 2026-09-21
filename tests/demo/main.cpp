@@ -319,17 +319,15 @@ void drawButtonsCard(UiManager& ui, const DemoState& state, const DemoActions& a
 		ui.createElement(FlowUi::FSEL::kButton, "built")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.activateButton,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = "Built button",
-			})
+				.contentMode = ButtonContentMode::TextOnly,})
 			.draw();
 
 		ui.createElement(FlowUi::FSEL::kButton, "constructed")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.activateButton,
 				.contentMode = ButtonContentMode::None,
-				.contentGap = 8,
-			})
+				.contentGap = 8,})
 			.construct();
 		drawText(ui, "Constructed", textStyle(ui, 14, kText, 550, CLAY_TEXT_WRAP_NONE));
 		CLAY(ui.toClaySID("demo/buttons/custom-badge"), badge(Flow_Color("#163c4aff"))) {
@@ -346,10 +344,10 @@ void drawButtonsCard(UiManager& ui, const DemoState& state, const DemoActions& a
 		ui.createElement(FlowUi::FSEL::kButton, "disabled")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.activateButton,
-				.enabled = false,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = "Disabled",
+				.contentMode = ButtonContentMode::TextOnly,
 				.padding = Clay_Padding{8, 8, 5, 5},
+				.enabled = false,
 			})
 			.draw();
 	}
@@ -370,7 +368,6 @@ void drawSelectableCard(
 
 	ui.createElement(kSelectableSurface, "surface")
 		.setParameters(SelectableSurfaceParameters{
-			.selected = state.surfaceSelected,
 			.onSelected = actions.selectSurface,
 			.style = SelectableSurfaceStyle{
 				.sizing = {
@@ -378,7 +375,7 @@ void drawSelectableCard(
 					.height = CLAY_SIZING_FIT(0),
 				},
 			},
-		})
+			.selected = state.surfaceSelected,})
 		.construct();
 	drawText(
 		ui,
@@ -406,11 +403,10 @@ void drawSelectableCard(
 	ui.createElement(FlowUi::FSEL::kButton, "clear")
 		.setParameters(FlowUi::FSEL::ButtonParameters{
 			.onActivate = actions.clearSurface,
-			.enabled = state.surfaceSelected,
-			.contentMode = ButtonContentMode::TextOnly,
 			.text = "Clear external selection",
+			.contentMode = ButtonContentMode::TextOnly,
 			.padding = Clay_Padding{8, 8, 5, 5},
-		})
+			.enabled = state.surfaceSelected,})
 		.draw();
 	ui.drawConstructed();
 }
@@ -470,20 +466,10 @@ void drawTextInputCard(
 
 	ui.createElement(kTextInput, "input")
 		.setParameters(TextInputParameters{
-			.value = &state.quickNote,
-			.syncPolicy = TextFieldSyncPolicy::Live,
 			.actions = TextFieldActions{
 				.onChanged = actions.quickNoteChange,
 				.onCommit = actions.quickNoteCommit,
 				.onSubmit = actions.quickNoteSubmit,
-			},
-			.placeholder = "Type a short note…",
-			.sizing = Clay_Sizing{
-				.width = CLAY_SIZING_GROW(0),
-				.height = CLAY_SIZING_FIXED(38),
-			},
-			.focusedOverrides = TextFieldStateOverrides{
-				.borderColor = kAccent,
 			},
 			.caret = TextFieldCaretOverrides{
 				.shape = InputCaretShape::Underline,
@@ -493,7 +479,16 @@ void drawTextInputCard(
 				.selectionBoxColor = Flow_Color("#247ba066"),
 				.blinkPeriodSeconds = 0.9,
 			},
-		})
+			.placeholder = "Type a short note…",
+			.value = &state.quickNote,
+			.focusedOverrides = TextFieldStateOverrides{
+				.borderColor = kAccent,
+			},
+			.sizing = Clay_Sizing{
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_FIXED(38),
+			},
+			.syncPolicy = TextFieldSyncPolicy::Live,})
 		.draw();
 
 	drawText(
@@ -519,15 +514,14 @@ void drawNumberInputCard(UiManager& ui, DemoState& state) {
 		ui.createElement(kNumberInputInt, "retries")
 			.setParameters(NumberInputParameters<int>{
 				.value = &state.retryCount,
-				.minimum = 0,
-				.maximum = 20,
-				.step = 1,
-				.stepButtons = NumberInputStepButtons::TrailingVertical,
 				.sizing = Clay_Sizing{
 					.width = CLAY_SIZING_FIXED(150),
 					.height = CLAY_SIZING_FIXED(36),
 				},
-			})
+				.minimum = 0,
+				.maximum = 20,
+				.step = 1,
+				.stepButtons = NumberInputStepButtons::TrailingVertical,})
 			.draw();
 	}
 
@@ -536,14 +530,14 @@ void drawNumberInputCard(UiManager& ui, DemoState& state) {
 		ui.createElement(kNumberInputUInt, "batch")
 			.setParameters(NumberInputParameters<unsigned int>{
 				.value = &state.batchSize,
-				.minimum = 1u,
-				.maximum = 128u,
-				.step = 4u,
-				.stepButtons = NumberInputStepButtons::TrailingHorizontal,
 				.sizing = Clay_Sizing{
 					.width = CLAY_SIZING_FIXED(150),
 					.height = CLAY_SIZING_FIXED(36),
 				},
+				.minimum = 1u,
+				.maximum = 128u,
+				.step = 4u,
+				.stepButtons = NumberInputStepButtons::TrailingHorizontal,
 			})
 			.draw();
 	}
@@ -553,19 +547,18 @@ void drawNumberInputCard(UiManager& ui, DemoState& state) {
 		ui.createElement(kNumberInputFloat, "exposure")
 			.setParameters(NumberInputParameters<float>{
 				.value = &state.exposure,
-				.minimum = -2.0f,
-				.maximum = 2.0f,
-				.step = 0.1f,
-				.format = NumericFormatOptions{
-					.notation = NumericFloatNotation::Fixed,
-					.precision = 2,
-				},
-				.stepButtons = NumberInputStepButtons::None,
 				.sizing = Clay_Sizing{
 					.width = CLAY_SIZING_FIXED(150),
 					.height = CLAY_SIZING_FIXED(36),
 				},
-			})
+				.format = NumericFormatOptions{
+					.notation = NumericFloatNotation::Fixed,
+					.precision = 2,
+				},
+				.minimum = -2.0f,
+				.maximum = 2.0f,
+				.step = 0.1f,
+				.stepButtons = NumberInputStepButtons::None,})
 			.draw();
 	}
 
@@ -586,15 +579,14 @@ void drawDragValueCard(UiManager& ui, DemoState& state) {
 		ui.createElement(kDragValueInt, "retries")
 			.setParameters(DragValueParameters<int>{
 				.value = &state.retryCount,
-				.minimum = 0,
-				.maximum = 20,
-				.step = 1,
-				.pixelsPerStep = 6.0f,
 				.sizing = Clay_Sizing{
 					.width = CLAY_SIZING_FIXED(150),
 					.height = CLAY_SIZING_FIXED(36),
 				},
-			})
+				.minimum = 0,
+				.maximum = 20,
+				.step = 1,
+				.pixelsPerStep = 6.0f,})
 			.draw();
 	}
 
@@ -603,19 +595,18 @@ void drawDragValueCard(UiManager& ui, DemoState& state) {
 		ui.createElement(kDragValueFloat, "exposure")
 			.setParameters(DragValueParameters<float>{
 				.value = &state.exposure,
-				.minimum = -2.0f,
-				.maximum = 2.0f,
-				.step = 0.05f,
-				.pixelsPerStep = 3.0f,
-				.format = NumericFormatOptions{
-					.notation = NumericFloatNotation::Fixed,
-					.precision = 2,
-				},
 				.sizing = Clay_Sizing{
 					.width = CLAY_SIZING_FIXED(150),
 					.height = CLAY_SIZING_FIXED(36),
 				},
-			})
+				.format = NumericFormatOptions{
+					.notation = NumericFloatNotation::Fixed,
+					.precision = 2,
+				},
+				.minimum = -2.0f,
+				.maximum = 2.0f,
+				.step = 0.05f,
+				.pixelsPerStep = 3.0f,})
 			.draw();
 	}
 
@@ -624,15 +615,14 @@ void drawDragValueCard(UiManager& ui, DemoState& state) {
 		ui.createElement(kDragValueUInt, "batch")
 			.setParameters(DragValueParameters<unsigned int>{
 				.value = &state.batchSize,
-				.minimum = 1u,
-				.maximum = 128u,
-				.step = 4u,
-				.allowTextEntry = false,
 				.sizing = Clay_Sizing{
 					.width = CLAY_SIZING_FIXED(150),
 					.height = CLAY_SIZING_FIXED(36),
 				},
-			})
+				.minimum = 1u,
+				.maximum = 128u,
+				.step = 4u,
+				.allowTextEntry = false,})
 			.draw();
 	}
 
@@ -654,9 +644,8 @@ void drawBooleanCard(
 	CLAY(ui.toClaySID("demo/booleans/checkbox"), row(12)) {
 		ui.createElement(kCheckbox, "checkbox")
 			.setParameters(CheckboxParameters{
-				.isChecked = state.checkboxChecked,
 				.onToggle = actions.toggleCheckbox,
-			})
+				.isChecked = state.checkboxChecked,})
 			.draw();
 		drawText(
 			ui,
@@ -696,15 +685,14 @@ void drawSlidersCard(
 		drawText(ui, "Volume", textStyle(ui, 13, kText, 550, CLAY_TEXT_WRAP_NONE));
 		ui.createElement(kSlider, "volume")
 			.setParameters(SliderParameters{
-				.value = &state.volume,
-				.minimum = 0.0,
-				.maximum = 1.0,
-				.roundingStep = 0.01,
 				.onBegin = actions.sliderBegin,
 				.onChanged = actions.sliderChange,
 				.onCommit = actions.sliderCommit,
-				.length = 260.0f,
-			})
+				.roundingStep = 0.01,
+				.value = &state.volume,
+				.minimum = 0.0,
+				.maximum = 1.0,
+				.length = 260.0f,})
 			.draw();
 		drawText(
 			ui,
@@ -728,16 +716,15 @@ void drawSlidersCard(
 			drawText(ui, "100", textStyle(ui, 11, kMuted, 500));
 			ui.createElement(kSlider, "temperature")
 				.setParameters(SliderParameters{
-					.axis = SliderAxis::Vertical,
+					.roundingStep = 1.0,
 					.value = &state.temperature,
 					.minimum = 0.0,
 					.maximum = 100.0,
-					.roundingStep = 1.0,
-					.length = 112.0f,
 					.idleOverrides = SliderStateOverrides{
 						.fillColor = kWarm,
 					},
-				})
+					.length = 112.0f,
+					.axis = SliderAxis::Vertical,})
 				.draw();
 			drawText(ui, "0", textStyle(ui, 11, kMuted, 500));
 		}
@@ -774,15 +761,14 @@ void drawSlidersCard(
 			CLAY(ui.toClaySID("demo/sliders/invisible-lane"), invisibleLane) {
 				ui.createElement(kSlider, "invisible")
 					.setParameters(SliderParameters{
-						.pressBehavior = SliderPressBehavior::DragFromCurrent,
+						.roundingStep = 0.05,
 						.value = &state.invisibleValue,
 						.minimum = -1.0,
 						.maximum = 1.0,
-						.roundingStep = 0.05,
-						.visualParts = SliderVisualParts::None,
 						.length = 245.0f,
 						.hitThickness = 28.0f,
-					})
+						.pressBehavior = SliderPressBehavior::DragFromCurrent,
+						.visualParts = SliderVisualParts::None,})
 					.draw();
 			}
 			drawText(
@@ -888,10 +874,9 @@ void drawPopupSurfaceCard(
 			.withID(kAnchoredPopupTriggerId)
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.openAnchoredPopup,
-				.enabled = true,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = "Anchored dropdown",
-			})
+				.contentMode = ButtonContentMode::TextOnly,
+				.enabled = true,})
 			.draw();
 
 		if (state.anchoredPopupOpen) {
@@ -925,10 +910,9 @@ void drawPopupSurfaceCard(
 		ui.createElement(FlowUi::FSEL::kButton, "pointer-trigger")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.openPointerPopup,
-				.enabled = !state.pointerPopupOpen,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = "Pointer popup",
-			})
+				.contentMode = ButtonContentMode::TextOnly,
+				.enabled = !state.pointerPopupOpen,})
 			.draw();
 
 		if (state.pointerPopupOpen) {
@@ -960,10 +944,9 @@ void drawPopupSurfaceCard(
 		ui.createElement(FlowUi::FSEL::kButton, "notice-trigger")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.openHeadsUpPopup,
-				.enabled = !state.headsUpPopupOpen,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = "Heads-up notice",
-			})
+				.contentMode = ButtonContentMode::TextOnly,
+				.enabled = !state.headsUpPopupOpen,})
 			.draw();
 
 		if (state.headsUpPopupOpen) {
@@ -1065,11 +1048,10 @@ void drawComboBoxCard(UiManager& ui, DemoState& state, const DemoActions& action
 		"The standard element owns the common text/icon option contract; arbitrary option rows remain a custom composition.");
 	ui.createElement(kComboBox, "workflow")
 		.setParameters(ComboBoxParameters{
+			.onChanged = actions.comboChanged,
 			.options = kOptions,
 			.selectedValue = &state.comboSelection,
-			.onChanged = actions.comboChanged,
-			.popupMaxHeight = 154.0f,
-		})
+			.popupMaxHeight = 154.0f,})
 		.draw();
 	drawText(
 		ui,
@@ -1121,15 +1103,14 @@ void drawHeader(
 				.onActivate = isGallery
 					? actions.showWritingStudio
 					: actions.showGallery,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = isGallery ? "Open writing studio  →" : "←  Back to gallery",
-				.padding = Clay_Padding{11, 11, 6, 6},
 				.idleOverrides = ButtonStateOverrides{
 					.backgroundColor = Flow_Color("#163c4aff"),
 					.labelColor = kAccent,
 					.borderColor = Flow_Color("#2d7894ff"),
 				},
-			})
+				.contentMode = ButtonContentMode::TextOnly,
+				.padding = Clay_Padding{11, 11, 6, 6},})
 			.draw();
 
 		CLAY(ui.toClaySID("demo/header/severity"), badge(Flow_Color("#183848ff"))) {
@@ -1141,8 +1122,8 @@ void drawHeader(
 		ui.createElement(FlowUi::FSEL::kButton, "reset")
 			.setParameters(FlowUi::FSEL::ButtonParameters{
 				.onActivate = actions.reset,
-				.contentMode = ButtonContentMode::TextOnly,
 				.text = "Reset demo",
+				.contentMode = ButtonContentMode::TextOnly,
 				.padding = Clay_Padding{10, 10, 6, 6},
 			})
 			.draw();
@@ -1367,13 +1348,11 @@ void drawDocumentEditor(
 	CLAY(ui.toClaySID("demo/editor/title-row"), titleRow) {
 		ui.createElement(kTextInput, "title")
 			.setParameters(TextInputParameters{
-				.value = &state.documentTitle,
-				.syncPolicy = TextFieldSyncPolicy::OnCommit,
-				.placeholder = "Untitled document",
-				.sizing = Clay_Sizing{
-					.width = CLAY_SIZING_GROW(0),
-					.height = CLAY_SIZING_FIXED(40),
+				.caret = TextFieldCaretOverrides{
+					.color = kAccent,
 				},
+				.placeholder = "Untitled document",
+				.value = &state.documentTitle,
 				.idleOverrides = TextFieldStateOverrides{
 					.backgroundColor = Flow_Color("#101722ff"),
 					.borderColor = Flow_Color("#263750ff"),
@@ -1382,11 +1361,12 @@ void drawDocumentEditor(
 					.backgroundColor = Flow_Color("#101722ff"),
 					.borderColor = kAccent,
 				},
-				.fontSize = 17,
-				.caret = TextFieldCaretOverrides{
-					.color = kAccent,
+				.sizing = Clay_Sizing{
+					.width = CLAY_SIZING_GROW(0),
+					.height = CLAY_SIZING_FIXED(40),
 				},
-			})
+				.syncPolicy = TextFieldSyncPolicy::OnCommit,
+				.fontSize = 17,})
 			.draw();
 		CLAY(ui.toClaySID("demo/editor/live-badge"), badge(Flow_Color("#173c32ff"))) {
 			drawText(ui, "LIVE", textStyle(ui, 10, kAccent, 750, CLAY_TEXT_WRAP_NONE));
@@ -1400,8 +1380,6 @@ void drawDocumentEditor(
 
 	ui.createElement(kTextArea, "body")
 		.setParameters(TextAreaParameters{
-			.value = &state.document,
-			.syncPolicy = TextFieldSyncPolicy::Live,
 			.actions = TextFieldActions{
 				.onChanged = actions.documentChange,
 				.onCommit = actions.documentCommit,
@@ -1409,24 +1387,6 @@ void drawDocumentEditor(
 				.onUndoRequested = actions.undoRequested,
 				.onRedoRequested = actions.redoRequested,
 			},
-			.softWrap = state.editorSoftWrap,
-			.transactionDetail = TransactionReportDetail::Reversible,
-			.placeholder = "Start writing here…",
-			.sizing = Clay_Sizing{
-				.width = CLAY_SIZING_GROW(0),
-				.height = CLAY_SIZING_GROW(0),
-			},
-			.padding = CLAY_PADDING_ALL(18),
-			.idleOverrides = TextFieldStateOverrides{
-				.backgroundColor = Flow_Color("#0e1520ff"),
-				.borderColor = Flow_Color("#263750ff"),
-			},
-			.focusedOverrides = TextFieldStateOverrides{
-				.backgroundColor = Flow_Color("#0e1520ff"),
-				.borderColor = kAccent,
-			},
-			.fontSize = 15,
-			.tabWidth = 4,
 			.caret = TextFieldCaretOverrides{
 				.shape = InputCaretShape::Bar,
 				.thicknessPx = 2.0f,
@@ -1436,7 +1396,26 @@ void drawDocumentEditor(
 				.blinkPeriodSeconds = 1.1,
 				.blinkVisibleSeconds = 0.62,
 			},
-		})
+			.placeholder = "Start writing here…",
+			.value = &state.document,
+			.idleOverrides = TextFieldStateOverrides{
+				.backgroundColor = Flow_Color("#0e1520ff"),
+				.borderColor = Flow_Color("#263750ff"),
+			},
+			.focusedOverrides = TextFieldStateOverrides{
+				.backgroundColor = Flow_Color("#0e1520ff"),
+				.borderColor = kAccent,
+			},
+			.sizing = Clay_Sizing{
+				.width = CLAY_SIZING_GROW(0),
+				.height = CLAY_SIZING_GROW(0),
+			},
+			.syncPolicy = TextFieldSyncPolicy::Live,
+			.transactionDetail = TransactionReportDetail::Reversible,
+			.padding = CLAY_PADDING_ALL(18),
+			.fontSize = 15,
+			.tabWidth = 4,
+			.softWrap = state.editorSoftWrap,})
 		.draw();
 
 	CLAY(ui.toClaySID("demo/editor/status-row"), row(14)) {

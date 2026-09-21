@@ -70,22 +70,22 @@ struct AppActionBindingPayload {
 };
 
 struct AppActionBindingHeader {
+#if FLOW_UI_DEV_MODE
+#endif
+	ActionInvocationSource lastSource{};
 	AppActionID id{};
 	uint64_t callableTypeHash = 0;
 	uint64_t resultTypeHash = 0;
 	storage::StringId debugName = 0;
 	void (*invokeDiscard)(void* payload) = nullptr;
 	void (*invokeResult)(void* payload, void* destination) = nullptr;
+	uint64_t invocationCount = 0;
+	uint64_t discardedResultCount = 0;
 	uint32_t activeInvocations = 0;
+	ActionInvocationStatus lastStatus = ActionInvocationStatus::Empty;
 	bool tombstoned = false;
 	AppActionAvailability availability{};
-#if FLOW_UI_DEV_MODE
-	uint64_t invocationCount = 0;
-	ActionInvocationSource lastSource{};
-	ActionInvocationStatus lastStatus = ActionInvocationStatus::Empty;
 	bool lastInvocationThrew = false;
-	uint64_t discardedResultCount = 0;
-#endif
 };
 
 template <typename Payload>

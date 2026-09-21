@@ -11,23 +11,11 @@
 namespace FlowUi::FSEL {
 
 struct TextInputParameters {
-	std::string* value = nullptr;
-	TextFieldSyncPolicy syncPolicy = TextFieldSyncPolicy::Live;
 	TextFieldActions actions{};
-	bool enabled = true;
-	bool readOnly = false;
-	bool valid = true;
-	bool clearFocusOnSubmit = true;
-	size_t maxBytes = std::numeric_limits<size_t>::max();
-	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	TextFieldCaretOverrides caret{};
 	std::string_view placeholder{};
-
-	std::optional<Clay_Sizing> sizing = std::nullopt;
-	std::optional<float> viewportWidth = std::nullopt;
-	std::optional<float> viewportHeight = std::nullopt;
-	std::optional<Clay_Padding> padding = std::nullopt;
-	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
-	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	std::string* value = nullptr;
+	size_t maxBytes = std::numeric_limits<size_t>::max();
 
 	TextFieldStateOverrides idleOverrides{};
 	TextFieldStateOverrides hoveredOverrides{};
@@ -36,17 +24,29 @@ struct TextInputParameters {
 	TextFieldStateOverrides invalidOverrides{};
 	TextFieldStateOverrides disabledOverrides{};
 
+	std::optional<Clay_Sizing> sizing = std::nullopt;
+	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	std::optional<float> viewportWidth = std::nullopt;
+	std::optional<float> viewportHeight = std::nullopt;
+
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
 	std::optional<uint32_t> fontWeight = std::nullopt;
-	std::optional<FontStyle> fontStyle = std::nullopt;
+	TextFieldSyncPolicy syncPolicy = TextFieldSyncPolicy::Live;
+	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	std::optional<Clay_Padding> padding = std::nullopt;
 	std::optional<uint16_t> fontSize = std::nullopt;
 	std::optional<uint16_t> letterSpacing = std::nullopt;
 	/** Layer for the field's floating text/placeholder nodes. Set this when the
 	 * input is nested in another floating surface such as a popup. */
 	std::optional<int16_t> floatingZIndex = std::nullopt;
-	TextFieldCaretOverrides caret{};
+	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	bool enabled = true;
+	bool readOnly = false;
+	bool valid = true;
+	bool clearFocusOnSubmit = true;
 };
 
 using TextInputState = detail::text_field::State;

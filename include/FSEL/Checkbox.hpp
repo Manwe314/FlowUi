@@ -24,23 +24,23 @@ struct CheckboxValueOverrides {
 };
 
 struct CheckboxParameters {
-	bool isChecked = false;
-	bool enabled = true;
 	ActionCall onToggle{};
 
 	TextureRef uncheckedIcon{};
 	TextureRef checkedIcon{};
-	bool tintIcon = true;
+	CheckboxValueOverrides uncheckedOverrides{};
+	CheckboxValueOverrides checkedOverrides{};
+	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
 
 	// Optional theme overrides
 	std::optional<float> size = std::nullopt;
 	std::optional<float> iconSize = std::nullopt;
 	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
-	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
-	CheckboxValueOverrides uncheckedOverrides{};
-	CheckboxValueOverrides checkedOverrides{};
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	bool isChecked = false;
+	bool enabled = true;
+	bool tintIcon = true;
 };
 
 using CheckboxState = detail::boolean_control::State;

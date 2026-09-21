@@ -344,13 +344,12 @@ GpuTimingZoneToken DevGpuTiming::beginZoneUnchecked(
 	const uint32_t beginQuery = slot.usedQueries++;
 	const uint32_t endQuery = slot.usedQueries++;
 	slot.zones.push_back(GpuTimingZonePlan{
-		.typeId = descriptor.typeId,
 		.entity = entity,
+		.typeId = descriptor.typeId,
 		.beginQuery = beginQuery,
 		.endQuery = endQuery,
 		.parentZoneIndex = slot.activeZones.empty() ? UINT32_MAX : slot.activeZones.back(),
-		.depth = static_cast<uint8_t>(std::min<size_t>(slot.activeZones.size(), UINT8_MAX)),
-	});
+		.depth = static_cast<uint8_t>(std::min<size_t>(slot.activeZones.size(), UINT8_MAX)),});
 	slot.activeZones.push_back(planIndex);
 	vkCmdWriteTimestamp2(commandBuffer, slot.zones.back().beginStage, slot.queryPool, beginQuery);
 	return GpuTimingZoneToken{planIndex, true};

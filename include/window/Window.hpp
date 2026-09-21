@@ -24,8 +24,8 @@ inline void glfwErrorCallback(int code, const char* description) noexcept {
 		.error = makeError(
 			ErrorCode::None, ErrorSite::WindowBackendDiagnostic,
 			0u, 0u, static_cast<std::uint32_t>(code)),
-		.kind = ErrorEventKind::BackendDiagnostic,
 		.nativeMessage = description ? std::string_view{description} : std::string_view{},
+		.kind = ErrorEventKind::BackendDiagnostic,
 	});
 }
 
@@ -123,6 +123,86 @@ struct GlfwLibrary {
 };
 
 class GlfwWindowBackend final : public IWindowBackend {
+
+private:
+	GLFWcursor* acquireStandardCursor(FlowUi::CursorType cursorType) {
+		const std::size_t cursorIndex = static_cast<std::size_t>(cursorType);
+		if (cursorIndex >= standardCursors_.size()) {
+			return nullptr;
+		}
+
+		GLFWcursor*& cachedCursor = standardCursors_[cursorIndex];
+		if (cachedCursor) {
+			return cachedCursor;
+		}
+
+		cachedCursor = glfwCreateStandardCursor(toGlfwCursorShape(cursorType));
+		return cachedCursor;
+	}
+
+	void destroyStandardCursors() {
+		for (GLFWcursor*& cursor : standardCursors_) {
+			if (!cursor) {
+				continue;
+			}
+			glfwDestroyCursor(cursor);
+			cursor = nullptr;
+		}
+	}
+
+	void installCallbacks() {
+		glfwSetCursorPosCallback(window, [](GLFWwindow* win, double x, double y) noexcept {
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (self && self->input) {
+				self->input->setMousePos(static_cast<float>(x), static_cast<float>(y));
+			}
+		});
+
+		glfwSetMouseButtonCallback(window, [](GLFWwindow* win, int button, int action, int mods) noexcept {
+			(void)mods;
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (self && self->input) {
+				self->input->pushMouseButton(button, action != GLFW_RELEASE);
+			}
+		});
+
+		glfwSetScrollCallback(window, [](GLFWwindow* win, double dx, double dy) noexcept {
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (self && self->input) {
+				self->input->pushScroll(static_cast<float>(dx), static_cast<float>(dy));
+			}
+		});
+
+		glfwSetKeyCallback(window, [](GLFWwindow* win, int key, int scancode, int action, int mods) noexcept {
+			(void)scancode;
+			(void)mods;
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (self && self->input) {
+				self->input->pushKey(key, action != GLFW_RELEASE);
+			}
+		});
+
+		glfwSetCharCallback(window, [](GLFWwindow* win, unsigned int codepoint) noexcept {
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (self && self->input) {
+				self->input->pushChar(static_cast<char32_t>(codepoint));
+			}
+		});
+
+		glfwSetWindowFocusCallback(window, [](GLFWwindow* win, int focused) noexcept {
+			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (!self || !self->input || focused == GLFW_TRUE) {
+				return;
+			}
+			self->input->clearKeyboardState();
+			self->input->clearMouseButtonsState();
+		});
+	}
+
+	GlfwLibrary library;
+	std::array<GLFWcursor*, static_cast<std::size_t>(FlowUi::CursorType::Custom) + 1u> standardCursors_{};
+	GLFWwindow* window = nullptr;
+	FlowUi::CursorType currentCursorType_ = FlowUi::CursorType::Default;
 public:
 	explicit GlfwWindowBackend(const FlowUi::WindowConfig& config, InputQueue* inputQueue)
 		: input(inputQueue) {
@@ -195,6 +275,7 @@ public:
 		double mouseY = 0.0;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 		input->setMousePos(static_cast<float>(mouseX), static_cast<float>(mouseY));
+		input->setPointerInside(glfwGetWindowAttrib(window, GLFW_HOVERED) == GLFW_TRUE);
 
 		for (int mouseButton = 0; mouseButton < static_cast<int>(FrameInput::kMouseButtonCount); ++mouseButton) {
 			const int buttonState = glfwGetMouseButton(window, mouseButton);
@@ -338,86 +419,6 @@ public:
 	}
 
 	void* nativeHandle() const override { return window; }
-
-private:
-	GLFWcursor* acquireStandardCursor(FlowUi::CursorType cursorType) {
-		const std::size_t cursorIndex = static_cast<std::size_t>(cursorType);
-		if (cursorIndex >= standardCursors_.size()) {
-			return nullptr;
-		}
-
-		GLFWcursor*& cachedCursor = standardCursors_[cursorIndex];
-		if (cachedCursor) {
-			return cachedCursor;
-		}
-
-		cachedCursor = glfwCreateStandardCursor(toGlfwCursorShape(cursorType));
-		return cachedCursor;
-	}
-
-	void destroyStandardCursors() {
-		for (GLFWcursor*& cursor : standardCursors_) {
-			if (!cursor) {
-				continue;
-			}
-			glfwDestroyCursor(cursor);
-			cursor = nullptr;
-		}
-	}
-
-	void installCallbacks() {
-		glfwSetCursorPosCallback(window, [](GLFWwindow* win, double x, double y) noexcept {
-			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
-			if (self && self->input) {
-				self->input->setMousePos(static_cast<float>(x), static_cast<float>(y));
-			}
-		});
-
-		glfwSetMouseButtonCallback(window, [](GLFWwindow* win, int button, int action, int mods) noexcept {
-			(void)mods;
-			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
-			if (self && self->input) {
-				self->input->pushMouseButton(button, action != GLFW_RELEASE);
-			}
-		});
-
-		glfwSetScrollCallback(window, [](GLFWwindow* win, double dx, double dy) noexcept {
-			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
-			if (self && self->input) {
-				self->input->pushScroll(static_cast<float>(dx), static_cast<float>(dy));
-			}
-		});
-
-		glfwSetKeyCallback(window, [](GLFWwindow* win, int key, int scancode, int action, int mods) noexcept {
-			(void)scancode;
-			(void)mods;
-			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
-			if (self && self->input) {
-				self->input->pushKey(key, action != GLFW_RELEASE);
-			}
-		});
-
-		glfwSetCharCallback(window, [](GLFWwindow* win, unsigned int codepoint) noexcept {
-			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
-			if (self && self->input) {
-				self->input->pushChar(static_cast<char32_t>(codepoint));
-			}
-		});
-
-		glfwSetWindowFocusCallback(window, [](GLFWwindow* win, int focused) noexcept {
-			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
-			if (!self || !self->input || focused == GLFW_TRUE) {
-				return;
-			}
-			self->input->clearKeyboardState();
-			self->input->clearMouseButtonsState();
-		});
-	}
-
-	GlfwLibrary library;
-	GLFWwindow* window = nullptr;
-	std::array<GLFWcursor*, static_cast<std::size_t>(FlowUi::CursorType::Custom) + 1u> standardCursors_{};
-	FlowUi::CursorType currentCursorType_ = FlowUi::CursorType::Default;
 	InputQueue* input = nullptr;
 	FlowUi::WindowInputConfig inputConfig_{};
 };

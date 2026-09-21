@@ -27,42 +27,42 @@ struct ButtonStateOverrides {
 
 struct ButtonParameters {
 	ActionCall onActivate{};
-	bool enabled = true;
-
-	// Used by buildElement and ignored by constructElement.
-	ButtonContentMode contentMode = ButtonContentMode::None;
-	std::string_view text{};
 	TextureRef icon{};
-	bool tintIcon = true;
-
-	Clay_Sizing sizing = {
-		.width = CLAY_SIZING_FIT(0),
-		.height = CLAY_SIZING_FIT(0),
-	};
-
-	// Optional theme overrides
-	std::optional<Clay_Padding> padding = std::nullopt;
-	std::optional<Clay_ChildAlignment> childAlignment = std::nullopt;
-	std::optional<Clay_LayoutDirection> layoutDirection = std::nullopt;
-	std::optional<uint16_t> contentGap = std::nullopt;
-	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
-	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	std::string_view text{};
 
 	ButtonStateOverrides idleOverrides{};
 	ButtonStateOverrides hoveredOverrides{};
 	ButtonStateOverrides pressedOverrides{};
 	ButtonStateOverrides disabledOverrides{};
 
+	Clay_Sizing sizing = {
+		.width = CLAY_SIZING_FIT(0),
+		.height = CLAY_SIZING_FIT(0),
+	};
+	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+
 	std::optional<FontFamilyId> labelFontFamily = std::nullopt;
 	std::optional<uint32_t> labelFontWeight = std::nullopt;
-	std::optional<FontStyle> labelFontStyle = std::nullopt;
+	std::optional<float> iconSize = std::nullopt;
+
+	// Used by buildElement and ignored by constructElement.
+	ButtonContentMode contentMode = ButtonContentMode::None;
+	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+
+	// Optional theme overrides
+	std::optional<Clay_Padding> padding = std::nullopt;
+	std::optional<uint16_t> contentGap = std::nullopt;
 	std::optional<uint16_t> labelFontSize = std::nullopt;
+	std::optional<Clay_ChildAlignment> childAlignment = std::nullopt;
+	std::optional<Clay_LayoutDirection> layoutDirection = std::nullopt;
+	std::optional<FontStyle> labelFontStyle = std::nullopt;
 	std::optional<Clay_TextElementConfigWrapMode> labelWrapMode = std::nullopt;
 	std::optional<Clay_TextAlignment> labelAlignment = std::nullopt;
-	std::optional<float> iconSize = std::nullopt;
 
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	bool enabled = true;
+	bool tintIcon = true;
 };
 
 struct ButtonState {

@@ -14,6 +14,7 @@
 #include "devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "managers/UiManager.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -37,6 +38,7 @@ void DevInterface::buildElement(BuildContext& context) {
 		TimingZoneRole::DevToolWork, "flowui.dev_interface.build");
 
 	State& state = context.state();
+	if (context.params.app) synchronize_inspect_selection(*context.params.app, state);
 	if (state.selectedWindowId == InvalidWindowId) {
 		state.selectedWindowId = context.params.mainWindowId;
 	}
