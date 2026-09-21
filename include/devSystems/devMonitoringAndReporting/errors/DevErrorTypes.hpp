@@ -110,7 +110,11 @@ inline constexpr uint64_t kHashPrime = 1099511628211ull;
 	const char* file = __builtin_FILE(),
 	const char* function = __builtin_FUNCTION(),
 	uint32_t line = __builtin_LINE(),
+#if __has_builtin(__builtin_COLUMN)
 	uint32_t column = __builtin_COLUMN()) noexcept {
+#else
+	uint32_t column = 0u) noexcept {
+#endif
 	uint64_t hash = detail::dev_error::hashBytes(name);
 	hash = detail::dev_error::hashBytes(file, hash);
 	hash = detail::dev_error::hashInteger(line, hash);
@@ -350,15 +354,19 @@ inline constexpr size_t kDevErrorFatalBreadcrumbCapacity = 8u;
 
 /** Fixed, allocation-free evidence written before production termination. */
 struct DevErrorFatalCapsule {
-	uint32_t layoutVersion = kDevErrorFatalCapsuleLayoutVersion;
-	uint32_t byteSize = 0u;
+	std::array<DevErrorFatalBreadcrumb, kDevErrorFatalBreadcrumbCapacity> breadcrumbs{};
+	std::array<uintptr_t, kDevErrorFatalStackCapacity> stackFrames{};
+	DevErrorEvidenceBlock evidence{};
+	DevErrorFatalSafePointSummary safePoint{};
+	DevErrorContext context{};
 	FlowUiError error{};
 	DevErrorOccurrenceId occurrence = 0u;
 	uint64_t timestampNs = 0u;
-	DevErrorContext context{};
 	uint64_t sourceId = 0u;
 	uint64_t moduleIdentity = 0u;
 	uint64_t buildIdentity = 0u;
+	uint32_t layoutVersion = kDevErrorFatalCapsuleLayoutVersion;
+	uint32_t byteSize = 0u;
 	uint32_t threadTrack = 0u;
 	uint32_t nativeCategory = 0u;
 	ErrorResolution resolution = ErrorResolution::None;
@@ -368,13 +376,9 @@ struct DevErrorFatalCapsule {
 	DevErrorRecordFlag flags = DevErrorRecordFlag::None;
 	DevErrorFatalCapabilityInput availableInputs = DevErrorFatalCapabilityInput::None;
 	uint16_t stackFrameCount = 0u;
-	uint8_t breadcrumbCount = 0u;
 	uint16_t nativeTextLength = 0u;
-	DevErrorEvidenceBlock evidence{};
-	DevErrorFatalSafePointSummary safePoint{};
-	std::array<uintptr_t, kDevErrorFatalStackCapacity> stackFrames{};
-	std::array<DevErrorFatalBreadcrumb, kDevErrorFatalBreadcrumbCapacity> breadcrumbs{};
 	std::array<char, kDevErrorNativeTextCapacity> nativeText{};
+	uint8_t breadcrumbCount = 0u;
 };
 
 struct DevErrorOverheadSnapshot {

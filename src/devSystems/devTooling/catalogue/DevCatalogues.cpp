@@ -177,9 +177,8 @@ void DevCatalogues::rebuildImageCache() {
 		auto& entries = *static_cast<std::vector<DevImageCatalogEntry>*>(context);
 		entries.push_back(DevImageCatalogEntry{
 			.key = ResourceKey{.name = image.key, .domain = ResourceDomain::Image},
-			.textureHandle = image.texture,
 			.sourcePathOrDebugName = image.sourcePath,
-		});
+			.textureHandle = image.texture,});
 		return true;
 	});
 	for (DevImageCatalogEntry& entry : cachedImages_) {

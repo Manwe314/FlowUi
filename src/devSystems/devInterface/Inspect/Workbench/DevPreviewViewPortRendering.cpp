@@ -31,6 +31,44 @@ constexpr float kUnconstrainedExtentDimension = 65535.0f;
 	};
 }
 
+// Grid geometry shares the replay target, so source-over blending puts it behind
+// the selected element instead of Clay floating elements covering the final image.
+void append_preview_grid(
+	const interface_elements::DevPreviewState& state,
+	float canvas_width, float canvas_height,
+	std::vector<UiInstance>& instances) {
+	constexpr int max_lines = 160;
+	instances.reserve(instances.size() + 2u * max_lines);
+	const float zoom_scale = std::max(state.camera.zoomScale, 1.0e-6f);
+	float minor_step = 10.0f;
+	if (minor_step * zoom_scale < 6.0f) minor_step = 50.0f;
+	if (minor_step * zoom_scale < 6.0f) minor_step = 200.0f;
+	const float major_step = minor_step > 50.0f ? minor_step * 4.0f : 50.0f;
+	for (int dimension = 0; dimension < 2; ++dimension) {
+		const float canvas_extent = dimension == 0 ? canvas_width : canvas_height;
+		const float pan = dimension == 0 ? state.camera.panX : state.camera.panY;
+		const float world_min = pan - canvas_extent * 0.5f / zoom_scale;
+		const float world_max = pan + canvas_extent * 0.5f / zoom_scale;
+		const int first_line = static_cast<int>(std::floor(world_min / minor_step));
+		const int last_line = static_cast<int>(std::ceil(world_max / minor_step));
+		for (int line = first_line, count = 0; line <= last_line && count < max_lines;
+			 ++line, ++count) {
+			const float world = static_cast<float>(line) * minor_step;
+			const float position = (world - pan) * zoom_scale + canvas_extent * 0.5f;
+			if (position < 0.0f || position >= canvas_extent) continue;
+			const bool axis = std::abs(world) < 0.01f;
+			const bool major = std::fmod(std::abs(world), major_step) < 0.01f;
+			const float thickness = axis ? 1.5f : 1.0f;
+			UiInstance& instance = instances.emplace_back();
+			instance.x = dimension == 0 ? position : 0.0f;
+			instance.y = dimension == 1 ? position : 0.0f;
+			instance.w = dimension == 0 ? thickness : canvas_width;
+			instance.h = dimension == 1 ? thickness : canvas_height;
+			instance.colorRGBA = axis ? 0xFFD88832u : major ? 0xA0554D3Fu : 0x703B3426u;
+		}
+	}
+}
+
 void transformReplayGeometry(
 	const interface_elements::DevPreviewState& state,
 	const DevUiReplaySource& replay,
@@ -264,21 +302,17 @@ void DevPreviewViewPortRenderer::record(
 	const FlowUi::detail::InputFieldFrameOverrides no_overrides{};
 	const FlowUi::detail::UiConversionCapacity capacity =
 		FlowUi::detail::measureUiConversionCapacity(*replay.commands, no_overrides);
-	if (capacity.instances == 0u || capacity.runs == 0u) {
-		if (frameSlot.mappedData && frameSlot.capacityBytes > 0u) {
-			std::memset(frameSlot.mappedData, 0, static_cast<size_t>(frameSlot.capacityBytes));
-			if (impl_->allocator && frameSlot.instanceAllocation) {
-				(void)vmaFlushAllocation(
-					impl_->allocator, frameSlot.instanceAllocation, 0u, frameSlot.capacityBytes);
-			}
-		}
-		frameSlot.is_dirty = false;
-		frameSlot.recorded_request_key = replay.requestKey;
-		return;
-	}
-
-	impl_->cpuInstances.resize(capacity.instances);
-	impl_->runs.resize(capacity.runs);
+	impl_->cpuInstances.clear();
+	append_preview_grid(state, canvas_width, canvas_height, impl_->cpuInstances);
+	const uint32_t grid_instance_count = static_cast<uint32_t>(impl_->cpuInstances.size());
+	impl_->cpuInstances.resize(grid_instance_count + capacity.instances);
+	impl_->runs.resize(1u + capacity.runs);
+	impl_->runs.front() = UiRun{
+		.type = UiType::Solid,
+		.scissor = {0.0f, 0.0f, canvas_width, canvas_height},
+		.firstInstance = 0u,
+		.instanceCount = grid_instance_count,
+	};
 	impl_->scissorStack.resize(capacity.scissorDepth);
 	constexpr VkExtent2D unconstrained_extent{65535u, 65535u};
 	const FlowUi::detail::UiConversionResult converted =
@@ -290,27 +324,19 @@ void DevPreviewViewPortRenderer::record(
 			replay.pointsToPixelsScale,
 			1.0f,
 			1.0f,
-			impl_->cpuInstances,
-			impl_->runs,
+			std::span(impl_->cpuInstances).subspan(grid_instance_count),
+			std::span(impl_->runs).subspan(1u),
 			impl_->scissorStack,
 			replay.textureBindings);
-	impl_->cpuInstances.resize(converted.instanceCount);
-	impl_->runs.resize(converted.runCount);
-	if (impl_->cpuInstances.empty() || impl_->runs.empty()) {
-		if (frameSlot.mappedData && frameSlot.capacityBytes > 0u) {
-			std::memset(frameSlot.mappedData, 0, static_cast<size_t>(frameSlot.capacityBytes));
-			if (impl_->allocator && frameSlot.instanceAllocation) {
-				(void)vmaFlushAllocation(
-					impl_->allocator, frameSlot.instanceAllocation, 0u, frameSlot.capacityBytes);
-			}
-		}
-		frameSlot.is_dirty = false;
-		frameSlot.recorded_request_key = replay.requestKey;
-		return;
-	}
-
+	impl_->cpuInstances.resize(grid_instance_count + converted.instanceCount);
+	impl_->runs.resize(1u + converted.runCount);
+	const auto replay_instances = std::span(impl_->cpuInstances).subspan(grid_instance_count);
+	const auto replay_runs = std::span(impl_->runs).subspan(1u);
 	transformReplayGeometry(
-		state, replay, canvas_width, canvas_height, impl_->cpuInstances, impl_->runs);
+		state, replay, canvas_width, canvas_height, replay_instances, replay_runs);
+	for (UiRun& run : replay_runs) {
+		run.firstInstance += grid_instance_count;
+	}
 	const VkDeviceSize copy_size = static_cast<VkDeviceSize>(
 		impl_->cpuInstances.size() * sizeof(UiInstance));
 	if (!impl_->ensureCapacity(ctx.frameIndex, copy_size)) return;

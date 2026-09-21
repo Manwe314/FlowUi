@@ -119,15 +119,14 @@ void DevOverrideApply::set(
 		return;
 	}
 	records_.push_back(Record{
+		.value = std::move(value),
 		.target = target,
 		.field = std::move(field),
-		.fieldIndex = fieldIndex,
-		.layer = layer,
-		.value = std::move(value),
 		.ownerPath = std::move(ownerPath),
 		.transaction = transaction,
-		.schemaValid = true,
-	});
+		.fieldIndex = fieldIndex,
+		.layer = layer,
+		.schemaValid = true,});
 }
 
 void DevOverrideApply::clear(

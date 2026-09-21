@@ -44,13 +44,13 @@ struct DevErrorTimingCorrelation {
 };
 
 struct DevErrorMemoryCorrelation {
-	DevErrorCorrelationState state = DevErrorCorrelationState::NotCaptured;
-	DevErrorCorrelationConfidence confidence = DevErrorCorrelationConfidence::None;
 	MemoryEventSequence eventSequence = 0u;
 	MemorySourceId source = 0u;
-	MemoryOperation operation = MemoryOperation::LogicalAllocate;
 	AppTickId checkpointTick = 0u;
 	uint64_t storageMutationSequence = 0u;
+	DevErrorCorrelationState state = DevErrorCorrelationState::NotCaptured;
+	DevErrorCorrelationConfidence confidence = DevErrorCorrelationConfidence::None;
+	MemoryOperation operation = MemoryOperation::LogicalAllocate;
 };
 
 enum class DevErrorOccurrenceState : uint8_t {

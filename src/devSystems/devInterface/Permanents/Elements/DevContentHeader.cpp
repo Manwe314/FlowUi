@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "FSEL/Button.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #include "FSEL/ComboBox.hpp"
 #include "FSEL/RadioChoice.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
@@ -33,8 +34,6 @@ inline constexpr LocalElementName kCatalogueTab{"tab-catalogue"};
 inline constexpr LocalElementName kSectionSeparatorInset{"section-separator-inset"};
 inline constexpr LocalElementName kSectionSeparatorLine{"section-separator-line"};
 inline constexpr LocalElementName kContextualControls{"contextual-controls"};
-inline constexpr LocalElementName kInspectScope{"inspect-scope"};
-inline constexpr LocalElementName kPickElement{"pick-element"};
 inline constexpr LocalElementName kFrameSelector{"frame-selector"};
 inline constexpr LocalElementName kCpuReportingLevel{"cpu-reporting-level"};
 inline constexpr LocalElementName kCapturedState{"captured-state"};
@@ -312,8 +311,8 @@ void drawContextualControls(
 	std::size_t bakeableChangeCount) {
 	switch (activeTab) {
 	case DevInterfaceTab::Inspect:
-		drawControl(context, kInspectScope, "Inspection Scope  ▾");
-		drawControl(context, kPickElement, "Pick Element");
+		context.uiManager.createElement(kDevInspectOverlayMenu, LocalElementName{"inspect-overlay-controls"})
+			.setParameters(DevInspectOverlayMenuParameters{.app = app}).draw();
 		break;
 	case DevInterfaceTab::Performance: {
 		drawControl(context, kFrameSelector, "Frame: Latest  ▾");

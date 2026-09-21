@@ -443,20 +443,20 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	};
 
 	struct RuntimeFieldState {
-		field_key::InputFieldKey fieldId{};
-		FieldState* field = nullptr;
-		size_t cursor = 0u;
-		bool hasContentBounds = false;
-		Clay_BoundingBox contentBounds{};
-		bool hasTextBounds = false;
-		Clay_BoundingBox textBounds{};
+		Clay_RenderCommand lastTextCommand{};
+		std::vector<bool> caretDrawn{};
 		std::vector<RuntimeSubmittedSpan> submittedSpans{};
 		std::vector<RuntimeTextSpan> textSpans{};
 		std::vector<SelectionRange> mergedSelections{};
-		std::vector<bool> caretDrawn{};
-		bool hasTextCommand = false;
-		Clay_RenderCommand lastTextCommand{};
+		field_key::InputFieldKey fieldId{};
+		FieldState* field = nullptr;
+		size_t cursor = 0u;
+		Clay_BoundingBox contentBounds{};
+		Clay_BoundingBox textBounds{};
 		int32_t lastTextCommandIndex = -1;
+		bool hasContentBounds = false;
+		bool hasTextBounds = false;
+		bool hasTextCommand = false;
 	};
 
 	std::vector<RuntimeFieldState> runtimes;
@@ -1427,11 +1427,10 @@ bool InputFieldManager::insertTextAtPrimaryCaret(std::string_view utf8Text) {
 bool InputFieldManager::enqueueCommand(TextCommand command, std::string_view payload) {
 	if (!state_->primaryFieldId || !hasPrimaryFieldFocus()) return false;
 	state_->pendingCommands.push_back(manager_storage::InputPendingCommand{
+		.payload = std::string(payload),
 		.fieldId = state_->primaryFieldId,
 		.command = command,
-		.payload = std::string(payload),
-		.extendSelection = state_->currentInput.shift,
-	});
+		.extendSelection = state_->currentInput.shift,});
 	return true;
 }
 

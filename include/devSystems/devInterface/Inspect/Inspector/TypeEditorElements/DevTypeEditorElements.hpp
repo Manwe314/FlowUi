@@ -38,14 +38,14 @@ enum class DevEditorRole : uint8_t {
 };
 
 struct DevEditorBinding {
-	DevEditorRole role = DevEditorRole::Parameters;
+	std::string elementName{};
+	std::vector<devMode::DevFieldId> nestedPath{};
 	FlowDefinitionID definition{};
 	WindowId window = InvalidWindowId;
 	::FlowUi::detail::element::ElementInstanceKey instance{};
 	devMode::DevTypeId rootOwnerType = 0u;
+	DevEditorRole role = DevEditorRole::Parameters;
 	devMode::DevFieldIndex field{};
-	std::vector<devMode::DevFieldId> nestedPath{};
-	std::string elementName{};
 };
 
 /** One snapshot of every override state represented by an editor card. */
@@ -66,11 +66,11 @@ enum class DevQuickStatus : std::uint8_t { Normal, Missing, Warning, Unavailable
 
 struct DevQuickView {
 	enum class Kind : std::uint8_t { Text, Color, Sizing, Spacing, Status };
-	Kind kind = Kind::Text;
+	std::optional<TextureRef> thumbnail{};
 	std::string primary{};
 	std::string secondary{};
 	std::optional<Clay_Color> swatch{};
-	std::optional<TextureRef> thumbnail{};
+	Kind kind = Kind::Text;
 	DevQuickStatus status = DevQuickStatus::Normal;
 };
 
@@ -256,12 +256,12 @@ struct DevNineSplitCell {
 };
 
 struct DevNineSplitEditorParameters {
-	DevNineSplitMode mode = DevNineSplitMode::Numeric;
 	std::array<DevNineSplitCell, 9> cells{};
-	std::uint64_t* selectedValue = nullptr;
 	ActionCall onSelected{};
 	ActionCall centerAction{};
 	std::string_view centerLabel{"Link"};
+	std::uint64_t* selectedValue = nullptr;
+	DevNineSplitMode mode = DevNineSplitMode::Numeric;
 	bool centerSelected = false;
 	bool enabled = true;
 };
@@ -320,21 +320,23 @@ struct DevTypeEditorParameters {
 };
 
 struct DevTypeEditorState {
-	App* app = nullptr;
-	DevInterfaceState* interfaceState = nullptr;
-	DevEditorBinding binding{};
 	tooling::DevOwnedValue currentValue{};
-	devMode::DevTypeId type = 0u;
-	devMode::DevTypeIndex typeIndex{};
-	devMode::DevTypeIndex operationType{};
-	void* editValue = nullptr;
+	DevEditorBinding binding{};
 	std::string fieldName{};
 	std::string draft{};
+	std::string semanticText{};
+	std::string localDiagnostic{};
+	devMode::DevCatalogLease catalogLease{};
 	std::vector<std::string> choiceLabels{};
 	std::vector<FSEL::ComboBoxOption> choiceOptions{};
 	std::vector<std::string> choiceKeys{};
 	std::vector<std::uint8_t> choiceResourceDomains{};
 	std::vector<std::uint64_t> choiceIdentities{};
+	std::array<std::uint64_t, 2> semanticSelections{};
+	App* app = nullptr;
+	DevInterfaceState* interfaceState = nullptr;
+	devMode::DevTypeId type = 0u;
+	void* editValue = nullptr;
 	devMode::DevTypeId choiceType = 0u;
 	devMode::DevChoiceDomain choiceDomain = devMode::DevChoiceDomain::None;
 	std::uint64_t choiceRevision = std::numeric_limits<std::uint64_t>::max();
@@ -344,21 +346,19 @@ struct DevTypeEditorState {
 	uint64_t resourceFitSelection = 0u;
 	uint64_t resourceSamplingSelection = 0u;
 	devMode::DevTypeId dragValueType = 0u;
+	uint64_t semanticMode = std::numeric_limits<uint64_t>::max();
+	double semanticSliderValue = 0.0;
+	std::size_t sequenceActionIndex = 0u;
+	std::array<unsigned int, 5> semanticUnsigned{};
+	std::array<float, 4> semanticChannels{};
+	std::array<float, 4> semanticCorners{};
+	devMode::DevTypeIndex typeIndex{};
+	devMode::DevTypeIndex operationType{};
 	int dragSigned = 0;
 	unsigned int dragUnsigned = 0u;
 	float dragFloat = 0.0f;
-	uint64_t semanticMode = std::numeric_limits<uint64_t>::max();
 	float semanticValueA = 0.0f;
 	float semanticValueB = 0.0f;
-	double semanticSliderValue = 0.0;
-	std::array<float, 4> semanticChannels{};
-	std::array<float, 4> semanticCorners{};
-	std::array<unsigned int, 5> semanticUnsigned{};
-	std::array<std::uint64_t, 2> semanticSelections{};
-	std::string semanticText{};
-	std::string localDiagnostic{};
-	devMode::DevCatalogLease catalogLease{};
-	std::size_t sequenceActionIndex = 0u;
 	bool draftInitialized = false;
 	bool draftValid = true;
 	bool editable = false;

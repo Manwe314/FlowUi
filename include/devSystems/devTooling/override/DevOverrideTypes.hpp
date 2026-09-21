@@ -173,15 +173,15 @@ enum class DevCommandStatus : std::uint8_t {
 
 struct DevCommandResult {
 	std::uint64_t transaction = 0;
-	DevCommandStatus status = DevCommandStatus::Applied;
 	std::uint32_t command = 0;
+	DevCommandStatus status = DevCommandStatus::Applied;
 	bool applied = false;
 };
 
 struct DevCapturedField {
+	DevOwnedValue value{};
 	/** One-based index into DevSchemaGeneration::fields. */
 	devMode::DevFieldIndex field{};
-	DevOwnedValue value{};
 	DevOverrideLayer winningLayer = DevOverrideLayer::LiveDefinition;
 	bool overridden = false;
 };

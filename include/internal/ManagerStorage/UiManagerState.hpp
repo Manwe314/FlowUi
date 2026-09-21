@@ -173,6 +173,7 @@ struct ConstructedElementFrame {
 	size_t priorFlowScopeDepth = 0;
 #if FLOW_UI_DEV_MODE
 	devSystems::tooling::DevTreeCapture::Token treeToken{};
+	bool isDevInternal = false;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
 	devSystems::ManualTimingZone subtreeTiming{};
@@ -180,37 +181,37 @@ struct ConstructedElementFrame {
 };
 
 struct UiManagerState {
-	explicit UiManagerState(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config);
 	~UiManagerState() noexcept;
-
-	storage::IStorageSystem* storage = nullptr;
-	storage::MemoryBlock clayMemory{};
-	Clay_Arena clayArena{};
-	Clay_Context* clayContext = nullptr;
-	storage::FrameToken activeFrame{};
-	storage::ArenaView frameArena{};
+#if FLOW_UI_DEV_MODE
+#endif
+	devMode::PerformanceDiagnostics performanceDiagnostics{};
 	FrameInput frameInputForCurrentLayout{};
 	FrameInput previousFrameInputForCurrentLayout{};
-	bool wasPrimaryPointerDownLastFrame = false;
+	devSystems::tooling::DevTreeCapture devTreeCapture{};
+	devMode::DevRuntime devRuntime{};
+	DevToolsConfig devToolsConfig{};
+	text::TextLayoutService textLayoutService{};
+	ClayBridgeIdTrackerForDev clayBridgeIdTracker{};
+	FontFrameView fontView{};
 	InteractionSnapshot previousInteractionSnapshot{};
 	InteractionSnapshot currentInteractionSnapshot{};
+	FlowRootIdTrackerForDev flowRootIdTracker{};
+	storage::MemoryBlock clayMemory{};
+	storage::FrameToken activeFrame{};
+	storage::ArenaView frameArena{};
+	Clay_Arena clayArena{};
 	FlowScopeStack flowScopes{};
 	std::vector<ConstructedElementFrame> constructedElementStack{};
-#if FLOW_UI_DEV_MODE
-	FlowRootIdTrackerForDev flowRootIdTracker{};
-	ClayBridgeIdTrackerForDev clayBridgeIdTracker{};
-	devMode::DevRuntime devRuntime{};
-	devSystems::tooling::DevTreeCapture devTreeCapture{};
-	devMode::PerformanceDiagnostics performanceDiagnostics{};
-	DevToolsConfig devToolsConfig{};
-#endif
+	explicit UiManagerState(storage::IStorageSystem& storageSystem, WindowId window, const AppConfig& config);
+
+	storage::IStorageSystem* storage = nullptr;
+	Clay_Context* clayContext = nullptr;
+	InputManagerConfig inputManagerConfig{};
 	CursorType cursor = CursorType::Arrow;
 	CursorType previousCursor = CursorType::Arrow;
-	uint8_t cursorPriority = 0;
-	FontFrameView fontView{};
-	text::TextLayoutService textLayoutService{};
 	float pointsToPixelsScale = 96.0f / 72.0f;
-	InputManagerConfig inputManagerConfig{};
+	bool wasPrimaryPointerDownLastFrame = false;
+	uint8_t cursorPriority = 0;
 };
 
 } // namespace detail::manager_storage

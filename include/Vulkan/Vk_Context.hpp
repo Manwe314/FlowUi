@@ -20,8 +20,8 @@ typedef struct VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT {
 typedef struct VkSwapchainPresentFenceInfoEXT {
 	VkStructureType sType;
 	const void* pNext;
-	uint32_t swapchainCount;
 	const VkFence* pFences;
+	uint32_t swapchainCount;
 } VkSwapchainPresentFenceInfoEXT;
 #endif
 
@@ -34,27 +34,7 @@ enum class WsiRetirementMode : uint8_t {
 };
 
 struct VulkanContext {
-	VkInstance instance = VK_NULL_HANDLE;
-	VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-
-	VkPhysicalDevice phys = VK_NULL_HANDLE;
-	VkDevice device = VK_NULL_HANDLE;
-	VmaAllocator_T* allocator = nullptr;
-
-	uint32_t graphicsQFamily = UINT32_MAX;
-	uint32_t presentQFamily  = UINT32_MAX;
-	VkQueue graphicsQ = VK_NULL_HANDLE;
-	VkQueue presentQ  = VK_NULL_HANDLE;
-	WsiRetirementMode wsiRetirementMode = WsiRetirementMode::LegacyDeviceIdle;
-	PFN_vkWaitForPresentKHR waitForPresentKHR = nullptr;
-	bool surfaceMaintenanceEnabled = false;
 #if FLOW_UI_DEV_MODE
-	bool devGpuTimingRequested = true;
-	bool devGpuMemoryRequested = true;
-	bool memoryBudgetEnabled = false;
-	bool synchronization2Enabled = false;
-	bool calibratedTimestampsEnabled = false;
-	PFN_vkGetCalibratedTimestampsEXT getCalibratedTimestampsEXT = nullptr;
 #endif
 
 	void createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts);
@@ -70,4 +50,24 @@ struct VulkanContext {
 	VkResult waitForPresent(VkSwapchainKHR swapchain, uint64_t presentId, uint64_t timeout) const noexcept;
 
 	void destroy();
+	VkInstance instance = VK_NULL_HANDLE;
+	VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
+
+	VkPhysicalDevice phys = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
+	VmaAllocator_T* allocator = nullptr;
+	VkQueue graphicsQ = VK_NULL_HANDLE;
+	VkQueue presentQ  = VK_NULL_HANDLE;
+	PFN_vkWaitForPresentKHR waitForPresentKHR = nullptr;
+	PFN_vkGetCalibratedTimestampsEXT getCalibratedTimestampsEXT = nullptr;
+
+	uint32_t graphicsQFamily = UINT32_MAX;
+	uint32_t presentQFamily  = UINT32_MAX;
+	WsiRetirementMode wsiRetirementMode = WsiRetirementMode::LegacyDeviceIdle;
+	bool surfaceMaintenanceEnabled = false;
+	bool devGpuTimingRequested = true;
+	bool devGpuMemoryRequested = true;
+	bool memoryBudgetEnabled = false;
+	bool synchronization2Enabled = false;
+	bool calibratedTimestampsEnabled = false;
 };

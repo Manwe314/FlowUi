@@ -38,8 +38,8 @@ public:
 	};
 
 	struct Token {
-		DevFlowNodeIndex node = InvalidFlowNode;
 		uint64_t frameGeneration = 0;
+		DevFlowNodeIndex node = InvalidFlowNode;
 		uint32_t scopeId = 0;
 		[[nodiscard]] explicit operator bool() const noexcept { return scopeId != 0; }
 	};
@@ -120,9 +120,9 @@ private:
 	DevTimingRecorder* timing_ = nullptr;
 	uint64_t frameGeneration_ = 0;
 	uint64_t publishedGeneration_ = 0;
-	uint32_t nextScopeId_ = 1;
 	uint64_t peakLogicalLiveBytes_ = 0;
 	uint64_t peakBackingCapacityBytes_ = 0;
+	uint32_t nextScopeId_ = 1;
 	bool frameActive_ = false;
 	bool lastFinishFailed_ = false;
 };

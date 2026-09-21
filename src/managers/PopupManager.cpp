@@ -32,8 +32,8 @@ constexpr uint32_t kPopupLayerCapacity = 1000u;
 constexpr std::array<int16_t, 3> kPopupLayerBase{10000, 11000, 12000};
 
 struct ResolvedAnchor {
-	Clay_FloatingAttachToElement attachTo = CLAY_ATTACH_TO_NONE;
 	Clay_ElementId parentId{};
+	Clay_FloatingAttachToElement attachTo = CLAY_ATTACH_TO_NONE;
 	Clay_BoundingBox bounds{};
 	bool valid = false;
 	bool hasGeometry = false;

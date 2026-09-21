@@ -9,12 +9,12 @@
 namespace FlowUi::FSEL {
 
 struct SelectableSurfaceParameters {
-	/** Current application-owned selection state. */
-	bool selected = false;
-	bool enabled = true;
 	/** Invoked only for a completed click while selected is false. */
 	ActionCall onSelected{};
 	SelectableSurfaceStyle style{};
+	/** Current application-owned selection state. */
+	bool selected = false;
+	bool enabled = true;
 };
 
 using SelectableSurfaceState = detail::selectable_surface::State;

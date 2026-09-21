@@ -14,17 +14,17 @@ struct FSELBoxTheme {
 };
 
 struct FSELPopupSurfaceTheme {
+	Clay_LayoutDirection layoutDirection = CLAY_TOP_TO_BOTTOM;
 	Clay_Color backgroundColor = Flow_Color("#252526ff");
 	Clay_Color borderColor = Flow_Color("#454545ff");
-	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
 	Clay_Padding padding = CLAY_PADDING_ALL(10);
 	uint16_t childGap = 6;
 	Clay_ChildAlignment childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT,
 		.y = CLAY_ALIGN_Y_TOP,
 	};
-	Clay_LayoutDirection layoutDirection = CLAY_TOP_TO_BOTTOM;
 };
 
 struct FSELSplitterHandleTheme {
@@ -47,6 +47,11 @@ struct FSELButtonStateTheme {
 };
 
 struct FSELButtonTheme {
+	Clay_LayoutDirection layoutDirection = CLAY_LEFT_TO_RIGHT;
+
+	FontFamilyId labelFontFamily = 0;
+	Clay_TextElementConfigWrapMode labelWrapMode = CLAY_TEXT_WRAP_NONE;
+	Clay_TextAlignment labelAlignment = CLAY_TEXT_ALIGN_CENTER;
 	FSELButtonStateTheme idle = {
 		.backgroundColor = Flow_Color("#252526ff"),
 		.labelColor = Flow_Color("#ffffffff"),
@@ -71,26 +76,21 @@ struct FSELButtonTheme {
 		.iconColor = Flow_Color("#6c6c6cb8"),
 		.borderColor = Flow_Color("#3e3e42b8"),
 	};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
+	uint32_t labelFontWeight = 400;
+	FontStyle labelFontStyle = FontStyle::Normal;
+	float iconSize = 18.0f;
+
+	CursorType cursor = CursorType::PointingHand;
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
 
 	Clay_Padding padding = CLAY_PADDING_ALL(10);
+	uint16_t contentGap = 8;
+	uint16_t labelFontSize = 16;
 	Clay_ChildAlignment childAlignment = {
 		.x = CLAY_ALIGN_X_CENTER,
 		.y = CLAY_ALIGN_Y_CENTER,
 	};
-	Clay_LayoutDirection layoutDirection = CLAY_LEFT_TO_RIGHT;
-	uint16_t contentGap = 8;
-	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
-	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
-
-	FontFamilyId labelFontFamily = 0;
-	uint32_t labelFontWeight = 400;
-	FontStyle labelFontStyle = FontStyle::Normal;
-	uint16_t labelFontSize = 16;
-	Clay_TextElementConfigWrapMode labelWrapMode = CLAY_TEXT_WRAP_NONE;
-	Clay_TextAlignment labelAlignment = CLAY_TEXT_ALIGN_CENTER;
-	float iconSize = 18.0f;
-
-	CursorType cursor = CursorType::PointingHand;
 	uint8_t cursorPriority = 10;
 };
 
@@ -138,12 +138,12 @@ struct FSELCheckboxTheme {
 			.iconColor = Flow_Color("#6c6c6cb8"),
 		},
 	};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(4);
 
 	float size = 20.0f;
 	float iconSize = 14.0f;
-	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
-	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(4);
 	CursorType cursor = CursorType::PointingHand;
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
 	uint8_t cursorPriority = 10;
 };
 
@@ -200,11 +200,11 @@ struct FSELSwitchTheme {
 
 	float trackWidth = 40.0f;
 	float trackHeight = 22.0f;
-	uint16_t knobInset = 2;
 	float roundness = 1.0f;
+	CursorType cursor = CursorType::PointingHand;
 	Clay_BorderWidth trackBorderWidth = {1, 1, 1, 1, 0};
 	Clay_BorderWidth knobBorderWidth = {0, 0, 0, 0, 0};
-	CursorType cursor = CursorType::PointingHand;
+	uint16_t knobInset = 2;
 	uint8_t cursorPriority = 10;
 };
 
@@ -285,6 +285,10 @@ struct FSELTextFieldStateTheme {
 };
 
 struct FSELTextFieldTheme {
+
+	InputFieldOverlayStyle overlayStyle{};
+
+	FontFamilyId fontFamily = 0;
 	FSELTextFieldStateTheme idle{};
 	FSELTextFieldStateTheme hovered = {
 		.backgroundColor = Flow_Color("#1e1e1eff"),
@@ -316,22 +320,18 @@ struct FSELTextFieldTheme {
 		.placeholderColor = Flow_Color("#5f5f5fb8"),
 		.borderColor = Flow_Color("#3e3e42b8"),
 	};
+	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(4);
 
 	float width = 240.0f;
 	float height = 34.0f;
-	Clay_Padding padding = CLAY_PADDING_ALL(8);
-	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
-	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(4);
-
-	FontFamilyId fontFamily = 0;
 	uint32_t fontWeight = 400;
 	FontStyle fontStyle = FontStyle::Normal;
+	CursorType cursor = CursorType::IBeam;
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
+	Clay_Padding padding = CLAY_PADDING_ALL(8);
 	uint16_t fontSize = 14;
 	uint16_t letterSpacing = 0;
 	uint8_t tabWidth = 4;
-
-	InputFieldOverlayStyle overlayStyle{};
-	CursorType cursor = CursorType::IBeam;
 	uint8_t cursorPriority = 20;
 };
 
@@ -428,6 +428,7 @@ struct FSELComboBoxOptionStateTheme {
 };
 
 struct FSELComboBoxTheme {
+	FontFamilyId fontFamily = 0;
 	FSELComboBoxStateTheme idle{};
 	FSELComboBoxStateTheme hovered = {
 		.backgroundColor = Flow_Color("#3e3e42ff"),
@@ -460,9 +461,6 @@ struct FSELComboBoxTheme {
 	Clay_Color placeholderColor = Flow_Color("#858585ff");
 	Clay_Color scrollTrackColor = Flow_Color("#ffffff12");
 	Clay_Color scrollThumbColor = Flow_Color("#858585ff");
-	Clay_Padding triggerPadding = {10, 8, 6, 6};
-	Clay_Padding optionPadding = {8, 8, 4, 4};
-	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
 	Clay_CornerRadius cornerRadius = CLAY_CORNER_RADIUS(6);
 	float width = 240.0f;
 	float height = 34.0f;
@@ -471,15 +469,17 @@ struct FSELComboBoxTheme {
 	float iconSize = 16.0f;
 	float scrollTrackWidth = 6.0f;
 	float scrollThumbMinimum = 22.0f;
+	uint32_t fontWeight = 400;
+	FontStyle fontStyle = FontStyle::Normal;
+	CursorType cursor = CursorType::PointingHand;
+	Clay_BorderWidth borderWidth = {1, 1, 1, 1, 0};
+	Clay_Padding triggerPadding = {10, 8, 6, 6};
+	Clay_Padding optionPadding = {8, 8, 4, 4};
 	uint16_t contentGap = 8;
 	uint16_t optionGap = 2;
 	uint16_t popupGap = 4;
 	uint16_t scrollGap = 6;
-	FontFamilyId fontFamily = 0;
-	uint32_t fontWeight = 400;
-	FontStyle fontStyle = FontStyle::Normal;
 	uint16_t fontSize = 16;
-	CursorType cursor = CursorType::PointingHand;
 	uint8_t cursorPriority = 10;
 };
 

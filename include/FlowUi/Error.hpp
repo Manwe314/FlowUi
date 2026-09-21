@@ -1506,11 +1506,11 @@ enum class ErrorEventKind : std::uint8_t {
  */
 struct ErrorEventView {
 	FlowUiError error{};
+	std::string_view nativeMessage{};
+	std::uint32_t nativeCategory = 0u;
 	ErrorEventKind kind = ErrorEventKind::Reported;
 	ErrorResolution resolution = ErrorResolution::None;
 	FatalInspectionCapability inspection = FatalInspectionCapability::None;
-	std::string_view nativeMessage{};
-	std::uint32_t nativeCategory = 0u;
 };
 
 using ErrorSinkCallback = void(*)(void* userData, const ErrorEventView& event) noexcept;
@@ -1524,7 +1524,11 @@ void reportErrorEvent(
 	const char* file = __builtin_FILE(),
 	const char* function = __builtin_FUNCTION(),
 	std::uint32_t line = __builtin_LINE(),
+#if __has_builtin(__builtin_COLUMN)
 	std::uint32_t column = __builtin_COLUMN()) noexcept;
+#else
+	std::uint32_t column = 0u) noexcept;
+#endif
 #else
 void reportErrorEvent(const ErrorEventView& event) noexcept;
 #endif

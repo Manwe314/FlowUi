@@ -88,25 +88,25 @@ private:
 	};
 
 	struct MutableField {
-		DevFieldId id = 0;
+		DevConstraintRecord constraint{};
 		std::string name{};
 		std::string displayName{};
 		std::string hint{};
+		std::string sourceFile{};
+		std::string sourceFunction{};
+		DevFieldId id = 0;
 		DevTypeId ownerType = 0;
 		DevTypeId valueType = 0;
+		const DevFieldOps* operations = nullptr;
+		std::uint32_t declarationOrder = 0;
+		std::uint32_t sourceLine = 0;
+		std::uint32_t sourceColumn = 0;
 		DevFieldAccess declaredAccess = DevFieldAccess::Inherit;
 		DevEditorKind editor = DevEditorKind::None;
 		DevChoiceDomain choiceDomain = DevChoiceDomain::None;
 		DevEditCapability effectiveEdit = DevEditCapability::Unsupported;
 		DevCapabilityReason reason = DevCapabilityReason::None;
-		DevConstraintRecord constraint{};
 		bool hasConstraint = false;
-		const DevFieldOps* operations = nullptr;
-		std::uint32_t declarationOrder = 0;
-		std::string sourceFile{};
-		std::string sourceFunction{};
-		std::uint32_t sourceLine = 0;
-		std::uint32_t sourceColumn = 0;
 	};
 
 	struct MutableType {
@@ -114,26 +114,26 @@ private:
 			std::string name{};
 			std::uint64_t bits = 0;
 		};
-
-		DevTypeId id = 0;
 		std::string displayName{};
 		std::string cppTypeName{};
+		std::vector<MutableField> fields{};
+		std::vector<EnumValue> enumValues{};
+
+		DevTypeId id = 0;
+		DevTypeId elementType = 0;
+		std::uint32_t sequenceExtent = 0;
+		std::uint8_t enumWidthBytes = 0;
+		std::uint32_t size = 0;
+		std::uint32_t alignment = 0;
+		const DevTypeOps* operations = nullptr;
 		DevTypeKind kind = DevTypeKind::Invalid;
 		DevCaptureCapability capture = DevCaptureCapability::None;
 		DevEditCapability edit = DevEditCapability::Unsupported;
 		DevEditorKind editor = DevEditorKind::None;
 		DevCapabilityReason reason = DevCapabilityReason::None;
-		DevTypeId elementType = 0;
-		std::uint32_t sequenceExtent = 0;
-		bool sequenceFixed = false;
-		std::uint8_t enumWidthBytes = 0;
-		bool enumIsSigned = false;
-		std::uint32_t size = 0;
-		std::uint32_t alignment = 0;
-		const DevTypeOps* operations = nullptr;
 		ResolutionState state = ResolutionState::Visiting;
-		std::vector<MutableField> fields{};
-		std::vector<EnumValue> enumValues{};
+		bool sequenceFixed = false;
+		bool enumIsSigned = false;
 	};
 
 	struct MutableElement {
@@ -559,9 +559,9 @@ private:
 		const std::size_t index = mutableTypes_.size();
 		mutableTypeIndex_.emplace(id, index);
 		mutableTypes_.push_back(MutableType{
-			.id = id,
 			.displayName = std::string(cppName),
 			.cppTypeName = std::string(cppName),
+			.id = id,
 			.size = static_cast<std::uint32_t>(sizeof(Type)),
 			.alignment = static_cast<std::uint32_t>(alignof(Type)),
 			.operations = &TypeOperations<Type>::operations,
@@ -794,12 +794,19 @@ private:
 			++retainedConstraintCount_;
 		}
 		destination.push_back(MutableField{
-			.id = fieldId,
+			.constraint = constraint,
 			.name = std::string(field.name),
 			.displayName = std::string(field.name),
 			.hint = std::string(field.options.hint),
+			.sourceFile = std::string(field.sourceFile),
+			.sourceFunction = std::string(field.sourceFunction),
+			.id = fieldId,
 			.ownerType = ownerId,
 			.valueType = valueId,
+			.operations = &DevMemberOps<Member>::operations,
+			.declarationOrder = order,
+			.sourceLine = field.sourceLine,
+			.sourceColumn = field.sourceColumn,
 			.declaredAccess = field.options.access,
 			.editor = field.options.editor == DevEditorKind::None
 				? (mutableType(valueId) ? mutableType(valueId)->editor : DevEditorKind::None)
@@ -807,14 +814,7 @@ private:
 			.choiceDomain = field.options.choiceDomain,
 			.effectiveEdit = effective,
 			.reason = reason,
-			.constraint = constraint,
 			.hasConstraint = retainConstraint,
-			.operations = &DevMemberOps<Member>::operations,
-			.declarationOrder = order,
-			.sourceFile = std::string(field.sourceFile),
-			.sourceFunction = std::string(field.sourceFunction),
-			.sourceLine = field.sourceLine,
-			.sourceColumn = field.sourceColumn,
 		});
 		++retainedFieldCount_;
 	}

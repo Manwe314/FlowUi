@@ -112,35 +112,35 @@ enum class MemoryApplyPolicy : uint8_t {
 };
 
 struct MemorySourceDescriptor {
+	std::string name{};
 	MemorySourceId id = 0u;
 	MemorySourceId parent = 0u;
+	MemoryTuningTargetId tuningTarget = 0u;
 	MemoryDomain domain = MemoryDomain::StorageCpu;
 	MemorySourceKind kind = MemorySourceKind::Allocator;
-	std::string name{};
 	MemoryAccuracy accuracy = MemoryAccuracy::Exact;
-	MemoryTuningTargetId tuningTarget = 0u;
 };
 
 struct StaticMemorySourceDescriptor {
+	std::string_view name{};
 	MemorySourceId id = 0u;
 	MemorySourceId parent = 0u;
+	MemoryTuningTargetId tuningTarget = 0u;
 	MemoryDomain domain = MemoryDomain::StorageCpu;
 	MemorySourceKind kind = MemorySourceKind::Allocator;
-	std::string_view name{};
 	MemoryAccuracy accuracy = MemoryAccuracy::Exact;
-	MemoryTuningTargetId tuningTarget = 0u;
 };
 
 struct MemoryTuningTargetDescriptor {
+	std::string configKey{};
 	MemoryTuningTargetId id = 0u;
 	MemorySourceId source = 0u;
-	MemoryTuningMetric metric = MemoryTuningMetric::BackingAllocatedBytes;
-	MemoryCapacityUnit unit = MemoryCapacityUnit::Bytes;
 	uint64_t minimum = 0u;
 	uint64_t maximum = UINT64_MAX;
 	uint64_t alignment = 1u;
 	uint64_t productionDefault = 0u;
-	std::string configKey{};
+	MemoryTuningMetric metric = MemoryTuningMetric::BackingAllocatedBytes;
+	MemoryCapacityUnit unit = MemoryCapacityUnit::Bytes;
 	MemoryApplyPolicy applyPolicy = MemoryApplyPolicy::RestartRequired;
 };
 
@@ -277,13 +277,13 @@ inline constexpr uint64_t kHashPrime = 1099511628211ull;
 	MemorySourceId parent = 0u,
 	MemoryTuningTargetId tuningTarget = 0u) {
 	return StaticMemorySourceDescriptor{
+		.name = stableName,
 		.id = makeMemorySourceId(stableName),
 		.parent = parent,
+		.tuningTarget = tuningTarget,
 		.domain = domain,
 		.kind = kind,
-		.name = stableName,
 		.accuracy = accuracy,
-		.tuningTarget = tuningTarget,
 	};
 }
 

@@ -236,18 +236,18 @@ struct ActionInvocationSource {
 #if FLOW_UI_DEV_MODE
 /** Safe developer-tooling snapshot; borrowed action resources are never exposed. */
 struct ActionDebugInfo {
-	ActionCallKind kind = ActionCallKind::None;
+	ActionInvocationSource lastSource{};
 	AppActionID appId{};
-	uint64_t uiRecipeId = 0;
+	ActionSourceLocation definitionSource{};
 	std::string_view debugName{};
-	ActionAvailability availability{};
-	bool bound = false;
+	uint64_t uiRecipeId = 0;
 	uint64_t invocationCount = 0;
 	uint64_t discardedResultCount = 0;
+	ActionCallKind kind = ActionCallKind::None;
 	ActionInvocationStatus lastStatus = ActionInvocationStatus::Empty;
-	ActionInvocationSource lastSource{};
+	ActionAvailability availability{};
+	bool bound = false;
 	bool lastInvocationThrew = false;
-	ActionSourceLocation definitionSource{};
 };
 #endif
 

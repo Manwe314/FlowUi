@@ -107,6 +107,28 @@ public:
 	[[nodiscard]] const devSystems::tooling::DevOverrideEngine* devOverrideEngine() const noexcept {
 		return devOverrideEngine_;
 	}
+
+	/**
+	 * @brief Check whether UI construction is currently inside an active dev-internal element scope.
+	 *
+	 * When true, child elements (even standard library controls like FSEL::Button)
+	 * are protected from developer override mutations and captured as internal dev elements.
+	 */
+	[[nodiscard]] bool isDevInternalScope() const noexcept {
+		return devInternalScopeDepth_ > 0;
+	}
+
+	/** Enter an internal dev element scope, shielding descendants from overrides. */
+	void enterDevInternalScope() noexcept {
+		++devInternalScopeDepth_;
+	}
+
+	/** Leave an internal dev element scope. */
+	void leaveDevInternalScope() noexcept {
+		if (devInternalScopeDepth_ > 0) {
+			--devInternalScopeDepth_;
+		}
+	}
 #endif
 	/**
 	 * @brief Store a string in the current frame arena and return a Clay string.
@@ -806,9 +828,10 @@ private:
 		size_t priorFlowScopeDepth
 #if FLOW_UI_DEV_MODE
 		, devSystems::tooling::DevTreeCapture::Token treeToken
+		, bool isDevInternal = false
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_TIMING_LEVEL >= 2
-		, FlowDefinitionID definitionId
+		, FlowDefinitionID definitionId = {}
 #endif
 		);
 #if FLOW_UI_DEV_MODE
@@ -841,6 +864,7 @@ private:
 	devSystems::DevTimingRecorder* devTimingRecorder_ = nullptr;
 	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;
 	devSystems::tooling::DevOverrideEngine* devOverrideEngine_ = nullptr;
+	uint32_t devInternalScopeDepth_ = 0;
 #endif
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;

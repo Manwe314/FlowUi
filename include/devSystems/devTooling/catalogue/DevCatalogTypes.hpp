@@ -31,12 +31,12 @@ struct DevUvRect {
 
 struct DevImageCatalogEntry {
 	ResourceKey key{};
-	TextureHandle textureHandle{};
+	std::string_view sourcePathOrDebugName{};
 	std::uint32_t width = 0;
 	std::uint32_t height = 0;
 	std::uint32_t formatVulkan = 0;
 	std::uint64_t gpuMemoryBytes = 0;
-	std::string_view sourcePathOrDebugName{};
+	TextureHandle textureHandle{};
 	DevResourceStatus status = DevResourceStatus::Ready;
 	bool isAnonymous = false;
 };

@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <cstdio>
 
+#include "devSystems/devInterface/Inspect/Inspector/DevClayInspector.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp"
+#include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 #include "managers/UiManager.hpp"
@@ -22,6 +24,19 @@ std::string_view localDebugName(std::string_view name) {
 
 void DevInspectInspector::buildElement(BuildContext& context) {
 	DevInterfaceState* state = context.params.interfaceState;
+
+	if (state && state->inspectSelectedNodeKind == kDevInterfaceClayNodeKind &&
+		state->inspectSelectedNodeKey != 0u) {
+		context.uiManager.createElement(kDevClayInspector, "clay-inspector")
+			.setParameters(DevClayInspectorParameters{
+				.app = context.params.app,
+				.interfaceState = state,
+				.selectionKey = state->inspectSelectedNodeKey,
+			})
+			.setDevInternalCapture(true)
+			.draw();
+		return;
+	}
 	const tooling::DevTreeSnapshot* snapshot = nullptr;
 	const tooling::DevFlowNode* selected = nullptr;
 	if (state && state->selectedElementId && context.params.app &&

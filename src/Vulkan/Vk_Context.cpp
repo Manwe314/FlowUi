@@ -56,12 +56,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		.error = FlowUi::makeError(
 			FlowUi::ErrorCode::None, FlowUi::ErrorSite::VulkanDebugDiagnostic,
 			0u, 0u, static_cast<std::uint32_t>(severity)),
-		.kind = FlowUi::ErrorEventKind::BackendDiagnostic,
 		.nativeMessage = callbackData && callbackData->pMessage
 			? std::string_view{callbackData->pMessage}
 			: std::string_view{},
 		.nativeCategory = static_cast<std::uint32_t>(type),
-	});
+		.kind = FlowUi::ErrorEventKind::BackendDiagnostic,});
 	return VK_FALSE;
 }
 
@@ -226,10 +225,9 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 				.error = FlowUi::makeError(
 					FlowUi::ErrorCode::VulkanExtensionMissing,
 					FlowUi::ErrorSite::VulkanInstanceCreate),
-				.kind = FlowUi::ErrorEventKind::Resolved,
-				.resolution = FlowUi::ErrorResolution::Skipped,
 				.nativeMessage = "VK_EXT_debug_utils is unavailable; continuing without the debug messenger.",
-			});
+				.kind = FlowUi::ErrorEventKind::Resolved,
+				.resolution = FlowUi::ErrorResolution::Skipped,});
 		}
 	}
 
@@ -261,10 +259,9 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 				.error = FlowUi::makeError(
 					FlowUi::ErrorCode::VulkanFeatureMissing,
 					FlowUi::ErrorSite::VulkanInstanceCreate),
-				.kind = FlowUi::ErrorEventKind::Resolved,
-				.resolution = FlowUi::ErrorResolution::Skipped,
 				.nativeMessage = "VK_LAYER_KHRONOS_validation is unavailable; continuing without validation layers.",
-			});
+				.kind = FlowUi::ErrorEventKind::Resolved,
+				.resolution = FlowUi::ErrorResolution::Skipped,});
 		}
 	}
 

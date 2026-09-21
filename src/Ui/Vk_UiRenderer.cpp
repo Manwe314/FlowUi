@@ -1438,22 +1438,21 @@ void initSharedUiByteResources(
 		uploadBlobs[2] = storageSystem.createBlob(transparentPixel, storageSystem.intern("FlowUi UI placeholder upload"));
 
 		(void)storageSystem.enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Buffer,
-			.source = uploadBlobs[0],
 			.byteCount = sizeof(quadVertices),
+			.source = uploadBlobs[0],
 			.destinationBuffer = resources.quadBuffer,
-		});
+			.destination = storage::UploadDestination::Buffer,});
 		(void)storageSystem.enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Image,
+			.byteCount = transparentPixel.size(),
 			.source = uploadBlobs[1],
-			.byteCount = transparentPixel.size(),
 			.destinationImage = resources.placeholderFontImage,
+			.destination = storage::UploadDestination::Image,
 		});
 		(void)storageSystem.enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Image,
-			.source = uploadBlobs[2],
 			.byteCount = transparentPixel.size(),
+			.source = uploadBlobs[2],
 			.destinationImage = resources.placeholderUiImage,
+			.destination = storage::UploadDestination::Image,
 		});
 		storageSystem.flushUploads();
 		for (const storage::BlobHandle blob : uploadBlobs) storageSystem.releaseBlob(blob);
@@ -2035,10 +2034,9 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 	}
 	return PreparedUiFrame{
 		.runs = runs.first(built.runCount),
-		.instanceCount = built.instanceCount,
 		.epoch = frame.epoch,
-		.originatingFrameSlot = frameSlot,
-	};
+		.instanceCount = built.instanceCount,
+		.originatingFrameSlot = frameSlot,};
 }
 
 void VulkanUiRenderer::recordPreparedFrame(

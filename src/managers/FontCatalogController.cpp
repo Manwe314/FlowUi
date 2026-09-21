@@ -35,13 +35,12 @@ FontCatalogController::FontCatalogController(storage::IStorageSystem& storageSys
 	if (atlasSize == 0) throw FlowUiException(makeError(ErrorCode::RendererConfigurationInvalid, ErrorSite::FontManagerInitialize));
 	const storage::StringId name = storageSystem.intern("flowui.font.atlas.sampler");
 	atlasSampler = storageSystem.acquireSampler(storage::SamplerDesc{
+		.debugName = name,
 		.minFilter = storage::FilterMode::Linear,
 		.magFilter = storage::FilterMode::Linear,
 		.addressU = storage::AddressMode::ClampToEdge,
 		.addressV = storage::AddressMode::ClampToEdge,
-		.addressW = storage::AddressMode::ClampToEdge,
-		.debugName = name,
-	});
+		.addressW = storage::AddressMode::ClampToEdge,});
 	refreshBorrowedAtlas();
 }
 
@@ -90,10 +89,7 @@ void FontCatalogController::uploadLayerTransactional(
 			std::as_bytes(std::span(rgbaPixels)), name);
 		try {
 			(void)storage->enqueueUpload(storage::UploadRequest{
-				.destination = storage::UploadDestination::Image,
-				.source = blob,
 				.byteCount = rgbaPixels.size(),
-				.destinationImage = atlasImage,
 				.imageRegion = storage::ImageRegion{
 					.width = atlasSizeHint,
 					.height = atlasSizeHint,
@@ -101,8 +97,10 @@ void FontCatalogController::uploadLayerTransactional(
 					.baseArrayLayer = layer,
 					.layerCount = 1,
 				},
-				.releaseSourceWhenComplete = true,
-			});
+				.source = blob,
+				.destinationImage = atlasImage,
+				.destination = storage::UploadDestination::Image,
+				.releaseSourceWhenComplete = true,});
 			storage->flushUploads();
 			blob = {};
 		} catch (...) {
@@ -157,18 +155,17 @@ void FontCatalogController::uploadLayerTransactional(
 		});
 		candidateBlob = storage->createBlob(combined, name);
 		(void)storage->enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Image,
-			.source = candidateBlob,
 			.byteCount = combined.size(),
-			.destinationImage = candidateImage,
 			.imageRegion = storage::ImageRegion{
 				.width = atlasSizeHint,
 				.height = atlasSizeHint,
 				.depth = 1,
 				.layerCount = candidateCapacity,
 			},
-			.releaseSourceWhenComplete = true,
-		});
+			.source = candidateBlob,
+			.destinationImage = candidateImage,
+			.destination = storage::UploadDestination::Image,
+			.releaseSourceWhenComplete = true,});
 		storage->flushUploads();
 		candidateBlob = {};
 #if FLOW_UI_DEV_MODE

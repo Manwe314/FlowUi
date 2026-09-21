@@ -645,59 +645,62 @@ void captureDevUiReplayPacket(
 #endif
 
 struct AppWindow {
+#if FLOW_UI_DEV_MODE
+#endif
+
+#if FLOW_UI_DEV_MODE
+#endif
+
+	enum class Phase : uint8_t { Idle, Building, Prepared, Closing };
+
+	VulkanUiRenderer renderer;
+	detail::InputQueue inputQueue;
+
+	FrameInput frameInput{};
+#if FLOW_UI_DEV_MODE
+	devSystems::tooling::DevInspectPointerState inspect_pointer{};
+#endif
+
+	UiManager ui;
+	AppWindowConfig config{};
+	SwapchainGeneration swapchain;
+	DevUiReplayPacket devReplayPacket{};
+	detail::manager_storage::FontFrameView fontFrameView{};
+	storage::FrameReadLease storageReadLease{};
+	devSystems::tooling::DevOverlayCommandBuffer devOverlay{};
+	DevUiReplayRequest devReplayRequest{};
+	storage::FrameToken storageFrame{};
+	ViewPortManager viewPorts;
+	PreparedUiFrame preparedUi{};
+	FrameVk frames;
+	std::vector<SwapchainGeneration> retiredSwapchains;
+	devSystems::ManualTimingZone frameTotalTiming{};
+	devSystems::ManualTimingZone userBuildTiming{};
+	devSystems::ManualTimingZone preparedGapTiming{};
+	Clay_RenderCommandArray renderCommands{};
+	devSystems::WindowFrameKey timingFrame{};
 	AppWindow(WindowId windowId, AppWindowConfig windowConfig, const AppConfig& appConfig)
 		: id(windowId),
 		  config(std::move(windowConfig)),
 		  inputQueue(appConfig.errors.policy.inputTextQueueCapacity, appConfig.errors.policy.inputQueueOverflow) {}
 
 	WindowId id = InvalidWindowId;
-	AppWindowConfig config{};
 	storage::IStorageSystem* storageSystem = nullptr;
-	bool storageRegistered = false;
 
 	std::unique_ptr<detail::IWindowBackend> backend;
-	detail::InputQueue inputQueue;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	SwapchainGeneration swapchain;
-	std::vector<SwapchainGeneration> retiredSwapchains;
-	FrameVk frames;
-
-	UiManager ui;
-	ViewPortManager viewPorts;
-
-	VulkanUiRenderer renderer;
-
-	FrameInput frameInput{};
-	Clay_RenderCommandArray renderCommands{};
-	PreparedUiFrame preparedUi{};
-#if FLOW_UI_DEV_MODE
-	DevUiReplayRequest devReplayRequest{};
-	DevUiReplayPacket devReplayPacket{};
-#endif
-	storage::FrameToken storageFrame{};
-	storage::FrameReadLease storageReadLease{};
-	detail::manager_storage::FontFrameView fontFrameView{};
 	uint64_t frameNumber = 0;
 	storage::SubmissionSerial lastSubmissionSerial = 0;
-
-#if FLOW_UI_DEV_MODE
-	devSystems::WindowFrameKey timingFrame{};
 	devSystems::AppTickId timingAppTick = 0u;
-	devSystems::ManualTimingZone frameTotalTiming{};
-	devSystems::ManualTimingZone userBuildTiming{};
-	devSystems::ManualTimingZone preparedGapTiming{};
-	devSystems::tooling::DevOverlayCommandBuffer devOverlay{};
-#endif
 
 	std::chrono::steady_clock::time_point previousBeginFrameTimestamp{};
-	bool hasPreviousBeginFrameTimestamp = false;
+	VkExtent2D observedFramebufferExtent{};
 	float uiToFramebufferScaleX = 1.0f;
 	float uiToFramebufferScaleY = 1.0f;
-	bool framebufferResized = false;
-	VkExtent2D observedFramebufferExtent{};
-
-	enum class Phase : uint8_t { Idle, Building, Prepared, Closing };
 	Phase phase = Phase::Idle;
+	bool storageRegistered = false;
+	bool hasPreviousBeginFrameTimestamp = false;
+	bool framebufferResized = false;
 };
 
 #if FLOW_UI_DEV_MODE
@@ -1613,8 +1616,18 @@ struct App::Impl {
 				layoutInput.scrollX += layoutInput.scrollY;
 				layoutInput.scrollY = 0.0f;
 			}
+#if FLOW_UI_DEV_MODE
+			devTooling.inspect_interaction().set_interface_window(devInterface.windowId());
+			devTooling.inspect_interaction().filter_input(
+				window.id, window.ui.devTreeSnapshot(), layoutInput, window.inspect_pointer);
+#endif
 			window.ui.beginFrame(
 				window.storageFrame, layoutInput, window.fontFrameView, layoutWidth, layoutHeight);
+#if FLOW_UI_DEV_MODE
+			if (devTooling.inspect_interaction().picking() &&
+				devTooling.inspect_interaction().eligible_window(window.id) && layoutInput.pointerInside)
+				window.ui.requestCursor(CursorType::Crosshair, 255);
+#endif
 #if FLOW_UI_DEV_MODE
 			beginTiming.end();
 			window.userBuildTiming.begin(
@@ -1722,7 +1735,10 @@ struct App::Impl {
 			}
 			window.devOverlay.clear();
 			devSystems::tooling::DevOverlaySelectionSpec overlaySelection{};
-			if (devTooling.overlaySelection(window.id, overlaySelection)) {
+			devTooling.inspect_interaction().finish_frame(window.ui.devTreeSnapshot(), window.inspect_pointer);
+			if (devTooling.inspect_interaction().eligible_window(window.id) &&
+				(devTooling.inspect_interaction().overlay_selection(window.ui.devTreeSnapshot(), overlaySelection) ||
+				 devTooling.overlaySelection(window.id, overlaySelection))) {
 				const float scaleX = std::max(window.uiToFramebufferScaleX, 1.0e-6f);
 				const float scaleY = std::max(window.uiToFramebufferScaleY, 1.0e-6f);
 				devTooling.overlays().generateOverlayCommands(
@@ -2220,6 +2236,10 @@ struct App::Impl {
 			timingRecorder(), devSystems::TimingCategory::Lifecycle,
 			devSystems::TimingZoneRole::Work, "flowui.window.destroy",
 			devSystems::TimingEntityRef::window(id));
+#endif
+#if FLOW_UI_DEV_MODE
+		devTooling.inspect_interaction().remove_window(id);
+		devTooling.clearOverlaySelection(id);
 #endif
 		window.phase = AppWindow::Phase::Closing;
 		if (window.backend) window.backend->detachCallbacks();

@@ -31,50 +31,50 @@ enum class ComboBoxPopupWidthPolicy : uint8_t {
 };
 
 struct ComboBoxParameters {
+	ActionCall onChanged{};
+	ActionCall onOpened{};
+	ActionCall onClosed{};
+
+	std::optional<TextureRef> closedIcon = std::nullopt;
+	std::optional<TextureRef> openIcon = std::nullopt;
 	std::span<const ComboBoxOption> options{};
+	std::string_view placeholder = "Select...";
+	std::string_view popupSearchPlaceholder = "Filter options...";
 	/** Borrowed authoritative selection. Null disables the control. */
 	uint64_t* selectedValue = nullptr;
 	/** Optional borrowed open state. Null selects element-owned state; keep the mode stable per element ID. */
 	bool* open = nullptr;
-	std::string_view placeholder = "Select...";
-	bool enabled = true;
-	ActionCall onChanged{};
-	ActionCall onOpened{};
-	ActionCall onClosed{};
 	/** Optional popup-local search model. When present, a fixed search header is
 	 * rendered above the independently scrollable option viewport. Filtering is
 	 * owned by the caller so catalogue-specific matching remains possible. */
 	std::string* popupSearchValue = nullptr;
-	std::string_view popupSearchPlaceholder = "Filter options...";
-	std::optional<float> popupSearchHeight = std::nullopt;
+	Clay_PointerCaptureMode pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE;
 
 	std::optional<Clay_Sizing> sizing = std::nullopt;
-	ComboBoxPopupWidthPolicy popupWidthPolicy = ComboBoxPopupWidthPolicy::MatchTrigger;
-	std::optional<float> popupWidth = std::nullopt;
-	std::optional<float> popupMaxHeight = std::nullopt;
-	std::optional<float> optionHeight = std::nullopt;
-	bool showScrollIndicator = true;
 
 	PopupPlacement placement = {
 		.anchorPoint = PopupAttachmentPoint::BottomLeft,
 		.popupPoint = PopupAttachmentPoint::TopLeft,
 		.offset = Clay_Vector2{0.0f, 4.0f},
 	};
-	PopupOverflowPolicy overflow{};
-	PopupLayer layer = PopupLayer::CasualPopup;
-	PopupOutsidePressPolicy outsidePress =
-		PopupOutsidePressPolicy::DismissAndBlockAnchor;
-	Clay_PointerCaptureMode pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE;
-
-	std::optional<TextureRef> closedIcon = std::nullopt;
-	std::optional<TextureRef> openIcon = std::nullopt;
+	std::optional<float> popupSearchHeight = std::nullopt;
+	std::optional<float> popupWidth = std::nullopt;
+	std::optional<float> popupMaxHeight = std::nullopt;
+	std::optional<float> optionHeight = std::nullopt;
 	std::optional<float> iconSize = std::nullopt;
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
 	std::optional<uint32_t> fontWeight = std::nullopt;
-	std::optional<FontStyle> fontStyle = std::nullopt;
+	ComboBoxPopupWidthPolicy popupWidthPolicy = ComboBoxPopupWidthPolicy::MatchTrigger;
+	PopupLayer layer = PopupLayer::CasualPopup;
+	PopupOutsidePressPolicy outsidePress =
+		PopupOutsidePressPolicy::DismissAndBlockAnchor;
 	std::optional<uint16_t> fontSize = std::nullopt;
+	PopupOverflowPolicy overflow{};
+	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	bool enabled = true;
+	bool showScrollIndicator = true;
 };
 
 struct ComboBoxState {

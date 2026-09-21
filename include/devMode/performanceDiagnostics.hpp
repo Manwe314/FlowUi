@@ -24,6 +24,8 @@ struct ViewPortFrameDiagnostics {
 };
 
 struct FrameDiagnostics {
+
+	std::unordered_map<std::string, ViewPortFrameDiagnostics> viewports{};
 	uint64_t frameIndex = 0u;
 
 	double deltaMs = 0.0;
@@ -39,6 +41,7 @@ struct FrameDiagnostics {
 	double uiRecordMs = 0.0;
 	double submitMs = 0.0;
 	double presentMs = 0.0;
+	uint64_t viewportPixelArea = 0u;
 
 	int32_t clayCommandCount = 0;
 	uint32_t uiInstanceCount = 0u;
@@ -48,14 +51,11 @@ struct FrameDiagnostics {
 
 	uint32_t referencedViewportCount = 0u;
 	uint32_t resizedViewportCount = 0u;
-	uint64_t viewportPixelArea = 0u;
 
 	bool swappedSuboptimal = false;
 	bool swapchainRecreated = false;
 	bool instanceBufferGrew = false;
 	bool textureDescriptorsRebuilt = false;
-
-	std::unordered_map<std::string, ViewPortFrameDiagnostics> viewports{};
 };
 
 struct RollingDiagnostics {

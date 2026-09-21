@@ -120,6 +120,12 @@ namespace storage = detail::storage;
 
 namespace {
 
+[[nodiscard]] int read_artery_font_bytes(void* destination, int length, void* user) {
+	auto& stream = *static_cast<std::ifstream*>(user);
+	stream.read(static_cast<char*>(destination), length);
+	return static_cast<int>(stream.gcount());
+}
+
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
 constexpr double kDefaultRuntimeFontPxRange = 6.0;
 constexpr double kDefaultRuntimeFontAngleThreshold = 3.0;
@@ -834,11 +840,7 @@ FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& 
 
 	artery_font::StdArteryFont<float> arteryFont{};
 	std::ifstream input(path, std::ios::binary);
-	if (!input || !artery_font::decode<+[](void* destination, int length, void* user) -> int {
-		auto& stream = *static_cast<std::ifstream*>(user);
-		stream.read(static_cast<char*>(destination), length);
-		return static_cast<int>(stream.gcount());
-	}>(arteryFont, &input)) {
+	if (!input || !artery_font::decode<read_artery_font_bytes>(arteryFont, &input)) {
 		throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontParse));
 	}
 	if (arteryFont.variants.length() <= 0) {

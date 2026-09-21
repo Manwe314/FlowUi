@@ -110,13 +110,13 @@ bool DevMemory::registerSource(const StaticMemorySourceDescriptor& descriptor) {
 		return identical;
 	}
 	impl_->descriptors.emplace(descriptor.id, MemorySourceDescriptor{
+		.name = std::string(descriptor.name),
 		.id = descriptor.id,
 		.parent = descriptor.parent,
+		.tuningTarget = descriptor.tuningTarget,
 		.domain = descriptor.domain,
 		.kind = descriptor.kind,
-		.name = std::string(descriptor.name),
 		.accuracy = descriptor.accuracy,
-		.tuningTarget = descriptor.tuningTarget,
 	});
 	return true;
 }

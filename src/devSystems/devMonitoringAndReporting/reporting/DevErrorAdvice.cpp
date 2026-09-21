@@ -146,18 +146,17 @@ std::vector<DevErrorAdviceResult> evaluateDevErrorAdvice(
 		if (descriptor.code != ErrorCode::None && descriptor.code != occurrence.error.code) continue;
 		if (descriptor.site != ErrorSite::None && descriptor.site != occurrence.error.site) continue;
 		DevErrorAdviceResult result{
-			.descriptorId = descriptor.id,
-			.category = descriptor.category,
-			.confidence = descriptor.baseConfidence,
-			.priority = descriptor.priority,
-			.sourceId = occurrence.steps.empty() ? 0u : occurrence.steps.front().sourceId,
 			.title = descriptor.title,
 			.explanation = descriptor.explanation,
 			.suggestedAction = descriptor.suggestedAction,
 			.configurationKey = descriptor.configurationKey,
 			.documentation = descriptor.documentation,
 			.limitation = descriptor.limitation,
-		};
+			.descriptorId = descriptor.id,
+			.sourceId = occurrence.steps.empty() ? 0u : occurrence.steps.front().sourceId,
+			.category = descriptor.category,
+			.confidence = descriptor.baseConfidence,
+			.priority = descriptor.priority,};
 		appendEvidence(result, DevErrorAdviceEvidenceKind::Contract,
 			static_cast<uint64_t>(occurrence.error.code),
 			static_cast<uint64_t>(occurrence.error.site));

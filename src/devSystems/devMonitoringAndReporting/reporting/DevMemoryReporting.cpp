@@ -594,9 +594,9 @@ std::optional<MemoryStatistics> DevMemoryReporting::statistics(const MemoryStati
 	}
 	if (values.empty() || totalWeight == 0u) return std::nullopt;
 	std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) { return a.value < b.value; });
-	MemoryStatistics result{.key = {query.source, query.window}, .metric = query.metric,
-		.weighting = query.weighting, .observationCount = values.size(), .totalWeight = totalWeight,
-		.minimum = minimum, .maximum = maximum, .mean = weightedSum / static_cast<long double>(totalWeight)};
+	MemoryStatistics result{ .mean = weightedSum / static_cast<long double>(totalWeight),.key = {query.source, query.window}, .observationCount = values.size(), .totalWeight = totalWeight,
+		.minimum = minimum, .maximum = maximum, .metric = query.metric,
+		.weighting = query.weighting,};
 	for (const double requested : query.percentiles) {
 		const double percentile = std::clamp(requested, 0.0, 1.0);
 		const uint64_t threshold = std::max<uint64_t>(1u, static_cast<uint64_t>(std::ceil(percentile * static_cast<double>(totalWeight))));

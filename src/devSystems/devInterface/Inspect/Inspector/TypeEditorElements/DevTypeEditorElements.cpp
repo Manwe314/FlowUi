@@ -377,22 +377,22 @@ DevQuickView quickView(
 	App* app = nullptr,
 	const devMode::DevFieldSchema* field = nullptr) {
 	if (!type) return DevQuickView{
-		.kind = DevQuickView::Kind::Status,
 		.primary = "Unregistered · Unknown",
-		.status = DevQuickStatus::Warning};
-	if (!value) return DevQuickView{
 		.kind = DevQuickView::Kind::Status,
+		.status = DevQuickStatus::Warning,};
+	if (!value) return DevQuickView{
 		.primary = "Value unavailable",
-		.status = DevQuickStatus::Unavailable};
+		.kind = DevQuickView::Kind::Status,
+		.status = DevQuickStatus::Unavailable,};
 	const std::size_t typeIndex = static_cast<std::size_t>(type - schema.types.data());
 	const devMode::DevTypeOps* operations = typeIndex < schema.typeOperations.size()
 		? schema.typeOperations[typeIndex] : nullptr;
 	if (type->kind == devMode::DevTypeKind::Optional) {
 		if (!operations || !operations->optionalHasValue || !operations->optionalValueAddress) {
-			return DevQuickView{.kind = DevQuickView::Kind::Status,
-				.primary = "Value unavailable", .status = DevQuickStatus::Unavailable};
+			return DevQuickView{
+				.primary = "Value unavailable",.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Unavailable,};
 		}
-		if (!operations->optionalHasValue(value)) return DevQuickView{.primary = "NullOpt"};
+		if (!operations->optionalHasValue(value)) return DevQuickView{.primary = "NullOpt",};
 		return quickView(
 			schema, schema.type(type->elementType),
 			operations->optionalValueAddress(value), app, field);
@@ -404,13 +404,13 @@ DevQuickView quickView(
 		if (padding.left == padding.right && padding.left == padding.top &&
 			padding.left == padding.bottom) {
 			std::snprintf(buffer, sizeof(buffer), "%u all", padding.left);
-			return DevQuickView{.kind = DevQuickView::Kind::Spacing, .primary = buffer};
+			return DevQuickView{ .primary = buffer,.kind = DevQuickView::Kind::Spacing,};
 		}
 		std::snprintf(buffer, sizeof(buffer), "T %u · R %u", padding.top, padding.right);
 		char second[64]{};
 		std::snprintf(second, sizeof(second), "B %u · L %u", padding.bottom, padding.left);
-		return DevQuickView{.kind = DevQuickView::Kind::Spacing,
-			.primary = buffer, .secondary = second};
+		return DevQuickView{
+			.primary = buffer, .secondary = second,.kind = DevQuickView::Kind::Spacing,};
 	}
 	if (name == "Clay_BorderWidth") {
 		const auto& width = *static_cast<const Clay_BorderWidth*>(value);
@@ -422,7 +422,7 @@ DevQuickView quickView(
 			std::snprintf(buffer, sizeof(buffer), "L%u R%u T%u B%u · Between %u",
 				width.left, width.right, width.top, width.bottom, width.betweenChildren);
 		}
-		return DevQuickView{.kind = DevQuickView::Kind::Spacing, .primary = buffer};
+		return DevQuickView{ .primary = buffer,.kind = DevQuickView::Kind::Spacing,};
 	}
 	if (name == "Clay_Color") {
 		const auto& color = *static_cast<const Clay_Color*>(value);
@@ -431,14 +431,14 @@ DevQuickView quickView(
 			static_cast<unsigned>(std::lround(std::clamp(color.g, 0.0f, 255.0f))),
 			static_cast<unsigned>(std::lround(std::clamp(color.b, 0.0f, 255.0f))),
 			static_cast<unsigned>(std::lround(std::clamp(color.a, 0.0f, 255.0f))));
-		return DevQuickView{.kind = DevQuickView::Kind::Color,
-			.primary = buffer, .swatch = color};
+		return DevQuickView{
+			.primary = buffer, .swatch = color,.kind = DevQuickView::Kind::Color,};
 	}
 	if (type->kind == devMode::DevTypeKind::Boolean) {
 		long double numeric = 0.0L;
 		return DevQuickView{.primary = operations && operations->numericValue &&
 			operations->numericValue(value, numeric) ? (numeric == 0.0L ? "Off" : "On")
-			: "Value unavailable"};
+			: "Value unavailable",};
 	}
 	if (field && field->choiceDomain != devMode::DevChoiceDomain::None &&
 		(field->choiceDomain == devMode::DevChoiceDomain::FontFace ||
@@ -457,54 +457,54 @@ DevQuickView quickView(
 					label += " · ";
 					label += font.faceName.empty() ? "Regular" : std::string(font.faceName);
 				}
-				return DevQuickView{.primary = std::move(label)};
+				return DevQuickView{.primary = std::move(label),};
 			}
-			return DevQuickView{.kind = DevQuickView::Kind::Status,
-				.primary = "Missing font · " + std::to_string(identity),
-				.status = DevQuickStatus::Missing};
+			return DevQuickView{
+				.primary = "Missing font · " + std::to_string(identity),.kind = DevQuickView::Kind::Status,
+				.status = DevQuickStatus::Missing,};
 		}
 	}
 	if (name == "ActionCall") {
 		const auto& call = *static_cast<const ActionCall*>(value);
-		if (!call) return DevQuickView{.primary = "None"};
+		if (!call) return DevQuickView{.primary = "None",};
 		if (app) {
 			if (const std::optional<ActionDebugInfo> info = app->actions().debugInfo(call)) {
 				return DevQuickView{.primary = std::string(
 					info->kind == ActionCallKind::App ? "APP " : "UI ") +
 					std::string(info->debugName),
-					.status = info->bound ? DevQuickStatus::Normal : DevQuickStatus::Missing};
+					.status = info->bound ? DevQuickStatus::Normal : DevQuickStatus::Missing,};
 			}
 		}
-		return DevQuickView{.kind = DevQuickView::Kind::Status,
-			.primary = "Missing action", .status = DevQuickStatus::Missing};
+		return DevQuickView{
+			.primary = "Missing action",.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Missing,};
 	}
 	if (name == "TextureRef") {
 		const auto& texture = *static_cast<const TextureRef*>(value);
 		if (!texture.handle && !texture.sourceKey.empty()) {
-			return DevQuickView{.primary = std::string(texture.sourceKey)};
+			return DevQuickView{.primary = std::string(texture.sourceKey),};
 		}
-		if (!texture.handle) return DevQuickView{.kind = DevQuickView::Kind::Status,
-			.primary = "No texture", .status = DevQuickStatus::Missing};
+		if (!texture.handle) return DevQuickView{
+			.primary = "No texture",.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Missing,};
 		if (app) {
 			for (const devMode::DevImageCatalogEntry& image :
 				app->devTooling().catalogues().queryImages()) {
 				if (image.textureHandle != texture.handle) continue;
 				return DevQuickView{.primary = std::string(image.key.name),
 					.status = image.status == devMode::DevResourceStatus::Ready
-						? DevQuickStatus::Normal : DevQuickStatus::Warning};
+						? DevQuickStatus::Normal : DevQuickStatus::Warning,};
 			}
 			for (const devMode::DevIconCatalogEntry& icon :
 				app->devTooling().catalogues().queryIcons()) {
 				if (icon.atlasTexture != texture.handle ||
 					std::abs(icon.atlasUv.x - texture.uv0x) > 0.00001f ||
 					std::abs(icon.atlasUv.y - texture.uv0y) > 0.00001f) continue;
-				return DevQuickView{.primary = "Icon · " + std::string(icon.iconName)};
+				return DevQuickView{.primary = "Icon · " + std::string(icon.iconName),};
 			}
 		}
 		std::snprintf(buffer, sizeof(buffer), "Anonymous texture · %016llX",
 			static_cast<unsigned long long>(texture.handle.packed()));
-		return DevQuickView{.kind = DevQuickView::Kind::Status,
-			.primary = buffer, .status = DevQuickStatus::Warning};
+		return DevQuickView{
+			.primary = buffer,.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Warning,};
 	}
 	if (name == "Clay_CornerRadius") {
 		const auto& radius = *static_cast<const Clay_CornerRadius*>(value);
@@ -515,34 +515,34 @@ DevQuickView quickView(
 			std::snprintf(buffer, sizeof(buffer), "TL%.0f TR%.0f BR%.0f BL%.0f",
 				radius.topLeft, radius.topRight, radius.bottomRight, radius.bottomLeft);
 		}
-		return DevQuickView{.primary = buffer};
+		return DevQuickView{.primary = buffer,};
 	}
 	if (name == "Clay_Dimensions") {
 		const auto& dimensions = *static_cast<const Clay_Dimensions*>(value);
 		std::snprintf(buffer, sizeof(buffer), "%.2f × %.2f",
 			dimensions.width, dimensions.height);
-		return DevQuickView{.primary = buffer};
+		return DevQuickView{.primary = buffer,};
 	}
 	if (name == "Clay_Vector2") {
 		const auto& vector = *static_cast<const Clay_Vector2*>(value);
 		std::snprintf(buffer, sizeof(buffer), "%.2f, %.2f", vector.x, vector.y);
-		return DevQuickView{.primary = buffer};
+		return DevQuickView{.primary = buffer,};
 	}
 	if (name == "Clay_SizingMinMax") {
 		const auto& range = *static_cast<const Clay_SizingMinMax*>(value);
 		std::snprintf(buffer, sizeof(buffer), "%.2f – %.2f", range.min, range.max);
-		return DevQuickView{.primary = buffer};
+		return DevQuickView{.primary = buffer,};
 	}
 	if (name == "Clay_SizingAxis") {
 		const auto& axis = *static_cast<const Clay_SizingAxis*>(value);
-		return DevQuickView{.kind = DevQuickView::Kind::Sizing,
-			.primary = sizingAxisQuick("", axis)};
+		return DevQuickView{
+			.primary = sizingAxisQuick("", axis),.kind = DevQuickView::Kind::Sizing,};
 	}
 	if (name == "Clay_Sizing") {
 		const auto& sizing = *static_cast<const Clay_Sizing*>(value);
-		return DevQuickView{.kind = DevQuickView::Kind::Sizing,
+		return DevQuickView{
 			.primary = sizingAxisQuick("W", sizing.width),
-			.secondary = sizingAxisQuick("H", sizing.height)};
+			.secondary = sizingAxisQuick("H", sizing.height),.kind = DevQuickView::Kind::Sizing,};
 	}
 	if (type->kind == devMode::DevTypeKind::Enumeration &&
 		type->enumeration.values.first <= schema.enumValues.size() &&
@@ -555,12 +555,12 @@ DevQuickView quickView(
 				const devMode::DevEnumValueSchema& option =
 					schema.enumValues[type->enumeration.values.first + index];
 				if (option.bits == bits) return DevQuickView{
-					.primary = std::string(schema.string(option.name))};
+					.primary = std::string(schema.string(option.name)),};
 			}
 			std::snprintf(buffer, sizeof(buffer), "Unknown · %llu",
 				static_cast<unsigned long long>(bits));
-			return DevQuickView{.kind = DevQuickView::Kind::Status,
-				.primary = buffer, .status = DevQuickStatus::Warning};
+			return DevQuickView{
+				.primary = buffer,.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Warning,};
 		}
 	}
 	if (type->kind == devMode::DevTypeKind::SignedInteger ||
@@ -572,35 +572,35 @@ DevQuickView quickView(
 			if (type->kind == devMode::DevTypeKind::FloatingPoint) {
 				stream << std::setprecision(6) << std::defaultfloat << numeric;
 			} else stream << std::fixed << std::setprecision(0) << numeric;
-			return DevQuickView{.primary = stream.str()};
+			return DevQuickView{.primary = stream.str(),};
 		}
 	}
 	if (type->kind == devMode::DevTypeKind::Text && operations && operations->textView) {
-		return DevQuickView{.primary = escapedSingleLine(operations->textView(value))};
+		return DevQuickView{.primary = escapedSingleLine(operations->textView(value)),};
 	}
 	if (type->kind == devMode::DevTypeKind::Sequence && operations && operations->sequenceSize) {
 		std::snprintf(buffer, sizeof(buffer), "%zu items", operations->sequenceSize(value));
-		return DevQuickView{.primary = buffer};
+		return DevQuickView{.primary = buffer,};
 	}
 	if (type->kind == devMode::DevTypeKind::Object) {
 		std::snprintf(buffer, sizeof(buffer), "%u fields", type->fields.count);
-		return DevQuickView{.primary = buffer};
+		return DevQuickView{.primary = buffer,};
 	}
 	if (type->kind == devMode::DevTypeKind::Pointer && operations && operations->pointerValue) {
 		const void* pointer = nullptr;
 		if (operations->pointerValue(value, pointer)) {
-			if (!pointer) return DevQuickView{.primary = "Null"};
+			if (!pointer) return DevQuickView{.primary = "Null",};
 			std::snprintf(buffer, sizeof(buffer), "Address · %p", pointer);
-			return DevQuickView{.primary = buffer};
+			return DevQuickView{.primary = buffer,};
 		}
 	}
 	if (type->kind == devMode::DevTypeKind::Opaque) {
 		std::snprintf(buffer, sizeof(buffer), "Opaque · %u bytes", type->size);
-		return DevQuickView{.kind = DevQuickView::Kind::Status, .primary = buffer};
+		return DevQuickView{ .primary = buffer,.kind = DevQuickView::Kind::Status,};
 	}
-	return DevQuickView{.kind = DevQuickView::Kind::Status,
-		.primary = boundedText("Unregistered · " + normalizedTypeName(schema, type)),
-		.status = DevQuickStatus::Warning};
+	return DevQuickView{
+		.primary = boundedText("Unregistered · " + normalizedTypeName(schema, type)),.kind = DevQuickView::Kind::Status,
+		.status = DevQuickStatus::Warning,};
 }
 
 std::string roleName(DevEditorRole role) {
@@ -1873,15 +1873,14 @@ void drawCard(
 		.setParameters(DevEditorCardParameters{
 			.schema = schema,
 			.binding = DevEditorBinding{
-				.role = role,
+				.elementName = std::string(context.params.elementName),
 				.definition = context.params.definition,
 				.window = context.params.interfaceState
 					? context.params.interfaceState->selectedWindowId : InvalidWindowId,
 				.instance = context.params.instance,
 				.rootOwnerType = rootOwnerType,
-				.field = fieldIndex(*schema, field),
-				.elementName = std::string(context.params.elementName),
-			},
+				.role = role,
+				.field = fieldIndex(*schema, field),},
 			.app = context.params.app,
 			.interfaceState = context.params.interfaceState,
 			.value = value,

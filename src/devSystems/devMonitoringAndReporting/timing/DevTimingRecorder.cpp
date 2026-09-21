@@ -59,6 +59,7 @@ void addSaturated(uint64_t& destination, uint64_t value) noexcept {
 } // namespace
 
 struct DevTimingRecorder::Impl {
+	std::array<ActiveCpuZone, kMaximumActiveZoneDepth> activeZones{};
 	Impl(
 		DevTiming& timingOwner,
 		TimingTrackId timingTrack,
@@ -157,19 +158,17 @@ struct DevTimingRecorder::Impl {
 	}
 
 	DevTiming* owner = nullptr;
-	TimingTrackId track = 0u;
-	std::string trackName{};
-	std::thread::id producerThread{};
-	bool attached = true;
 	DevTimingConfig cachedConfig{};
-	uint64_t cachedConfigGeneration = 0u;
-	WindowFrameKey currentFrame{};
-	AppTickId currentAppTick = 0u;
-	uint32_t nextLocalInvocation = 1u;
-	bool invocationIdsExhausted = false;
-	std::array<ActiveCpuZone, kMaximumActiveZoneDepth> activeZones{};
-	uint16_t activeCount = 0u;
+	std::unordered_set<TimingZoneTypeId> registeredDescriptors{};
+	std::unordered_map<ElementAggregateKey, ElementDefinitionTimingAggregate, ElementAggregateKeyHash>
+		elementAggregates{};
+	std::string trackName{};
 	std::vector<CpuTimingRecord> records{};
+	WindowFrameKey currentFrame{};
+	TimingTrackId track = 0u;
+	std::thread::id producerThread{};
+	uint64_t cachedConfigGeneration = 0u;
+	AppTickId currentAppTick = 0u;
 	std::atomic<uint64_t> writeSequence{0u};
 	std::atomic<uint64_t> readSequence{0u};
 	std::atomic<uint64_t> recordedZones{0u};
@@ -180,9 +179,10 @@ struct DevTimingRecorder::Impl {
 	std::atomic<uint64_t> incompleteZones{0u};
 	std::atomic<uint64_t> clockAnomalies{0u};
 	std::atomic<uint64_t> timingOverheadNs{0u};
-	std::unordered_set<TimingZoneTypeId> registeredDescriptors{};
-	std::unordered_map<ElementAggregateKey, ElementDefinitionTimingAggregate, ElementAggregateKeyHash>
-		elementAggregates{};
+	uint32_t nextLocalInvocation = 1u;
+	uint16_t activeCount = 0u;
+	bool attached = true;
+	bool invocationIdsExhausted = false;
 };
 
 DevTimingRecorder::DevTimingRecorder(

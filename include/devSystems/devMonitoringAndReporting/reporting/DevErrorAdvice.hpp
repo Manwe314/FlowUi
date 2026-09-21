@@ -93,19 +93,19 @@ struct DevErrorNoGuidanceAnnotation {
 inline constexpr size_t kDevErrorAdviceEvidenceCapacity = 8u;
 
 struct DevErrorAdviceResult {
-	DevErrorAdviceId descriptorId = 0u;
-	DevErrorAdviceCategory category = DevErrorAdviceCategory::Resource;
-	DevErrorAdviceConfidence confidence = DevErrorAdviceConfidence::Possible;
-	uint16_t priority = 0u;
-	uint64_t sourceId = 0u;
+	std::array<DevErrorAdviceEvidenceRef, kDevErrorAdviceEvidenceCapacity> evidence{};
 	std::string_view title{};
 	std::string_view explanation{};
 	std::string_view suggestedAction{};
 	std::string_view configurationKey{};
 	std::string_view documentation{};
 	std::string_view limitation{};
+	DevErrorAdviceId descriptorId = 0u;
+	uint64_t sourceId = 0u;
+	DevErrorAdviceCategory category = DevErrorAdviceCategory::Resource;
+	DevErrorAdviceConfidence confidence = DevErrorAdviceConfidence::Possible;
+	uint16_t priority = 0u;
 	uint8_t evidenceCount = 0u;
-	std::array<DevErrorAdviceEvidenceRef, kDevErrorAdviceEvidenceCapacity> evidence{};
 };
 
 /** Static human-facing catalogue. All advice prose is defined in its .cpp file. */

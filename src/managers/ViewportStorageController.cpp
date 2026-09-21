@@ -45,11 +45,10 @@ ViewportStorageController::ViewportStorageController(
 	: storage(&storageSystem), vk(&context), window(owningWindow),
 	  framesInFlight(std::max(1u, frameCount)) {
 	const storage::StringId name = storageSystem.intern("flowui.viewport.sampler");
-	sampler = storageSystem.acquireSampler(storage::SamplerDesc{
+	sampler = storageSystem.acquireSampler(storage::SamplerDesc{ .debugName = name,
 		.minFilter = storage::FilterMode::Linear, .magFilter = storage::FilterMode::Linear,
 		.addressU = storage::AddressMode::ClampToEdge, .addressV = storage::AddressMode::ClampToEdge,
-		.addressW = storage::AddressMode::ClampToEdge, .debugName = name,
-	});
+		.addressW = storage::AddressMode::ClampToEdge,});
 	interop = ViewPortVulkanInterop{
 		.instance = context.instance, .physicalDevice = context.phys,
 		.device = context.device, .allocator = context.allocator,

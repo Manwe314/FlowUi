@@ -317,13 +317,13 @@ using ManagerRecordDestroy = void (*)(void* object) noexcept;
 
 struct ManagerRecordDesc {
 	ResourceKey key{};
-	ResourceKind kind = ResourceKind::ManagerRoot;
 	size_t bytes = 0;
 	size_t alignment = alignof(std::max_align_t);
 	StringId debugName = 0;
 	ManagerRecordConstruct construct = nullptr;
 	ManagerRecordDestroy destroy = nullptr;
 	void* userData = nullptr;
+	ResourceKind kind = ResourceKind::ManagerRoot;
 };
 
 using PersistentRecordConstruct = void (*)(void* header, void* payload, void* userData);
@@ -621,6 +621,7 @@ struct ImageViewDesc {
 };
 
 struct SamplerDesc {
+	StringId debugName = 0;
 	FilterMode minFilter = FilterMode::Linear;
 	FilterMode magFilter = FilterMode::Linear;
 	AddressMode addressU = AddressMode::ClampToEdge;
@@ -630,7 +631,6 @@ struct SamplerDesc {
 	float maxLod = 0.0f;
 	float maxAnisotropy = 1.0f;
 	bool anisotropy = false;
-	StringId debugName = 0;
 };
 
 struct TextureViewDesc {
@@ -659,14 +659,14 @@ struct ImageRegion {
 enum class UploadDestination : uint8_t { Buffer = 0, Image };
 
 struct UploadRequest {
-	UploadDestination destination = UploadDestination::Image;
-	BlobHandle source{};
 	uint64_t sourceOffset = 0;
 	uint64_t byteCount = 0;
-	BufferHandle destinationBuffer{};
 	uint64_t destinationBufferOffset = 0;
-	ImageHandle destinationImage{};
 	ImageRegion imageRegion{};
+	BlobHandle source{};
+	BufferHandle destinationBuffer{};
+	ImageHandle destinationImage{};
+	UploadDestination destination = UploadDestination::Image;
 	ResourceState finalState = ResourceState::Ready;
 	bool releaseSourceWhenComplete = false;
 };
@@ -680,10 +680,10 @@ struct TextureMetadata {
 
 #if FLOW_UI_DEV_MODE
 struct DevTextureMetadata {
-	TextureMetadata texture{};
 	ResourceKey key{};
-	uint32_t formatVulkan = 0;
 	uint64_t gpuMemoryBytes = 0;
+	TextureMetadata texture{};
+	uint32_t formatVulkan = 0;
 	bool published = false;
 };
 #endif
@@ -891,9 +891,9 @@ struct StorageStats {
 };
 
 struct ResourceStats {
-	ResourceKind kind = ResourceKind::Invalid;
 	uint64_t liveBytes = 0;
 	uint64_t retiredBytes = 0;
+	ResourceKind kind = ResourceKind::Invalid;
 	uint32_t slots = 0;
 	uint32_t live = 0;
 	uint32_t free = 0;
@@ -924,11 +924,7 @@ struct StorageMemorySnapshotRequest {
 };
 
 struct StorageAllocatorSnapshot {
-	StorageAllocatorKind kind = StorageAllocatorKind::PersistentPool;
-	MemoryClass memoryClass = MemoryClass::Persistent;
 	WindowId window = InvalidWindowId;
-	uint32_t frameSlot = InvalidFrameSlot;
-	uint32_t workerIndex = InvalidIndex;
 	uint64_t reservedBytes = 0;
 	uint64_t liveBytes = 0;
 	uint64_t peakLiveBytes = 0;
@@ -945,21 +941,25 @@ struct StorageAllocatorSnapshot {
 	uint64_t growthCount = 0;
 	uint64_t resetCount = 0;
 	uint64_t mutationSequence = 0;
+	StorageAllocatorKind kind = StorageAllocatorKind::PersistentPool;
+	MemoryClass memoryClass = MemoryClass::Persistent;
+	uint32_t frameSlot = InvalidFrameSlot;
+	uint32_t workerIndex = InvalidIndex;
 	uint32_t backingAllocationCount = 0;
 };
 
 struct ResourceMemoryRecord {
 	uint64_t lifetimeId = 0;
-	ResourceKind kind = ResourceKind::Invalid;
 	StringId debugName = 0;
 	WindowId window = InvalidWindowId;
-	uint32_t frameSlot = InvalidFrameSlot;
 	uint64_t requestedBytes = 0;
 	uint64_t allocationBytes = 0;
+	SubmissionSerial retireAfter = 0;
+	ResourceKind kind = ResourceKind::Invalid;
+	uint32_t frameSlot = InvalidFrameSlot;
 	uint32_t memoryTypeIndex = InvalidIndex;
 	uint32_t memoryHeapIndex = InvalidIndex;
 	ResourceState state = ResourceState::Invalid;
-	SubmissionSerial retireAfter = 0;
 };
 
 struct StorageMemorySnapshot {

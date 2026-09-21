@@ -12,13 +12,13 @@
 namespace FlowUi::detail::manager_storage {
 
 struct ShortcutRegistrationRecord {
-	ShortcutScope scope = ShortcutScope::Global;
-	int32_t priority = 0;
-	ShortcutId id = 0;
-	uint64_t registrationOrder = 0;
-	uint32_t packedChord = 0;
 	ShortcutCallback callback{};
 	AppActionCall action{};
+	ShortcutId id = 0;
+	uint64_t registrationOrder = 0;
+	ShortcutScope scope = ShortcutScope::Global;
+	int32_t priority = 0;
+	uint32_t packedChord = 0;
 	ShortcutHandling handling = ShortcutHandling::Consume;
 	bool tombstoned = false;
 };

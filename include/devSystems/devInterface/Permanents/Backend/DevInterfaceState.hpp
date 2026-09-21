@@ -51,12 +51,16 @@ struct DevInterfaceEditTransaction {
 
 /** Persistent orchestration state owned by the singleton interface element. */
 struct DevInterfaceState {
+	DevInterfaceEditorClipboard editorClipboard{};
+	std::string searchQuery{};
+	std::string lastActionMessage = "Developer interface initialized";
+	FlowElementID selectedElementId{};
+	std::vector<DevInterfaceEditTransaction> editUndoStack{};
+	std::vector<DevInterfaceEditTransaction> editRedoStack{};
 	// RadioChoice binds to an unsigned selection value. This is normalized to a
 	// valid DevInterfaceTab by DevContentHeader on every build.
 	uint64_t activeTab = static_cast<uint64_t>(DevInterfaceTab::Inspect);
 	WindowId selectedWindowId = MainWindowId;
-	FlowElementID selectedElementId{};
-	std::string searchQuery{};
 	// Inspect selector controls use unsigned values to bind directly to FSEL.
 	// Forest: 0 = Flow, 1 = Clay. Definition 0 means no filter.
 	uint64_t inspectForest = 0u;
@@ -68,24 +72,21 @@ struct DevInterfaceState {
 	// Inspector detail tabs: 0 = Parameters, 1 = State, 2 = Resources,
 	// 3 = Changes.
 	uint64_t inspectInspectorTab = 0u;
-
-	DevApplicationState applicationState = DevApplicationState::Running;
-	bool overlayEnabled = true;
-	bool panelPinned = false;
-
-	uint32_t unbakedChangeCount = 0u;
-	std::string lastActionMessage = "Developer interface initialized";
-	DevInterfaceEditorClipboard editorClipboard{};
-	std::vector<DevInterfaceEditTransaction> editUndoStack{};
-	std::vector<DevInterfaceEditTransaction> editRedoStack{};
 	uint64_t nextEditTransaction = 1u;
 
 	std::size_t interfaceMemoryBytes = 0;
-	uint32_t activeErrorCount = 0;
 	uint64_t cpuReportingLevel = FLOWUI_DEV_TIMING_LEVEL >= 1 ? 1u : 0u;
+
+	DevApplicationState applicationState = DevApplicationState::Running;
+
+	uint32_t unbakedChangeCount = 0u;
+	uint32_t activeErrorCount = 0;
 
 	float selectorWidth = 280.0f;
 	float inspectorWidth = 320.0f;
+	uint64_t inspect_selection_revision = 0u;
+	uint8_t inspect_reveal_frames = 0u;
+	bool panelPinned = false;
 };
 
 } // namespace FlowUi::devSystems

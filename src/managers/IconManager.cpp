@@ -254,11 +254,10 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 		std::vector<std::byte> zeroes(static_cast<size_t>(page.width) * page.height * 4u, std::byte{0});
 		zeroBlob = storage_->createBlob(zeroes, name);
 		(void)storage_->enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Image, .source = zeroBlob,
-			.byteCount = zeroes.size(), .destinationImage = page.image,
-			.imageRegion = storage::ImageRegion{.width = page.width, .height = page.height},
-			.releaseSourceWhenComplete = true,
-		});
+			.byteCount = zeroes.size(),
+			.imageRegion = storage::ImageRegion{.width = page.width, .height = page.height}, .source = zeroBlob, .destinationImage = page.image,
+			.destination = storage::UploadDestination::Image,
+			.releaseSourceWhenComplete = true,});
 		storage_->flushUploads();
 		zeroBlob = {};
 	} catch (...) {
@@ -466,14 +465,13 @@ void IconManager::uploadRasterToAtlasPage(
 		const storage::StringId name = storage_->intern("flowui.icon.atlas.region");
 		blob = storage_->createBlob(tight, name);
 		(void)storage_->enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Image, .source = blob,
-			.byteCount = tight.size(), .destinationImage = page.image,
+			.byteCount = tight.size(),
 			.imageRegion = storage::ImageRegion{
 				.x = contentRect.x, .y = contentRect.y,
 				.width = raster.width, .height = raster.height,
-			},
-			.releaseSourceWhenComplete = true,
-		});
+			}, .source = blob, .destinationImage = page.image,
+			.destination = storage::UploadDestination::Image,
+			.releaseSourceWhenComplete = true,});
 		storage_->flushUploads();
 		blob = {};
 	} catch (...) {
@@ -1022,10 +1020,9 @@ TextureRef IconManager::textureRef(ResourceKey key) {
 			});
 		}
 		return TextureRef{
-			.sourceDomain = ResourceDomain::Icon,
 			.sourceKey = stableKey,
-			.skipIfUnavailable = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual,
-		};
+			.sourceDomain = ResourceDomain::Icon,
+			.skipIfUnavailable = generationPolicy_ == IconGenerationFailurePolicy::SkipVisual,};
 	}
 
 	auto requestIdIt = controller_->requestTextureByKey.find(keyString);

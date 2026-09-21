@@ -31,39 +31,21 @@ using NumberInputTextStatus = NumericTextStatus;
 
 template<NumericValueType T>
 struct NumberInputParameters {
-	/** Borrowed authoritative native value. Null disables interaction. */
-	T* value = nullptr;
-	std::optional<T> minimum = std::nullopt;
-	std::optional<T> maximum = std::nullopt;
-	T step = T{1};
-	NumberInputSyncPolicy syncPolicy = NumberInputSyncPolicy::Live;
-	NumberInputBoundsPolicy boundsPolicy = NumberInputBoundsPolicy::SoftClamp;
-	NumericFormatOptions format{};
 	NumericEditActions edit{};
+	TextFieldCaretOverrides caret{};
 	ActionCall onSubmit{};
 	ActionCall onFocus{};
 	ActionCall onBlur{};
 	ActionCall onUndoRequested{};
 	ActionCall onRedoRequested{};
-
-	bool enabled = true;
-	bool readOnly = false;
-	bool valid = true;
-	bool clearFocusOnSubmit = true;
-	NumberInputStepButtons stepButtons =
-		NumberInputStepButtons::TrailingVertical;
-	size_t maxBytes = 128;
-	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	std::optional<TextureRef> incrementIcon = std::nullopt;
+	std::optional<TextureRef> decrementIcon = std::nullopt;
 	std::string_view placeholder{};
-
-	std::optional<Clay_Sizing> sizing = std::nullopt;
-	std::optional<float> viewportWidth = std::nullopt;
-	std::optional<float> viewportHeight = std::nullopt;
-	std::optional<Clay_Padding> padding = std::nullopt;
-	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
-	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
-	std::optional<float> stepButtonWidth = std::nullopt;
-	std::optional<float> stepIconSize = std::nullopt;
+	/** Borrowed authoritative native value. Null disables interaction. */
+	T* value = nullptr;
+	NumberInputSyncPolicy syncPolicy = NumberInputSyncPolicy::Live;
+	NumberInputBoundsPolicy boundsPolicy = NumberInputBoundsPolicy::SoftClamp;
+	size_t maxBytes = 128;
 
 	TextFieldStateOverrides idleOverrides{};
 	TextFieldStateOverrides hoveredOverrides{};
@@ -72,16 +54,34 @@ struct NumberInputParameters {
 	TextFieldStateOverrides invalidOverrides{};
 	TextFieldStateOverrides disabledOverrides{};
 
+	std::optional<Clay_Sizing> sizing = std::nullopt;
+	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	NumericFormatOptions format{};
+	std::optional<T> minimum = std::nullopt;
+	std::optional<T> maximum = std::nullopt;
+	std::optional<float> viewportWidth = std::nullopt;
+	std::optional<float> viewportHeight = std::nullopt;
+	std::optional<float> stepButtonWidth = std::nullopt;
+	std::optional<float> stepIconSize = std::nullopt;
+
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
 	std::optional<uint32_t> fontWeight = std::nullopt;
-	std::optional<FontStyle> fontStyle = std::nullopt;
+	T step = T{1};
+	NumberInputStepButtons stepButtons =
+		NumberInputStepButtons::TrailingVertical;
+	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	std::optional<Clay_Padding> padding = std::nullopt;
 	std::optional<uint16_t> fontSize = std::nullopt;
 	std::optional<uint16_t> letterSpacing = std::nullopt;
-	TextFieldCaretOverrides caret{};
-	std::optional<TextureRef> incrementIcon = std::nullopt;
-	std::optional<TextureRef> decrementIcon = std::nullopt;
+	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+
+	bool enabled = true;
+	bool readOnly = false;
+	bool valid = true;
+	bool clearFocusOnSubmit = true;
 };
 
 template<NumericValueType T>
@@ -249,13 +249,13 @@ struct NumberInput {
 		FieldRequest request{
 			.initialText = initialText.view(),
 			.config = FieldConfig{
+				.maxBytes = context.params.maxBytes,
 				.mode = TextFieldMode::SingleLine,
+				.transactionDetail = context.params.transactionDetail,
 				.readOnly = !editable,
 				.allowNewline = false,
 				.softWrap = false,
 				.allowArrowNavigation = true,
-				.maxBytes = context.params.maxBytes,
-				.transactionDetail = context.params.transactionDetail,
 			},
 			.layout = TextLayoutDescriptor{
 				.fontId = textConfig.fontId,

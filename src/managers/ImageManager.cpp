@@ -145,17 +145,16 @@ Result<bool> ImageManager::register_image_file(ResourceKey key, const std::files
 		});
 		candidate.sampler = storage_->acquireSampler(storage::SamplerDesc{.debugName = debugName});
 		(void)storage_->enqueueUpload(storage::UploadRequest{
-			.destination = storage::UploadDestination::Image,
-			.source = candidate.pixels,
 			.byteCount = byteCount,
-			.destinationImage = candidate.image,
 			.imageRegion = storage::ImageRegion{
 				.width = static_cast<uint32_t>(width),
 				.height = static_cast<uint32_t>(height),
 			},
+			.source = candidate.pixels,
+			.destinationImage = candidate.image,
+			.destination = storage::UploadDestination::Image,
 			.finalState = storage::ResourceState::Ready,
-			.releaseSourceWhenComplete = true,
-		});
+			.releaseSourceWhenComplete = true,});
 		candidate.uploadQueued = true;
 		storage_->flushUploads();
 		candidate.uploadFlushed = true;

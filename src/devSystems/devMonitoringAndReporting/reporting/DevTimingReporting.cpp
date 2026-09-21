@@ -157,6 +157,7 @@ struct RollingSeries {
 } // namespace
 
 struct DevTimingReporting::Impl {
+	TimingQualitySnapshot currentCpuQuality{};
 	Impl(DevTiming& cpuTiming, DevGpuTiming& deviceTiming)
 		: timing(&cpuTiming), gpuTiming(&deviceTiming) {
 		resizeRetention(effectiveCapacity(reportingConfig, maximumFramesInFlight));
@@ -240,17 +241,15 @@ struct DevTimingReporting::Impl {
 	}
 
 	DevTiming* timing = nullptr;
-	DevGpuTiming* gpuTiming = nullptr;
-	TimingReportingConfig reportingConfig{};
-	uint32_t maximumFramesInFlight = 1u;
+	GpuTimingQualitySnapshot currentGpuQuality{};
+	DevTimingConfig currentCaptureConfig{};
 	mutable std::shared_mutex mutex{};
+	std::unordered_map<RollingKey, RollingSeries, RollingKeyHash> rolling{};
+	TimingReportingConfig reportingConfig{};
 	std::vector<TimingAppTickReport> ring{};
 	std::vector<TimingZoneDescriptor> descriptors{};
 	std::vector<TimingTrackDescriptor> cpuTracks{};
-	std::unordered_map<RollingKey, RollingSeries, RollingKeyHash> rolling{};
-	DevTimingConfig currentCaptureConfig{};
-	TimingQualitySnapshot currentCpuQuality{};
-	GpuTimingQualitySnapshot currentGpuQuality{};
+	DevGpuTiming* gpuTiming = nullptr;
 	AppTickId oldestTick = 0u;
 	AppTickId newestTick = 0u;
 	uint64_t retainedTickCount = 0u;
@@ -259,6 +258,7 @@ struct DevTimingReporting::Impl {
 	uint64_t lateRecordsAfterEviction = 0u;
 	std::atomic<uint64_t> ingestionFailures{0u};
 	uint64_t mutationSequence = 0u;
+	uint32_t maximumFramesInFlight = 1u;
 	bool hasTicks = false;
 };
 

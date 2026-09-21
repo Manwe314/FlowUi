@@ -87,12 +87,12 @@ struct MemoryStatisticsQuery {
 	std::vector<double> percentiles{0.50, 0.90, 0.95, 0.99};
 };
 struct MemoryStatistics {
-	MemorySourceKey key{};
-	MemoryStatisticMetric metric = MemoryStatisticMetric::LogicalLiveBytes;
-	MemoryWeighting weighting = MemoryWeighting::AppTicks;
-	uint64_t observationCount = 0u, totalWeight = 0u, minimum = 0u, maximum = 0u;
 	long double mean = 0.0;
 	std::vector<MemoryPercentile> percentiles{};
+	MemorySourceKey key{};
+	uint64_t observationCount = 0u, totalWeight = 0u, minimum = 0u, maximum = 0u;
+	MemoryStatisticMetric metric = MemoryStatisticMetric::LogicalLiveBytes;
+	MemoryWeighting weighting = MemoryWeighting::AppTicks;
 	MemoryReportFlag flags = MemoryReportFlag::None;
 };
 enum class CapacityGrowthPolicy : uint8_t {
@@ -126,15 +126,15 @@ struct MemoryOverheadSnapshot {
 		storageProbeDurationNs = 0u, processProbeDurationNs = 0u, gpuProbeDurationNs = 0u;
 };
 struct MemoryReportingStatus {
+	MemoryRetentionStatus segments{}, events{};
+	MemoryOverheadSnapshot overhead{};
+	MemoryQualitySnapshot quality{};
 	uint64_t consumedOperations = 0u, consumeFailures = 0u, generation = 0u;
 	AppTickId lastConsumedAppTick = 0u;
+	uint64_t storageMutationSequence = 0u;
 	MemoryMonitoringLevel compiledLevel = MemoryMonitoringLevel::Disabled;
 	MemoryMonitoringLevel runtimeLevel = MemoryMonitoringLevel::Disabled;
-	MemoryQualitySnapshot quality{};
-	MemoryRetentionStatus segments{}, events{};
 	MemoryReportFlag flags = MemoryReportFlag::None;
-	MemoryOverheadSnapshot overhead{};
-	uint64_t storageMutationSequence = 0u;
 	bool hasStorageSnapshot = false;
 };
 

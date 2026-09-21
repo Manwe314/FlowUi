@@ -1045,3 +1045,18 @@ if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
     add_test(NAME flowui.dev.inspect_subtree COMMAND flowui_dev_inspect_subtree_tests)
     set_tests_properties(flowui.dev.inspect_subtree PROPERTIES TIMEOUT 30)
 endif()
+
+# Inspection state and hit testing are independently exercised with/without Clay capture.
+foreach(inspect_capture IN ITEMS 0 1)
+    set(inspect_test_target flowui_dev_inspect_interaction_${inspect_capture}_tests)
+    add_executable(${inspect_test_target}
+        DevSystemsTests/DevInspectInteractionTests.cpp
+        ${PROJECT_SOURCE_DIR}/src/devSystems/devTooling/inspect/DevInspectInteractionController.cpp)
+    target_compile_features(${inspect_test_target} PRIVATE cxx_std_23)
+    target_compile_definitions(${inspect_test_target} PRIVATE
+        FLOW_UI_DEV_MODE=1 FLOW_UI_DEV_CAPTURE_CLAY=${inspect_capture}
+        FLOWUI_DEV_TIMING_LEVEL=0 FLOWUI_DEV_MEMORY_LEVEL=0 FLOWUI_DEV_ERROR_LEVEL=0)
+    target_include_directories(${inspect_test_target} PRIVATE
+        ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/external)
+    add_test(NAME flowui.dev.inspect_interaction_${inspect_capture} COMMAND ${inspect_test_target})
+endforeach()

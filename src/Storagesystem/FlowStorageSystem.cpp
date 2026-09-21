@@ -246,6 +246,7 @@ struct AlignedByteDelete {
 using AlignedByteArray = std::unique_ptr<std::byte[], AlignedByteDelete>;
 
 struct SamplerKey {
+	auto operator<=>(const SamplerKey&) const = default;
 	FilterMode minFilter{};
 	FilterMode magFilter{};
 	AddressMode addressU{};
@@ -255,7 +256,6 @@ struct SamplerKey {
 	uint32_t maxLodBits = 0;
 	uint32_t anisotropyBits = 0;
 	bool anisotropy = false;
-	auto operator<=>(const SamplerKey&) const = default;
 };
 
 struct SamplerKeyHash {
@@ -849,14 +849,14 @@ struct FlowStorageSystem::Impl {
 	explicit Impl(VulkanContext& context) : vk(context) {}
 
 	struct BlobRecord {
+#if FLOW_UI_DEV_MODE
+#endif
+		MemoryBlock memory{};
+		SubmissionSerial lastUse = 0;
+		StringId debugName = 0;
 		uint32_t generation = 0;
 		ResourceState state = ResourceState::Invalid;
-		MemoryBlock memory{};
 		uint32_t referenceCount = 0;
-		SubmissionSerial lastUse = 0;
-#if FLOW_UI_DEV_MODE
-		StringId debugName = 0;
-#endif
 	};
 
 	struct BufferRecord {
@@ -889,40 +889,40 @@ struct FlowStorageSystem::Impl {
 	};
 
 	struct ImageViewRecord {
-		uint32_t generation = 0;
-		ResourceState state = ResourceState::Invalid;
 		VkImageView view = VK_NULL_HANDLE;
-		ImageHandle image{};
-		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
 		ImageViewDesc desc{};
+		ImageHandle image{};
+		uint32_t generation = 0;
+		ResourceState state = ResourceState::Invalid;
+		uint32_t referenceCount = 0;
 	};
 
 	struct SamplerRecord {
-		uint32_t generation = 0;
-		ResourceState state = ResourceState::Invalid;
 		VkSampler sampler = VK_NULL_HANDLE;
-		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
 		SamplerDesc desc{};
 		SamplerKey key{};
+		uint32_t generation = 0;
+		ResourceState state = ResourceState::Invalid;
+		uint32_t referenceCount = 0;
 	};
 
 	struct TextureColdRecord {
 		ResourceKey key{};
+		SubmissionSerial lastUse = 0;
 		TextureViewDesc desc{};
 		uint32_t referenceCount = 0;
-		SubmissionSerial lastUse = 0;
 		bool published = false;
 	};
 
 	struct ManagerRecord {
+		MemoryBlock memory{};
+		ResourceKey key{};
+		ManagerRecordDestroy destroy = nullptr;
 		uint32_t generation = 0;
 		ResourceState state = ResourceState::Invalid;
-		ResourceKey key{};
 		ResourceKind kind = ResourceKind::Invalid;
-		MemoryBlock memory{};
-		ManagerRecordDestroy destroy = nullptr;
 	};
 
 	struct PersistentRecord {
@@ -939,27 +939,27 @@ struct FlowStorageSystem::Impl {
 	};
 
 	struct RendererLayoutRecord {
+#if FLOW_UI_DEV_MODE
+#endif
+		NativeRendererLayout native{};
+		SubmissionSerial lastUse = 0;
+		StringId debugName = 0;
+		RendererLayoutKey key{};
 		uint32_t generation = 0;
 		ResourceState state = ResourceState::Invalid;
-		RendererLayoutKey key{};
-		NativeRendererLayout native{};
 		uint32_t referenceCount = 0;
-		SubmissionSerial lastUse = 0;
-#if FLOW_UI_DEV_MODE
-		StringId debugName = 0;
-#endif
 	};
 
 	struct RendererPipelineBundleRecord {
-		uint32_t generation = 0;
-		ResourceState state = ResourceState::Invalid;
+#if FLOW_UI_DEV_MODE
+#endif
 		RendererPipelineKey key{};
 		NativeRendererPipelineBundle native{};
-		uint32_t referenceCount = 0;
 		SubmissionSerial lastUse = 0;
-#if FLOW_UI_DEV_MODE
 		StringId debugName = 0;
-#endif
+		uint32_t generation = 0;
+		ResourceState state = ResourceState::Invalid;
+		uint32_t referenceCount = 0;
 	};
 
 	struct WindowDescriptorBundleRecord {
@@ -1000,15 +1000,7 @@ struct FlowStorageSystem::Impl {
 	};
 
 	struct FrameState {
-		FrameEpoch epoch = 0;
-		uint64_t frameNumber = 0;
-		bool active = false;
-		bool sealed = false;
-		uint64_t leaseId = 0;
-		SubmissionSerial inFlightSerial = 0;
 #if FLOW_UI_DEV_MODE
-		std::shared_ptr<ReadLeaseState> leaseValidation{};
-		std::shared_ptr<ArenaLeaseState> arenaValidation{};
 #endif
 		LinearArena transient;
 		LinearArena decode;
@@ -1025,9 +1017,17 @@ struct FlowStorageSystem::Impl {
 		std::vector<UseEpochMarker> usedDescriptorBundleEpochs;
 		std::vector<uint32_t> appliedBindingRevisions;
 		std::vector<uint32_t> preparedBindingBatches;
-		uint32_t currentBindingBatch = 0;
 		std::vector<PendingBufferWrite> pendingBufferWrites;
+		std::shared_ptr<ReadLeaseState> leaseValidation{};
+		std::shared_ptr<ArenaLeaseState> arenaValidation{};
+		FrameEpoch epoch = 0;
+		uint64_t frameNumber = 0;
+		uint64_t leaseId = 0;
+		SubmissionSerial inFlightSerial = 0;
 		size_t activeBufferCommits = 0;
+		uint32_t currentBindingBatch = 0;
+		bool active = false;
+		bool sealed = false;
 	};
 
 	struct WindowState {
@@ -1047,81 +1047,29 @@ struct FlowStorageSystem::Impl {
 		SubmissionSerial retireAfter = 0;
 		uint64_t managerRevision = 1;
 	};
-
-	VulkanContext& vk;
-	StorageConfig config{};
-	bool initialized = false;
-	bool terminated = false;
-	mutable std::recursive_mutex mutex;
-	std::condition_variable_any bufferCommitCondition;
-	uint64_t cpuSoftBudgetBytes = 0;
-	uint64_t gpuSoftBudgetBytes = 0;
-	uint64_t gpuLiveBytes = 0;
-	uint64_t gpuRetiredBytes = 0;
-
-	PersistentPool persistentPool;
-	PersistentPool stringPool;
-	std::vector<std::string_view> strings{std::string_view{}};
-	std::unordered_map<std::string_view, StringId, StringViewHash, StringViewEqual> stringIds;
-	std::unordered_set<DiagnosticKey, DiagnosticKeyHash> diagnosticMarks;
-	std::vector<ManagerRecord> managerRecords{ManagerRecord{}};
-	std::vector<uint32_t> freeManagerRecords;
-	std::unordered_map<ResourceKey, ManagerRecordHandle, ResourceKeyHash> managerRecordByKey;
-	std::vector<PersistentRecord> persistentRecords{PersistentRecord{}};
-	std::vector<uint32_t> freePersistentRecords;
-	uint64_t sharedManagerRevision = 1;
-	uint32_t recordFailureCountdown = 0;
-
-	std::vector<BlobRecord> blobs{BlobRecord{}};
-	std::vector<uint32_t> freeBlobs;
-	std::vector<BufferRecord> buffers{BufferRecord{}};
-	std::vector<uint32_t> freeBuffers;
-	std::vector<ImageRecord> images{ImageRecord{}};
-	std::vector<uint32_t> freeImages;
-	std::vector<ImageViewRecord> imageViews{ImageViewRecord{}};
-	std::vector<ImageViewHotRecord> imageViewHot{ImageViewHotRecord{}};
-	std::vector<uint32_t> freeImageViews;
-	std::vector<SamplerRecord> samplers{SamplerRecord{}};
-	std::vector<SamplerHotRecord> samplerHot{SamplerHotRecord{}};
-	std::vector<uint32_t> freeSamplers;
-	std::unordered_map<SamplerKey, SamplerHandle, SamplerKeyHash> samplerByKey;
-	std::vector<TextureHotRecord> textureHot{TextureHotRecord{.generation = 1, .revision = 1, .state = ResourceState::Ready}};
-	std::vector<TextureColdRecord> textureCold{TextureColdRecord{}};
-	std::vector<uint32_t> freeTextures;
-	std::unordered_map<ResourceKey, TextureHandle, ResourceKeyHash> textureByKey;
-	TextureHandle fallbackTexture{};
-	BindingHotRecord fallbackBinding{};
-	std::vector<RendererLayoutRecord> rendererLayouts{RendererLayoutRecord{}};
-	std::vector<uint32_t> freeRendererLayouts;
-	std::unordered_map<RendererLayoutKey, RendererLayoutHandle, RendererLayoutKeyHash> rendererLayoutByKey;
-	std::vector<RendererPipelineBundleRecord> rendererPipelineBundles{RendererPipelineBundleRecord{}};
-	std::vector<uint32_t> freeRendererPipelineBundles;
-	std::unordered_map<RendererPipelineKey, RendererPipelineBundleHandle, RendererPipelineKeyHash> rendererPipelineByKey;
-	std::vector<WindowDescriptorBundleRecord> windowDescriptorBundles{WindowDescriptorBundleRecord{}};
-	std::vector<uint32_t> freeWindowDescriptorBundles;
-
-	std::unordered_map<WindowId, std::unique_ptr<WindowState>> windows;
-	std::unordered_set<WindowId> registeredWindowIds;
-	std::deque<UploadRecord> uploads;
-	std::unordered_map<UploadId, ResourceState> uploadStates;
-	std::vector<RetirementRecord> retirements;
-
-	VkCommandPool uploadCommandPool = VK_NULL_HANDLE;
-	UploadId nextUploadId = 1;
-	FrameEpoch nextFrameEpoch = 1;
-	uint64_t nextReadLeaseId = 1;
-	uint64_t nextBufferWriteId = 1;
-	SubmissionSerial nextSubmissionSerial = 1;
-	SubmissionSerial completedWatermark = 0;
-	std::unordered_set<SubmissionSerial> completedOutOfOrder;
 #if FLOW_UI_DEV_MODE
-	StorageStats telemetry{};
-	mutable uint64_t memorySnapshotSequence = 0u;
-	mutable uint64_t memorySnapshotSignature = 0u;
-	mutable uint64_t resourceMetadataPeakBytes = 0u;
 #endif
 
 #if FLOW_UI_DEV_MODE
+	StorageStats telemetry{};
+
+	PersistentPool persistentPool;
+	PersistentPool stringPool;
+	StorageConfig config{};
+	std::deque<UploadRecord> uploads;
+	std::condition_variable_any bufferCommitCondition;
+	std::unordered_map<std::string_view, StringId, StringViewHash, StringViewEqual> stringIds;
+	std::unordered_set<DiagnosticKey, DiagnosticKeyHash> diagnosticMarks;
+	std::unordered_map<ResourceKey, ManagerRecordHandle, ResourceKeyHash> managerRecordByKey;
+	std::unordered_map<SamplerKey, SamplerHandle, SamplerKeyHash> samplerByKey;
+	std::unordered_map<ResourceKey, TextureHandle, ResourceKeyHash> textureByKey;
+	std::unordered_map<RendererLayoutKey, RendererLayoutHandle, RendererLayoutKeyHash> rendererLayoutByKey;
+	std::unordered_map<RendererPipelineKey, RendererPipelineBundleHandle, RendererPipelineKeyHash> rendererPipelineByKey;
+
+	std::unordered_map<WindowId, std::unique_ptr<WindowState>> windows;
+	std::unordered_set<WindowId> registeredWindowIds;
+	std::unordered_map<UploadId, ResourceState> uploadStates;
+	std::unordered_set<SubmissionSerial> completedOutOfOrder;
 	template <typename T>
 	[[nodiscard]] static uint64_t vectorCapacityBytes(const std::vector<T>& values) noexcept {
 		return static_cast<uint64_t>(values.capacity()) * sizeof(T);
@@ -2263,6 +2211,58 @@ struct FlowStorageSystem::Impl {
 		}
 		uploadCommandPool = VK_NULL_HANDLE;
 	}
+	mutable std::recursive_mutex mutex;
+	BindingHotRecord fallbackBinding{};
+	std::vector<std::string_view> strings{std::string_view{}};
+	std::vector<ManagerRecord> managerRecords{ManagerRecord{}};
+	std::vector<uint32_t> freeManagerRecords;
+	std::vector<PersistentRecord> persistentRecords{PersistentRecord{}};
+	std::vector<uint32_t> freePersistentRecords;
+
+	std::vector<BlobRecord> blobs{BlobRecord{}};
+	std::vector<uint32_t> freeBlobs;
+	std::vector<BufferRecord> buffers{BufferRecord{}};
+	std::vector<uint32_t> freeBuffers;
+	std::vector<ImageRecord> images{ImageRecord{}};
+	std::vector<uint32_t> freeImages;
+	std::vector<ImageViewRecord> imageViews{ImageViewRecord{}};
+	std::vector<ImageViewHotRecord> imageViewHot{ImageViewHotRecord{}};
+	std::vector<uint32_t> freeImageViews;
+	std::vector<SamplerRecord> samplers{SamplerRecord{}};
+	std::vector<SamplerHotRecord> samplerHot{SamplerHotRecord{}};
+	std::vector<uint32_t> freeSamplers;
+	std::vector<TextureHotRecord> textureHot{TextureHotRecord{.generation = 1, .revision = 1, .state = ResourceState::Ready}};
+	std::vector<TextureColdRecord> textureCold{TextureColdRecord{}};
+	std::vector<uint32_t> freeTextures;
+	std::vector<RendererLayoutRecord> rendererLayouts{RendererLayoutRecord{}};
+	std::vector<uint32_t> freeRendererLayouts;
+	std::vector<RendererPipelineBundleRecord> rendererPipelineBundles{RendererPipelineBundleRecord{}};
+	std::vector<uint32_t> freeRendererPipelineBundles;
+	std::vector<WindowDescriptorBundleRecord> windowDescriptorBundles{WindowDescriptorBundleRecord{}};
+	std::vector<uint32_t> freeWindowDescriptorBundles;
+	std::vector<RetirementRecord> retirements;
+
+	VulkanContext& vk;
+	uint64_t cpuSoftBudgetBytes = 0;
+	uint64_t gpuSoftBudgetBytes = 0;
+	uint64_t gpuLiveBytes = 0;
+	uint64_t gpuRetiredBytes = 0;
+	uint64_t sharedManagerRevision = 1;
+
+	VkCommandPool uploadCommandPool = VK_NULL_HANDLE;
+	UploadId nextUploadId = 1;
+	FrameEpoch nextFrameEpoch = 1;
+	uint64_t nextReadLeaseId = 1;
+	uint64_t nextBufferWriteId = 1;
+	SubmissionSerial nextSubmissionSerial = 1;
+	SubmissionSerial completedWatermark = 0;
+	mutable uint64_t memorySnapshotSequence = 0u;
+	mutable uint64_t memorySnapshotSignature = 0u;
+	mutable uint64_t resourceMetadataPeakBytes = 0u;
+	TextureHandle fallbackTexture{};
+	uint32_t recordFailureCountdown = 0;
+	bool initialized = false;
+	bool terminated = false;
 };
 
 FlowStorageSystem::FlowStorageSystem(VulkanContext& vulkanContext)
@@ -2945,13 +2945,12 @@ ManagerRecordHandle FlowStorageSystem::createManagerRecord(const ManagerRecordDe
 		constructed = true;
 		impl_->recordCheckpoint();
 		record = Impl::ManagerRecord{
+			.memory = memory,
+			.key = desc.key,
+			.destroy = desc.destroy,
 			.generation = generation,
 			.state = ResourceState::Ready,
-			.key = desc.key,
-			.kind = desc.kind,
-			.memory = memory,
-			.destroy = desc.destroy,
-		};
+			.kind = desc.kind,};
 		const ManagerRecordHandle handle{index, generation};
 		impl_->managerRecordByKey.emplace(desc.key, handle);
 		published = true;
@@ -3723,10 +3722,9 @@ DevTextureMetadata FlowStorageSystem::devTextureMetadata(TextureHandle texture) 
 	const TextureHotRecord& hot = impl_->textureHot[texture.index];
 	const Impl::TextureColdRecord& cold = impl_->textureCold[texture.index];
 	DevTextureMetadata result{
-		.texture = TextureMetadata{hot.state, hot.sourceWidth, hot.sourceHeight, hot.revision},
 		.key = cold.key,
-		.published = cold.published,
-	};
+		.texture = TextureMetadata{hot.state, hot.sourceWidth, hot.sourceHeight, hot.revision},
+		.published = cold.published,};
 	if (impl_->validImageView(cold.desc.imageView)) {
 		const ImageHandle image = impl_->imageViews[cold.desc.imageView.index].image;
 		if (impl_->validImage(image)) {
@@ -4745,8 +4743,6 @@ void FlowStorageSystem::appendMemorySnapshot(
 
 	auto appendPool = [&](MemoryClass memoryClass, const PersistentPool& pool) {
 		destination.allocators.push_back(StorageAllocatorSnapshot{
-			.kind = StorageAllocatorKind::PersistentPool,
-			.memoryClass = memoryClass,
 			.reservedBytes = pool.reservedBytes(),
 			.liveBytes = pool.liveBytes(),
 			.peakLiveBytes = pool.peakLiveBytes(),
@@ -4761,20 +4757,20 @@ void FlowStorageSystem::appendMemorySnapshot(
 			.physicalReleaseCount = pool.physicalReleaseOps(),
 			.growthCount = pool.growthCount(),
 			.mutationSequence = pool.mutationSequence(),
-			.backingAllocationCount = pool.slabCount(),
-		});
+			.kind = StorageAllocatorKind::PersistentPool,
+			.memoryClass = memoryClass,
+			.backingAllocationCount = pool.slabCount(),});
 	};
 	appendPool(MemoryClass::Persistent, impl_->persistentPool);
 	appendPool(MemoryClass::StringPool, impl_->stringPool);
 
 	destination.allocators.push_back(StorageAllocatorSnapshot{
-		.kind = StorageAllocatorKind::ResourceMetadata,
-		.memoryClass = MemoryClass::ResourceMetadata,
 		.reservedBytes = destination.resourceMetadataBytes,
 		.liveBytes = destination.resourceMetadataLiveBytes,
 		.reusableBytes = destination.resourceMetadataBytes - std::min(
 			destination.resourceMetadataBytes, destination.resourceMetadataLiveBytes),
-	});
+		.kind = StorageAllocatorKind::ResourceMetadata,
+		.memoryClass = MemoryClass::ResourceMetadata,});
 
 	auto appendArena = [&](
 		MemoryClass memoryClass,
@@ -4783,11 +4779,7 @@ void FlowStorageSystem::appendMemorySnapshot(
 		uint32_t workerIndex,
 		const LinearArena& arena) {
 		destination.allocators.push_back(StorageAllocatorSnapshot{
-			.kind = StorageAllocatorKind::LinearArena,
-			.memoryClass = memoryClass,
 			.window = window,
-			.frameSlot = frameSlot,
-			.workerIndex = workerIndex,
 			.reservedBytes = arena.capacity(),
 			.liveBytes = arena.liveBytes(),
 			.peakLiveBytes = arena.highWater(),
@@ -4804,8 +4796,11 @@ void FlowStorageSystem::appendMemorySnapshot(
 			.growthCount = arena.growthCount(),
 			.resetCount = arena.resetCount(),
 			.mutationSequence = arena.mutationSequence(),
-			.backingAllocationCount = arena.pageCount(),
-		});
+			.kind = StorageAllocatorKind::LinearArena,
+			.memoryClass = memoryClass,
+			.frameSlot = frameSlot,
+			.workerIndex = workerIndex,
+			.backingAllocationCount = arena.pageCount(),});
 	};
 
 	if (request.includeWindows) destination.windows.reserve(impl_->windows.size());
@@ -4838,71 +4833,67 @@ void FlowStorageSystem::appendMemorySnapshot(
 			if (record.state == ResourceState::Invalid || !include(record.memory.size)) continue;
 			destination.individualResources.push_back(ResourceMemoryRecord{
 				.lifetimeId = BlobHandle{index, record.generation}.packed(),
-				.kind = ResourceKind::CpuBlob,
 				.debugName = record.debugName,
 				.requestedBytes = record.memory.size,
 				.allocationBytes = record.memory.size,
-				.state = record.state,
 				.retireAfter = record.lastUse,
-			});
+				.kind = ResourceKind::CpuBlob,
+				.state = record.state,});
 		}
 		for (uint32_t index = 1u; index < impl_->buffers.size(); ++index) {
 			const Impl::BufferRecord& record = impl_->buffers[index];
 			if (record.state == ResourceState::Invalid || !include(record.allocationBytes)) continue;
 			destination.individualResources.push_back(ResourceMemoryRecord{
 				.lifetimeId = BufferHandle{index, record.generation}.packed(),
-				.kind = ResourceKind::GpuBuffer,
 				.debugName = record.desc.debugName,
 				.window = record.desc.window,
-				.frameSlot = record.desc.frameSlot,
 				.requestedBytes = record.size,
 				.allocationBytes = record.allocationBytes,
+				.retireAfter = record.lastUse,
+				.kind = ResourceKind::GpuBuffer,
+				.frameSlot = record.desc.frameSlot,
 				.memoryTypeIndex = record.memoryTypeIndex,
 				.memoryHeapIndex = heapForType(record.memoryTypeIndex),
-				.state = record.state,
-				.retireAfter = record.lastUse,
-			});
+				.state = record.state,});
 		}
 		for (uint32_t index = 1u; index < impl_->images.size(); ++index) {
 			const Impl::ImageRecord& record = impl_->images[index];
 			if (record.state == ResourceState::Invalid || !include(record.byteSize)) continue;
 			destination.individualResources.push_back(ResourceMemoryRecord{
 				.lifetimeId = ImageHandle{index, record.generation}.packed(),
-				.kind = ResourceKind::GpuImage,
 				.debugName = record.desc.debugName,
 				.window = record.desc.window,
-				.frameSlot = record.desc.frameSlot,
 				.requestedBytes = record.requestedBytes,
 				.allocationBytes = record.byteSize,
+				.retireAfter = record.lastUse,
+				.kind = ResourceKind::GpuImage,
+				.frameSlot = record.desc.frameSlot,
 				.memoryTypeIndex = record.memoryTypeIndex,
 				.memoryHeapIndex = heapForType(record.memoryTypeIndex),
-				.state = record.state,
-				.retireAfter = record.lastUse,
-			});
+				.state = record.state,});
 		}
 		for (uint32_t index = 1u; index < impl_->managerRecords.size(); ++index) {
 			const Impl::ManagerRecord& record = impl_->managerRecords[index];
 			if (record.state == ResourceState::Invalid || !include(record.memory.size)) continue;
 			destination.individualResources.push_back(ResourceMemoryRecord{
 				.lifetimeId = ManagerRecordHandle{index, record.generation}.packed(),
-				.kind = record.kind,
 				.debugName = record.memory.tag.debugName,
 				.window = record.key.window,
 				.requestedBytes = record.memory.size,
 				.allocationBytes = record.memory.size,
-				.state = record.state,
-			});
+				.kind = record.kind,
+				.state = record.state,});
 		}
 		for (uint32_t index = 1u; index < impl_->persistentRecords.size(); ++index) {
 			const Impl::PersistentRecord& record = impl_->persistentRecords[index];
 			if (record.state == ResourceState::Invalid || !include(record.memory.size)) continue;
 			destination.individualResources.push_back(ResourceMemoryRecord{
 				.lifetimeId = PersistentRecordHandle{index, record.generation}.packed(),
-				.kind = record.kind,
 				.debugName = record.memory.tag.debugName,
 				.window = record.window,
 				.requestedBytes = record.memory.size,
 				.allocationBytes = record.memory.size,
+				.kind = record.kind,
 				.state = record.state,
 			});
 		}
@@ -5031,14 +5022,14 @@ NativePublishResult<RendererLayoutHandle> FlowStorageSystem::publishRendererLayo
 	Impl::RendererLayoutRecord& record = impl_->rendererLayouts[index];
 	const uint32_t generation = record.generation == 0 ? 1u : record.generation;
 	record = Impl::RendererLayoutRecord{
-		.generation = generation,
-		.state = ResourceState::Ready,
-		.key = key,
 		.native = native,
-		.referenceCount = 1,
 		.lastUse = 0,
 #if FLOW_UI_DEV_MODE
 		.debugName = debugName,
+		.key = key,
+		.generation = generation,
+		.state = ResourceState::Ready,
+		.referenceCount = 1,
 #endif
 	};
 	const RendererLayoutHandle handle{index, generation};
@@ -5093,14 +5084,14 @@ NativePublishResult<RendererPipelineBundleHandle> FlowStorageSystem::publishRend
 		Impl::RendererPipelineBundleRecord& record = impl_->rendererPipelineBundles[index];
 		const uint32_t generation = record.generation == 0 ? 1u : record.generation;
 		record = Impl::RendererPipelineBundleRecord{
-			.generation = generation,
-			.state = ResourceState::Ready,
 			.key = key,
 			.native = native,
-			.referenceCount = 1,
 			.lastUse = 0,
 #if FLOW_UI_DEV_MODE
 			.debugName = debugName,
+			.generation = generation,
+			.state = ResourceState::Ready,
+			.referenceCount = 1,
 #endif
 		};
 		const RendererPipelineBundleHandle handle{index, generation};

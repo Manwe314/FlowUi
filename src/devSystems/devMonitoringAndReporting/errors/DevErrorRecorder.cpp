@@ -12,45 +12,6 @@
 namespace FlowUi::devSystems {
 
 struct DevErrorRecorder::Impl {
-	Impl(
-		DevErrorMonitoring& recorderOwner,
-		uint32_t recorderTrack,
-		std::string_view recorderName,
-		const DevErrorConfig& config)
-		: owner(&recorderOwner), track(recorderTrack), name(recorderName),
-		  records(std::max(1u, config.producerRecordCapacity)),
-		  breadcrumbs(std::max(1u, config.breadcrumbCapacity)),
-		  recentBreadcrumbCount(std::max(1u, config.recentBreadcrumbCount)) {}
-
-	DevErrorMonitoring* owner = nullptr;
-	uint32_t track = 0u;
-	std::string name{};
-	mutable std::mutex mutex{};
-	DevErrorContext currentContext{};
-	std::atomic<uint64_t> contextSequence{0u};
-	std::atomic<AppTickId> emergencyAppTick{0u};
-	std::atomic<WindowId> emergencyWindow{InvalidWindowId};
-	std::atomic<uint64_t> emergencyFrame{0u};
-	std::atomic<uint64_t> emergencySubmission{0u};
-	std::atomic<uint64_t> emergencyPrimary{0u};
-	std::atomic<uint64_t> emergencySecondary{0u};
-	std::atomic<uint32_t> emergencyTimingTrack{0u};
-	std::atomic<uint16_t> emergencyPhase{0u};
-	std::vector<DevErrorRecord> records{};
-	std::vector<DevErrorBreadcrumb> breadcrumbs{};
-	uint32_t recentBreadcrumbCount = 1u;
-	uint32_t recordBegin = 0u;
-	uint32_t recordCount = 0u;
-	uint32_t breadcrumbBegin = 0u;
-	uint32_t breadcrumbCount = 0u;
-	std::atomic<uint64_t> recordedEvents{0u};
-	std::atomic<uint64_t> recordedBreadcrumbs{0u};
-	std::atomic<uint64_t> suppressedEvents{0u};
-	std::atomic<uint64_t> droppedEvents{0u};
-	std::atomic<uint64_t> droppedBreadcrumbs{0u};
-	std::atomic<uint64_t> overwrittenBreadcrumbs{0u};
-	std::atomic<uint64_t> recursiveEvents{0u};
-	std::atomic<uint64_t> nativeTextTruncations{0u};
 
 	void publishContext(const DevErrorContext& context) noexcept {
 		contextSequence.fetch_add(1u, std::memory_order_acq_rel);
@@ -64,6 +25,45 @@ struct DevErrorRecorder::Impl {
 		emergencyPhase.store(context.phase, std::memory_order_relaxed);
 		contextSequence.fetch_add(1u, std::memory_order_release);
 	}
+	DevErrorContext currentContext{};
+	mutable std::mutex mutex{};
+	std::string name{};
+	std::vector<DevErrorRecord> records{};
+	std::vector<DevErrorBreadcrumb> breadcrumbs{};
+	Impl(
+		DevErrorMonitoring& recorderOwner,
+		uint32_t recorderTrack,
+		std::string_view recorderName,
+		const DevErrorConfig& config)
+		: owner(&recorderOwner), track(recorderTrack), name(recorderName),
+		  records(std::max(1u, config.producerRecordCapacity)),
+		  breadcrumbs(std::max(1u, config.breadcrumbCapacity)),
+		  recentBreadcrumbCount(std::max(1u, config.recentBreadcrumbCount)) {}
+
+	DevErrorMonitoring* owner = nullptr;
+	std::atomic<uint64_t> contextSequence{0u};
+	std::atomic<AppTickId> emergencyAppTick{0u};
+	std::atomic<WindowId> emergencyWindow{InvalidWindowId};
+	std::atomic<uint64_t> emergencyFrame{0u};
+	std::atomic<uint64_t> emergencySubmission{0u};
+	std::atomic<uint64_t> emergencyPrimary{0u};
+	std::atomic<uint64_t> emergencySecondary{0u};
+	std::atomic<uint64_t> recordedEvents{0u};
+	std::atomic<uint64_t> recordedBreadcrumbs{0u};
+	std::atomic<uint64_t> suppressedEvents{0u};
+	std::atomic<uint64_t> droppedEvents{0u};
+	std::atomic<uint64_t> droppedBreadcrumbs{0u};
+	std::atomic<uint64_t> overwrittenBreadcrumbs{0u};
+	std::atomic<uint64_t> recursiveEvents{0u};
+	std::atomic<uint64_t> nativeTextTruncations{0u};
+	uint32_t track = 0u;
+	std::atomic<uint32_t> emergencyTimingTrack{0u};
+	uint32_t recentBreadcrumbCount = 1u;
+	uint32_t recordBegin = 0u;
+	uint32_t recordCount = 0u;
+	uint32_t breadcrumbBegin = 0u;
+	uint32_t breadcrumbCount = 0u;
+	std::atomic<uint16_t> emergencyPhase{0u};
 };
 
 DevErrorRecorder::DevErrorRecorder(

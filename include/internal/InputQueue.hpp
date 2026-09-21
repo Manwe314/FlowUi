@@ -18,23 +18,26 @@ struct InputQueue {
 	void pushMouseButton(int mouseButton, bool down) noexcept;
 	void pushScroll(float dx, float dy) noexcept;
 	void setMousePos(float x, float y) noexcept;
+	/** Update native pointer presence independently of stale cursor coordinates. */
+	void setPointerInside(bool inside) noexcept { pointer_inside_ = inside; }
 	void clearKeyboardState() noexcept;
 	void clearMouseButtonsState() noexcept;
 	[[nodiscard]] std::uint64_t takeDroppedTextInputCount() noexcept;
 
 	FrameInput drain(double dt);
-
-private:
-	std::array<bool, FrameInput::kMouseButtonCount> queuedMouseButtonsDown_{};
-	std::array<bool, FrameInput::kKeyboardKeyCount> queuedKeysDown_{};
 	std::vector<char32_t> queuedTextInput_;
 	std::size_t textCapacity_ = 0;
-	InputQueueOverflowPolicy overflowPolicy_ = InputQueueOverflowPolicy::DropNewest;
 	std::uint64_t droppedTextInputCount_ = 0;
+	InputQueueOverflowPolicy overflowPolicy_ = InputQueueOverflowPolicy::DropNewest;
 	float latestMouseX_ = 0.0f;
 	float latestMouseY_ = 0.0f;
 	float queuedScrollX_ = 0.0f;
 	float queuedScrollY_ = 0.0f;
+	std::array<bool, FrameInput::kKeyboardKeyCount> queuedKeysDown_{};
+
+private:
+	bool pointer_inside_ = false;
+	std::array<bool, FrameInput::kMouseButtonCount> queuedMouseButtonsDown_{};
 };
 
 } // namespace FlowUi::detail

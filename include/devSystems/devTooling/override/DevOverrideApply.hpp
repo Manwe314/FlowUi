@@ -19,14 +19,14 @@ namespace FlowUi::devSystems::tooling {
 class DevOverrideApply {
 public:
 	struct Record {
+		DevOwnedValue value{};
 		DevElementOverrideTarget target{};
 		DevOverrideFieldKey field{};
+		std::vector<const devMode::DevFieldOps*> ownerPath{};
+		std::uint64_t transaction = 0;
 		/** One-based index into the bound generation's fields. */
 		devMode::DevFieldIndex fieldIndex{};
 		DevOverrideLayer layer = DevOverrideLayer::LiveDefinition;
-		DevOwnedValue value{};
-		std::vector<const devMode::DevFieldOps*> ownerPath{};
-		std::uint64_t transaction = 0;
 		bool schemaValid = false;
 	};
 

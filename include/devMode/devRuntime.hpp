@@ -328,35 +328,35 @@ struct ElementTreePlaceholder {
 	};
 
 	struct FlatNode {
-		// Pre-order index assigned at capture time.
-		uint64_t captureOrder = 0u;
-		// Tree depth (0 is root-level).
-		uint32_t depth = 0u;
-		ElementKind kind = ElementKind::Unknown;
-
-		FlowDefinitionID definitionId{};
-		uint64_t definitionTypeHash = 0u;
-		detail::element::ElementInstanceKey instanceId{};
 		// Display-only copy. Never participates in override or snapshot identity.
 		std::string debugPath{};
 
 		// Useful display metadata from registry/definition.
 		std::string definitionDisplayName{};
 		std::string definitionTypeToken{};
+
+		// Future combiner-tool hints for patching source.
+		std::string sourceFile{};
+		std::string sourceFunction{};
+		std::string authoredInstanceKey{};
+		std::string authoredDefinitionKey{};
+		std::string debugLabel{};
+		// Pre-order index assigned at capture time.
+		uint64_t captureOrder = 0u;
+
+		FlowDefinitionID definitionId{};
+		uint64_t definitionTypeHash = 0u;
+		detail::element::ElementInstanceKey instanceId{};
+		uint64_t sourceLocationHash = 0u;
+		// Tree depth (0 is root-level).
+		uint32_t depth = 0u;
+		ElementKind kind = ElementKind::Unknown;
+		uint32_t sourceLine = 0u;
+		uint32_t sourceColumn = 0u;
 		bool hasRegisteredDefinition = false;
 		bool hasRegisteredParamsStruct = false;
 		bool hasRegisteredStateStruct = false;
 		bool hasRegisteredResourcesStruct = false;
-
-		// Future combiner-tool hints for patching source.
-		std::string sourceFile{};
-		uint32_t sourceLine = 0u;
-		uint32_t sourceColumn = 0u;
-		std::string sourceFunction{};
-		uint64_t sourceLocationHash = 0u;
-		std::string authoredInstanceKey{};
-		std::string authoredDefinitionKey{};
-		std::string debugLabel{};
 		bool isFloating = false;
 		bool isInternalToDevMode = false;
 	};

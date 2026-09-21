@@ -69,28 +69,28 @@ struct GpuTimingQualitySnapshot {
 };
 
 struct GpuTimingZonePlan {
-	TimingZoneTypeId typeId = 0u;
 	TimingEntityRef entity{};
+	TimingZoneTypeId typeId = 0u;
+	VkPipelineStageFlags2 beginStage = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags2 endStage = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 	uint32_t beginQuery = 0u;
 	uint32_t endQuery = 0u;
 	uint32_t parentZoneIndex = UINT32_MAX;
-	VkPipelineStageFlags2 beginStage = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
-	VkPipelineStageFlags2 endStage = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 	uint8_t depth = 0u;
 	bool ended = false;
 };
 
 struct GpuTimingFrameSlot {
-	VkQueryPool queryPool = VK_NULL_HANDLE;
-	uint32_t queryCapacity = 0u;
-	uint32_t usedQueries = 0u;
-	WindowFrameKey frame{};
-	AppTickId appTick = 0u;
-	uint64_t submissionSerial = 0u;
-	uint32_t queueFamilyIndex = UINT32_MAX;
 	std::vector<GpuTimingZonePlan> zones{};
 	std::vector<uint32_t> activeZones{};
 	std::vector<uint64_t> queryResults{};
+	WindowFrameKey frame{};
+	VkQueryPool queryPool = VK_NULL_HANDLE;
+	AppTickId appTick = 0u;
+	uint64_t submissionSerial = 0u;
+	uint32_t queryCapacity = 0u;
+	uint32_t usedQueries = 0u;
+	uint32_t queueFamilyIndex = UINT32_MAX;
 	bool recording = false;
 	bool submitted = false;
 	bool detailTruncated = false;

@@ -65,6 +65,9 @@ struct FrameInput {
 	 */
 	float mouseY = 0.0f;
 
+	/** Whether the native pointer currently belongs to this window. */
+	bool pointerInside = false;
+
 	/**
 	 * @brief Mouse button down states for the current frame.
 	 *

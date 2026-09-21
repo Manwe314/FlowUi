@@ -150,30 +150,30 @@ inline std::vector<MemoryTuningTargetDescriptor> tuningTargets() {
 	using Unit = MemoryCapacityUnit;
 	using Policy = MemoryApplyPolicy;
 	std::vector<MemoryTuningTargetDescriptor> result{
-		{makeMemorySourceId("flowui.tuning.storage.initial_persistent_cpu_bytes"), kStoragePersistent.id,
-			Metric::PeakLogicalBytes, Unit::Bytes, 64u, UINT64_MAX, 64u, 4ull * 1024ull * 1024ull,
-			"storage.initialPersistentCpuBytes", Policy::RestartRequired},
-		{makeMemorySourceId("flowui.tuning.storage.initial_string_bytes"), kStorageStringPool.id,
-			Metric::PeakLogicalBytes, Unit::Bytes, 64u, UINT64_MAX, 64u, 1ull * 1024ull * 1024ull,
-			"storage.initialStringBytes", Policy::RestartRequired},
-		{makeMemorySourceId("flowui.tuning.storage.transient_bytes_per_frame_per_window"), kStorageFrameTransient.id,
-			Metric::PeakLogicalBytes, Unit::Bytes, 64u, UINT64_MAX, 64u, 1ull * 1024ull * 1024ull,
-			"storage.transientBytesPerFramePerWindow", Policy::RestartRequired},
-		{makeMemorySourceId("flowui.tuning.storage.transient_bytes_per_worker"), kStorageWorkerTransient.id,
-			Metric::PeakLogicalBytes, Unit::Bytes, 64u, UINT64_MAX, 64u, 1ull * 1024ull * 1024ull,
-			"storage.transientBytesPerWorker", Policy::RestartRequired},
-		{makeMemorySourceId("flowui.tuning.storage.initial_decode_scratch_bytes"), kStorageDecodeTransient.id,
-			Metric::PeakLogicalBytes, Unit::Bytes, 64u, UINT64_MAX, 64u, 8ull * 1024ull * 1024ull,
-			"storage.initialDecodeScratchBytes", Policy::RestartRequired},
-		{makeMemorySourceId("flowui.tuning.storage.initial_upload_staging_bytes"), kStorageUploadStaging.id,
-			Metric::PeakLogicalBytes, Unit::Bytes, 64u, UINT64_MAX, 64u, 16ull * 1024ull * 1024ull,
-			"storage.initialUploadStagingBytes", Policy::RestartRequired},
+		{"storage.initialPersistentCpuBytes", makeMemorySourceId("flowui.tuning.storage.initial_persistent_cpu_bytes"), kStoragePersistent.id,
+			64u, UINT64_MAX, 64u, 4ull * 1024ull * 1024ull,
+			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
+		{"storage.initialStringBytes", makeMemorySourceId("flowui.tuning.storage.initial_string_bytes"), kStorageStringPool.id,
+			64u, UINT64_MAX, 64u, 1ull * 1024ull * 1024ull,
+			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
+		{"storage.transientBytesPerFramePerWindow", makeMemorySourceId("flowui.tuning.storage.transient_bytes_per_frame_per_window"), kStorageFrameTransient.id,
+			64u, UINT64_MAX, 64u, 1ull * 1024ull * 1024ull,
+			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
+		{"storage.transientBytesPerWorker", makeMemorySourceId("flowui.tuning.storage.transient_bytes_per_worker"), kStorageWorkerTransient.id,
+			64u, UINT64_MAX, 64u, 1ull * 1024ull * 1024ull,
+			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
+		{"storage.initialDecodeScratchBytes", makeMemorySourceId("flowui.tuning.storage.initial_decode_scratch_bytes"), kStorageDecodeTransient.id,
+			64u, UINT64_MAX, 64u, 8ull * 1024ull * 1024ull,
+			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
+		{"storage.initialUploadStagingBytes", makeMemorySourceId("flowui.tuning.storage.initial_upload_staging_bytes"), kStorageUploadStaging.id,
+			64u, UINT64_MAX, 64u, 16ull * 1024ull * 1024ull,
+			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
 	};
 	const auto addEntries = [&](const StaticMemorySourceDescriptor& source, std::string key,
 		uint64_t defaultValue = 0u) {
 		if (source.tuningTarget == 0u) return;
-		result.push_back({source.tuningTarget, source.id, Metric::CapacityCount, Unit::Entries,
-			0u, UINT64_MAX, 1u, defaultValue, std::move(key), Policy::RestartRequired});
+		result.push_back({std::move(key), source.tuningTarget, source.id,
+			0u, UINT64_MAX, 1u, defaultValue, Metric::CapacityCount, Unit::Entries, Policy::RestartRequired});
 	};
 	addEntries(kElements, "managers.elementsReserve");
 	addEntries(kInputFields, "managers.inputFieldsReserve");
@@ -186,15 +186,12 @@ inline std::vector<MemoryTuningTargetDescriptor> tuningTargets() {
 	addEntries(kThemes, "managers.themesReserve");
 	addEntries(kUiLayout, "managers.uiLayoutReserve");
 	addEntries(kRenderer, "managers.rendererReserve");
-	result.push_back({kInputTextPayload.tuningTarget, kInputTextPayload.id,
-		Metric::BackingAllocatedBytes, Unit::Bytes, 0u, UINT64_MAX, 1u, 0u,
-		"managers.inputTextBytesReserve", Policy::RestartRequired});
-	result.push_back({kFontAtlasCpuPixels.tuningTarget, kFontAtlasCpuPixels.id,
-		Metric::BackingAllocatedBytes, Unit::Bytes, 0u, UINT64_MAX, 1u, 0u,
-		"managers.fontAtlasCpuPixelBytesReserve", Policy::RebuildRequired});
-	result.push_back({kRendererFramePayload.tuningTarget, kRendererFramePayload.id,
-		Metric::LogicalLiveBytes, Unit::Bytes, 256u, UINT64_MAX, 256u, 1024ull * 1024ull,
-		"storage.initialInstanceBytesPerFrame", Policy::RestartRequired});
+	result.push_back({"managers.inputTextBytesReserve", kInputTextPayload.tuningTarget, kInputTextPayload.id,
+		0u, UINT64_MAX, 1u, 0u, Metric::BackingAllocatedBytes, Unit::Bytes, Policy::RestartRequired});
+	result.push_back({"managers.fontAtlasCpuPixelBytesReserve", kFontAtlasCpuPixels.tuningTarget, kFontAtlasCpuPixels.id,
+		0u, UINT64_MAX, 1u, 0u, Metric::BackingAllocatedBytes, Unit::Bytes, Policy::RebuildRequired});
+	result.push_back({"storage.initialInstanceBytesPerFrame", kRendererFramePayload.tuningTarget, kRendererFramePayload.id,
+		256u, UINT64_MAX, 256u, 1024ull * 1024ull, Metric::LogicalLiveBytes, Unit::Bytes, Policy::RestartRequired});
 	addEntries(kIconSvgDocuments, "managers.iconDocumentsReserve");
 	addEntries(kIconAtlasMetadata, "managers.iconAtlasMetadataReserve");
 	return result;
