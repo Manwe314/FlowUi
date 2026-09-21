@@ -1,3 +1,4 @@
+#include "FlowUi/Resources.hpp"
 #include "managers/ImageManager.hpp"
 
 #include <algorithm>
@@ -74,6 +75,10 @@ void ImageManager::destroy() noexcept {
 }
 
 Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view filePath) {
+	return register_image_file(key, path_from_utf8(filePath));
+}
+
+Result<bool> ImageManager::register_image_file(ResourceKey key, const std::filesystem::path& path) {
 	if (!storage_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ImageRegister));
 	storage::ResourceKey normalized{};
 	try {
@@ -81,9 +86,7 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
-	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty, ErrorSite::ImageLoad));
-
-	const std::filesystem::path path(filePath);
+	if (path.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty, ErrorSite::ImageLoad));
 	std::error_code pathError;
 	if (!std::filesystem::is_regular_file(path, pathError)) {
 		return unexpectedError(makeError(
@@ -94,7 +97,10 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 	int width = 0;
 	int height = 0;
 	int channels = 0;
-	stbi_uc* decoded = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+	const auto encoded = read_file_bytes(path);
+	if (!encoded || encoded->size() > static_cast<size_t>(std::numeric_limits<int>::max()))
+		return unexpectedError(makeError(ErrorCode::AssetReadFailed, ErrorSite::ImageLoad));
+	stbi_uc* decoded = stbi_load_from_memory(encoded->data(), static_cast<int>(encoded->size()), &width, &height, &channels, STBI_rgb_alpha);
 	if (!decoded || width <= 0 || height <= 0) {
 		if (decoded) stbi_image_free(decoded);
 		return unexpectedError(makeError(ErrorCode::ImageDecodeFailed, ErrorSite::ImageDecode));
@@ -166,7 +172,7 @@ Result<bool> ImageManager::registerImage(ResourceKey key, std::string_view fileP
 				[key](const DevImageRecord& record) { return record.key == key.name; });
 			DevImageRecord record{
 				.key = std::string(key.name),
-				.sourcePath = path.string(),
+				.sourcePath = path_to_utf8(path),
 				.texture = texture,
 			};
 			if (existing == devImages_.end()) devImages_.push_back(std::move(record));

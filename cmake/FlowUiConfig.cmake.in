@@ -1,14 +1,23 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
+set(_flowui_package_prefix "${PACKAGE_PREFIX_DIR}")
 
 find_dependency(Vulkan)
 find_dependency(glfw3)
 if(@FLOWUI_INCLUDE_ICON_MANAGER_VALUE@)
     find_dependency(plutosvg)
 endif()
+if(@FLOWUI_ENABLE_RUNTIME_FONT_BAKING@)
+    find_dependency(msdf-atlas-gen CONFIG)
+endif()
 
 set(FLOWUI_PUBLIC_VULKAN_INTEROP @FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE@)
 set(FLOWUI_INCLUDE_ICON_MANAGER @FLOWUI_INCLUDE_ICON_MANAGER_VALUE@)
 
 include("${CMAKE_CURRENT_LIST_DIR}/FlowUiTargets.cmake")
+set(PACKAGE_PREFIX_DIR "${_flowui_package_prefix}")
+set(FLOWUI_RESOURCE_SUBDIRECTORY "@FLOWUI_RESOURCE_SUBDIRECTORY@")
+set_property(TARGET FlowUi::FlowUi PROPERTY FLOWUI_RESOURCE_DIRECTORY
+    "@PACKAGE_FLOWUI_INSTALL_RESOURCE_DIRECTORY@")
+include("${CMAKE_CURRENT_LIST_DIR}/FlowUiResources.cmake")

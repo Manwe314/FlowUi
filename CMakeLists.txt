@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 
 project(FlowUi VERSION 0.1.0 LANGUAGES CXX)
 
@@ -55,6 +55,14 @@ set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendo
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
 
 include(GNUInstallDirs)
+set(FLOWUI_RESOURCE_SUBDIRECTORY "flowui" CACHE STRING "Resource pack directory name")
+if(WIN32)
+    set(FLOWUI_DEFAULT_RESOURCE_INSTALL "${CMAKE_INSTALL_BINDIR}/${FLOWUI_RESOURCE_SUBDIRECTORY}")
+else()
+    set(FLOWUI_DEFAULT_RESOURCE_INSTALL "${CMAKE_INSTALL_DATADIR}/${FLOWUI_RESOURCE_SUBDIRECTORY}")
+endif()
+set(FLOWUI_INSTALL_RESOURCE_DIRECTORY "${FLOWUI_DEFAULT_RESOURCE_INSTALL}" CACHE STRING "Installed resource pack destination")
+include(cmake/FlowUiResources.cmake)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -137,6 +145,12 @@ set(FLOWUI_SHADER_SOURCES
     "${FLOWUI_SHADER_SOURCE_DIR}/flowui_ui_textured.frag"
 )
 
+if(CMAKE_CROSSCOMPILING)
+    find_program(FLOWUI_HOST_GLSLC NAMES glslc HINTS "$ENV{VULKAN_SDK}/Bin" "$ENV{VULKAN_SDK}/bin" NO_CMAKE_FIND_ROOT_PATH)
+    find_program(FLOWUI_HOST_GLSLANG NAMES glslangValidator HINTS "$ENV{VULKAN_SDK}/Bin" "$ENV{VULKAN_SDK}/bin" NO_CMAKE_FIND_ROOT_PATH)
+    set(Vulkan_GLSLC_EXECUTABLE "${FLOWUI_HOST_GLSLC}")
+    set(Vulkan_GLSLANG_VALIDATOR_EXECUTABLE "${FLOWUI_HOST_GLSLANG}")
+endif()
 if(Vulkan_GLSLC_EXECUTABLE)
     set(FLOWUI_SHADER_COMPILER "${Vulkan_GLSLC_EXECUTABLE}")
     set(FLOWUI_SHADER_COMPILE_ARGS -O)
@@ -166,6 +180,13 @@ foreach(FLOWUI_SHADER_SOURCE IN LISTS FLOWUI_SHADER_SOURCES)
 endforeach()
 
 add_custom_target(flowui_shaders DEPENDS ${FLOWUI_SHADER_SPIRV_FILES})
+set(FLOWUI_RESOURCE_DIRECTORY "${CMAKE_BINARY_DIR}/share/${FLOWUI_RESOURCE_SUBDIRECTORY}")
+add_custom_target(flowui_resources ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${FLOWUI_RESOURCE_DIRECTORY}/shaders" "${FLOWUI_RESOURCE_DIRECTORY}/fonts"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FLOWUI_SHADER_SPIRV_FILES} "${FLOWUI_RESOURCE_DIRECTORY}/shaders"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/Inter.arfont" "${FLOWUI_RESOURCE_DIRECTORY}/fonts/Inter.arfont"
+    DEPENDS flowui_shaders "${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts/Inter.arfont"
+    VERBATIM)
 
 set(FLOWUI_MSDF_ATLAS_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/msdf-atlas-gen")
 
@@ -196,10 +217,25 @@ if(FLOWUI_BUILD_FONT_BAKER OR FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
 endif()
 
 if(FLOWUI_NEED_MSDF_ATLAS_GEN)
+    # Vendor defaults select /MT; follow the consuming project's CRT selection.
+    if(NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY OR CMAKE_MSVC_RUNTIME_LIBRARY MATCHES "DLL")
+        set(MSDF_ATLAS_DYNAMIC_RUNTIME ON CACHE BOOL "Use the project's dynamic MSVC runtime" FORCE)
+    else()
+        set(MSDF_ATLAS_DYNAMIC_RUNTIME OFF CACHE BOOL "Use the project's dynamic MSVC runtime" FORCE)
+    endif()
+    set(MSDF_ATLAS_INSTALL ${FLOWUI_INSTALL} CACHE BOOL "Generate installation target" FORCE)
     set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_USE_VCPKG OFF CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
     add_subdirectory(external/msdf-atlas-gen)
+    foreach(msdf_target msdf-atlas-gen msdfgen-core msdfgen-ext)
+        if(TARGET ${msdf_target})
+            set_target_properties(${msdf_target} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+            if(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+                set_property(TARGET ${msdf_target} PROPERTY MSVC_RUNTIME_LIBRARY "${CMAKE_MSVC_RUNTIME_LIBRARY}")
+            endif()
+        endif()
+    endforeach()
 endif()
 
 if(FLOWUI_INCLUDE_ICON_MANAGER)
@@ -216,10 +252,42 @@ if(FLOWUI_BUILD_FONT_BAKER)
     add_executable(flowui_font_baker tools/flowui_font_baker/main.cpp)
     target_link_libraries(flowui_font_baker PRIVATE msdf-atlas-gen::msdf-atlas-gen)
     target_compile_features(flowui_font_baker PRIVATE cxx_std_23)
+    target_compile_options(flowui_font_baker PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+    if(MSVC)
+        target_sources(flowui_font_baker PRIVATE tools/utf8.manifest)
+    endif()
 endif()
 
 if(FLOW_UI_ENABLE_BAKED_CHANGES)
-    add_subdirectory(tools/flowui-dev-generate)
+    if(CMAKE_CROSSCOMPILING)
+        set(FLOWUI_HOST_DEV_GENERATOR "" CACHE FILEPATH "Prebuilt native flowui-dev-generate; empty builds a host tool")
+        if(FLOWUI_HOST_DEV_GENERATOR)
+            add_executable(flowui-dev-generate IMPORTED GLOBAL)
+            set_property(TARGET flowui-dev-generate PROPERTY IMPORTED_LOCATION "${FLOWUI_HOST_DEV_GENERATOR}")
+        else()
+            include(ExternalProject)
+            find_program(FLOWUI_HOST_CXX_COMPILER NAMES c++ clang++ g++ cl REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+            set(host_generator_directory "${CMAKE_CURRENT_BINARY_DIR}/host-tools/dev-generate")
+            set(host_executable_suffix "")
+            if(CMAKE_HOST_WIN32)
+                set(host_executable_suffix ".exe")
+            endif()
+            set(host_generator "${host_generator_directory}/flowui-dev-generate${host_executable_suffix}")
+            ExternalProject_Add(flowui_host_generator
+                SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools/flowui-dev-generate"
+                BINARY_DIR "${host_generator_directory}"
+                CMAKE_GENERATOR Ninja
+                CMAKE_ARGS "-DCMAKE_CXX_COMPILER=${FLOWUI_HOST_CXX_COMPILER}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=
+                INSTALL_COMMAND ""
+                BUILD_ALWAYS TRUE
+                BUILD_BYPRODUCTS "${host_generator}")
+            add_executable(flowui-dev-generate IMPORTED GLOBAL)
+            set_property(TARGET flowui-dev-generate PROPERTY IMPORTED_LOCATION "${host_generator}")
+            add_dependencies(flowui-dev-generate flowui_host_generator)
+        endif()
+    else()
+        add_subdirectory(tools/flowui-dev-generate)
+    endif()
 endif()
 
 if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
@@ -227,7 +295,7 @@ if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+    set(GLFW_INSTALL ${FLOWUI_INSTALL} CACHE BOOL "" FORCE)
 
     add_subdirectory(external/glfw)
     set(FLOWUI_GLFW_TARGET glfw)
@@ -253,6 +321,23 @@ endif()
 
 add_library(flowui)
 add_library(FlowUi::FlowUi ALIAS flowui)
+get_target_property(flowui_library_type flowui TYPE)
+if(flowui_library_type STREQUAL "SHARED_LIBRARY")
+    target_compile_definitions(flowui PUBLIC FLOWUI_SHARED_LIBRARY=1)
+endif()
+set_target_properties(flowui PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+    POSITION_INDEPENDENT_CODE ON
+    FLOWUI_RESOURCE_DIRECTORY "${FLOWUI_RESOURCE_DIRECTORY}")
+target_compile_options(flowui PUBLIC
+    $<$<CXX_COMPILER_ID:MSVC>:/Zc:preprocessor>
+    $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+target_link_libraries(flowui PRIVATE ${CMAKE_DL_LIBS})
+add_dependencies(flowui flowui_resources)
+if(AgenticDebug)
+    target_compile_definitions(flowui PRIVATE AgenticDebug=1)
+endif()
 set_target_properties(flowui PROPERTIES EXPORT_NAME FlowUi)
 add_dependencies(flowui flowui_shaders)
 
@@ -261,6 +346,8 @@ target_sources(flowui
     PRIVATE
         src/clay.cpp
         src/FlowUi.cpp
+        src/Resources.cpp
+        src/internal/AgenticDebug/FrameCapture.cpp
         src/managers/FontManager.cpp
         src/managers/FontCatalogController.cpp
         src/managers/ElementManager.cpp
@@ -572,7 +659,7 @@ if(FLOWUI_INCLUDE_ICON_MANAGER)
 endif()
 
 if(FLOWUI_ENABLE_RUNTIME_FONT_BAKING)
-    target_link_libraries(flowui PRIVATE $<BUILD_INTERFACE:msdf-atlas-gen::msdf-atlas-gen>)
+    target_link_libraries(flowui PRIVATE msdf-atlas-gen::msdf-atlas-gen)
     target_compile_definitions(flowui PUBLIC FLOWUI_RUNTIME_FONT_BAKING=1)
 endif()
 
@@ -583,6 +670,8 @@ target_compile_definitions(flowui
     PRIVATE
         FLOWUI_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         FLOWUI_SHADER_OUTPUT_DIR="${FLOWUI_SHADER_OUTPUT_DIR}"
+        FLOWUI_RESOURCE_BUILD_DIRECTORY="${FLOWUI_RESOURCE_DIRECTORY}"
+        FLOWUI_RESOURCE_SUBDIRECTORY="${FLOWUI_RESOURCE_SUBDIRECTORY}"
         FLOWUI_INTERNAL_VIEWPORT_MANAGER=1
 )
 
@@ -621,11 +710,15 @@ if(FLOWUI_INSTALL)
     endif()
 
     if(FLOW_UI_ENABLE_BAKED_CHANGES)
-        install(TARGETS flowui-dev-generate RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+        if(NOT CMAKE_CROSSCOMPILING)
+            install(TARGETS flowui-dev-generate RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif()
         install(FILES "${FLOWUI_BAKED_GENERATED_HPP}" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     endif()
 
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(DIRECTORY "${FLOWUI_RESOURCE_DIRECTORY}/" DESTINATION "${FLOWUI_INSTALL_RESOURCE_DIRECTORY}")
+    install(FILES cmake/FlowUiResources.cmake cmake/FlowUiCopyResources.cmake cmake/FlowUiCopyRuntime.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
     install(FILES external/clay.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/external)
     install(FILES
         "${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/BuildConfig.hpp"
@@ -642,6 +735,7 @@ if(FLOWUI_INSTALL)
         ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FlowUiConfig.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/FlowUiConfig.cmake
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi
+        PATH_VARS FLOWUI_INSTALL_RESOURCE_DIRECTORY
     )
 
     write_basic_package_version_file(

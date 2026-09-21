@@ -140,6 +140,12 @@ struct IconManager {
 	 */
 	Result<bool> registerFromFile(std::string_view key, std::string_view filePath);
 	Result<bool> registerFromFile(ResourceKey key, std::string_view filePath);
+	/** Load SVG source through a native filesystem path. */
+	[[nodiscard]] Result<bool> register_file(ResourceKey key, const std::filesystem::path& file_path);
+	/** Load SVG source through a native filesystem path under a string key. */
+	[[nodiscard]] Result<bool> register_file(std::string_view key, const std::filesystem::path& file_path) {
+		return register_file(ResourceKey{.name = key}, file_path);
+	}
 
 	/**
 	 * @brief Remove a registered SVG document by key.
@@ -371,6 +377,14 @@ struct IconManager {
 	}
 	Result<bool> registerFromFile(ResourceKey key, std::string_view filePath) {
 		return registerFromFile(key.name, filePath);
+	}
+	/** Report unavailable SVG support for a native file path. */
+	[[nodiscard]] Result<bool> register_file(ResourceKey key, const std::filesystem::path& file_path) {
+		return registerFromFile(key, path_to_utf8(file_path));
+	}
+	/** Report unavailable SVG support for a native file path under a string key. */
+	[[nodiscard]] Result<bool> register_file(std::string_view key, const std::filesystem::path& file_path) {
+		return register_file(ResourceKey{.name = key}, file_path);
 	}
 
 	/**

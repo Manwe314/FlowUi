@@ -1,3 +1,4 @@
+#include "../Utf8Paths.hpp"
 #include "CppCodeGenerator.hpp"
 
 #include <algorithm>
@@ -42,15 +43,15 @@ bool writeIfChanged(const std::filesystem::path& path, const std::string& conten
 				std::error_code touchError;
 				std::filesystem::last_write_time(
 					path, std::filesystem::file_time_type::clock::now(), touchError);
-				if (touchError) { error = "cannot update generated file timestamp: " + path.string(); return false; }
+				if (touchError) { error = "cannot update generated file timestamp: " + flowui::tools::utf8_text(path); return false; }
 				return true;
 			}
 		}
 	}
 	std::ofstream output(path, std::ios::binary | std::ios::trunc);
-	if (!output) { error = "cannot write generated file: " + path.string(); return false; }
+	if (!output) { error = "cannot write generated file: " + flowui::tools::utf8_text(path); return false; }
 	output.write(contents.data(), static_cast<std::streamsize>(contents.size()));
-	if (!output) { error = "failed while writing generated file: " + path.string(); return false; }
+	if (!output) { error = "failed while writing generated file: " + flowui::tools::utf8_text(path); return false; }
 	return true;
 }
 

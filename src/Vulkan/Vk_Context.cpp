@@ -1,4 +1,5 @@
 #include "Vulkan/Vk_Context.hpp"
+#include "internal/AgenticDebug/FrameCapture.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -209,6 +210,12 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	};
 
 	VkInstanceCreateFlags createFlags = 0;
+	surfaceMaintenanceEnabled = hasExtension("VK_EXT_surface_maintenance1", availableExts) &&
+		hasExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, availableExts);
+	if (surfaceMaintenanceEnabled) {
+		appendUnique(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
+		appendUnique("VK_EXT_surface_maintenance1");
+	}
 
 	if (enableDebugUtils) {
 		if (hasExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, availableExts)) {
@@ -432,7 +439,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	if (enableMemoryBudget) deviceExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 #endif
 	const bool hasSwapchainMaintenance1 =
-		deviceHasExtension(phys, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+		surfaceMaintenanceEnabled && deviceHasExtension(phys, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
 	const bool hasPresentId = deviceHasExtension(phys, VK_KHR_PRESENT_ID_EXTENSION_NAME);
 	const bool hasPresentWait = deviceHasExtension(phys, VK_KHR_PRESENT_WAIT_EXTENSION_NAME);
 #ifdef VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
@@ -579,6 +586,9 @@ VkResult VulkanContext::waitForPresent(
 
 void VulkanContext::destroy() {
 	if (device != VK_NULL_HANDLE) {
+#if defined(AgenticDebug) && AgenticDebug
+		FlowUi::agentic_debug::release_device(*this);
+#endif
 		if (allocator) {
 			vmaDestroyAllocator(allocator);
 			allocator = nullptr;
@@ -601,6 +611,7 @@ void VulkanContext::destroy() {
 	}
 
 	phys = VK_NULL_HANDLE;
+	surfaceMaintenanceEnabled = false;
 #if FLOW_UI_DEV_MODE
 	devGpuTimingRequested = true;
 	synchronization2Enabled = false;

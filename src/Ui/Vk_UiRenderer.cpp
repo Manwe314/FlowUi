@@ -141,7 +141,7 @@ static void vkCheck(VkResult result, FlowUi::ErrorSite site) {
 	}
 }
 
-static std::vector<char> readFile(const std::string& path) {
+static std::vector<char> readFile(const std::filesystem::path& path) {
 	std::ifstream file(path, std::ios::ate | std::ios::binary);
 	if (!file) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable, FlowUi::ErrorSite::RendererLoadShader));
@@ -164,20 +164,10 @@ static std::vector<char> readFile(const std::string& path) {
 	return buffer;
 }
 
-static std::vector<char> readShaderFile(const char* fileName) {
-	const std::string relativePath = std::string("shaders/") + fileName;
-#if defined(FLOWUI_SHADER_OUTPUT_DIR)
-	const std::string configuredPath = std::string(FLOWUI_SHADER_OUTPUT_DIR) + "/" + fileName;
-	if (std::filesystem::exists(configuredPath)) {
-		return readFile(configuredPath);
-	}
-#endif
-	if (std::filesystem::exists(relativePath)) {
-		return readFile(relativePath);
-	}
-
-	(void)fileName;
-	throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable, FlowUi::ErrorSite::RendererLoadShader));
+static std::vector<char> readShaderFile(const char* fileName, const FlowUi::ResourceConfig& resources) {
+	const auto path = FlowUi::locate_resource(std::filesystem::path("shaders") / fileName, resources);
+	if (!path) throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ShaderUnavailable, FlowUi::ErrorSite::RendererLoadShader));
+	return readFile(*path);
 }
 
 static VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code) {
@@ -819,13 +809,13 @@ static VkPipeline createGraphicsPipeline(
 	VkFormat format,
 	const char* vertexFile,
 	const char* fragmentFile,
-	bool requiresUvVertexAttribute) {
+	bool requiresUvVertexAttribute, const FlowUi::ResourceConfig& resources) {
 	if (format == VK_FORMAT_UNDEFINED) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::RendererConfigurationInvalid, FlowUi::ErrorSite::RendererPublishPipeline));
 	}
 
-	const std::vector<char> vertexCode = readShaderFile(vertexFile);
-	const std::vector<char> fragmentCode = readShaderFile(fragmentFile);
+	const std::vector<char> vertexCode = readShaderFile(vertexFile, resources);
+	const std::vector<char> fragmentCode = readShaderFile(fragmentFile, resources);
 	VkShaderModule vertexModule = createShaderModule(device, vertexCode);
 	VkShaderModule fragmentModule = createShaderModule(device, fragmentCode);
 
@@ -974,28 +964,28 @@ static void DestroyPipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipel
 	}
 }
 
-static void CreatePipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines_, VkFormat format) {
+static void CreatePipelines(VkDevice device, VulkanUiRenderer::Pipelines& pipelines_, VkFormat format, const FlowUi::ResourceConfig& resources) {
 	pipelines_.solid = createGraphicsPipeline(
 		device,
 		pipelines_.layout,
 		format,
 		kUiSolidVertexShaderFile,
 		kUiSolidFragmentShaderFile,
-		false);
+		false, resources);
 	pipelines_.msdf = createGraphicsPipeline(
 		device,
 		pipelines_.layout,
 		format,
 		kUiMsdfVertexShaderFile,
 		kUiMsdfFragmentShaderFile,
-		true);
+		true, resources);
 	pipelines_.textured = createGraphicsPipeline(
 		device,
 		pipelines_.layout,
 		format,
 		kUiTexturedVertexShaderFile,
 		kUiTexturedFragmentShaderFile,
-		true);
+		true, resources);
 }
 
 static void DestroyPipelineObjects(VkDevice device, VulkanUiRenderer::Pipelines& pipelines_) {
@@ -1139,7 +1129,7 @@ static void CreatePipelineObjects(VkDevice device, VulkanUiRenderer& renderer) {
 		FlowUi::detail::terminateForFatalError(
 			FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererPublishPipeline));
 	}
-	CreatePipelines(device, renderer.pipelines_, renderer.targetFormat_);
+	CreatePipelines(device, renderer.pipelines_, renderer.targetFormat_, renderer.resources_);
 }
 
 static void UpdateInstanceBufferDescriptorForFrame(const VulkanUiRenderer& renderer, VkDevice device, uint32_t frameSlot) {
@@ -1503,7 +1493,7 @@ void VulkanUiRenderer::init(
 	const SharedUiByteResources& sharedResources,
 	uint64_t initialInstanceBytes,
 	uint32_t textureDescriptorCapacity,
-	bool allowInstanceGrowth) {
+	bool allowInstanceGrowth, const FlowUi::ResourceConfig& resources) {
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::RendererInitialize));
 	}
@@ -1514,6 +1504,7 @@ void VulkanUiRenderer::init(
 	destroy(vk, storageSystem);
 
 	try {
+		resources_ = resources;
 		storage_ = &storageSystem;
 		windowId_ = windowId;
 		sharedByteResources_ = &sharedResources;
@@ -1758,7 +1749,7 @@ void VulkanUiRenderer::onSwapchainFormatChanged(
 		Pipelines candidate{};
 		candidate.layout = pipelines_.layout;
 		try {
-			CreatePipelines(vk.device, candidate, newFormat);
+			CreatePipelines(vk.device, candidate, newFormat, resources_);
 		} catch (...) {
 			DestroyPipelines(vk.device, candidate);
 			throw;

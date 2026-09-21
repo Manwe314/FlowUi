@@ -1,3 +1,4 @@
+#include "../Utf8Paths.hpp"
 #include "ManifestParser.hpp"
 
 #include <charconv>
@@ -105,7 +106,7 @@ bool safeExpression(std::string_view value) {
 
 bool parseManifest(const std::filesystem::path& path, Manifest& output, std::string& error) {
 	std::ifstream input(path, std::ios::binary);
-	if (!input) { error = "cannot open manifest: " + path.string(); return false; }
+	if (!input) { error = "cannot open manifest: " + flowui::tools::utf8_text(path); return false; }
 	const std::string contents((std::istreambuf_iterator<char>(input)), {});
 	JsonValue root;
 	if (!Parser(contents).parse(root) || root.kind != JsonValue::Kind::Object) { error = "manifest is not valid JSON"; return false; }

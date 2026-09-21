@@ -1,4 +1,5 @@
 #include "Vulkan/Vk_Swapchain.hpp"
+#include "internal/AgenticDebug/FrameCapture.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -197,6 +198,12 @@ void Swapchain::create(
 	createInfo.imageExtent = chosenExtent;
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+#if defined(AgenticDebug) && AgenticDebug
+	if (FlowUi::agentic_debug::requested() &&
+		(caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0u) {
+		createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	}
+#endif
 	createInfo.imageSharingMode = useConcurrent ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
 	createInfo.queueFamilyIndexCount = useConcurrent ? 2u : 0u;
 	createInfo.pQueueFamilyIndices = useConcurrent ? queueFamilyIndices : nullptr;

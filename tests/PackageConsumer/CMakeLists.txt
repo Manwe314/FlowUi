@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.25)
+project(FlowUiPackageConsumer LANGUAGES CXX)
+find_package(FlowUi CONFIG REQUIRED)
+add_executable(flowui_package_consumer main.cpp)
+target_link_libraries(flowui_package_consumer PRIVATE FlowUi::FlowUi)
+flowui_package_resources(flowui_package_consumer)
+enable_testing()
+add_test(NAME flowui.package.consumer COMMAND flowui_package_consumer)

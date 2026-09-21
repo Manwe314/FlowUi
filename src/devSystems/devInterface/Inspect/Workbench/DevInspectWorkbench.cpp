@@ -2814,6 +2814,8 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 	container.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 
 	CLAY(context.clayID(), container) {
+		// Fallback returns must leave the Clay scope through its closing step.
+		[&]() {
 #if !FLOW_UI_DEV_CAPTURE_CLAY
 		Clay_ElementDeclaration fallback{};
 		fallback.layout.sizing = {
@@ -3023,6 +3025,7 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 			}
 		}
 #endif
+		}();
 	}
 }
 

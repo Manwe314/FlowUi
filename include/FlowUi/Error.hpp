@@ -415,6 +415,9 @@ enum class ErrorSite : std::uint16_t {
 	FontRemoveFamily = 0x1008,
 	FontManagerShutdown = 0x1009,
 
+	ResourceLocate = 0x1401,
+	ResourceReadFile = 0x1402,
+
 	IconManagerInitialize = 0x1101,
 	IconRegisterSource = 0x1102,
 	IconParseSource = 0x1103,
@@ -683,6 +686,8 @@ struct ErrorSiteDescriptor {
 	FLOWUI_ERROR_SITE_CASE(FontLookupFamily, Font);
 	FLOWUI_ERROR_SITE_CASE(FontRemoveFamily, Font);
 	FLOWUI_ERROR_SITE_CASE(FontManagerShutdown, None);
+	FLOWUI_ERROR_SITE_CASE(ResourceLocate, Resource);
+	FLOWUI_ERROR_SITE_CASE(ResourceReadFile, Resource);
 
 	FLOWUI_ERROR_SITE_CASE(IconManagerInitialize, None);
 	FLOWUI_ERROR_SITE_CASE(IconRegisterSource, Icon);

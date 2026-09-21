@@ -1,3 +1,6 @@
+#include "../Utf8Main.hpp"
+#include <fstream>
+#include <limits>
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -185,14 +188,14 @@ bool parseArgs(int argc, char **argv, Options &options, std::string &error) {
 }
 
 bool prepareOutputPath(const std::string &outputPath, std::string &error) {
-    const std::filesystem::path outPath(outputPath);
+    const auto outPath = flowui::tools::utf8_path(outputPath);
     if (!outPath.has_parent_path())
         return true;
 
     std::error_code ec;
     std::filesystem::create_directories(outPath.parent_path(), ec);
     if (ec) {
-        error = "Failed to create output directory: " + outPath.parent_path().string() + " (" + ec.message() + ")";
+        error = "Failed to create output directory: " + flowui::tools::utf8_text(outPath.parent_path()) + " (" + ec.message() + ")";
         return false;
     }
     return true;
@@ -254,8 +257,14 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    std::ifstream input(flowui::tools::utf8_path(options.inputPath), std::ios::binary);
+    std::vector<unsigned char> font_bytes{std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
+    if (font_bytes.empty() || font_bytes.size() > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        std::cerr << "Error: Could not read font input\n";
+        return 1;
+    }
     FontGuard font;
-    font.handle = msdfgen::loadFont(freetype.handle, options.inputPath.c_str());
+    font.handle = msdfgen::loadFontData(freetype.handle, font_bytes.data(), static_cast<int>(font_bytes.size()));
     if (!font.handle) {
         std::cerr << "Error: Failed to load font file: " << options.inputPath << '\n';
         return 1;

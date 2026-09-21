@@ -359,7 +359,13 @@ typedef struct Clay_LayoutConfig {
 
 CLAY__WRAPPER_STRUCT(Clay_LayoutConfig);
 
-extern Clay_LayoutConfig CLAY_LAYOUT_DEFAULT;
+// FlowUi's shared build exports functions automatically; public data needs an import declaration.
+#if defined(_WIN32) && defined(FLOWUI_SHARED_LIBRARY) && !defined(flowui_EXPORTS) && !defined(CLAY_IMPLEMENTATION)
+#define CLAY_DATA_IMPORT __declspec(dllimport)
+#else
+#define CLAY_DATA_IMPORT
+#endif
+extern CLAY_DATA_IMPORT Clay_LayoutConfig CLAY_LAYOUT_DEFAULT;
 
 // Controls how text "wraps", that is how it is broken into multiple lines when there is insufficient horizontal space.
 typedef CLAY_PACKED_ENUM {
@@ -1043,8 +1049,8 @@ CLAY_DLL_EXPORT Clay_ElementId Clay__HashString(Clay_String key, uint32_t seed);
 CLAY_DLL_EXPORT Clay_ElementId Clay__HashStringWithOffset(Clay_String key, uint32_t offset, uint32_t seed);
 CLAY_DLL_EXPORT void Clay__OpenTextElement(Clay_String text, Clay_TextElementConfig textConfig);
 
-extern Clay_Color Clay__debugViewHighlightColor;
-extern uint32_t Clay__debugViewWidth;
+extern CLAY_DATA_IMPORT Clay_Color Clay__debugViewHighlightColor;
+extern CLAY_DATA_IMPORT uint32_t Clay__debugViewWidth;
 
 #ifdef __cplusplus
 }
@@ -2251,7 +2257,9 @@ void Clay__InitializePersistentMemory(Clay_Context* context) {
     int32_t maxMeasureTextCacheWordCount = context->maxMeasureTextCacheWordCount;
     Clay_Arena *arena = &context->internalArena;
 
-    context->scrollContainerDatas = Clay__ScrollContainerDataInternalArray_Allocate_Arena(100, arena);
+    // Every clipped element uses a scroll record, including clip-only controls.
+    // Dense developer panels must not exhaust an unrelated fixed 100-slot limit.
+    context->scrollContainerDatas = Clay__ScrollContainerDataInternalArray_Allocate_Arena(maxElementCount, arena);
     context->transitionDatas = Clay__TransitionDataInternalArray_Allocate_Arena(200, arena);
     context->layoutElementsHashMapInternal = Clay__LayoutElementHashMapItemArray_Allocate_Arena(maxElementCount, arena);
     context->layoutElementsHashMap = Clay__int32_tArray_Allocate_Arena(maxElementCount, arena);

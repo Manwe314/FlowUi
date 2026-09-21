@@ -18,6 +18,7 @@
 #include "managers/UiManager.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
+#include "internal/AgenticDebug/FrameCapture.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
@@ -926,7 +927,14 @@ struct App::Impl {
 	void initializeDefaultFont() {
 		bool defaultFontLoaded = false;
 		{
-			auto created = fonts.createFamily(config.ui.defaultFontFamily);
+			auto default_family = config.ui.defaultFontFamily;
+			for (auto& face : default_family.faces) {
+				if (face.path == "assets/fonts/Inter.arfont" || face.path.empty()) {
+					const auto path = locate_resource("fonts/Inter.arfont", config.resources);
+					face.path = path ? *path : std::filesystem::path{};
+				}
+			}
+			auto created = fonts.createFamily(default_family);
 			if (created) {
 				const FontManager::FontId defaultFontId = fonts.resolveFont(*created);
 				defaultFontLoaded = fonts.getFontById(defaultFontId) != nullptr;
@@ -934,7 +942,8 @@ struct App::Impl {
 		}
 		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr &&
 			config.errors.policy.defaultFont == DefaultFontFailurePolicy::FailAppImmediately) {
-			throw FlowUiException(makeError(ErrorCode::DefaultFontUnavailable, ErrorSite::FontManagerInitialize));
+			throw FlowUiException(
+				makeError(ErrorCode::DefaultFontUnavailable, ErrorSite::FontManagerInitialize));
 		}
 
 		if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
@@ -947,34 +956,30 @@ struct App::Impl {
 				(void)fonts.createFamily(fallbackFamily);
 			}
 
-			const std::array<std::filesystem::path, 5> fallbackCandidates = {
-				std::filesystem::path(FLOWUI_SOURCE_DIR) / "assets/fonts/FacultyGlyphic-Regular.arfont",
-				std::filesystem::path(FLOWUI_SOURCE_DIR) / "external/msdf-atlas-gen/artery-font-format/example.arfont",
-				std::filesystem::path("assets/fonts/FacultyGlyphic-Regular.arfont"),
-				std::filesystem::path("external/assets/fonts/FacultyGlyphic-Regular.arfont"),
-				std::filesystem::path("external/external/msdf-atlas-gen/artery-font-format/example.arfont"),
-			};
+			const auto packaged_font = locate_resource("fonts/Inter.arfont", config.resources);
+			const std::array<std::filesystem::path, 1> fallbackCandidates{
+				packaged_font ? *packaged_font : std::filesystem::path{}};
 
 			for (const auto& fallbackPath : fallbackCandidates) {
-				if (!std::filesystem::is_regular_file(fallbackPath)) continue;
+				if (!std::filesystem::is_regular_file(fallbackPath))
+					continue;
 				FontFaceCreateInfo fallbackFace{};
-					fallbackFace.path = fallbackPath;
-					fallbackFace.pixelSize = config.ui.defaultFontFamily.faces.empty()
-						? 18.0f
-						: config.ui.defaultFontFamily.faces.front().pixelSize;
-					auto added = fonts.addFamilyFace(fallbackFamilyName, fallbackFace);
-					if (!added) {
-						continue;
-					}
-					detail::reportErrorEvent(ErrorEventView{
-						.error = makeError(
-							ErrorCode::DefaultFontUnavailable,
-							ErrorSite::FontManagerInitialize),
-						.kind = ErrorEventKind::Resolved,
-						.resolution = ErrorResolution::UsedFallback,
-					});
-					defaultFontLoaded = true;
-					break;
+				fallbackFace.path = fallbackPath;
+				fallbackFace.pixelSize = config.ui.defaultFontFamily.faces.empty()
+											 ? 18.0f
+											 : config.ui.defaultFontFamily.faces.front().pixelSize;
+				auto added = fonts.addFamilyFace(fallbackFamilyName, fallbackFace);
+				if (!added) {
+					continue;
+				}
+				detail::reportErrorEvent(ErrorEventView{
+					.error = makeError(ErrorCode::DefaultFontUnavailable,
+									   ErrorSite::FontManagerInitialize),
+					.kind = ErrorEventKind::Resolved,
+					.resolution = ErrorResolution::UsedFallback,
+				});
+				defaultFontLoaded = true;
+				break;
 			}
 		}
 
@@ -1118,7 +1123,7 @@ struct App::Impl {
 			sharedUiByteResources,
 			storageConfig.initialInstanceBytesPerFrame,
 			mainPointer->config.uiTextureDescriptorCapacity,
-			config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget);
+			config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget, config.resources);
 		imagesInitialized = true;
 		imageManager.init(*storageSystem, config.errors.policy.missingImage);
 		mainPointer->viewPorts.init(
@@ -1297,7 +1302,7 @@ struct App::Impl {
 				sharedUiByteResources,
 				storageConfig.initialInstanceBytesPerFrame,
 				pending->config.uiTextureDescriptorCapacity,
-				config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget);
+				config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget, config.resources);
 			pending->viewPorts.init(
 				*storageSystem, vk, id, pending->config.vulkan.framesInFlight,
 				config.errors.policy.missingViewport);
@@ -1522,6 +1527,9 @@ struct App::Impl {
 			}
 
 			const uint32_t frameSlot = window.frames.currentFrame;
+#if defined(AgenticDebug) && AgenticDebug
+			agentic_debug::complete_slot(vk, window.id, frameSlot);
+#endif
 			{
 #if FLOW_UI_DEV_MODE
 				FLOWUI_DEV_TIMING_ZONE_BALANCED(
@@ -1968,6 +1976,13 @@ struct App::Impl {
 			, &timingRecorder(), &gpuTiming
 #endif
 		);
+#if defined(AgenticDebug) && AgenticDebug
+		if (agentic_debug::requested() && agentic_debug::supports_surface(vk, window.surface)) {
+			agentic_debug::record(vk, frame.cmd, window.swapchain.swapchain.images[swapchainImageIndex],
+				window.swapchain.swapchain.extent, window.swapchain.swapchain.format,
+				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, window.id, window.frames.currentFrame, "window");
+		}
+#endif
 
 		{
 #if FLOW_UI_DEV_MODE
@@ -2007,6 +2022,9 @@ struct App::Impl {
 #endif
 			vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
 				ErrorSite::AppSubmitFrame);
+#if defined(AgenticDebug) && AgenticDebug
+			agentic_debug::mark_submitted(vk, window.id, window.frames.currentFrame);
+#endif
 			frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().markSubmitted(
@@ -2209,6 +2227,9 @@ struct App::Impl {
 		drainWindowGraphics(window);
 		collectRetiredSwapchains(window);
 		window.swapchain.waitForPresentCompletion(vk);
+#if defined(AgenticDebug) && AgenticDebug
+		agentic_debug::release_window(vk, id);
+#endif
 		window.renderer.destroy(vk, *storageSystem, window.lastSubmissionSerial);
 		window.viewPorts.destroyDrained(vk);
 		window.frames.destroy(vk);
@@ -2249,6 +2270,9 @@ struct App::Impl {
 		if (vk.device != VK_NULL_HANDLE) {
 			(void)vkDeviceWaitIdle(vk.device);
 			try { completeAllSubmissionsAfterIdle(); } catch (...) {}
+#if defined(AgenticDebug) && AgenticDebug
+			agentic_debug::release_device(vk);
+#endif
 		}
 		for (auto& [_, window] : windows) {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2

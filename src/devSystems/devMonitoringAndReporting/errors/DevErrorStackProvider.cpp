@@ -1,8 +1,13 @@
 #include "devSystems/devMonitoringAndReporting/errors/DevErrorStackProvider.hpp"
 
 #if FLOW_UI_DEV_MODE
+#include <algorithm>
 
-#if __has_include(<unwind.h>)
+#if defined(_WIN32)
+#define NOMINMAX
+#include <windows.h>
+#define FLOWUI_HAS_UNWIND_STACK_CAPTURE 0
+#elif __has_include(<unwind.h>)
 #include <unwind.h>
 #define FLOWUI_HAS_UNWIND_STACK_CAPTURE 1
 #else
@@ -56,7 +61,14 @@ DevErrorRawStackCapture PlatformDevErrorStackProvider::capture(
 		.moduleIdentity = hashText("flowui.current_process"),
 		.buildIdentity = hashText(__DATE__ " " __TIME__),
 	};
-#if FLOWUI_HAS_UNWIND_STACK_CAPTURE
+#if defined(_WIN32)
+	if (destination.empty()) return result;
+	const auto capacity = static_cast<DWORD>(std::min<size_t>(destination.size(), 62u));
+	result.frameCount = CaptureStackBackTrace(framesToSkip + 1u, capacity,
+		reinterpret_cast<void**>(destination.data()), nullptr);
+	result.status = result.frameCount == 0u ? DevErrorStackStatus::Unavailable :
+		(result.frameCount == capacity ? DevErrorStackStatus::Truncated : DevErrorStackStatus::Available);
+#elif FLOWUI_HAS_UNWIND_STACK_CAPTURE
 	if (destination.empty()) return result;
 	UnwindCaptureState state{.destination = destination, .skip = framesToSkip};
 	(void)_Unwind_Backtrace(&unwindCallback, &state);

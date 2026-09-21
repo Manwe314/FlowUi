@@ -1,3 +1,5 @@
+#include "FlowUi/Resources.hpp"
+#include <fstream>
 #include "managers/FontManager.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
@@ -148,7 +150,7 @@ std::string toLowerAscii(std::string text) {
 }
 
 bool isArfontPath(const std::filesystem::path& path) {
-	return toLowerAscii(path.extension().string()) == ".arfont";
+	return toLowerAscii(path_to_utf8(path.extension())) == ".arfont";
 }
 
 bool supportsImageEncoding(artery_font::ImageEncoding encoding) {
@@ -544,16 +546,16 @@ FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createIn
 		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty, ErrorSite::FontLoad));
 	}
 	if (isArfontPath(createInfo.path)) {
-		return registerBakedFont(createInfo.path.string(), createInfo.name);
+		return registerBakedFont(createInfo.path, createInfo.name);
 	}
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
 	return registerRuntimeFont(createInfo);
 #else
-	return loadFont(createInfo.path.string(), createInfo.pixelSize);
+	return loadFont(createInfo.path, createInfo.pixelSize);
 #endif
 }
 
-FontManager::FontId FontManager::loadFont(std::string_view path, float px) {
+FontManager::FontId FontManager::loadFont(const std::filesystem::path& path, float px) {
 	(void)px;
 	if (!controller_) {
 		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontLoad));
@@ -621,9 +623,10 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		throw FlowUiException(makeError(ErrorCode::FontBakeUnavailable, ErrorSite::FontBake));
 	}
 
+	const auto font_bytes = read_file_bytes(createInfo.path);
+	if (!font_bytes || font_bytes->size() > static_cast<size_t>(std::numeric_limits<int>::max())) throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontLoad));
 	FontGuard font{};
-	const std::string pathString = createInfo.path.string();
-	font.handle = msdfgen::loadFont(freetype.handle, pathString.c_str());
+	font.handle = msdfgen::loadFontData(freetype.handle, font_bytes->data(), static_cast<int>(font_bytes->size()));
 	if (!font.handle) {
 		throw FlowUiException(makeError(ErrorCode::AssetOpenFailed, ErrorSite::FontBake));
 	}
@@ -729,7 +732,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 	variant.lineHeight = static_cast<float>(metrics.lineHeight);
 	variant.underlineY = static_cast<float>(metrics.underlineY);
 	variant.underlineThickness = static_cast<float>(metrics.underlineThickness);
-	variant.name = createInfo.name.empty() ? createInfo.path.stem().string() : createInfo.name;
+	variant.name = createInfo.name.empty() ? path_to_utf8(createInfo.path.stem()) : createInfo.name;
 	variant.metadata = "runtime-msdf";
 	variant.glyphs.reserve(glyphs.size());
 
@@ -813,7 +816,7 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 #endif
 }
 
-FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, std::string_view requestedName) {
+FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& arfontPath, std::string_view requestedName) {
 	if (!controller_) {
 		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontParse));
 	}
@@ -830,8 +833,12 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	}
 
 	artery_font::StdArteryFont<float> arteryFont{};
-	const std::string pathString = path.string();
-	if (!artery_font::readFile(arteryFont, pathString.c_str())) {
+	std::ifstream input(path, std::ios::binary);
+	if (!input || !artery_font::decode<+[](void* destination, int length, void* user) -> int {
+		auto& stream = *static_cast<std::ifstream*>(user);
+		stream.read(static_cast<char*>(destination), length);
+		return static_cast<int>(stream.gcount());
+	}>(arteryFont, &input)) {
 		throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontParse));
 	}
 	if (arteryFont.variants.length() <= 0) {
@@ -964,7 +971,7 @@ FontManager::FontId FontManager::registerBakedFont(std::string_view arfontPath, 
 	} else if (!fontFace.variants.empty() && !fontFace.variants[0].name.empty()) {
 		preferredName = fontFace.variants[0].name;
 	} else {
-		preferredName = path.stem().string();
+		preferredName = path_to_utf8(path.stem());
 	}
 	fontFace.name = makeUniqueFontName(preferredName, controller_->fontIdByName);
 

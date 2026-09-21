@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "Vulkan/Vk_Context.hpp"
+#include "internal/AgenticDebug/FrameCapture.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include "internal/ManagerStorage/ViewportStorageController.hpp"
@@ -556,6 +557,10 @@ void ViewPortManager::recordFramePasses(
 		vkCmdEndRendering(primary);
 		transitionViewportImageLayout(primary, image.nativeImage, image.layout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		image.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+#if defined(AgenticDebug) && AgenticDebug
+		agentic_debug::record(vk, primary, image.nativeImage, {image.width, image.height},
+			record.state.colorFormat, image.layout, windowId_, slot, "viewport", key);
+#endif
 	}
 }
 

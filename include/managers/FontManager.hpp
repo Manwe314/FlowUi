@@ -356,8 +356,8 @@ private:
 		const detail::storage::FrameToken& frame) const;
 
 	FontId loadFontFace(const FontFaceCreateInfo& createInfo);
-	FontId loadFont(std::string_view path, float px);
-	FontId registerBakedFont(std::string_view arfontPath, std::string_view requestedName = {});
+	FontId loadFont(const std::filesystem::path& path, float px);
+	FontId registerBakedFont(const std::filesystem::path& arfontPath, std::string_view requestedName = {});
 	FontId registerRuntimeFont(const FontFaceCreateInfo& createInfo);
 
 	detail::storage::IStorageSystem* storage_ = nullptr;
