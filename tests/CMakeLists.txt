@@ -1,3 +1,8 @@
+add_executable(flowui_resource_tests ResourceTests.cpp)
+target_link_libraries(flowui_resource_tests PRIVATE FlowUi::FlowUi)
+target_compile_definitions(flowui_resource_tests PRIVATE FLOWUI_TEST_RESOURCE_SUBDIRECTORY="${FLOWUI_RESOURCE_SUBDIRECTORY}")
+add_test(NAME flowui.resources COMMAND flowui_resource_tests)
+
 add_executable(flowui_storage_types_tests
     StorageTests/StorageTypesTests.cpp
 )
@@ -609,6 +614,7 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 	# Interactive showcase: built with the tests, but deliberately not registered
 	# with CTest because it runs until its window is closed.
 	add_executable(flowui_fsel_demo demo/main.cpp)
+	flowui_package_resources(flowui_fsel_demo)
 	target_compile_features(flowui_fsel_demo PRIVATE cxx_std_23)
 	target_link_libraries(flowui_fsel_demo PRIVATE FlowUi::FlowUi)
 endif()
@@ -856,6 +862,24 @@ set_tests_properties(flowui.phase4.two_window PROPERTIES
 	TIMEOUT 60
 )
 
+if(AgenticDebug)
+	add_executable(flowui_agentic_capture_tests
+		RendererTests/AgenticFrameCaptureTests.cpp
+		HeadlessVulkanFixture.cpp
+	)
+	target_compile_features(flowui_agentic_capture_tests PRIVATE cxx_std_23)
+	target_compile_definitions(flowui_agentic_capture_tests PRIVATE AgenticDebug=1)
+	target_include_directories(flowui_agentic_capture_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(flowui_agentic_capture_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+	add_test(NAME flowui.agentic.capture COMMAND flowui_agentic_capture_tests)
+	set_tests_properties(flowui.agentic.capture PROPERTIES
+		ENVIRONMENT "FLOWUI_AGENTIC_DEBUG_DIR=${CMAKE_CURRENT_BINARY_DIR}/agentic-captures;FLOWUI_AGENTIC_DEBUG_START_FRAME=0;FLOWUI_AGENTIC_DEBUG_FRAME_COUNT=8"
+		LABELS "flowui;agentic;integration;vulkan"
+		SKIP_RETURN_CODE 77
+		TIMEOUT 60
+	)
+endif()
+
 add_executable(flowui_storage_system_tests
     StorageTests/FlowStorageSystemTests.cpp
     HeadlessVulkanFixture.cpp
@@ -1008,3 +1032,16 @@ set_tests_properties(flowui.themes.manager PROPERTIES
     SKIP_RETURN_CODE 77
     TIMEOUT 60
 )
+
+add_executable(flowui_dev_inspect_scroll_tests DevSystemsTests/DevInspectScrollTests.cpp)
+target_compile_features(flowui_dev_inspect_scroll_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_dev_inspect_scroll_tests PRIVATE ${PROJECT_SOURCE_DIR}/external)
+add_test(NAME flowui.dev.inspect_scroll COMMAND flowui_dev_inspect_scroll_tests)
+
+if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
+    add_executable(flowui_dev_inspect_subtree_tests DevSystemsTests/DevInspectSubtreeTests.cpp)
+    target_compile_features(flowui_dev_inspect_subtree_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_inspect_subtree_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.inspect_subtree COMMAND flowui_dev_inspect_subtree_tests)
+    set_tests_properties(flowui.dev.inspect_subtree PROPERTIES TIMEOUT 30)
+endif()

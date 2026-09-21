@@ -56,9 +56,11 @@ void DevInspectInspector::buildElement(BuildContext& context) {
 	}
 
 	Clay_ElementDeclaration root{};
+	// The column clips overflow, so GROW would expand to the content size.
+	// Bound the panel to the column so its inner scroll region can overflow.
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
+		.height = CLAY_SIZING_PERCENT(1),
 	};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth1Panel;

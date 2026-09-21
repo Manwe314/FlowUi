@@ -2556,7 +2556,8 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 		storageError(ErrorCode::StorageGenerationExhausted, ErrorSite::StorageBeginFrame);
 	}
 	frame.epoch = impl_->nextFrameEpoch++;
-	frame.currentBindingBatch = 0;
+	// Keep batch identities distinct across reuse of this frame slot: its
+	// preparedBindingBatches markers persist alongside the applied revisions.
 	frame.active = true;
 	frame.sealed = false;
 #if FLOW_UI_DEV_MODE

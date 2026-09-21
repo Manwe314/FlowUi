@@ -47,6 +47,7 @@ struct VulkanContext {
 	VkQueue presentQ  = VK_NULL_HANDLE;
 	WsiRetirementMode wsiRetirementMode = WsiRetirementMode::LegacyDeviceIdle;
 	PFN_vkWaitForPresentKHR waitForPresentKHR = nullptr;
+	bool surfaceMaintenanceEnabled = false;
 #if FLOW_UI_DEV_MODE
 	bool devGpuTimingRequested = true;
 	bool devGpuMemoryRequested = true;

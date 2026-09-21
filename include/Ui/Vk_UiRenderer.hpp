@@ -187,6 +187,7 @@ struct VulkanUiRenderer {
 	uint64_t initialInstanceBytes_ = 1024u * 1024u;
 	bool allowInstanceGrowth_ = true;
 
+	FlowUi::ResourceConfig resources_{};
 	VkFormat targetFormat_ = VK_FORMAT_UNDEFINED;
 	uint32_t maxUiImageDescriptors_ = 256;
 	uint32_t frameResourceCount_ = 1u;
@@ -204,7 +205,8 @@ struct VulkanUiRenderer {
 		const SharedUiByteResources& sharedResources,
 		uint64_t initialInstanceBytes,
 		uint32_t textureDescriptorCapacity,
-		bool allowInstanceGrowth);
+		bool allowInstanceGrowth,
+		const FlowUi::ResourceConfig& resources = {});
 	void destroy(
 		VulkanContext& vk,
 		FlowUi::detail::storage::IStorageSystem& storage,

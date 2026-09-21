@@ -8,6 +8,7 @@
 
 #include "CppCodeGenerator.hpp"
 #include "ManifestParser.hpp"
+#include "../Utf8Main.hpp"
 
 namespace {
 
@@ -41,9 +42,9 @@ int main(int argc, char** argv) {
 		if ((argument == "--manifest" || argument == "--output-dir" || argument == "--schema-header") && index + 1 >= argc) {
 			usage(); return 2;
 		}
-		if (argument == "--manifest") manifestPath = argv[++index];
-		else if (argument == "--output-dir") outputDirectory = argv[++index];
-		else if (argument == "--schema-header") schemaHeader = argv[++index];
+		if (argument == "--manifest") manifestPath = flowui::tools::utf8_path(argv[++index]);
+		else if (argument == "--output-dir") outputDirectory = flowui::tools::utf8_path(argv[++index]);
+		else if (argument == "--schema-header") schemaHeader = flowui::tools::utf8_path(argv[++index]);
 		else { std::cerr << "unknown argument: " << argument << '\n'; usage(); return 2; }
 	}
 	if (manifestPath.empty() || outputDirectory.empty()) { usage(); return 2; }

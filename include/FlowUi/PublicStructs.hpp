@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include "FlowUi/Resources.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <cstdint>
@@ -752,6 +753,8 @@ struct DevToolsConfig {
  * app startup.
  */
 struct AppConfig {
+	/** Packaged shader/font and application resource lookup policy. */
+	ResourceConfig resources{};
 	/**
 	 * @brief Initial native-window configuration for the semantic main window.
 	 *

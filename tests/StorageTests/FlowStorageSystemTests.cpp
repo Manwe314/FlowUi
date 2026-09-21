@@ -16,6 +16,7 @@
 #include <string_view>
 #include <thread>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
@@ -1024,6 +1025,91 @@ void testTextureBindingProtocol(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	storage.unregisterWindow(61u, submission.serial);
 }
 
+void test_viewport_binding_replacement_across_frames(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	FlowStorageSystem storage(vulkan.context());
+	storage.initialize(testConfig());
+	const SamplerHandle sampler = storage.acquireSampler(SamplerDesc{});
+	auto create_texture = [&](uint32_t extent) {
+		const ImageHandle image = storage.createImage(ImageDesc{
+			.width = extent,
+			.height = extent,
+			.format = PixelFormat::Rgba8Unorm,
+			.usage = ImageUsage::Sampled | ImageUsage::ColorAttachment,
+			.memory = MemoryPreference::DeviceLocal,
+		});
+		const ImageViewHandle image_view = storage.createImageView(image, ImageViewDesc{});
+		const TextureHandle texture = storage.createAnonymousTexture(TextureViewDesc{
+			.imageView = image_view,
+			.sampler = sampler,
+			.sourceWidth = static_cast<int32_t>(extent),
+			.sourceHeight = static_cast<int32_t>(extent),
+		});
+		const uint64_t native_view = storage.nativeImageView(image_view).nativeImageView;
+		storage.releaseImageView(image_view);
+		storage.releaseImage(image);
+		return std::pair{texture, native_view};
+	};
+	const auto fallback = create_texture(1u);
+	storage.setFallbackTexture(fallback.first);
+	constexpr std::array<FlowUi::WindowId, 2> windows{71u, 72u};
+	for (const auto window : windows)
+		storage.registerWindow(window, windowDesc(2u, 1u));
+	std::array<std::pair<TextureHandle, uint64_t>, 2> targets{};
+	uint64_t frame_number = 0u;
+	for (uint32_t generation = 0u; generation < 4u; ++generation) {
+		// Resize like a viewport: publish replacement targets, then retire the old ones.
+		const std::array replacements{create_texture(8u << generation),
+									  create_texture(8u << generation)};
+		for (const auto& target : targets) {
+			if (target.first)
+				storage.releaseAnonymousTexture(target.first);
+		}
+		storage.collect();
+		targets = replacements;
+		for (uint32_t unchanged_pass = 0u; unchanged_pass < 2u; ++unchanged_pass) {
+			for (uint32_t frame_slot = 0u; frame_slot < targets.size(); ++frame_slot) {
+				// Different window progress must not suppress either window's descriptor writes.
+				for (const auto window : windows) {
+					const FrameStorageDesc frame_desc{
+						.frameSlot = frame_slot,
+						.frameNumber = ++frame_number,
+					};
+					const auto frame = storage.beginFrame(window, frame_desc);
+					const auto& target = targets[frame_slot];
+					const std::array requested{target.first, target.first};
+					const auto prepared = storage.prepareTextureBindings(frame, requested);
+					const auto* binding = prepared.binding(target.first);
+					FLOWUI_CHECK(binding != nullptr);
+					FLOWUI_CHECK(binding->nativeImageView == target.second);
+					if (unchanged_pass == 0u) {
+						FLOWUI_CHECK(prepared.dirtyBindings.size() == (generation == 0u ? 2u : 1u));
+						const auto replacement_write = std::find_if(
+							prepared.dirtyBindings.begin(), prepared.dirtyBindings.end(),
+							[&](const DescriptorWriteRecord& write) {
+								return write.texture == target.first;
+							});
+						FLOWUI_CHECK(replacement_write != prepared.dirtyBindings.end());
+						FLOWUI_CHECK(replacement_write->nativeImageView == target.second);
+						FLOWUI_CHECK(replacement_write->descriptorIndex ==
+									 binding->descriptorIndex);
+					} else {
+						FLOWUI_CHECK(prepared.dirtyBindings.empty());
+					}
+					storage.acknowledgeTextureBindings(frame, prepared.dirtyBindings);
+					const auto submission = storage.noteSubmission(storage.sealFrame(frame));
+					storage.noteCompleted(submission);
+				}
+			}
+		}
+	}
+	for (const auto& target : targets)
+		storage.releaseAnonymousTexture(target.first);
+	storage.releaseAnonymousTexture(fallback.first);
+	storage.releaseSampler(sampler);
+	for (const auto window : windows)
+		storage.unregisterWindow(window, storage.completedSerial());
+}
+
  void testWindowAndFrameLocality(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	FlowStorageSystem storage(vulkan.context());
 	storage.initialize(testConfig());
@@ -1704,6 +1790,9 @@ int main() {
 			testConcurrentNonOverlappingWrites(vulkan);
 		});
 		runner.run("fallback and descriptor binding protocol", [&] { testTextureBindingProtocol(vulkan); });
+		runner.run("viewport descriptor replacement across reused frame slots", [&] {
+			test_viewport_binding_replacement_across_frames(vulkan);
+		});
 		runner.run("window and frame-slot resource locality", [&] { testWindowAndFrameLocality(vulkan); });
 		runner.run("typed renderer resource ownership", [&] { testRendererResourceOwnership(vulkan); });
 		runner.run("descriptor bundle replacement", [&] { testDescriptorBundleReplacement(vulkan); });

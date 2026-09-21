@@ -1,3 +1,4 @@
+#include "FlowUi/Resources.hpp"
 #include "managers/IconManager.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -914,15 +915,17 @@ Result<bool> IconManager::registerFromFile(std::string_view key, std::string_vie
 }
 
 Result<bool> IconManager::registerFromFile(ResourceKey key, std::string_view filePath) {
+	return register_file(key, path_from_utf8(filePath));
+}
+
+Result<bool> IconManager::register_file(ResourceKey key, const std::filesystem::path& path) {
 	if (!storage_ || !controller_) return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconRegisterSource));
 	try {
 		(void)iconKey(*storage_, key);
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
 	}
-	if (filePath.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty, ErrorSite::IconRegisterSource));
-
-	const std::filesystem::path path(filePath);
+	if (path.empty()) return unexpectedError(makeError(ErrorCode::AssetPathEmpty, ErrorSite::IconRegisterSource));
 	std::error_code pathError;
 	if (!std::filesystem::is_regular_file(path, pathError)) {
 		return unexpectedError(makeError(

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <string_view>
@@ -126,6 +127,15 @@ int main() {
 	reporting.consumeThrough(7u);
 
 	bool passed = true;
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+	PlatformDevErrorStackProvider native_stack_provider;
+	std::array<uintptr_t, 32> native_stack{};
+	const auto native_capture = native_stack_provider.capture(native_stack, 0u);
+	passed &= expect(native_capture.frameCount > 0u && native_stack[0] != 0u,
+		"platform stack provider captures native frames");
+	passed &= expect(native_stack_provider.capture({}, 0u).frameCount == 0u,
+		"empty native stack destination remains safe");
+#endif
 	const auto retained = reporting.occurrence(occurrence);
 	passed &= expect(retained.has_value(), "explicit occurrence was retained");
 	if (retained) {

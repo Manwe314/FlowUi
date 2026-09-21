@@ -88,6 +88,12 @@ public:
 	 * @endcode
 	 */
 	Result<bool> registerImage(ResourceKey key, std::string_view filePath);
+	/** Load an image through a native filesystem path. */
+	[[nodiscard]] Result<bool> register_image_file(ResourceKey key, const std::filesystem::path& file_path);
+	/** Load an image through a native filesystem path under a string key. */
+	[[nodiscard]] Result<bool> register_image_file(std::string_view key, const std::filesystem::path& file_path) {
+		return register_image_file(ResourceKey{.name = key}, file_path);
+	}
 	Result<bool> registerImage(std::string_view key, std::string_view filePath) {
 		return registerImage(ResourceKey{.name = key}, filePath);
 	}

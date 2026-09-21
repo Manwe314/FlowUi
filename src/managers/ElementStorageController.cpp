@@ -426,7 +426,9 @@ void ElementStorageController::destroyWindow(WindowId window) noexcept {
 		storage = storage_;
 		const auto found = windows_.find(window);
 		if (found != windows_.end()) {
-			std::lock_guard<std::mutex> registryLock(found->second->mutex);
+			// Erasing the map entry must not destroy the mutex before its guard unlocks.
+			const auto registry = found->second;
+			std::lock_guard<std::mutex> registryLock(registry->mutex);
 			if (found->second->activeInvocations != 0) {
 				found->second->destroyRequested = true;
 			} else {

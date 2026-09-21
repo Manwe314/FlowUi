@@ -5,6 +5,7 @@
 #include <limits>
 
 #include "Vulkan/Vk_Context.hpp"
+#include "internal/AgenticDebug/FrameCapture.hpp"
 
 namespace FlowUi::detail::manager_storage {
 
@@ -107,10 +108,20 @@ ViewportImageResource ViewportStorageController::createImage(
 	const storage::PixelFormat pixelFormat = storageFormat(format);
 	const storage::StringId name = storage->intern("flowui.viewport.target");
 	ViewportImageResource result{};
+#if defined(AgenticDebug) && AgenticDebug
+	storage::ImageUsage image_usage = storage::ImageUsage::Sampled | storage::ImageUsage::ColorAttachment;
+	if (agentic_debug::requested() && agentic_debug::supports_format(*vk, format)) {
+		image_usage = image_usage | storage::ImageUsage::TransferSource;
+	}
+#endif
 	try {
 		result.image = storage->createImage(storage::ImageDesc{
 			.width = width, .height = height, .format = pixelFormat,
+#if defined(AgenticDebug) && AgenticDebug
+			.usage = image_usage,
+#else
 			.usage = storage::ImageUsage::Sampled | storage::ImageUsage::ColorAttachment,
+#endif
 			.memory = storage::MemoryPreference::DeviceLocal,
 			.sharing = storage::ResourceSharing::WindowLocal,
 			.access = storage::AccessMode::GpuWrite, .window = window, .debugName = name,
