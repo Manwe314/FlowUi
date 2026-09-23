@@ -48,12 +48,24 @@ constexpr DevOverlayModeFlags& operator|=(
 	return value & flag;
 }
 
+enum class DevInspectTargetKind : uint8_t {
+	None = 0,
+	Flow = 1,
+	Clay = 2,
+};
+
 struct DevOverlayTargetSpec {
 	uint32_t flowNodeIndex = UINT32_MAX;
+	uint32_t clayNodeIndex = UINT32_MAX;
+	uint32_t clayId = 0u;
 	FlowDefinitionID definition{};
 	::FlowUi::detail::element::ElementInstanceKey instanceKey{};
+	DevInspectTargetKind kind = DevInspectTargetKind::Flow;
 
 	[[nodiscard]] constexpr bool isValid() const noexcept {
+		if (kind == DevInspectTargetKind::Clay) {
+			return clayNodeIndex != UINT32_MAX;
+		}
 		return flowNodeIndex != UINT32_MAX;
 	}
 };

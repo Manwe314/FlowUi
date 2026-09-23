@@ -6,7 +6,9 @@
 namespace FlowUi::devSystems::tooling {
 namespace {
 [[nodiscard]] bool eligible_node(const DevFlowNode& node) noexcept {
-	return hasFlag(node.flags, DevFlowNodeFlag::Drawn) &&
+	// construct() emits visible Clay geometry just like draw(), with caller-authored children.
+	return (hasFlag(node.flags, DevFlowNodeFlag::Drawn) ||
+			hasFlag(node.flags, DevFlowNodeFlag::Constructed)) &&
 		   !hasFlag(node.flags, DevFlowNodeFlag::InternalDev) &&
 		   !hasFlag(node.flags, DevFlowNodeFlag::CaptureCanceled);
 }
@@ -48,6 +50,19 @@ namespace {
 	}
 	return clip_id == 0;
 }
+[[nodiscard]] constexpr uint64_t compute_clay_selection_key(uint32_t root_index,
+															uint32_t node_index,
+															uint32_t clay_id) noexcept {
+	uint64_t value = (static_cast<uint64_t>(root_index) << 32u) | node_index;
+	uint64_t salt = clay_id;
+	value ^= salt + 0x9e3779b97f4a7c15ull + (value << 6u) + (value >> 2u);
+	value ^= value >> 30u;
+	value *= 0xbf58476d1ce4e5b9ull;
+	value ^= value >> 27u;
+	value *= 0x94d049bb133111ebull;
+	value ^= value >> 31u;
+	return value == 0u ? 1u : value;
+}
 #endif
 } // namespace
 
@@ -55,19 +70,63 @@ DevOverlayTargetSpec resolve_inspect_target(const DevInspectTarget& target,
 											const DevTreeSnapshot& snapshot) noexcept {
 	if (!target || target.window != snapshot.window)
 		return {};
+#if FLOW_UI_DEV_CAPTURE_CLAY
+	if (target.kind == DevInspectTargetKind::Clay) {
+		if (target.clay_index < snapshot.clay.nodes.size()) {
+			const auto& node = snapshot.clay.nodes[target.clay_index];
+			const uint64_t computed =
+				compute_clay_selection_key(node.rootIndex, target.clay_index, node.clayId);
+			if (node.rootIndex == target.clay_root &&
+				(node.clayId == target.clay_id ||
+				 (target.selection_key && target.selection_key == computed))) {
+				return DevOverlayTargetSpec{
+					.flowNodeIndex = node.directFlowOwner < snapshot.flow.nodes.size()
+										 ? node.directFlowOwner
+										 : UINT32_MAX,
+					.clayNodeIndex = target.clay_index,
+					.clayId = node.clayId,
+					.definition = target.definition,
+					.instanceKey = target.instance,
+					.kind = DevInspectTargetKind::Clay,
+				};
+			}
+		}
+		for (uint32_t index = 0; index < snapshot.clay.nodes.size(); ++index) {
+			const auto& node = snapshot.clay.nodes[index];
+			const uint64_t computed =
+				compute_clay_selection_key(node.rootIndex, index, node.clayId);
+			if ((target.selection_key && target.selection_key == computed) ||
+				(target.clay_id != 0u && node.clayId == target.clay_id &&
+				 node.rootIndex == target.clay_root)) {
+				return DevOverlayTargetSpec{
+					.flowNodeIndex = node.directFlowOwner < snapshot.flow.nodes.size()
+										 ? node.directFlowOwner
+										 : UINT32_MAX,
+					.clayNodeIndex = index,
+					.clayId = node.clayId,
+					.definition = target.definition,
+					.instanceKey = target.instance,
+					.kind = DevInspectTargetKind::Clay,
+				};
+			}
+		}
+		return {};
+	}
+#endif
 	for (uint32_t node_index = 0; node_index < snapshot.flow.nodes.size(); ++node_index) {
 		const auto& node = snapshot.flow.nodes[node_index];
 		if (node.definition == target.definition && node.instance == target.instance &&
 			eligible_node(node))
 			return {.flowNodeIndex = node_index,
 					.definition = node.definition,
-					.instanceKey = node.instance};
+					.instanceKey = node.instance,
+					.kind = DevInspectTargetKind::Flow};
 	}
 	return {};
 }
 
 DevInspectTarget hit_test_inspect_target(const DevTreeSnapshot& snapshot, float pointer_x,
-										 float pointer_y) noexcept {
+										 float pointer_y, DevInspectPickDomain domain) noexcept {
 	if (!std::isfinite(pointer_x) || !std::isfinite(pointer_y) || !snapshot.stats.complete)
 		return {};
 #if FLOW_UI_DEV_CAPTURE_CLAY
@@ -90,12 +149,48 @@ DevInspectTarget hit_test_inspect_target(const DevTreeSnapshot& snapshot, float 
 		top_z = root.zIndex;
 		top_order = root.paintOrder;
 	}
+	if (!topmost)
+		return {};
+
+	if (domain == DevInspectPickDomain::Clay) {
+		const uint32_t clay_node_index =
+			static_cast<uint32_t>(topmost - snapshot.clay.nodes.data());
+		const uint64_t selection_key =
+			compute_clay_selection_key(topmost->rootIndex, clay_node_index, topmost->clayId);
+		DevInspectTarget result{};
+		result.window = snapshot.window;
+		result.kind = DevInspectTargetKind::Clay;
+		result.clay_id = topmost->clayId;
+		result.clay_root = topmost->rootIndex;
+		result.clay_index = clay_node_index;
+		result.selection_key = selection_key;
+		for (size_t depth = 0; topmost && depth < snapshot.clay.nodes.size(); ++depth) {
+			if (topmost->directFlowOwner < snapshot.flow.nodes.size()) {
+				const auto& owner = snapshot.flow.nodes[topmost->directFlowOwner];
+				result.definition = owner.definition;
+				result.instance = owner.instance;
+				break;
+			}
+			uint32_t parent = topmost->parent;
+			if (parent == InvalidClayNode && topmost->rootIndex < snapshot.clay.roots.size())
+				parent = snapshot.clay.roots[topmost->rootIndex].attachmentParent;
+			topmost = parent < snapshot.clay.nodes.size() ? &snapshot.clay.nodes[parent] : nullptr;
+		}
+		return result;
+	}
+
 	for (size_t depth = 0; topmost && depth < snapshot.clay.nodes.size(); ++depth) {
 		if (topmost->directFlowOwner < snapshot.flow.nodes.size()) {
 			const auto& owner = snapshot.flow.nodes[topmost->directFlowOwner];
 			if (!eligible_node(owner))
 				return {};
-			return {snapshot.window, owner.definition, owner.instance};
+			DevInspectTarget result{};
+			result.window = snapshot.window;
+			result.kind = DevInspectTargetKind::Flow;
+			result.definition = owner.definition;
+			result.instance = owner.instance;
+			result.selection_key = owner.instance.value;
+			return result;
 		}
 		uint32_t parent = topmost->parent;
 		if (parent == InvalidClayNode && topmost->rootIndex < snapshot.clay.roots.size())
@@ -177,6 +272,16 @@ void DevInspectInteractionController::toggle_surface(DevOverlayModeFlags flag) n
 												   static_cast<uint32_t>(flag));
 }
 
+void DevInspectInteractionController::set_pick_domain(DevInspectPickDomain domain) noexcept {
+	pick_domain_ = domain;
+}
+
+void DevInspectInteractionController::toggle_pick_domain() noexcept {
+	pick_domain_ = (pick_domain_ == DevInspectPickDomain::Flow)
+					   ? DevInspectPickDomain::Clay
+					   : DevInspectPickDomain::Flow;
+}
+
 void DevInspectInteractionController::filter_input(WindowId window, const DevTreeSnapshot& snapshot,
 												   FrameInput& input,
 												   DevInspectPointerState& pointer) noexcept {
@@ -195,7 +300,8 @@ void DevInspectInteractionController::filter_input(WindowId window, const DevTre
 		if (picking() && pressed && input.pointerInside) {
 			pointer.consume_until_release = true;
 			if (pick_mode_ != DevInspectPickMode::Secondary || window == primary_target_.window)
-				click_candidate_ = hit_test_inspect_target(snapshot, input.mouseX, input.mouseY);
+				click_candidate_ =
+					hit_test_inspect_target(snapshot, input.mouseX, input.mouseY, pick_domain_);
 		}
 		// An already-held application gesture is allowed to finish before arming.
 		if (pointer.consume_until_release)
@@ -234,7 +340,8 @@ void DevInspectInteractionController::finish_frame(const DevTreeSnapshot& snapsh
 	if (picking() && pointer.pointer_inside) {
 		hover_target_ =
 			(pick_mode_ == DevInspectPickMode::Primary || snapshot.window == primary_target_.window)
-				? hit_test_inspect_target(snapshot, pointer.pointer_x, pointer.pointer_y)
+				? hit_test_inspect_target(snapshot, pointer.pointer_x, pointer.pointer_y,
+										  pick_domain_)
 				: DevInspectTarget{};
 	}
 }

@@ -476,7 +476,15 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Inspect/Inspector/DevClayInspector.cpp
 			src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp
+			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelectorElements.cpp
+			src/devSystems/devInterface/Performance/DevPerformanceSelection.cpp
+			src/devSystems/devInterface/Permanents/Elements/DevSelectorSearch.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevTimelineData.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevTimelineElements.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.cpp
 			src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp
 			src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp
 			src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp
@@ -557,7 +565,16 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/DevPerformanceContentParameters.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Selector/DevPerformanceSelectorElements.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/DevPerformanceSelection.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineElements.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/DevMemoryContentParameters.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Selector/DevMemorySelector.hpp>

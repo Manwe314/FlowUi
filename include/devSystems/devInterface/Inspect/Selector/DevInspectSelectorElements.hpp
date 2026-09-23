@@ -10,6 +10,7 @@
 #if FLOW_UI_DEV_MODE
 
 #include "FSEL/ComboBox.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
 
@@ -51,21 +52,8 @@ struct DevInterfaceSelectorControls {
 	static void buildElement(BuildContext& context);
 };
 
-struct DevInterfaceSelectorSearchParameters {
-	std::string* query = nullptr;
-};
-
-struct DevInterfaceSelectorSearch {
-	using Parameters = DevInterfaceSelectorSearchParameters;
-	using BuildContext = ElementBuildContext<DevInterfaceSelectorSearch>;
-
-	static constexpr FlowDefinitionID definitionId =
-		DefinitionID("flowui.dev_interface.inspect.selector.search");
-	static constexpr std::string_view debugName = "Inspect Selector Search";
-	static constexpr bool isDevInternal = true;
-
-	static void buildElement(BuildContext& context);
-};
+using DevInterfaceSelectorSearchParameters = DevSelectorSearchParameters;
+using DevInterfaceSelectorSearch = DevSelectorSearch;
 
 [[nodiscard]] uint64_t stableNodeKey(uint64_t value, uint64_t salt) noexcept;
 

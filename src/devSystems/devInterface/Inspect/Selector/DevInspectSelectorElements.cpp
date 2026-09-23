@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "FSEL/RadioChoice.hpp"
-#include "FSEL/TextInput.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
@@ -22,7 +22,6 @@ namespace {
 
 inline constexpr float kTitleHeight = 36.0f;
 inline constexpr float kControlsHeight = 44.0f;
-inline constexpr float kSearchHeight = 46.0f;
 inline constexpr float kFooterHeight = 60.0f;
 inline constexpr float kControlHeight = 28.0f;
 inline constexpr float kNodeHeight = 25.0f;
@@ -32,7 +31,6 @@ inline constexpr LocalElementName kForestToggle{"forest-toggle"};
 inline constexpr LocalElementName kFlowChoice{"flow-choice"};
 inline constexpr LocalElementName kClayChoice{"clay-choice"};
 inline constexpr LocalElementName kDefinitionFilter{"definition-filter"};
-inline constexpr LocalElementName kSearchInput{"search-input"};
 inline constexpr LocalElementName kForestContent{"content"};
 inline constexpr LocalElementName kNodeRow{"node"};
 inline constexpr LocalElementName kNodeDisclosure{"disclosure"};
@@ -75,33 +73,6 @@ Clay_ElementDeclaration fixedSection(
 	return section;
 }
 
-FSEL::SelectableSurfaceStyle forestChoiceStyle() {
-	FSEL::SelectableSurfaceStyle style{};
-	style.sizing = {
-		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_GROW(0),
-	};
-	style.padding = Clay_Padding{7, 7, 0, 0};
-	style.childAlignment = Clay_ChildAlignment{
-		.x = CLAY_ALIGN_X_CENTER,
-		.y = CLAY_ALIGN_Y_CENTER,
-	};
-	style.borderWidth = Clay_BorderWidth{0, 0, 0, 0, 0};
-	style.cornerRadius = CLAY_CORNER_RADIUS(2);
-	style.idleOverrides.backgroundColor = interface_theme::kDepth0Keel;
-	style.idleOverrides.borderColor = interface_theme::kDepth0Keel;
-	style.hoveredOverrides.backgroundColor = interface_theme::kHoverSurface;
-	style.hoveredOverrides.borderColor = interface_theme::kHoverSurface;
-	style.pressedOverrides.backgroundColor = interface_theme::kSelectedRow;
-	style.pressedOverrides.borderColor = interface_theme::kAccentCurrent;
-	style.selectedOverrides.backgroundColor = interface_theme::kDepth3Elevated;
-	style.selectedOverrides.borderColor = interface_theme::kAccentCurrent;
-	style.disabledOverrides.backgroundColor = interface_theme::kDepth0Keel;
-	style.disabledOverrides.borderColor = interface_theme::kDepth0Keel;
-	style.selectedDisabledOverrides.backgroundColor = interface_theme::kDepth2Ink;
-	style.selectedDisabledOverrides.borderColor = interface_theme::kBorderPrimary;
-	return style;
-}
 
 void drawForestChoice(
 	DevInterfaceSelectorControls::BuildContext& context,
@@ -115,7 +86,7 @@ void drawForestChoice(
 	parameters.choiceValue = value;
 	parameters.selectedValue = context.params.selectedForest;
 	parameters.enabled = enabled;
-	parameters.style = forestChoiceStyle();
+	parameters.style = selector_choice_style();
 
 	context.uiManager.createElement(FSEL::kRadioChoice, id)
 		.setParameters(std::move(parameters))
@@ -226,19 +197,8 @@ void DevInterfaceSelectorControls::buildElement(BuildContext& context) {
 	};
 
 	CLAY(context.clayID(), controls) {
-		Clay_ElementDeclaration toggle{};
-		toggle.layout.sizing = {
-			.width = CLAY_SIZING_FIXED(108),
-			.height = CLAY_SIZING_FIXED(kControlHeight),
-		};
-		toggle.layout.padding = Clay_Padding{2, 2, 2, 2};
-		toggle.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-		toggle.backgroundColor = interface_theme::kDepth0Keel;
-		toggle.cornerRadius = CLAY_CORNER_RADIUS(3);
-		toggle.border = {
-			.color = interface_theme::kBorderVisible,
-			.width = Clay_BorderWidth{1, 1, 1, 1, 0},
-		};
+		Clay_ElementDeclaration toggle = selector_choice_track();
+		toggle.layout.sizing.width = CLAY_SIZING_FIXED(108);
 
 		CLAY(context.clayID(kForestToggle), toggle) {
 			drawForestChoice(
@@ -266,55 +226,6 @@ void DevInterfaceSelectorControls::buildElement(BuildContext& context) {
 
 		context.uiManager.createElement(FSEL::kComboBox, kDefinitionFilter)
 			.setParameters(std::move(definitionFilter))
-			.setDevInternalCapture(true)
-			.draw();
-	}
-}
-
-void DevInterfaceSelectorSearch::buildElement(BuildContext& context) {
-	Clay_ElementDeclaration search = fixedSection(
-		kSearchHeight,
-		interface_theme::kDepth1Panel,
-		Clay_Padding{8, 8, 8, 8});
-	search.layout.childAlignment = {
-		.x = CLAY_ALIGN_X_LEFT,
-		.y = CLAY_ALIGN_Y_CENTER,
-	};
-
-	CLAY(context.clayID(), search) {
-		FSEL::TextInputParameters input{};
-		input.value = context.params.query;
-		input.placeholder = "Filter nodes...";
-		input.enabled = context.params.query != nullptr;
-		input.sizing = Clay_Sizing{
-			.width = CLAY_SIZING_GROW(0),
-			.height = CLAY_SIZING_FIXED(30),
-		};
-		input.padding = Clay_Padding{8, 8, 5, 5};
-		input.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
-		input.cornerRadius = CLAY_CORNER_RADIUS(3);
-		input.fontSize = 12;
-		input.idleOverrides.backgroundColor = interface_theme::kDepth3Elevated;
-		input.idleOverrides.textColor = interface_theme::kTextCanvas;
-		input.idleOverrides.placeholderColor = interface_theme::kTextMuted;
-		input.idleOverrides.borderColor = interface_theme::kBorderVisible;
-		input.hoveredOverrides.backgroundColor = interface_theme::kDepth3Elevated;
-		input.hoveredOverrides.textColor = interface_theme::kTextCanvas;
-		input.hoveredOverrides.placeholderColor = interface_theme::kTextSecondary;
-		input.hoveredOverrides.borderColor = interface_theme::kTextMuted;
-		input.focusedOverrides.backgroundColor = interface_theme::kDepth3Elevated;
-		input.focusedOverrides.textColor = interface_theme::kTextCanvas;
-		input.focusedOverrides.placeholderColor = interface_theme::kTextMuted;
-		input.focusedOverrides.borderColor = interface_theme::kAccentCurrent;
-		input.disabledOverrides.backgroundColor = interface_theme::kDepth2Ink;
-		input.disabledOverrides.textColor = interface_theme::kTextMuted;
-		input.disabledOverrides.placeholderColor = interface_theme::kTextMuted;
-		input.disabledOverrides.borderColor = interface_theme::kBorderPrimary;
-		input.caret.color = interface_theme::kAccentCurrent;
-		input.caret.selectionBoxColor = interface_theme::kSelectedRow;
-
-		context.uiManager.createElement(FSEL::kTextInput, kSearchInput)
-			.setParameters(std::move(input))
 			.setDevInternalCapture(true)
 			.draw();
 	}

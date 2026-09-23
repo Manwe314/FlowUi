@@ -9,13 +9,37 @@
 
 namespace FlowUi::devSystems::tooling {
 
+enum class DevInspectPickDomain : uint8_t { Flow = 0, Clay = 1 };
+
 /** Window-qualified identity retained independently of a captured tree's indices. */
 struct DevInspectTarget {
-	WindowId window = InvalidWindowId;
-	FlowDefinitionID definition{};
+	uint64_t selection_key = 0u;
 	::FlowUi::detail::element::ElementInstanceKey instance{};
+	FlowDefinitionID definition{};
+	WindowId window = InvalidWindowId;
+	uint32_t clay_id = 0u;
+	uint32_t clay_root = 0u;
+	uint32_t clay_index = UINT32_MAX;
+	DevInspectTargetKind kind = DevInspectTargetKind::None;
+
+	constexpr DevInspectTarget() noexcept = default;
+	constexpr DevInspectTarget(WindowId win, FlowDefinitionID def,
+							   ::FlowUi::detail::element::ElementInstanceKey inst) noexcept
+		: selection_key(inst.value), instance(inst), definition(def), window(win),
+		  kind(inst ? DevInspectTargetKind::Flow : DevInspectTargetKind::None) {}
+	constexpr DevInspectTarget(WindowId win, uint32_t c_id, uint32_t c_root, uint32_t c_index,
+							   uint64_t s_key) noexcept
+		: selection_key(s_key), window(win), clay_id(c_id), clay_root(c_root), clay_index(c_index),
+		  kind(DevInspectTargetKind::Clay) {}
+
 	[[nodiscard]] explicit operator bool() const noexcept {
-		return window != InvalidWindowId && bool(instance);
+		if (window == InvalidWindowId || kind == DevInspectTargetKind::None) {
+			return false;
+		}
+		if (kind == DevInspectTargetKind::Flow) {
+			return bool(instance);
+		}
+		return clay_id != 0u || clay_index != UINT32_MAX || selection_key != 0u;
 	}
 	[[nodiscard]] bool operator==(const DevInspectTarget&) const noexcept = default;
 };
@@ -36,9 +60,10 @@ struct DevInspectPointerState {
 [[nodiscard]] DevOverlayTargetSpec resolve_inspect_target(const DevInspectTarget& target,
 														  const DevTreeSnapshot& snapshot) noexcept;
 
-/** Return the topmost visible Flow owner, respecting Clay paint order and clipping. */
-[[nodiscard]] DevInspectTarget hit_test_inspect_target(const DevTreeSnapshot& snapshot,
-													   float pointer_x, float pointer_y) noexcept;
+/** Return the topmost visible owner or primitive, respecting Clay paint order and clipping. */
+[[nodiscard]] DevInspectTarget hit_test_inspect_target(
+	const DevTreeSnapshot& snapshot, float pointer_x, float pointer_y,
+	DevInspectPickDomain domain = DevInspectPickDomain::Flow) noexcept;
 
 /** Session-owned inspection state; contains no borrowed UI or snapshot pointers. */
 class DevInspectInteractionController {
@@ -51,7 +76,7 @@ public:
 	void begin_secondary_pick() noexcept;
 	/** Restore committed overlays without changing the inspector selection. */
 	void cancel_pick() noexcept;
-	/** Commit a Flow selection; inspector synchronization observes the revision. */
+	/** Commit a selection; inspector synchronization observes the revision. */
 	void select_primary(DevInspectTarget target) noexcept;
 	/** Clear both targets and notify the inspector, retaining surface choices. */
 	void clear_selection() noexcept;
@@ -59,6 +84,10 @@ public:
 	void remove_window(WindowId window) noexcept;
 	/** Toggle one overlay surface without changing targets or pick mode. */
 	void toggle_surface(DevOverlayModeFlags flag) noexcept;
+	/** Set the active element pick domain (Flow vs Clay). */
+	void set_pick_domain(DevInspectPickDomain domain) noexcept;
+	/** Toggle between Flow and Clay element picking. */
+	void toggle_pick_domain() noexcept;
 	/** Filter application input before UI dispatch, preserving raw pointer history. */
 	void filter_input(WindowId window, const DevTreeSnapshot& snapshot, FrameInput& input,
 					  DevInspectPointerState& pointer) noexcept;
@@ -71,6 +100,7 @@ public:
 	[[nodiscard]] bool eligible_window(WindowId window) const noexcept;
 	[[nodiscard]] bool picking() const noexcept { return pick_mode_ != DevInspectPickMode::Idle; }
 	[[nodiscard]] DevInspectPickMode pick_mode() const noexcept { return pick_mode_; }
+	[[nodiscard]] DevInspectPickDomain pick_domain() const noexcept { return pick_domain_; }
 	[[nodiscard]] DevOverlayModeFlags mode_flags() const noexcept { return mode_flags_; }
 	[[nodiscard]] DevInspectTarget primary_target() const noexcept { return primary_target_; }
 	[[nodiscard]] DevInspectTarget secondary_target() const noexcept { return secondary_target_; }
@@ -85,6 +115,7 @@ private:
 	uint64_t selection_revision_ = 1u;
 	DevOverlayModeFlags mode_flags_ = DevOverlayModeFlags::Default;
 	DevInspectPickMode pick_mode_ = DevInspectPickMode::Idle;
+	DevInspectPickDomain pick_domain_ = DevInspectPickDomain::Flow;
 };
 
 } // namespace FlowUi::devSystems::tooling
