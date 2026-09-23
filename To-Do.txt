@@ -151,6 +151,7 @@ things i want to do:
 	- DevInterface functionality
 		- Authored Code value capture should be made explicit
 	- DevInspectInspectors
+		- Window Targeting migh be better to be on the Inspector tab rather than the overall header.
 		- CLAY element Selection Needs its own ENTIRE DevInspectInspector area element.
 		- enum chociec for Fonts 
 		- Quick View Value not configured on every Parameter including unregistered/unddefineds
@@ -158,7 +159,11 @@ things i want to do:
 	- DevInspect Workbench
 		- wining value in changes section display std::optional badly
 		- tree struct and gerometry reporting is not fiting in width nicely .
-
+	- DevTooling
+		- Overlay service:
+			-	Text is usually over the eleent instead of it beeing outside it
+			-	distance ruler lines can be placed better
+			-	bettter highlighting legend?
 
 		
 		

@@ -129,13 +129,33 @@ struct ResolvedTarget {
 	DevFlowNodeIndex flowIndex = InvalidFlowNode;
 	DevClayNodeIndex clayIndex = InvalidClayNode;
 
-	[[nodiscard]] explicit operator bool() const noexcept { return flow && clay; }
+	[[nodiscard]] explicit operator bool() const noexcept { return clay != nullptr; }
 };
 
 [[nodiscard]] ResolvedTarget resolveTarget(
 	const DevOverlayTargetSpec& target,
 	const DevTreeSnapshot& snapshot) noexcept {
-	if (!target.isValid() || target.flowNodeIndex >= snapshot.flow.nodes.size()) return {};
+	if (!target.isValid()) return {};
+	if (target.kind == DevInspectTargetKind::Clay) {
+		if (target.clayNodeIndex >= snapshot.clay.nodes.size()) return {};
+		const DevClayNode& clay = snapshot.clay.nodes[target.clayNodeIndex];
+		const DevFlowNode* flow = nullptr;
+		DevFlowNodeIndex flowIndex = InvalidFlowNode;
+		if (clay.directFlowOwner < snapshot.flow.nodes.size()) {
+			flow = &snapshot.flow.nodes[clay.directFlowOwner];
+			flowIndex = clay.directFlowOwner;
+		} else if (target.flowNodeIndex < snapshot.flow.nodes.size()) {
+			flow = &snapshot.flow.nodes[target.flowNodeIndex];
+			flowIndex = target.flowNodeIndex;
+		}
+		return ResolvedTarget{
+			.flow = flow,
+			.clay = &clay,
+			.flowIndex = flowIndex,
+			.clayIndex = target.clayNodeIndex,
+		};
+	}
+	if (target.flowNodeIndex >= snapshot.flow.nodes.size()) return {};
 	const DevFlowNode& flow = snapshot.flow.nodes[target.flowNodeIndex];
 	if (target.definition && target.definition != flow.definition) return {};
 	if (target.instanceKey && target.instanceKey != flow.instance) return {};
@@ -356,6 +376,7 @@ void buildTreeHierarchy(
 	const ResolvedTarget& target,
 	float scale,
 	DevOverlayCommandBuffer& out) {
+	if (!target.flow) return;
 	constexpr std::array<uint32_t, 6> palette{
 		0xEB5757FFu, 0xF2994AFFu, 0xF2C94CFFu,
 		0x27AE60FFu, 0x2F80EDFFu, 0x9B51E0FFu,
@@ -403,6 +424,7 @@ void buildTypography(
 	const ResolvedTarget& target,
 	float scale,
 	DevOverlayCommandBuffer& out) {
+	if (!target.flow || target.flowIndex >= snapshot.flow.nodes.size()) return;
 	const std::span<const DevClayNode> nodes = fullClaySubtree(snapshot, target.flowIndex);
 	for (const DevClayNode& node : nodes) {
 		if (!hasFlag(node.flags, DevClayNodeFlag::Text)) continue;
@@ -426,6 +448,7 @@ void buildClipOverlay(
 	const ResolvedTarget& target,
 	float scale,
 	DevOverlayCommandBuffer& out) {
+	if (!target.flow || target.flowIndex >= snapshot.flow.nodes.size()) return;
 	const std::span<const DevClayNode> nodes = fullClaySubtree(snapshot, target.flowIndex);
 	for (const DevClayNode& node : nodes) {
 		if (!node.declaration.clip.horizontal && !node.declaration.clip.vertical) continue;
@@ -498,6 +521,7 @@ void buildRenderDiagnostics(
 		}
 		return;
 	}
+	if (!target.flow || target.flowIndex >= snapshot.flow.nodes.size()) return;
 	const std::span<const DevClayNode> nodes = fullClaySubtree(snapshot, target.flowIndex);
 	for (const DevClayNode& node : nodes) {
 		const RectF bounds = scaledBounds(node.bounds, scale);

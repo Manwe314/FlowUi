@@ -21,6 +21,9 @@ using Flags = tooling::DevOverlayModeFlags;
 inline constexpr LocalElementName trigger_id{"trigger"};
 inline constexpr LocalElementName pick_id{"pick"};
 inline constexpr LocalElementName secondary_id{"secondary"};
+inline constexpr LocalElementName pick_domain_flow_id{"pick-domain-flow"};
+inline constexpr LocalElementName pick_domain_clay_id{"pick-domain-clay"};
+inline constexpr LocalElementName pick_domain_row_id{"pick-domain-row"};
 inline constexpr LocalElementName clear_id{"clear"};
 
 struct Surface {
@@ -59,6 +62,16 @@ constexpr auto toggle_surface = UiAction("flowui.dev_interface.inspect.toggle-su
 										 [](Controller& controller, const Surface& surface) {
 											 controller.toggle_surface(surface.flag);
 										 });
+constexpr auto set_pick_domain_flow =
+	UiAction("flowui.dev_interface.inspect.set-pick-domain-flow",
+			 [](Controller& controller) {
+				 controller.set_pick_domain(tooling::DevInspectPickDomain::Flow);
+			 });
+constexpr auto set_pick_domain_clay =
+	UiAction("flowui.dev_interface.inspect.set-pick-domain-clay",
+			 [](Controller& controller) {
+				 controller.set_pick_domain(tooling::DevInspectPickDomain::Clay);
+			 });
 
 [[nodiscard]] FSEL::ButtonParameters button_parameters(std::string_view label, ActionCall action,
 													   bool emphasized = false,
@@ -107,10 +120,32 @@ void separator(DevInspectOverlayMenu::BuildContext& context, uint64_t index) {
 									   std::string_view role) {
 	std::string label(role);
 	label += ": ";
+	if (target.kind == tooling::DevInspectTargetKind::Clay) {
+		if (app.hasWindow(target.window)) {
+			const auto& snapshot = app.ui(target.window).devTreeSnapshot();
+			const auto resolved = tooling::resolve_inspect_target(target, snapshot);
+			if (resolved.isValid() && resolved.clayNodeIndex < snapshot.clay.nodes.size()) {
+				const auto& node = snapshot.clay.nodes[resolved.clayNodeIndex];
+				auto name = snapshot.string(node.idString);
+				if (name.empty()) {
+					char fallback[40]{};
+					std::snprintf(fallback, sizeof(fallback), "Clay #%u", node.clayId);
+					name = fallback;
+				}
+				label.append(name);
+			}
+		}
+		char identity[72]{};
+		std::snprintf(identity, sizeof(identity), "\nWindow %llu · Clay #%u",
+					  static_cast<unsigned long long>(target.window),
+					  static_cast<unsigned int>(target.clay_id));
+		label += identity;
+		return label;
+	}
 	if (app.hasWindow(target.window)) {
 		const auto& snapshot = app.ui(target.window).devTreeSnapshot();
 		const auto resolved = tooling::resolve_inspect_target(target, snapshot);
-		if (resolved.isValid()) {
+		if (resolved.isValid() && resolved.flowNodeIndex < snapshot.flow.nodes.size()) {
 			const auto& node = snapshot.flow.nodes[resolved.flowNodeIndex];
 			auto name = snapshot.string(node.debugName);
 			if (name.empty())
@@ -147,35 +182,39 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 	if (state.open) {
 		if (pressed(264) || pressed(258)) {
 			state.focused_row =
-				static_cast<uint8_t>((state.focused_row + (input.shift ? 7 : 1)) % 8);
+				static_cast<uint8_t>((state.focused_row + (input.shift ? 9 : 1)) % 10);
 			state.keyboard_focus = true;
 		}
 		if (pressed(265)) {
-			state.focused_row = static_cast<uint8_t>((state.focused_row + 7) % 8);
+			state.focused_row = static_cast<uint8_t>((state.focused_row + 9) % 10);
 			state.keyboard_focus = true;
 		}
 		if (pressed(32) || pressed(257)) {
 			if (state.focused_row == 0 && controller.primary_target()) {
 				controller.begin_secondary_pick();
 				state.open = false;
-			} else if (state.focused_row == 7)
-				controller.clear_selection();
-			else if (state.focused_row > 0 && state.focused_row < 7)
+			} else if (state.focused_row > 0 && state.focused_row < 7)
 				controller.toggle_surface(surfaces[state.focused_row - 1].flag);
+			else if (state.focused_row == 7)
+				controller.set_pick_domain(tooling::DevInspectPickDomain::Flow);
+			else if (state.focused_row == 8)
+				controller.set_pick_domain(tooling::DevInspectPickDomain::Clay);
+			else if (state.focused_row == 9)
+				controller.clear_selection();
 		}
 	} else if (!popup_dismissed && pressed(256))
 		controller.cancel_pick();
-	if (!state.open)
-		context.uiManager.popups().dismiss(popup_id);
-
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {.width = CLAY_SIZING_FIT(0), .height = CLAY_SIZING_FIXED(28)};
 	root.layout.childGap = 8;
 	CLAY(context.clayID(), root) {
-		context.uiManager.createElement(FSEL::kButton, trigger_id)
-			.setParameters(button_parameters(
-				"Overlay ▾", ActionCall{actions.make(toggle_menu, state)}, state.open))
-			.draw();
+		auto trigger =
+			button_parameters("Overlay", ActionCall{actions.make(toggle_menu, state)}, state.open);
+		trigger.icon = context.resources().dropdown_icon;
+		trigger.contentMode = trigger.icon.handle ? FSEL::ButtonContentMode::TextThenIcon
+												  : FSEL::ButtonContentMode::TextOnly;
+		trigger.iconSize = 12.0f;
+		context.uiManager.createElement(FSEL::kButton, trigger_id).setParameters(trigger).draw();
 		const auto pick_label = controller.pick_mode() == tooling::DevInspectPickMode::Secondary
 									? "Picking Secondary · Esc"
 								: controller.picking() ? "Picking Element · Esc"
@@ -186,12 +225,14 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 				controller.picking(), FLOW_UI_DEV_CAPTURE_CLAY))
 			.draw();
 	}
+	// Child buttons execute their actions during draw(). Only decide whether to submit
+	// the popup afterward; PopupManager retires records that were not submitted.
 	if (!state.open)
 		return;
 	const float width =
 		std::min(320.0f, std::max(160.0f, Clay_GetLayoutDimensions().width - 16.0f));
-	const float height =
-		std::min(440.0f, std::max(100.0f, Clay_GetLayoutDimensions().height - 100.0f));
+	const float height = std::min(controller.secondary_target() ? 620.0f : 540.0f,
+								  std::max(100.0f, Clay_GetLayoutDimensions().height - 100.0f));
 	PopupRequest request{};
 	request.anchor = PopupAnchor::element(context.id);
 	request.placement.offset = {0, 5};
@@ -256,6 +297,8 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 					checkbox.isChecked = checked;
 					checkbox.onToggle = action;
 					checkbox.size = 16;
+					checkbox.checkedIcon = context.resources().checked_icon;
+					checkbox.iconSize = 12;
 					checkbox.checkedOverrides.idle.backgroundColor =
 						interface_theme::kAccentCurrent;
 					checkbox.checkedOverrides.idle.borderColor = interface_theme::kAccentCurrent;
@@ -269,6 +312,7 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 										  state.keyboard_focus && state.focused_row == index + 1);
 					label.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(26)};
 					label.padding = {4, 4, 3, 3};
+					label.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 					label.idleOverrides.backgroundColor = interface_theme::kDepth1Panel;
 					label.borderWidth = state.keyboard_focus && state.focused_row == index + 1
 											? Clay_BorderWidth{1, 1, 1, 1, 0}
@@ -279,24 +323,66 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 				}
 			}
 			separator(context, 2);
+			text(context, "Picker target mode", interface_theme::kTextSecondary, 11);
+			Clay_ElementDeclaration domain_row{};
+			domain_row.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(28)};
+			domain_row.layout.childGap = 4;
+			domain_row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+			CLAY(context.clayID(pick_domain_row_id), domain_row) {
+				const bool flow_active =
+					controller.pick_domain() == tooling::DevInspectPickDomain::Flow;
+				const bool clay_active =
+					controller.pick_domain() == tooling::DevInspectPickDomain::Clay;
+
+				auto flow_btn = button_parameters(
+					"Flow Element", ActionCall{actions.make(set_pick_domain_flow, controller)},
+					flow_active, true);
+				flow_btn.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(26)};
+				if (state.keyboard_focus && state.focused_row == 7) {
+					flow_btn.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
+				}
+
+				auto clay_btn = button_parameters(
+					"Clay Element", ActionCall{actions.make(set_pick_domain_clay, controller)},
+					clay_active, true);
+				clay_btn.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(26)};
+				if (state.keyboard_focus && state.focused_row == 8) {
+					clay_btn.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
+				}
+
+				context.uiManager.createElement(FSEL::kButton, pick_domain_flow_id)
+					.setParameters(flow_btn)
+					.draw();
+				context.uiManager.createElement(FSEL::kButton, pick_domain_clay_id)
+					.setParameters(clay_btn)
+					.draw();
+			}
+			separator(context, 3);
 			context.uiManager.createElement(FSEL::kButton, clear_id)
 				.setParameters(button_parameters(
 					"Clear Selection", ActionCall{actions.make(clear_targets, controller)},
-					state.keyboard_focus && state.focused_row == 7))
+					state.keyboard_focus && state.focused_row == 9))
 				.draw();
 		}
 	}
 }
 
-DevInspectOverlayMenuResources::DevInspectOverlayMenuResources(App& app) {
+DevInspectOverlayMenuResources::DevInspectOverlayMenuResources([[maybe_unused]] App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager& icons = app.icons();
 	interface_icons::registerDevInterfaceIcons(icons);
 	if (icons.contains(interface_icons::kTreeExpandedKey)) {
 		dropdown_icon = icons.textureRef(interface_icons::kTreeExpandedKey);
 	}
-#else
-	(void)app;
+	constexpr std::string_view checked_key = "flowui/dev-interface/overlay/checked";
+	if (!icons.contains(checked_key)) {
+		const auto registered = icons.registerSvg(
+			checked_key,
+			R"svg(<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m3 8 3 3 7-7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>)svg");
+		if (!registered)
+			return;
+	}
+	checked_icon = icons.textureRef(checked_key);
 #endif
 }
 

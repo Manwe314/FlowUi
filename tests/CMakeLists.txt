@@ -95,6 +95,23 @@ set_tests_properties(flowui.dev.schema_registry PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+    add_executable(flowui_dev_timeline_tests DevSystemsTests/DevTimelineTests.cpp)
+    target_compile_features(flowui_dev_timeline_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_timeline_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.timeline COMMAND flowui_dev_timeline_tests)
+    add_executable(flowui_dev_timeline_interaction_tests DevSystemsTests/DevTimelineInteractionTests.cpp)
+    target_compile_features(flowui_dev_timeline_interaction_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_timeline_interaction_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.timeline_interaction COMMAND flowui_dev_timeline_interaction_tests)
+    set_tests_properties(flowui.dev.timeline_interaction PROPERTIES LABELS "flowui;dev;integration" TIMEOUT 60)
+
+    add_executable(flowui_dev_performance_selection_tests
+        DevSystemsTests/DevPerformanceSelectionTests.cpp
+    )
+    target_compile_features(flowui_dev_performance_selection_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_performance_selection_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.performance_selection COMMAND flowui_dev_performance_selection_tests)
+
 	add_executable(flowui_dev_catalogues_tests
 		DevSystemsTests/DevCataloguesTests.cpp
 	)
@@ -1039,6 +1056,13 @@ target_include_directories(flowui_dev_inspect_scroll_tests PRIVATE ${PROJECT_SOU
 add_test(NAME flowui.dev.inspect_scroll COMMAND flowui_dev_inspect_scroll_tests)
 
 if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
+    add_executable(flowui_dev_inspect_overlay_menu_tests DevSystemsTests/DevInspectOverlayMenuTests.cpp)
+    target_compile_features(flowui_dev_inspect_overlay_menu_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_inspect_overlay_menu_tests PRIVATE FlowUi::FlowUi)
+    flowui_package_resources(flowui_dev_inspect_overlay_menu_tests)
+    add_test(NAME flowui.dev.inspect_overlay_menu COMMAND flowui_dev_inspect_overlay_menu_tests)
+    set_tests_properties(flowui.dev.inspect_overlay_menu PROPERTIES TIMEOUT 60)
+
     add_executable(flowui_dev_inspect_subtree_tests DevSystemsTests/DevInspectSubtreeTests.cpp)
     target_compile_features(flowui_dev_inspect_subtree_tests PRIVATE cxx_std_23)
     target_link_libraries(flowui_dev_inspect_subtree_tests PRIVATE FlowUi::FlowUi)

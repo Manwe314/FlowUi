@@ -73,6 +73,22 @@ void identity_and_configuration() {
 	CHECK(controller.mode_flags() == DevOverlayModeFlags::None);
 	CHECK(!controller.eligible_window(9u));
 	CHECK(controller.eligible_window(2u));
+
+	CHECK(controller.pick_domain() == DevInspectPickDomain::Flow);
+	controller.set_pick_domain(DevInspectPickDomain::Clay);
+	CHECK(controller.pick_domain() == DevInspectPickDomain::Clay);
+	controller.toggle_pick_domain();
+	CHECK(controller.pick_domain() == DevInspectPickDomain::Flow);
+	controller.set_pick_domain(DevInspectPickDomain::Clay);
+
+#if FLOW_UI_DEV_CAPTURE_CLAY
+	const DevInspectTarget clay_spec(snapshot.window, snapshot.clay.nodes[1].clayId, 0u, 1u, 9999u);
+	const auto resolved_clay = resolve_inspect_target(clay_spec, snapshot);
+	CHECK(resolved_clay.isValid());
+	CHECK(resolved_clay.kind == DevInspectTargetKind::Clay);
+	CHECK(resolved_clay.clayNodeIndex == 1u);
+	CHECK(resolved_clay.clayId == snapshot.clay.nodes[1].clayId);
+#endif
 }
 
 #if FLOW_UI_DEV_CAPTURE_CLAY
@@ -90,10 +106,20 @@ void geometry() {
 	snapshot.clay.nodes[2].flags = DevClayNodeFlag::None;
 	snapshot.flow.nodes[2].flags |= DevFlowNodeFlag::InternalDev;
 	CHECK(!hit_test_inspect_target(snapshot, 20, 20));
+	snapshot.flow.nodes[2].flags = DevFlowNodeFlag::Constructed;
+	CHECK(hit_test_inspect_target(snapshot, 20, 20) == target(snapshot, 2));
+	CHECK(resolve_inspect_target(target(snapshot, 2), snapshot).isValid());
+	snapshot.flow.nodes[2].flags = DevFlowNodeFlag::None;
+	CHECK(!hit_test_inspect_target(snapshot, 20, 20));
 	snapshot.flow.nodes[2].flags = DevFlowNodeFlag::Drawn;
 	// Unowned content resolves only through its ancestry, not an obscured sibling.
 	snapshot.clay.nodes[2].directFlowOwner = InvalidFlowNode;
 	CHECK(hit_test_inspect_target(snapshot, 20, 20) == target(snapshot, 0));
+	// In Clay domain, hit testing returns the topmost Clay node directly without requiring a Flow owner.
+	const auto clay_hit = hit_test_inspect_target(snapshot, 20, 20, DevInspectPickDomain::Clay);
+	CHECK(clay_hit.kind == DevInspectTargetKind::Clay);
+	CHECK(clay_hit.clay_index == 2u);
+	CHECK(clay_hit.clay_id == snapshot.clay.nodes[2].clayId);
 	snapshot.clay.nodes[2].parent = InvalidClayNode;
 	CHECK(!hit_test_inspect_target(snapshot, 20, 20));
 	// Floating root ordering is independent of node storage order.
@@ -151,6 +177,7 @@ void picking() {
 	controller.filter_input(1u, snapshot, input, pointer);
 
 	controller.begin_secondary_pick();
+	snapshot.flow.nodes[2].flags = DevFlowNodeFlag::Constructed;
 	input.mouseX = 70;
 	input.mouseDown[0] = true;
 	controller.filter_input(1u, snapshot, input, pointer);
@@ -166,6 +193,31 @@ void picking() {
 	CHECK(controller.secondary_target() == target(snapshot, 2));
 	controller.select_primary(target(snapshot, 1));
 	CHECK(controller.primary_target() == target(snapshot, 1));
+
+	// Clay domain picking
+	controller.clear_selection();
+	controller.set_pick_domain(DevInspectPickDomain::Clay);
+	CHECK(controller.pick_domain() == DevInspectPickDomain::Clay);
+	controller.toggle_primary_pick();
+	CHECK(controller.picking());
+	input.mouseX = 20;
+	input.mouseY = 20;
+	input.mouseDown[0] = false;
+	controller.filter_input(1u, snapshot, input, pointer);
+	controller.finish_frame(snapshot, pointer);
+	CHECK(controller.overlay_selection(snapshot, overlay));
+	CHECK(overlay.primaryTarget.kind == DevInspectTargetKind::Clay);
+	CHECK(overlay.primaryTarget.clayNodeIndex == 1u);
+	CHECK(overlay.primaryTarget.clayId == snapshot.clay.nodes[1].clayId);
+
+	input.mouseDown[0] = true;
+	controller.filter_input(1u, snapshot, input, pointer);
+	controller.finish_frame(snapshot, pointer);
+	CHECK(!controller.picking());
+	CHECK(controller.primary_target().kind == DevInspectTargetKind::Clay);
+	CHECK(controller.primary_target().clay_id == snapshot.clay.nodes[1].clayId);
+	CHECK(controller.primary_target().clay_index == 1u);
+
 	controller.remove_window(1u);
 	CHECK(!controller.primary_target());
 	CHECK(!controller.overlay_selection(snapshot, overlay));
