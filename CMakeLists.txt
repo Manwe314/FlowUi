@@ -477,11 +477,13 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelectorElements.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevTimelineLayout.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevTimelineViewport.cpp
 			src/devSystems/devInterface/Performance/DevPerformanceSelection.cpp
 			src/devSystems/devInterface/Permanents/Elements/DevSelectorSearch.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevTimelineData.cpp
-			src/devSystems/devInterface/Performance/Workbench/DevTimelineElements.cpp
+			src/devSystems/devInterface/Performance/Workbench/DevTimelineControls.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.cpp
@@ -571,7 +573,9 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineElements.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineLayout.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp>

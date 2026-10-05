@@ -1,4 +1,5 @@
 #include "managers/UiManager.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -445,10 +446,15 @@ namespace FlowUi
 				devTimingRecorder_, devSystems::TimingCategory::Layout,
 				devSystems::TimingZoneRole::Work, "flowui.layout.scroll_update");
 #endif
-			Clay_UpdateScrollContainers(
-				false,
-				Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
-				static_cast<float>(frameInput.dt));
+			bool timeline_scroll = false;
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			timeline_scroll = timeline_controller_ && timeline_controller_->owns_scroll(frameInput);
+#endif
+			Clay_UpdateScrollContainers(false,
+										timeline_scroll
+											? Clay_Vector2{}
+											: Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
+										static_cast<float>(frameInput.dt));
 		}
 		state_->constructedElementStack.clear();
 		state_->flowScopes.beginFrame();

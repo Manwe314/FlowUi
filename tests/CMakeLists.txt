@@ -95,6 +95,11 @@ set_tests_properties(flowui.dev.schema_registry PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+    add_executable(flowui_dev_timeline_layout_tests
+        DevSystemsTests/DevTimelineLayoutTests.cpp)
+    target_compile_features(flowui_dev_timeline_layout_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_timeline_layout_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.timeline_layout COMMAND flowui_dev_timeline_layout_tests)
     add_executable(flowui_dev_timeline_tests DevSystemsTests/DevTimelineTests.cpp)
     target_compile_features(flowui_dev_timeline_tests PRIVATE cxx_std_23)
     target_link_libraries(flowui_dev_timeline_tests PRIVATE FlowUi::FlowUi)

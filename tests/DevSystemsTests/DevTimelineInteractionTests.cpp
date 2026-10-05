@@ -2,8 +2,11 @@
 #include "devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineLayout.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
 #include "managers/ElementManager.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -35,15 +38,19 @@ constexpr auto card_id = Global<kDevDrillDownTimelineCard>("timeline.test.card")
 	return {};
 }
 void draw_frame(App& app, DevTimelineState& state, DevPerformanceSelection& selection,
-				FlowElementID control = {}, int pointer_event = 0) {
+				FlowElementID control = {}, int pointer_event = 0, float pointer_x = -10,
+				float pointer_y = -10, bool middle = false, float wheel = 0, bool focused = true) {
 	require(app.beginFrame(), "begin frame");
 	auto& manager = app.ui();
 	auto& interaction = const_cast<InteractionSnapshot&>(manager.getPreviousFramesInteraction());
 	interaction = {};
 	auto& input = const_cast<FrameInput&>(manager.getCurrentFrameInput());
 	input.mouseDown[0] = pointer_event == 1;
-	input.mouseX = -10;
-	input.mouseY = -10;
+	input.mouseX = pointer_x;
+	input.mouseY = pointer_y;
+	input.mouseDown[2] = middle;
+	input.scrollY = wheel;
+	input.windowFocused = focused;
 	if (control) {
 		const auto clay_id = manager.toClayEID(control).id;
 		interaction.hoveredElementIds.emplace_back(clay_id);
@@ -85,7 +92,7 @@ int main() {
 	config.window.title = "Timeline integration verification";
 	config.window.width = 1200;
 	config.window.height = 800;
-	config.vk.enableValidation = false;
+	config.vk.enableValidation = true;
 	auto app = makeApplication(config);
 	DevTimelineState state;
 	DevPerformanceSelection selection;
@@ -132,6 +139,14 @@ int main() {
 	clamp_timeline_view(state);
 	draw_frame(app, state, selection);
 	draw_frame(app, state, selection);
+	draw_frame(app, state, selection);
+	const auto cached_stats = app.ui().timeline_controller()->stats();
+	require(cached_stats.surfaces == 2 && cached_stats.layout_builds == 0 &&
+				cached_stats.base_builds == 0,
+			"Paused geometry and glyph batches are reused across frame slots");
+	std::cout << "Cached baseline: " << cached_stats.surfaces << " surfaces, "
+			  << cached_stats.instances << " instances, " << cached_stats.runs << " runs, "
+			  << cached_stats.uploaded_bytes << " upload bytes\n";
 	const auto header_bounds = bounds(app, FlowElementID{.value = header_id.value});
 	const auto macro_bounds = bounds(app, FlowElementID{.value = macro_id.value});
 	require(header_bounds.height == 106 && macro_bounds.y >= header_bounds.y + 106,
@@ -142,15 +157,18 @@ int main() {
 	require(state.zoom == 2, "2x zoom button callback");
 	click(app, state, selection, control_id(macro_id, 1));
 	require(state.active_depth == 2, "In-place macro depth callback");
-	// Select a real timeline sample using its stable Flow ID.
-	const auto lane_id = ::FlowUi::detail::element_id::resolveLocal(
-		FlowElementID{.value = macro_id.value}, DevContiguousTimelineStrip::definitionId,
-		Indexed("lane", 0).token);
-	const auto sample_key = uint64_t(app.ui().toClayEID(lane_id).id) << 32;
-	const auto sample_id = ::FlowUi::detail::element_id::resolveLocal(
-		FlowElementID{.value = macro_id.value}, DevTimelineButton::definitionId,
-		Keyed("sample", sample_key).token);
-	click(app, state, selection, sample_id);
+	// The viewport has no per-sample Flow IDs. Click the submitted image coordinates.
+	const auto macro_layout =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Macro, 0, macro_bounds.width);
+	const auto sample = std::ranges::find_if(macro_layout.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Open;
+	});
+	require(sample != macro_layout.items.end(), "Macro has sample geometry");
+	const float sample_x = macro_bounds.x + sample->bounds.x + sample->bounds.width / 2;
+	const float sample_y = macro_bounds.y + 28 + sample->bounds.y + sample->bounds.height / 2;
+	draw_frame(app, state, selection, {}, 1, sample_x, sample_y);
+	draw_frame(app, state, selection, {}, 2, sample_x, sample_y);
+	draw_frame(app, state, selection);
 	require(state.cards.size() == 1, "Sample click opens a drill-down card");
 	draw_frame(app, state, selection);
 	const auto card_bounds = bounds(app, FlowElementID{.value = card_id.value});
@@ -159,21 +177,23 @@ int main() {
 	const auto root = state.cards[0].roots.front();
 	require(snapshot.blocks[root].label == "User build",
 			"Drill target identity survives callbacks");
-	const auto card_lane = ::FlowUi::detail::element_id::resolveLocal(
-		FlowElementID{.value = card_id.value}, DevDrillDownTimelineCard::definitionId,
-		Indexed("lane", 0).token);
-	const auto child_key = uint64_t(app.ui().toClayEID(card_lane).id) << 32;
-	const auto child_id = ::FlowUi::detail::element_id::resolveLocal(
-		FlowElementID{.value = card_id.value}, DevTimelineButton::definitionId,
-		Keyed("sample", child_key).token);
-	const auto child_bounds = bounds(app, child_id);
-	require(std::abs(child_bounds.x - card_bounds.x - card_bounds.width * .2f) < 2,
+	const auto card_layout =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Card, 0, card_bounds.width);
+	const auto child = std::ranges::find_if(card_layout.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Open;
+	});
+	require(child != card_layout.items.end(), "Card has child geometry");
+	require(std::abs(child->bounds.x - card_bounds.width * .2f) < 2,
 			"Child starts at its exact 20 percent offset");
-	require(std::abs(child_bounds.width - card_bounds.width * .8f) < 2,
+	require(std::abs(child->bounds.width - card_bounds.width * .8f) < 2,
 			"Child occupies its exact 80 percent duration");
 	click(app, state, selection, control_id(card_id, 1));
 	require(state.cards[0].active_depth == 2, "Card depth callback");
-	click(app, state, selection, child_id);
+	const float child_x = card_bounds.x + child->bounds.x + child->bounds.width / 2;
+	const float child_y = card_bounds.y + 54 + child->bounds.y + child->bounds.height / 2;
+	draw_frame(app, state, selection, {}, 1, child_x, child_y);
+	draw_frame(app, state, selection, {}, 2, child_x, child_y);
+	draw_frame(app, state, selection);
 	require(state.cards.size() == 2, "Child sample chains a card");
 	click(app, state, selection, control_id(header_id, 40));
 	require(state.cards.size() == 1, "Breadcrumb prunes descendants");
@@ -183,15 +203,87 @@ int main() {
 	require(selection.hardware_domain == 1, "Hardware domain callback");
 	click(app, state, selection, control_id(header_id, 1));
 	require(!state.paused, "Play callback");
+	// Middle-button capture continues outside the body and never opens a sample.
+	state.zoom = 4;
+	clamp_timeline_view(state);
+	state.visible_start_ns = state.snapshot.start_ns + 10000000;
+	draw_frame(app, state, selection);
+	const auto before_pan = state.visible_start_ns;
+	draw_frame(app, state, selection, {}, 0, 400, sample_y, true);
+	draw_frame(app, state, selection, {}, 0, -100, sample_y, true);
+	require(state.visible_start_ns > before_pan, "Middle drag pans outside viewport bounds");
+	draw_frame(app, state, selection, {}, 0, -100, sample_y);
+	require(state.cards.empty(), "Middle drag never opens samples");
+	const auto zoom_before = state.zoom;
+	draw_frame(app, state, selection, {}, 0, 600, sample_y, false, .25f);
+	require(state.zoom > zoom_before && state.zoom < zoom_before * 1.2,
+			"Fractional wheel zoom is bounded");
+	// Scope replacement and focus loss invalidate a pressed sample.
+	draw_frame(app, state, selection, {}, 1, 600, sample_y);
+	++state.snapshot_revision;
+	draw_frame(app, state, selection, {}, 2, 600, sample_y);
+	require(state.pending.action == TimelineAction::None && state.cards.empty(),
+			"Stale revision cannot activate");
+	draw_frame(app, state, selection, {}, 1, 600, sample_y);
+	draw_frame(app, state, selection, {}, 2, 600, sample_y, false, 0, false);
+	require(state.pending.action == TimelineAction::None && state.cards.empty(),
+			"Focus loss cancels activation");
+	const float minimap_y = header_bounds.y + 32 + 30;
+	draw_frame(app, state, selection, {}, 1, 600, minimap_y);
+	draw_frame(app, state, selection, {}, 1, 900, minimap_y);
+	const auto scrubbed_start = state.visible_start_ns;
+	draw_frame(app, state, selection, {}, 2, 900, minimap_y);
+	require(state.visible_start_ns == scrubbed_start &&
+				state.pending.action == TimelineAction::None,
+			"Minimap drag has no competing release activation");
+	// Clay geometry remains bounded when retained samples and frames increase tenfold.
+	const auto original_snapshot = state.snapshot;
+	size_t sparse_clay_count = 0;
+	for (const size_t sample_count : {1000u, 10000u}) {
+		state.snapshot.blocks.clear();
+		state.snapshot.frames.clear();
+		state.snapshot.frame_metrics.clear();
+		state.snapshot.blocks.reserve(sample_count);
+		state.snapshot.frames.reserve(sample_count);
+		state.snapshot.frame_metrics.reserve(sample_count);
+		state.snapshot.start_ns = 1000000000;
+		state.snapshot.end_ns = 1064000000;
+		for (size_t sample_index = 0; sample_index < sample_count; ++sample_index) {
+			TimelineBlockSlice sample{.label = "Dense sample",
+									  .start_ns =
+										  1000000000 + sample_index * 64000000 / sample_count,
+									  .duration_ns = 64000000 / sample_count,
+									  .track = 1};
+			state.snapshot.blocks.emplace_back(sample);
+			state.snapshot.frames.emplace_back(sample);
+			state.snapshot.frame_metrics.emplace_back(sample.duration_ns);
+		}
+		++state.snapshot_revision;
+		state.zoom = 1;
+		clamp_timeline_view(state);
+		draw_frame(app, state, selection);
+		draw_frame(app, state, selection);
+		draw_frame(app, state, selection);
+		const auto count = app.ui().devTreeSnapshot().clay.nodes.size();
+		if (!sparse_clay_count)
+			sparse_clay_count = count;
+		require(count == sparse_clay_count, "Clay element count is independent of sample count");
+		std::cout << sample_count << " retained samples: " << count << " Clay nodes\n";
+	}
+	state.snapshot = original_snapshot;
+	++state.snapshot_revision;
+	clamp_timeline_view(state);
 	// Exercise the actual orchestrator: retained snapshots and pinned/scrolling regions.
 	constexpr auto workbench_id = Global<kDevPerformanceWorkbench>("timeline.test.workbench");
 	DevInterfaceState interface_state;
 	interface_state.performance_selection = selection;
-	const auto draw_workbench = [&] {
+	const auto draw_workbench = [&](float wheel = 0) {
 		require(app.beginFrame(), "begin Workbench frame");
 		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
-		input.mouseX = -10;
-		input.mouseY = -10;
+		input.mouseX = wheel ? 600 : -10;
+		input.mouseY = wheel ? 200 : -10;
+		input.scrollY = wheel;
+		input.windowFocused = true;
 		input.mouseDown = {};
 		app.ui()
 			.createElement(kDevPerformanceWorkbench, workbench_id)
@@ -205,6 +297,7 @@ int main() {
 		kDevPerformanceWorkbench, app.ui().windowId(), FlowElementID{.value = workbench_id.value});
 	require(retained, "Workbench owns timeline state");
 	retained->snapshot = snapshot;
+	++retained->snapshot_revision;
 	retained->origin_ns = snapshot.start_ns;
 	retained->paused = true;
 	retained->cards.assign(7, TimelineCard{{0}, 1});
@@ -230,5 +323,16 @@ int main() {
 	require(retained && retained->snapshot.frames.front().frame.frameNumber == 100 &&
 				retained->cards.size() == 7,
 			"Paused snapshot survives new live reports");
+	retained->cards.clear();
+	retained->reveal_frames = 0;
+	draw_workbench();
+	draw_workbench();
+	draw_workbench();
+	retained->paused = false;
+	const auto live_zoom = retained->zoom;
+	draw_workbench(1);
+	require(retained->paused && retained->zoom > live_zoom &&
+				retained->snapshot.frames.front().frame.frameNumber == 100,
+			"Wheel navigation freezes the displayed live snapshot before refresh");
 	std::cout << "Timeline rendering and interaction checks passed\n";
 }

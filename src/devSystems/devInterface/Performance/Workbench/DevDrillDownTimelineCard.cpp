@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #if FLOW_UI_DEV_MODE
 #include <algorithm>
 namespace FlowUi::devSystems::interface_elements {
@@ -25,8 +26,6 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 	root.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth1Panel;
-	const auto measured = Clay_GetElementData(context.clayID());
-	const float width = measured.found ? measured.boundingBox.width : 600;
 	CLAY(context.clayID(), root) {
 		const auto header = timeline_ui::row(28);
 		CLAY(context.clayID("header"), header) {
@@ -41,7 +40,6 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 			timeline_ui::button(context, 3, "Close",
 								{{}, TimelineAction::Close, context.params.card_index});
 		}
-		timeline_ui::ruler(context.uiManager, context.clayID("ruler"), 0, duration, false);
 		auto parent = timeline_ui::row(26);
 		parent.backgroundColor = timeline_ui::block_color(target, false);
 		CLAY(context.clayID("target"), parent) {
@@ -51,17 +49,12 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 								  std::string(performance_category_names[size_t(target.category)]),
 							  interface_theme::kTextCanvas);
 		}
-		auto lanes = timeline_lanes(state.snapshot, card.active_depth, card.roots);
-		if (card.roots.size() > 1)
-			lanes.insert(lanes.begin(),
-						 TimelineTrackLane{card.roots, target.track, 0, target.domain});
-		for (size_t lane_index = 0; lane_index < lanes.size(); ++lane_index) {
-			timeline_ui::lane(context.uiManager, context.clayID(Indexed("lane", lane_index)),
-							  context.params, lanes[lane_index].blocks, start, duration, width,
-							  context.params.card_index + 1,
-							  !(card.roots.size() > 1 && lane_index == 0));
-		}
-		if (lanes.empty())
+		timeline_viewport(context.uiManager, context.clayID("body"), context.params,
+						  TimelineSurfaceKind::Card);
+		if (card.roots.size() == 1 &&
+			std::ranges::none_of(state.snapshot.blocks, [&](const auto& block) {
+				return block.parent == card.roots.front();
+			}))
 			timeline_ui::text(
 				context, "No recorded children · leaf, self time, or capture detail unavailable.");
 	}
