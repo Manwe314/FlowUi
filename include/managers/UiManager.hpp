@@ -39,7 +39,12 @@ namespace FlowUi {
 namespace devSystems { class MemorySampleSink; }
 
 #if FLOW_UI_DEV_MODE
-namespace devSystems { class DevTimingRecorder; }
+namespace devSystems {
+class DevTimingRecorder;
+namespace interface_elements {
+class DevTimelineController;
+}
+} // namespace devSystems
 #endif
 
 struct AppWindow;
@@ -727,7 +732,17 @@ public:
 	/** @brief Return the window whose frame this UI manager builds. */
 	[[nodiscard]] WindowId windowId() const noexcept { return window_; }
 
+#if FLOW_UI_DEV_MODE
+	/** Internal window-owned timeline renderer; absent before runtime initialization. */
+	[[nodiscard]] devSystems::interface_elements::DevTimelineController*
+	timeline_controller() const noexcept {
+		return timeline_controller_;
+	}
+#endif
 private:
+#if FLOW_UI_DEV_MODE
+	devSystems::interface_elements::DevTimelineController* timeline_controller_ = nullptr;
+#endif
 	friend class App;
 	friend class ElementManager;
 	friend class ActionManager;

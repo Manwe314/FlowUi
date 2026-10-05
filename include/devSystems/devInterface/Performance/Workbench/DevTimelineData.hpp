@@ -42,6 +42,7 @@ struct TimelineTrackLane {
 struct TimelineCard {
 	std::vector<size_t> roots{};
 	uint32_t active_depth = 1;
+	uint64_t surface_identity = 0;
 };
 enum class TimelineAction {
 	None,
@@ -63,6 +64,7 @@ struct TimelineCommand {
 	TimelineAction action = TimelineAction::None;
 	size_t index = 0;
 	double value = 0;
+	uint64_t revision = 0;
 };
 /** State belongs to the Workbench element, never to the recorder. */
 struct DevTimelineState {
@@ -74,6 +76,7 @@ struct DevTimelineState {
 	DevPerformanceSelection selection{};
 	uint64_t mutation_sequence = UINT64_MAX, visible_start_ns = 0, visible_duration_ns = 1;
 	uint64_t last_seen_tick = 0, origin_ns = 0;
+	uint64_t snapshot_revision = 1, next_surface_identity = 1;
 	size_t selected_frame = 0;
 	double zoom = 1;
 	uint32_t active_depth = 1;

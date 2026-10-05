@@ -20,6 +20,8 @@ struct InputQueue {
 	void setMousePos(float x, float y) noexcept;
 	/** Update native pointer presence independently of stale cursor coordinates. */
 	void setPointerInside(bool inside) noexcept { pointer_inside_ = inside; }
+	/** Preserve native focus independently of pointer presence. */
+	void setWindowFocused(bool focused) noexcept { window_focused_ = focused; }
 	void clearKeyboardState() noexcept;
 	void clearMouseButtonsState() noexcept;
 	[[nodiscard]] std::uint64_t takeDroppedTextInputCount() noexcept;
@@ -37,6 +39,7 @@ struct InputQueue {
 
 private:
 	bool pointer_inside_ = false;
+	bool window_focused_ = true;
 	std::array<bool, FrameInput::kMouseButtonCount> queuedMouseButtonsDown_{};
 };
 

@@ -81,6 +81,7 @@ FrameInput InputQueue::drain(double dt) {
 	frameInput.mouseX = latestMouseX_;
 	frameInput.mouseY = latestMouseY_;
 	frameInput.pointerInside = pointer_inside_;
+	frameInput.windowFocused = window_focused_;
 	frameInput.mouseDown = queuedMouseButtonsDown_;
 	frameInput.scrollX = queuedScrollX_;
 	frameInput.scrollY = queuedScrollY_;

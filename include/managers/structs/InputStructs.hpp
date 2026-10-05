@@ -67,6 +67,8 @@ struct FrameInput {
 
 	/** Whether the native pointer currently belongs to this window. */
 	bool pointerInside = false;
+	/** Native window focus; focus loss cancels captured development gestures. */
+	bool windowFocused = true;
 
 	/**
 	 * @brief Mouse button down states for the current frame.

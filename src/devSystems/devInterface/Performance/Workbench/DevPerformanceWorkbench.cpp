@@ -2,6 +2,7 @@
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include <algorithm>
@@ -13,21 +14,26 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 	auto& selection = context.params.interfaceState->performance_selection;
 	// Freeze the displayed snapshot before a press can be resolved against a newer ring buffer.
 	const auto& input = context.uiManager.getCurrentFrameInput();
-	const auto macro_id = context.uiManager.toClayEID(::FlowUi::detail::element_id::resolveLocal(
-		context.id, DevContiguousTimelineStrip::definitionId, LocalElementName{"macro"}.token));
-	const auto macro_bounds = Clay_GetElementData(macro_id);
-	if (input.mouseDown[0] && macro_bounds.found && input.mouseX >= macro_bounds.boundingBox.x &&
-		input.mouseX <= macro_bounds.boundingBox.x + macro_bounds.boundingBox.width &&
-		input.mouseY >= macro_bounds.boundingBox.y &&
-		input.mouseY <= macro_bounds.boundingBox.y + macro_bounds.boundingBox.height)
+	const auto workbench_bounds = Clay_GetElementData(context.clayID());
+	if ((input.mouseDown[0] || input.mouseDown[2]) && workbench_bounds.found &&
+		input.mouseX >= workbench_bounds.boundingBox.x &&
+		input.mouseX <= workbench_bounds.boundingBox.x + workbench_bounds.boundingBox.width &&
+		input.mouseY >= workbench_bounds.boundingBox.y + 32 &&
+		input.mouseY <= workbench_bounds.boundingBox.y + workbench_bounds.boundingBox.height)
 		state.paused = true;
+#if FLOWUI_PUBLIC_VULKAN_INTEROP
+	if ((input.scrollX != 0 || input.scrollY != 0) && context.uiManager.timeline_controller() &&
+		context.uiManager.timeline_controller()->owns_scroll(input))
+		state.paused = true;
+#endif
 	apply_timeline_command(state, selection);
 	auto& reporting = context.params.app->devMonitoring().timingReporting();
 	const auto status = reporting.status();
 	const bool scope_changed = state.selection.selected_scope != selection.selected_scope ||
 							   state.selection.selected_zone != selection.selected_zone ||
 							   state.selection.selector_mode != selection.selector_mode ||
-							   state.selection.hardware_domain != selection.hardware_domain;
+							   state.selection.hardware_domain != selection.hardware_domain ||
+							   state.selection.category_mask != selection.category_mask;
 	if ((!state.paused && status.mutationSequence != state.mutation_sequence) || scope_changed ||
 		state.mutation_sequence == UINT64_MAX) {
 		if (!state.paused || state.mutation_sequence == UINT64_MAX) {
@@ -35,6 +41,7 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 															size_t(status.retainedTickCount));
 			state.descriptors = reporting.descriptorSnapshot();
 		}
+		++state.snapshot_revision;
 		state.snapshot = extract_timeline(state.retained_reports, state.descriptors, selection);
 		if (state.origin_ns == 0 && state.snapshot.start_ns)
 			state.origin_ns = state.snapshot.start_ns;
@@ -63,9 +70,10 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+	root.backgroundColor = interface_theme::kDepth0Keel;
 	root.clip.horizontal = true;
 	root.clip.scrollInputDisabled = true;
-	const DevTimelineParameters parameters{&state, &selection};
+	const DevTimelineParameters parameters{&state, &selection, 0, context.clayID("canvas")};
 	CLAY(context.clayID(), root) {
 		context.uiManager.createElement(kDevWorkbenchHeader, LocalElementName{"header"})
 			.setParameters(parameters)
@@ -95,7 +103,8 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 			for (size_t card_index = 0; card_index < state.cards.size(); ++card_index) {
 				context.uiManager
 					.createElement(kDevDrillDownTimelineCard, Keyed("card", card_index))
-					.setParameters(DevTimelineParameters{&state, &selection, card_index})
+					.setParameters(DevTimelineParameters{&state, &selection, card_index,
+														 context.clayID("canvas")})
 					.setDevInternalCapture(true)
 					.draw();
 			}

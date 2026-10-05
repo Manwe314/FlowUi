@@ -191,6 +191,8 @@ private:
 
 		glfwSetWindowFocusCallback(window, [](GLFWwindow* win, int focused) noexcept {
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
+			if (self && self->input)
+				self->input->setWindowFocused(focused == GLFW_TRUE);
 			if (!self || !self->input || focused == GLFW_TRUE) {
 				return;
 			}

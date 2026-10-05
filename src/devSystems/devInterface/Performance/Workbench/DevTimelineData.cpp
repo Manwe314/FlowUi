@@ -291,6 +291,8 @@ void center_timeline(DevTimelineState& state, uint64_t timestamp) noexcept {
 void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& selection) {
 	auto command = std::move(state.pending);
 	state.pending = {};
+	if (command.revision && command.revision != state.snapshot_revision)
+		return;
 	const auto frame_count = state.snapshot.frames.size();
 	if (frame_count)
 		state.selected_frame = std::min(state.selected_frame, frame_count - 1);
@@ -342,7 +344,8 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 			break;
 		state.paused = true;
 		state.cards.resize(std::min(command.index, state.cards.size()));
-		state.cards.emplace_back(TimelineCard{std::move(command.members), 1});
+		state.cards.emplace_back(
+			TimelineCard{std::move(command.members), 1, state.next_surface_identity++});
 		state.reveal_frames = 12;
 		break;
 	case TimelineAction::Close:

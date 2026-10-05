@@ -1,3 +1,4 @@
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/App.hpp"
 #include "FlowUi/PublicStructs.hpp"
@@ -645,7 +646,8 @@ void captureDevUiReplayPacket(
 #endif
 
 struct AppWindow {
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+	std::unique_ptr<devSystems::interface_elements::DevTimelineController> timeline_controller;
 #endif
 
 #if FLOW_UI_DEV_MODE
@@ -1529,6 +1531,14 @@ struct App::Impl {
 				storageSystem->collect();
 			}
 
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (!window.timeline_controller)
+				window.timeline_controller =
+					std::make_unique<devSystems::interface_elements::DevTimelineController>();
+			window.ui.timeline_controller_ = window.timeline_controller.get();
+			window.timeline_controller->begin_frame(window.viewPorts, window.renderer,
+													storageSystem->completedSerial());
+#endif
 			const uint32_t frameSlot = window.frames.currentFrame;
 #if defined(AgenticDebug) && AgenticDebug
 			agentic_debug::complete_slot(vk, window.id, frameSlot);
@@ -1760,6 +1770,14 @@ struct App::Impl {
 					static_cast<float>(window.swapchain.swapchain.extent.width),
 					static_cast<float>(window.swapchain.swapchain.extent.height));
 			}
+#endif
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (window.timeline_controller)
+				window.timeline_controller->prepare(window.fontFrameView,
+													std::max(0.01f, window.config.ui.fontScale) *
+														std::max(1.0f, window.config.ui.dpi) /
+														72.0f,
+													window.frames.currentFrame);
 #endif
 			window.preparedUi = window.renderer.prepareFrame(
 				vk,
@@ -2047,6 +2065,10 @@ struct App::Impl {
 				frame.gpuTiming, frame.storageSubmission.serial);
 #endif
 		}
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+		if (window.timeline_controller)
+			window.timeline_controller->submitted(frame.storageSubmission.serial);
+#endif
 		window.lastSubmissionSerial = std::max(window.lastSubmissionSerial, frame.storageSubmission.serial);
 		window.swapchain.lastGraphicsUse = std::max(window.swapchain.lastGraphicsUse, frame.storageSubmission.serial);
 		window.preparedUi = {};
@@ -2250,6 +2272,10 @@ struct App::Impl {
 #if defined(AgenticDebug) && AgenticDebug
 		agentic_debug::release_window(vk, id);
 #endif
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+		if (window.timeline_controller)
+			window.timeline_controller->destroy_drained();
+#endif
 		window.renderer.destroy(vk, *storageSystem, window.lastSubmissionSerial);
 		window.viewPorts.destroyDrained(vk);
 		window.frames.destroy(vk);
@@ -2314,6 +2340,10 @@ struct App::Impl {
 		if (fontsInitialized) fonts.destroy();
 
 		for (auto& [_, window] : windows) {
+#if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (window->timeline_controller)
+				window->timeline_controller->destroy_drained();
+#endif
 			window->viewPorts.destroyDrained(vk);
 			if (storageSystem) {
 				try { window->renderer.destroy(vk, *storageSystem, window->lastSubmissionSerial); } catch (...) {}

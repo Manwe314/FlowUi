@@ -13,15 +13,13 @@ struct DevTimelineParameters {
 	DevTimelineState* timeline = nullptr;
 	DevPerformanceSelection* selection = nullptr;
 	size_t card_index = 0;
+	Clay_ElementId canvas_clip{};
 };
-/** A timeline control or sample; queues commands until the next Workbench build. */
+/** Transport, depth and breadcrumb controls queue commands for the next Workbench build. */
 struct DevTimelineButtonParameters {
 	TimelineCommand command{};
 	std::string label{};
 	DevTimelineState* timeline = nullptr;
-	Clay_Color color = interface_theme::kDepth3Elevated;
-	float width = 0, height = 24;
-	bool highlighted = false;
 };
 struct DevTimelineButton {
 	using Parameters = DevTimelineButtonParameters;
@@ -63,24 +61,16 @@ void text(Context& context, std::string_view value,
 	CLAY_TEXT(context.uiManager.toClayString(value), CLAY_TEXT_CONFIG(config));
 }
 template <class Context>
-void button(Context& context, uint64_t key, std::string label, TimelineCommand command,
-			float width = 0, Clay_Color color = interface_theme::kDepth3Elevated, float height = 24,
-			bool highlighted = false) {
+void button(Context& context, uint64_t key, std::string label, TimelineCommand command) {
 	context.uiManager.createElement(kDevTimelineButton, Keyed("control", key))
 		.setParameters(DevTimelineButtonParameters{std::move(command), std::move(label),
-												   context.params.timeline, color, width, height,
-												   highlighted})
+												   context.params.timeline})
 		.setDevInternalCapture(true)
 		.draw();
 }
+
 [[nodiscard]] Clay_Color block_color(const TimelineBlockSlice& block, bool ghost) noexcept;
 [[nodiscard]] Clay_Color frame_color(uint64_t metric) noexcept;
-/** Draw bounded ruler ticks, preserving nanosecond subtraction before conversion. */
-void ruler(UiManager& manager, Clay_ElementId id, uint64_t start, uint64_t duration, bool seconds);
-/** Draw exact offsets, clipped samples and gaps for a hardware track. */
-void lane(UiManager& manager, Clay_ElementId id, DevTimelineParameters parameters,
-		  std::span<const size_t> blocks, uint64_t start, uint64_t duration, float width,
-		  size_t chain_index, bool cluster_small = true);
 } // namespace timeline_ui
 } // namespace FlowUi::devSystems::interface_elements
 #endif

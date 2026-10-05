@@ -1,5 +1,5 @@
 #pragma once
-#include "devSystems/devInterface/Performance/Workbench/DevTimelineElements.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #if FLOW_UI_DEV_MODE
 namespace FlowUi::devSystems::interface_elements {
 /** Pinned transport, history scrubber and breadcrumb path. */
