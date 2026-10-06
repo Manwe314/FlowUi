@@ -12,6 +12,7 @@ namespace FlowUi::devSystems::interface_elements {
 struct DevPerformanceContentParameters {
 	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
+	Clay_ElementId column_clip{};
 };
 
 } // namespace FlowUi::devSystems::interface_elements

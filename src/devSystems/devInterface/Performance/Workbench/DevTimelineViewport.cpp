@@ -7,6 +7,7 @@
 #include "managers/ViewPortManager.hpp"
 #include <algorithm>
 #include <bit>
+#include <chrono>
 #include <cmath>
 #include <cstring>
 
@@ -134,8 +135,8 @@ struct SurfaceUpload {
 };
 struct Surface {
 	TimelineLayout pending{}, presented{};
-	std::array<uint64_t, 10> layout_key{};
-	std::array<uint64_t, 3> lanes_key{};
+	std::array<uint64_t, 13> layout_key{};
+	std::array<uint64_t, 4> lanes_key{};
 	std::vector<TimelineTrackLane> lanes{};
 	std::vector<UiInstance> base_instances{};
 	std::vector<UiRun> base_runs{};
@@ -148,11 +149,14 @@ struct Surface {
 	}
 	std::unique_ptr<SurfaceUpload> upload = std::make_unique<SurfaceUpload>();
 	std::string key{};
-	Clay_ElementId image_id{}, body_id{}, clip_id{};
+	Clay_ElementId image_id{}, body_id{}, clip_id{}, column_clip_id{};
 	Clay_BoundingBox bounds{}, effective_clip{}, presented_bounds{}, presented_clip{};
 	uint64_t identity = 0, last_serial = 0;
 	float content_y = 0, presented_content_y = 0, press_x = 0, press_y = 0;
 	size_t hovered = timeline_no_parent, pressed = timeline_no_parent;
+	size_t last_clicked = timeline_no_parent;
+	uint64_t last_click_revision = 0;
+	std::chrono::steady_clock::time_point last_click_time{};
 	VkFormat format = VK_FORMAT_UNDEFINED;
 	bool seen = false, recorded = false, available = false, panning = false, scrubbing = false,
 		 primary = false;
@@ -207,8 +211,8 @@ struct DevTimelineController::Impl {
 			instances.emplace_back(instance);
 		};
 		const auto visible = [&](const TimelineDisplayItem& item) {
-			return item.bounds.y + item.bounds.height > surface.content_y &&
-				   item.bounds.y < surface.content_y + surface.bounds.height;
+			return item.screen_space || (item.bounds.y + item.bounds.height > surface.content_y &&
+										 item.bounds.y < surface.content_y + surface.bounds.height);
 		};
 		const std::array<uint64_t, 12> render_key{surface.layout_generation,
 												  fonts->publicationRevision,
@@ -223,16 +227,34 @@ struct DevTimelineController::Impl {
 												  std::bit_cast<uint32_t>(scissor.w),
 												  std::bit_cast<uint32_t>(scissor.h)};
 		if (render_key != surface.render_key || surface.base_instances.empty()) {
+			std::vector<TimelineDisplayItem> render_items;
+			render_items.reserve(scene.items.size());
+			for (const auto& item : scene.items)
+				if (!item.screen_space && visible(item))
+					render_items.emplace_back(item);
+			for (const auto& item : scene.items)
+				if (item.screen_space) {
+					render_items.emplace_back(item);
+					render_items.back().bounds.y += surface.content_y;
+				}
 			++stats.base_builds;
 			++surface.upload_generation;
 			instances.reserve(scene.items.size() * 2 + 1);
 			rectangle({0, surface.content_y, surface.bounds.width, surface.bounds.height},
 					  interface_theme::kDepth0Keel);
-			for (const auto& item : scene.items)
-				if (visible(item))
-					rectangle(item.bounds, item.color);
+			for (const auto& item : render_items)
+				if (visible(item)) {
+					auto clipped_bounds = item.bounds;
+					if (!item.screen_space)
+						clipped_bounds = intersection(
+							clipped_bounds,
+							{0, surface.content_y + scene.ruler_height, surface.bounds.width,
+							 std::max(0.0f, surface.bounds.height - scene.ruler_height)});
+					if (clipped_bounds.height > 0)
+						rectangle(clipped_bounds, item.color);
+				}
 			runs.emplace_back(UiRun{UiType::Solid, scissor, 0, uint32_t(instances.size())});
-			for (const auto& item : scene.items) {
+			for (const auto& item : render_items) {
 				if (!visible(item) || item.label.empty() || item.bounds.width < 18)
 					continue;
 				const auto& layout = text.layout({.text = item.label,
@@ -246,11 +268,13 @@ struct DevTimelineController::Impl {
 				const float top =
 					item.bounds.y + std::max(0.0f, (item.bounds.height - layout.lineHeight) / 2);
 				for (const auto& glyph : layout.glyphs) {
-					if (glyph.x > item.bounds.width)
+					if (glyph.x + item.text_offset_x > item.bounds.width)
 						break;
+					if (glyph.x + item.text_offset_x + glyph.width < 0)
+						continue;
 					UiInstance instance{};
 					instance.type = uint32_t(UiType::Msdf);
-					instance.x = (item.bounds.x + 4 + glyph.x) * scale_x;
+					instance.x = (item.bounds.x + item.text_offset_x + 4 + glyph.x) * scale_x;
 					instance.y = (top - surface.content_y + glyph.y) * scale_y;
 					instance.w = glyph.width * scale_x;
 					instance.h = glyph.height * scale_y;
@@ -264,7 +288,12 @@ struct DevTimelineController::Impl {
 					instances.emplace_back(instance);
 				}
 				const auto clipped = intersection(
-					{scissor.x, scissor.y, scissor.w, scissor.h},
+					{scissor.x,
+					 item.screen_space ? scissor.y
+									   : std::max(scissor.y, scene.ruler_height * scale_y),
+					 scissor.w,
+					 item.screen_space ? scissor.h
+									   : std::max(0.0f, scissor.h - scene.ruler_height * scale_y)},
 					{item.bounds.x * scale_x, (item.bounds.y - surface.content_y) * scale_y,
 					 item.bounds.width * scale_x, item.bounds.height * scale_y});
 				if (instances.size() > first)
@@ -283,22 +312,34 @@ struct DevTimelineController::Impl {
 		const uint32_t outline_start = uint32_t(instances.size());
 		for (size_t index = 0; index < scene.items.size(); ++index) {
 			const auto& item = scene.items[index];
-			if (!visible(item) || (!item.selected && index != surface.hovered))
+			if (item.bounds.width <= 3 && !item.selected && index != surface.hovered)
+				continue;
+			if (!visible(item) || (!item.selected && index != surface.hovered &&
+								   item.command.action == TimelineAction::None))
 				continue;
 			const auto bounds = item.bounds;
-			const float thickness = index == surface.hovered ? 2.0f : 1.0f;
-			rectangle({bounds.x, bounds.y, bounds.width, thickness},
-					  interface_theme::kAccentSeaGlass);
+			const float thickness =
+				index == surface.hovered || item.focused_root || item.selected ? 2.0f : 1.0f;
+			const auto outline_color = index == surface.hovered ? interface_theme::kTextCanvas
+									   : item.selected			? interface_theme::kAccentSeaGlass
+									   : item.focused_root		? Flow_Color("#F59E0B")
+																: Flow_Color("#10232A");
+			rectangle({bounds.x, bounds.y, bounds.width, thickness}, outline_color);
 			rectangle({bounds.x, bounds.y + bounds.height - thickness, bounds.width, thickness},
-					  interface_theme::kAccentSeaGlass);
+					  outline_color);
 			rectangle({bounds.x, bounds.y, std::min(thickness, bounds.width), bounds.height},
-					  interface_theme::kAccentSeaGlass);
+					  outline_color);
 			rectangle({bounds.x + std::max(0.0f, bounds.width - thickness), bounds.y,
 					   std::min(thickness, bounds.width), bounds.height},
-					  interface_theme::kAccentSeaGlass);
+					  outline_color);
 		}
 		if (instances.size() > outline_start)
-			runs.emplace_back(UiRun{UiType::Solid, scissor, outline_start,
+			runs.emplace_back(UiRun{UiType::Solid,
+									{std::max(scissor.x, scene.label_width * scale_x),
+									 std::max(scissor.y, scene.ruler_height * scale_y),
+									 std::max(0.0f, scissor.w - scene.label_width * scale_x),
+									 std::max(0.0f, scissor.h - scene.ruler_height * scale_y)},
+									outline_start,
 									uint32_t(instances.size()) - outline_start});
 		if (surface.uploaded_hover != surface.hovered) {
 			surface.uploaded_hover = surface.hovered;
@@ -329,7 +370,7 @@ struct DevTimelineController::Impl {
 			stats.uploaded_bytes += instances.size() * sizeof(UiInstance);
 		stats.visible_pixels += uint64_t(context.extent.width) * context.extent.height;
 	}
-	void input(Surface& surface, UiManager& manager, DevTimelineState& state) {
+	void input(Surface& surface, UiManager& manager, DevTimelineState& state, size_t card_index) {
 		const auto& input = manager.getCurrentFrameInput();
 		const auto& previous = manager.getPreviousFrameInput();
 		const bool valid = input.windowFocused && surface.available &&
@@ -339,29 +380,133 @@ struct DevTimelineController::Impl {
 		const float vertical =
 			input.mouseY - surface.presented_bounds.y + surface.presented_content_y;
 		const bool plot =
-			inside &&
-			vertical >= (surface.presented.kind == TimelineSurfaceKind::Minimap ? 16 : 20);
+			inside && horizontal >= surface.presented.label_width &&
+			input.mouseY - surface.presented_bounds.y >= surface.presented.ruler_height;
 		surface.hovered =
 			plot ? timeline_hit(surface.presented, horizontal, vertical) : timeline_no_parent;
 		if (!valid) {
 			surface.panning = surface.primary = surface.scrubbing = false;
 			return;
 		}
+		const bool keyboard_owner =
+			surface.presented.kind == TimelineSurfaceKind::Card ||
+			(surface.presented.kind == TimelineSurfaceKind::Macro && state.cards.empty());
+		const bool next_sample = input.keyDown[264] && !previous.keyDown[264];
+		const bool previous_sample = input.keyDown[265] && !previous.keyDown[265];
+		if (keyboard_owner && (next_sample || previous_sample) && !input.ctrl && !input.alt &&
+			!input.super && !manager.inputFields().hasPrimaryFieldFocus()) {
+			std::vector<size_t> candidates;
+			candidates.reserve(surface.presented.items.size());
+			size_t current_candidate = timeline_no_parent;
+			for (size_t item_index = 0; item_index < surface.presented.items.size(); ++item_index) {
+				const auto& item = surface.presented.items[item_index];
+				if ((item.command.action != TimelineAction::Inspect &&
+					 item.command.action != TimelineAction::Open) ||
+					item.command.members.empty())
+					continue;
+				if (std::ranges::find(item.command.members, state.inspected_sample) !=
+					item.command.members.end())
+					current_candidate = candidates.size();
+				candidates.emplace_back(item_index);
+			}
+			if (!candidates.empty() && state.pending.action == TimelineAction::None) {
+				const auto selected = current_candidate == timeline_no_parent
+										  ? (next_sample ? 0 : candidates.size() - 1)
+									  : next_sample ? (current_candidate + 1) % candidates.size()
+									  : current_candidate ? current_candidate - 1
+														  : candidates.size() - 1;
+				const auto& item = surface.presented.items[candidates[selected]];
+				auto command = item.command;
+				command.revision = state.snapshot_revision;
+				command.index =
+					surface.presented.kind == TimelineSurfaceKind::Card ? card_index + 1 : 0;
+				if (surface.presented.kind == TimelineSurfaceKind::Card &&
+					command.members.size() == 1)
+					command.action = TimelineAction::Inspect;
+				state.pending = std::move(command);
+				if (surface.presented.kind == TimelineSurfaceKind::Card &&
+					card_index < state.cards.size()) {
+					if (item.bounds.y <
+						surface.presented_content_y + surface.presented.ruler_height)
+						state.cards[card_index].scroll_y =
+							-std::max(0.0f, item.bounds.y - surface.presented.ruler_height);
+					else if (item.bounds.y + item.bounds.height >
+							 surface.presented_content_y + surface.presented_bounds.height)
+						state.cards[card_index].scroll_y =
+							-std::max(0.0f, item.bounds.y + item.bounds.height -
+												surface.presented_bounds.height);
+					state.restore_minor_scroll = true;
+				}
+			}
+		}
 		if (plot && input.mouseDown[2] && !previous.mouseDown[2] &&
-			surface.presented.kind == TimelineSurfaceKind::Macro) {
+			surface.presented.kind != TimelineSurfaceKind::Minimap) {
 			surface.panning = true;
+			if (surface.presented.kind == TimelineSurfaceKind::Macro)
+				state.minimap_follow_selection = false;
 			state.paused = true;
 			surface.primary = false;
 		}
 		if (!input.mouseDown[2])
 			surface.panning = false;
 		const double fraction =
-			std::clamp(double(horizontal) / std::max(1.0f, surface.presented.width), 0.0, 1.0);
-		if ((plot && surface.presented.kind == TimelineSurfaceKind::Macro) || surface.panning) {
-			if (input.scrollY && plot) {
+			std::clamp(double(horizontal - surface.presented.label_width) /
+						   std::max(1.0f, surface.presented.width - surface.presented.label_width),
+					   0.0, 1.0);
+		if (plot && surface.presented.kind == TimelineSurfaceKind::Minimap && input.scrollY &&
+			!input.shift) {
+			state.minimap_zoom = std::clamp(
+				state.minimap_zoom * std::pow(1.04, std::clamp(double(input.scrollY), -3.0, 3.0)),
+				1.0, 1000.0);
+		}
+		if (((plot && surface.presented.kind == TimelineSurfaceKind::Card) || surface.panning) &&
+			surface.presented.kind == TimelineSurfaceKind::Card &&
+			card_index < state.cards.size() &&
+			(surface.panning || input.scrollX || (input.scrollY && !input.shift))) {
+			auto& focus = state.cards[card_index];
+			uint64_t domain_start = UINT64_MAX, domain_end = 0;
+			for (const auto index : focus.roots) {
+				const auto& block = state.snapshot.blocks[index];
+				domain_start = std::min(domain_start, block.start_ns);
+				domain_end = std::max(domain_end, timeline_end(block.start_ns, block.duration_ns));
+			}
+			const auto domain_duration = std::max(uint64_t{1}, domain_end - domain_start);
+			if (!focus.visible_duration_ns) {
+				focus.visible_start_ns = domain_start;
+				focus.visible_duration_ns = domain_duration;
+			}
+			const auto anchor = timeline_end(focus.visible_start_ns,
+											 uint64_t(fraction * focus.visible_duration_ns));
+			if (plot && input.scrollY && !input.shift) {
+				focus.zoom = std::clamp(
+					focus.zoom * std::pow(1.04, std::clamp(double(input.scrollY), -3.0, 3.0)), 1.0,
+					1000.0);
+				focus.visible_duration_ns =
+					std::max(uint64_t{1}, uint64_t(domain_duration / focus.zoom));
+				const auto offset = uint64_t(fraction * focus.visible_duration_ns);
+				focus.visible_start_ns = anchor > offset ? anchor - offset : 0;
+			}
+			const double delta =
+				(surface.panning ? previous.mouseX - input.mouseX : input.scrollX * 24) /
+				std::max(1.0f, surface.presented.width - surface.presented.label_width) *
+				focus.visible_duration_ns;
+			if (delta < 0)
+				focus.visible_start_ns -= std::min(focus.visible_start_ns, uint64_t(-delta));
+			else
+				focus.visible_start_ns = timeline_end(focus.visible_start_ns, uint64_t(delta));
+			focus.visible_start_ns =
+				std::clamp(focus.visible_start_ns, domain_start,
+						   std::max(domain_start, domain_end > focus.visible_duration_ns
+													  ? domain_end - focus.visible_duration_ns
+													  : domain_start));
+		}
+		if ((plot && surface.presented.kind == TimelineSurfaceKind::Macro) ||
+			(surface.panning && surface.presented.kind == TimelineSurfaceKind::Macro)) {
+			if (input.scrollY && plot && !input.shift) {
+				state.minimap_follow_selection = false;
 				const auto anchor = timeline_end(state.visible_start_ns,
 												 uint64_t(fraction * state.visible_duration_ns));
-				state.zoom *= std::pow(1.2, std::clamp(double(input.scrollY), -20.0, 20.0));
+				state.zoom *= std::pow(1.04, std::clamp(double(input.scrollY), -3.0, 3.0));
 				clamp_timeline_view(state);
 				const auto offset = uint64_t(fraction * state.visible_duration_ns);
 				state.visible_start_ns = anchor > offset ? anchor - offset : 0;
@@ -369,7 +514,8 @@ struct DevTimelineController::Impl {
 			}
 			const double delta =
 				(surface.panning ? previous.mouseX - input.mouseX : input.scrollX * 24) /
-				std::max(1.0f, surface.presented.width) * state.visible_duration_ns;
+				std::max(1.0f, surface.presented.width - surface.presented.label_width) *
+				state.visible_duration_ns;
 			if (delta < 0)
 				state.visible_start_ns -= std::min(state.visible_start_ns, uint64_t(-delta));
 			else
@@ -405,6 +551,19 @@ struct DevTimelineController::Impl {
 				surface.pressed == surface.hovered && plot) {
 				auto command = surface.presented.items[surface.pressed].command;
 				command.revision = surface.presented.revision;
+				if (command.action == TimelineAction::Inspect) {
+					const auto now = std::chrono::steady_clock::now();
+					if (surface.last_clicked == command.members.front() &&
+						surface.last_click_revision == state.snapshot_revision &&
+						now - surface.last_click_time < std::chrono::milliseconds(400)) {
+						command.action = TimelineAction::Open;
+						command.index = card_index + 1;
+						surface.last_clicked = timeline_no_parent;
+					} else
+						surface.last_clicked = command.members.front();
+					surface.last_click_revision = state.snapshot_revision;
+					surface.last_click_time = now;
+				}
 				if (surface.presented.kind == TimelineSurfaceKind::Minimap &&
 					!command.members.empty()) {
 					const auto timestamp =
@@ -476,12 +635,16 @@ void DevTimelineController::prepare(const ::FlowUi::detail::manager_storage::Fon
 			 std::abs(image.boundingBox.x - surface->presented_bounds.x) > .5f ||
 			 std::abs(image.boundingBox.y - surface->presented_bounds.y) > .5f)) {
 			surface->primary = surface->panning = surface->scrubbing = false;
+			surface->last_clicked = timeline_no_parent;
 			surface->hovered = timeline_no_parent;
 		}
 		surface->bounds = image.boundingBox;
 		surface->effective_clip = intersection(image.boundingBox, body.boundingBox);
 		if (clip.found)
 			surface->effective_clip = intersection(surface->effective_clip, clip.boundingBox);
+		const auto column = Clay_GetElementData(surface->column_clip_id);
+		if (column.found)
+			surface->effective_clip = intersection(surface->effective_clip, column.boundingBox);
 		// Use the actual floating image offset; a large scroll never changes the meaning of pixels.
 		surface->content_y = image.boundingBox.y - body.boundingBox.y;
 	}
@@ -515,21 +678,30 @@ void DevTimelineController::destroy_drained() {
 	impl_->retired.clear();
 }
 bool DevTimelineController::owns_scroll(const FrameInput& input) const noexcept {
+	if (input.shift)
+		return false;
 	for (const auto& surface : impl_->surfaces)
-		if (surface->available && surface->presented.kind == TimelineSurfaceKind::Macro &&
-			contains(surface->presented_clip, input.mouseX, input.mouseY) &&
-			input.mouseY - surface->presented_bounds.y + surface->presented_content_y >= 20)
+		if (surface->available && contains(surface->presented_clip, input.mouseX, input.mouseY) &&
+			input.mouseY - surface->presented_bounds.y >= surface->presented.ruler_height &&
+			input.mouseX - surface->presented_bounds.x >= surface->presented.label_width)
 			return true;
 	return false;
 }
 void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_ElementId clip,
 								 DevTimelineState& state, const DevPerformanceSelection& selection,
-								 TimelineSurfaceKind kind, size_t card_index) {
+								 TimelineSurfaceKind kind, size_t card_index,
+								 Clay_ElementId column_clip) {
 	const auto measured = Clay_GetElementData(id);
 	const auto clip_data = Clay_GetElementData(clip);
-	const float width = measured.found	  ? measured.boundingBox.width
-						: clip_data.found ? clip_data.boundingBox.width
-										  : 600;
+	const auto column_data = Clay_GetElementData(column_clip);
+	const float candidate_width =
+		measured.found && clip_data.found
+			? std::min(measured.boundingBox.width, clip_data.boundingBox.width)
+		: measured.found  ? measured.boundingBox.width
+		: clip_data.found ? clip_data.boundingBox.width
+						  : 600;
+	const float width = column_data.found ? std::min(candidate_width, column_data.boundingBox.width)
+										  : candidate_width;
 	if (measured.found && clip_data.found &&
 		intersection(measured.boundingBox, clip_data.boundingBox).height <= 0) {
 		const auto layout = build_timeline_layout(state, selection, kind, card_index, width);
@@ -543,7 +715,7 @@ void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_Ele
 								   ? state.cards[card_index].surface_identity
 								   : 0;
 	const std::string key = "performance.timeline." + std::to_string(manager.windowId()) + "." +
-							std::to_string(id.id) + "." + std::to_string(card_identity) + "." +
+							std::to_string(id.id) + "." +
 							std::to_string(impl_->renderer->devReplayTargetFormat());
 	auto found = std::ranges::find_if(impl_->surfaces,
 									  [&](const auto& surface) { return surface->key == key; });
@@ -580,30 +752,46 @@ void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_Ele
 		found = std::prev(impl_->surfaces.end());
 	}
 	auto& surface = **found;
-	impl_->input(surface, manager, state);
+	impl_->input(surface, manager, state, card_index);
 	surface.body_id = id;
 	surface.clip_id = clip;
+	surface.column_clip_id = column_clip;
 	const uint64_t depth = kind == TimelineSurfaceKind::Card && card_index < state.cards.size()
 							   ? state.cards[card_index].active_depth
 							   : state.active_depth;
-	const std::array<uint64_t, 10> layout_key{state.snapshot_revision,
-											  state.visible_start_ns,
-											  state.visible_duration_ns,
-											  state.selected_frame,
-											  selection.category_mask,
-											  selection.hardware_domain,
-											  depth,
-											  card_identity,
-											  std::bit_cast<uint32_t>(width),
-											  uint64_t(kind)};
+	const std::array<uint64_t, 13> layout_key{
+		state.snapshot_revision,
+		(kind == TimelineSurfaceKind::Card && card_index < state.cards.size()
+			 ? state.cards[card_index].visible_start_ns
+			 : state.visible_start_ns),
+		(kind == TimelineSurfaceKind::Card && card_index < state.cards.size()
+			 ? state.cards[card_index].visible_duration_ns
+			 : state.visible_duration_ns),
+		state.selected_frame,
+		state.inspected_sample,
+		(kind == TimelineSurfaceKind::Macro ? state.track_preferences_revision : 0),
+		selection.category_mask,
+		selection.hardware_domain,
+		depth,
+		(kind == TimelineSurfaceKind::Macro && !state.cards.empty()
+			 ? state.cards.front().surface_identity
+			 : card_identity),
+		std::bit_cast<uint32_t>(width),
+		uint64_t(kind),
+		std::bit_cast<uint64_t>(state.minimap_zoom)};
 	if (surface.layout_key != layout_key || surface.scene().height == 0) {
-		const std::array<uint64_t, 3> lanes_key{state.snapshot_revision, depth, card_identity};
+		const std::array<uint64_t, 4> lanes_key{
+			state.snapshot_revision, depth, card_identity,
+			kind == TimelineSurfaceKind::Macro ? state.track_preferences_revision : 0};
 		if (kind != TimelineSurfaceKind::Minimap && surface.lanes_key != lanes_key) {
 			const std::span<const size_t> roots =
-				kind == TimelineSurfaceKind::Card
+				kind == TimelineSurfaceKind::Card && card_index < state.cards.size()
 					? std::span<const size_t>(state.cards[card_index].roots)
 					: std::span<const size_t>{};
-			surface.lanes = timeline_lanes(state.snapshot, uint32_t(depth), roots);
+			surface.lanes =
+				kind == TimelineSurfaceKind::Macro
+					? timeline_major_lanes(state.snapshot, selection, state.track_preferences)
+					: timeline_lanes(state.snapshot, uint32_t(depth), roots);
 			surface.lanes_key = lanes_key;
 		}
 		surface.pending =
@@ -692,7 +880,8 @@ void timeline_viewport(UiManager& manager, Clay_ElementId id, DevTimelineParamet
 	if (auto* controller = manager.timeline_controller();
 		controller && parameters.timeline && parameters.selection)
 		controller->draw(manager, id, parameters.canvas_clip, *parameters.timeline,
-						 *parameters.selection, kind, parameters.card_index);
+						 *parameters.selection, kind, parameters.card_index,
+						 parameters.column_clip);
 }
 } // namespace FlowUi::devSystems::interface_elements
 #elif FLOW_UI_DEV_MODE

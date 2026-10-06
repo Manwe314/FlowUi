@@ -105,12 +105,14 @@ public:
 	[[nodiscard]] DevTimingConfig config() const noexcept;
 	[[nodiscard]] const TimingClockCalibration& clockCalibration() const noexcept;
 
+	/** Read the monotonic capture clock used by CPU zones and tick boundaries. */
+	[[nodiscard]] uint64_t nowNs() const noexcept;
+
 private:
 	friend class DevTimingRecorder;
 	friend class DevGpuTiming;
 	struct Impl;
 
-	[[nodiscard]] uint64_t nowNs() const noexcept;
 	[[nodiscard]] uint64_t configGeneration() const noexcept;
 	[[nodiscard]] DevTimingConfig recorderConfig(uint64_t& generation) const noexcept;
 	void registerDescriptor(const TimingZoneDescriptor& descriptor) noexcept;

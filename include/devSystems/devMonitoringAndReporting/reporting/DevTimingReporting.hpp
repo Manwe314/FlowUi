@@ -35,6 +35,8 @@ struct TimingWindowReport {
 struct TimingAppTickReport {
 	AppTickId appTick = 0u;
 	uint64_t revision = 0u;
+	uint64_t boundary_start_ns = 0, boundary_end_ns = 0;
+	bool boundary_open = false;
 	std::vector<CpuTimingRecord> applicationCpuZones{};
 	std::vector<TimingWindowReport> windows{};
 	DevTimingConfig captureConfig{};
@@ -80,6 +82,12 @@ struct TimingReportingStatus {
 	bool hasRetainedTicks = false;
 };
 
+/** Consistent owned report set and metadata from one reporting lock. */
+struct TimingCaptureSnapshot {
+	std::vector<TimingAppTickReport> reports{};
+	std::vector<TimingZoneDescriptor> descriptors{};
+	uint64_t mutation_sequence = 0;
+};
 /** Central retained-timeline owner and lightweight timing post-processor. */
 class DevTimingReporting {
 public:
@@ -95,6 +103,10 @@ public:
 
 	/** Drain producer data and publish every app tick through the supplied identity. */
 	void consumeThrough(AppTickId completedThroughAppTick) noexcept;
+	/** Record a non-stack tick boundary; closes the previous cadence interval. */
+	void note_tick_boundary(AppTickId app_tick, uint64_t timestamp_ns) noexcept;
+	/** Acquire reports and descriptor metadata consistently. */
+	[[nodiscard]] TimingCaptureSnapshot capture_snapshot() const;
 
 	[[nodiscard]] TimingReportingStatus status() const noexcept;
 	[[nodiscard]] std::optional<TimingAppTickReport> appTickReport(AppTickId appTick) const;

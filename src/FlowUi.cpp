@@ -666,21 +666,29 @@ struct AppWindow {
 	UiManager ui;
 	AppWindowConfig config{};
 	SwapchainGeneration swapchain;
+#if FLOW_UI_DEV_MODE
 	DevUiReplayPacket devReplayPacket{};
+#endif
 	detail::manager_storage::FontFrameView fontFrameView{};
 	storage::FrameReadLease storageReadLease{};
+#if FLOW_UI_DEV_MODE
 	devSystems::tooling::DevOverlayCommandBuffer devOverlay{};
 	DevUiReplayRequest devReplayRequest{};
+#endif
 	storage::FrameToken storageFrame{};
 	ViewPortManager viewPorts;
 	PreparedUiFrame preparedUi{};
 	FrameVk frames;
 	std::vector<SwapchainGeneration> retiredSwapchains;
+#if FLOW_UI_DEV_MODE
 	devSystems::ManualTimingZone frameTotalTiming{};
 	devSystems::ManualTimingZone userBuildTiming{};
 	devSystems::ManualTimingZone preparedGapTiming{};
+#endif
 	Clay_RenderCommandArray renderCommands{};
+#if FLOW_UI_DEV_MODE
 	devSystems::WindowFrameKey timingFrame{};
+#endif
 	AppWindow(WindowId windowId, AppWindowConfig windowConfig, const AppConfig& appConfig)
 		: id(windowId),
 		  config(std::move(windowConfig)),
@@ -693,7 +701,9 @@ struct AppWindow {
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	uint64_t frameNumber = 0;
 	storage::SubmissionSerial lastSubmissionSerial = 0;
+#if FLOW_UI_DEV_MODE
 	devSystems::AppTickId timingAppTick = 0u;
+#endif
 
 	std::chrono::steady_clock::time_point previousBeginFrameTimestamp{};
 	VkExtent2D observedFramebufferExtent{};
@@ -1344,6 +1354,7 @@ struct App::Impl {
 			detail::terminateForFatalError(makeError(ErrorCode::AppTickSpaceExhausted, ErrorSite::AppPollEvents));
 		}
 		++appTick;
+		devMonitoring.timingReporting().note_tick_boundary(appTick, devMonitoring.timing().nowNs());
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
 		devMonitoring.memory().recorder().setAppTickContext(appTick);
 		devMonitoring.memory().advanceGpuFrameIndex(static_cast<uint32_t>(appTick));

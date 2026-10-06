@@ -1018,8 +1018,10 @@ struct FlowStorageSystem::Impl {
 		std::vector<uint32_t> appliedBindingRevisions;
 		std::vector<uint32_t> preparedBindingBatches;
 		std::vector<PendingBufferWrite> pendingBufferWrites;
+#if FLOW_UI_DEV_MODE
 		std::shared_ptr<ReadLeaseState> leaseValidation{};
 		std::shared_ptr<ArenaLeaseState> arenaValidation{};
+#endif
 		FrameEpoch epoch = 0;
 		uint64_t frameNumber = 0;
 		uint64_t leaseId = 0;
@@ -1052,6 +1054,7 @@ struct FlowStorageSystem::Impl {
 
 #if FLOW_UI_DEV_MODE
 	StorageStats telemetry{};
+#endif
 
 	PersistentPool persistentPool;
 	PersistentPool stringPool;
@@ -1070,6 +1073,7 @@ struct FlowStorageSystem::Impl {
 	std::unordered_set<WindowId> registeredWindowIds;
 	std::unordered_map<UploadId, ResourceState> uploadStates;
 	std::unordered_set<SubmissionSerial> completedOutOfOrder;
+#if FLOW_UI_DEV_MODE
 	template <typename T>
 	[[nodiscard]] static uint64_t vectorCapacityBytes(const std::vector<T>& values) noexcept {
 		return static_cast<uint64_t>(values.capacity()) * sizeof(T);

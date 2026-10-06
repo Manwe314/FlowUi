@@ -702,9 +702,9 @@ struct DevShortcutChord {
 struct DevToolsConfig {
 
 #if FLOW_UI_DEV_MODE
-#endif
 	/** Capture, retention, and sampling controls for developer monitoring. */
 	devSystems::DevMonitoringConfig monitoring{};
+#endif
 
 	/**
 	 * @brief File path used when exporting developer override data.
@@ -713,8 +713,10 @@ struct DevToolsConfig {
 	 */
 	std::filesystem::path overridesPath = ".flowui/overrides.v1.json";
 
+#if FLOW_UI_DEV_MODE
 	/** Schema, override, and per-window tree-capture capacity controls. */
 	devSystems::DevToolingConfig tooling{};
+#endif
 
 	/** @brief Keyboard chord used to toggle the developer-interface window. */
 	DevShortcutChord panelToggleChord{};

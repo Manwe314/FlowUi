@@ -184,18 +184,26 @@ struct UiManagerState {
 	~UiManagerState() noexcept;
 #if FLOW_UI_DEV_MODE
 #endif
+#if FLOW_UI_DEV_MODE
 	devMode::PerformanceDiagnostics performanceDiagnostics{};
+#endif
 	FrameInput frameInputForCurrentLayout{};
 	FrameInput previousFrameInputForCurrentLayout{};
+#if FLOW_UI_DEV_MODE
 	devSystems::tooling::DevTreeCapture devTreeCapture{};
 	devMode::DevRuntime devRuntime{};
+#endif
 	DevToolsConfig devToolsConfig{};
 	text::TextLayoutService textLayoutService{};
+#if FLOW_UI_DEV_MODE
 	ClayBridgeIdTrackerForDev clayBridgeIdTracker{};
+#endif
 	FontFrameView fontView{};
 	InteractionSnapshot previousInteractionSnapshot{};
 	InteractionSnapshot currentInteractionSnapshot{};
+#if FLOW_UI_DEV_MODE
 	FlowRootIdTrackerForDev flowRootIdTracker{};
+#endif
 	storage::MemoryBlock clayMemory{};
 	storage::FrameToken activeFrame{};
 	storage::ArenaView frameArena{};
