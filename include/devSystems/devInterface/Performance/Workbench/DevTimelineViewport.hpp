@@ -37,8 +37,8 @@ public:
 	/** Own wheel events over a previously submitted macro plot before Clay scrolling. */
 	[[nodiscard]] bool owns_scroll(const FrameInput& input) const noexcept;
 	void draw(UiManager& manager, Clay_ElementId id, Clay_ElementId clip, DevTimelineState& state,
-			  const DevPerformanceSelection& selection, TimelineSurfaceKind kind,
-			  size_t card_index);
+			  const DevPerformanceSelection& selection, TimelineSurfaceKind kind, size_t card_index,
+			  Clay_ElementId column_clip = {});
 
 private:
 	struct Impl;

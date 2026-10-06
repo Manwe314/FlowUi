@@ -14,7 +14,6 @@ namespace FlowUi::devSystems::interface_elements {
 
 struct DevPerformanceWorkbench {
 	using Parameters = DevPerformanceContentParameters;
-	using State = DevTimelineState;
 	using BuildContext = ElementBuildContext<DevPerformanceWorkbench>;
 
 	static constexpr FlowDefinitionID definitionId =

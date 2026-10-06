@@ -35,6 +35,8 @@ namespace {
 void clearReport(TimingAppTickReport& report) {
 	report.appTick = 0u;
 	report.revision = 0u;
+	report.boundary_start_ns = report.boundary_end_ns = 0;
+	report.boundary_open = false;
 	report.applicationCpuZones.clear();
 	for (TimingWindowReport& window : report.windows) {
 		window.window = InvalidWindowId;
@@ -96,6 +98,9 @@ void clearReport(TimingAppTickReport& report) {
 	TimingAppTickReport result{
 		.appTick = source.appTick,
 		.revision = source.revision,
+		.boundary_start_ns = source.boundary_start_ns,
+		.boundary_end_ns = source.boundary_end_ns,
+		.boundary_open = source.boundary_open,
 		.applicationCpuZones = source.applicationCpuZones,
 		.captureConfig = source.captureConfig,
 		.cpuQuality = source.cpuQuality,
@@ -365,6 +370,44 @@ void DevTimingReporting::consumeThrough(AppTickId completedThroughAppTick) noexc
 		// Development reporting must not replace application control flow.
 		impl_->ingestionFailures.fetch_add(1u, std::memory_order_relaxed);
 	}
+}
+
+void DevTimingReporting::note_tick_boundary(AppTickId app_tick, uint64_t timestamp_ns) noexcept {
+	try {
+		std::unique_lock lock(impl_->mutex);
+		impl_->publishThrough(app_tick);
+		if (app_tick > 0)
+			if (auto* previous = impl_->retained(app_tick - 1)) {
+				previous->boundary_end_ns = timestamp_ns;
+				previous->boundary_open = false;
+				impl_->revise(*previous);
+			}
+		if (auto* current = impl_->retained(app_tick)) {
+			current->boundary_start_ns = timestamp_ns;
+			current->boundary_open = true;
+			impl_->revise(*current);
+		}
+	} catch (...) {
+		impl_->ingestionFailures.fetch_add(1u, std::memory_order_relaxed);
+	}
+}
+TimingCaptureSnapshot DevTimingReporting::capture_snapshot() const {
+	TimingCaptureSnapshot result;
+	std::shared_lock lock(impl_->mutex);
+	result.mutation_sequence = impl_->mutationSequence;
+	result.descriptors = impl_->descriptors;
+	result.reports.reserve(impl_->retainedTickCount);
+	if (impl_->hasTicks)
+		for (auto tick = impl_->oldestTick; tick <= impl_->newestTick; ++tick) {
+			if (const auto* report = impl_->retained(tick)) {
+				result.reports.emplace_back(publicSnapshot(*report));
+				if (result.reports.back().boundary_open)
+					result.reports.back().boundary_end_ns = impl_->timing->nowNs();
+			}
+			if (tick == UINT64_MAX)
+				break;
+		}
+	return result;
 }
 
 TimingReportingStatus DevTimingReporting::status() const noexcept {

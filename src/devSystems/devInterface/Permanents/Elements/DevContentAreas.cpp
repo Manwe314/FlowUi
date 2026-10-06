@@ -109,10 +109,12 @@ void drawSelectedWorkbench(Context& context) {
 		});
 		break;
 	case DevInterfaceTab::Performance:
-		drawSelected(context, kDevPerformanceWorkbench, DevPerformanceContentParameters{
-			.app = context.params.app,
-			.interfaceState = context.params.interfaceState,
-		});
+		drawSelected(context, kDevPerformanceWorkbench,
+					 DevPerformanceContentParameters{
+						 .app = context.params.app,
+						 .interfaceState = context.params.interfaceState,
+						 .column_clip = context.clayID(),
+					 });
 		break;
 	case DevInterfaceTab::Memory:
 		drawSelected(context, kDevMemoryWorkbench, DevMemoryContentParameters{

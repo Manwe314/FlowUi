@@ -34,15 +34,19 @@ struct GpuTimingRecord {
 	uint64_t startTick = 0u;
 	uint64_t durationTicks = 0u;
 	uint64_t durationNs = 0u;
+	double timestamp_period_ns = 0;
+	uint32_t timestamp_valid_bits = 64;
 	uint64_t cpuAlignedStartNs = 0u;
 	uint64_t calibrationMaximumDeviationNs = 0u;
 	uint64_t submissionSerial = 0u;
+	uint64_t device_identity = 0, queue_identity = 0;
 	TimingZoneTypeId typeId = 0u;
 	WindowFrameKey frame{};
 	AppTickId appTick = 0u;
 	uint64_t primaryEntityId = 0u;
 	uint64_t secondaryEntityId = 0u;
 	uint64_t calibrationId = 0u;
+	uint32_t zone_index = UINT32_MAX;
 	uint32_t parentZoneIndex = UINT32_MAX;
 	uint32_t queueFamilyIndex = UINT32_MAX;
 	VkPipelineStageFlags2 beginStage = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
@@ -88,6 +92,7 @@ struct GpuTimingFrameSlot {
 	VkQueryPool queryPool = VK_NULL_HANDLE;
 	AppTickId appTick = 0u;
 	uint64_t submissionSerial = 0u;
+	uint64_t device_identity = 0, queue_identity = 0;
 	uint32_t queryCapacity = 0u;
 	uint32_t usedQueries = 0u;
 	uint32_t queueFamilyIndex = UINT32_MAX;

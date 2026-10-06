@@ -13,11 +13,15 @@ struct TimelineDisplayItem {
 	Clay_BoundingBox bounds{};
 	Clay_Color color{};
 	bool selected = false;
+	bool screen_space = false;
+	bool focused_root = false;
+	float text_offset_x = 0;
 };
 struct TimelineLayout {
 	std::vector<TimelineDisplayItem> items{};
 	uint64_t revision = 0, start_ns = 0, duration_ns = 1;
 	float width = 0, height = 0;
+	float label_width = 0, ruler_height = 20;
 	TimelineSurfaceKind kind = TimelineSurfaceKind::Macro;
 };
 /** Clip before subtracting unsigned timestamps; retain at least one logical pixel. */

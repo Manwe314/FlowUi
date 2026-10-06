@@ -218,17 +218,22 @@ void DevGpuTiming::resolveCompleted(VulkanContext& vk, GpuTimingFrameSlot& slot)
 				.startTick = begin,
 				.durationTicks = duration,
 				.durationNs = toNanoseconds(duration, timestampPeriodNs_),
-				.cpuAlignedStartNs = calibration.valid
-					? alignGpuTickToCpu(begin, calibration, mask, timestampPeriodNs_)
-					: 0u,
+				.timestamp_period_ns = timestampPeriodNs_,
+				.timestamp_valid_bits = timestampValidBits_,
+				.cpuAlignedStartNs = calibration.valid ? alignGpuTickToCpu(begin, calibration, mask,
+																		   timestampPeriodNs_)
+													   : 0u,
 				.calibrationMaximumDeviationNs = calibration.maximumDeviationNs,
 				.submissionSerial = slot.submissionSerial,
+				.device_identity = slot.device_identity,
+				.queue_identity = slot.queue_identity,
 				.typeId = zone.typeId,
 				.frame = slot.frame,
 				.appTick = slot.appTick,
 				.primaryEntityId = zone.entity.primaryId,
 				.secondaryEntityId = zone.entity.secondaryId,
 				.calibrationId = calibration.id,
+				.zone_index = zoneIndex,
 				.parentZoneIndex = zone.parentZoneIndex,
 				.queueFamilyIndex = slot.queueFamilyIndex,
 				.beginStage = zone.beginStage,
@@ -279,6 +284,8 @@ GpuTimingCommandContext DevGpuTiming::beginFrameRecording(
 	slot.appTick = appTick;
 	slot.submissionSerial = 0u;
 	slot.queueFamilyIndex = vk.graphicsQFamily;
+	slot.device_identity = reinterpret_cast<uintptr_t>(vk.device);
+	slot.queue_identity = reinterpret_cast<uintptr_t>(vk.graphicsQ);
 	slot.usedQueries = 0u;
 	slot.zones.clear();
 	slot.activeZones.clear();

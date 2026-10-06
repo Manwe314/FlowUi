@@ -11,7 +11,7 @@
 
 #include "FlowUi/ElementID.hpp"
 #include "FlowUi/WindowId.hpp"
-#include "devSystems/devInterface/Performance/DevPerformanceSelection.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
 #include "devSystems/devTooling/override/DevOverrideTypes.hpp"
 
 namespace FlowUi::devSystems {
@@ -53,6 +53,7 @@ struct DevInterfaceEditTransaction {
 /** Persistent orchestration state owned by the singleton interface element. */
 struct DevInterfaceState {
 	DevPerformanceSelection performance_selection{};
+	interface_elements::DevTimelineState performance_timeline{};
 	DevInterfaceEditorClipboard editorClipboard{};
 	std::string searchQuery{};
 	std::string lastActionMessage = "Developer interface initialized";

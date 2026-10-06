@@ -14,6 +14,7 @@ struct DevTimelineParameters {
 	DevPerformanceSelection* selection = nullptr;
 	size_t card_index = 0;
 	Clay_ElementId canvas_clip{};
+	Clay_ElementId column_clip{};
 };
 /** Transport, depth and breadcrumb controls queue commands for the next Workbench build. */
 struct DevTimelineButtonParameters {
