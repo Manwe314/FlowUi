@@ -37,7 +37,9 @@ void DevInterface::buildElement(BuildContext& context) {
 		context.devTimingRecorder(), TimingCategory::DevTool,
 		TimingZoneRole::DevToolWork, "flowui.dev_interface.build");
 
-	State& state = context.state();
+	if (!context.params.interface_state)
+		return;
+	DevInterfaceState& state = *context.params.interface_state;
 	if (context.params.app) synchronize_inspect_selection(*context.params.app, state);
 	if (state.selectedWindowId == InvalidWindowId) {
 		state.selectedWindowId = context.params.mainWindowId;
@@ -60,28 +62,26 @@ void DevInterface::buildElement(BuildContext& context) {
 }
 
 void DevInterface::buildPermanentHeader(BuildContext& context) {
-	context.uiManager.createElement(
-		kDevInterfaceHeader, LocalElementName{"permanent-header"})
+	context.uiManager.createElement(kDevInterfaceHeader, LocalElementName{"permanent-header"})
 		.setParameters(DevInterfaceHeaderParameters{
 			.app = context.params.app,
-			.interfaceState = &context.state(),
+			.interfaceState = context.params.interface_state,
 			.interfaceWindowId = context.params.interfaceWindowId,
 		})
 		.draw();
 }
 
 void DevInterface::buildContentHeader(BuildContext& context) {
-	context.uiManager.createElement(
-		kDevContentHeader, LocalElementName{"content-header"})
+	context.uiManager.createElement(kDevContentHeader, LocalElementName{"content-header"})
 		.setParameters(DevContentHeaderParameters{
 			.app = context.params.app,
-			.interfaceState = &context.state(),
+			.interfaceState = context.params.interface_state,
 		})
 		.draw();
 }
 
 void DevInterface::buildContent(BuildContext& context) {
-	State& state = context.state();
+	DevInterfaceState& state = *context.params.interface_state;
 	state.selectorWidth = std::clamp(
 		state.selectorWidth, kSelectorMinimumWidth, kSelectorMaximumWidth);
 	state.inspectorWidth = std::clamp(
@@ -150,7 +150,7 @@ void DevInterface::buildContent(BuildContext& context) {
 }
 
 void DevInterface::buildPermanentFooter(BuildContext& context) {
-	const State& state = context.state();
+	const DevInterfaceState& state = *context.params.interface_state;
 	context.uiManager.createElement(
 		kDevInterfaceFooter, LocalElementName{"permanent-footer"})
 		.setParameters(DevInterfaceFooterParameters{

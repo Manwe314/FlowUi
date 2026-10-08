@@ -377,6 +377,11 @@ void DevGpuTiming::endZone(
 	slot.activeZones.pop_back();
 }
 
+void DevGpuTiming::drain_completed_records_into(std::vector<GpuTimingRecord>& destination) {
+	std::lock_guard lock(recordsMutex_);
+	destination.insert(destination.end(), completedRecords_.begin(), completedRecords_.end());
+	completedRecords_.clear();
+}
 std::vector<GpuTimingRecord> DevGpuTiming::drainCompletedRecords() {
 	std::lock_guard lock(recordsMutex_);
 	std::vector<GpuTimingRecord> result;

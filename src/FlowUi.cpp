@@ -31,6 +31,7 @@
 #include "devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp"
+#include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #endif
@@ -646,6 +647,9 @@ void captureDevUiReplayPacket(
 #endif
 
 struct AppWindow {
+#if FLOW_UI_DEV_MODE
+	bool dev_suspended = false;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 	std::unique_ptr<devSystems::interface_elements::DevTimelineController> timeline_controller;
 #endif
@@ -1173,7 +1177,10 @@ struct App::Impl {
 		initializeDefaultFont();
 #if FLOW_UI_DEV_MODE
 		Status devInterfaceStatus = devInterface.initialize(mainPointer->ui, config.dev);
-		if (!devInterfaceStatus) throw FlowUiException(devInterfaceStatus.error());
+		if (!devInterfaceStatus)
+			throw FlowUiException(devInterfaceStatus.error());
+		if (config.dev.enabled && config.dev.capture_timing_on_startup)
+			devMonitoring.performance_capture().request_startup_capture();
 #endif
 	}
 
@@ -1293,8 +1300,7 @@ struct App::Impl {
 			actionManager.attachTo(pending->ui);
 			elementManager.attachTo(pending->ui);
 #if FLOW_UI_DEV_MODE
-			Status devInterfaceStatus = devInterface.attachWindow(pending->ui);
-			if (!devInterfaceStatus) throw FlowUiException(devInterfaceStatus.error());
+
 #endif
 			pending->swapchain.create(
 				pending->config.native,
@@ -1307,6 +1313,11 @@ struct App::Impl {
 			devMonitoring.timingReporting().noteFramesInFlight(pending->config.vulkan.framesInFlight);
 #endif
 			pending->observedFramebufferExtent = pending->backend->framebufferExtent();
+#if FLOW_UI_DEV_MODE
+			Status dev_interface_status = devInterface.attachWindow(pending->ui);
+			if (!dev_interface_status)
+				throw FlowUiException(dev_interface_status.error());
+#endif
 			pending->renderer.init(
 				pending->config.vulkan,
 				pending->config.ui,
@@ -1368,6 +1379,10 @@ struct App::Impl {
 		FLOWUI_DEV_TIMING_ZONE(
 			timingRecorder(), devSystems::TimingCategory::Lifecycle,
 			devSystems::TimingZoneRole::Work, "flowui.app.poll_events");
+#endif
+#if FLOW_UI_DEV_MODE
+		for (auto& [window_id, window] : windows)
+			window->inputQueue.dev_shortcut_presses.fill(0);
 #endif
 		detail::pollWindowSystemEvents();
 		themeManager.applyStagedMutations();
@@ -1639,14 +1654,17 @@ struct App::Impl {
 			}
 #if FLOW_UI_DEV_MODE
 			devTooling.inspect_interaction().set_interface_window(devInterface.windowId());
-			devTooling.inspect_interaction().filter_input(
-				window.id, window.ui.devTreeSnapshot(), layoutInput, window.inspect_pointer);
+			if (!devMonitoring.performance_capture().interface_work_suspended())
+				devTooling.inspect_interaction().filter_input(
+					window.id, window.ui.devTreeSnapshot(), layoutInput, window.inspect_pointer);
 #endif
 			window.ui.beginFrame(
 				window.storageFrame, layoutInput, window.fontFrameView, layoutWidth, layoutHeight);
 #if FLOW_UI_DEV_MODE
-			if (devTooling.inspect_interaction().picking() &&
-				devTooling.inspect_interaction().eligible_window(window.id) && layoutInput.pointerInside)
+			if (!devMonitoring.performance_capture().interface_work_suspended() &&
+				devTooling.inspect_interaction().picking() &&
+				devTooling.inspect_interaction().eligible_window(window.id) &&
+				layoutInput.pointerInside)
 				window.ui.requestCursor(CursorType::Crosshair, 255);
 #endif
 #if FLOW_UI_DEV_MODE
@@ -1745,7 +1763,8 @@ struct App::Impl {
 					window.storageFrame, preparedBindings.dirtyBindings);
 			}
 #if FLOW_UI_DEV_MODE
-			if (!window.devReplayRequest.commandIds.empty()) {
+			if (!devMonitoring.performance_capture().interface_work_suspended() &&
+				!window.devReplayRequest.commandIds.empty()) {
 				captureDevUiReplayPacket(
 					window.devReplayRequest,
 					window.renderCommands,
@@ -1756,9 +1775,13 @@ struct App::Impl {
 			}
 			window.devOverlay.clear();
 			devSystems::tooling::DevOverlaySelectionSpec overlaySelection{};
-			devTooling.inspect_interaction().finish_frame(window.ui.devTreeSnapshot(), window.inspect_pointer);
-			if (devTooling.inspect_interaction().eligible_window(window.id) &&
-				(devTooling.inspect_interaction().overlay_selection(window.ui.devTreeSnapshot(), overlaySelection) ||
+			if (!devMonitoring.performance_capture().interface_work_suspended())
+				devTooling.inspect_interaction().finish_frame(window.ui.devTreeSnapshot(),
+															  window.inspect_pointer);
+			if (!devMonitoring.performance_capture().interface_work_suspended() &&
+				devTooling.inspect_interaction().eligible_window(window.id) &&
+				(devTooling.inspect_interaction().overlay_selection(window.ui.devTreeSnapshot(),
+																	overlaySelection) ||
 				 devTooling.overlaySelection(window.id, overlaySelection))) {
 				const float scaleX = std::max(window.uiToFramebufferScaleX, 1.0e-6f);
 				const float scaleY = std::max(window.uiToFramebufferScaleY, 1.0e-6f);
@@ -2395,6 +2418,7 @@ struct App::Impl {
 #endif
 		vk.destroy();
 #if FLOW_UI_DEV_MODE
+		devMonitoring.performance_capture().shutdown(appTick, devMonitoring.timing().nowNs());
 		shutdownTiming.end();
 		devMonitoring.timingReporting().consumeThrough(appTick);
 		devMonitoring.memoryReporting().consume(appTick);
@@ -2568,6 +2592,10 @@ Status App::dispatchManagedWindows() {
 			removeWindowUiCallback(id);
 			continue;
 		}
+#if FLOW_UI_DEV_MODE
+		if (windowIt->second->dev_suspended)
+			continue;
+#endif
 		if (!windowIt->second->backend || windowIt->second->backend->shouldClose()) {
 			if (flags.autoDestroyOnClose) {
 				try {
@@ -2619,9 +2647,128 @@ bool App::hasWindow(WindowId id) const noexcept {
 	return impl_ && id != InvalidWindowId && impl_->windows.contains(id);
 }
 
+#if FLOW_UI_DEV_MODE
+void App::request_dev_interface_toggle() noexcept {
+	if (impl_)
+		impl_->devInterface.request_toggle();
+}
+Status App::request_dev_performance_capture(
+	const devSystems::PerformanceCaptureSettings& settings) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	const auto& toggle = impl_->config.dev.panelToggleChord;
+	const auto& start = settings.start_chord;
+	if (settings.start_mode == devSystems::PerformanceCaptureStartMode::Shortcut &&
+		start.key == toggle.key && start.ctrl == toggle.ctrl && start.shift == toggle.shift &&
+		start.alt == toggle.alt && start.super == toggle.super)
+		return unexpectedError(makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
+	if (settings.end_mode == devSystems::PerformanceCaptureEndMode::BudgetEvent &&
+		settings.budget_window &&
+		(!impl_->windows.contains(settings.budget_window) ||
+		 settings.budget_window == impl_->devInterface.windowId()))
+		return unexpectedError(
+			makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppAccessWindow));
+	return impl_->devMonitoring.performance_capture().request_capture(settings);
+}
+Status App::set_dev_window_suspended(WindowId window_id, bool suspended) {
+	return runLocalOperation([&] {
+		impl_->requirePlatformThread();
+		impl_->requireQuiescent();
+		auto& window = impl_->requireWindow(window_id);
+		window.dev_suspended = suspended;
+		window.backend->setShouldClose(0);
+		auto* native = static_cast<GLFWwindow*>(window.backend->nativeHandle());
+		if (suspended) {
+			impl_->drainWindowGraphics(window);
+			glfwHideWindow(native);
+			window.inputQueue.clearKeyboardState();
+			window.inputQueue.clearMouseButtonsState();
+		} else {
+			glfwShowWindow(native);
+			glfwFocusWindow(native);
+		}
+	});
+}
+bool App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept {
+	if (!impl_ || chord.key < 32 || chord.key >= 349)
+		return false;
+	const auto modifiers =
+		(chord.ctrl ? 1 : 0) | (chord.shift ? 2 : 0) | (chord.alt ? 4 : 0) | (chord.super ? 8 : 0);
+	for (const auto& [window_id, window] : impl_->windows)
+		if (!window->dev_suspended &&
+			(window->inputQueue.dev_shortcut_presses[static_cast<size_t>(chord.key)] &
+			 (1u << modifiers)))
+			return true;
+	return false;
+}
+bool App::dev_shortcut_down(const DevShortcutChord& chord) const noexcept {
+	if (!impl_ || chord.key < 32 || chord.key >= 349)
+		return false;
+	for (const auto& [window_id, window] : impl_->windows) {
+		if (!window->backend || window->dev_suspended)
+			continue;
+		auto* native = static_cast<GLFWwindow*>(window->backend->nativeHandle());
+		if (!native || glfwGetWindowAttrib(native, GLFW_FOCUSED) != GLFW_TRUE)
+			continue;
+		const auto down = [&](int key) { return glfwGetKey(native, key) == GLFW_PRESS; };
+		if (down(chord.key) &&
+			(down(GLFW_KEY_LEFT_CONTROL) || down(GLFW_KEY_RIGHT_CONTROL)) == chord.ctrl &&
+			(down(GLFW_KEY_LEFT_SHIFT) || down(GLFW_KEY_RIGHT_SHIFT)) == chord.shift &&
+			(down(GLFW_KEY_LEFT_ALT) || down(GLFW_KEY_RIGHT_ALT)) == chord.alt &&
+			(down(GLFW_KEY_LEFT_SUPER) || down(GLFW_KEY_RIGHT_SUPER)) == chord.super)
+			return true;
+	}
+	return false;
+}
+Status App::advance_dev_capture() {
+	auto synchronized = impl_->devInterface.synchronize(*this);
+	if (!synchronized)
+		return synchronized;
+	auto& capture = impl_->devMonitoring.performance_capture();
+	const auto tick = impl_->appTick;
+	const auto& settings = capture.status().settings;
+	if (settings.end_mode == devSystems::PerformanceCaptureEndMode::BudgetEvent &&
+		settings.budget_window && !impl_->windows.contains(settings.budget_window))
+		capture.fail_capture(tick, impl_->devMonitoring.timingReporting().current_boundary_ns());
+	const auto progress = capture.status();
+	uint64_t pending = 0;
+	if (progress.phase == devSystems::PerformanceCapturePhase::Finalizing) {
+		for (auto& [window_id, window] : impl_->windows) {
+			for (auto& frame : window->frames.frames) {
+				auto& timing_slot = frame.gpuTiming;
+				if (!timing_slot.submitted || timing_slot.appTick < progress.first_app_tick ||
+					timing_slot.appTick >= progress.end_app_tick_exclusive)
+					continue;
+				if (vkGetFenceStatus(impl_->vk.device, frame.inFlight) == VK_SUCCESS)
+					impl_->devMonitoring.gpuTiming().resolveCompleted(impl_->vk, timing_slot);
+				else
+					++pending;
+			}
+		}
+		pending += impl_->devMonitoring.timing().pending_scope_count(
+			progress.first_app_tick, progress.end_app_tick_exclusive);
+		impl_->devMonitoring.timingReporting().consumeThrough(tick);
+	}
+	capture.advance_tick(tick, impl_->devMonitoring.timingReporting().current_boundary_ns(),
+						 impl_->devInterface.windowId() != InvalidWindowId &&
+							 !impl_->devInterface.suspended(),
+						 impl_->devInterface.take_start_request(), pending);
+	if (capture.status().phase == devSystems::PerformanceCapturePhase::Sealed)
+		return impl_->devInterface.synchronize(*this);
+	return {};
+}
+#endif
+
 Status App::pollEvents() {
 	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
-	return runLocalOperation([&] { impl_->pollEventsAndAdvanceSharedManagers(); });
+	return runLocalOperation([&] {
+		impl_->pollEventsAndAdvanceSharedManagers();
+#if FLOW_UI_DEV_MODE
+		auto capture_status = advance_dev_capture();
+		if (!capture_status)
+			throw FlowUiException(capture_status.error());
+#endif
+	});
 }
 
 bool App::shouldClose() const {
@@ -2650,6 +2797,11 @@ Status App::beginFrame() {
 	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppBeginFrame));
 	return runLocalOperation([&] {
 		impl_->pollEventsAndAdvanceSharedManagers();
+#if FLOW_UI_DEV_MODE
+		auto capture_status = advance_dev_capture();
+		if (!capture_status)
+			throw FlowUiException(capture_status.error());
+#endif
 		impl_->beginFrame(impl_->mainWindowId);
 	});
 }
@@ -2673,10 +2825,6 @@ Status App::drawFrame() {
 	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppDrawFrame));
 	Status mainStatus = drawFrame(impl_->mainWindowId);
 	if (!mainStatus) return mainStatus;
-#if FLOW_UI_DEV_MODE
-	Status devInterfaceStatus = impl_->devInterface.synchronize(*this);
-	if (!devInterfaceStatus) return devInterfaceStatus;
-#endif
 	return dispatchManagedWindows();
 }
 

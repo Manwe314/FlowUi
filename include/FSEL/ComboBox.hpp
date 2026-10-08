@@ -73,6 +73,8 @@ struct ComboBoxParameters {
 	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	/** Alignment of the trigger label; popup options retain their normal alignment. */
+	Clay_TextAlignment labelAlignment = CLAY_TEXT_ALIGN_LEFT;
 	bool enabled = true;
 	bool showScrollIndicator = true;
 };
@@ -215,18 +217,23 @@ struct ComboBox {
 			.vertical = true,
 		};
 
-		const Clay_TextElementConfig textConfig = makeTextConfig(
-			context, selected ? appearance.textColor : theme.placeholderColor);
+		Clay_TextElementConfig textConfig =
+			makeTextConfig(context, selected ? appearance.textColor : theme.placeholderColor);
+		textConfig.textAlignment = context.params.labelAlignment;
 		CLAY(context.clayID(), trigger) {
 			if (selected && selected->icon.handle) {
 				drawIcon(context, context.clayID("selected-icon"), selected->icon,
-					appearance.iconColor, resolvedIconSize(context, theme));
+						 appearance.iconColor, resolvedIconSize(context, theme));
 			}
 			Clay_ElementDeclaration labelRoot{};
 			labelRoot.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0),
 				.height = CLAY_SIZING_FIT(0),
 			};
+			labelRoot.layout.childAlignment.x =
+				context.params.labelAlignment == CLAY_TEXT_ALIGN_CENTER	 ? CLAY_ALIGN_X_CENTER
+				: context.params.labelAlignment == CLAY_TEXT_ALIGN_RIGHT ? CLAY_ALIGN_X_RIGHT
+																		 : CLAY_ALIGN_X_LEFT;
 			labelRoot.clip = {
 				.horizontal = true,
 				.vertical = false,

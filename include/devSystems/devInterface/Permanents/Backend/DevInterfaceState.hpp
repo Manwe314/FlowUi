@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "FlowUi/ElementID.hpp"
+#include "FlowUi/App.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
 #include "devSystems/devTooling/override/DevOverrideTypes.hpp"
@@ -52,6 +53,12 @@ struct DevInterfaceEditTransaction {
 
 /** Persistent orchestration state owned by the singleton interface element. */
 struct DevInterfaceState {
+	uint64_t capture_start_mode = 0, capture_end_mode = 2, capture_budget_window = 0;
+	uint64_t capture_key = 297, capture_modifiers = 3;
+	float capture_duration_seconds = 5, capture_budget_ms = 16.6f, capture_tail_seconds = .5f;
+	std::string capture_error{};
+	std::vector<DevWindowInfo> capture_windows{}, pending_capture_windows{};
+	uint64_t capture_metadata_generation = 0;
 	DevPerformanceSelection performance_selection{};
 	interface_elements::DevTimelineState performance_timeline{};
 	DevInterfaceEditorClipboard editorClipboard{};

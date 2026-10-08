@@ -179,6 +179,13 @@ private:
 			auto* self = static_cast<GlfwWindowBackend*>(glfwGetWindowUserPointer(win));
 			if (self && self->input) {
 				self->input->pushKey(key, action != GLFW_RELEASE);
+#if FLOW_UI_DEV_MODE
+				if (action == GLFW_PRESS)
+					self->input->note_dev_shortcut_press(
+						key,
+						((mods & GLFW_MOD_CONTROL) ? 1 : 0) | ((mods & GLFW_MOD_SHIFT) ? 2 : 0) |
+							((mods & GLFW_MOD_ALT) ? 4 : 0) | ((mods & GLFW_MOD_SUPER) ? 8 : 0));
+#endif
 			}
 		});
 

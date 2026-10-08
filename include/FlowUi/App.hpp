@@ -105,6 +105,7 @@ namespace detail::storage { struct BindingHotRecord; }
 
 namespace devSystems {
 class DevMonitoringAndReporting;
+struct PerformanceCaptureSettings;
 class DevTooling;
 
 struct DevUiReplaySource {
@@ -500,6 +501,17 @@ public:
 	/** @brief Access the immutable app-wide action manager. */
 	const ActionManager& actions() const;
 #if FLOW_UI_DEV_MODE
+	/** Queue a manual developer-interface toggle, equivalent to its panel shortcut. */
+	void request_dev_interface_toggle() noexcept;
+	/** Validate capture intent against this application's panel shortcut. */
+	[[nodiscard]] Status request_dev_performance_capture(
+		const devSystems::PerformanceCaptureSettings& settings) noexcept;
+	/** Suspend developer-window dispatch and visibility while preserving its session. */
+	[[nodiscard]] Status set_dev_window_suspended(WindowId window, bool suspended);
+	/** Poll a configured chord on focused native application windows before UI work. */
+	[[nodiscard]] bool dev_shortcut_down(const DevShortcutChord& chord) const noexcept;
+	/** Read a native press edge before UI dispatch; repeat events are excluded. */
+	[[nodiscard]] bool dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept;
 	/** Development-only access to timing monitoring and retained reports. */
 	devSystems::DevMonitoringAndReporting& devMonitoring();
 	const devSystems::DevMonitoringAndReporting& devMonitoring() const;
@@ -745,6 +757,9 @@ public:
 	[[nodiscard]] std::string clipboardText(WindowId id) const;
 
 private:
+#if FLOW_UI_DEV_MODE
+	[[nodiscard]] Status advance_dev_capture();
+#endif
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 

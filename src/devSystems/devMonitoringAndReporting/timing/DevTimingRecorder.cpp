@@ -6,6 +6,7 @@
 #include <array>
 #include <atomic>
 #include <limits>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -60,6 +61,7 @@ void addSaturated(uint64_t& destination, uint64_t value) noexcept {
 
 struct DevTimingRecorder::Impl {
 	std::array<ActiveCpuZone, kMaximumActiveZoneDepth> activeZones{};
+	std::array<std::atomic<AppTickId>, kMaximumActiveZoneDepth> pending_ticks{};
 	Impl(
 		DevTiming& timingOwner,
 		TimingTrackId timingTrack,
@@ -70,6 +72,8 @@ struct DevTimingRecorder::Impl {
 		  trackName(name),
 		  producerThread(std::this_thread::get_id()),
 		  records(std::max(64u, requestedCapacity)) {
+		for (auto& tick : pending_ticks)
+			tick.store(UINT64_MAX, std::memory_order_relaxed);
 		cachedConfig = owner->recorderConfig(cachedConfigGeneration);
 	}
 
@@ -109,10 +113,9 @@ struct DevTimingRecorder::Impl {
 		}
 	}
 
-	[[nodiscard]] CpuTimingRecord closeTop(
-		TimingRecordFlag result,
-		uint64_t endNs,
-		bool retainRecord = true) noexcept {
+	[[nodiscard]] CpuTimingRecord closeTop(TimingRecordFlag result, uint64_t endNs,
+										   bool retainRecord = true,
+										   bool complete_pending = true) noexcept {
 		if (activeCount == 0u) return {};
 		ActiveCpuZone active = activeZones[activeCount - 1u];
 		--activeCount;
@@ -146,6 +149,8 @@ struct DevTimingRecorder::Impl {
 			.flags = flags,
 		};
 		if (retainRecord) append(record);
+		if (complete_pending)
+			pending_ticks[activeCount].store(UINT64_MAX, std::memory_order_release);
 		return record;
 	}
 
@@ -160,6 +165,7 @@ struct DevTimingRecorder::Impl {
 	DevTiming* owner = nullptr;
 	DevTimingConfig cachedConfig{};
 	std::unordered_set<TimingZoneTypeId> registeredDescriptors{};
+	std::mutex aggregate_mutex{};
 	std::unordered_map<ElementAggregateKey, ElementDefinitionTimingAggregate, ElementAggregateKeyHash>
 		elementAggregates{};
 	std::string trackName{};
@@ -235,6 +241,7 @@ ActiveZoneToken DevTimingRecorder::tryBegin(
 		.entity = entity,
 		.depth = static_cast<uint8_t>(stackIndex),
 	};
+	impl_->pending_ticks[stackIndex].store(impl_->currentAppTick, std::memory_order_release);
 	++impl_->activeCount;
 	const ActiveZoneToken result{
 		.invocationId = invocationId,
@@ -290,8 +297,9 @@ void DevTimingRecorder::endElement(
 	const bool retain = level == CpuTimingLevel::Deep ||
 		(level == CpuTimingLevel::Balanced &&
 			(selected || durationNs >= impl_->cachedConfig.balancedElementRetentionThresholdNs));
-	const CpuTimingRecord record = impl_->closeTop(result, endNs, retain);
+	const CpuTimingRecord record = impl_->closeTop(result, endNs, retain, false);
 	try {
+		std::scoped_lock aggregate_lock(impl_->aggregate_mutex);
 		const ElementAggregateKey aggregateKey{definition, active.frame, active.appTick};
 		auto& aggregate = impl_->elementAggregates[aggregateKey];
 		aggregate.definition = definition;
@@ -306,6 +314,7 @@ void DevTimingRecorder::endElement(
 	} catch (...) {
 		impl_->droppedRecords.fetch_add(1u, std::memory_order_relaxed);
 	}
+	impl_->pending_ticks[token.stackIndex].store(UINT64_MAX, std::memory_order_release);
 	impl_->addTimingOverhead(overheadStartNs);
 }
 
@@ -345,11 +354,22 @@ void DevTimingRecorder::drainInto(std::vector<CpuTimingRecord>& output) {
 
 void DevTimingRecorder::drainElementAggregatesInto(
 	std::vector<ElementDefinitionTimingAggregate>& output) {
+	std::scoped_lock aggregate_lock(impl_->aggregate_mutex);
 	output.reserve(output.size() + impl_->elementAggregates.size());
 	for (const auto& [_, aggregate] : impl_->elementAggregates) output.push_back(aggregate);
 	impl_->elementAggregates.clear();
 }
 
+uint64_t DevTimingRecorder::pending_scope_count(AppTickId first_tick,
+												AppTickId end_tick) const noexcept {
+	uint64_t count = 0;
+	for (const auto& pending : impl_->pending_ticks) {
+		const auto tick = pending.load(std::memory_order_acquire);
+		if (tick >= first_tick && tick < end_tick)
+			++count;
+	}
+	return count;
+}
 TimingQualitySnapshot DevTimingRecorder::qualitySnapshot() const noexcept {
 	return TimingQualitySnapshot{
 		.recordedZones = impl_->recordedZones.load(std::memory_order_relaxed),

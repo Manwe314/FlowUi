@@ -444,7 +444,6 @@ struct DevTimelineController::Impl {
 			surface.panning = true;
 			if (surface.presented.kind == TimelineSurfaceKind::Macro)
 				state.minimap_follow_selection = false;
-			state.paused = true;
 			surface.primary = false;
 		}
 		if (!input.mouseDown[2])
@@ -510,7 +509,6 @@ struct DevTimelineController::Impl {
 				clamp_timeline_view(state);
 				const auto offset = uint64_t(fraction * state.visible_duration_ns);
 				state.visible_start_ns = anchor > offset ? anchor - offset : 0;
-				state.paused = true;
 			}
 			const double delta =
 				(surface.panning ? previous.mouseX - input.mouseX : input.scrollX * 24) /
@@ -521,8 +519,7 @@ struct DevTimelineController::Impl {
 			else
 				state.visible_start_ns = timeline_end(state.visible_start_ns, uint64_t(delta));
 			if (delta != 0)
-				state.paused = true;
-			clamp_timeline_view(state);
+				clamp_timeline_view(state);
 		}
 		if (plot && input.mouseDown[0] && !previous.mouseDown[0] && !surface.panning) {
 			surface.primary = true;
@@ -530,7 +527,6 @@ struct DevTimelineController::Impl {
 			surface.press_x = input.mouseX;
 			surface.press_y = input.mouseY;
 			surface.scrubbing = false;
-			state.paused = true;
 		}
 		if (surface.primary && input.mouseDown[0]) {
 			const bool moved =

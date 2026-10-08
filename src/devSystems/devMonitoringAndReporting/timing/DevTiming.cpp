@@ -126,44 +126,64 @@ DevTimingThreadAttachment DevTiming::attachCurrentThread(std::string_view trackN
 	return DevTimingThreadAttachment(result);
 }
 
+void DevTiming::drain_completed_records_into(std::vector<CpuTimingRecord>& destination) {
+	std::lock_guard lock(impl_->mutex);
+	for (const auto& recorder : impl_->recorders)
+		recorder->drainInto(destination);
+}
+uint64_t DevTiming::pending_scope_count(AppTickId first_tick, AppTickId end_tick) const noexcept {
+	std::lock_guard lock(impl_->mutex);
+	uint64_t count = 0;
+	for (const auto& recorder : impl_->recorders)
+		count += recorder->pending_scope_count(first_tick, end_tick);
+	return count;
+}
 std::vector<CpuTimingRecord> DevTiming::drainCompletedRecords() {
 	std::vector<CpuTimingRecord> result;
-	std::lock_guard lock(impl_->mutex);
-	for (const auto& recorder : impl_->recorders) {
-		recorder->drainInto(result);
-	}
+	drain_completed_records_into(result);
 	return result;
 }
 
-std::vector<ElementDefinitionTimingAggregate> DevTiming::drainElementTimingAggregates() {
-	std::vector<ElementDefinitionTimingAggregate> result;
+void DevTiming::drain_element_aggregates_into(
+	std::vector<ElementDefinitionTimingAggregate>& destination) {
 	std::lock_guard lock(impl_->mutex);
-	for (const auto& recorder : impl_->recorders) {
-		recorder->drainElementAggregatesInto(result);
-	}
-	std::sort(result.begin(), result.end(), [](const auto& left, const auto& right) {
-		if (left.appTick != right.appTick) return left.appTick < right.appTick;
-		if (left.frame != right.frame) return left.frame < right.frame;
+	for (const auto& recorder : impl_->recorders)
+		recorder->drainElementAggregatesInto(destination);
+	std::sort(destination.begin(), destination.end(), [](const auto& left, const auto& right) {
+		if (left.appTick != right.appTick)
+			return left.appTick < right.appTick;
+		if (left.frame != right.frame)
+			return left.frame < right.frame;
 		return left.definition.value < right.definition.value;
 	});
-	std::vector<ElementDefinitionTimingAggregate> merged;
-	merged.reserve(result.size());
-	for (const ElementDefinitionTimingAggregate& aggregate : result) {
-		if (merged.empty() || merged.back().definition != aggregate.definition ||
-			merged.back().frame != aggregate.frame || merged.back().appTick != aggregate.appTick) {
-			merged.push_back(aggregate);
-			continue;
+	size_t merged_count = 0;
+	for (size_t source_index = 0; source_index < destination.size(); ++source_index) {
+		const auto aggregate = destination[source_index];
+		if (!merged_count || destination[merged_count - 1].definition != aggregate.definition ||
+			destination[merged_count - 1].frame != aggregate.frame ||
+			destination[merged_count - 1].appTick != aggregate.appTick) {
+			destination[merged_count++] = aggregate;
+		} else {
+			auto& merged = destination[merged_count - 1];
+			merged.invocationCount += aggregate.invocationCount;
+			merged.totalInclusiveNs += aggregate.totalInclusiveNs;
+			merged.maximumInclusiveNs =
+				std::max(merged.maximumInclusiveNs, aggregate.maximumInclusiveNs);
+			merged.canceledInvocationCount += aggregate.canceledInvocationCount;
 		}
-		auto& destination = merged.back();
-		destination.invocationCount += aggregate.invocationCount;
-		destination.totalInclusiveNs += aggregate.totalInclusiveNs;
-		destination.maximumInclusiveNs =
-			std::max(destination.maximumInclusiveNs, aggregate.maximumInclusiveNs);
-		destination.canceledInvocationCount += aggregate.canceledInvocationCount;
 	}
-	return merged;
+	destination.resize(merged_count);
+}
+std::vector<ElementDefinitionTimingAggregate> DevTiming::drainElementTimingAggregates() {
+	std::vector<ElementDefinitionTimingAggregate> result;
+	drain_element_aggregates_into(result);
+	return result;
 }
 
+uint64_t DevTiming::metadata_revision() const noexcept {
+	std::lock_guard lock(impl_->mutex);
+	return impl_->descriptors.size() + impl_->recorders.size();
+}
 std::vector<TimingZoneDescriptor> DevTiming::descriptorSnapshot() const {
 	std::vector<TimingZoneDescriptor> result;
 	std::lock_guard lock(impl_->mutex);

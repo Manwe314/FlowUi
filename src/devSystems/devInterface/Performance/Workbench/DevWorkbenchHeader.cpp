@@ -13,8 +13,6 @@ void DevWorkbenchHeader::runLogic(InteractionContext& context) {
 	if (!input.windowFocused || context.uiManager.inputFields().hasPrimaryFieldFocus())
 		return;
 	if (!input.ctrl && !input.alt && !input.super) {
-		if (input.keyDown[32] && !previous.keyDown[32])
-			state.pending.action = TimelineAction::Pause;
 		if (input.keyDown[257] && !previous.keyDown[257] &&
 			state.inspected_sample < state.snapshot.blocks.size())
 			state.pending = {{state.inspected_sample},
@@ -44,8 +42,6 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 		auto controls = timeline_ui::row(32);
 		controls.clip.horizontal = true;
 		CLAY(context.clayID("controls"), controls) {
-			timeline_ui::button(context, 1, state.paused ? "Follow" : "Freeze",
-								{{}, TimelineAction::Pause});
 			timeline_ui::button(context, 2, "<", {{}, TimelineAction::Previous});
 			timeline_ui::button(context, 3, ">", {{}, TimelineAction::Next});
 			timeline_ui::button(context, 4, "Spike", {{}, TimelineAction::Spike});
@@ -61,6 +57,7 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 				: context.params.selection->hardware_domain == 1 ? "CPU"
 																 : "GPU",
 				{{}, TimelineAction::Domain, (context.params.selection->hardware_domain + 1) % 3});
+			timeline_ui::button(context, 26, state.track_controls_open ? "Close tracks" : "Major tracks", {{}, TimelineAction::TrackControls});
 			if (!state.snapshot.frames.empty()) {
 				const auto duration = state.snapshot.frames.back().duration_ns;
 				char delivery[72];
@@ -81,10 +78,10 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 		CLAY(context.clayID("breadcrumbs"), breadcrumbs) {
 			timeline_ui::button(
 				context, 30,
-				frames.empty() ? "No retained frames"
-							   : frames[std::min(state.selected_frame, frames.size() - 1)].label,
+				frames.empty()
+					? "No retained frames"
+					: std::string(frames[std::min(state.selected_frame, frames.size() - 1)].label),
 				{{}, TimelineAction::Breadcrumb, 0});
-			timeline_ui::button(context, 31, "Refresh snapshot", {{}, TimelineAction::Refresh});
 			timeline_ui::button(context, 32, "Minimap fit",
 								{{}, TimelineAction::MinimapZoom, 0, 1});
 			timeline_ui::text(context, "Minimap " + std::to_string(int(state.minimap_zoom)) +

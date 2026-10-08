@@ -21,9 +21,11 @@ int main() {
 		report.windows.resize(1);
 		auto& window = report.windows.front();
 		window.window = 1;
+		window.occupied = true;
 		window.frames.resize(1);
 		auto& frame = window.frames.front();
 		frame.key = {1, report_index + 1};
+		frame.occupied = true;
 		const auto start = 1'000'000'000ULL + report_index * 40'000'000ULL;
 		const auto duration = report_index ? 35'000'000ULL : 16'000'000ULL;
 		frame.cpuZones = {{.startNs = start,
@@ -123,7 +125,7 @@ int main() {
 	assert(snapshot.blocks[1].parent == 0 && snapshot.blocks[9].parent == 8);
 	assert(snapshot.blocks[5].parent == 4 && snapshot.blocks[7].parent == 6);
 	assert(snapshot.blocks[4].zone_index == 4 && snapshot.blocks[6].queue_identity == 502);
-	assert(snapshot.blocks[6].exclusive_ns == 0);
+	assert(snapshot.blocks[6].recorded_exclusive_ns() == 0);
 	auto lanes = timeline_lanes(snapshot, 1);
 	assert(lanes.size() == 2);
 	assert(lanes[0].blocks == std::vector<size_t>({1, 9})); // window root is replaced by milestones
@@ -170,7 +172,7 @@ int main() {
 		   state.snapshot.end_ns);
 	state.pending.action = TimelineAction::Spike;
 	apply_timeline_command(state, selection);
-	assert(state.paused && state.selected_frame == 1);
+	assert(state.selected_frame == 1);
 	state.pending.action = TimelineAction::Next;
 	apply_timeline_command(state, selection);
 	assert(state.selected_frame == 1);
@@ -236,12 +238,16 @@ int main() {
 	reporting_config.retainedAppTickCapacity = 2;
 	reporting_config.minimumFramesInFlightMultiplier = 1;
 	reporting.setConfig(reporting_config);
+	assert(reporting.begin_capture(1) == 1);
+	reporting.admit_tick(1, 100);
 	reporting.note_tick_boundary(1, 100);
 	reporting.note_tick_boundary(2, 200);
+	reporting.admit_tick(2, 200);
 	const auto frozen_capture = reporting.capture_snapshot();
 	assert(frozen_capture.reports.size() == 2 && frozen_capture.reports[0].boundary_end_ns == 200);
 	assert(!frozen_capture.reports[0].boundary_open && frozen_capture.reports[1].boundary_open);
 	reporting.note_tick_boundary(3, 300);
+	reporting.admit_tick(3, 300);
 	assert(!reporting.appTickReport(1) && frozen_capture.reports[0].boundary_start_ns == 100);
 	// Uncalibrated GPU records stay selectable without contaminating the CPU clock range.
 	assert(!cross_tick.blocks[16].cpu_clock_aligned &&

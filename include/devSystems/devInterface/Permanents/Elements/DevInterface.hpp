@@ -15,6 +15,7 @@ namespace FlowUi::devSystems::interface_elements {
 /** App-owned dependencies and identities made available to the interface root. */
 struct DevInterfaceParameters {
 	App* app = nullptr;
+	DevInterfaceState* interface_state = nullptr;
 	WindowId interfaceWindowId = InvalidWindowId;
 	WindowId mainWindowId = MainWindowId;
 };
@@ -22,7 +23,6 @@ struct DevInterfaceParameters {
 /** Singleton drawable root for the dedicated developer-interface window. */
 struct DevInterface {
 	using Parameters = DevInterfaceParameters;
-	using State = DevInterfaceState;
 	using BuildContext = ElementBuildContext<DevInterface>;
 
 	static constexpr FlowDefinitionID definitionId =

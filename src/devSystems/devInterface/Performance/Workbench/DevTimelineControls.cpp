@@ -35,18 +35,18 @@ Clay_Color frame_color(uint64_t metric) noexcept {
 	const float time_ms = float(metric / 1e6);
 	Clay_Color low{}, high{};
 	float mix = 0;
-	if (time_ms <= 16.667f) {
+	if (metric <= 16'667'000) {
 		low = Flow_Color("#22B8C7");
 		high = Flow_Color("#18B8A6");
 		mix = time_ms / 16.667f;
-	} else if (time_ms <= 33.333f) {
+	} else if (metric <= 33'300'000) {
 		low = Flow_Color("#D9A633");
 		high = Flow_Color("#F59E0B");
-		mix = (time_ms - 16.667f) / 16.666f;
+		mix = (time_ms - 16.667f) / (33.3f - 16.667f);
 	} else {
 		low = Flow_Color("#EF4444");
 		high = Flow_Color("#FB7185");
-		mix = std::min(1.0f, (time_ms - 33.333f) / 100);
+		mix = std::min(1.0f, (time_ms - 33.3f) / 100);
 	}
 	return {low.r + (high.r - low.r) * mix, low.g + (high.g - low.g) * mix,
 			low.b + (high.b - low.b) * mix, 255};

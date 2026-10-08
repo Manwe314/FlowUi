@@ -41,6 +41,7 @@ struct DevErrorTimingCorrelation {
 	TimingInvocationId containingInvocation = 0u;
 	TimingZoneTypeId containingZone = 0u;
 	uint64_t reportRevision = 0u;
+	uint64_t capture_generation = 0;
 };
 
 struct DevErrorMemoryCorrelation {
@@ -95,7 +96,8 @@ struct DevErrorTriggeredCapture {
 	bool memoryHistoryEvicted = false;
 	bool timingTruncated = false;
 	bool memoryTruncated = false;
-	std::vector<TimingAppTickReport> timingTicks{};
+	uint64_t timing_generation = 0, timing_retained_ticks = 0;
+	DevErrorCorrelationState timing_state = DevErrorCorrelationState::NotCaptured;
 	std::vector<RetainedMemoryEvent> memoryEvents{};
 };
 

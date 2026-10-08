@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <cmath>
+#include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
+#include "devSystems/devInterface/Performance/Inspector/DevPerformanceCapturePolicy.hpp"
 #include <limits>
 #include <string>
 #include <utility>
@@ -56,6 +59,34 @@ inline constexpr std::array<TabSpec, 6> kTabs{{
 	{DevInterfaceTab::Changes, kChangesTab, "Changes"},
 	{DevInterfaceTab::Catalogue, kCatalogueTab, "Catalogue"},
 }};
+
+constexpr auto kMainCapture = UiAction(
+	"flowui.dev_interface.performance.main-capture", [](App& app, DevInterfaceState& state) {
+		const auto validation_error = performance_capture_policy_error(state, &app);
+		if (!validation_error.empty()) {
+			state.capture_error = validation_error;
+			return;
+		}
+		PerformanceCaptureSettings settings;
+		settings.start_mode = static_cast<PerformanceCaptureStartMode>(state.capture_start_mode);
+		settings.end_mode = static_cast<PerformanceCaptureEndMode>(state.capture_end_mode);
+		settings.duration_ns = static_cast<uint64_t>(double(state.capture_duration_seconds) * 1e9);
+		settings.budget_ns = static_cast<uint64_t>(double(state.capture_budget_ms) * 1e6);
+		settings.post_event_ns = static_cast<uint64_t>(double(state.capture_tail_seconds) * 1e9);
+		settings.budget_window = state.capture_budget_window;
+		settings.start_chord.key = static_cast<int>(state.capture_key);
+		settings.start_chord.ctrl = (state.capture_modifiers & 1) != 0;
+		settings.start_chord.shift = (state.capture_modifiers & 2) != 0;
+		settings.start_chord.alt = (state.capture_modifiers & 4) != 0;
+		settings.start_chord.super = (state.capture_modifiers & 8) != 0;
+		auto requested = app.request_dev_performance_capture(settings);
+		state.capture_error =
+			requested ? "" : "Capture unavailable: check shortcut conflict and settings.";
+		if (requested) {
+			state.pending_capture_windows = app.devWindowSnapshot();
+			state.lastActionMessage = "Main Capture queued";
+		}
+	});
 
 constexpr auto kBakeActiveChanges = UiAction(
 	"flowui.dev_interface.bake-active-changes",
@@ -315,7 +346,10 @@ void drawContextualControls(
 			.setParameters(DevInspectOverlayMenuParameters{.app = app}).draw();
 		break;
 	case DevInterfaceTab::Performance: {
-		drawControl(context, kFrameSelector, "Frame: Latest  ▾");
+		drawControl(context, kFrameSelector, "Main Capture",
+					app ? ActionCall{app->actions().uiActions().make(kMainCapture, *app, state)}
+						: ActionCall{},
+					app != nullptr, true);
 		drawCpuReportingSelector(context, app, state);
 		break;
 	}

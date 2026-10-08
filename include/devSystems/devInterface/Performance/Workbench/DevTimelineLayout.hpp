@@ -20,6 +20,7 @@ struct TimelineDisplayItem {
 struct TimelineLayout {
 	std::vector<TimelineDisplayItem> items{};
 	uint64_t revision = 0, start_ns = 0, duration_ns = 1;
+	uint64_t root_duration_ns = 1;
 	float width = 0, height = 0;
 	float label_width = 0, ruler_height = 20;
 	TimelineSurfaceKind kind = TimelineSurfaceKind::Macro;

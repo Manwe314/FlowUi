@@ -118,12 +118,12 @@ int main() {
 		source);
 
 	DevErrorReporting reporting(monitoring, DevErrorReportingConfig{
-		.retainedOccurrenceCapacity = 8u,
-		.retainedByteBudget = 64u * 1024u,
-		.retainedBreadcrumbCapacity = 16u,
-		.postOccurrenceTicks = 2u,
-		.maxStepsPerOccurrence = 8u,
-	});
+												.retainedByteBudget = 64u * 1024u,
+												.retainedOccurrenceCapacity = 8u,
+												.retainedBreadcrumbCapacity = 16u,
+												.postOccurrenceTicks = 2u,
+												.maxStepsPerOccurrence = 8u,
+											});
 	reporting.consumeThrough(7u);
 
 	bool passed = true;
@@ -189,8 +189,8 @@ int main() {
 		"native text truncation is visible in quality status");
 
 	reporting.setConfig(DevErrorReportingConfig{
-		.retainedOccurrenceCapacity = 1u,
 		.retainedByteBudget = 64u * 1024u,
+		.retainedOccurrenceCapacity = 1u,
 	});
 	passed &= expect(
 		reporting.status().retainedOccurrences == 1u &&
@@ -313,6 +313,9 @@ int main() {
 		.minimumFramesInFlightMultiplier = 1u,
 		.rollingSampleCapacity = 32u,
 	});
+	if (timingReporting.begin_capture(30) != 1)
+		return 1;
+	timingReporting.admit_tick(30, timing.nowNs());
 	auto timingAttachment = timing.attachCurrentThread("test.correlation");
 	const WindowFrameKey correlationFrame{9u, 3u};
 	timingAttachment.recorder().setFrameContext(correlationFrame, 30u);
@@ -326,12 +329,12 @@ int main() {
 		.processMemory = false,
 	});
 	DevMemoryReporting memoryReporting(memory, MemoryReportingConfig{
-		.segmentCapacity = 32u,
-		.eventByteCapacity = sizeof(RetainedMemoryEvent),
-		.managerSampleEveryTicks = 8u,
-		.quantileWindowSegments = 32u,
-		.retainLifetimeEvents = true,
-	});
+												   .eventByteCapacity = sizeof(RetainedMemoryEvent),
+												   .segmentCapacity = 32u,
+												   .managerSampleEveryTicks = 8u,
+												   .quantileWindowSegments = 32u,
+												   .retainLifetimeEvents = true,
+											   });
 	memory.recorder().setAppTickContext(30u);
 	const uint64_t memoryTimestamp = static_cast<uint64_t>(
 		std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -385,26 +388,24 @@ int main() {
 	const DevErrorOccurrenceId evictedCorrelationOccurrence =
 		correlatedMonitoring.recordRaised(error, source);
 
-	DevErrorReporting correlatedReporting(
-		correlatedMonitoring,
-		DevErrorReportingConfig{
-			.retainedOccurrenceCapacity = 8u,
-			.retainedByteBudget = 256u * 1024u,
-			.retainedBreadcrumbCapacity = 16u,
-			.postOccurrenceTicks = 1u,
-			.maxStepsPerOccurrence = 8u,
-			.retainedCaptureCapacity = 2u,
-			.maximumPinnedTimingTicks = 4u,
-			.maximumPinnedMemoryEvents = 8u,
-			.triggers = {DevErrorTrigger{
-				.code = ErrorCode::StorageCapacityExceeded,
-				.site = ErrorSite::ResourceAllocatePersistent,
-				.preOccurrenceTicks = 0u,
-				.postOccurrenceTicks = 1u,
-			}},
-		},
-		&timingReporting,
-		&memoryReporting);
+	DevErrorReporting correlatedReporting(correlatedMonitoring,
+										  DevErrorReportingConfig{
+											  .triggers = {DevErrorTrigger{
+												  .code = ErrorCode::StorageCapacityExceeded,
+												  .site = ErrorSite::ResourceAllocatePersistent,
+												  .preOccurrenceTicks = 0u,
+												  .postOccurrenceTicks = 1u,
+											  }},
+											  .retainedByteBudget = 256u * 1024u,
+											  .retainedOccurrenceCapacity = 8u,
+											  .retainedBreadcrumbCapacity = 16u,
+											  .postOccurrenceTicks = 1u,
+											  .maxStepsPerOccurrence = 8u,
+											  .retainedCaptureCapacity = 2u,
+											  .maximumPinnedTimingTicks = 4u,
+											  .maximumPinnedMemoryEvents = 8u,
+										  },
+										  &timingReporting, &memoryReporting);
 	correlatedReporting.consumeThrough(30u);
 	const auto correlated = correlatedReporting.occurrence(correlatedOccurrence);
 	passed &= expect(correlated &&
@@ -438,16 +439,19 @@ int main() {
 		"matching code/site trigger opened umbrella capture");
 	const DevErrorCaptureId correlatedCaptureId = correlated ? correlated->captureId : 0u;
 	const auto activeCapture = correlatedReporting.capture(correlatedCaptureId);
-	passed &= expect(activeCapture && activeCapture->timingTicks.size() == 1u &&
-		activeCapture->memoryEvents.size() == 1u,
-		"trigger pinned bounded timing and memory history");
+	passed &= expect(activeCapture && activeCapture->timing_retained_ticks == 1u &&
+						 activeCapture->memoryEvents.size() == 1u,
+					 "trigger references timing generation and pins bounded memory evidence");
 	const auto evictedCorrelation =
 		correlatedReporting.occurrence(evictedCorrelationOccurrence);
-	passed &= expect(evictedCorrelation &&
-		evictedCorrelation->timing.state == DevErrorCorrelationState::Evicted &&
-		evictedCorrelation->memory.state == DevErrorCorrelationState::Evicted,
-		"evicted timing and memory history was explicit");
+	passed &=
+		expect(evictedCorrelation &&
+				   evictedCorrelation->timing.state == DevErrorCorrelationState::NotCaptured &&
+				   evictedCorrelation->memory.state == DevErrorCorrelationState::Evicted,
+			   "timing outside capture and evicted memory history are distinguished");
 
+	timingReporting.note_tick_boundary(31, timing.nowNs());
+	timingReporting.admit_tick(31, timing.nowNs());
 	timingReporting.consumeThrough(31u);
 	memoryReporting.consume(31u);
 	correlatedReporting.consumeThrough(31u);
@@ -471,12 +475,13 @@ int main() {
 	DevErrorOccurrence releaseEvidence{
 		.id = 999u,
 		.error = error,
-		.memory = DevErrorMemoryCorrelation{
-			.state = DevErrorCorrelationState::Available,
-			.confidence = DevErrorCorrelationConfidence::SharedContext,
-			.eventSequence = 55u,
-			.operation = MemoryOperation::LogicalRelease,
-		},
+		.memory =
+			DevErrorMemoryCorrelation{
+				.eventSequence = 55u,
+				.state = DevErrorCorrelationState::Available,
+				.confidence = DevErrorCorrelationConfidence::SharedContext,
+				.operation = MemoryOperation::LogicalRelease,
+			},
 	};
 	const auto releaseAdvice = evaluateDevErrorAdvice(releaseEvidence, 4u);
 	passed &= expect(std::none_of(
@@ -599,13 +604,15 @@ int main() {
 	});
 	const FlowUiError fatalError = makeError(
 		ErrorCode::InternalInvariantBroken, ErrorSite::AppPollEvents, 77u, 88u, 99u);
-	fatalMonitoring.recordProductionEvent(0u, ErrorEventView{
-		.error = fatalError,
-		.kind = ErrorEventKind::Fatal,
-		.resolution = ErrorResolution::Terminated,
-		.inspection = FatalInspectionCapability::TerminalOnly,
-		.nativeMessage = "fatal-native-evidence",
-	}, source);
+	fatalMonitoring.recordProductionEvent(0u,
+										  ErrorEventView{
+											  .error = fatalError,
+											  .nativeMessage = "fatal-native-evidence",
+											  .kind = ErrorEventKind::Fatal,
+											  .resolution = ErrorResolution::Terminated,
+											  .inspection = FatalInspectionCapability::TerminalOnly,
+										  },
+										  source);
 	const auto fatalCapsule = fatalMonitoring.fatalCapsuleSnapshot();
 	passed &= expect(fatalCapsule &&
 		fatalCapsule->layoutVersion == kDevErrorFatalCapsuleLayoutVersion &&

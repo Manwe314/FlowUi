@@ -3,6 +3,7 @@
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
+#include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
@@ -23,10 +24,15 @@ DevMonitoringAndReporting::DevMonitoringAndReporting(
 	  errors_(std::make_unique<DevErrorMonitoring>(config.errors)),
 	  errorReporting_(std::make_unique<DevErrorReporting>(
 		  *errors_, config.errorReporting, timingReporting_.get(), memoryReporting_.get())) {
+	performance_capture_ = std::make_unique<DevPerformanceCapture>(*timingReporting_);
 	timingReporting_->setConfig(config.timingReporting);
 }
 
 DevMonitoringAndReporting::~DevMonitoringAndReporting() = default;
+
+DevPerformanceCapture& DevMonitoringAndReporting::performance_capture() noexcept {
+	return *performance_capture_;
+}
 
 DevTiming& DevMonitoringAndReporting::timing() noexcept { return *timing_; }
 const DevTiming& DevMonitoringAndReporting::timing() const noexcept { return *timing_; }

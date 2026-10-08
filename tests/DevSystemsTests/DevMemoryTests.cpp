@@ -94,9 +94,10 @@ void testCoalescedWeightedHistoryAndOverwriteContract() {
 	FLOWUI_CHECK(memory.registerSource(source));
 	TraceProbeOwner owner{source.id, 10u};
 	FLOWUI_CHECK(memory.registerProbe({source.id, &owner, &sampleTraceProbe}));
-	DevMemoryReporting reporting(memory, MemoryReportingConfig{
-		.segmentCapacity = 16u, .eventByteCapacity = 1u,
-		.managerSampleEveryTicks = 1u, .quantileWindowSegments = 16u});
+	DevMemoryReporting reporting(memory, MemoryReportingConfig{.eventByteCapacity = 1u,
+															   .segmentCapacity = 16u,
+															   .managerSampleEveryTicks = 1u,
+															   .quantileWindowSegments = 16u});
 	for (uint64_t tick = 1u; tick <= 9u; ++tick) reporting.consume(tick);
 	owner.value = 100u;
 	reporting.consume(10u);
@@ -135,17 +136,24 @@ void testCaptureProfileAndProductionGrowthReplay() {
 		"flowui.memory.test.capacity", MemoryDomain::ManagerCpu, MemorySourceKind::Container);
 	constexpr MemoryTuningTargetId targetId = makeMemorySourceId("flowui.tuning.test.capacity");
 	FLOWUI_CHECK(memory.registerSource(source));
-	FLOWUI_CHECK(memory.registerTuningTarget(MemoryTuningTargetDescriptor{
-		.id = targetId, .source = source.id, .metric = MemoryTuningMetric::LogicalLiveBytes,
-		.unit = MemoryCapacityUnit::Bytes, .minimum = 16u, .alignment = 16u,
-		.productionDefault = 32u, .configKey = "test.capacity",
-		.applyPolicy = MemoryApplyPolicy::RestartRequired}));
+	FLOWUI_CHECK(memory.registerTuningTarget(
+		MemoryTuningTargetDescriptor{.configKey = "test.capacity",
+									 .id = targetId,
+									 .source = source.id,
+									 .minimum = 16u,
+									 .alignment = 16u,
+									 .productionDefault = 32u,
+									 .metric = MemoryTuningMetric::LogicalLiveBytes,
+									 .unit = MemoryCapacityUnit::Bytes,
+									 .applyPolicy = MemoryApplyPolicy::RestartRequired}));
 	TraceProbeOwner owner{source.id, 1000u};
 	FLOWUI_CHECK(memory.registerProbe({source.id, &owner, &sampleTraceProbe}));
-	DevMemoryReporting reporting(memory, MemoryReportingConfig{
-		.segmentCapacity = 64u, .eventByteCapacity = 2u * sizeof(RetainedMemoryEvent),
-		.managerSampleEveryTicks = 1u, .quantileWindowSegments = 64u,
-		.retainLifetimeEvents = true});
+	DevMemoryReporting reporting(
+		memory, MemoryReportingConfig{.eventByteCapacity = 2u * sizeof(RetainedMemoryEvent),
+									  .segmentCapacity = 64u,
+									  .managerSampleEveryTicks = 1u,
+									  .quantileWindowSegments = 64u,
+									  .retainLifetimeEvents = true});
 	const MemoryCaptureId capture = reporting.beginCapture("representative", 1u);
 	reporting.consume(1u); // excluded warm-up spike
 	owner.value = 64u;
