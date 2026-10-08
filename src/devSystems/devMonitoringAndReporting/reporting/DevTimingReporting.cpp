@@ -168,33 +168,17 @@ struct DevTimingReporting::Impl {
 		resizeRetention(effectiveCapacity(reportingConfig, maximumFramesInFlight));
 	}
 
-	void resizeRetention(uint32_t newCapacity) {
-		newCapacity = std::max(1u, newCapacity);
-		if (ring.size() == newCapacity) return;
-		std::vector<TimingAppTickReport> replacement(newCapacity);
-		if (hasTicks) {
-			const uint64_t keepCount = std::min<uint64_t>(retainedTickCount, newCapacity);
-			const AppTickId firstToKeep = newestTick - keepCount + 1u;
-			for (AppTickId tick = firstToKeep; tick <= newestTick; ++tick) {
-				if (ring.empty()) break;
-				TimingAppTickReport& source = ring[tick % ring.size()];
-				if (source.occupied && source.appTick == tick) {
-					replacement[tick % newCapacity] = std::move(source);
-				}
-				if (tick == std::numeric_limits<AppTickId>::max()) break;
-			}
-			if (retainedTickCount > keepCount) evictedTicks += retainedTickCount - keepCount;
-			retainedTickCount = keepCount;
-			oldestTick = firstToKeep;
-		}
-		ring = std::move(replacement);
+	void resizeRetention(uint32_t new_capacity) {
+		new_capacity = std::max(1u, new_capacity);
+		if (ring.size() == new_capacity || hasTicks || capture_recording || capture_finalizing)
+			return;
+		ring.resize(new_capacity);
+		head = next_write_slot = 0;
 	}
-
 	void publishOne(AppTickId tick) {
-		TimingAppTickReport& destination = ring[tick % ring.size()];
-		if (destination.occupied && destination.appTick != tick) {
-			++evictedTicks;
-		}
+		if (!capture_recording || (hasTicks && tick <= newestTick))
+			return;
+		auto& destination = ring[next_write_slot];
 		clearReport(destination);
 		destination.appTick = tick;
 		destination.occupied = true;
@@ -202,38 +186,63 @@ struct DevTimingReporting::Impl {
 		destination.captureConfig = currentCaptureConfig;
 		destination.cpuQuality = currentCpuQuality;
 		destination.gpuQuality = currentGpuQuality;
-
-		if (!hasTicks) {
-			hasTicks = true;
-			oldestTick = tick;
-			newestTick = tick;
-			retainedTickCount = 1u;
+		if (retainedTickCount == ring.size()) {
+			head = (head + 1) % ring.size();
+			++capture_overwritten_ticks;
+			++evictedTicks;
 		} else {
-			newestTick = tick;
-			retainedTickCount = std::min<uint64_t>(retainedTickCount + 1u, ring.size());
-			oldestTick = newestTick - retainedTickCount + 1u;
+			if (!retainedTickCount)
+				head = next_write_slot;
+			++retainedTickCount;
 		}
+		next_write_slot = (next_write_slot + 1) % ring.size();
+		oldestTick = ring[head].appTick;
+		newestTick = tick;
+		hasTicks = true;
+		++capture_admitted_ticks;
 		++totalPublishedTicks;
 	}
-
-	void publishThrough(AppTickId tick) {
-		if (!hasTicks) {
-			publishOne(tick);
-			return;
-		}
-		if (tick <= newestTick) return;
-		for (AppTickId next = newestTick + 1u; next <= tick; ++next) {
-			publishOne(next);
-			if (next == std::numeric_limits<AppTickId>::max()) break;
-		}
-	}
-
 	[[nodiscard]] TimingAppTickReport* retained(AppTickId tick) noexcept {
-		if (!hasTicks || tick < oldestTick || tick > newestTick || ring.empty()) return nullptr;
-		TimingAppTickReport& report = ring[tick % ring.size()];
+		if (!hasTicks || tick < oldestTick || tick > newestTick)
+			return nullptr;
+		const auto offset = tick - oldestTick;
+		if (offset < retainedTickCount) {
+			auto& direct = ring[(head + offset) % ring.size()];
+			if (direct.occupied && direct.appTick == tick)
+				return &direct;
+		}
+		// Recoverable polling failures or explicit callers can leave admission gaps.
+		size_t first = 0, last = retainedTickCount;
+		while (first < last) {
+			const auto middle = first + (last - first) / 2;
+			auto& candidate = ring[(head + middle) % ring.size()];
+			if (candidate.appTick < tick)
+				first = middle + 1;
+			else
+				last = middle;
+		}
+		if (first == retainedTickCount)
+			return nullptr;
+		auto& report = ring[(head + first) % ring.size()];
 		return report.occupied && report.appTick == tick ? &report : nullptr;
 	}
-
+	[[nodiscard]] TimingAppTickReport* writable(AppTickId tick) noexcept {
+		if (tick < capture_first_tick || tick >= capture_end_tick ||
+			(!capture_recording && !capture_finalizing && !capture_sealed)) {
+			++not_retained_by_policy;
+			return nullptr;
+		}
+		auto* report = retained(tick);
+		if (!report) {
+			++lateRecordsAfterEviction;
+			return nullptr;
+		}
+		if (capture_sealed) {
+			++late_after_seal;
+			return nullptr;
+		}
+		return report;
+	}
 	void revise(TimingAppTickReport& report) {
 		report.revision = ++mutationSequence;
 		report.captureConfig = currentCaptureConfig;
@@ -255,6 +264,9 @@ struct DevTimingReporting::Impl {
 	std::vector<TimingZoneDescriptor> descriptors{};
 	std::vector<TimingTrackDescriptor> cpuTracks{};
 	DevGpuTiming* gpuTiming = nullptr;
+	AppTickId current_tick = 0;
+	uint64_t current_boundary_ns = 0;
+	std::mutex ingestion_mutex{};
 	AppTickId oldestTick = 0u;
 	AppTickId newestTick = 0u;
 	uint64_t retainedTickCount = 0u;
@@ -264,6 +276,23 @@ struct DevTimingReporting::Impl {
 	std::atomic<uint64_t> ingestionFailures{0u};
 	uint64_t mutationSequence = 0u;
 	uint32_t maximumFramesInFlight = 1u;
+	size_t head = 0, next_write_slot = 0;
+	uint64_t capture_generation = 0, capture_admitted_ticks = 0, capture_overwritten_ticks = 0;
+	uint64_t not_retained_by_policy = 0, late_after_seal = 0;
+	WindowId budget_window = InvalidWindowId;
+	uint64_t budget_ns = UINT64_MAX;
+	std::optional<TimingBudgetEvent> latched_budget_event{};
+	uint64_t capture_dropped_baseline = 0, capture_failure_baseline = 0,
+			 capture_gpu_failure_baseline = 0;
+	uint64_t capture_dropped_records = 0, capture_ingestion_failures = 0, capture_gpu_failures = 0;
+	uint64_t metadata_revision = UINT64_MAX;
+	std::vector<std::string> descriptor_strings{};
+	AppTickId completed_through_tick = 0;
+	AppTickId capture_first_tick = 0, capture_end_tick = UINT64_MAX;
+	std::vector<CpuTimingRecord> cpu_scratch{};
+	std::vector<ElementDefinitionTimingAggregate> element_scratch{};
+	std::vector<GpuTimingRecord> gpu_scratch{};
+	bool capture_recording = false, capture_finalizing = false, capture_sealed = false;
 	bool hasTicks = false;
 };
 
@@ -313,12 +342,29 @@ void DevTimingReporting::noteFramesInFlight(uint32_t framesInFlight) {
 
 void DevTimingReporting::consumeThrough(AppTickId completedThroughAppTick) noexcept {
 	try {
-		std::vector<CpuTimingRecord> cpuRecords = impl_->timing->drainCompletedRecords();
-		std::vector<GpuTimingRecord> gpuRecords = impl_->gpuTiming->drainCompletedRecords();
-		std::vector<ElementDefinitionTimingAggregate> elementAggregates =
-			impl_->timing->drainElementTimingAggregates();
-		std::vector<TimingZoneDescriptor> descriptors = impl_->timing->descriptorSnapshot();
-		std::vector<TimingTrackDescriptor> cpuTracks = impl_->timing->trackSnapshot();
+		std::scoped_lock ingestion_lock(impl_->ingestion_mutex);
+		auto& cpuRecords = impl_->cpu_scratch;
+		cpuRecords.clear();
+		impl_->timing->drain_completed_records_into(cpuRecords);
+		auto& gpuRecords = impl_->gpu_scratch;
+		gpuRecords.clear();
+		impl_->gpuTiming->drain_completed_records_into(gpuRecords);
+		auto& elementAggregates = impl_->element_scratch;
+		elementAggregates.clear();
+		impl_->timing->drain_element_aggregates_into(elementAggregates);
+		const auto metadata_revision = impl_->timing->metadata_revision();
+		std::vector<TimingZoneDescriptor> descriptors;
+		std::vector<TimingTrackDescriptor> cpuTracks;
+		bool refresh_metadata = false;
+		{
+			std::shared_lock metadata_lock(impl_->mutex);
+			refresh_metadata =
+				!impl_->capture_sealed && metadata_revision != impl_->metadata_revision;
+		}
+		if (refresh_metadata) {
+			descriptors = impl_->timing->descriptorSnapshot();
+			cpuTracks = impl_->timing->trackSnapshot();
+		}
 		const DevTimingConfig captureConfig = impl_->timing->config();
 		const TimingQualitySnapshot cpuQuality = impl_->timing->qualitySnapshot();
 		const GpuTimingQualitySnapshot gpuQuality = impl_->gpuTiming->qualitySnapshot();
@@ -327,14 +373,17 @@ void DevTimingReporting::consumeThrough(AppTickId completedThroughAppTick) noexc
 		impl_->currentCaptureConfig = captureConfig;
 		impl_->currentCpuQuality = cpuQuality;
 		impl_->currentGpuQuality = gpuQuality;
-		impl_->publishThrough(completedThroughAppTick);
-		impl_->descriptors = std::move(descriptors);
-		impl_->cpuTracks = std::move(cpuTracks);
+		// Publication is driven only by clean capture boundaries.
+		impl_->completed_through_tick = completedThroughAppTick;
+		if (!impl_->capture_sealed && refresh_metadata) {
+			impl_->metadata_revision = metadata_revision;
+			impl_->descriptors = std::move(descriptors);
+			impl_->cpuTracks = std::move(cpuTracks);
+		}
 		for (const CpuTimingRecord& record : cpuRecords) {
-			impl_->publishThrough(record.appTick);
-			TimingAppTickReport* tick = impl_->retained(record.appTick);
+			impl_->appendRolling({record.typeId, TimingSampleDomain::Cpu}, record.durationNs);
+			TimingAppTickReport* tick = impl_->writable(record.appTick);
 			if (!tick) {
-				++impl_->lateRecordsAfterEviction;
 				continue;
 			}
 			if (record.frame) {
@@ -342,25 +391,27 @@ void DevTimingReporting::consumeThrough(AppTickId completedThroughAppTick) noexc
 			} else {
 				tick->applicationCpuZones.push_back(record);
 			}
-			impl_->appendRolling({record.typeId, TimingSampleDomain::Cpu}, record.durationNs);
+			if (!impl_->latched_budget_event && impl_->budget_window &&
+				record.frame.window == impl_->budget_window &&
+				record.typeId == timing_zones::kWindowFrameTotal.typeId &&
+				record.durationNs > impl_->budget_ns &&
+				record.flags == timingRecordFlags(TimingRecordFlag::Completed))
+				impl_->latched_budget_event = TimingBudgetEvent{
+					record.appTick, record.startNs + record.durationNs, record.durationNs};
 			impl_->revise(*tick);
 		}
 		for (const GpuTimingRecord& record : gpuRecords) {
-			impl_->publishThrough(record.appTick);
-			TimingAppTickReport* tick = impl_->retained(record.appTick);
+			impl_->appendRolling({record.typeId, TimingSampleDomain::Gpu}, record.durationNs);
+			TimingAppTickReport* tick = impl_->writable(record.appTick);
 			if (!tick || !record.frame) {
-				++impl_->lateRecordsAfterEviction;
 				continue;
 			}
 			findOrAddFrame(*tick, record.frame).gpuZones.push_back(record);
-			impl_->appendRolling({record.typeId, TimingSampleDomain::Gpu}, record.durationNs);
 			impl_->revise(*tick);
 		}
 		for (const ElementDefinitionTimingAggregate& aggregate : elementAggregates) {
-			impl_->publishThrough(aggregate.appTick);
-			TimingAppTickReport* tick = impl_->retained(aggregate.appTick);
+			TimingAppTickReport* tick = impl_->writable(aggregate.appTick);
 			if (!tick || !aggregate.frame) {
-				++impl_->lateRecordsAfterEviction;
 				continue;
 			}
 			findOrAddFrame(*tick, aggregate.frame).elementDefinitions.push_back(aggregate);
@@ -372,24 +423,141 @@ void DevTimingReporting::consumeThrough(AppTickId completedThroughAppTick) noexc
 	}
 }
 
+AppTickId DevTimingReporting::current_app_tick() const noexcept {
+	std::shared_lock lock(impl_->mutex);
+	return impl_->current_tick;
+}
+uint64_t DevTimingReporting::current_boundary_ns() const noexcept {
+	std::shared_lock lock(impl_->mutex);
+	return impl_->current_boundary_ns;
+}
 void DevTimingReporting::note_tick_boundary(AppTickId app_tick, uint64_t timestamp_ns) noexcept {
 	try {
 		std::unique_lock lock(impl_->mutex);
-		impl_->publishThrough(app_tick);
-		if (app_tick > 0)
+		impl_->current_tick = app_tick;
+		impl_->current_boundary_ns = timestamp_ns;
+
+		if (app_tick > 0 && !impl_->capture_sealed)
 			if (auto* previous = impl_->retained(app_tick - 1)) {
 				previous->boundary_end_ns = timestamp_ns;
 				previous->boundary_open = false;
+				if (!impl_->budget_window && !impl_->latched_budget_event &&
+					timestamp_ns >= previous->boundary_start_ns &&
+					timestamp_ns - previous->boundary_start_ns > impl_->budget_ns)
+					impl_->latched_budget_event =
+						TimingBudgetEvent{previous->appTick, timestamp_ns,
+										  timestamp_ns - previous->boundary_start_ns};
 				impl_->revise(*previous);
 			}
-		if (auto* current = impl_->retained(app_tick)) {
-			current->boundary_start_ns = timestamp_ns;
-			current->boundary_open = true;
-			impl_->revise(*current);
+
+	} catch (...) {
+		impl_->ingestionFailures.fetch_add(1u, std::memory_order_relaxed);
+	}
+}
+uint64_t DevTimingReporting::begin_capture(AppTickId first_app_tick, WindowId budget_window,
+										   uint64_t budget_ns) noexcept {
+	std::unique_lock lock(impl_->mutex);
+	impl_->hasTicks = false;
+	impl_->capture_recording = impl_->capture_finalizing = false;
+	try {
+		impl_->resizeRetention(
+			effectiveCapacity(impl_->reportingConfig, impl_->maximumFramesInFlight));
+	} catch (...) {
+		impl_->ingestionFailures.fetch_add(1u, std::memory_order_relaxed);
+	}
+	impl_->metadata_revision = UINT64_MAX;
+	impl_->retainedTickCount = 0;
+	impl_->oldestTick = impl_->newestTick = 0;
+	impl_->head = impl_->next_write_slot;
+	impl_->capture_first_tick = first_app_tick;
+	impl_->budget_window = budget_window;
+	impl_->budget_ns = budget_ns;
+	impl_->latched_budget_event.reset();
+	impl_->capture_dropped_records = impl_->capture_ingestion_failures =
+		impl_->capture_gpu_failures = 0;
+	impl_->capture_dropped_baseline =
+		impl_->currentCpuQuality.droppedRecords + impl_->currentGpuQuality.droppedRecords;
+	impl_->capture_gpu_failure_baseline = impl_->currentGpuQuality.queryReadFailures +
+										  impl_->currentGpuQuality.queryPoolFailures +
+										  impl_->currentGpuQuality.unavailableQueries;
+	impl_->capture_failure_baseline = impl_->ingestionFailures.load(std::memory_order_relaxed);
+	impl_->capture_end_tick = UINT64_MAX;
+	impl_->capture_admitted_ticks = impl_->capture_overwritten_ticks = 0;
+	impl_->capture_recording = true;
+	impl_->capture_finalizing = impl_->capture_sealed = false;
+	return ++impl_->capture_generation;
+}
+void DevTimingReporting::admit_tick(AppTickId app_tick, uint64_t timestamp_ns) noexcept {
+	std::unique_lock lock(impl_->mutex);
+	if (!impl_->capture_recording)
+		return;
+	impl_->publishOne(app_tick);
+	if (auto* report = impl_->retained(app_tick)) {
+		report->boundary_start_ns = timestamp_ns;
+		report->boundary_open = true;
+	}
+}
+void DevTimingReporting::stop_capture(AppTickId end_app_tick_exclusive) noexcept {
+	std::unique_lock lock(impl_->mutex);
+	impl_->capture_recording = false;
+	impl_->capture_finalizing = true;
+	impl_->capture_end_tick = end_app_tick_exclusive;
+}
+void DevTimingReporting::seal_capture() noexcept {
+	std::unique_lock lock(impl_->mutex);
+	if (impl_->capture_sealed)
+		return;
+	impl_->capture_recording = impl_->capture_finalizing = false;
+	try {
+		// Refresh cold metadata once before sealing, including registrations that
+		// arrived after the last producer drain. Keep old owned strings alive until then.
+		impl_->descriptors = impl_->timing->descriptorSnapshot();
+		impl_->cpuTracks = impl_->timing->trackSnapshot();
+		impl_->descriptor_strings.clear();
+		impl_->descriptor_strings.reserve(impl_->descriptors.size() * 3);
+		for (auto& descriptor : impl_->descriptors) {
+			impl_->descriptor_strings.emplace_back(descriptor.name);
+			impl_->descriptor_strings.emplace_back(descriptor.source.file);
+			impl_->descriptor_strings.emplace_back(descriptor.source.function);
+		}
+		size_t string_index = 0;
+		for (auto& descriptor : impl_->descriptors) {
+			descriptor.name = impl_->descriptor_strings[string_index++];
+			descriptor.source.file = impl_->descriptor_strings[string_index++];
+			descriptor.source.function = impl_->descriptor_strings[string_index++];
 		}
 	} catch (...) {
 		impl_->ingestionFailures.fetch_add(1u, std::memory_order_relaxed);
 	}
+	impl_->capture_dropped_records = impl_->currentCpuQuality.droppedRecords +
+									 impl_->currentGpuQuality.droppedRecords -
+									 impl_->capture_dropped_baseline;
+	impl_->capture_ingestion_failures =
+		impl_->ingestionFailures.load(std::memory_order_relaxed) - impl_->capture_failure_baseline;
+	impl_->capture_gpu_failures =
+		impl_->currentGpuQuality.queryReadFailures + impl_->currentGpuQuality.queryPoolFailures +
+		impl_->currentGpuQuality.unavailableQueries - impl_->capture_gpu_failure_baseline;
+	impl_->capture_sealed = true;
+}
+TimingCaptureReadView DevTimingReporting::read_capture() const {
+	TimingCaptureReadView view;
+	view.lock = std::shared_lock(impl_->mutex);
+	if (!impl_->capture_sealed)
+		return view;
+	view.generation = impl_->capture_generation;
+	view.descriptors = impl_->descriptors;
+	const auto first_count =
+		std::min<size_t>(impl_->retainedTickCount, impl_->ring.size() - impl_->head);
+	view.first = std::span(impl_->ring).subspan(impl_->head, first_count);
+	view.second = std::span(impl_->ring).first(impl_->retainedTickCount - first_count);
+	return view;
+}
+std::optional<TimingBudgetEvent>
+DevTimingReporting::budget_event(WindowId window, uint64_t budget_ns) const noexcept {
+	std::shared_lock lock(impl_->mutex);
+	return window == impl_->budget_window && budget_ns == impl_->budget_ns
+			   ? impl_->latched_budget_event
+			   : std::nullopt;
 }
 TimingCaptureSnapshot DevTimingReporting::capture_snapshot() const {
 	TimingCaptureSnapshot result;
@@ -426,10 +594,47 @@ TimingReportingStatus DevTimingReporting::status() const noexcept {
 		.ingestionFailures = impl_->ingestionFailures.load(std::memory_order_relaxed),
 		.mutationSequence = impl_->mutationSequence,
 		.quality = impl_->currentCpuQuality,
+		.capture_generation = impl_->capture_generation,
+		.capture_admitted_ticks = impl_->capture_admitted_ticks,
+		.capture_overwritten_ticks = impl_->capture_overwritten_ticks,
+		.capture_first_app_tick = impl_->capture_first_tick,
+		.capture_end_app_tick_exclusive = impl_->capture_end_tick,
+		.not_retained_by_policy = impl_->not_retained_by_policy,
+		.late_after_seal = impl_->late_after_seal,
+		.capture_dropped_records = impl_->capture_dropped_records,
+		.capture_ingestion_failures = impl_->capture_ingestion_failures,
+		.capture_gpu_failures = impl_->capture_gpu_failures,
+		.capture_recording = impl_->capture_recording,
+		.capture_sealed = impl_->capture_sealed,
 		.hasRetainedTicks = impl_->hasTicks,
 	};
 }
 
+std::optional<TimingCorrelationSummary>
+DevTimingReporting::correlate_sample(AppTickId app_tick, WindowFrameKey frame, TimingTrackId track,
+									 uint64_t timestamp_ns) const noexcept {
+	std::shared_lock lock(impl_->mutex);
+	const auto* report = impl_->retained(app_tick);
+	if (!report)
+		return std::nullopt;
+	const auto* zones = &report->applicationCpuZones;
+	if (frame)
+		for (const auto& window : report->windows) {
+			if (!window.occupied || window.window != frame.window)
+				continue;
+			for (const auto& candidate : window.frames)
+				if (candidate.occupied && candidate.key == frame)
+					zones = &candidate.cpuZones;
+		}
+	const CpuTimingRecord* containing = nullptr;
+	for (const auto& sample : *zones)
+		if (sample.track == track && timestamp_ns >= sample.startNs &&
+			timestamp_ns - sample.startNs <= sample.durationNs &&
+			(!containing || sample.depth >= containing->depth))
+			containing = &sample;
+	return TimingCorrelationSummary{report->revision, containing ? containing->invocationId : 0,
+									containing ? containing->typeId : 0, impl_->capture_generation};
+}
 std::optional<TimingAppTickReport> DevTimingReporting::appTickReport(AppTickId appTick) const {
 	std::shared_lock lock(impl_->mutex);
 	TimingAppTickReport* report = impl_->retained(appTick);

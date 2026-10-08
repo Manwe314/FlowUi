@@ -7,23 +7,115 @@
 #include <unordered_map>
 
 namespace FlowUi::devSystems::interface_elements {
+TimelineSampleDetails TimelineBlockSlice::details() const noexcept {
+	TimelineSampleDetails result;
+	if (!descriptor.empty()) {
+		result.source_file = descriptor.front().source.file;
+		result.source_function = descriptor.front().source.function;
+		result.source_line = descriptor.front().source.line;
+	}
+	if (!cpu_sample.empty()) {
+		const auto& sample = cpu_sample.front();
+		result.exclusive_ns = sample.exclusiveNs();
+		result.parent_invocation_id = sample.parentInvocationId;
+		result.entity = {sample.entityKind, sample.primaryEntityId, sample.secondaryEntityId};
+		result.quality_flags = sample.flags;
+	} else if (!gpu_sample.empty()) {
+		const auto& sample = gpu_sample.front();
+		result.entity = {sample.entityKind, sample.primaryEntityId, sample.secondaryEntityId};
+		result.quality_flags = sample.flags;
+		result.device_start_ticks = sample.startTick;
+		result.device_duration_ticks = sample.durationTicks;
+		result.timestamp_period_ns = sample.timestamp_period_ns;
+		result.timestamp_valid_bits = sample.timestamp_valid_bits;
+		result.calibration_id = sample.calibrationId;
+		result.calibration_deviation_ns = sample.calibrationMaximumDeviationNs;
+		result.begin_stage = sample.beginStage;
+		result.end_stage = sample.endStage;
+	}
+	return result;
+}
+TimelineSnapshot::TimelineSnapshot(const TimelineSnapshot& other) {
+	*this = other;
+}
+TimelineSnapshot& TimelineSnapshot::operator=(const TimelineSnapshot& other) {
+	if (this == &other)
+		return *this;
+	blocks = other.blocks;
+	frames = other.frames;
+	ticks = other.ticks;
+	labels.reserve(other.labels.capacity());
+	labels = other.labels;
+	frame_metrics = other.frame_metrics;
+	tick_samples = other.tick_samples;
+	child_offsets = other.child_offsets;
+	children = other.children;
+	start_ns = other.start_ns;
+	end_ns = other.end_ns;
+	percentile_ns = other.percentile_ns;
+	uncalibrated_gpu_count = other.uncalibrated_gpu_count;
+	window_milestones = other.window_milestones;
+	tick_cadence = other.tick_cadence;
+	for (auto* sequence : {&blocks, &frames, &ticks})
+		for (auto& block : *sequence)
+			for (size_t label_index = 0; label_index < other.labels.size(); ++label_index)
+				if (block.label.data() == other.labels[label_index].data()) {
+					block.label = labels[label_index];
+					break;
+				}
+	return *this;
+}
+namespace {
+struct ReportSegments {
+	std::span<const TimingAppTickReport> first{}, second{};
+	struct Iterator {
+		const ReportSegments* owner;
+		size_t offset;
+		[[nodiscard]] const TimingAppTickReport& operator*() const noexcept {
+			return offset < owner->first.size() ? owner->first[offset]
+												: owner->second[offset - owner->first.size()];
+		}
+		Iterator& operator++() noexcept {
+			++offset;
+			return *this;
+		}
+		[[nodiscard]] bool operator!=(const Iterator& other) const noexcept {
+			return offset != other.offset;
+		}
+	};
+	[[nodiscard]] size_t size() const noexcept { return first.size() + second.size(); }
+	[[nodiscard]] Iterator begin() const noexcept { return {this, 0}; }
+	[[nodiscard]] Iterator end() const noexcept { return {this, size()}; }
+};
+} // namespace
 uint64_t timeline_end(uint64_t start_ns, uint64_t duration_ns) noexcept {
 	return start_ns + std::min(duration_ns, UINT64_MAX - start_ns);
 }
-TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
-								  std::span<const TimingZoneDescriptor> descriptors,
-								  const DevPerformanceSelection& selection) {
+static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
+												  std::span<const TimingZoneDescriptor> descriptors,
+												  const DevPerformanceSelection& selection) {
 	TimelineSnapshot result;
-	std::vector<GpuTimingRecord> unaligned_records;
+	std::vector<const GpuTimingRecord*> unaligned_records;
 	result.window_milestones = true;
 	size_t record_count = 0;
 	for (const auto& report : reports) {
 		record_count += report.applicationCpuZones.size();
 		for (const auto& window : report.windows)
-			for (const auto& frame : window.frames)
-				record_count += frame.cpuZones.size() + frame.gpuZones.size();
+			if (window.occupied)
+				for (const auto& frame : window.frames)
+					if (frame.occupied)
+						record_count += frame.cpuZones.size() + frame.gpuZones.size();
 	}
-	result.blocks.reserve(record_count);
+	result.blocks.reserve(record_count + reports.size());
+	result.labels.reserve(record_count * 2 + reports.size() * 3 + descriptors.size());
+	const auto own_label = [&](std::string value) -> std::string_view {
+		result.labels.emplace_back(std::move(value));
+		return result.labels.back();
+	};
+	std::unordered_map<uint64_t, std::string_view> labels;
+	labels.reserve(descriptors.size());
+	for (const auto& descriptor : descriptors)
+		labels.emplace(descriptor.typeId, own_label(performance_zone_label(descriptor.name)));
 	result.frames.reserve(reports.size());
 	std::unordered_map<uint64_t, const TimingZoneDescriptor*> descriptor_map;
 	descriptor_map.reserve(descriptors.size());
@@ -34,30 +126,32 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 	std::map<std::tuple<uint64_t, uint64_t, uint64_t>, size_t> identities;
 	const auto label_block = [&](TimelineBlockSlice& block) {
 		if (const auto found = descriptor_map.find(block.type_id); found != descriptor_map.end()) {
-			block.label = performance_zone_label(found->second->name);
+			block.label = labels.at(block.type_id);
+			block.descriptor = {found->second, 1};
 			block.category = found->second->category;
 			block.role = found->second->role;
-			block.source_file = found->second->source.file;
-			block.source_function = found->second->source.function;
-			block.source_line = found->second->source.line;
-		} else
-			block.label = "Zone " + std::to_string(block.type_id);
+		} else {
+			auto label_iterator = labels.find(block.type_id);
+			if (label_iterator == labels.end())
+				label_iterator =
+					labels
+						.emplace(block.type_id, own_label("Zone " + std::to_string(block.type_id)))
+						.first;
+			block.label = label_iterator->second;
+		}
 		block.selected = selection.selector_mode == 1 && selection.selected_zone != 0 &&
 						 selection.selected_zone == block.type_id;
 	};
 	const auto add_cpu = [&](const CpuTimingRecord& record) {
 		TimelineBlockSlice block;
+		block.cpu_sample = {&record, 1};
 		block.scope_visible =
 			!selection.selected_scope.id ||
 			(selection.selected_scope.kind == DevPerformanceScopeKind::Window
 				 ? !record.frame.window || record.frame.window == selection.selected_scope.id
 				 : record.track == selection.selected_scope.id);
-		block.entity = {record.entityKind, record.primaryEntityId, record.secondaryEntityId};
-		block.quality_flags = record.flags;
-		block.parent_invocation_id = record.parentInvocationId;
 		block.start_ns = record.startNs;
 		block.duration_ns = record.durationNs;
-		block.exclusive_ns = record.exclusiveNs();
 		block.invocation_id = record.invocationId;
 		block.type_id = record.typeId;
 		block.app_tick = record.appTick;
@@ -80,7 +174,11 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 			add_cpu(record);
 		}
 		for (const auto& window : report.windows) {
+			if (!window.occupied)
+				continue;
 			for (const auto& frame : window.frames) {
+				if (!frame.occupied)
+					continue;
 				for (const auto& record : frame.cpuZones) {
 					note_time(record);
 					add_cpu(record);
@@ -94,8 +192,9 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 						block.duration_ns = record.durationNs;
 						block.frame = record.frame;
 						block.app_tick = report.appTick;
-						block.label = "Window " + std::to_string(record.frame.window) +
-									  " · Frame #" + std::to_string(record.frame.frameNumber);
+						block.label =
+							own_label("Window " + std::to_string(record.frame.window) +
+									  " · Frame #" + std::to_string(record.frame.frameNumber));
 						result.frames.emplace_back(std::move(block));
 					}
 				}
@@ -111,32 +210,23 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 							0 ||
 						record.cpuAlignedStartNs == 0) {
 						++result.uncalibrated_gpu_count;
-						unaligned_records.emplace_back(record);
+						unaligned_records.emplace_back(&record);
 						continue;
 					}
 					TimelineBlockSlice block;
+					block.gpu_sample = {&record, 1};
 					block.start_ns = record.cpuAlignedStartNs;
 					block.duration_ns = record.durationNs;
-					block.exclusive_ns = 0;
 					block.type_id = record.typeId;
 					block.frame = record.frame;
 					block.app_tick = record.appTick;
 					block.track = record.queueFamilyIndex;
 					block.domain = TimingSampleDomain::Gpu;
-					block.entity = {record.entityKind, record.primaryEntityId,
-									record.secondaryEntityId};
-					block.quality_flags = record.flags;
 					block.submission_serial = record.submissionSerial;
 					block.device_identity = record.device_identity;
 					block.queue_identity = record.queue_identity;
 					block.zone_index = record.zone_index;
 					block.parent_zone_index = record.parentZoneIndex;
-					block.timestamp_period_ns = record.timestamp_period_ns;
-					block.timestamp_valid_bits = record.timestamp_valid_bits;
-					block.calibration_id = record.calibrationId;
-					block.calibration_deviation_ns = record.calibrationMaximumDeviationNs;
-					block.begin_stage = record.beginStage;
-					block.end_stage = record.endStage;
 					block.scope_visible =
 						selection.selected_scope.kind != DevPerformanceScopeKind::Thread &&
 						(!selection.selected_scope.id ||
@@ -177,8 +267,8 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 			tick.app_tick = report.appTick;
 			tick.measured_cadence =
 				report.boundary_start_ns && report.boundary_end_ns >= report.boundary_start_ns;
-			tick.label = "AppTick #" + std::to_string(report.appTick) +
-						 (report.boundary_open ? " (open)" : "");
+			tick.label = own_label("AppTick #" + std::to_string(report.appTick) +
+								   (report.boundary_open ? " (open)" : ""));
 			result.ticks.emplace_back(tick);
 		}
 	}
@@ -198,7 +288,7 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 				block.hierarchy_note = "Invalid synchronous containment";
 	}
 	for (auto& block : result.blocks)
-		if (block.domain == TimingSampleDomain::Cpu && block.parent_invocation_id &&
+		if (block.domain == TimingSampleDomain::Cpu && block.details().parent_invocation_id &&
 			block.parent == timeline_no_parent && block.hierarchy_note.empty())
 			block.hierarchy_note = "Parent unavailable or invalid containment";
 	std::vector<uint8_t> ancestry_state(result.blocks.size(), 0);
@@ -241,7 +331,7 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 							 record.frame};
 	};
 	for (size_t record_index = 0; record_index < unaligned_records.size(); ++record_index) {
-		const auto& record = unaligned_records[record_index];
+		const auto& record = *unaligned_records[record_index];
 		auto [origin, inserted] = device_origins.emplace(
 			submission_key(record), std::pair{record.startTick, record.zone_index});
 		if (!inserted && record.zone_index < origin->second.second)
@@ -264,36 +354,29 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 				   ? static_cast<long double>(forward) * period
 				   : -static_cast<long double>((reference - record.startTick) & mask) * period;
 	};
-	for (const auto& record : unaligned_records) {
+	for (const auto* record_pointer : unaligned_records) {
+		const auto& record = *record_pointer;
 		auto [offset, inserted] =
 			earliest_offsets.emplace(submission_key(record), local_offset(record));
 		if (!inserted)
 			offset->second = std::min(offset->second, local_offset(record));
 	}
-	for (const auto& record : unaligned_records) {
+	for (const auto* record_pointer : unaligned_records) {
+		const auto& record = *record_pointer;
 		TimelineBlockSlice block;
+		block.gpu_sample = {&record, 1};
 		block.cpu_clock_aligned = false;
-		block.device_start_ticks = record.startTick;
-		block.device_duration_ticks = record.durationTicks;
 		block.duration_ns = record.durationNs;
 		block.type_id = record.typeId;
 		block.frame = record.frame;
 		block.app_tick = record.appTick;
 		block.track = record.queueFamilyIndex;
 		block.domain = TimingSampleDomain::Gpu;
-		block.entity = {record.entityKind, record.primaryEntityId, record.secondaryEntityId};
-		block.quality_flags = record.flags;
 		block.submission_serial = record.submissionSerial;
 		block.device_identity = record.device_identity;
 		block.queue_identity = record.queue_identity;
 		block.zone_index = record.zone_index;
 		block.parent_zone_index = record.parentZoneIndex;
-		block.timestamp_period_ns = record.timestamp_period_ns;
-		block.timestamp_valid_bits = record.timestamp_valid_bits;
-		block.calibration_id = record.calibrationId;
-		block.calibration_deviation_ns = record.calibrationMaximumDeviationNs;
-		block.begin_stage = record.beginStage;
-		block.end_stage = record.endStage;
 		block.scope_visible =
 			selection.selected_scope.kind != DevPerformanceScopeKind::Thread &&
 			(!selection.selected_scope.id || selection.selected_scope.id == record.frame.window);
@@ -307,7 +390,7 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 		result.blocks.emplace_back(std::move(block));
 	}
 	for (size_t record_index = 0; record_index < unaligned_records.size(); ++record_index) {
-		const auto& record = unaligned_records[record_index];
+		const auto& record = *unaligned_records[record_index];
 		const auto parent = local_identities.find({submission_key(record), record.parentZoneIndex});
 		if (parent != local_identities.end() && parent->second != aligned_count + record_index)
 			result.blocks[aligned_count + record_index].parent = parent->second;
@@ -361,6 +444,35 @@ TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 		result.percentile_ns = sorted_metrics[(sorted_metrics.size() - 1) * 95 / 100];
 	return result;
 }
+void reset_timeline_minimap_scale(DevTimelineState& state,
+								  const DevPerformanceSelection& selection) noexcept {
+	state.minimap_maximum_ns = 33'333'334;
+	if (selection.selector_mode == 1 && selection.selected_zone) {
+		long double total = 0;
+		size_t sample_count = 0;
+		for (const auto metric : state.snapshot.frame_metrics)
+			if (metric) {
+				total += metric;
+				++sample_count;
+			}
+		if (sample_count)
+			state.minimap_maximum_ns = uint64_t(
+				std::clamp(2 * total / sample_count, 1.0L, static_cast<long double>(UINT64_MAX)));
+	} else {
+		for (const auto metric : state.snapshot.frame_metrics)
+			state.minimap_maximum_ns = std::max(state.minimap_maximum_ns, metric);
+	}
+}
+TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
+								  std::span<const TimingZoneDescriptor> descriptors,
+								  const DevPerformanceSelection& selection) {
+	return extract_timeline_segments({reports, {}}, descriptors, selection);
+}
+TimelineSnapshot extract_timeline(const TimingCaptureReadView& capture,
+								  const DevPerformanceSelection& selection) {
+	return extract_timeline_segments({capture.first, capture.second}, capture.descriptors,
+									 selection);
+}
 std::vector<TimelineTrackLane> timeline_lanes(const TimelineSnapshot& snapshot, uint32_t depth,
 											  std::span<const size_t> roots) {
 	std::map<std::tuple<TimingSampleDomain, uint64_t, uint32_t>, std::vector<size_t>> groups;
@@ -412,8 +524,9 @@ timeline_major_lanes(const TimelineSnapshot& snapshot, const DevPerformanceSelec
 		groups;
 	for (size_t block_index = 0; block_index < snapshot.blocks.size(); ++block_index) {
 		const auto& block = snapshot.blocks[block_index];
-		bool candidate = block.parent == timeline_no_parent &&
-						 (block.domain != TimingSampleDomain::Cpu || !block.parent_invocation_id);
+		bool candidate =
+			block.parent == timeline_no_parent &&
+			(block.domain != TimingSampleDomain::Cpu || !block.details().parent_invocation_id);
 		if (selection.selector_mode == 1 && selection.selected_zone) {
 			candidate = block.selected;
 			size_t parent = block.parent, guard = 0;
@@ -572,13 +685,6 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 	if (frame_count)
 		state.selected_frame = std::min(state.selected_frame, frame_count - 1);
 	switch (command.action) {
-	case TimelineAction::Pause:
-		state.paused = !state.paused;
-		if (!state.paused) {
-			state.cards.clear();
-			state.refresh_requested = true;
-		}
-		break;
 	case TimelineAction::Zoom:
 		state.zoom = command.value;
 		break;
@@ -591,7 +697,6 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 	case TimelineAction::Center: {
 		if (!frame_count)
 			break;
-		state.paused = true;
 		if (command.action == TimelineAction::Previous && state.selected_frame)
 			--state.selected_frame;
 		if (command.action == TimelineAction::Next)
@@ -633,7 +738,6 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 				return index >= state.snapshot.blocks.size();
 			}))
 			break;
-		state.paused = true;
 		state.inspected_sample = command.members.front();
 		if (command.index && !state.cards.empty() && state.cards.back().roots == command.members)
 			break;
@@ -670,7 +774,6 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 		break;
 	}
 	case TimelineAction::Inspect:
-		state.paused = true;
 		if (command.members.size() == 1 && command.members.front() < state.snapshot.blocks.size())
 			state.inspected_sample = command.members.front();
 		break;
@@ -732,6 +835,8 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 			std::clamp(std::isfinite(command.value) ? command.value : 1.0, 1.0, 1000.0);
 		break;
 	case TimelineAction::FitSelected:
+		if (!command.members.empty() && command.members.front() < state.snapshot.blocks.size())
+			state.inspected_sample = command.members.front();
 		if (state.inspected_sample < state.snapshot.blocks.size() &&
 			state.snapshot.blocks[state.inspected_sample].cpu_clock_aligned) {
 			const auto& block = state.snapshot.blocks[state.inspected_sample];
@@ -756,11 +861,7 @@ void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& se
 			state.zoom = double(history_duration) / std::max(1.0, double(block.duration_ns) * 1.2);
 			clamp_timeline_view(state);
 			center_timeline(state, timeline_end(block.start_ns, block.duration_ns / 2));
-			state.paused = true;
 		}
-		break;
-	case TimelineAction::Refresh:
-		state.refresh_requested = true;
 		break;
 	case TimelineAction::None:
 		break;

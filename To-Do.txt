@@ -164,8 +164,13 @@ things i want to do:
 			-	Text is usually over the eleent instead of it beeing outside it
 			-	distance ruler lines can be placed better
 			-	bettter highlighting legend?
-
-		
+	- DevTimelines
+		- Zones turn some bars red
+		- main header not centered
+		- Capture text not centered
+		- text on the right end of timing tracks overlap timeline lines
+		- add config to capture performance on startUP untill ring buffer full or DevInterface open.
+		- double check probe level selection and compilation.
 		
 
 

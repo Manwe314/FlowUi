@@ -41,6 +41,9 @@ public:
 	void setFrameContext(WindowFrameKey frame, AppTickId appTick = 0u) noexcept;
 	void clearFrameContext() noexcept;
 
+	/** Number of published active scopes attributed to the requested interval. */
+	[[nodiscard]] uint64_t pending_scope_count(AppTickId first_tick,
+											   AppTickId end_tick) const noexcept;
 	[[nodiscard]] TimingTrackId trackId() const noexcept;
 	[[nodiscard]] std::string_view trackName() const noexcept;
 
@@ -95,8 +98,14 @@ public:
 	DevTiming& operator=(DevTiming&&) = delete;
 
 	[[nodiscard]] DevTimingThreadAttachment attachCurrentThread(std::string_view trackName);
+	/** Drain into reusable caller storage without retaining timing history. */
+	void drain_completed_records_into(std::vector<CpuTimingRecord>& destination);
 	[[nodiscard]] std::vector<CpuTimingRecord> drainCompletedRecords();
+	/** Drain and merge element aggregates into reusable caller storage. */
+	void drain_element_aggregates_into(std::vector<ElementDefinitionTimingAggregate>& destination);
 	[[nodiscard]] std::vector<ElementDefinitionTimingAggregate> drainElementTimingAggregates();
+	/** Registration revision used to avoid repeated metadata copies. */
+	[[nodiscard]] uint64_t metadata_revision() const noexcept;
 	[[nodiscard]] std::vector<TimingZoneDescriptor> descriptorSnapshot() const;
 	[[nodiscard]] std::vector<TimingTrackDescriptor> trackSnapshot() const;
 	[[nodiscard]] TimingQualitySnapshot qualitySnapshot() const;
@@ -105,6 +114,9 @@ public:
 	[[nodiscard]] DevTimingConfig config() const noexcept;
 	[[nodiscard]] const TimingClockCalibration& clockCalibration() const noexcept;
 
+	/** Count worker scopes attributed to an admitted interval. */
+	[[nodiscard]] uint64_t pending_scope_count(AppTickId first_tick,
+											   AppTickId end_tick) const noexcept;
 	/** Read the monotonic capture clock used by CPU zones and tick boundaries. */
 	[[nodiscard]] uint64_t nowNs() const noexcept;
 

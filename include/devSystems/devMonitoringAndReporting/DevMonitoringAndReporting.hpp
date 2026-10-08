@@ -10,6 +10,7 @@
 
 namespace FlowUi::devSystems {
 
+class DevPerformanceCapture;
 class DevTiming;
 class DevGpuTiming;
 class DevTimingReporting;
@@ -29,6 +30,8 @@ public:
 	DevMonitoringAndReporting(DevMonitoringAndReporting&&) = delete;
 	DevMonitoringAndReporting& operator=(DevMonitoringAndReporting&&) = delete;
 
+	/** App-lifetime Performance capture controller. */
+	[[nodiscard]] DevPerformanceCapture& performance_capture() noexcept;
 	[[nodiscard]] DevTiming& timing() noexcept;
 	[[nodiscard]] const DevTiming& timing() const noexcept;
 	[[nodiscard]] DevGpuTiming& gpuTiming() noexcept;
@@ -45,6 +48,7 @@ public:
 	[[nodiscard]] const DevErrorReporting& errorReporting() const noexcept;
 
 private:
+	std::unique_ptr<DevPerformanceCapture> performance_capture_{};
 	std::unique_ptr<DevTiming> timing_{};
 	std::unique_ptr<DevGpuTiming> gpuTiming_{};
 	std::unique_ptr<DevTimingReporting> timingReporting_{};

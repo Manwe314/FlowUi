@@ -15,6 +15,15 @@ struct InputQueue {
 
 	void pushChar(char32_t c) noexcept;
 	void pushKey(int key, bool down) noexcept;
+#if FLOW_UI_DEV_MODE
+	/** Preserve native press edges, including a press/release between two polls. */
+	void note_dev_shortcut_press(int key, uint8_t modifiers) noexcept {
+		if (key >= 0 && static_cast<size_t>(key) < dev_shortcut_presses.size() && modifiers < 16)
+			dev_shortcut_presses[static_cast<size_t>(key)] |=
+				static_cast<uint16_t>(1u << modifiers);
+	}
+	std::array<uint16_t, FrameInput::kKeyboardKeyCount> dev_shortcut_presses{};
+#endif
 	void pushMouseButton(int mouseButton, bool down) noexcept;
 	void pushScroll(float dx, float dy) noexcept;
 	void setMousePos(float x, float y) noexcept;

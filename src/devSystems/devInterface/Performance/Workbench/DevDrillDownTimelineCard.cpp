@@ -20,11 +20,11 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 		const auto& block = state.snapshot.blocks[index];
 		start = std::min(start, block.start_ns);
 		end = std::max(end, timeline_end(block.start_ns, block.duration_ns));
-		exclusive = timeline_end(exclusive, block.exclusive_ns);
+		exclusive = timeline_end(exclusive, block.recorded_exclusive_ns());
 	}
 	const uint64_t duration = end - start;
-	const auto label =
-		card.roots.size() == 1 ? target.label : std::to_string(card.roots.size()) + " micro zones";
+	const auto label = card.roots.size() == 1 ? std::string(target.label)
+											  : std::to_string(card.roots.size()) + " micro zones";
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
@@ -61,7 +61,8 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 				const auto& focus = state.cards[history_index];
 				const auto& block = state.snapshot.blocks[focus.roots.front()];
 				timeline_ui::button(context, 40 + history_index,
-									focus.roots.size() > 1 ? "Aggregate members" : block.label,
+									focus.roots.size() > 1 ? "Aggregate members"
+														   : std::string(block.label),
 									{{}, TimelineAction::Breadcrumb, history_index + 1});
 			}
 		}

@@ -724,6 +724,15 @@ struct DevToolsConfig {
 	bool enabled = false;
 
 	/**
+	 * @brief Capture timing from the first application tick until the timing ring is full
+	 * or the developer interface is opened. Requires enabled developer tooling.
+	 *
+	 * The completed startup snapshot is preserved for the first investigation; filling
+	 * the ring does not automatically open the developer interface. Defaults to off.
+	 */
+	bool capture_timing_on_startup = false;
+
+	/**
 	 * @brief Register the developer-interface toggle chord with ShortcutManager.
 	 *
 	 * Disable this when the application wants to own panel toggling itself.

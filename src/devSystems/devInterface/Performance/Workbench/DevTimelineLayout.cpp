@@ -1,6 +1,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineLayout.hpp"
 #if FLOW_UI_DEV_MODE
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 namespace FlowUi::devSystems::interface_elements {
@@ -13,7 +14,8 @@ timeline_project_interval(uint64_t sample_start, uint64_t sample_duration, uint6
 	if ((sample_duration ? clipped_end <= clipped_start
 						 : sample_start < view_start ||
 							   sample_start >= timeline_end(view_start, view_duration)) ||
-		width <= 0 || height <= 0 || !std::isfinite(width))
+		width <= 0 || height <= 0 || !std::isfinite(width) || !std::isfinite(height) ||
+		!std::isfinite(top))
 		return std::nullopt;
 	const double scale = double(width) / std::max(uint64_t{1}, view_duration);
 	const float left = std::min(width, float(double(clipped_start - view_start) * scale));
@@ -41,8 +43,11 @@ void decoration(TimelineLayout& layout, Clay_BoundingBox bounds, Clay_Color colo
 }
 void ruler(TimelineLayout& layout, uint64_t origin, bool seconds) {
 	const float axis_width = std::max(0.0f, layout.width - layout.label_width);
+	const float endpoint_width = std::min(140.0f, axis_width);
+	constexpr float endpoint_gap = 12;
+	const float tick_label_end = std::max(0.0f, axis_width - endpoint_width - endpoint_gap);
 	const auto relative = layout.start_ns >= origin ? layout.start_ns - origin : 0;
-	const double requested = double(layout.duration_ns) / std::max(1.0, double(axis_width) / 100);
+	const double requested = double(layout.duration_ns) / std::max(1.0, double(axis_width) / 120);
 	const double magnitude = std::pow(10.0, std::floor(std::log10(std::max(1.0, requested))));
 	const double multiple = requested / magnitude;
 	const double cadence =
@@ -57,7 +62,7 @@ void ruler(TimelineLayout& layout, uint64_t origin, bool seconds) {
 	uint64_t offset = remainder ? step - remainder : 0;
 	for (size_t tick = 0; tick < 64 && offset < layout.duration_ns; ++tick) {
 		const float horizontal = float(double(offset) / layout.duration_ns * axis_width);
-		if (horizontal >= axis_width - 130)
+		if (horizontal >= tick_label_end)
 			break;
 		char label[64];
 		const auto timestamp = timeline_end(relative, offset);
@@ -70,12 +75,17 @@ void ruler(TimelineLayout& layout, uint64_t origin, bool seconds) {
 		else
 			std::snprintf(label, sizeof(label), "| %llu ns",
 						  static_cast<unsigned long long>(timestamp));
-		decoration(layout,
-				   {layout.label_width + horizontal, 0,
-					std::min(float(double(step) / layout.duration_ns * axis_width),
-							 axis_width - horizontal - 130),
-					seconds ? 16.0f : 20.0f},
-				   interface_theme::kDepth1Panel, label);
+		const float available_label_width = std::min(
+			float(double(step) / layout.duration_ns * axis_width), tick_label_end - horizontal);
+		const float required_label_width = float(std::string_view(label).size()) * 8.5f + 8;
+		if (available_label_width >= required_label_width)
+			decoration(layout,
+					   {layout.label_width + horizontal, 0, available_label_width,
+						seconds ? 16.0f : 20.0f},
+					   interface_theme::kDepth1Panel, label);
+		else
+			decoration(layout, {layout.label_width + horizontal, 0, 1, seconds ? 16.0f : 20.0f},
+					   interface_theme::kTextMuted);
 		if (UINT64_MAX - offset < step)
 			break;
 		offset += step;
@@ -86,7 +96,7 @@ void ruler(TimelineLayout& layout, uint64_t origin, bool seconds) {
 		for (uint64_t minor_offset = minor_remainder ? minor_step - minor_remainder : 0;
 			 minor_offset < layout.duration_ns; minor_offset += minor_step) {
 			const float horizontal = float(double(minor_offset) / layout.duration_ns * axis_width);
-			if ((relative % step + minor_offset % step) % step && horizontal < axis_width - 130)
+			if ((relative % step + minor_offset % step) % step && horizontal < tick_label_end)
 				decoration(layout, {layout.label_width + horizontal, 13, 1, 3},
 						   interface_theme::kTextMuted);
 		}
@@ -105,8 +115,8 @@ void ruler(TimelineLayout& layout, uint64_t origin, bool seconds) {
 		std::snprintf(endpoint, sizeof(endpoint), "%llu ns",
 					  static_cast<unsigned long long>(endpoint_ns));
 	decoration(layout,
-			   {layout.label_width + std::max(0.0f, axis_width - 130), 0,
-				std::min(130.0f, axis_width), seconds ? 16.0f : 20.0f},
+			   {layout.label_width + std::max(0.0f, axis_width - endpoint_width), 0, endpoint_width,
+				seconds ? 16.0f : 20.0f},
 			   interface_theme::kDepth1Panel, endpoint);
 }
 std::string track_name(const TimelineBlockSlice& block, const TimelineSnapshot& snapshot) {
@@ -129,16 +139,33 @@ std::string track_name(const TimelineBlockSlice& block, const TimelineSnapshot& 
 	}
 	return "GPU queue " + std::to_string(queue_number);
 }
+void capture_event_marker(TimelineLayout& layout, const DevTimelineState& state) {
+	if (!state.capture_event_ns || state.capture_event_ns < state.snapshot.start_ns ||
+		state.capture_event_ns > state.snapshot.end_ns)
+		return;
+	const auto interval = timeline_project_interval(
+		state.capture_event_ns, 1, layout.start_ns, layout.duration_ns,
+		std::max(0.0f, layout.width - layout.label_width), layout.ruler_height,
+		std::max(1.0f, layout.height - layout.ruler_height));
+	if (interval) {
+		auto bounds = *interval;
+		bounds.x += layout.label_width;
+		bounds.width = 2;
+		decoration(layout, bounds, interface_theme::kAccentCurrent);
+	}
+}
 std::string details(const TimelineBlockSlice& block, uint64_t origin) {
 	if (block.synthetic_tick)
-		return block.label + "\n" +
+		return std::string(block.label) + "\n" +
 			   (block.measured_cadence ? "Tick cadence " : "Recorded CPU envelope ") +
 			   timeline_ui::milliseconds(block.duration_ns) +
 			   "\nSynthetic grouping; related activity is associated, not contained";
-	return block.label + "\nInclusive " + timeline_ui::milliseconds(block.duration_ns) +
+	return std::string(block.label) + "\nInclusive " +
+		   timeline_ui::milliseconds(block.duration_ns) +
 		   (block.domain == TimingSampleDomain::Gpu
 				? std::string{}
-				: " · Recorded exclusive " + timeline_ui::milliseconds(block.exclusive_ns)) +
+				: " · Recorded exclusive " +
+					  timeline_ui::milliseconds(block.recorded_exclusive_ns())) +
 		   "\nStart +" +
 		   timeline_ui::milliseconds(block.start_ns >= origin ? block.start_ns - origin : 0) +
 		   " · " + std::string(performance_category_names[size_t(block.category)]) + "\n" +
@@ -154,19 +181,22 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 	TimelineLayout layout;
 	layout.revision = state.snapshot_revision;
 	layout.kind = kind;
-	layout.width = std::max(0.0f, width);
+	layout.width = std::isfinite(width) ? std::max(0.0f, width) : 0;
+	width = layout.width;
 	layout.start_ns =
 		kind == TimelineSurfaceKind::Minimap ? state.snapshot.start_ns : state.visible_start_ns;
 	layout.duration_ns =
 		kind == TimelineSurfaceKind::Minimap
-			? std::max(uint64_t{1}, uint64_t((state.snapshot.end_ns - state.snapshot.start_ns) /
-											 state.minimap_zoom))
+			? std::max(
+				  uint64_t{1},
+				  uint64_t((state.snapshot.end_ns - state.snapshot.start_ns) /
+						   std::clamp(std::isfinite(state.minimap_zoom) ? state.minimap_zoom : 1.0,
+									  1.0, 1000.0)))
 			: state.visible_duration_ns;
 	if (kind == TimelineSurfaceKind::Minimap) {
 		const auto history = state.snapshot.end_ns - state.snapshot.start_ns;
 		const auto center =
-			!state.paused ? state.snapshot.end_ns
-			: state.minimap_follow_selection && state.selected_frame < state.snapshot.frames.size()
+			state.minimap_follow_selection && state.selected_frame < state.snapshot.frames.size()
 				? timeline_end(state.snapshot.frames[state.selected_frame].start_ns,
 							   state.snapshot.frames[state.selected_frame].duration_ns / 2)
 				: timeline_end(state.visible_start_ns, state.visible_duration_ns / 2);
@@ -180,15 +210,16 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 	if (kind == TimelineSurfaceKind::Minimap) {
 		layout.height = 96;
 		layout.ruler_height = 16;
+		layout.label_width = std::min(76.0f, width * .25f);
+		const float plot_width = std::max(0.0f, width - layout.label_width);
 		ruler(layout, state.origin_ns, true);
 		for (auto& item : layout.items)
 			item.screen_space = true;
-		uint64_t maximum = 33'333'334;
-		for (const auto metric : state.snapshot.frame_metrics)
-			maximum = std::max(maximum, metric);
+		const uint64_t maximum =
+			std::max(uint64_t{1}, state.minimap_maximum_ns ? state.minimap_maximum_ns : 33'333'334);
 		// One bin per logical pixel, preserving every frame for deterministic nearest-start
 		// picking.
-		const size_t bin_count = size_t(std::clamp(std::ceil(width), 1.0f, 16384.0f));
+		const size_t bin_count = size_t(std::clamp(std::ceil(plot_width), 1.0f, 16384.0f));
 		std::vector<std::vector<size_t>> bins(bin_count);
 		for (size_t index = 0; index < state.snapshot.frames.size(); ++index) {
 			const auto& frame = state.snapshot.frames[index];
@@ -200,7 +231,7 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 											   layout.duration_ns * bin_count));
 			bins[bin].emplace_back(index);
 		}
-		for (size_t bin = 0; bin < bins.size(); ++bin) {
+		for (size_t bin = 0; plot_width > 0 && bin < bins.size(); ++bin) {
 			if (bins[bin].empty())
 				continue;
 			uint64_t peak = 0;
@@ -211,15 +242,18 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 										  : state.snapshot.frames[index].duration_ns);
 				selected |= index == state.selected_frame;
 			}
-			const float height = std::max(2.0f, float(double(peak) / maximum * 78));
-			const float left = float(double(bin) / bin_count * width);
+			const float height = std::max(2.0f, float(std::min(1.0, double(peak) / maximum) * 78));
+			const float left = layout.label_width + float(double(bin) / bin_count * plot_width);
 			size_t next_bin = bin + 1;
 			while (next_bin < bins.size() && bins[next_bin].empty())
 				++next_bin;
-			const float right = float(double(next_bin) / bin_count * width);
-			auto color = timeline_ui::frame_color(peak);
-			if (selection.selector_mode == 1 && peak > state.snapshot.percentile_ns)
-				color = Flow_Color("#EF4444");
+			const float right =
+				layout.label_width + float(double(next_bin) / bin_count * plot_width);
+			const bool total_frame_timing =
+				selection.selector_mode == 0 ||
+				selection.selected_zone == timing_zones::kWindowFrameTotal.typeId;
+			const auto color = total_frame_timing ? timeline_ui::frame_color(peak)
+												  : interface_theme::kAccentCurrent;
 			layout.items.emplace_back(TimelineDisplayItem{
 				{},
 				std::to_string(bins[bin].size()) +
@@ -235,20 +269,29 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 				color,
 				selected});
 		}
-		for (const uint64_t target : {16'666'667ULL, 8'333'333ULL}) {
+		const bool zone_scale = selection.selector_mode == 1 && selection.selected_zone;
+		const std::array<uint64_t, 2> timing_ticks =
+			zone_scale ? std::array<uint64_t, 2>{maximum / 2, maximum}
+					   : std::array<uint64_t, 2>{16'666'667, 33'333'333};
+		decoration(layout, {layout.label_width - 1, 18, 1, 78}, interface_theme::kTextMuted);
+		for (const auto target : timing_ticks) {
+			if (target == 0 || target > maximum)
+				continue;
 			const float top = 96 - float(double(target) / maximum * 78);
-			for (float left = 0; left < width; left += target == 16'666'667 ? 10 : 5)
-				decoration(
-					layout,
-					{left, top, std::min(target == 16'666'667 ? 6.0f : 1.0f, width - left), 1},
-					interface_theme::kTextMuted);
+			decoration(layout, {0, std::clamp(top - 8, 16.0f, 80.0f), layout.label_width - 4, 16},
+					   interface_theme::kDepth0Keel, timeline_ui::milliseconds(target));
+			for (float left = layout.label_width; left < width; left += 10)
+				decoration(layout, {left, top, std::min(6.0f, width - left), 1},
+						   interface_theme::kTextMuted);
 		}
-		if (auto bounds =
-				timeline_project_interval(state.visible_start_ns, state.visible_duration_ns,
-										  layout.start_ns, layout.duration_ns, width, 16, 80)) {
+		if (auto bounds = timeline_project_interval(state.visible_start_ns,
+													state.visible_duration_ns, layout.start_ns,
+													layout.duration_ns, plot_width, 16, 80)) {
+			bounds->x += layout.label_width;
 			decoration(layout, *bounds, {115, 213, 197, 25});
 			layout.items.back().selected = true;
 		}
+		capture_event_marker(layout, state);
 		return layout;
 	}
 	std::span<const size_t> roots;
@@ -267,6 +310,7 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 			end = std::max(end, timeline_end(block.start_ns, block.duration_ns));
 		}
 		layout.duration_ns = std::max(uint64_t{1}, end - layout.start_ns);
+		layout.root_duration_ns = layout.duration_ns;
 		root_origin = layout.start_ns;
 		if (state.cards[card_index].visible_duration_ns) {
 			layout.start_ns = state.cards[card_index].visible_start_ns;
@@ -314,9 +358,10 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 		bounds->x += layout.label_width;
 		layout.items.emplace_back(TimelineDisplayItem{
 			double(block.duration_ns) / layout.duration_ns * plot_width >= 80
-				? block.label + " · " + timeline_ui::milliseconds(block.duration_ns)
-			: double(block.duration_ns) / layout.duration_ns * plot_width >= 32 ? block.label
-																				: std::string{},
+				? std::string(block.label) + " · " + timeline_ui::milliseconds(block.duration_ns)
+			: double(block.duration_ns) / layout.duration_ns * plot_width >= 32
+				? std::string(block.label)
+				: std::string{},
 			{},
 			{{block_index}, action, kind == TimelineSurfaceKind::Card ? card_index + 1 : 0},
 			*bounds,
@@ -333,7 +378,8 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 		if (double(block.duration_ns) / layout.duration_ns * plot_width <= 3) {
 			item.label.clear();
 			item.bounds.width = std::min(2.0f, width - item.bounds.x);
-			item.color = Flow_Color("#67E8F9");
+			if (!(selection.selector_mode == 1 && selection.selected_zone && !block.selected))
+				item.color = Flow_Color("#67E8F9");
 		}
 		if (kind == TimelineSurfaceKind::Macro && !state.cards.empty() &&
 			std::ranges::find(state.cards.front().roots, block_index) !=
@@ -384,12 +430,19 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 							 cluster.start_ns, cluster.duration_ns, layout.start_ns,
 							 layout.duration_ns, plot_width, top, 32)) {
 					bounds->x += layout.label_width;
+					auto cluster_color = Flow_Color("#3B82F6");
+					if (selection.selector_mode == 1 && selection.selected_zone &&
+						!state.snapshot.blocks[cluster.members.front()].selected) {
+						cluster_color.r *= .25f;
+						cluster_color.g *= .25f;
+						cluster_color.b *= .25f;
+					}
 					layout.items.emplace_back(
 						TimelineDisplayItem{std::to_string(cluster.members.size()) + " roots",
 											{},
 											{std::move(cluster.members), TimelineAction::Open, 0},
 											*bounds,
-											Flow_Color("#3B82F6")});
+											cluster_color});
 				}
 			}
 		} else {
@@ -411,12 +464,19 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 							   cluster.start_ns, cluster.duration_ns, layout.start_ns,
 							   layout.duration_ns, plot_width, top, 32)) {
 					bounds->x += layout.label_width;
+					auto cluster_color = Flow_Color("#3B82F6");
+					if (selection.selector_mode == 1 && selection.selected_zone &&
+						!state.snapshot.blocks[cluster.members.front()].selected) {
+						cluster_color.r *= .25f;
+						cluster_color.g *= .25f;
+						cluster_color.b *= .25f;
+					}
 					layout.items.emplace_back(TimelineDisplayItem{
 						std::to_string(cluster.members.size()) + " micro zones",
 						{},
 						{std::move(cluster.members), TimelineAction::Open, card_index + 1},
 						*bounds,
-						Flow_Color("#3B82F6")});
+						cluster_color});
 				}
 			}
 		}
@@ -450,12 +510,13 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 			const auto sample_end = timeline_end(sample.start_ns, sample.duration_ns);
 			if (sample_end <= layout.start_ns ||
 				sample.start_ns >= timeline_end(layout.start_ns, layout.duration_ns))
-				layout.items.emplace_back(TimelineDisplayItem{
-					(sample_end <= layout.start_ns ? "Earlier: " : "Later: ") + sample.label,
-					"Associated AppTick activity; outside cadence interval",
-					{{sample_index}, TimelineAction::Inspect},
-					{layout.label_width, top, plot_width, 32},
-					Flow_Color("#3B82F6")});
+				layout.items.emplace_back(
+					TimelineDisplayItem{(sample_end <= layout.start_ns ? "Earlier: " : "Later: ") +
+											std::string(sample.label),
+										"Associated AppTick activity; outside cadence interval",
+										{{sample_index}, TimelineAction::Inspect},
+										{layout.label_width, top, plot_width, 32},
+										Flow_Color("#3B82F6")});
 			else
 				append_block(sample_index, top, TimelineAction::Inspect);
 			decoration(layout, {0, top, layout.label_width, 32}, interface_theme::kDepth1Panel,
@@ -478,12 +539,13 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 			const auto sample_end = timeline_end(sample.start_ns, sample.duration_ns);
 			if (sample_end <= layout.start_ns ||
 				sample.start_ns >= timeline_end(layout.start_ns, layout.duration_ns)) {
-				layout.items.emplace_back(TimelineDisplayItem{
-					(sample_end <= layout.start_ns ? "Earlier: " : "Later: ") + sample.label,
-					"Associated GPU frame work; outside selected interval",
-					{{sample_index}, TimelineAction::Inspect},
-					{layout.label_width, top, plot_width, 32},
-					Flow_Color("#3B82F6")});
+				layout.items.emplace_back(
+					TimelineDisplayItem{(sample_end <= layout.start_ns ? "Earlier: " : "Later: ") +
+											std::string(sample.label),
+										"Associated GPU frame work; outside selected interval",
+										{{sample_index}, TimelineAction::Inspect},
+										{layout.label_width, top, plot_width, 32},
+										Flow_Color("#3B82F6")});
 			} else {
 				append_block(sample_index, top, TimelineAction::Inspect);
 				if (sample.start_ns < layout.start_ns)
@@ -505,17 +567,19 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 				sample.cpu_clock_aligned || !sample.scope_visible ||
 				sample.parent != timeline_no_parent)
 				continue;
-			layout.items.emplace_back(TimelineDisplayItem{"Unaligned GPU: " + sample.label,
-														  "Open in GPU local time",
-														  {{sample_index}, TimelineAction::Open},
-														  {layout.label_width, top, plot_width, 32},
-														  Flow_Color("#3B82F6")});
+			layout.items.emplace_back(
+				TimelineDisplayItem{"Unaligned GPU: " + std::string(sample.label),
+									"Open in GPU local time",
+									{{sample_index}, TimelineAction::Open},
+									{layout.label_width, top, plot_width, 32},
+									Flow_Color("#3B82F6")});
 			decoration(layout, {0, top, layout.label_width, 32}, interface_theme::kDepth1Panel,
 					   "GPU local picker");
 			top += 33;
 		}
 	}
 	layout.height = top;
+	capture_event_marker(layout, state);
 	return layout;
 }
 std::string timeline_item_detail(const DevTimelineState& state, const TimelineLayout& layout,
@@ -550,16 +614,23 @@ std::string timeline_item_detail(const DevTimelineState& state, const TimelineLa
 				 timeline_ui::milliseconds(sum);
 		for (size_t preview = 0; preview < std::min(size_t{4}, item.command.members.size());
 			 ++preview)
-			detail += "\n" + state.snapshot.blocks[item.command.members[preview]].label;
+			detail +=
+				"\n" + std::string(state.snapshot.blocks[item.command.members[preview]].label);
 	}
 	if (item.command.members.size() == 1 &&
 		!(state.selection.category_mask &
 		  timingCategoryBit(state.snapshot.blocks[item.command.members.front()].category)))
 		detail += "\nCategory-filtered structural context";
 	if (layout.kind == TimelineSurfaceKind::Card) {
-		char percent[48];
-		std::snprintf(percent, sizeof(percent), "\n%.1f%% of card interval",
-					  100.0 * (end - start) / layout.duration_ns);
+		uint64_t parent_duration = layout.root_duration_ns;
+		if (item.command.members.size() == 1) {
+			const auto parent = state.snapshot.blocks[item.command.members.front()].parent;
+			if (parent < state.snapshot.blocks.size())
+				parent_duration = state.snapshot.blocks[parent].duration_ns;
+		}
+		char percent[64];
+		std::snprintf(percent, sizeof(percent), "\n%.1f%% of parent runtime",
+					  100.0 * sum / std::max(uint64_t{1}, parent_duration));
 		detail += percent;
 	}
 	size_t overlaps = 0;

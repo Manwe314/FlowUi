@@ -78,6 +78,8 @@ struct NumberInputParameters {
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
 
+	/** Center single-line text and its caret when it fits the field viewport. */
+	bool centerText = false;
 	bool enabled = true;
 	bool readOnly = false;
 	bool valid = true;
@@ -583,10 +585,26 @@ private:
 			CLAY(contentId, content) {
 				if (!field.visibleLines.empty()) {
 					const VisibleTextLine& line = field.visibleLines.front();
-					CLAY(textId, line.declaration) {
-						CLAY_TEXT(
-							context.uiManager.toClayString(line.text),
-							CLAY_TEXT_CONFIG(textConfig));
+					auto line_declaration = line.declaration;
+					if (context.params.centerText) {
+						const auto previous_text = Clay_GetElementData(textId);
+						const auto previous_content = Clay_GetElementData(contentId);
+						const bool fits =
+							!previous_text.found || !previous_content.found ||
+							previous_text.boundingBox.width <=
+								previous_content.boundingBox.width - padding.left - padding.right;
+						line_declaration.floating.attachPoints =
+							fits ? Clay_FloatingAttachPoints{CLAY_ATTACH_POINT_CENTER_CENTER,
+															 CLAY_ATTACH_POINT_CENTER_CENTER}
+								 : Clay_FloatingAttachPoints{CLAY_ATTACH_POINT_LEFT_CENTER,
+															 CLAY_ATTACH_POINT_LEFT_CENTER};
+						if (fits)
+							line_declaration.floating.offset.x = 0;
+						line_declaration.floating.offset.y = 0;
+					}
+					CLAY(textId, line_declaration) {
+						CLAY_TEXT(context.uiManager.toClayString(line.text),
+								  CLAY_TEXT_CONFIG(textConfig));
 					}
 				}
 				if (field.text.empty() && !context.params.placeholder.empty()) {

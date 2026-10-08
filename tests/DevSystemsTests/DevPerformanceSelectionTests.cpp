@@ -115,6 +115,8 @@ int main() {
 	DevTiming timing;
 	DevGpuTiming gpu_timing(timing);
 	DevTimingReporting reporting(timing, gpu_timing);
+	assert(reporting.begin_capture(1) == 1);
+	reporting.admit_tick(1, timing.nowNs());
 	auto main_thread = timing.attachCurrentThread("flowui.platform");
 	auto& recorder = main_thread.recorder();
 	recorder.setFrameContext({MainWindowId, 1}, 1);

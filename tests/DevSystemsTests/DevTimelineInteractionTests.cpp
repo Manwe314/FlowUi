@@ -7,6 +7,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
 #include "managers/ElementManager.hpp"
+#include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -105,13 +106,16 @@ int main() {
 	auto& snapshot = state.snapshot;
 	snapshot.start_ns = 1'000'000'000;
 	snapshot.end_ns = 1'064'000'000;
+	snapshot.labels.reserve(64);
+	std::array<CpuTimingRecord, 8> measured_samples{};
 	snapshot.frames.reserve(4);
 	snapshot.frame_metrics.reserve(4);
 	snapshot.blocks.reserve(12);
 	for (size_t frame_index = 0; frame_index < 4; ++frame_index) {
 		const uint64_t start = snapshot.start_ns + frame_index * 16'000'000;
 		TimelineBlockSlice frame;
-		frame.label = "Frame #" + std::to_string(100 + frame_index);
+		snapshot.labels.emplace_back("Frame #" + std::to_string(100 + frame_index));
+		frame.label = snapshot.labels.back();
 		frame.start_ns = start;
 		frame.duration_ns = 16'000'000;
 		frame.frame = {1, 100 + frame_index};
@@ -121,7 +125,8 @@ int main() {
 		TimelineBlockSlice parent = frame;
 		parent.label = "User build";
 		parent.duration_ns = 10'000'000;
-		parent.exclusive_ns = 2'000'000;
+		measured_samples[frame_index * 2].durationNs = 2'000'000;
+		parent.cpu_sample = {&measured_samples[frame_index * 2], 1};
 		parent.category = TimingCategory::Frame;
 		parent.track = 1;
 		snapshot.blocks.emplace_back(parent);
@@ -129,7 +134,8 @@ int main() {
 		child.label = "Workbench container";
 		child.start_ns += 2'000'000;
 		child.duration_ns = 8'000'000;
-		child.exclusive_ns = 8'000'000;
+		measured_samples[frame_index * 2 + 1].durationNs = 8'000'000;
+		child.cpu_sample = {&measured_samples[frame_index * 2 + 1], 1};
 		child.parent = snapshot.blocks.size() - 1;
 		child.category = TimingCategory::Element;
 		snapshot.blocks.emplace_back(child);
@@ -156,8 +162,8 @@ int main() {
 	const auto macro_bounds = bounds(app, FlowElementID{.value = macro_id.value});
 	require(header_bounds.height == 154 && macro_bounds.y >= header_bounds.y + 154,
 			"Header stays above the timeline");
-	click(app, state, selection, control_id(header_id, 1));
-	require(state.paused, "Pause button callback");
+	draw_frame(app, state, selection, {}, 0, -10, -10, false, 0, true, 32);
+	require(state.zoom == 4, "Space does not change sealed investigation mode");
 	click(app, state, selection, control_id(header_id, 11));
 	require(state.zoom == 2, "2x zoom button callback");
 	click(app, state, selection, control_id(macro_id, 1));
@@ -217,8 +223,7 @@ int main() {
 	require(state.cards.empty(), "Close prunes card chain");
 	click(app, state, selection, control_id(header_id, 20));
 	require(selection.hardware_domain == 1, "Hardware domain callback");
-	click(app, state, selection, control_id(header_id, 1));
-	require(!state.paused, "Play callback");
+
 	// Middle-button capture continues outside the body and never opens a sample.
 	state.zoom = 4;
 	clamp_timeline_view(state);
@@ -337,13 +342,20 @@ int main() {
 		require(app.endFrame(), "end Workbench frame");
 		require(app.drawFrame(), "render Workbench frame");
 	};
+	auto& reporting = app.devMonitoring().timingReporting();
+	require(reporting.begin_capture(1) == 1, "seed sealed generation");
+	reporting.admit_tick(1, 100);
+	reporting.note_tick_boundary(2, 200);
+	reporting.stop_capture(2);
+	reporting.seal_capture();
 	draw_workbench();
 	auto* retained = &interface_state.performance_timeline;
 	require(retained, "Workbench owns timeline state");
 	retained->snapshot = snapshot;
+	retained->capture_generation = 1;
+	retained->selection = interface_state.performance_selection;
 	++retained->snapshot_revision;
 	retained->origin_ns = snapshot.start_ns;
-	retained->paused = true;
 	retained->cards.assign(7, TimelineCard{{0}, 256});
 	retained->inspected_sample = 1;
 	retained->selected_frame = 0;
@@ -372,7 +384,8 @@ int main() {
 	retained->snapshot.blocks.reserve(retained->snapshot.blocks.size() + 20);
 	for (size_t depth_index = 0; depth_index < 20; ++depth_index) {
 		auto nested = retained->snapshot.blocks[1];
-		nested.label = "Nested zone " + std::to_string(depth_index + 1);
+		retained->snapshot.labels.emplace_back("Nested zone " + std::to_string(depth_index + 1));
+		nested.label = retained->snapshot.labels.back();
 		nested.duration_ns = 1000000;
 		nested.parent = ancestor_index;
 		ancestor_index = retained->snapshot.blocks.size();
@@ -435,11 +448,10 @@ int main() {
 	draw_workbench();
 	draw_workbench();
 	draw_workbench();
-	retained->paused = false;
 	const auto live_zoom = retained->zoom;
 	draw_workbench(1);
-	require(retained->paused && retained->zoom > live_zoom &&
+	require(retained->zoom > live_zoom &&
 				retained->snapshot.frames.front().frame.frameNumber == 100,
-			"Wheel navigation freezes the displayed live snapshot before refresh");
+			"Wheel navigation preserves the sealed snapshot");
 	std::cout << "Timeline rendering and interaction checks passed\n";
 }

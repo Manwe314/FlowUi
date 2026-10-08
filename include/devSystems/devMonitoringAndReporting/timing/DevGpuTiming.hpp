@@ -148,6 +148,8 @@ public:
 		VkCommandBuffer commandBuffer,
 		GpuTimingZoneToken token) noexcept;
 
+	/** Drain completed queries into reusable caller storage. */
+	void drain_completed_records_into(std::vector<GpuTimingRecord>& destination);
 	[[nodiscard]] std::vector<GpuTimingRecord> drainCompletedRecords();
 	[[nodiscard]] GpuTimingQualitySnapshot qualitySnapshot() const noexcept;
 

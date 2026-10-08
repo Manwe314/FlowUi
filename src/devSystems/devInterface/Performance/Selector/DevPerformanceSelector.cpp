@@ -60,7 +60,10 @@ void draw_row(Context& context, LocalElementName group, uint64_t key,
 
 void draw_scope(Context& context, DevPerformanceSelection& selection) {
 	const auto windows =
-		context.params.app ? context.params.app->devWindowSnapshot() : std::vector<DevWindowInfo>{};
+		context.params.interfaceState && context.params.interfaceState->capture_metadata_generation
+			? context.params.interfaceState->capture_windows
+		: context.params.app ? context.params.app->devWindowSnapshot()
+							 : std::vector<DevWindowInfo>{};
 	const auto threads =
 		context.params.app
 			? context.params.app->devMonitoring().timingReporting().cpuTrackSnapshot()

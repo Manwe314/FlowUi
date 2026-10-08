@@ -53,7 +53,8 @@ void DevContiguousTimelineStrip::buildElement(BuildContext& context) {
 		}
 		if (state.snapshot.blocks.empty())
 			timeline_ui::text(
-				context, "No timing samples in this scope. Enable timing capture to record zones.");
+				context,
+				"No samples match this scope. Adjust filters or capture with more detail.");
 		if (state.snapshot.uncalibrated_gpu_count)
 			timeline_ui::text(
 				context, std::to_string(state.snapshot.uncalibrated_gpu_count) +

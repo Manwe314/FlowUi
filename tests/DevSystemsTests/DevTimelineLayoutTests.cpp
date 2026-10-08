@@ -65,6 +65,16 @@ int main() {
 	assert(state.visible_start_ns == 1000 && state.visible_duration_ns == 100000);
 	assert(std::ranges::count_if(zoomed_minor.items,
 								 [](const auto& item) { return item.screen_space; }) >= 3);
+	const auto zoomed_child = std::ranges::find_if(zoomed_minor.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Inspect &&
+			   item.command.members == std::vector<size_t>{1};
+	});
+	assert(zoomed_child != zoomed_minor.items.end());
+	assert(
+		timeline_item_detail(state, zoomed_minor, size_t(zoomed_child - zoomed_minor.items.begin()))
+			.find("25.0% of parent runtime") != std::string::npos);
+	assert(timeline_item_detail(state, card, size_t(child - card.items.begin()))
+			   .find("25.0% of parent runtime") != std::string::npos);
 	state.cards[0].visible_duration_ns = 0;
 	state.cards[0].roots = {0, 1};
 	card = build_timeline_layout(state, selection, TimelineSurfaceKind::Card, 0, 1000);
@@ -93,6 +103,78 @@ int main() {
 	});
 	assert(proxy != proxy_layout.items.end() && proxy->bounds.width == 2 && proxy->label.empty() &&
 		   proxy->color.g > 200);
+	state.cards = {{{0}, 1, 1}};
+	state.snapshot.blocks[2].parent = 0;
+	state.snapshot.blocks[2].start_ns = 71000;
+	selection.selector_mode = 1;
+	selection.selected_zone = 123;
+	const auto dimmed_layout =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Card, 0, 1000);
+	const auto dimmed_proxy = std::ranges::find_if(dimmed_layout.items, [](const auto& item) {
+		return item.command.members == std::vector<size_t>{2};
+	});
+	assert(dimmed_proxy != dimmed_layout.items.end() && dimmed_proxy->color.g < 100);
+	state.snapshot.frame_metrics = {0, 10000, 10000};
+	reset_timeline_minimap_scale(state, selection);
+	assert(state.minimap_maximum_ns == 20000);
+	state.snapshot.frames = {{.start_ns = 21000, .duration_ns = 10000}};
+	state.snapshot.frame_metrics = {10000};
+	state.minimap_zoom = 1;
+	const auto scaled_minimap =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Minimap, 0, 1000);
+	const auto scaled_bar = std::ranges::find_if(scaled_minimap.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Center;
+	});
+	assert(scaled_bar != scaled_minimap.items.end() && scaled_bar->bounds.height == 39 &&
+		   scaled_bar->bounds.x >= scaled_minimap.label_width);
+	state.snapshot.frame_metrics = {20000};
+	const auto updated_minimap =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Minimap, 0, 1000);
+	assert(state.minimap_maximum_ns == 20000);
+	assert(std::ranges::any_of(updated_minimap.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Center && item.bounds.height == 78;
+	}));
+
+	// Zone selection is not a frame-budget failure, even with an expensive repeated population.
+	state.snapshot.frame_metrics = {40'000'000};
+	const auto selected_zone_minimap =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Minimap, 0, 1000);
+	for (const auto& item : selected_zone_minimap.items)
+		if (item.command.action == TimelineAction::Center)
+			assert(item.color.r == interface_theme::kAccentCurrent.r &&
+				   item.color.g == interface_theme::kAccentCurrent.g);
+	// Zero-duration samples remain visible and pickable at a two-pixel baseline.
+	state.snapshot.frame_metrics = {0};
+	state.minimap_zoom = 0;
+	const auto zero_minimap =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Minimap, 0, 1000);
+	assert(std::ranges::any_of(zero_minimap.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Center && item.bounds.height == 2 &&
+			   std::isfinite(item.bounds.y);
+	}));
+	const auto zero_width =
+		build_timeline_layout(state, selection, TimelineSurfaceKind::Minimap, 0, 0);
+	assert(std::ranges::none_of(zero_width.items, [](const auto& item) {
+		return item.command.action == TimelineAction::Center;
+	}));
+	assert(timeline_ui::frame_color(33'300'000).g > timeline_ui::frame_color(33'300'001).g);
+	// Both minor ruler rows reserve a clean fixed endpoint gutter.
+	for (const float width : {320.0f, 840.0f, 1200.0f}) {
+		const auto minor =
+			build_timeline_layout(state, selection, TimelineSurfaceKind::Card, 0, width);
+		for (const auto& tick : minor.items) {
+			if (!tick.screen_space || !tick.label.starts_with("|"))
+				continue;
+			for (const auto& endpoint : minor.items)
+				if (endpoint.screen_space && !endpoint.label.empty() &&
+					!endpoint.label.starts_with("|") && endpoint.bounds.x >= minor.label_width &&
+					endpoint.bounds.y == tick.bounds.y)
+					assert(tick.bounds.x + tick.bounds.width + 12 <= endpoint.bounds.x + .1f);
+		}
+	}
+	selection.selector_mode = 0;
+	selection.selected_zone = 0;
+	state.minimap_maximum_ns = 0;
 	selection.category_mask = 0;
 	const auto filtered_layout =
 		build_timeline_layout(state, selection, TimelineSurfaceKind::Macro, 0, 1000);

@@ -143,9 +143,12 @@ struct DevErrorReporting::Impl {
 		if (!timing || occurrence.steps.empty()) return;
 		const DevErrorRecord& raised = occurrence.steps.front();
 		const TimingReportingStatus timingStatus = timing->status();
-		const auto report = timing->appTickReport(raised.context.appTick);
+		const auto report =
+			timing->correlate_sample(raised.context.appTick, raised.context.frame,
+									 raised.context.timingTrack, raised.timestampNs);
 		if (!report) {
 			if (timingStatus.hasRetainedTicks &&
+				raised.context.appTick >= timingStatus.capture_first_app_tick &&
 				raised.context.appTick < timingStatus.oldestRetainedAppTick) {
 				occurrence.timing.state = DevErrorCorrelationState::Evicted;
 				++reportingStatus.timingCorrelationEvictions;
@@ -160,27 +163,10 @@ struct DevErrorReporting::Impl {
 			.appTick = raised.context.appTick,
 			.frame = raised.context.frame,
 			.reportRevision = report->revision,
+			.capture_generation = report->generation,
 		};
-
-		const std::vector<CpuTimingRecord>* zones = &report->applicationCpuZones;
-		if (raised.context.frame) {
-			for (const TimingWindowReport& window : report->windows) {
-				if (window.window != raised.context.frame.window) continue;
-				for (const TimingFrameReport& frame : window.frames) {
-					if (frame.key == raised.context.frame) zones = &frame.cpuZones;
-				}
-			}
-		}
-		const CpuTimingRecord* containing = nullptr;
-		for (const CpuTimingRecord& zone : *zones) {
-			if (zone.track != raised.context.timingTrack || raised.timestampNs < zone.startNs ||
-				raised.timestampNs > zone.startNs + zone.durationNs) continue;
-			if (!containing || zone.depth >= containing->depth) containing = &zone;
-		}
-		if (containing) {
-			occurrence.timing.containingInvocation = containing->invocationId;
-			occurrence.timing.containingZone = containing->typeId;
-		}
+		occurrence.timing.containingInvocation = report->invocation;
+		occurrence.timing.containingZone = report->zone;
 	}
 
 	void correlateMemory(DevErrorOccurrence& occurrence) {
@@ -251,27 +237,43 @@ struct DevErrorReporting::Impl {
 
 	void updateTriggeredCaptures(AppTickId appTick) {
 		for (DevErrorTriggeredCapture& capture : captures) {
-			if (capture.state == DevErrorTriggeredCaptureState::Complete) continue;
 			const AppTickId through = std::min(appTick, capture.lastAppTick);
 			if (timing) {
 				const TimingReportingStatus timingStatus = timing->status();
-				capture.timingHistoryEvicted = timingStatus.hasRetainedTicks &&
+				capture.timingHistoryEvicted =
+					timingStatus.hasRetainedTicks &&
+					capture.firstAppTick >= timingStatus.capture_first_app_tick &&
 					capture.firstAppTick < timingStatus.oldestRetainedAppTick;
-				const auto ticks = timing->appTickRange(
-					capture.firstAppTick, reportingConfig.maximumPinnedTimingTicks);
-				for (const TimingAppTickReport& tick : ticks) {
-					if (tick.appTick > through) break;
-					const bool duplicate = std::any_of(
-						capture.timingTicks.begin(), capture.timingTicks.end(),
-						[&](const auto& value) { return value.appTick == tick.appTick; });
-					if (duplicate) continue;
-					if (capture.timingTicks.size() >= reportingConfig.maximumPinnedTimingTicks) {
-						capture.timingTruncated = true;
-						break;
-					}
-					capture.timingTicks.push_back(tick);
+				if (!capture.timing_generation && timingStatus.hasRetainedTicks &&
+					capture.firstAppTick <= timingStatus.newestRetainedAppTick &&
+					through >= timingStatus.oldestRetainedAppTick)
+					capture.timing_generation = timingStatus.capture_generation;
+				if (capture.timing_generation &&
+					capture.timing_generation != timingStatus.capture_generation) {
+					capture.timingHistoryEvicted = true;
+					capture.timing_state = DevErrorCorrelationState::Evicted;
+					capture.timing_retained_ticks = 0;
+				} else if (capture.timing_generation) {
+					const auto first =
+						std::max(capture.firstAppTick, timingStatus.oldestRetainedAppTick);
+					const auto last = std::min(through, timingStatus.newestRetainedAppTick);
+					const auto available_count = last >= first ? last - first + 1 : 0;
+					capture.timing_retained_ticks = std::min<uint64_t>(
+						available_count, reportingConfig.maximumPinnedTimingTicks);
+					const bool outside_capture =
+						capture.firstAppTick < timingStatus.capture_first_app_tick ||
+						through >= timingStatus.capture_end_app_tick_exclusive;
+					capture.timingTruncated =
+						outside_capture ||
+						available_count > reportingConfig.maximumPinnedTimingTicks;
+					capture.timing_state = capture.timingHistoryEvicted
+											   ? DevErrorCorrelationState::Evicted
+										   : outside_capture ? DevErrorCorrelationState::NotCaptured
+															 : DevErrorCorrelationState::Available;
 				}
 			}
+			if (capture.state == DevErrorTriggeredCaptureState::Complete)
+				continue;
 			if (memory) {
 				const MemoryReportingStatus memoryStatus = memory->status();
 				const auto events = memory->eventSnapshot();
@@ -454,7 +456,13 @@ void DevErrorReporting::consumeThrough(AppTickId appTick) noexcept {
 			case DevErrorSnapshotOutcome::Available: break;
 			}
 		}
+		const auto correlation_status =
+			impl_->timing ? impl_->timing->status() : TimingReportingStatus{};
 		for (DevErrorOccurrence& occurrence : impl_->occurrences) {
+			if (occurrence.timing.capture_generation &&
+				(occurrence.timing.capture_generation != correlation_status.capture_generation ||
+				 occurrence.timing.appTick < correlation_status.oldestRetainedAppTick))
+				occurrence.timing.state = DevErrorCorrelationState::Evicted;
 			const uint64_t correlationStarted = steadyNowNs();
 			if (occurrence.timing.state == DevErrorCorrelationState::NotCaptured) {
 				impl_->correlateTiming(occurrence);
