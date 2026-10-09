@@ -22,7 +22,7 @@ void DevContiguousTimelineStrip::buildElement(BuildContext& context) {
 			timeline_ui::text(context, scope.kind == DevPerformanceScopeKind::Thread
 										   ? "Thread " + std::to_string(scope.id)
 									   : scope.id ? "Window " + std::to_string(scope.id)
-												  : "All Windows · Frames");
+												  : "All Windows · App Ticks");
 			timeline_ui::button(context, 1, "Fit history", {{}, TimelineAction::Zoom, 0, 1});
 			timeline_ui::button(context, 2, "Fit selected", {{}, TimelineAction::FitSelected});
 			if (context.params.selection->selector_mode == 1 &&

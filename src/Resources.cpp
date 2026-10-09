@@ -1,4 +1,5 @@
 #include "FlowUi/Resources.hpp"
+#include "internal/Resources/ExecutableDirectory.hpp"
 #include <array>
 #include <cstdlib>
 #include <fstream>
@@ -149,6 +150,14 @@ Result<std::filesystem::path> locate_resource(const std::filesystem::path& name,
 		return unexpectedError(makeError(ErrorCode::AssetNotFound, ErrorSite::ResourceLocate));
 	} catch (const std::filesystem::filesystem_error&) {
 		return unexpectedError(makeError(ErrorCode::AssetOpenFailed, ErrorSite::ResourceLocate));
+	}
+}
+
+std::filesystem::path detail::executable_directory() noexcept {
+	try {
+		return ::FlowUi::executable_directory();
+	} catch (...) {
+		return {};
 	}
 }
 

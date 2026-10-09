@@ -12,6 +12,7 @@
 #include "FlowUi/ElementID.hpp"
 #include "FlowUi/App.hpp"
 #include "FlowUi/WindowId.hpp"
+#include "devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
 #include "devSystems/devTooling/override/DevOverrideTypes.hpp"
 
@@ -57,9 +58,12 @@ struct DevInterfaceState {
 	uint64_t capture_key = 297, capture_modifiers = 3;
 	float capture_duration_seconds = 5, capture_budget_ms = 16.6f, capture_tail_seconds = .5f;
 	std::string capture_error{};
+	std::string performance_export_path{};
 	std::vector<DevWindowInfo> capture_windows{}, pending_capture_windows{};
 	uint64_t capture_metadata_generation = 0;
+	uint64_t performance_export_generation = 0;
 	DevPerformanceSelection performance_selection{};
+	DevMemorySelection memory_selection{};
 	interface_elements::DevTimelineState performance_timeline{};
 	DevInterfaceEditorClipboard editorClipboard{};
 	std::string searchQuery{};

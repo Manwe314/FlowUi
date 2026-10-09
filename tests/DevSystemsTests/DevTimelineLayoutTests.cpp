@@ -25,6 +25,7 @@ int main() {
 	DevTimelineState state;
 	DevPerformanceSelection selection;
 	selection.category_mask = UINT32_MAX;
+	selection.selected_scope = {0, DevPerformanceScopeKind::Thread};
 	state.snapshot.start_ns = 1000;
 	state.snapshot.end_ns = 101000;
 	state.visible_start_ns = 1000;

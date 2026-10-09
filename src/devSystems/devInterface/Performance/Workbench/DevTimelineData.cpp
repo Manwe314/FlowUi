@@ -541,7 +541,13 @@ timeline_major_lanes(const TimelineSnapshot& snapshot, const DevPerformanceSelec
 				   selection.selected_scope.kind == DevPerformanceScopeKind::Window) {
 			candidate = block.type_id == timing_zones::kWindowFrameTotal.typeId || candidate;
 		}
-		if (candidate && block.scope_visible && block.cpu_clock_aligned && !block.synthetic_tick)
+		const bool all_windows = selection.selected_scope.id == 0 &&
+								 selection.selected_scope.kind == DevPerformanceScopeKind::Window &&
+								 !(selection.selector_mode == 1 && selection.selected_zone);
+		if (all_windows && block.domain == TimingSampleDomain::Cpu)
+			candidate = block.synthetic_tick;
+		if (candidate && block.scope_visible && block.cpu_clock_aligned &&
+			(all_windows || !block.synthetic_tick))
 			groups[{block.domain,
 					block.domain == TimingSampleDomain::Gpu && block.queue_identity
 						? block.queue_identity
