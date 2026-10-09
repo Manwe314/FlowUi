@@ -518,6 +518,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdviceCatalogue.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevPerformanceExport.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp
 			src/devSystems/devMonitoringAndReporting/timing/DevGpuTiming.cpp
@@ -585,6 +586,7 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Performance/Inspector/DevPerformanceCapturePolicy.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/DevMemoryContentParameters.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Selector/DevMemorySelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsContentParameters.hpp>

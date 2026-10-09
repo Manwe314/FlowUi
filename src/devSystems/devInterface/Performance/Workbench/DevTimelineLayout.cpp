@@ -210,7 +210,7 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 	if (kind == TimelineSurfaceKind::Minimap) {
 		layout.height = 96;
 		layout.ruler_height = 16;
-		layout.label_width = std::min(76.0f, width * .25f);
+		layout.label_width = std::min(84.0f, width * .25f);
 		const float plot_width = std::max(0.0f, width - layout.label_width);
 		ruler(layout, state.origin_ns, true);
 		for (auto& item : layout.items)
@@ -278,7 +278,7 @@ TimelineLayout build_timeline_layout(const DevTimelineState& state,
 			if (target == 0 || target > maximum)
 				continue;
 			const float top = 96 - float(double(target) / maximum * 78);
-			decoration(layout, {0, std::clamp(top - 8, 16.0f, 80.0f), layout.label_width - 4, 16},
+			decoration(layout, {0, std::clamp(top - 10, 18.0f, 74.0f), layout.label_width - 4, 20},
 					   interface_theme::kDepth0Keel, timeline_ui::milliseconds(target));
 			for (float left = layout.label_width; left < width; left += 10)
 				decoration(layout, {left, top, std::min(6.0f, width - left), 1},

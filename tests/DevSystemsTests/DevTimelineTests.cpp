@@ -230,6 +230,16 @@ int main() {
 	assert(cadence.tick_cadence && cadence.ticks.front().start_ns == 100 &&
 		   cadence.ticks.front().duration_ns == 100);
 
+	// All Windows uses application cadence as the CPU major track.
+	const auto cadence_lanes = timeline_major_lanes(cadence, selection);
+	assert(std::ranges::any_of(cadence_lanes, [&](const auto& lane) {
+		return lane.domain == TimingSampleDomain::Cpu && !lane.blocks.empty();
+	}));
+	for (const auto& lane : cadence_lanes)
+		if (lane.domain == TimingSampleDomain::Cpu)
+			for (const auto block_index : lane.blocks)
+				assert(cadence.blocks[block_index].synthetic_tick);
+	assert(DevTimelineState{}.minimap_zoom == 1 && DevTimelineState{}.zoom == 4);
 	// Reporting boundary snapshots remain owned and consistent after eviction.
 	DevTiming timing;
 	DevGpuTiming gpu_timing(timing);

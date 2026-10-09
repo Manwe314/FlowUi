@@ -134,7 +134,7 @@ struct DevTimelineState {
 	size_t selected_frame = 0;
 	size_t inspected_sample = timeline_no_parent;
 	float major_height = 260;
-	double minimap_zoom = 4;
+	double minimap_zoom = 1;
 	bool restore_minor_scroll = false;
 	bool track_controls_open = false;
 	bool minimap_follow_selection = false;

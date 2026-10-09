@@ -8,6 +8,8 @@
 #include <cmath>
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceCapturePolicy.hpp"
+#include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceExport.hpp"
+#include "FlowUi/Resources.hpp"
 #include <limits>
 #include <string>
 #include <utility>
@@ -59,6 +61,24 @@ inline constexpr std::array<TabSpec, 6> kTabs{{
 	{DevInterfaceTab::Changes, kChangesTab, "Changes"},
 	{DevInterfaceTab::Catalogue, kCatalogueTab, "Catalogue"},
 }};
+
+constexpr auto kExportCapture =
+	UiAction("flowui.dev_interface.performance.export", [](App& app, DevInterfaceState& state) {
+		const auto generation = state.performance_timeline.capture_generation;
+		if (generation && state.performance_export_generation == generation)
+			return;
+		const auto result =
+			export_performance_capture_csv(app.devMonitoring().timingReporting(), generation,
+										   app.devMonitoring().performance_capture().status());
+		if (result) {
+			state.performance_export_generation = generation;
+			state.performance_export_path = path_to_utf8(*result);
+			state.lastActionMessage = "Exported capture to " + state.performance_export_path;
+		} else {
+			state.lastActionMessage =
+				"Export failed: the capture must be sealed and the executable directory writable.";
+		}
+	});
 
 constexpr auto kMainCapture = UiAction(
 	"flowui.dev_interface.performance.main-capture", [](App& app, DevInterfaceState& state) {
@@ -350,6 +370,16 @@ void drawContextualControls(
 					app ? ActionCall{app->actions().uiActions().make(kMainCapture, *app, state)}
 						: ActionCall{},
 					app != nullptr, true);
+		const auto status =
+			app ? app->devMonitoring().timingReporting().status() : TimingReportingStatus{};
+		const auto generation = state.performance_timeline.capture_generation;
+		const bool exported = generation && state.performance_export_generation == generation;
+		const bool can_export = app && status.capture_sealed && status.hasRetainedTicks &&
+								generation == status.capture_generation;
+		drawControl(context, LocalElementName{"export-capture"}, exported ? "Exported" : "Export",
+					app ? ActionCall{app->actions().uiActions().make(kExportCapture, *app, state)}
+						: ActionCall{},
+					can_export && !exported);
 		drawCpuReportingSelector(context, app, state);
 		break;
 	}

@@ -4,6 +4,7 @@
 #include "FSEL/NumberInput.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceCapturePolicy.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include <numeric>
@@ -80,6 +81,17 @@ void disclosure(Context& context, LocalElementName name, std::string_view label,
 	auto parameters = button_style(label);
 	const auto owned_label = std::string(expanded ? "-  " : "+  ") + std::string(label);
 	parameters.text = owned_label;
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	if (context.params.app) {
+		auto& icons = context.params.app->icons();
+		interface_icons::registerDevInterfaceIcons(icons);
+		parameters.icon = icons.textureRef(expanded ? interface_icons::kCollapseKey
+													: interface_icons::kExpandKey);
+		parameters.contentMode = FSEL::ButtonContentMode::IconThenText;
+		parameters.iconSize = 12;
+		parameters.text = label;
+	}
+#endif
 	if (header) {
 		parameters.labelFontSize = 12;
 		parameters.labelAlignment = CLAY_TEXT_ALIGN_LEFT;
@@ -1003,6 +1015,10 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 								 state.cached_range != state.analysis_range ||
 								 state.cached_source != state.analysis_source;
 	if (state.refresh_gate.advance(context_changed)) {
+		const bool had_expanded_zone = state.expanded_zone < state.analysis.zones.size();
+		const auto expanded_population =
+			had_expanded_zone ? state.analysis.zones[state.expanded_zone].largest.population()
+							  : PerformanceAnalysisSample{}.population();
 		if (context.params.app) {
 			auto capture = context.params.app->devMonitoring().timingReporting().read_capture();
 			state.analysis =
@@ -1010,6 +1026,13 @@ void DevPerformanceInspector::buildElement(BuildContext& context) {
 		}
 		state.cached_ranking = UINT64_MAX;
 		state.expanded_zone = timeline_no_parent;
+		if (had_expanded_zone) {
+			const auto expanded = std::ranges::find_if(state.analysis.zones, [&](const auto& zone) {
+				return zone.largest.population() == expanded_population;
+			});
+			if (expanded != state.analysis.zones.end())
+				state.expanded_zone = size_t(expanded - state.analysis.zones.begin());
+		}
 		state.cached_range = state.analysis_range;
 		state.cached_source = state.analysis_source;
 	}

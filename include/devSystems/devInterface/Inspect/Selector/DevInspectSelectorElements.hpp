@@ -69,6 +69,9 @@ struct DevNodeParameters {
 	// Optional frame-local output used by the forest after draw() completes.
 	// Expansion remains owned by DevNode's retained state.
 	bool* expandedOutput = nullptr;
+	/** Optional independent selection and expansion bindings for shared selector rows. */
+	uint64_t* selected_key = nullptr;
+	bool* expanded = nullptr;
 	uint64_t kind = 0u;
 	uint64_t selectionKey = 0u;
 	Clay_Color badgeColor{};

@@ -247,15 +247,27 @@ void DevNode::onReleased(InteractionContext& context) {
 	nodeState.isArmed = false;
 	nodeState.mouseUpObserved = false;
 
-	if (context.params.hasChildren && context.previousInteraction.isReleased(
-		context.clayID(kNodeDisclosure))) {
-		nodeState.isExpanded = !nodeState.isExpanded;
+	if (context.params.hasChildren &&
+		context.previousInteraction.isReleased(context.clayID(kNodeDisclosure))) {
+		if (context.params.expanded) {
+			*context.params.expanded = !*context.params.expanded;
+			nodeState.isExpanded = *context.params.expanded;
+		} else
+			nodeState.isExpanded = !nodeState.isExpanded;
+		return;
+	}
+	if (context.params.selected_key) {
+		auto& selected_key = *context.params.selected_key;
+		selected_key =
+			selected_key == context.params.selectionKey ? 0u : context.params.selectionKey;
 		return;
 	}
 	DevInterfaceState* state = context.params.interfaceState;
-	if (!state || context.params.selectionKey == 0u) return;
-	if (context.params.app) apply_inspect_selection(*context.params.app, *state,
-		context.params.kind, context.params.selectionKey, true);
+	if (!state || context.params.selectionKey == 0u)
+		return;
+	if (context.params.app)
+		apply_inspect_selection(*context.params.app, *state, context.params.kind,
+								context.params.selectionKey, true);
 }
 
 DevNodeResources::DevNodeResources(App& app) {
@@ -292,6 +304,7 @@ void DevNode::runLogic(InteractionContext& context) {
 }
 
 void DevNode::buildElement(BuildContext& context) {
+	if (context.params.expanded) context.state().isExpanded = *context.params.expanded;
 	if (context.params.force_expanded) context.state().isExpanded = true;
 	if (context.params.reveal_selected) {
 		const auto row = Clay_GetElementData(context.clayID());
@@ -308,11 +321,13 @@ void DevNode::buildElement(BuildContext& context) {
 		*context.params.expandedOutput = context.state().isExpanded;
 	}
 	const DevInterfaceState* interfaceState = context.params.interfaceState;
-	const bool selected = interfaceState &&
-		interfaceState->inspectSelectedNodeKind == context.params.kind &&
-		interfaceState->inspectSelectedNodeKey == context.params.selectionKey;
-	const bool hovered = context.uiManager.getPreviousFramesInteraction()
-		.isHovered(context.clayID());
+	const bool selected =
+		context.params.selected_key
+			? *context.params.selected_key == context.params.selectionKey
+			: interfaceState && interfaceState->inspectSelectedNodeKind == context.params.kind &&
+				  interfaceState->inspectSelectedNodeKey == context.params.selectionKey;
+	const bool hovered =
+		context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID());
 	const Clay_Color rowColor = selected ? interface_theme::kSelectedRow
 		: hovered ? interface_theme::kHoverSurface : interface_theme::kDepth0Keel;
 

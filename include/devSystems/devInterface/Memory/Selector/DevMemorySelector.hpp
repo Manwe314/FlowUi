@@ -6,13 +6,24 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Memory/DevMemoryContentParameters.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
+#include <string>
+#include <vector>
 
 namespace FlowUi::devSystems::interface_elements {
 
+/** Owned option labels keep ComboBox borrowed views valid across popup interactions. */
+struct DevMemorySelectorState {
+	std::vector<DevWindowInfo> windows{};
+	std::vector<std::string> window_labels{};
+	std::vector<FSEL::ComboBoxOption> window_options{};
+};
+
 struct DevMemorySelector {
 	using Parameters = DevMemoryContentParameters;
+	using State = DevMemorySelectorState;
 	using BuildContext = ElementBuildContext<DevMemorySelector>;
 
 	static constexpr FlowDefinitionID definitionId =
