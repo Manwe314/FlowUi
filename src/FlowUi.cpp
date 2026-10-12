@@ -1,3 +1,4 @@
+#include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/App.hpp"
@@ -652,6 +653,8 @@ struct AppWindow {
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 	std::unique_ptr<devSystems::interface_elements::DevTimelineController> timeline_controller;
+	std::unique_ptr<devSystems::interface_elements::DevMemoryHistoryController>
+		memory_history_controller;
 #endif
 
 #if FLOW_UI_DEV_MODE
@@ -1558,6 +1561,11 @@ struct App::Impl {
 			}
 
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (!window.memory_history_controller)
+				window.memory_history_controller =
+					std::make_unique<devSystems::interface_elements::DevMemoryHistoryController>();
+			window.ui.memory_history_controller_ = window.memory_history_controller.get();
+			window.memory_history_controller->begin_frame(window.viewPorts);
 			if (!window.timeline_controller)
 				window.timeline_controller =
 					std::make_unique<devSystems::interface_elements::DevTimelineController>();
@@ -1806,6 +1814,8 @@ struct App::Impl {
 			}
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (window.memory_history_controller)
+				window.memory_history_controller->prepare();
 			if (window.timeline_controller)
 				window.timeline_controller->prepare(window.fontFrameView,
 													std::max(0.01f, window.config.ui.fontScale) *
@@ -2100,6 +2110,8 @@ struct App::Impl {
 #endif
 		}
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+		if (window.memory_history_controller)
+			window.memory_history_controller->submitted();
 		if (window.timeline_controller)
 			window.timeline_controller->submitted(frame.storageSubmission.serial);
 #endif
@@ -2307,6 +2319,8 @@ struct App::Impl {
 		agentic_debug::release_window(vk, id);
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+		if (window.memory_history_controller)
+			window.memory_history_controller->destroy_drained();
 		if (window.timeline_controller)
 			window.timeline_controller->destroy_drained();
 #endif
@@ -2375,6 +2389,8 @@ struct App::Impl {
 
 		for (auto& [_, window] : windows) {
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (window->memory_history_controller)
+				window->memory_history_controller->destroy_drained();
 			if (window->timeline_controller)
 				window->timeline_controller->destroy_drained();
 #endif

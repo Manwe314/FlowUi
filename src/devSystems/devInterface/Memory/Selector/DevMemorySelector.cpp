@@ -32,6 +32,11 @@ void section(Context& context, LocalElementName identity, std::string_view label
 }
 void update_windows(Context& context, DevMemorySelection& selection) {
 	auto windows = context.params.app->devWindowSnapshot();
+	if (const auto* saved = interface_elements::selected_memory_dataset(context.params.interfaceState->memory_workbench.analysis)) {
+		windows.clear();
+		for (const auto& source : saved->live.sources) if (source.key.window && !std::ranges::any_of(windows, [&](const auto& window) { return window.id == source.key.window; }))
+			windows.emplace_back(DevWindowInfo{.id = source.key.window, .title = "Captured Window " + std::to_string(source.key.window)});
+	}
 	std::ranges::sort(windows, {}, &DevWindowInfo::id);
 	auto& state = context.state();
 	const bool changed = state.window_options.empty() || windows.size() != state.windows.size() ||
@@ -151,8 +156,8 @@ void DevMemorySelector::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), root) {
 		auto& selection = context.params.interfaceState->memory_selection;
 		update_windows(context, selection);
-		const auto environment =
-			context.params.app->devMonitoring().memoryReporting().environmentSnapshot();
+		const auto* dataset = selected_memory_dataset(context.params.interfaceState->memory_workbench.analysis);
+		const auto environment = dataset ? dataset->live.environment : context.params.app->devMonitoring().memoryReporting().environmentSnapshot();
 		const bool valid_heap =
 			selection.selected_node >= memory_heap_node_base && environment &&
 			environment->gpu.available &&

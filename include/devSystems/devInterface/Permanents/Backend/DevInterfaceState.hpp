@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "FlowUi/ElementID.hpp"
 #include "FlowUi/App.hpp"
+#include "FlowUi/ElementID.hpp"
 #include "FlowUi/WindowId.hpp"
 #include "devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp"
+#include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
 #include "devSystems/devTooling/override/DevOverrideTypes.hpp"
 
@@ -64,6 +65,7 @@ struct DevInterfaceState {
 	uint64_t performance_export_generation = 0;
 	DevPerformanceSelection performance_selection{};
 	DevMemorySelection memory_selection{};
+	interface_elements::DevMemoryWorkbenchState memory_workbench{};
 	interface_elements::DevTimelineState performance_timeline{};
 	DevInterfaceEditorClipboard editorClipboard{};
 	std::string searchQuery{};

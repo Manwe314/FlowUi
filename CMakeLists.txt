@@ -490,7 +490,13 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.cpp
 			src/devSystems/devInterface/Memory/Selector/DevMemorySelector.cpp
 			src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.cpp
+			src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.cpp
+			src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.cpp
+			src/devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.cpp
 			src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp
+			src/devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.cpp
+			src/devSystems/devInterface/Memory/Analysis/DevMemorySession.cpp
+			src/devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.cpp
 			src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp
 			src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp
 			src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp
@@ -588,7 +594,14 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Selector/DevMemorySelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.hpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Analysis/DevMemorySession.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsContentParameters.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.hpp>

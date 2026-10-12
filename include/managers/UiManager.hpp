@@ -43,6 +43,7 @@ namespace devSystems {
 class DevTimingRecorder;
 namespace interface_elements {
 class DevTimelineController;
+class DevMemoryHistoryController;
 }
 } // namespace devSystems
 #endif
@@ -734,6 +735,11 @@ public:
 
 #if FLOW_UI_DEV_MODE
 	/** Internal window-owned timeline renderer; absent before runtime initialization. */
+	[[nodiscard]] devSystems::interface_elements::DevMemoryHistoryController*
+	memory_history_controller() const noexcept {
+		return memory_history_controller_;
+	}
+	/** Window-owned Performance timeline controller. */
 	[[nodiscard]] devSystems::interface_elements::DevTimelineController*
 	timeline_controller() const noexcept {
 		return timeline_controller_;
@@ -742,6 +748,8 @@ public:
 private:
 #if FLOW_UI_DEV_MODE
 	devSystems::interface_elements::DevTimelineController* timeline_controller_ = nullptr;
+	devSystems::interface_elements::DevMemoryHistoryController* memory_history_controller_ =
+		nullptr;
 #endif
 	friend class App;
 	friend class ElementManager;

@@ -55,6 +55,9 @@ void VulkanUiRenderer::appendDevMemorySamples(
 					static_cast<uint64_t>(prepared->runs.size()) * sizeof(UiRun),
 				.objectCount = prepared->instanceCount + prepared->runs.size(),
 			};
+			framePayload.value_fields =
+				uint16_t(FlowUi::devSystems::MemoryValueField::LogicalLive) |
+				uint16_t(FlowUi::devSystems::MemoryValueField::Objects);
 			(void)sink.append(framePayload);
 		}
 	} catch (...) {}
