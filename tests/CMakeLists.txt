@@ -1091,6 +1091,30 @@ target_include_directories(flowui_dev_inspect_scroll_tests PRIVATE ${PROJECT_SOU
 add_test(NAME flowui.dev.inspect_scroll COMMAND flowui_dev_inspect_scroll_tests)
 
 if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
+    add_executable(flowui_dev_memory_surface_interaction_tests DevSystemsTests/DevMemorySurfaceInteractionTests.cpp)
+    target_compile_features(flowui_dev_memory_surface_interaction_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_memory_surface_interaction_tests PRIVATE FlowUi::FlowUi)
+    flowui_package_resources(flowui_dev_memory_surface_interaction_tests)
+    add_test(NAME flowui.dev.memory_surface_interaction COMMAND flowui_dev_memory_surface_interaction_tests)
+    set_tests_properties(flowui.dev.memory_surface_interaction PROPERTIES TIMEOUT 60)
+
+    add_executable(flowui_dev_memory_planner_tests DevSystemsTests/DevMemoryPlannerTests.cpp)
+    target_compile_features(flowui_dev_memory_planner_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_memory_planner_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.memory_planner COMMAND flowui_dev_memory_planner_tests)
+
+    add_executable(flowui_dev_memory_workbench_data_tests DevSystemsTests/DevMemoryWorkbenchDataTests.cpp)
+    target_compile_features(flowui_dev_memory_workbench_data_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_memory_workbench_data_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.memory_workbench_data COMMAND flowui_dev_memory_workbench_data_tests)
+
+    add_executable(flowui_dev_memory_workbench_interaction_tests DevSystemsTests/DevMemoryWorkbenchInteractionTests.cpp)
+    target_compile_features(flowui_dev_memory_workbench_interaction_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_memory_workbench_interaction_tests PRIVATE FlowUi::FlowUi)
+    flowui_package_resources(flowui_dev_memory_workbench_interaction_tests)
+    add_test(NAME flowui.dev.memory_workbench_interaction COMMAND flowui_dev_memory_workbench_interaction_tests)
+    set_tests_properties(flowui.dev.memory_workbench_interaction PROPERTIES TIMEOUT 60)
+
     add_executable(flowui_dev_memory_selector_interaction_tests DevSystemsTests/DevMemorySelectorInteractionTests.cpp)
     target_compile_features(flowui_dev_memory_selector_interaction_tests PRIVATE cxx_std_23)
     target_link_libraries(flowui_dev_memory_selector_interaction_tests PRIVATE FlowUi::FlowUi)

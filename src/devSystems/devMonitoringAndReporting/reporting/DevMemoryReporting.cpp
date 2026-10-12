@@ -2,6 +2,7 @@
 #if FLOW_UI_DEV_MODE
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <cmath>
 #include <limits>
@@ -54,6 +55,22 @@ public:
 			.oldestRetainedSequence = oldest(), .newestRetainedSequence = count_ ? next_ - 1u : 0u,
 			.totalPublished = next_ - 1u, .overwriteCount = overwritten_, .hasRetained = count_ != 0u};
 	}
+	std::pair<std::span<const T>, std::span<const T>> spans() const noexcept {
+		if (!count_)
+			return {};
+		const auto start = size_t((oldest() - 1) % values_.size());
+		const auto tail = std::min(size_t(count_), values_.size() - start);
+		return {std::span<const T>(values_).subspan(start, tail),
+				std::span<const T>(values_).first(size_t(count_) - tail)};
+	}
+	template <class Visitor>
+	void visit(const Visitor& visitor) const {
+		for (uint64_t sequence = oldest(); count_ && sequence < next_; ++sequence) {
+			const auto& value = values_[(sequence - 1u) % values_.size()];
+			if (value.sequence == sequence)
+				visitor(value);
+		}
+	}
 	std::vector<T> snapshot() const {
 		std::vector<T> result; result.reserve(count_);
 		for (uint64_t sequence = oldest(); sequence < next_; ++sequence) {
@@ -69,14 +86,16 @@ private:
 
 bool equalValue(const MemoryValueSample& a, const MemoryValueSample& b) noexcept {
 	return a.source == b.source && a.window == b.window &&
-		a.logicalLiveBytes == b.logicalLiveBytes && a.retiredBytes == b.retiredBytes &&
-		a.reusableBytes == b.reusableBytes && a.backingAllocatedBytes == b.backingAllocatedBytes &&
-		a.peakLogicalBytes == b.peakLogicalBytes &&
-		a.peakBackingAllocatedBytes == b.peakBackingAllocatedBytes &&
-		a.peakObjectCount == b.peakObjectCount && a.objectCount == b.objectCount &&
-		a.capacityCount == b.capacityCount && a.allocationOps == b.allocationOps &&
-		a.logicalReleaseOps == b.logicalReleaseOps && a.physicalReleaseOps == b.physicalReleaseOps &&
-		a.growthOps == b.growthOps && a.flags == b.flags;
+		   a.logicalLiveBytes == b.logicalLiveBytes && a.retiredBytes == b.retiredBytes &&
+		   a.reusableBytes == b.reusableBytes &&
+		   a.backingAllocatedBytes == b.backingAllocatedBytes &&
+		   a.peakLogicalBytes == b.peakLogicalBytes &&
+		   a.peakBackingAllocatedBytes == b.peakBackingAllocatedBytes &&
+		   a.peakObjectCount == b.peakObjectCount && a.objectCount == b.objectCount &&
+		   a.capacityCount == b.capacityCount && a.allocationOps == b.allocationOps &&
+		   a.logicalReleaseOps == b.logicalReleaseOps &&
+		   a.physicalReleaseOps == b.physicalReleaseOps && a.growthOps == b.growthOps &&
+		   a.flags == b.flags && a.value_fields == b.value_fields;
 }
 
 uint64_t metricValue(const MemoryValueSample& sample, MemoryStatisticMetric metric) noexcept {
@@ -202,6 +221,8 @@ struct DevMemoryReporting::Impl {
 		const MemorySourceKey key{sample.source, sample.window};
 		auto [it, inserted] = current.try_emplace(key);
 		MemoryCurrentSource& state = it->second;
+		if (timestamp < state.measured_at_ns)
+			timestamp = state.measured_at_ns;
 		if (inserted) { state.key = key; state.sessionPeak = sample; }
 		state.sessionPeak.logicalLiveBytes = std::max(state.sessionPeak.logicalLiveBytes, sample.logicalLiveBytes);
 		state.sessionPeak.backingAllocatedBytes = std::max(
@@ -211,14 +232,27 @@ struct DevMemoryReporting::Impl {
 		state.sessionPeak.objectCount = std::max(state.sessionPeak.objectCount, sample.objectCount);
 		state.sessionPeak.capacityCount = std::max(state.sessionPeak.capacityCount, sample.capacityCount);
 		state.sessionPeak.growthOps = std::max(state.sessionPeak.growthOps, sample.growthOps);
+		state.value = sample;
+		state.lastSampledTick = tick;
+		state.measured_at_ns = timestamp;
+		if (status.freeze_owner_count || memory->config().level == MemoryMonitoringLevel::Disabled)
+			return;
 		MemorySampleSegment* active = segments.retained(state.activeSegment);
 		if (active && equalValue(active->value, sample)) {
 			active->endTickExclusive = std::max(active->endTickExclusive, tick + 1u);
 			active->endNs = timestamp;
 		} else {
-			MemorySampleSegment& segment = segments.append(MemorySampleSegment{
-				.beginTick = tick, .endTickExclusive = tick + 1u, .beginNs = timestamp,
-				.endNs = timestamp, .value = sample});
+			if (active) {
+				active->endNs = timestamp;
+				active->endTickExclusive = tick;
+			}
+			MemorySampleSegment& segment =
+				segments.append(MemorySampleSegment{.history_epoch = status.history_epoch,
+													.beginTick = tick,
+													.endTickExclusive = tick + 1u,
+													.beginNs = timestamp,
+													.endNs = timestamp,
+													.value = sample});
 			state.activeSegment = segment.sequence;
 		}
 		if (sample.retiredBytes > sample.logicalLiveBytes) status.flags |= MemoryReportFlag::RetiredExceedsLive;
@@ -226,9 +260,36 @@ struct DevMemoryReporting::Impl {
 		state.lastSampledTick = tick;
 	}
 
-	void applyOperation(const MemoryOperationRecord& operation) {
+	void applyOperation(const MemoryOperationRecord& operation, AppTickId tick) {
 		MemoryCurrentSource& state = current[MemorySourceKey{operation.source, operation.frame.window}];
 		state.key = {operation.source, operation.frame.window};
+		const bool temporary = operation.source == memory_sources::kImageDecode.id ||
+							   operation.source == memory_sources::kIconRaster.id ||
+							   operation.source == memory_sources::kIconTightUpload.id ||
+							   operation.source == memory_sources::kFontDecode.id ||
+							   operation.source == memory_sources::kFontAtlasCombine.id;
+		if (temporary && (operation.operation == MemoryOperation::ExternalAcquire ||
+						  operation.operation == MemoryOperation::ExternalRelease)) {
+			auto value = state.value;
+			value.value_fields =
+				uint16_t(MemoryValueField::LogicalLive) | uint16_t(MemoryValueField::PeakLogical);
+			value.source = operation.source;
+			value.window = operation.frame.window;
+			if (operation.operation == MemoryOperation::ExternalAcquire)
+				value.logicalLiveBytes =
+					saturatedAdd(value.logicalLiveBytes, operation.bytesChanged);
+			else {
+				if (operation.bytesChanged > value.logicalLiveBytes)
+					value.flags = value.flags | MemorySampleFlag::Incomplete;
+				value.logicalLiveBytes -= std::min(value.logicalLiveBytes, operation.bytesChanged);
+			}
+			value.peakLogicalBytes = std::max(value.peakLogicalBytes, value.logicalLiveBytes);
+			if (memory->qualitySnapshot().droppedOperations)
+				value.flags =
+					value.flags | MemorySampleFlag::Incomplete | MemorySampleFlag::DroppedDetail;
+			publishSample(value, tick, operation.timestampNs ? operation.timestampNs : nowNs());
+		}
+
 		switch (operation.operation) {
 		case MemoryOperation::LogicalAllocate:
 		case MemoryOperation::ExternalAcquire:
@@ -259,21 +320,33 @@ DevMemoryReporting::DevMemoryReporting(DevMemory& memory, MemoryReportingConfig 
 }
 DevMemoryReporting::~DevMemoryReporting() = default;
 
-void DevMemoryReporting::setConfig(const MemoryReportingConfig& config) {
+bool DevMemoryReporting::setConfig(const MemoryReportingConfig& config) {
 	std::scoped_lock lock(impl_->mutex);
 	const auto normalized = Impl::normalize(config);
+	if (impl_->status.freeze_owner_count)
+		return false;
 	const uint32_t effectiveSegmentCapacity = impl_->memory->compiledLevel() == MemoryMonitoringLevel::Disabled
 		? 1u : normalized.segmentCapacity;
 	if (effectiveSegmentCapacity != impl_->segments.status().capacity) {
 		impl_->segments.reset(effectiveSegmentCapacity);
+		for (auto& capture : impl_->captures) {
+			capture.complete = false;
+			capture.flags |= MemoryReportFlag::CaptureIncomplete;
+		}
 		for (auto& [_, source] : impl_->current) source.activeSegment = 0u;
 	}
 	const size_t effectiveEventCapacity = impl_->memory->compiledLevel() == MemoryMonitoringLevel::Disabled
 		? 1u : Impl::eventCapacity(normalized);
 	if (effectiveEventCapacity != impl_->events.status().capacity)
 		impl_->events.reset(effectiveEventCapacity);
+	impl_->status.segments = impl_->segments.status();
+	impl_->status.events = impl_->events.status();
 	impl_->reportingConfig = normalized;
 	impl_->forceCompleteCheckpoint = true;
+	++impl_->status.history_revision;
+	++impl_->status.history_epoch;
+	++impl_->status.history_storage_generation;
+	return true;
 }
 MemoryReportingConfig DevMemoryReporting::config() const {
 	std::scoped_lock lock(impl_->mutex); return impl_->reportingConfig;
@@ -305,17 +378,43 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 				if (probe.owner && probe.sample) probe.sample(probe.owner, context);
 			std::unordered_map<MemorySourceId, MemoryValueSample> tuningAggregates;
 			for (const auto& value : samples) if (value.window != InvalidWindowId) {
-				auto& aggregate = tuningAggregates[value.source]; aggregate.source = value.source;
-				aggregate.logicalLiveBytes = std::max(aggregate.logicalLiveBytes, value.logicalLiveBytes);
-				aggregate.backingAllocatedBytes = std::max(aggregate.backingAllocatedBytes, value.backingAllocatedBytes);
-				aggregate.reusableBytes = std::max(aggregate.reusableBytes, value.reusableBytes);
-				aggregate.objectCount = std::max(aggregate.objectCount, value.objectCount);
-				aggregate.capacityCount = std::max(aggregate.capacityCount, value.capacityCount);
+					auto& aggregate = tuningAggregates[value.source];
+					aggregate.source = value.source;
+					aggregate.flags = MemorySampleFlag::TuningAggregate;
+					aggregate.value_fields &= value.value_fields;
+					aggregate.logicalLiveBytes =
+						std::max(aggregate.logicalLiveBytes, value.logicalLiveBytes);
+					aggregate.backingAllocatedBytes =
+						std::max(aggregate.backingAllocatedBytes, value.backingAllocatedBytes);
+					aggregate.reusableBytes =
+						std::max(aggregate.reusableBytes, value.reusableBytes);
+					aggregate.objectCount = std::max(aggregate.objectCount, value.objectCount);
+					aggregate.capacityCount =
+						std::max(aggregate.capacityCount, value.capacityCount);
 			}
 			for (auto& [_, aggregate] : tuningAggregates) samples.push_back(aggregate);
 			impl_->lastManagerSampleTick = appTick;
 		}
 #endif
+
+		MemoryValueSample tree_total{};
+		tree_total.source = memory_sources::kDevTreeCapture.id;
+		bool has_tree = false;
+		std::erase_if(samples, [&](const auto& sample) {
+			if (sample.source != tree_total.source || sample.window != InvalidWindowId ||
+				(uint16_t(sample.flags) & uint16_t(MemorySampleFlag::TuningAggregate)))
+				return false;
+			has_tree = true;
+			tree_total.logicalLiveBytes =
+				saturatedAdd(tree_total.logicalLiveBytes, sample.logicalLiveBytes);
+			tree_total.backingAllocatedBytes =
+				saturatedAdd(tree_total.backingAllocatedBytes, sample.backingAllocatedBytes);
+			tree_total.reusableBytes = saturatedAdd(tree_total.reusableBytes, sample.reusableBytes);
+			tree_total.flags = tree_total.flags | sample.flags;
+			return true;
+		});
+		if (has_tree)
+			samples.emplace_back(tree_total);
 		const size_t managerSampleCount = samples.size();
 		::FlowUi::detail::storage::StorageMemorySnapshot storage;
 		bool hasStorage = false;
@@ -345,7 +444,9 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 					value.physicalReleaseOps += allocator.physicalReleaseCount;
 					value.growthOps += allocator.growthCount;
 					if (allocator.window != InvalidWindowId) {
-						auto& tuning = tuningAggregates[source]; tuning.source = source;
+						auto& tuning = tuningAggregates[source];
+						tuning.source = source;
+						tuning.flags = MemorySampleFlag::TuningAggregate;
 						tuning.logicalLiveBytes = std::max(tuning.logicalLiveBytes, allocator.liveBytes);
 						tuning.backingAllocatedBytes = std::max(tuning.backingAllocatedBytes, allocator.reservedBytes);
 						tuning.peakLogicalBytes = std::max(tuning.peakLogicalBytes, allocator.peakLiveBytes);
@@ -393,14 +494,33 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 		if (impl_->memory->config().level != MemoryMonitoringLevel::Disabled) {
 			environment = impl_->memory->sampleEnvironment(consumeBegin, attributableCpu,
 				impl_->forceEnvironmentCheckpoint || eventCheckpoint || impl_->forceCompleteCheckpoint);
-			if (environment->process.availableFields != 0u) samples.push_back(MemoryValueSample{
-				.source = memory_sources::kProcess.id,
-				.logicalLiveBytes = environment->process.residentBytes,
-				.backingAllocatedBytes = environment->process.virtualBytes,
-				.peakLogicalBytes = environment->process.peakResidentBytes,
-				.flags = MemorySampleFlag::Estimate});
+			if (environment->process.availableFields != 0u)
+				samples.push_back(MemoryValueSample{
+					.source = memory_sources::kProcess.id,
+					.logicalLiveBytes = environment->process.residentBytes,
+					.backingAllocatedBytes = environment->process.virtualBytes,
+					.peakLogicalBytes = environment->process.peakResidentBytes,
+
+					.flags = MemorySampleFlag::Estimate,
+					.value_fields =
+						uint16_t((environment->process.availableFields &
+										  uint32_t(ProcessMemoryFieldBit::ResidentBytes)
+									  ? uint16_t(MemoryValueField::LogicalLive)
+									  : 0) |
+								 (environment->process.availableFields &
+										  uint32_t(ProcessMemoryFieldBit::VirtualBytes)
+									  ? uint16_t(MemoryValueField::Backing)
+									  : 0) |
+								 (environment->process.availableFields &
+										  uint32_t(ProcessMemoryFieldBit::PeakResidentBytes)
+									  ? uint16_t(MemoryValueField::PeakLogical)
+									  : 0))});
 			if (environment->gpu.available) {
-				MemoryValueSample gpu{.source = memory_sources::kVulkanHeaps.id};
+				MemoryValueSample gpu{.source = memory_sources::kVulkanHeaps.id,
+									  .value_fields = uint16_t(MemoryValueField::LogicalLive) |
+													  uint16_t(MemoryValueField::Backing) |
+													  uint16_t(MemoryValueField::Objects) |
+													  uint16_t(MemoryValueField::Capacity)};
 				for (const auto& heap : environment->gpu.heaps) {
 					gpu.logicalLiveBytes += heap.allocationBytes; gpu.backingAllocatedBytes += heap.blockBytes;
 					gpu.objectCount += heap.allocationCount; gpu.capacityCount += heap.blockCount; gpu.flags = gpu.flags | heap.flags;
@@ -410,16 +530,30 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 		}
 #endif
 		const uint64_t timestamp = nowNs();
+
 		std::scoped_lock lock(impl_->mutex);
+		const auto runtime_level = impl_->memory->config().level;
+		if (runtime_level != impl_->status.runtimeLevel) {
+			for (auto& [key, source] : impl_->current)
+				source.activeSegment = 0;
+			if (!impl_->status.freeze_owner_count) {
+				++impl_->status.history_epoch;
+				++impl_->status.history_revision;
+			}
+		}
 		impl_->status.consumedOperations += impl_->drainScratch.size();
 		for (const auto& operation : impl_->drainScratch) {
-			impl_->applyOperation(operation);
-			if (impl_->reportingConfig.retainLifetimeEvents)
+			impl_->applyOperation(operation, appTick);
+			if (impl_->status.freeze_owner_count)
+				++impl_->status.operations_not_retained;
+			else if (impl_->reportingConfig.retainLifetimeEvents)
 				impl_->events.append(RetainedMemoryEvent{.operation = operation});
 		}
 		for (size_t index = 0u; index < managerSampleCount; ++index) {
 			MemoryValueSample& sample = samples[index];
 			sample.peakLogicalBytes = std::max(sample.peakLogicalBytes, sample.logicalLiveBytes);
+			if (sample.value_fields & uint16_t(MemoryValueField::LogicalLive))
+				sample.value_fields |= uint16_t(MemoryValueField::PeakLogical);
 			sample.peakBackingAllocatedBytes = std::max(
 				sample.peakBackingAllocatedBytes, sample.backingAllocatedBytes);
 			sample.peakObjectCount = std::max(sample.peakObjectCount, sample.objectCount);
@@ -437,27 +571,74 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 					 sample.backingAllocatedBytes > previous.value.backingAllocatedBytes ? 1u : 0u);
 			}
 		}
-		if (managerSampled) impl_->managerSamples.assign(
-			samples.begin(), samples.begin() + static_cast<std::ptrdiff_t>(managerSampleCount));
+
+		if (managerSampled) {
+			for (const auto& previous : impl_->managerSamples) {
+				const MemorySourceKey key{previous.source, previous.window};
+				const bool present = std::ranges::any_of(
+					std::span(samples).first(managerSampleCount), [&](const auto& sample) {
+						return MemorySourceKey{sample.source, sample.window} == key;
+					});
+				if (!present)
+					impl_->current.erase(key);
+			}
+			impl_->managerSamples.assign(
+				samples.begin(), samples.begin() + static_cast<std::ptrdiff_t>(managerSampleCount));
+		}
+		if (hasStorage) {
+			constexpr MemorySourceId storage_sources[] = {
+				memory_sources::kStoragePersistent.id,
+				memory_sources::kStorageStringPool.id,
+				memory_sources::kStorageMetadata.id,
+				memory_sources::kStorageFrameTransient.id,
+				memory_sources::kStorageWorkerTransient.id,
+				memory_sources::kStorageDecodeTransient.id,
+				memory_sources::kStorageUploadStaging.id};
+			std::erase_if(impl_->current, [&](const auto& item) {
+				if (std::ranges::find(storage_sources, item.first.source) ==
+					std::end(storage_sources))
+					return false;
+				return !std::ranges::any_of(samples, [&](const auto& sample) {
+					return MemorySourceKey{sample.source, sample.window} == item.first;
+				});
+			});
+		}
 		impl_->storageSnapshot = std::move(storage);
 		impl_->status.hasStorageSnapshot = hasStorage;
 		if (hasStorage) impl_->status.storageMutationSequence = impl_->storageSnapshot.mutationSequence;
 		impl_->environmentSnapshot = std::move(environment);
 		for (const auto& sample : samples) impl_->publishSample(sample, appTick, timestamp);
 		for (auto& [_, source] : impl_->current) {
-			if (auto* active = impl_->segments.retained(source.activeSegment)) {
+			if (runtime_level == MemoryMonitoringLevel::Disabled)
+				continue;
+			const uint64_t second = timestamp / 1'000'000'000ull;
+			auto& bucket = source.live_buckets[second % source.live_buckets.size()];
+			if (bucket.second != second) {
+				bucket = {};
+				bucket.second = second;
+			}
+			++bucket.count;
+			bucket.active_sum += source.value.logicalLiveBytes;
+			bucket.minimum = std::min(bucket.minimum, source.value.logicalLiveBytes);
+			bucket.maximum = std::max(bucket.maximum, source.value.logicalLiveBytes);
+			source.retirementPressureByteTicks =
+				saturatedAdd(source.retirementPressureByteTicks, source.value.retiredBytes);
+			if (auto* active = (impl_->status.freeze_owner_count ||
+								runtime_level == MemoryMonitoringLevel::Disabled)
+								   ? nullptr
+								   : impl_->segments.retained(source.activeSegment)) {
 				active->endTickExclusive = std::max(active->endTickExclusive, appTick + 1u);
 				active->endNs = timestamp;
-				source.retirementPressureByteTicks = saturatedAdd(
-					source.retirementPressureByteTicks, source.value.retiredBytes);
 			}
 		}
 		impl_->status.lastConsumedAppTick = appTick;
+		impl_->status.last_consumed_ns = timestamp;
 		impl_->status.runtimeLevel = impl_->memory->config().level;
 		impl_->status.quality = impl_->memory->qualitySnapshot();
 		impl_->status.segments = impl_->segments.status();
 		impl_->status.events = impl_->events.status();
-		impl_->status.flags = MemoryReportFlag::None;
+		impl_->status.flags = impl_->status.freeze_owner_count ? MemoryReportFlag::HistoryPaused
+															   : MemoryReportFlag::None;
 		if (impl_->status.segments.overwriteCount) impl_->status.flags |= MemoryReportFlag::SegmentHistoryOverwritten;
 		if (impl_->status.events.overwriteCount) impl_->status.flags |= MemoryReportFlag::EventHistoryOverwritten;
 		if (impl_->status.quality.droppedOperations) impl_->status.flags |= MemoryReportFlag::ProducerDetailDropped;
@@ -485,14 +666,20 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 		if (impl_->status.overhead.lastConsumeDurationNs > impl_->reportingConfig.consumeWarningThresholdNs)
 			impl_->status.flags |= MemoryReportFlag::MonitorOverheadExceeded;
 		for (auto& capture : impl_->captures) if (capture.active) {
-			if (appTick >= capture.measurementBeginTick) {
-				for (const auto& op : impl_->drainScratch) {
-					if (op.operation == MemoryOperation::BackingGrow || op.operation == MemoryOperation::ContainerReallocate)
-						capture.flags |= MemoryReportFlag::GrewDuringCapture;
-					if (op.operation == MemoryOperation::BackingGrow || op.operation == MemoryOperation::BackingTrim)
-						capture.flags |= MemoryReportFlag::BackingChurnAfterWarmUp;
+				if (!capture.begin_ns && appTick >= capture.beginTick)
+					capture.begin_ns = timestamp;
+				if (!capture.measurement_begin_ns && appTick >= capture.measurementBeginTick)
+					capture.measurement_begin_ns = timestamp;
+				if (appTick >= capture.measurementBeginTick) {
+					for (const auto& op : impl_->drainScratch) {
+						if (op.operation == MemoryOperation::BackingGrow ||
+							op.operation == MemoryOperation::ContainerReallocate)
+							capture.flags |= MemoryReportFlag::GrewDuringCapture;
+						if (op.operation == MemoryOperation::BackingGrow ||
+							op.operation == MemoryOperation::BackingTrim)
+							capture.flags |= MemoryReportFlag::BackingChurnAfterWarmUp;
+					}
 				}
-			}
 		}
 		for (auto& capture : impl_->captures) {
 			const bool segmentEvicted = impl_->status.segments.hasRetained &&
@@ -507,6 +694,8 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 		}
 		impl_->forceEnvironmentCheckpoint = false;
 		impl_->forceCompleteCheckpoint = false;
+		if (!impl_->status.freeze_owner_count)
+			++impl_->status.history_revision;
 		++impl_->status.generation;
 	} catch (...) {
 		std::scoped_lock lock(impl_->mutex); ++impl_->status.consumeFailures;
@@ -518,6 +707,8 @@ void DevMemoryReporting::requestEnvironmentCheckpoint() noexcept {
 }
 MemoryCaptureId DevMemoryReporting::beginCapture(std::string_view name, uint64_t warmUpTicks) {
 	std::scoped_lock lock(impl_->mutex);
+	if (impl_->status.freeze_owner_count)
+		return 0;
 	const MemoryCaptureId id = impl_->nextCapture++;
 	const AppTickId begin = impl_->status.lastConsumedAppTick + 1u;
 	impl_->captures.push_back(MemoryCaptureInfo{.id = id, .name = std::string(name),
@@ -532,17 +723,157 @@ MemoryCaptureId DevMemoryReporting::beginCapture(std::string_view name, uint64_t
 bool DevMemoryReporting::endCapture(MemoryCaptureId captureId) noexcept {
 	std::scoped_lock lock(impl_->mutex);
 	for (auto& capture : impl_->captures) if (capture.id == captureId && capture.active) {
-		capture.active = false; capture.complete = true;
-		capture.endTickExclusive = impl_->status.lastConsumedAppTick + 1u;
-		if ((impl_->status.segments.hasRetained && capture.firstSegmentSequence < impl_->status.segments.oldestRetainedSequence) ||
-			(impl_->reportingConfig.retainLifetimeEvents && impl_->status.events.hasRetained &&
-			 capture.firstEventSequence < impl_->status.events.oldestRetainedSequence)) {
-			capture.complete = false; capture.flags |= MemoryReportFlag::CaptureIncomplete;
-		}
+			capture.active = false;
+			capture.complete = (static_cast<uint32_t>(capture.flags) &
+								static_cast<uint32_t>(MemoryReportFlag::HistoryPaused |
+													  MemoryReportFlag::CaptureIncomplete)) == 0;
+			capture.endTickExclusive = impl_->status.lastConsumedAppTick + 1u;
+			capture.end_ns = impl_->status.last_consumed_ns;
+			if ((impl_->status.segments.hasRetained &&
+				 capture.firstSegmentSequence < impl_->status.segments.oldestRetainedSequence) ||
+				(impl_->reportingConfig.retainLifetimeEvents && impl_->status.events.hasRetained &&
+				 capture.firstEventSequence < impl_->status.events.oldestRetainedSequence)) {
+				capture.complete = false;
+				capture.flags |= MemoryReportFlag::CaptureIncomplete;
+			}
 		impl_->forceCompleteCheckpoint = true; impl_->forceEnvironmentCheckpoint = true;
 		return true;
 	}
 	return false;
+}
+
+MemoryHistoryFreeze::~MemoryHistoryFreeze() {
+	reset();
+}
+MemoryHistoryFreeze::MemoryHistoryFreeze(MemoryHistoryFreeze&& other) noexcept
+	: reporting_(std::exchange(other.reporting_, nullptr)) {}
+MemoryHistoryFreeze& MemoryHistoryFreeze::operator=(MemoryHistoryFreeze&& other) noexcept {
+	if (this != &other) {
+		reset();
+		reporting_ = std::exchange(other.reporting_, nullptr);
+	}
+	return *this;
+}
+void MemoryHistoryFreeze::reset() noexcept {
+	if (auto* reporting = std::exchange(reporting_, nullptr))
+		reporting->release_history();
+}
+MemoryHistoryFreeze DevMemoryReporting::freeze_history() noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	if (!impl_->status.freeze_owner_count++) {
+		impl_->status.frozen_at_ns = nowNs();
+		for (auto& [key, source] : impl_->current)
+			source.activeSegment = 0;
+		for (auto& capture : impl_->captures)
+			if (capture.active) {
+				capture.complete = false;
+				capture.flags |=
+					MemoryReportFlag::CaptureIncomplete | MemoryReportFlag::HistoryPaused;
+			}
+	}
+	return MemoryHistoryFreeze(this);
+}
+void DevMemoryReporting::release_history() noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	assert(impl_->status.freeze_owner_count);
+	if (!--impl_->status.freeze_owner_count) {
+		++impl_->status.history_epoch;
+		++impl_->status.history_revision;
+		impl_->forceCompleteCheckpoint = true;
+	}
+}
+void DevMemoryReporting::visit_history(
+	const std::function<void(const MemorySampleSegment&)>& visitor) const {
+	const auto begin = nowNs();
+	std::scoped_lock lock(impl_->mutex);
+	impl_->segments.visit(visitor);
+	impl_->status.history_scan_ns = nowNs() - begin;
+}
+void DevMemoryReporting::read_history(
+	const std::function<void(std::span<const MemorySampleSegment>,
+							 std::span<const MemorySampleSegment>, const MemoryReportingStatus&)>&
+		visitor) {
+	const auto begin = nowNs();
+	std::unique_lock lock(impl_->mutex);
+	const auto spans = impl_->segments.spans();
+	const auto status = impl_->status;
+	if (impl_->status.freeze_owner_count) {
+		++impl_->status.freeze_owner_count;
+		MemoryHistoryFreeze read_guard(this);
+		lock.unlock();
+		visitor(spans.first, spans.second, status);
+		// Keep the read guard through callback unwinding, including exceptions.
+	} else
+		visitor(spans.first, spans.second, status);
+	if (!lock.owns_lock())
+		lock.lock();
+	impl_->status.history_scan_ns = nowNs() - begin;
+}
+bool DevMemoryReporting::visit_history_chunks(
+	const MemoryReportingStatus& snapshot,
+	const std::function<void(std::span<const MemorySampleSegment>)>& visitor,
+	size_t maximum_records) {
+	maximum_records = std::clamp<size_t>(maximum_records, 1, 2048);
+	const auto begin = nowNs();
+	uint64_t longest_lock = 0;
+	if (!snapshot.segments.hasRetained)
+		return true;
+	uint64_t cursor = snapshot.segments.oldestRetainedSequence;
+	while (cursor <= snapshot.segments.newestRetainedSequence) {
+		std::unique_lock lock(impl_->mutex);
+		const auto locked_begin = nowNs();
+		if (impl_->status.history_storage_generation != snapshot.history_storage_generation)
+			return false;
+		const auto* record = impl_->segments.retained(cursor);
+		if (!record)
+			return false;
+		const auto capacity = impl_->segments.status().capacity;
+		const size_t count = std::min(
+			{maximum_records, size_t(snapshot.segments.newestRetainedSequence - cursor + 1),
+			 size_t(capacity - (cursor - 1) % capacity)});
+		visitor(std::span<const MemorySampleSegment>(record, count));
+		cursor += count;
+		longest_lock = std::max(longest_lock, nowNs() - locked_begin);
+	}
+	std::scoped_lock lock(impl_->mutex);
+	impl_->status.history_scan_ns = nowNs() - begin;
+	impl_->status.history_max_lock_ns = longest_lock;
+	return true;
+}
+MemoryLiveRead DevMemoryReporting::read_live() const {
+	std::scoped_lock lock(impl_->mutex);
+	MemoryLiveRead read;
+	read.sources.reserve(impl_->current.size());
+	for (const auto& [key, value] : impl_->current)
+		read.sources.emplace_back(value);
+	if (impl_->status.hasStorageSnapshot)
+		read.storage = impl_->storageSnapshot;
+	read.environment = impl_->environmentSnapshot;
+	read.status = impl_->status;
+	return read;
+}
+
+std::optional<MemoryLiveStatistics> DevMemoryReporting::live_statistics(MemorySourceKey key) const {
+	std::scoped_lock lock(impl_->mutex);
+	const auto found = impl_->current.find(key);
+	if (found == impl_->current.end() ||
+		!(found->second.value.value_fields & uint16_t(MemoryValueField::LogicalLive)))
+		return std::nullopt;
+	const auto second = nowNs() / 1'000'000'000ull;
+	MemoryLiveStatistics result;
+	result.minimum = UINT64_MAX;
+	long double total = 0;
+	for (const auto& bucket : found->second.live_buckets)
+		if (bucket.count && bucket.second <= second && second - bucket.second < 60) {
+			total += bucket.active_sum;
+			result.count += bucket.count;
+			result.minimum = std::min(result.minimum, bucket.minimum);
+			result.maximum = std::max(result.maximum, bucket.maximum);
+		}
+	if (!result.count)
+		return std::nullopt;
+	result.mean = total / result.count;
+	return result;
 }
 
 MemoryReportingStatus DevMemoryReporting::status() const noexcept { std::scoped_lock lock(impl_->mutex); return impl_->status; }
@@ -559,6 +890,8 @@ std::vector<MemorySampleSegment> DevMemoryReporting::segmentSnapshot() const { s
 std::vector<RetainedMemoryEvent> DevMemoryReporting::eventSnapshot() const { std::scoped_lock lock(impl_->mutex); return impl_->events.snapshot(); }
 
 std::optional<MemoryStatistics> DevMemoryReporting::statistics(const MemoryStatisticsQuery& query) const {
+	if ((query.begin_ns || query.end_ns) && query.weighting == MemoryWeighting::AppTicks)
+		return std::nullopt;
 	std::vector<MemorySampleSegment> segments;
 	MemoryRetentionStatus retention{};
 	MemoryReportingConfig reportingConfig{};
@@ -569,6 +902,9 @@ std::optional<MemoryStatistics> DevMemoryReporting::statistics(const MemoryStati
 		if (query.capture) for (const auto& candidate : impl_->captures) if (candidate.id == *query.capture) capture = candidate;
 	}
 	if (query.capture && !capture) return std::nullopt;
+	std::erase_if(segments, [&](const auto& segment) {
+		return segment.value.source != query.source || segment.value.window != query.window;
+	});
 	if (!capture && segments.size() > reportingConfig.quantileWindowSegments)
 		segments.erase(segments.begin(), segments.end() - reportingConfig.quantileWindowSegments);
 	struct Weighted { uint64_t value; uint64_t weight; };
@@ -583,10 +919,53 @@ std::optional<MemoryStatistics> DevMemoryReporting::statistics(const MemoryStati
 			const AppTickId captureEnd = capture->endTickExclusive ? capture->endTickExclusive : UINT64_MAX;
 			end = std::min(end, captureEnd);
 		}
-		if (end <= begin) continue;
-		uint64_t weight = end - begin;
-		if (query.weighting == MemoryWeighting::ElapsedTime) weight = std::max<uint64_t>(1u, segment.endNs - segment.beginNs);
-		else if (query.weighting == MemoryWeighting::Epochs) weight = 1u;
+
+		uint64_t weight = 0;
+		if (query.weighting == MemoryWeighting::ElapsedTime || query.begin_ns || query.end_ns) {
+			uint64_t from = std::max(segment.beginNs, query.begin_ns.value_or(0));
+			uint64_t to = std::min(segment.endNs, query.end_ns.value_or(UINT64_MAX));
+			if (capture) {
+				if (!capture->measurement_begin_ns)
+					continue;
+				from = std::max(from, capture->measurement_begin_ns);
+				if (capture->end_ns)
+					to = std::min(to, capture->end_ns);
+			}
+			if (to <= from)
+				continue;
+			weight = query.weighting == MemoryWeighting::Epochs ? 1 : to - from;
+		} else {
+			if (end <= begin)
+				continue;
+			weight = query.weighting == MemoryWeighting::Epochs ? 1 : end - begin;
+		}
+
+		uint16_t required = 0;
+		switch (query.metric) {
+		case MemoryStatisticMetric::LogicalLiveBytes:
+			required = uint16_t(MemoryValueField::LogicalLive);
+			break;
+		case MemoryStatisticMetric::BackingAllocatedBytes:
+			required = uint16_t(MemoryValueField::Backing);
+			break;
+		case MemoryStatisticMetric::ReusableBytes:
+			required = uint16_t(MemoryValueField::Reusable);
+			break;
+		case MemoryStatisticMetric::RetiredBytes:
+			required = uint16_t(MemoryValueField::Retired);
+			break;
+		case MemoryStatisticMetric::ObjectCount:
+			required = uint16_t(MemoryValueField::Objects);
+			break;
+		case MemoryStatisticMetric::CapacityCount:
+			required = uint16_t(MemoryValueField::Capacity);
+			break;
+		case MemoryStatisticMetric::PeakLogicalBytes:
+			required = uint16_t(MemoryValueField::PeakLogical);
+			break;
+		}
+		if (!(segment.value.value_fields & required))
+			continue;
 		const uint64_t value = metricValue(segment.value, query.metric);
 		values.push_back({value, weight}); totalWeight = saturatedAdd(totalWeight, weight);
 		weightedSum += static_cast<long double>(value) * static_cast<long double>(weight);

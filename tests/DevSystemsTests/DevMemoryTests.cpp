@@ -85,6 +85,109 @@ void sampleTraceProbe(const void* owner, MemoryProbeContext& context) noexcept {
 	});
 }
 
+void testHistoryFreezeRetainsWhileLiveAdvances() {
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	DevMemory memory(DevMemoryConfig{.level = MemoryMonitoringLevel::SubsystemCapacity,
+									 .gpuMemory = false,
+									 .processMemory = false});
+	constexpr auto source = makeMemorySourceDescriptor(
+		"flowui.memory.test.freeze", MemoryDomain::ManagerCpu, MemorySourceKind::Container);
+	FLOWUI_CHECK(memory.registerSource(source));
+	TraceProbeOwner owner{source.id, 10};
+	FLOWUI_CHECK(memory.registerProbe({source.id, &owner, &sampleTraceProbe}));
+	DevMemoryReporting reporting(memory, MemoryReportingConfig{.segmentCapacity = 16,
+															   .managerSampleEveryTicks = 1,
+															   .retainLifetimeEvents = true});
+	reporting.consume(1);
+	reporting.consume(2);
+	const auto capture = reporting.beginCapture("pause audit");
+	auto first = reporting.freeze_history();
+	auto second = reporting.freeze_history();
+	const auto before = reporting.segmentSnapshot();
+	const auto retention = reporting.status().segments;
+	FLOWUI_CHECK(!reporting.setConfig(MemoryReportingConfig{.segmentCapacity = 2}));
+	FLOWUI_CHECK(reporting.beginCapture("must fail") == 0);
+	for (uint64_t tick = 3; tick < 30; ++tick) {
+		owner.value = tick * 10;
+		FLOWUI_CHECK(memory.recorder().tryRecord(
+			MemoryOperationRecord{.source = source.id, .bytesChanged = 8}));
+		reporting.consume(tick);
+	}
+	const auto after = reporting.segmentSnapshot();
+	FLOWUI_CHECK(before.size() == after.size());
+	for (size_t index = 0; index < before.size(); ++index) {
+		FLOWUI_CHECK(before[index].sequence == after[index].sequence);
+		FLOWUI_CHECK(before[index].endNs == after[index].endNs);
+		FLOWUI_CHECK(before[index].endTickExclusive == after[index].endTickExclusive);
+		FLOWUI_CHECK(before[index].value.logicalLiveBytes == after[index].value.logicalLiveBytes);
+	}
+	FLOWUI_CHECK(reporting.status().segments.totalPublished == retention.totalPublished);
+	FLOWUI_CHECK(reporting.status().operations_not_retained == 27);
+	const auto live = reporting.read_live();
+	const auto current = std::ranges::find(live.sources, source.id,
+										   [](const auto& item) { return item.key.source; });
+	FLOWUI_CHECK(current != live.sources.end() && current->value.logicalLiveBytes == 290);
+	FLOWUI_CHECK(current->sessionPeak.logicalLiveBytes == 290);
+	const auto rolling = reporting.live_statistics({source.id, FlowUi::InvalidWindowId});
+	FLOWUI_CHECK(rolling && rolling->maximum == 290 && rolling->count >= 29);
+	first.reset();
+	FLOWUI_CHECK(reporting.status().freeze_owner_count == 1);
+	second.reset();
+	reporting.consume(30);
+	const auto resumed = reporting.segmentSnapshot();
+	FLOWUI_CHECK(std::ranges::any_of(resumed, [&](const auto& segment) {
+		return segment.history_epoch == 2 && segment.beginTick == 30;
+	}));
+	FLOWUI_CHECK(reporting.endCapture(capture));
+	FLOWUI_CHECK(!reporting.captureSnapshot().front().complete);
+	size_t visits = 0;
+	reporting.visit_history([&](const auto&) { ++visits; });
+	FLOWUI_CHECK(visits == resumed.size());
+	auto disabled_config = memory.config();
+	disabled_config.level = MemoryMonitoringLevel::Disabled;
+	memory.setConfig(disabled_config);
+	reporting.consume(31);
+	reporting.consume(32);
+	const auto disabled = reporting.segmentSnapshot();
+	FLOWUI_CHECK(disabled.size() == resumed.size());
+	for (size_t index = 0; index < disabled.size(); ++index)
+		FLOWUI_CHECK(disabled[index].endNs == resumed[index].endNs);
+	disabled_config.level = MemoryMonitoringLevel::SubsystemCapacity;
+	memory.setConfig(disabled_config);
+	reporting.consume(33);
+	const auto enabled = reporting.segmentSnapshot();
+	FLOWUI_CHECK(std::ranges::any_of(enabled, [](const auto& segment) {
+		return segment.beginTick == 33 && segment.history_epoch > 2;
+	}));
+#endif
+}
+
+void testTemporaryLiveReportingDuringFreeze() {
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	DevMemory memory(DevMemoryConfig{.level = MemoryMonitoringLevel::SubsystemCapacity,
+									 .gpuMemory = false,
+									 .processMemory = false});
+	DevMemoryReporting reporting(memory);
+	reporting.consume(1);
+	auto pause = reporting.freeze_history();
+	{
+		DevExternalMemoryScope allocation(&memory.recorder(), memory_sources::kImageDecode.id,
+										  4096);
+		reporting.consume(2);
+		const auto read = reporting.read_live();
+		const auto found = std::ranges::find(read.sources, memory_sources::kImageDecode.id,
+											 [](const auto& source) { return source.key.source; });
+		FLOWUI_CHECK(found != read.sources.end() && found->value.logicalLiveBytes == 4096);
+	}
+	reporting.consume(3);
+	const auto read = reporting.read_live();
+	const auto found = std::ranges::find(read.sources, memory_sources::kImageDecode.id,
+										 [](const auto& source) { return source.key.source; });
+	FLOWUI_CHECK(found != read.sources.end() && found->value.logicalLiveBytes == 0 &&
+				 found->sessionPeak.logicalLiveBytes == 4096);
+#endif
+}
+
 void testCoalescedWeightedHistoryAndOverwriteContract() {
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
 	DevMemory memory(DevMemoryConfig{.level = MemoryMonitoringLevel::SubsystemCapacity,
@@ -112,7 +215,8 @@ void testCoalescedWeightedHistoryAndOverwriteContract() {
 	FLOWUI_CHECK(statistics->percentiles[0].value == 10u);
 	FLOWUI_CHECK(statistics->percentiles[1].value == 100u);
 
-	reporting.setConfig(MemoryReportingConfig{.segmentCapacity = 2u, .managerSampleEveryTicks = 1u});
+	FLOWUI_CHECK(reporting.setConfig(
+		MemoryReportingConfig{.segmentCapacity = 2u, .managerSampleEveryTicks = 1u}));
 	owner.value = 200u; reporting.consume(11u);
 	owner.value = 300u; reporting.consume(12u);
 	owner.value = 400u; reporting.consume(13u);
@@ -307,6 +411,9 @@ int main() {
 	runner.run("bounded recorder and runtime level", testBoundedRecorderAndRuntimeLevel);
 	runner.run("stable source registry and collision detection", testStableSourceRegistryAndCollisionDetection);
 	runner.run("manager probe and temporary lifetime", testManagerProbeAndTemporaryLifetime);
+	runner.run("history freeze preserves retention while live advances",
+			   testHistoryFreezeRetainsWhileLiveAdvances);
+	runner.run("temporary live accounting while frozen", testTemporaryLiveReportingDuringFreeze);
 	runner.run("process probe availability", testProcessProbeAvailability);
 	runner.run("coalesced weighted history and overwrite contract", testCoalescedWeightedHistoryAndOverwriteContract);
 	runner.run("capture profile and production growth replay", testCaptureProfileAndProductionGrowthReplay);

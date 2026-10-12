@@ -77,6 +77,7 @@ enum class MemorySampleFlag : uint16_t {
 	DroppedDetail = 1u << 3u,
 	SharedPhysicalMemory = 1u << 4u,
 	OverlapsProcessResident = 1u << 5u,
+	TuningAggregate = 1u << 6u,
 };
 
 [[nodiscard]] constexpr MemorySampleFlag operator|(
@@ -144,6 +145,16 @@ struct MemoryTuningTargetDescriptor {
 	MemoryApplyPolicy applyPolicy = MemoryApplyPolicy::RestartRequired;
 };
 
+/** Declared sampled metrics. Unpopulated fields must not be treated as measured zero. */
+enum class MemoryValueField : uint16_t {
+	LogicalLive = 1u,
+	Backing = 2u,
+	Reusable = 4u,
+	Retired = 8u,
+	PeakLogical = 16u,
+	Objects = 32u,
+	Capacity = 64u,
+};
 struct MemoryValueSample {
 	MemorySourceId source = 0u;
 	WindowId window = InvalidWindowId;
@@ -161,6 +172,7 @@ struct MemoryValueSample {
 	uint64_t physicalReleaseOps = 0u;
 	uint64_t growthOps = 0u;
 	MemorySampleFlag flags = MemorySampleFlag::None;
+	uint16_t value_fields = 127u;
 };
 
 struct MemoryOperationRecord {

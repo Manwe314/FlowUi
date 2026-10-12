@@ -1,4 +1,5 @@
 #include "managers/UiManager.hpp"
+#include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include <algorithm>
 #include <cstdint>
@@ -85,6 +86,18 @@ namespace FlowUi
 			memory.capacityBytes += state_->clayBridgeIdTracker.retainedBytesForDev();
 			devSystems::appendManagerSample(
 				sink, devSystems::memory_sources::kUiLayout.id, memory, window_);
+
+#if FLOWUI_PUBLIC_VULKAN_INTEROP
+			if (memory_history_controller_) {
+				const auto bytes = memory_history_controller_->capacity_bytes();
+				(void)sink.append(devSystems::MemoryValueSample{
+					.source = devSystems::memory_sources::kMemoryWorkbench.id,
+					.window = window_,
+					.backingAllocatedBytes = bytes,
+					.flags = devSystems::MemorySampleFlag::Estimate,
+					.value_fields = uint16_t(devSystems::MemoryValueField::Backing)});
+			}
+#endif
 			state_->devTreeCapture.appendDevMemorySamples(sink);
 			inputFieldManager_.appendDevMemorySamples(sink);
 			popupManager_.appendDevMemorySamples(sink);
@@ -448,7 +461,9 @@ namespace FlowUi
 #endif
 			bool timeline_scroll = false;
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
-			timeline_scroll = timeline_controller_ && timeline_controller_->owns_scroll(frameInput);
+			timeline_scroll =
+				(timeline_controller_ && timeline_controller_->owns_scroll(frameInput)) ||
+				(memory_history_controller_ && memory_history_controller_->owns_scroll(frameInput));
 #endif
 			Clay_UpdateScrollContainers(false,
 										timeline_scroll

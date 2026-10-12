@@ -28,6 +28,9 @@ inline constexpr auto kMonitoring = makeMemorySourceDescriptor(
 inline constexpr auto kDevTooling = makeMemorySourceDescriptor(
 	"flowui.memory.development.tooling", MemoryDomain::ManagerCpu,
 	MemorySourceKind::Development, MemoryAccuracy::Estimate, kDevelopment.id);
+inline constexpr auto kMemoryWorkbench = makeMemorySourceDescriptor(
+	"flowui.memory.development.memory_workbench", MemoryDomain::ManagerCpu,
+	MemorySourceKind::Development, MemoryAccuracy::Estimate, kDevelopment.id);
 inline constexpr auto kDevTreeCapture = makeMemorySourceDescriptor(
 	"flowui.memory.development.tooling.tree_capture", MemoryDomain::ManagerCpu,
 	MemorySourceKind::Development, MemoryAccuracy::AllocatorRequested, kDevTooling.id);
@@ -134,7 +137,7 @@ inline constexpr auto kVulkanHeaps = makeMemorySourceDescriptor(
 
 inline constexpr StaticMemorySourceDescriptor kAll[] = {
 	kStorageCpu, kStorageMetadata, kStorageTransient, kStorageGpu,
-	kDevelopment, kMonitoring, kDevTooling, kDevTreeCapture,
+	kDevelopment, kMonitoring, kDevTooling, kDevTreeCapture, kMemoryWorkbench,
 	kStoragePersistent, kStorageStringPool, kStorageFrameTransient, kStorageWorkerTransient,
 	kStorageDecodeTransient, kStorageUploadStaging,
 	kManagers, kElements, kInputFields, kInputTextPayload, kFonts, kFontAtlasCpuPixels,

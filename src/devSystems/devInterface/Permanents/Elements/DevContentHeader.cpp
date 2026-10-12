@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "FSEL/Button.hpp"
+#include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #include "FSEL/ComboBox.hpp"
 #include "FSEL/RadioChoice.hpp"
@@ -384,8 +385,8 @@ void drawContextualControls(
 		break;
 	}
 	case DevInterfaceTab::Memory:
-		drawReportingText(context, kCapturedState, "Captured State: None");
-		drawControl(context, kCaptureState, "Capture State");
+		context.uiManager.createElement(kDevMemoryContextControls, LocalElementName{"memory-context"})
+			.setParameters({app, &state}).setDevInternalCapture(true).draw();
 		break;
 	case DevInterfaceTab::Diagnostics:
 		break;

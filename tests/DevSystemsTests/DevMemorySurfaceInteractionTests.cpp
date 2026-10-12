@@ -1,0 +1,140 @@
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+#include "FlowUi/Flow.hpp"
+#include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
+#include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
+#include "devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp"
+#include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp"
+#include <cassert>
+#include <iostream>
+using namespace FlowUi;
+using namespace FlowUi::devSystems;
+using namespace FlowUi::devSystems::interface_elements;
+int main() {
+	AppConfig config;
+	config.window.title = "Memory complete surface verification";
+	config.window.width = 1400;
+	config.window.height = 900;
+	config.dev.excludeInternalDevElementsFromCapture = false;
+	config.vk.enableValidation = true;
+	auto app = makeApplication(config);
+	DevInterfaceState session;
+	session.memory_selection.selected_node = uint64_t(DevMemoryNodeId::PersistentPool);
+	constexpr auto workbench_id = Global<kDevMemoryWorkbench>("surface.memory.workbench");
+	constexpr auto inspector_id = Global<kDevMemoryInspector>("surface.memory.inspector");
+	constexpr auto context_id = Global<kDevMemoryContextControls>("surface.memory.context");
+	const auto action_id = [&](FlowElementID parent, uint32_t action) {
+		return ::FlowUi::detail::element_id::resolveLocal(parent, DevMemoryControl::definitionId,
+														  Keyed("memory-action", action).token);
+	};
+	const auto draw = [&](FlowElementID control = {}, int event = 0, float inspector_width = 360) {
+		assert(app.beginFrame());
+		auto& interaction =
+			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+		interaction = {};
+		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		input.mouseX = input.mouseY = -1;
+		input.windowFocused = true;
+		input.mouseDown = {};
+		input.mouseDown[0] = event == 1;
+		if (control.value) {
+			const auto identity = app.ui().toClayEID(control).id;
+			interaction.hoveredElementIds.emplace_back(identity);
+			if (event == 1)
+				interaction.pressedElementIds.emplace_back(identity);
+			if (event == 2)
+				interaction.releasedElementIds.emplace_back(identity);
+		}
+		auto root = memory_ui::column();
+		root.layout.sizing = {.width = CLAY_SIZING_FIXED(1400), .height = CLAY_SIZING_FIXED(900)};
+		root.backgroundColor = interface_theme::kDepth0Keel;
+		CLAY(CLAY_ID("memory-surface-test"), root) {
+			app.ui()
+				.createElement(kDevMemoryContextControls, context_id)
+				.setParameters({&app, &session})
+				.draw();
+			auto body = memory_ui::row();
+			body.layout.sizing.height = CLAY_SIZING_GROW(0);
+			CLAY(CLAY_ID("memory-surface-body"), body) {
+				auto workbench = memory_ui::column();
+				workbench.layout.sizing = {.width = CLAY_SIZING_FIXED(850),
+										   .height = CLAY_SIZING_GROW(0)};
+				CLAY(CLAY_ID("memory-test-workbench"), workbench)
+				app.ui()
+					.createElement(kDevMemoryWorkbench, workbench_id)
+					.setParameters({&app, &session})
+					.draw();
+				auto inspector = memory_ui::column();
+				inspector.layout.sizing = {.width = CLAY_SIZING_FIXED(inspector_width),
+										   .height = CLAY_SIZING_GROW(0)};
+				CLAY(CLAY_ID("memory-test-inspector"), inspector)
+				app.ui()
+					.createElement(kDevMemoryInspector, inspector_id)
+					.setParameters({&app, &session})
+					.draw();
+			}
+		}
+		assert(app.endFrame());
+		assert(app.drawFrame());
+	};
+	const auto click = [&](FlowElementID identity) {
+		draw(identity, 1);
+		draw(identity, 2);
+		draw();
+	};
+	draw();
+	draw();
+	auto& analysis = session.memory_workbench.analysis;
+	assert(!analysis.target_options.empty());
+	analysis.evidence_mode = 2;
+	analysis.planner.preset = 1;
+	analysis.previous_preset = UINT64_MAX;
+	draw();
+	draw();
+	analysis.planner.percentile = 50;
+	draw();
+	assert(analysis.plan && analysis.plan->initial_coverage == .5);
+	click(action_id(FlowElementID{inspector_id.value}, 130));
+	assert(analysis.staged.size() == 1 && analysis.show_review);
+	const auto staged_factor = analysis.shared_factor;
+	click(action_id(FlowElementID{inspector_id.value}, 120));
+	assert(analysis.staged.size() == 1 && analysis.shared_factor == staged_factor);
+	click(action_id(FlowElementID{context_id.value}, 106));
+	assert(analysis.show_recording_settings);
+	click(action_id(FlowElementID{context_id.value}, 101));
+	assert(analysis.datasets.size() == 1 && analysis.datasets.front().snapshot);
+	assert(!analysis.datasets.front().live.sources.empty());
+	analysis.evidence_mode = 0;
+	draw();
+	assert(!analysis.plan); // instant snapshots cannot drive chronological replay
+	analysis.dataset = 0;
+	click(action_id(FlowElementID{context_id.value}, 100));
+	assert(analysis.recording);
+	const auto recording_tick = app.devMonitoring().memoryReporting().status().lastConsumedAppTick;
+	draw();
+	draw();
+	assert(app.devMonitoring().memoryReporting().status().lastConsumedAppTick > recording_tick);
+	click(action_id(FlowElementID{context_id.value}, 100));
+	assert(!analysis.recording && analysis.datasets.size() == 2);
+	assert(!analysis.datasets.back().segments.empty());
+	assert(analysis.dataset == analysis.datasets.back().identity);
+	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);
+	click(action_id(FlowElementID{context_id.value}, 104));
+	assert(analysis.baseline_dataset == analysis.dataset);
+	click(action_id(FlowElementID{context_id.value}, 103));
+	assert(analysis.dataset == 0 && analysis.datasets.size() == 1 && !analysis.baseline_dataset);
+	analysis.show_review = true;
+	analysis.evidence_mode = 2;
+	for (const auto width : {280.0f, 360.0f, 480.0f}) {
+		draw({}, 0, width);
+		draw({}, 0, width);
+	}
+	const auto scroll =
+		Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+	assert(scroll.found &&
+		   scroll.contentDimensions.height > scroll.scrollContainerDimensions.height);
+	assert(analysis.staged.size() == 1); // navigation/capture does not discard settings
+	std::cout << "Inspector, preview planner, staging, disabled export, independent recording, "
+				 "immutable snapshot, baseline and narrow layout verified\n";
+}
