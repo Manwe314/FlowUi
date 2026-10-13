@@ -2,6 +2,7 @@
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/ComboBox.hpp"
+#include "FlowUi/MemoryCapacityManifest.hpp"
 namespace FlowUi::devSystems::interface_elements {
 /** Immutable window-owned dataset, bounded independently of reporting's live ring. */
 struct MemoryDataset {
@@ -9,10 +10,16 @@ struct MemoryDataset {
 	std::vector<MemorySampleSegment> segments{};
 	std::string name{};
 	uint64_t identity = 0, begin_ns = 0, end_ns = 0;
+	uint32_t sample_every_ticks = 1;
 	bool snapshot = false, complete = false;
 };
 /** One staged public configuration target and the evidence used to reevaluate a shared factor. */
 struct MemorySettingDraft {
+	MemoryCapacityEvidence export_evidence{};
+	std::string selection_policy{"manual"};
+	double percentile = 100;
+	uint64_t headroom = 0;
+	bool synthetic = false;
 	std::vector<MemoryDemandObservation> evidence{};
 	MemoryTuningTargetDescriptor target{};
 	MemoryPlan plan{};
@@ -41,9 +48,15 @@ struct MemoryAnalysisState {
 	double recording_seconds = 0, shared_factor = 1.5;
 	bool show_recording_settings = false, show_quality = false, show_planner = true,
 		 show_review = false;
+	uint32_t sample_every_ticks = 1;
 	bool include_recent = true, record_shortcut = false;
 	bool replace_pending = false, shared_factor_pending = false;
 };
+/** Convert staged selections to a validated payload. Staging/export never changes live allocations.
+ */
+[[nodiscard]] Result<MemoryCapacityManifest>
+export_staged_memory_capacities(const MemoryAnalysisState& state,
+								bool acknowledge_incomplete = false) noexcept;
 /** Find the selected immutable dataset; null selects live reporting. */
 [[nodiscard]] const MemoryDataset*
 selected_memory_dataset(const MemoryAnalysisState& state) noexcept;

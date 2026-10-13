@@ -84,6 +84,8 @@ template <FlowElement Element>
 consteval ElementRegistrationDescriptor makeElementDescriptor() {
 	using E = std::remove_cvref_t<Element>;
 	using Parameters = ParametersOf<E>;
+	// Evaluate before aggregate initialization for GCC 12 immediate-function handling.
+	constexpr std::string_view element_debug_name = detail::elementDebugName<E>();
 
 	ElementRegistrationDescriptor descriptor{
 		.definitionId = E::definitionId,
@@ -93,7 +95,7 @@ consteval ElementRegistrationDescriptor makeElementDescriptor() {
 		.parametersAlignment = alignof(Parameters),
 		.hasState = HasState<E>,
 		.hasResources = HasResources<E>,
-		.debugName = detail::elementDebugName<E>(),
+		.debugName = element_debug_name,
 		.definitionTypeName = detail::typeToken<E>(),
 		.parametersTypeName = detail::typeToken<Parameters>(),
 	};

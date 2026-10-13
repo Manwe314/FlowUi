@@ -103,8 +103,10 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 	if (state.navigator != state.navigator_applied &&
 		state.retained_end_ns > state.retained_begin_ns) {
 		hold_memory_history(state, reporting);
-		const auto width =
-			std::min(state.duration_ns, state.retained_end_ns - state.retained_begin_ns);
+		const auto width = std::min(state.view_end_ns > state.view_begin_ns
+										? state.view_end_ns - state.view_begin_ns
+										: state.duration_ns,
+									state.retained_end_ns - state.retained_begin_ns);
 		const auto available = state.retained_end_ns - state.retained_begin_ns - width;
 		state.view_begin_ns =
 			state.retained_begin_ns + uint64_t(available * std::clamp(state.navigator, 0.0, 1.0));

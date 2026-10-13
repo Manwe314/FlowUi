@@ -199,6 +199,7 @@ struct UiManagerState {
 	ClayBridgeIdTrackerForDev clayBridgeIdTracker{};
 #endif
 	FontFrameView fontView{};
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	InteractionSnapshot previousInteractionSnapshot{};
 	InteractionSnapshot currentInteractionSnapshot{};
 #if FLOW_UI_DEV_MODE

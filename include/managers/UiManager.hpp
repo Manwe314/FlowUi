@@ -28,7 +28,7 @@
 #include "managers/structs/ActionManagerStructs.hpp"
 #include "managers/structs/FlowUiElementStructs.hpp"
 #include "managers/structs/InputStructs.hpp"
-#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+#if FLOW_UI_DEV_MODE
 #include "devMode/elementDevCapture.hpp"
 #include "devMode/devRuntime.hpp"
 #include "devMode/performanceDiagnostics.hpp"

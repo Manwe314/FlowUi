@@ -4,6 +4,7 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "FlowUi/MemoryCapacityTargets.hpp"
 #include <utility>
 
 namespace FlowUi::devSystems::memory_sources {
@@ -148,6 +149,37 @@ inline constexpr StaticMemorySourceDescriptor kAll[] = {
 	kProcess, kVulkanHeaps,
 };
 
+/** Physical parent for a diagnostic demand child; child bytes must not be added again. */
+[[nodiscard]] constexpr MemorySourceId
+initial_capacity_parent(const InitialCapacityDefinition& definition) noexcept {
+	const auto key = definition.key;
+	if (key.starts_with("flowui.tuning.storage.") || key.starts_with("flowui.tuning.allocator."))
+		return kStorageMetadata.id;
+	if (key.starts_with("flowui.tuning.input_fields."))
+		return kInputFields.id;
+	if (key.starts_with("flowui.tuning.elements."))
+		return kElements.id;
+	if (key.starts_with("flowui.tuning.popups."))
+		return kPopups.id;
+	if (key.starts_with("flowui.tuning.shortcuts."))
+		return kShortcuts.id;
+	if (key.starts_with("flowui.tuning.actions."))
+		return kActions.id;
+	if (key.starts_with("flowui.tuning.fonts."))
+		return kFonts.id;
+	if (key.starts_with("flowui.tuning.icons."))
+		return kIcons.id;
+	if (key.starts_with("flowui.tuning.themes."))
+		return kThemes.id;
+	if (key.starts_with("flowui.tuning.viewports."))
+		return kViewports.id;
+	if (key.starts_with("flowui.tuning.development."))
+		return kDevTreeCapture.id;
+	if (key.starts_with("flowui.tuning.ui."))
+		return kUiLayout.id;
+	return kManagers.id;
+}
+
 inline std::vector<MemoryTuningTargetDescriptor> tuningTargets() {
 	using Metric = MemoryTuningMetric;
 	using Unit = MemoryCapacityUnit;
@@ -172,31 +204,20 @@ inline std::vector<MemoryTuningTargetDescriptor> tuningTargets() {
 			64u, UINT64_MAX, 64u, 16ull * 1024ull * 1024ull,
 			Metric::PeakLogicalBytes, Unit::Bytes, Policy::RestartRequired},
 	};
-	const auto addEntries = [&](const StaticMemorySourceDescriptor& source, std::string key,
-		uint64_t defaultValue = 0u) {
-		if (source.tuningTarget == 0u) return;
-		result.push_back({std::move(key), source.tuningTarget, source.id,
-			0u, UINT64_MAX, 1u, defaultValue, Metric::CapacityCount, Unit::Entries, Policy::RestartRequired});
-	};
-	addEntries(kElements, "managers.elementsReserve");
-	addEntries(kInputFields, "managers.inputFieldsReserve");
-	addEntries(kFonts, "managers.fontsReserve");
-	addEntries(kIcons, "managers.iconsReserve");
-	addEntries(kViewports, "managers.viewportsReserve");
-	addEntries(kPopups, "managers.popupsReserve");
-	addEntries(kShortcuts, "managers.shortcutsReserve");
-	addEntries(kActions, "managers.actionsReserve");
-	addEntries(kThemes, "managers.themesReserve");
-	addEntries(kUiLayout, "managers.uiLayoutReserve");
-	addEntries(kRenderer, "managers.rendererReserve");
-	result.push_back({"managers.inputTextBytesReserve", kInputTextPayload.tuningTarget, kInputTextPayload.id,
-		0u, UINT64_MAX, 1u, 0u, Metric::BackingAllocatedBytes, Unit::Bytes, Policy::RestartRequired});
-	result.push_back({"managers.fontAtlasCpuPixelBytesReserve", kFontAtlasCpuPixels.tuningTarget, kFontAtlasCpuPixels.id,
-		0u, UINT64_MAX, 1u, 0u, Metric::BackingAllocatedBytes, Unit::Bytes, Policy::RebuildRequired});
-	result.push_back({"storage.initialInstanceBytesPerFrame", kRendererFramePayload.tuningTarget, kRendererFramePayload.id,
-		256u, UINT64_MAX, 256u, 1024ull * 1024ull, Metric::LogicalLiveBytes, Unit::Bytes, Policy::RestartRequired});
-	addEntries(kIconSvgDocuments, "managers.iconDocumentsReserve");
-	addEntries(kIconAtlasMetadata, "managers.iconAtlasMetadataReserve");
+	result.push_back({"storage.initialInstanceBytesPerFrame", kRendererFramePayload.tuningTarget,
+					  kRendererFramePayload.id, 256u, SIZE_MAX / 2ull, 256u, 1024ull * 1024ull,
+					  Metric::LogicalLiveBytes, Unit::Bytes, Policy::RestartRequired});
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	for (const auto& definition : initial_capacity_definitions) {
+		if (!definition.storage_member.empty())
+			continue;
+		result.push_back(
+			{std::string(definition.key), definition.id(), definition.id(), 0u, definition.maximum,
+			 definition.alignment, definition.default_value, Metric::ObjectCount,
+			 definition.unit == InitialCapacityUnit::Bytes ? Unit::Bytes : Unit::Entries,
+			 Policy::RestartRequired});
+	}
+#endif
 	return result;
 }
 

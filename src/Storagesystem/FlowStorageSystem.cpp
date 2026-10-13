@@ -1,4 +1,6 @@
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include "internal/InitialMemoryCapacity.hpp"
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -288,7 +290,12 @@ SamplerKey makeSamplerKey(const SamplerDesc& desc) noexcept {
 
 class LinearArena {
 public:
-	void initialize(size_t initialBytes, float growthFactor, bool allowGrowth) {
+	void initialize(size_t initialBytes, float growthFactor, bool allowGrowth,
+					const InitialMemoryCapacities& capacities = {},
+					const ::FlowUi::detail::MemoryDemandControl* demand_control = nullptr) {
+		demand_control_ = demand_control;
+		::FlowUi::detail::reserve_initial_capacity(
+			pages_, capacities.get(InitialCapacityTarget::allocator_arena_pages));
 		growthFactor_ = growthFactor;
 		allowGrowth_ = allowGrowth;
 		if (initialBytes > 0 && pages_.empty()) {
@@ -468,7 +475,11 @@ public:
 		return 0;
 #endif
 	}
-	[[nodiscard]] uint32_t pageCount() const noexcept { return static_cast<uint32_t>(pages_.size()); }
+	[[nodiscard]] uint32_t pageCount() const noexcept {
+		return demand_control_ && !demand_control_->enabled.load(std::memory_order_relaxed)
+				   ? 0u
+				   : static_cast<uint32_t>(pages_.size());
+	}
 	[[nodiscard]] uint64_t growthCount() const noexcept {
 #if FLOW_UI_DEV_MODE
 		return growthCount_;
@@ -503,6 +514,7 @@ private:
 #endif
 	}
 
+	const ::FlowUi::detail::MemoryDemandControl* demand_control_ = nullptr;
 	std::vector<Page> pages_;
 	size_t currentPage_ = 0;
 #if FLOW_UI_DEV_MODE
@@ -527,7 +539,15 @@ private:
 
 class PersistentPool {
 public:
-	void initialize(size_t initialBytes, float growthFactor, bool allowGrowth) {
+	void initialize(size_t initialBytes, float growthFactor, bool allowGrowth,
+					const InitialMemoryCapacities& capacities = {},
+					const ::FlowUi::detail::MemoryDemandControl* demand_control = nullptr) {
+		capacity_demand_.bind(demand_control);
+		free_block_hint_ = capacities.get(InitialCapacityTarget::allocator_pool_free_blocks);
+		::FlowUi::detail::reserve_initial_capacity(
+			slabs_, capacities.get(InitialCapacityTarget::allocator_pool_slabs));
+		::FlowUi::detail::reserve_initial_capacity(
+			allocations_, capacities.get(InitialCapacityTarget::allocator_pool_allocations));
 		growthFactor_ = growthFactor;
 		allowGrowth_ = allowGrowth;
 		if (initialBytes > 0 && slabs_.empty()) addSlab(initialBytes, alignof(std::max_align_t));
@@ -603,6 +623,8 @@ public:
 		if (block.data != expectedData || block.size != allocation.size || !matchingTag) return;
 		slab.free.push_back({allocation.offset, allocation.size});
 		if (slab.activeAllocations > 0) --slab.activeAllocations;
+		FLOWUI_MEMORY_DEMAND_RECORD(
+			capacity_demand_, InitialCapacityTarget::allocator_pool_free_blocks, slab.free.size());
 		merge(slab.free);
 		liveBytes_ -= std::min<uint64_t>(liveBytes_, allocation.size);
 #if FLOW_UI_DEV_MODE
@@ -615,6 +637,9 @@ public:
 		cumulativeLogicalReleasedBytes_ += allocation.size;
 		++mutationSequence_;
 #endif
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::allocator_pool_allocations,
+									allocations_.size());
 		allocations_.erase(it);
 	}
 
@@ -720,6 +745,23 @@ public:
 #endif
 	}
 
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	void append_capacity_demands(std::vector<StorageCapacityDemand>& output) const {
+		const auto append = [&](InitialCapacityTarget target, uint64_t entries, uint64_t capacity) {
+			output.emplace_back(StorageCapacityDemand{
+				initial_capacity_definitions[static_cast<size_t>(target)].id(),
+				capacity_demand_.consume(target, entries), capacity, 0});
+		};
+		append(InitialCapacityTarget::allocator_pool_slabs, slabs_.size(), slabs_.capacity());
+		append(InitialCapacityTarget::allocator_pool_allocations, allocations_.size(),
+			   allocations_.bucket_count());
+		uint64_t free_max = 0;
+		for (const auto& slab : slabs_)
+			free_max = std::max<uint64_t>(free_max, slab.free.size());
+		append(InitialCapacityTarget::allocator_pool_free_blocks, free_max, 0);
+	}
+#endif
+
 private:
 	struct FreeBlock { size_t offset = 0; size_t size = 0; };
 	struct Slab {
@@ -743,7 +785,7 @@ private:
 			AlignedByteDelete{alignment});
 		slab.capacity = capacity;
 		slab.alignment = alignment;
-		slab.free.reserve(2u);
+		::FlowUi::detail::reserve_initial_capacity(slab.free, free_block_hint_);
 		slab.free.push_back({0, capacity});
 		slabs_.push_back(std::move(slab));
 #if FLOW_UI_DEV_MODE
@@ -759,6 +801,9 @@ public:
 		physicalReleaseOps_ += slabs_.size();
 #endif
 		slabs_.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::allocator_pool_allocations,
+									allocations_.size());
 		allocations_.clear();
 		nextId_ = 1;
 		liveBytes_ = 0;
@@ -799,6 +844,8 @@ private:
 		free.resize(output);
 	}
 
+	uint64_t free_block_hint_ = 2;
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand_;
 	std::vector<Slab> slabs_;
 	std::unordered_map<AllocationId, Allocation> allocations_;
 	AllocationId nextId_ = 1;
@@ -1000,6 +1047,7 @@ struct FlowStorageSystem::Impl {
 	};
 
 	struct FrameState {
+		::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 #if FLOW_UI_DEV_MODE
 #endif
 		LinearArena transient;
@@ -1059,6 +1107,7 @@ struct FlowStorageSystem::Impl {
 	PersistentPool persistentPool;
 	PersistentPool stringPool;
 	StorageConfig config{};
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	std::deque<UploadRecord> uploads;
 	std::condition_variable_any bufferCommitCondition;
 	std::unordered_map<std::string_view, StringId, StringViewHash, StringViewEqual> stringIds;
@@ -2293,14 +2342,21 @@ void FlowStorageSystem::initialize(const StorageConfig& config) {
 	}
 
 	impl_->config = config;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	impl_->capacity_demand.bind(config.memory_demand_control);
+#endif
 	impl_->config.framesInFlight = std::max(1u, config.framesInFlight);
 	impl_->config.expectedWorkerCount = std::max(1u, config.expectedWorkerCount);
-	impl_->persistentPool.initialize(
-		checkedSize(config.initialPersistentCpuBytes),
-		config.growthFactor, config.allowPersistentGrowth);
-	impl_->stringPool.initialize(
-		checkedSize(config.initialStringBytes),
-		config.growthFactor, config.allowPersistentGrowth);
+	const ::FlowUi::detail::MemoryDemandControl* demand_control = nullptr;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	demand_control = config.memory_demand_control;
+#endif
+	impl_->persistentPool.initialize(checkedSize(config.initialPersistentCpuBytes),
+									 config.growthFactor, config.allowPersistentGrowth,
+									 config.initial_capacities, demand_control);
+	impl_->stringPool.initialize(checkedSize(config.initialStringBytes), config.growthFactor,
+								 config.allowPersistentGrowth, config.initial_capacities,
+								 demand_control);
 	impl_->blobs.reserve(static_cast<size_t>(config.expectedBlobs) + 1u);
 	impl_->buffers.reserve(static_cast<size_t>(config.expectedBuffers) + 1u);
 	impl_->images.reserve(static_cast<size_t>(config.expectedImages) + 1u);
@@ -2323,6 +2379,64 @@ void FlowStorageSystem::initialize(const StorageConfig& config) {
 	impl_->windows.reserve(config.expectedWindows);
 	impl_->registeredWindowIds.reserve(config.expectedWindows);
 
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->strings, config.initial_capacities.get(InitialCapacityTarget::storage_strings) + 1u);
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->stringIds, config.initial_capacities.get(InitialCapacityTarget::storage_string_ids));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->textureByKey,
+		config.initial_capacities.get(InitialCapacityTarget::storage_texture_lookup));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->samplerByKey,
+		config.initial_capacities.get(InitialCapacityTarget::storage_sampler_lookup));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->rendererLayoutByKey,
+		config.initial_capacities.get(InitialCapacityTarget::storage_renderer_layout_lookup));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->rendererPipelineByKey,
+		config.initial_capacities.get(InitialCapacityTarget::storage_renderer_pipeline_lookup));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->uploadStates,
+		config.initial_capacities.get(InitialCapacityTarget::storage_upload_states));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->completedOutOfOrder,
+		config.initial_capacities.get(InitialCapacityTarget::storage_completed_submissions));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->diagnosticMarks,
+		config.initial_capacities.get(InitialCapacityTarget::storage_diagnostics));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->retirements,
+		config.initial_capacities.get(InitialCapacityTarget::storage_retirements));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeBlobs, config.initial_capacities.get(InitialCapacityTarget::storage_blobs));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeBuffers, config.initial_capacities.get(InitialCapacityTarget::storage_buffers));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeImages, config.initial_capacities.get(InitialCapacityTarget::storage_images));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeImageViews,
+		config.initial_capacities.get(InitialCapacityTarget::storage_image_views));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeSamplers,
+		config.initial_capacities.get(InitialCapacityTarget::storage_samplers));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeTextures,
+		config.initial_capacities.get(InitialCapacityTarget::storage_textures));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeRendererLayouts,
+		config.initial_capacities.get(InitialCapacityTarget::storage_renderer_objects));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeRendererPipelineBundles,
+		config.initial_capacities.get(InitialCapacityTarget::storage_renderer_objects));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeWindowDescriptorBundles,
+		config.initial_capacities.get(InitialCapacityTarget::storage_renderer_objects));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freeManagerRecords,
+		config.initial_capacities.get(InitialCapacityTarget::storage_manager_records));
+	::FlowUi::detail::reserve_initial_capacity(
+		impl_->freePersistentRecords,
+		config.initial_capacities.get(InitialCapacityTarget::storage_persistent_records));
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -2361,18 +2475,39 @@ void FlowStorageSystem::shutdown() noexcept {
 	impl_->destroyAllManagerRecords();
 	impl_->immediateDestroyAll();
 	impl_->uploads.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								InitialCapacityTarget::storage_upload_states,
+								impl_->uploadStates.size());
 	impl_->uploadStates.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand, InitialCapacityTarget::storage_retirements,
+								impl_->retirements.size());
 	impl_->retirements.clear();
 	impl_->windows.clear();
 	impl_->registeredWindowIds.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								InitialCapacityTarget::storage_texture_lookup,
+								impl_->textureByKey.size());
 	impl_->textureByKey.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								InitialCapacityTarget::storage_sampler_lookup,
+								impl_->samplerByKey.size());
 	impl_->samplerByKey.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								InitialCapacityTarget::storage_renderer_layout_lookup,
+								impl_->rendererLayoutByKey.size());
 	impl_->rendererLayoutByKey.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								InitialCapacityTarget::storage_renderer_pipeline_lookup,
+								impl_->rendererPipelineByKey.size());
 	impl_->rendererPipelineByKey.clear();
 	impl_->persistentPool.clear();
 	impl_->stringPool.clear();
 	impl_->strings.assign(1u, std::string_view{});
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand, InitialCapacityTarget::storage_string_ids,
+								impl_->stringIds.size());
 	impl_->stringIds.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand, InitialCapacityTarget::storage_diagnostics,
+								impl_->diagnosticMarks.size());
 	impl_->diagnosticMarks.clear();
 	impl_->managerRecordByKey.clear();
 	impl_->managerRecords.assign(1u, Impl::ManagerRecord{});
@@ -2404,6 +2539,9 @@ void FlowStorageSystem::shutdown() noexcept {
 	impl_->freeRendererPipelineBundles.clear();
 	impl_->windowDescriptorBundles.assign(1u, Impl::WindowDescriptorBundleRecord{});
 	impl_->freeWindowDescriptorBundles.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								InitialCapacityTarget::storage_completed_submissions,
+								impl_->completedOutOfOrder.size());
 	impl_->completedOutOfOrder.clear();
 	impl_->gpuLiveBytes = 0;
 	impl_->gpuRetiredBytes = 0;
@@ -2421,6 +2559,17 @@ void FlowStorageSystem::shutdown() noexcept {
 #endif
 	impl_->initialized = false;
 	impl_->terminated = true;
+}
+
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+const ::FlowUi::detail::MemoryDemandControl*
+FlowStorageSystem::memory_demand_control() const noexcept {
+	return impl_->config.memory_demand_control;
+}
+#endif
+uint64_t
+FlowStorageSystem::initial_memory_capacity(FlowUi::InitialCapacityTarget target) const noexcept {
+	return impl_->config.initial_capacities.get(target);
 }
 
 uint32_t FlowStorageSystem::interfaceVersion() const noexcept { return CurrentInterfaceVersion; }
@@ -2456,22 +2605,35 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 		}
 		window->bindingsByTextureIndex[impl_->fallbackTexture.index] = impl_->fallbackBinding;
 	}
+	const ::FlowUi::detail::MemoryDemandControl* demand_control = nullptr;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	demand_control = impl_->config.memory_demand_control;
+#endif
 	window->frames.reserve(window->desc.framesInFlight);
 	const auto expectedSlots = [](uint32_t expected) {
 		return checkedSize(static_cast<uint64_t>(expected) + 1u);
 	};
 	for (uint32_t slot = 0; slot < window->desc.framesInFlight; ++slot) {
 		auto frame = std::make_unique<Impl::FrameState>();
-		frame->transient.initialize(checkedSize(desc.transientBytesPerFrame), impl_->config.growthFactor,
-			impl_->config.allowTransientGrowth);
-		frame->decode.initialize(checkedSize(impl_->config.initialDecodeScratchBytes), impl_->config.growthFactor,
-			impl_->config.allowTransientGrowth);
-		frame->upload.initialize(checkedSize(impl_->config.initialUploadStagingBytes), impl_->config.growthFactor,
-			impl_->config.allowTransientGrowth);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+		frame->capacity_demand.bind(impl_->config.memory_demand_control);
+#endif
+		frame->transient.initialize(checkedSize(desc.transientBytesPerFrame),
+									impl_->config.growthFactor, impl_->config.allowTransientGrowth,
+									impl_->config.initial_capacities, demand_control);
+		frame->decode.initialize(checkedSize(impl_->config.initialDecodeScratchBytes),
+								 impl_->config.growthFactor, impl_->config.allowTransientGrowth,
+								 impl_->config.initial_capacities, demand_control);
+		frame->upload.initialize(checkedSize(impl_->config.initialUploadStagingBytes),
+								 impl_->config.growthFactor, impl_->config.allowTransientGrowth,
+								 impl_->config.initial_capacities, demand_control);
 		frame->workers.reserve(window->desc.workerCount);
-		frame->pendingBufferWrites.reserve(4u);
+		frame->pendingBufferWrites.reserve(
+			initial_memory_capacity(InitialCapacityTarget::frame_pending_writes));
 		frame->used.reserve(std::max<size_t>(
-			64u, expectedSlots(impl_->config.expectedBindingsPerWindow) + 8u));
+			std::max<uint64_t>(
+				64u, initial_memory_capacity(InitialCapacityTarget::frame_used_resources)),
+			expectedSlots(impl_->config.expectedBindingsPerWindow) + 8u));
 		frame->usedBufferEpochs.resize(expectedSlots(impl_->config.expectedBuffers));
 		frame->usedImageEpochs.resize(expectedSlots(impl_->config.expectedImages));
 		frame->usedImageViewEpochs.resize(expectedSlots(impl_->config.expectedImageViews));
@@ -2485,7 +2647,8 @@ void FlowStorageSystem::registerWindow(WindowId id, const WindowStorageDesc& des
 		for (uint32_t worker = 0; worker < window->desc.workerCount; ++worker) {
 			auto arena = std::make_unique<LinearArena>();
 			arena->initialize(checkedSize(desc.transientBytesPerWorker), impl_->config.growthFactor,
-				impl_->config.allowTransientGrowth);
+							  impl_->config.allowTransientGrowth, impl_->config.initial_capacities,
+							  demand_control);
 			frame->workers.push_back(std::move(arena));
 		}
 		window->frames.push_back(std::move(frame));
@@ -2551,7 +2714,11 @@ FrameToken FlowStorageSystem::beginFrame(WindowId id, const FrameStorageDesc& de
 	frame.decode.reset();
 	frame.upload.reset();
 	for (const auto& worker : frame.workers) worker->reset();
+	FLOWUI_MEMORY_DEMAND_RECORD(frame.capacity_demand, InitialCapacityTarget::frame_used_resources,
+								frame.used.size());
 	frame.used.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(frame.capacity_demand, InitialCapacityTarget::frame_pending_writes,
+								frame.pendingBufferWrites.size());
 	frame.pendingBufferWrites.clear();
 	Impl::invalidateLease(frame);
 	Impl::invalidateArena(frame);
@@ -4352,6 +4519,8 @@ SubmissionToken FlowStorageSystem::noteSubmission(const FrameReadLease& lease) {
 		impl_->stampUse(used, serial);
 		impl_->releaseUsed(used, serial);
 	}
+	FLOWUI_MEMORY_DEMAND_RECORD(frame.capacity_demand, InitialCapacityTarget::frame_used_resources,
+								frame.used.size());
 	frame.used.clear();
 	frame.inFlightSerial = serial;
 	Impl::invalidateLease(frame);
@@ -4380,6 +4549,9 @@ void FlowStorageSystem::noteCompleted(SubmissionToken submission) {
 	if (submission.serial == impl_->completedWatermark + 1u) {
 		frame.inFlightSerial = 0;
 		++impl_->completedWatermark;
+		FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+									InitialCapacityTarget::storage_completed_submissions,
+									impl_->completedOutOfOrder.size());
 		while (impl_->completedOutOfOrder.erase(impl_->completedWatermark + 1u) > 0) {
 			++impl_->completedWatermark;
 		}
@@ -4503,6 +4675,9 @@ void FlowStorageSystem::collect() {
 				ready.push_back(std::move(retired));
 				return true;
 			});
+		FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+									InitialCapacityTarget::storage_retirements,
+									impl_->retirements.size());
 		impl_->retirements.erase(pending, impl_->retirements.end());
 		for (const Impl::RetirementRecord& retired : ready) impl_->destroyRetired(retired);
 	}
@@ -4728,6 +4903,103 @@ void FlowStorageSystem::appendMemorySnapshot(
 
 	destination.windows.clear();
 	destination.allocators.clear();
+	destination.capacity_demands.clear();
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	const auto append_demand = [&](InitialCapacityTarget target, const auto& container,
+								   uint64_t sentinel = 0) {
+		uint64_t capacity = container.size(),
+				 bytes = container.size() *
+						 sizeof(typename std::decay_t<decltype(container)>::value_type);
+		if constexpr (requires { container.capacity(); }) {
+			capacity = container.capacity();
+			bytes = capacity * sizeof(typename std::decay_t<decltype(container)>::value_type);
+		} else if constexpr (requires { container.bucket_count(); }) {
+			capacity = container.bucket_count();
+			bytes += capacity * sizeof(void*);
+		}
+		const uint64_t count = container.size() > sentinel ? container.size() - sentinel : 0;
+		destination.capacity_demands.emplace_back(
+			StorageCapacityDemand{initial_capacity_definitions[static_cast<size_t>(target)].id(),
+								  impl_->capacity_demand.consume(target, count), capacity, bytes});
+	};
+	std::vector<StorageCapacityDemand> pool_demands;
+	impl_->persistentPool.append_capacity_demands(pool_demands);
+	impl_->stringPool.append_capacity_demands(pool_demands);
+	for (const auto& demand : pool_demands) {
+		const auto found =
+			std::find_if(destination.capacity_demands.begin(), destination.capacity_demands.end(),
+						 [&](const auto& existing) { return existing.target == demand.target; });
+		if (found == destination.capacity_demands.end())
+			destination.capacity_demands.emplace_back(demand);
+		else {
+			found->entries = std::max(found->entries, demand.entries);
+			found->capacity = std::max(found->capacity, demand.capacity);
+		}
+	}
+	uint64_t pages_max = 0;
+	for (const auto& [window_id, window] : impl_->windows)
+		for (const auto& frame : window->frames) {
+			pages_max = std::max<uint64_t>({pages_max, frame->transient.pageCount(),
+											frame->decode.pageCount(), frame->upload.pageCount()});
+			for (const auto& worker : frame->workers)
+				pages_max = std::max<uint64_t>(pages_max, worker->pageCount());
+		}
+	destination.capacity_demands.emplace_back(StorageCapacityDemand{
+		initial_capacity_definitions[static_cast<size_t>(
+										 InitialCapacityTarget::allocator_arena_pages)]
+			.id(),
+		pages_max, 0, 0});
+	for (const auto& [window_id, window] : impl_->windows) {
+		uint64_t used_max = 0, writes_max = 0;
+		for (const auto& frame : window->frames) {
+			used_max = std::max(
+				used_max, frame->capacity_demand.consume(
+							  InitialCapacityTarget::frame_used_resources, frame->used.size()));
+			writes_max =
+				std::max(writes_max,
+						 frame->capacity_demand.consume(InitialCapacityTarget::frame_pending_writes,
+														frame->pendingBufferWrites.size()));
+		}
+		destination.capacity_demands.emplace_back(StorageCapacityDemand{
+			initial_capacity_definitions[static_cast<size_t>(
+											 InitialCapacityTarget::frame_used_resources)]
+				.id(),
+			used_max, 0, 0, window_id});
+		destination.capacity_demands.emplace_back(StorageCapacityDemand{
+			initial_capacity_definitions[static_cast<size_t>(
+											 InitialCapacityTarget::frame_pending_writes)]
+				.id(),
+			writes_max, 0, 0, window_id});
+	}
+	append_demand(InitialCapacityTarget::storage_blobs, impl_->blobs, 1);
+	append_demand(InitialCapacityTarget::storage_buffers, impl_->buffers, 1);
+	append_demand(InitialCapacityTarget::storage_images, impl_->images, 1);
+	append_demand(InitialCapacityTarget::storage_image_views, impl_->imageViews, 1);
+	append_demand(InitialCapacityTarget::storage_samplers, impl_->samplers, 1);
+	append_demand(InitialCapacityTarget::storage_textures, impl_->textureHot, 1);
+	FLOWUI_MEMORY_DEMAND_RECORD(
+		impl_->capacity_demand, InitialCapacityTarget::storage_renderer_objects,
+		std::max(impl_->rendererPipelineBundles.size(), impl_->windowDescriptorBundles.size()) -
+			1u);
+	append_demand(InitialCapacityTarget::storage_renderer_objects, impl_->rendererLayouts, 1);
+	append_demand(InitialCapacityTarget::storage_manager_records, impl_->managerRecords, 1);
+	append_demand(InitialCapacityTarget::storage_persistent_records, impl_->persistentRecords, 1);
+	append_demand(InitialCapacityTarget::storage_windows, impl_->windows, 0);
+
+	append_demand(InitialCapacityTarget::storage_strings, impl_->strings, 1);
+	append_demand(InitialCapacityTarget::storage_string_ids, impl_->stringIds, 0);
+	append_demand(InitialCapacityTarget::storage_texture_lookup, impl_->textureByKey, 0);
+	append_demand(InitialCapacityTarget::storage_sampler_lookup, impl_->samplerByKey, 0);
+	append_demand(InitialCapacityTarget::storage_renderer_layout_lookup, impl_->rendererLayoutByKey,
+				  0);
+	append_demand(InitialCapacityTarget::storage_renderer_pipeline_lookup,
+				  impl_->rendererPipelineByKey, 0);
+	append_demand(InitialCapacityTarget::storage_upload_states, impl_->uploadStates, 0);
+	append_demand(InitialCapacityTarget::storage_completed_submissions, impl_->completedOutOfOrder,
+				  0);
+	append_demand(InitialCapacityTarget::storage_diagnostics, impl_->diagnosticMarks, 0);
+	append_demand(InitialCapacityTarget::storage_retirements, impl_->retirements, 0);
+#endif
 	destination.individualResources.clear();
 	destination.resources.fill({});
 	destination.includesResourceKinds = request.includeResourceKinds;

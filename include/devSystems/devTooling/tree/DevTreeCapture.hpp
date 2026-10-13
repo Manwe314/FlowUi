@@ -4,6 +4,7 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "internal/MemoryDemandPeaks.hpp"
 #include <cstdint>
 #include <string_view>
 #include <vector>
@@ -44,8 +45,13 @@ public:
 		[[nodiscard]] explicit operator bool() const noexcept { return scopeId != 0; }
 	};
 
-	explicit DevTreeCapture(DevTreeCaptureConfig config = {});
+	explicit DevTreeCapture(DevTreeCaptureConfig config = {},
+							const InitialMemoryCapacities& capacities = {});
 
+	/** Bind the owning application monitoring gate before capture. */
+	void bind_memory_demand(const ::FlowUi::detail::MemoryDemandControl* control) noexcept {
+		capacity_demand_.bind(control);
+	}
 	void beginFrame(
 		WindowId window,
 		uint64_t frameNumber,
@@ -111,6 +117,7 @@ private:
 	uint32_t currentClayRoot_ = 0;
 #endif
 
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand_{};
 	DevTreeCaptureConfig config_{};
 	DevTreeSnapshot building_{};
 	DevTreeSnapshot published_{};

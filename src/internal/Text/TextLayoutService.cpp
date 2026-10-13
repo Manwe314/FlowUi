@@ -72,6 +72,8 @@ void TextLayoutService::evictFor(size_t incomingBytes) {
 			return a.lastUse < b.lastUse;
 		});
 		cacheBytes_ -= oldest->byteCost;
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_, InitialCapacityTarget::ui_text_cache,
+									cache_.size());
 		cache_.erase(oldest);
 	}
 }
@@ -112,6 +114,8 @@ const TextLayoutResult& TextLayoutService::layout(const TextLayoutRequest& reque
 }
 
 void TextLayoutService::clear() noexcept {
+	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_, InitialCapacityTarget::ui_text_cache,
+								cache_.size());
 	cache_.clear();
 	uncachedResult_ = {};
 	cacheBytes_ = 0;

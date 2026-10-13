@@ -14,6 +14,7 @@ namespace {
 
 struct JsonValue {
 	enum class Kind { Null, Boolean, Number, String, Array, Object } kind = Kind::Null;
+	bool boolean = false;
 	std::string text{};
 	std::vector<JsonValue> array{};
 	std::vector<std::pair<std::string, JsonValue>> object{};
@@ -35,8 +36,22 @@ private:
 		if (input_[at_] == '"') { out.kind = JsonValue::Kind::String; return string(out.text); }
 		if (input_[at_] == '{') return object(out);
 		if (input_[at_] == '[') return array(out);
-		if (input_.substr(at_, 4) == "true" || input_.substr(at_, 4) == "null") { at_ += 4; return true; }
-		if (input_.substr(at_, 5) == "false") { at_ += 5; return true; }
+		if (input_.substr(at_, 4) == "true") {
+			at_ += 4;
+			out.kind = JsonValue::Kind::Boolean;
+			out.boolean = true;
+			return true;
+		}
+		if (input_.substr(at_, 4) == "null") {
+			at_ += 4;
+			return true;
+		}
+		if (input_.substr(at_, 5) == "false") {
+			at_ += 5;
+			out.kind = JsonValue::Kind::Boolean;
+			out.boolean = false;
+			return true;
+		}
 		const std::size_t first = at_;
 		while (at_ < input_.size() && (input_[at_] == '-' || input_[at_] == '+' || input_[at_] == '.' ||
 			(input_[at_] >= '0' && input_[at_] <= '9') || input_[at_] == 'e' || input_[at_] == 'E')) ++at_;
@@ -64,7 +79,22 @@ private:
 	}
 	bool object(JsonValue& out) {
 		if (!take('{')) return false; out.kind = JsonValue::Kind::Object; space(); if (take('}')) return true;
-		for (;;) { std::string key; space(); if (!string(key) || !take(':')) return false; JsonValue value; if (!parseValue(value)) return false; out.object.emplace_back(std::move(key), std::move(value)); if (take('}')) return true; if (!take(',')) return false; }
+		for (;;) {
+			std::string key;
+			space();
+			if (!string(key) || !take(':'))
+				return false;
+			JsonValue value;
+			if (!parseValue(value))
+				return false;
+			if (out.find(key))
+				return false;
+			out.object.emplace_back(std::move(key), std::move(value));
+			if (take('}'))
+				return true;
+			if (!take(','))
+				return false;
+		}
 	}
 	std::string_view input_; std::size_t at_ = 0;
 };
@@ -111,8 +141,23 @@ bool parseManifest(const std::filesystem::path& path, Manifest& output, std::str
 	JsonValue root;
 	if (!Parser(contents).parse(root) || root.kind != JsonValue::Kind::Object) { error = "manifest is not valid JSON"; return false; }
 	const auto* version = root.find("manifestVersion");
-	if (!version || version->kind != JsonValue::Kind::Number || version->text != "1") { error = "unsupported manifestVersion (expected 1)"; return false; }
-	output = {}; output.version = 1;
+	if (!version || version->kind != JsonValue::Kind::Number ||
+		(version->text != "1" && version->text != "2")) {
+		error = "unsupported manifestVersion (expected 1 or 2)";
+		return false;
+	}
+	output = {};
+	output.version = version->text == "1" ? 1 : 2;
+	if (const auto* memory = root.find("memoryCapacity")) {
+		if (output.version != 2) {
+			error = "memoryCapacity requires manifestVersion 2";
+			return false;
+		}
+		FlowUi::MemoryCapacityManifest decoded;
+		if (!FlowUi::decode_memory_capacity_manifest(*memory, decoded, error))
+			return false;
+		output.memoryCapacity = std::move(decoded);
+	}
 	if (const auto fingerprint = member(root, "schemaFingerprint"); fingerprint && !hex(*fingerprint, output.schemaFingerprint)) { error = "invalid schemaFingerprint"; return false; }
 	const auto* entries = root.find("bakedChanges");
 	if (!entries || entries->kind != JsonValue::Kind::Array) { error = "bakedChanges must be an array"; return false; }

@@ -35,9 +35,19 @@ void VulkanUiRenderer::appendDevMemorySamples(
 		memory.add(frameResources_);
 		memory.add(boundFontAtlasRevisionByFrame_);
 		memory.liveBytes += textLayoutService_.cacheBytes();
-		memory.capacityBytes += textLayoutService_.cacheBytes();
+		memory.capacityBytes += textLayoutService_.cache_backing_bytes();
 		memory.objectCount += textLayoutService_.cacheEntryCount();
-		memory.capacityCount += FlowUi::detail::text::TextLayoutService::MaxCacheEntries;
+		memory.capacityCount += textLayoutService_.cache_entry_capacity();
+		(void)sink.append(FlowUi::devSystems::MemoryValueSample{
+			.source = FlowUi::initial_capacity_definitions
+						  [static_cast<size_t>(FlowUi::InitialCapacityTarget::ui_text_cache)]
+							  .id(),
+			.window = windowId_,
+			.objectCount = textLayoutService_.consume_entry_demand(),
+			.capacityCount = textLayoutService_.cache_entry_capacity(),
+			.flags = FlowUi::devSystems::MemorySampleFlag::TuningAggregate,
+			.value_fields = uint16_t(FlowUi::devSystems::MemoryValueField::Objects) |
+							uint16_t(FlowUi::devSystems::MemoryValueField::Capacity)});
 		if (prepared) {
 			memory.liveBytes += static_cast<uint64_t>(prepared->instanceCount) * sizeof(UiInstance);
 			memory.liveBytes += static_cast<uint64_t>(prepared->runs.size()) * sizeof(UiRun);
@@ -51,9 +61,9 @@ void VulkanUiRenderer::appendDevMemorySamples(
 			FlowUi::devSystems::MemoryValueSample framePayload{
 				.source = FlowUi::devSystems::memory_sources::kRendererFramePayload.id,
 				.window = windowId_,
-				.logicalLiveBytes = static_cast<uint64_t>(prepared->instanceCount) * sizeof(UiInstance) +
-					static_cast<uint64_t>(prepared->runs.size()) * sizeof(UiRun),
-				.objectCount = prepared->instanceCount + prepared->runs.size(),
+				.logicalLiveBytes =
+					static_cast<uint64_t>(prepared->instanceCount) * sizeof(UiInstance),
+				.objectCount = prepared->instanceCount,
 			};
 			framePayload.value_fields =
 				uint16_t(FlowUi::devSystems::MemoryValueField::LogicalLive) |
@@ -1508,6 +1518,11 @@ void VulkanUiRenderer::init(
 	try {
 		resources_ = resources;
 		storage_ = &storageSystem;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+		textLayoutService_.bind_memory_demand(storageSystem.memory_demand_control());
+#endif
+		textLayoutService_.reserve_initial_entries(
+			storageSystem.initial_memory_capacity(FlowUi::InitialCapacityTarget::ui_text_cache));
 		windowId_ = windowId;
 		sharedByteResources_ = &sharedResources;
 		initialInstanceBytes_ = std::max<uint64_t>(1u, initialInstanceBytes);

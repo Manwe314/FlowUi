@@ -971,6 +971,8 @@ void build_memory_history(DevMemoryWorkbenchState& state, DevMemoryReporting& re
 					: state.lanes.size() > 1
 						? "Constituent source lanes — independent peaks are not summed"
 						: "Sampled intervals · independent demand/backing outlines";
+	if (saved && !saved->complete)
+		state.message += " · Partial coverage: missing observations are unavailable";
 	++state.history_reads;
 	++state.layout_revision;
 }

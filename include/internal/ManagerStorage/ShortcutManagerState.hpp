@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -28,6 +29,7 @@ using ShortcutBucket = std::vector<ShortcutRegistration>;
 using PublishedShortcutBucket = std::shared_ptr<const ShortcutBucket>;
 
 struct ShortcutManagerState {
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	std::unordered_map<uint32_t, PublishedShortcutBucket> chordBuckets{};
 	std::unordered_map<ShortcutId, ShortcutRegistration> registrationsById{};
 	std::unordered_map<int, uint32_t> registeredKeyRefCount{};

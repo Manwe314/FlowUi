@@ -9,6 +9,11 @@
 #include <cstdio>
 namespace FlowUi::devSystems::interface_elements {
 namespace {
+[[nodiscard]] float linear_channel(float channel) noexcept {
+	const float normalized = channel / 255;
+	return normalized <= .04045f ? normalized / 12.92f
+								 : std::pow((normalized + .055f) / 1.055f, 2.4f);
+}
 bool contains(Clay_BoundingBox bounds, float horizontal, float vertical) noexcept {
 	return horizontal >= bounds.x && vertical >= bounds.y && horizontal < bounds.x + bounds.width &&
 		   vertical < bounds.y + bounds.height;
@@ -54,8 +59,9 @@ struct DevMemoryHistoryController::Impl {
 				continue;
 			VkClearAttachment attachment{};
 			attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			attachment.clearValue.color = {
-				{rectangle.color.r / 255, rectangle.color.g / 255, rectangle.color.b / 255, 1}};
+			attachment.clearValue.color = {{linear_channel(rectangle.color.r),
+											linear_channel(rectangle.color.g),
+											linear_channel(rectangle.color.b), 1}};
 			VkClearRect region{};
 			region.rect = {{left, top}, {uint32_t(right - left), uint32_t(bottom - top)}};
 			region.layerCount = 1;
@@ -263,7 +269,10 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 	}
 	if (!controller.created) {
 		const auto result = controller.viewports->create(
-			controller.key, ViewPortCreateInfo{.clearColor = {.027f, .102f, .133f, 1}});
+			controller.key,
+			ViewPortCreateInfo{.clearColor = {linear_channel(interface_theme::kDepth0Keel.r),
+											  linear_channel(interface_theme::kDepth0Keel.g),
+											  linear_channel(interface_theme::kDepth0Keel.b), 1}});
 		controller.created = result.has_value();
 		if (controller.created)
 			controller.viewports->getViewPort(controller.key)

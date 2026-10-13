@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <cstdint>
 #include <limits>
@@ -78,6 +79,7 @@ public:
 	IconCacheController(storage::IStorageSystem& storageSystem, const IconManagerConfig& config);
 	~IconCacheController() noexcept;
 
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	storage::IStorageSystem* storage = nullptr;
 	storage::SamplerHandle atlasSampler{};
 	uint32_t atlasSize = 0, atlasPadding = 1, sizeReuseTolerance = 8, maxAtlasPages = 10, frameCounter = 0;

@@ -1,6 +1,7 @@
 #include "managers/UiManager.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
+#include "internal/InitialMemoryCapacity.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -76,10 +77,60 @@ namespace FlowUi
 		try {
 			devSystems::DevContainerMemoryAccumulator memory{};
 			memory.add(state_->constructedElementStack);
+			devSystems::append_capacity_demand(sink, InitialCapacityTarget::ui_constructed_depth,
+											   state_->constructedElementStack,
+											   state_->capacity_demand, window_);
+			(void)sink.append(devSystems::MemoryValueSample{
+				.source =
+					initial_capacity_definitions[static_cast<size_t>(
+													 InitialCapacityTarget::ui_flow_scope_depth)]
+						.id(),
+				.window = window_,
+				.objectCount = state_->flowScopes.consume_demand(),
+				.capacityCount = state_->flowScopes.capacity(),
+				.flags = devSystems::MemorySampleFlag::TuningAggregate,
+				.value_fields = uint16_t(devSystems::MemoryValueField::Objects) |
+								uint16_t(devSystems::MemoryValueField::Capacity)});
+			(void)sink.append(devSystems::MemoryValueSample{
+				.source = initial_capacity_definitions[static_cast<size_t>(
+														   InitialCapacityTarget::ui_text_cache)]
+							  .id(),
+				.window = window_,
+				.objectCount = state_->textLayoutService.consume_entry_demand(),
+				.capacityCount = state_->textLayoutService.cache_entry_capacity(),
+				.flags = devSystems::MemorySampleFlag::TuningAggregate,
+				.value_fields = uint16_t(devSystems::MemoryValueField::Objects) |
+								uint16_t(devSystems::MemoryValueField::Capacity)});
+			state_->capacity_demand.record(
+				InitialCapacityTarget::ui_hovered_element_ids,
+				state_->previousInteractionSnapshot.hoveredElementIds.size());
+			devSystems::append_capacity_demand(sink, InitialCapacityTarget::ui_hovered_element_ids,
+											   state_->currentInteractionSnapshot.hoveredElementIds,
+											   state_->capacity_demand, window_);
+			state_->capacity_demand.record(
+				InitialCapacityTarget::ui_pressed_element_ids,
+				state_->previousInteractionSnapshot.pressedElementIds.size());
+			devSystems::append_capacity_demand(sink, InitialCapacityTarget::ui_pressed_element_ids,
+											   state_->currentInteractionSnapshot.pressedElementIds,
+											   state_->capacity_demand, window_);
+			state_->capacity_demand.record(
+				InitialCapacityTarget::ui_held_element_ids,
+				state_->previousInteractionSnapshot.heldElementIds.size());
+			devSystems::append_capacity_demand(sink, InitialCapacityTarget::ui_held_element_ids,
+											   state_->currentInteractionSnapshot.heldElementIds,
+											   state_->capacity_demand, window_);
+			state_->capacity_demand.record(
+				InitialCapacityTarget::ui_released_element_ids,
+				state_->previousInteractionSnapshot.releasedElementIds.size());
+			devSystems::append_capacity_demand(
+				sink, InitialCapacityTarget::ui_released_element_ids,
+				state_->currentInteractionSnapshot.releasedElementIds, state_->capacity_demand,
+				window_);
+
 			memory.liveBytes += state_->textLayoutService.cacheBytes();
-			memory.capacityBytes += state_->textLayoutService.cacheBytes();
+			memory.capacityBytes += state_->textLayoutService.cache_backing_bytes();
 			memory.objectCount += state_->textLayoutService.cacheEntryCount();
-			memory.capacityCount += detail::text::TextLayoutService::MaxCacheEntries;
+			memory.capacityCount += state_->textLayoutService.cache_entry_capacity();
 			memory.liveBytes += state_->flowRootIdTracker.retainedBytesForDev();
 			memory.capacityBytes += state_->flowRootIdTracker.retainedBytesForDev();
 			memory.liveBytes += state_->clayBridgeIdTracker.retainedBytesForDev();
@@ -106,13 +157,20 @@ namespace FlowUi
 	}
 #endif
 
-	manager_storage::UiManagerState::UiManagerState(
-		storage::IStorageSystem& storageSystem,
-		WindowId window,
-		const AppConfig& appConfig)
+	manager_storage::UiManagerState::UiManagerState(storage::IStorageSystem& storageSystem,
+													WindowId window, const AppConfig& appConfig)
 		: storage(&storageSystem)
 #if FLOW_UI_DEV_MODE
-		, devTreeCapture(appConfig.dev.tooling.treeCapture)
+		  ,
+		  devTreeCapture(appConfig.dev.tooling.treeCapture,
+						 [&] {
+							 InitialMemoryCapacities capacities;
+							 for (const auto& setting : appConfig.memoryCapacityProfile.settings)
+								 if (const auto* definition = find_initial_capacity(setting.target))
+									 capacities.values[static_cast<size_t>(definition->target)] =
+										 setting.value;
+							 return capacities;
+						 }())
 #endif
 	{
 		const size_t minimumClayArenaCapacityBytes = static_cast<size_t>(Clay_MinMemorySize());
@@ -151,8 +209,42 @@ namespace FlowUi
 			pointsToPixelsScale = configuredDpi / kPointsPerInch;
 		}
 		inputManagerConfig = appConfig.ui.inputManager;
-		flowScopes.reserve(32);
-		constructedElementStack.reserve(16);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+		capacity_demand.bind(storageSystem.memory_demand_control());
+		flowScopes.bind_memory_demand(storageSystem.memory_demand_control());
+		textLayoutService.bind_memory_demand(storageSystem.memory_demand_control());
+		devTreeCapture.bind_memory_demand(storageSystem.memory_demand_control());
+#endif
+		flowScopes.reserve(
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_flow_scope_depth));
+		detail::reserve_initial_capacity(
+			currentInteractionSnapshot.hoveredElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_hovered_element_ids));
+		detail::reserve_initial_capacity(
+			currentInteractionSnapshot.pressedElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_pressed_element_ids));
+		detail::reserve_initial_capacity(
+			currentInteractionSnapshot.heldElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_held_element_ids));
+		detail::reserve_initial_capacity(
+			currentInteractionSnapshot.releasedElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_released_element_ids));
+		detail::reserve_initial_capacity(
+			previousInteractionSnapshot.hoveredElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_hovered_element_ids));
+		detail::reserve_initial_capacity(
+			previousInteractionSnapshot.pressedElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_pressed_element_ids));
+		detail::reserve_initial_capacity(
+			previousInteractionSnapshot.heldElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_held_element_ids));
+		detail::reserve_initial_capacity(
+			previousInteractionSnapshot.releasedElementIds,
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_released_element_ids));
+		constructedElementStack.reserve(
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_constructed_depth));
+		textLayoutService.reserve_initial_entries(
+			storageSystem.initial_memory_capacity(InitialCapacityTarget::ui_text_cache));
 #if FLOW_UI_DEV_MODE
 		devToolsConfig = appConfig.dev;
 #endif
@@ -471,6 +563,9 @@ namespace FlowUi
 											: Clay_Vector2{frameInput.scrollX, frameInput.scrollY},
 										static_cast<float>(frameInput.dt));
 		}
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::ui_constructed_depth,
+									state_->constructedElementStack.size());
 		state_->constructedElementStack.clear();
 		state_->flowScopes.beginFrame();
 #if FLOW_UI_DEV_MODE
@@ -1134,6 +1229,9 @@ namespace devMode::elementCapture {
 			manager_storage::ConstructedElementFrame frame =
 				std::move(state_->constructedElementStack.back());
 			Clay__CloseElement();
+			FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+										InitialCapacityTarget::ui_constructed_depth,
+										state_->constructedElementStack.size());
 			state_->constructedElementStack.pop_back();
 			restoreFlowScope(frame.priorFlowScopeDepth);
 #if FLOW_UI_DEV_MODE
@@ -1202,9 +1300,21 @@ namespace devMode::elementCapture {
 
 	void UiManager::advanceFrameInteractionSnapshots() {
 		std::swap(state_->previousInteractionSnapshot, state_->currentInteractionSnapshot);
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::ui_hovered_element_ids,
+									state_->currentInteractionSnapshot.hoveredElementIds.size());
 		state_->currentInteractionSnapshot.hoveredElementIds.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::ui_pressed_element_ids,
+									state_->currentInteractionSnapshot.pressedElementIds.size());
 		state_->currentInteractionSnapshot.pressedElementIds.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::ui_held_element_ids,
+									state_->currentInteractionSnapshot.heldElementIds.size());
 		state_->currentInteractionSnapshot.heldElementIds.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::ui_released_element_ids,
+									state_->currentInteractionSnapshot.releasedElementIds.size());
 		state_->currentInteractionSnapshot.releasedElementIds.clear();
 	}
 
@@ -1215,6 +1325,9 @@ namespace devMode::elementCapture {
 			frame.subtreeTiming.end(devSystems::TimingRecordFlag::Canceled);
 		}
 #endif
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::ui_constructed_depth,
+									state_->constructedElementStack.size());
 		state_->constructedElementStack.clear();
 		state_->flowScopes.cancelFrame();
 		popupManager_.cancelFrame();

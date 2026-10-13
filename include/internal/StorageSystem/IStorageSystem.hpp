@@ -17,9 +17,21 @@ public:
 
 	virtual void initialize(const StorageConfig& config) = 0;
 	virtual void shutdown() noexcept = 0;
+	/** Startup reserve hint. Alternate storage implementations retain library defaults. */
+	[[nodiscard]] virtual uint64_t
+	initial_memory_capacity(FlowUi::InitialCapacityTarget target) const noexcept {
+		return FlowUi::InitialMemoryCapacities{}.get(target);
+	}
 	[[nodiscard]] virtual uint32_t interfaceVersion() const noexcept = 0;
 	[[nodiscard]] virtual uint64_t capabilities() const noexcept = 0;
 
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	/** Optional application-owned runtime demand gate. */
+	[[nodiscard]] virtual const ::FlowUi::detail::MemoryDemandControl*
+	memory_demand_control() const noexcept {
+		return nullptr;
+	}
+#endif
 	virtual void registerWindow(WindowId id, const WindowStorageDesc& desc) = 0;
 	virtual void unregisterWindow(WindowId id, SubmissionSerial lastUse) = 0;
 	[[nodiscard]] virtual FrameToken beginFrame(WindowId id, const FrameStorageDesc& desc) = 0;

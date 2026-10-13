@@ -2,13 +2,20 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/App.hpp"
-#include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/MemoryCapacityProfile.hpp"
+#include "internal/InitialMemoryCapacity.hpp"
+#include "internal/MemoryDemandPeaks.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#endif
 #include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/PublicStructs.hpp"
+#include "devSystems/devTooling/bake/DevBakedChanges.hpp"
+#include "managers/ActionManager.hpp"
+#include "managers/ElementManager.hpp"
 #include "managers/FontManager.hpp"
 #include "managers/ImageManager.hpp"
 #include "managers/ThemeManager.hpp"
-#include "managers/ElementManager.hpp"
-#include "managers/ActionManager.hpp"
 #if COMPILE_FSELI
 #include "FSEL/Theme.hpp"
 #include "FSEL/StandardIcons.hpp"
@@ -834,6 +841,9 @@ struct App::Impl {
 		ManagedWindowFlags flags{};
 	};
 	std::vector<ManagedWindowEntry> managedWindows;
+	std::vector<WindowId> dispatch_order;
+	bool dispatching_managed_windows = false;
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	WindowId mainWindowId = MainWindowId;
 	WindowId nextWindowId = MainWindowId + 1;
 	WindowId activeWindowFrame = InvalidWindowId;
@@ -867,6 +877,16 @@ struct App::Impl {
 	}
 
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	static void sample_app_memory(const void* owner,
+								  devSystems::MemoryProbeContext& context) noexcept {
+		const auto& app = *static_cast<const Impl*>(owner);
+		devSystems::append_capacity_demand(context.sink, InitialCapacityTarget::app_windows,
+										   app.windows, app.capacity_demand);
+		devSystems::append_capacity_demand(context.sink, InitialCapacityTarget::app_managed,
+										   app.managedWindows, app.capacity_demand);
+		devSystems::append_capacity_demand(context.sink, InitialCapacityTarget::app_dispatch,
+										   app.dispatch_order, app.capacity_demand);
+	}
 	static void sampleElementMemory(const void* owner, devSystems::MemoryProbeContext& context) noexcept {
 		static_cast<const ElementManager*>(owner)->appendDevMemorySamples(context.sink);
 	}
@@ -897,6 +917,10 @@ struct App::Impl {
 	}
 	void registerAppMemoryProbes() {
 		auto& memory = devMonitoring.memory();
+		(void)memory.registerProbe(
+			{initial_capacity_definitions[static_cast<size_t>(InitialCapacityTarget::app_windows)]
+				 .id(),
+			 this, &sample_app_memory});
 		(void)memory.registerProbe({devSystems::memory_sources::kElements.id, &elementManager, &sampleElementMemory});
 		(void)memory.registerProbe({devSystems::memory_sources::kFonts.id, &fonts, &sampleFontMemory});
 #if FLOWUI_INCLUDE_ICON_MANAGER
@@ -1064,7 +1088,17 @@ struct App::Impl {
 
 		storageSystem = std::make_unique<storage::FlowStorageSystem>(vk);
 		storageConfig = makeStorageConfig(config);
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+		storageConfig.memory_demand_control = devMonitoring.memory().demand_control();
+		capacity_demand.bind(storageConfig.memory_demand_control);
+#endif
 		storageSystem->initialize(storageConfig);
+		detail::reserve_initial_capacity(
+			windows, storageSystem->initial_memory_capacity(InitialCapacityTarget::app_windows));
+		detail::reserve_initial_capacity(managedWindows, storageSystem->initial_memory_capacity(
+															 InitialCapacityTarget::app_managed));
+		detail::reserve_initial_capacity(dispatch_order, storageSystem->initial_memory_capacity(
+															 InitialCapacityTarget::app_dispatch));
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 1
 		devMonitoring.memory().setStorageSystem(storageSystem.get());
 #endif
@@ -2577,8 +2611,18 @@ Status App::dispatchManagedWindows() {
 		return unexpectedError(exception.error());
 	}
 
-	std::vector<WindowId> dispatchOrder;
-	dispatchOrder.reserve(impl_->managedWindows.size());
+	std::vector<WindowId> recursive_dispatch_order;
+	const bool recursive = impl_->dispatching_managed_windows;
+	struct DispatchScope {
+		bool& active;
+		bool previous;
+		~DispatchScope() { active = previous; }
+	} dispatch_scope{impl_->dispatching_managed_windows,
+					 std::exchange(impl_->dispatching_managed_windows, true)};
+	auto& dispatchOrder = recursive ? recursive_dispatch_order : impl_->dispatch_order;
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand, InitialCapacityTarget::app_dispatch,
+								dispatchOrder.size());
+	dispatchOrder.clear();
 	for (const Impl::ManagedWindowEntry& entry : impl_->managedWindows) {
 		dispatchOrder.push_back(entry.id);
 	}
@@ -3176,7 +3220,40 @@ std::pair<int, int> App::framebufferSize(WindowId id) const {
 
 App makeApplication(const AppConfig& cfg) {
 	App app;
-	app.impl_ = std::make_unique<App::Impl>(cfg);
+	AppConfig effective_config = cfg;
+	const bool use_baked = cfg.prefer_baked_capacities && baked::has_baked_memory_capacity();
+	auto resolved = resolve_memory_capacity_profile(
+		cfg.memoryCapacityProfile, use_baked ? baked::baked_memory_capacity_settings()
+											 : std::span<const MemoryCapacitySetting>{});
+	if (!resolved)
+		throw FlowUiException(resolved.error());
+	effective_config.memoryCapacityProfile = std::move(*resolved);
+#if FLOW_UI_HAS_BAKED_CHANGES && __has_include("FlowUiBakedChanges.hpp")
+	if (use_baked)
+		baked::apply_baked_memory_policy(effective_config.memoryCapacityProfile);
+#endif
+#if FLOW_UI_DEV_MODE
+	for (const auto& setting : effective_config.memoryCapacityProfile.settings) {
+		const auto* definition = find_initial_capacity(setting.target);
+		const auto value = setting.value ? setting.value : definition->default_value;
+		switch (definition->target) {
+		case InitialCapacityTarget::development_tree_flow_nodes:
+			effective_config.dev.tooling.treeCapture.flowNodeReserve = static_cast<uint32_t>(value);
+			break;
+		case InitialCapacityTarget::development_tree_strings:
+			effective_config.dev.tooling.treeCapture.stringByteReserve =
+				static_cast<uint32_t>(value);
+			break;
+		case InitialCapacityTarget::development_tree_diagnostics:
+			effective_config.dev.tooling.treeCapture.diagnosticReserve =
+				static_cast<uint32_t>(value);
+			break;
+		default:
+			break;
+		}
+	}
+#endif
+	app.impl_ = std::make_unique<App::Impl>(effective_config);
 #if FLOW_UI_DEV_MODE
 	FLOWUI_DEV_TIMING_ZONE(
 		app.impl_->timingRecorder(), devSystems::TimingCategory::Lifecycle,

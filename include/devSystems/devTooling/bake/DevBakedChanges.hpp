@@ -2,6 +2,22 @@
 
 #include "FlowUi/BuildConfig.hpp"
 
+#include "FlowUi/PublicStructs.hpp"
+#include <span>
+
+#if !FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUiBakedChanges.hpp")
+namespace FlowUi::baked {
+/** No compiled capacity payload in this build. */
+[[nodiscard]] constexpr bool has_baked_memory_capacity() noexcept {
+	return false;
+}
+[[nodiscard]] inline std::span<const MemoryCapacitySetting>
+baked_memory_capacity_settings() noexcept {
+	return {};
+}
+} // namespace FlowUi::baked
+#endif
+
 #if FLOW_UI_HAS_BAKED_CHANGES
 
 #include <memory>

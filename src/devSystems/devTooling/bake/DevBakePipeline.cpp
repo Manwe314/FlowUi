@@ -144,6 +144,8 @@ private:
 			if (!parseString(name) || !consume(':')) return false;
 			JsonValue value;
 			if (!parseValue(value)) return false;
+			if (output.find(name))
+				return false;
 			output.object.emplace_back(std::move(name), std::move(value));
 			if (consume('}')) return true;
 			if (!consume(',')) return false;
@@ -491,8 +493,20 @@ bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, 
 	JsonValue root;
 	if (!JsonParser(contents).parse(root) || root.kind != JsonValue::Kind::Object) return false;
 	const JsonValue* version = root.find("manifestVersion");
-	if (!version || version->kind != JsonValue::Kind::Number || version->text != "1") return false;
+	if (!version || version->kind != JsonValue::Kind::Number ||
+		(version->text != "1" && version->text != "2"))
+		return false;
 	manifest = {};
+	manifest.manifestVersion = version->text == "1" ? 1 : 2;
+	if (const auto* memory = root.find("memoryCapacity")) {
+		if (manifest.manifestVersion != 2)
+			return false;
+		FlowUi::MemoryCapacityManifest decoded;
+		std::string error;
+		if (!FlowUi::decode_memory_capacity_manifest(*memory, decoded, error))
+			return false;
+		manifest.memoryCapacity = std::move(decoded);
+	}
 	if (const auto fingerprint = stringMember(root, "schemaFingerprint")) {
 		if (!parseHex(*fingerprint, manifest.schemaFingerprint)) return false;
 	}
@@ -509,7 +523,9 @@ bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, 
 }
 
 std::string encodeManifest(const DevBakeManifest& manifest) {
-	std::string output = "{\n  \"manifestVersion\": 1,\n  \"schemaFingerprint\": ";
+	std::string output = "{\n  \"manifestVersion\": " +
+						 std::to_string(manifest.memoryCapacity ? 2 : manifest.manifestVersion) +
+						 ",\n  \"schemaFingerprint\": ";
 	appendEscaped(output, hex64(manifest.schemaFingerprint));
 	output += ",\n  \"buildFingerprint\": "; appendEscaped(output, manifest.buildFingerprint);
 	output += ",\n  \"createdTimestamp\": "; appendEscaped(output, manifest.createdTimestamp);
@@ -546,7 +562,11 @@ std::string encodeManifest(const DevBakeManifest& manifest) {
 		output += "}\n    }";
 	}
 	if (!manifest.entries.empty()) output += '\n';
-	output += "  ]\n}\n";
+	output += "  ]";
+	if (manifest.memoryCapacity)
+		output += ",\n  \"memoryCapacity\": " +
+				  FlowUi::encode_memory_capacity_manifest(*manifest.memoryCapacity);
+	output += "\n}\n";
 	return output;
 }
 
@@ -560,14 +580,17 @@ bool writeAtomically(const std::filesystem::path& destination, std::string_view 
 		std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
 		if (!output) return false;
 		output.write(contents.data(), static_cast<std::streamsize>(contents.size()));
+		output.flush();
 		if (!output) return false;
+		output.close();
+		if (output.fail())
+			return false;
 	}
 	std::filesystem::rename(temporary, destination, error);
 	if (!error) return true;
-	std::filesystem::remove(destination, error);
-	error.clear();
-	std::filesystem::rename(temporary, destination, error);
-	return !error;
+	std::error_code cleanup_error;
+	std::filesystem::remove(temporary, cleanup_error);
+	return false;
 }
 
 } // namespace
@@ -596,6 +619,86 @@ void DevBakePipeline::setManifestPath(std::filesystem::path path) {
 	}
 }
 
+DevCommandResult
+DevBakePipeline::save_memory_capacities(const FlowUi::MemoryCapacityManifest& selections,
+										std::span<const std::string_view> removed,
+										const std::filesystem::path& review_path) noexcept {
+	status_ = {};
+	try {
+		std::string diagnostic;
+		if (!FlowUi::validate_memory_capacity_manifest(selections, diagnostic)) {
+			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid, diagnostic});
+			return {.status = DevCommandStatus::BakeManifestInvalid};
+		}
+		bool existed = false;
+		DevBakeManifest updated;
+		if (!loadManifest(manifestPath_, updated, existed)) {
+			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid,
+											   "Invalid manifest: " + manifestPath_.string()});
+			return {.status = DevCommandStatus::BakeManifestInvalid};
+		}
+		if (!updated.memoryCapacity)
+			updated.memoryCapacity.emplace();
+		auto& section = *updated.memoryCapacity;
+		section.enabled = selections.enabled;
+		if (selections.growth_factor)
+			section.growth_factor = selections.growth_factor;
+		if (selections.allow_runtime_growth)
+			section.allow_runtime_growth = selections.allow_runtime_growth;
+		for (const auto key : removed) {
+			const auto* definition =
+				FlowUi::find_initial_capacity(FlowUi::memory_capacity_target_id(key));
+			if (!definition || definition->key != key) {
+				status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid,
+												   "Unknown remove target: " + std::string(key)});
+				return {.status = DevCommandStatus::BakeManifestInvalid};
+			}
+			std::erase_if(section.targets, [&](const auto& target) { return target.key == key; });
+		}
+		for (const auto& target : selections.targets) {
+			const auto found =
+				std::find_if(section.targets.begin(), section.targets.end(),
+							 [&](const auto& current) { return current.key == target.key; });
+			if (found == section.targets.end())
+				section.targets.emplace_back(target);
+			else
+				*found = target;
+		}
+		if (!FlowUi::validate_memory_capacity_manifest(section, diagnostic)) {
+			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid, diagnostic});
+			return {.status = DevCommandStatus::BakeManifestInvalid};
+		}
+		updated.manifestVersion = 2;
+		updated.createdTimestamp = nowUtc();
+		const auto& destination = review_path.empty() ? manifestPath_ : review_path;
+		if (!writeAtomically(destination, encodeManifest(updated))) {
+			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestWriteFailed,
+											   "Cannot replace manifest: " + destination.string()});
+			return {.status = DevCommandStatus::BakeWriteFailed};
+		}
+		if (review_path.empty())
+			manifest_ = std::move(updated);
+		return {.status = DevCommandStatus::Applied, .applied = true};
+	} catch (...) {
+		return {.status = DevCommandStatus::BakeWriteFailed};
+	}
+}
+DevCommandResult DevBakePipeline::reset_memory_capacities() noexcept {
+	try {
+		bool existed = false;
+		DevBakeManifest updated;
+		if (!loadManifest(manifestPath_, updated, existed))
+			return {.status = DevCommandStatus::BakeManifestInvalid};
+		updated.memoryCapacity.reset();
+		if (!writeAtomically(manifestPath_, encodeManifest(updated)))
+			return {.status = DevCommandStatus::BakeWriteFailed};
+		manifest_ = std::move(updated);
+		return {.status = DevCommandStatus::Applied, .applied = true};
+	} catch (...) {
+		return {.status = DevCommandStatus::BakeWriteFailed};
+	}
+}
+
 DevCommandResult DevBakePipeline::bake() noexcept {
 	status_ = {};
 	try {
@@ -619,7 +722,7 @@ DevCommandResult DevBakePipeline::bake() noexcept {
 				DevBakeDiagnosticCode::ManifestInvalid,
 				"Stale baked entries were ignored because the developer schema fingerprint changed."});
 		}
-		updated.manifestVersion = kManifestVersion;
+		updated.manifestVersion = updated.memoryCapacity ? 2u : kManifestVersion;
 		updated.schemaFingerprint = schema->fingerprint;
 		updated.buildFingerprint = FLOWUI_BAKE_BUILD_FINGERPRINT;
 		updated.createdTimestamp = nowUtc();

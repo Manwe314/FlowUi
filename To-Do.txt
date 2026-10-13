@@ -140,6 +140,7 @@ things i want to do:
 	- Dev Mode Tooling to auto Train PGO.
 	- CancelFrame silently catches. cleanUp Falure operations need strengthening.
 	[Done]- Upgrade Flow_Color
+	- Add Pre Rasterized Icon Atlas Export For immediate recompile and re use.
 	- AA Pass
 		- Configurations for Primitives AA
 		- correct SDF AA qued edge boundry collision
@@ -166,6 +167,8 @@ things i want to do:
 			-	bettter highlighting legend?
 	- DevTimelines
 		- double check probe level selection and compilation.
+	- DevMonitoring and DevTooling
+		- move Memory capacity targets and json orchestration from FlowUi namespace to internal or detail
 		
 
 

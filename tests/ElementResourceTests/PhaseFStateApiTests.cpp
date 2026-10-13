@@ -1,6 +1,7 @@
 #include "TestHarness.hpp"
 
 #include <concepts>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -34,6 +35,7 @@ struct StatelessDefinition {
 	using Parameters = ::Parameters;
 	using BuildContext = FlowUi::ElementBuildContext<StatelessDefinition>;
 	using InteractionContext = FlowUi::ElementInteractionContext<StatelessDefinition>;
+	static constexpr std::string_view debugName = "phase-f/stateless";
 	static constexpr FlowUi::FlowDefinitionID definitionId =
 		FlowUi::DefinitionID("flowui/tests/phase-f/stateless");
 	static void buildElement(BuildContext&) {}
@@ -41,6 +43,15 @@ struct StatelessDefinition {
 
 inline constexpr StatefulDefinition kStatefulElement{};
 inline constexpr StatelessDefinition kStatelessElement{};
+struct EmptyDebugName {
+	static constexpr std::string_view debugName{};
+};
+static_assert(FlowUi::detail::elementDebugName<EmptyDebugName>() ==
+	FlowUi::detail::typeToken<EmptyDebugName>());
+static_assert(FlowUi::detail::element::elementDescriptor<StatefulDefinition>.debugName ==
+	FlowUi::detail::typeToken<StatefulDefinition>());
+static_assert(FlowUi::detail::element::elementDescriptor<StatelessDefinition>.debugName ==
+	StatelessDefinition::debugName);
 inline constexpr FlowUi::FlowElementID kStatefulInstance =
 	FlowUi::detail::element_id::resolveLocal(
 		FlowUi::RootFlowScopeID,

@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <cstdint>
 #include <deque>
@@ -84,6 +85,7 @@ public:
 #endif
 	void refreshBorrowedAtlas();
 
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	storage::IStorageSystem* storage = nullptr;
 	uint64_t catalogRevision = 1;
 	uint32_t atlasSizeHint = 0;

@@ -28,16 +28,24 @@ uint64_t capacityBytes(const Vector& value) noexcept {
 
 } // namespace
 
-DevTreeCapture::DevTreeCapture(DevTreeCaptureConfig config) : config_(config) {
+DevTreeCapture::DevTreeCapture(DevTreeCaptureConfig config,
+							   const InitialMemoryCapacities& capacities)
+	: config_(config) {
 	building_.flow.nodes.reserve(config_.flowNodeReserve);
-	building_.flow.roots.reserve(config_.flowNodeReserve / 4u);
+	building_.flow.roots.reserve(
+		capacities.values[static_cast<size_t>(InitialCapacityTarget::development_tree_flow_roots)]
+			? capacities.get(InitialCapacityTarget::development_tree_flow_roots)
+			: config_.flowNodeReserve / 4u);
 	building_.strings.reserve(config_.stringByteReserve);
 	building_.diagnostics.reserve(config_.diagnosticReserve);
 	published_.flow.nodes.reserve(config_.flowNodeReserve);
-	published_.flow.roots.reserve(config_.flowNodeReserve / 4u);
+	published_.flow.roots.reserve(
+		capacities.values[static_cast<size_t>(InitialCapacityTarget::development_tree_flow_roots)]
+			? capacities.get(InitialCapacityTarget::development_tree_flow_roots)
+			: config_.flowNodeReserve / 4u);
 	published_.strings.reserve(config_.stringByteReserve);
 	published_.diagnostics.reserve(config_.diagnosticReserve);
-	activeFlowScopes_.reserve(64);
+	activeFlowScopes_.reserve(capacities.get(InitialCapacityTarget::development_tree_active_depth));
 	lastFlowChild_.reserve(config_.flowNodeReserve);
 #if FLOW_UI_DEV_CAPTURE_CLAY
 	building_.flow.directClayNodes.reserve(config_.directLinkReserve);
@@ -60,6 +68,18 @@ DevTreeCapture::DevTreeCapture(DevTreeCaptureConfig config) : config_(config) {
 }
 
 void DevTreeCapture::clearSnapshot(DevTreeSnapshot& snapshot) noexcept {
+	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+								InitialCapacityTarget::development_tree_flow_nodes,
+								snapshot.flow.nodes.size());
+	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+								InitialCapacityTarget::development_tree_flow_roots,
+								snapshot.flow.roots.size());
+	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_, InitialCapacityTarget::development_tree_strings,
+								snapshot.strings.size());
+	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+								InitialCapacityTarget::development_tree_diagnostics,
+								snapshot.diagnostics.size());
+
 	clearRetained(snapshot.flow.nodes);
 	clearRetained(snapshot.flow.roots);
 #if FLOW_UI_DEV_CAPTURE_CLAY
@@ -185,6 +205,9 @@ void DevTreeCapture::endFlow(Token token, bool autoClosed) noexcept {
 		if (found == activeFlowScopes_.rend()) return;
 		while (!activeFlowScopes_.empty() && activeFlowScopes_.back().token.scopeId != token.scopeId) {
 			const ActiveFlowCapture dangling = activeFlowScopes_.back();
+			FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+										InitialCapacityTarget::development_tree_active_depth,
+										activeFlowScopes_.size());
 			activeFlowScopes_.pop_back();
 			if (!dangling.suppressed && dangling.token.node < building_.flow.nodes.size()) {
 				DevFlowNode& node = building_.flow.nodes[dangling.token.node];
@@ -198,6 +221,9 @@ void DevTreeCapture::endFlow(Token token, bool autoClosed) noexcept {
 	}
 	if (activeFlowScopes_.empty()) return;
 	const ActiveFlowCapture active = activeFlowScopes_.back();
+	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+								InitialCapacityTarget::development_tree_active_depth,
+								activeFlowScopes_.size());
 	activeFlowScopes_.pop_back();
 	if (active.suppressed || active.token.node >= building_.flow.nodes.size()) return;
 	DevFlowNode& node = building_.flow.nodes[active.token.node];
@@ -268,6 +294,9 @@ void DevTreeCapture::finishAfterLayout() noexcept {
 	if (!frameActive_) return;
 	while (!activeFlowScopes_.empty()) {
 		const ActiveFlowCapture active = activeFlowScopes_.back();
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::development_tree_active_depth,
+									activeFlowScopes_.size());
 		activeFlowScopes_.pop_back();
 		if (active.suppressed || active.token.node >= building_.flow.nodes.size()) continue;
 		DevFlowNode& node = building_.flow.nodes[active.token.node];
@@ -689,6 +718,28 @@ void DevTreeCapture::resolveAndValidateFlowRoots() {
 void DevTreeCapture::appendDevMemorySamples(MemorySampleSink& sink) const noexcept {
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
 	try {
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::development_tree_flow_nodes,
+									building_.flow.nodes.size());
+		append_capacity_demand(sink, InitialCapacityTarget::development_tree_flow_nodes,
+							   published_.flow.nodes, capacity_demand_, published_.window);
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::development_tree_flow_roots,
+									building_.flow.roots.size());
+		append_capacity_demand(sink, InitialCapacityTarget::development_tree_flow_roots,
+							   published_.flow.roots, capacity_demand_, published_.window);
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::development_tree_strings,
+									building_.strings.size());
+		append_capacity_demand(sink, InitialCapacityTarget::development_tree_strings,
+							   published_.strings, capacity_demand_, published_.window);
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									InitialCapacityTarget::development_tree_diagnostics,
+									building_.diagnostics.size());
+		append_capacity_demand(sink, InitialCapacityTarget::development_tree_diagnostics,
+							   published_.diagnostics, capacity_demand_, published_.window);
+		append_capacity_demand(sink, InitialCapacityTarget::development_tree_active_depth,
+							   activeFlowScopes_, capacity_demand_, published_.window);
 		DevContainerMemoryAccumulator memory{};
 		const auto addSnapshot = [&](const DevTreeSnapshot& value) {
 			memory.add(value.flow.nodes);

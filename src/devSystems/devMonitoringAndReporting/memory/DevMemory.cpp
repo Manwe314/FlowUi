@@ -37,6 +37,7 @@ struct DevMemory::Impl {
 	}
 
 	mutable std::mutex mutex{};
+	::FlowUi::detail::MemoryDemandControl demand_control{};
 	DevMemoryConfig config{};
 	DevMemoryRecorder recorder;
 	std::unordered_map<MemorySourceId, MemorySourceDescriptor> descriptors{};
@@ -51,18 +52,49 @@ struct DevMemory::Impl {
 
 DevMemory::DevMemory(DevMemoryConfig config)
 	: impl_(std::make_unique<Impl>(config)) {
+	impl_->demand_control.enabled.store(
+		impl_->config.level >= MemoryMonitoringLevel::SubsystemCapacity, std::memory_order_relaxed);
 	for (const auto& source : memory_sources::kAll) (void)registerSource(source);
-	for (auto& target : memory_sources::tuningTargets()) (void)registerTuningTarget(target);
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	for (const auto& definition : initial_capacity_definitions) {
+		if (!definition.storage_member.empty())
+			continue;
+		const std::string label = std::string(definition.key) + " (probe interval maximum; " +
+								  std::string(definition.scope) + ")";
+		(void)registerSource(StaticMemorySourceDescriptor{
+			.name = label,
+			.id = definition.id(),
+			.parent = memory_sources::initial_capacity_parent(definition),
+			.tuningTarget = definition.id(),
+			.domain = definition.key.starts_with("flowui.tuning.storage.") ||
+							  definition.key.starts_with("flowui.tuning.allocator.")
+						  ? MemoryDomain::StorageCpu
+						  : MemoryDomain::ManagerCpu,
+			.kind = MemorySourceKind::Container,
+			.accuracy = MemoryAccuracy::Estimate});
+	}
+#endif
+	for (auto& target : memory_sources::tuningTargets())
+		(void)registerTuningTarget(target);
 }
 
 DevMemory::~DevMemory() = default;
 
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+const ::FlowUi::detail::MemoryDemandControl* DevMemory::demand_control() const noexcept {
+	return &impl_->demand_control;
+}
+#endif
 void DevMemory::setConfig(const DevMemoryConfig& config) noexcept {
 	std::scoped_lock lock(impl_->mutex);
 	DevMemoryConfig normalized = normalizeConfig(config);
 	// Producer capacity is fixed at construction so recording never reallocates.
 	normalized.producerEventCapacity = impl_->recorder.capacity();
 	impl_->config = normalized;
+	const bool demand_enabled = normalized.level >= MemoryMonitoringLevel::SubsystemCapacity;
+	if (impl_->demand_control.enabled.exchange(demand_enabled, std::memory_order_relaxed) !=
+		demand_enabled)
+		impl_->demand_control.generation.fetch_add(1, std::memory_order_relaxed);
 	impl_->recorder.setLevel(normalized.level);
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
 	impl_->environment.setConfig(normalized);

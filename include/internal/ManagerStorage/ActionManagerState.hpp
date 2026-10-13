@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <unordered_map>
 #include <vector>
@@ -9,6 +10,7 @@
 namespace FlowUi::detail::manager_storage {
 
 struct ActionManagerState {
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	std::unordered_map<
 		AppActionID,
 		storage::PersistentRecordHandle,

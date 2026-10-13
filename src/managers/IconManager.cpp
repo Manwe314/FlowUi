@@ -1,5 +1,6 @@
-#include "FlowUi/Resources.hpp"
 #include "managers/IconManager.hpp"
+#include "FlowUi/Resources.hpp"
+#include "internal/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevExternalMemoryScope.hpp"
@@ -94,6 +95,23 @@ bool IconManager::visitDevAtlases(void* userData, DevAtlasVisitor visitor) const
 void IconManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!controller_) return;
 	try {
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::icons_documents,
+										   controller_->documentsByKey,
+										   controller_->capacity_demand);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::icons_requests,
+										   controller_->requestTextureByKey,
+										   controller_->capacity_demand);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::icons_reverse_lookup,
+										   controller_->requestedKeyByTexture,
+										   controller_->capacity_demand);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::icons_variants,
+										   controller_->variantsByKeyAndSize,
+										   controller_->capacity_demand);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::icons_pages,
+										   controller_->atlasPages, controller_->capacity_demand);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::icons_retired_regions,
+										   controller_->retiredRegions,
+										   controller_->capacity_demand);
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.addNodeContainer(controller_->documentsByKey);
 		memory.addNodeContainer(controller_->requestTextureByKey);
@@ -101,6 +119,19 @@ void IconManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) con
 		memory.addNodeContainer(controller_->variantsByKeyAndSize);
 		memory.add(controller_->atlasPages);
 		memory.add(controller_->retiredRegions);
+		for (const auto& page : controller_->atlasPages)
+			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
+										InitialCapacityTarget::icons_free_rectangles,
+										page.freeRects.size());
+		(void)sink.append(devSystems::MemoryValueSample{
+			.source =
+				initial_capacity_definitions[static_cast<size_t>(
+												 InitialCapacityTarget::icons_free_rectangles)]
+					.id(),
+			.objectCount = controller_->capacity_demand.consume(
+				InitialCapacityTarget::icons_free_rectangles, 0),
+			.flags = devSystems::MemorySampleFlag::TuningAggregate,
+			.value_fields = uint16_t(devSystems::MemoryValueField::Objects)});
 		for (const auto& [key, _] : controller_->documentsByKey) memory.add(key);
 		for (const auto& [key, _] : controller_->requestTextureByKey) memory.add(key);
 		for (const auto& [_, key] : controller_->requestedKeyByTexture) memory.add(key);
@@ -228,6 +259,9 @@ IconManager::AtlasPage IconManager::createAtlasPage(uint32_t pageIndex) const
 	}
 
 	AtlasPage page{};
+	detail::reserve_initial_capacity(
+		page.freeRects,
+		storage_->initial_memory_capacity(InitialCapacityTarget::icons_free_rectangles));
 	page.width = std::max<uint32_t>(1u, controller_->atlasSize);
 	page.height = std::max<uint32_t>(1u, controller_->atlasSize);
 	page.freeRects.emplace_back(AtlasRect{
@@ -286,6 +320,8 @@ void IconManager::destroyAtlasPages() {
 	for (AtlasPage& page : controller_->atlasPages) {
 		destroyAtlasPage(page);
 	}
+	FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand, InitialCapacityTarget::icons_pages,
+								controller_->atlasPages.size());
 	controller_->atlasPages.clear();
 }
 
@@ -564,6 +600,8 @@ bool IconManager::evictLeastRecentlyUsedVariant() {
 	const VariantEntry victim = victimIt->second;
 	storage_->releaseAnonymousTexture(victim.texture);
 	controller_->retiredRegions.push_back({victim.texture, victim.pageIndex, victim.paddedRect});
+	FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand, InitialCapacityTarget::icons_variants,
+								controller_->variantsByKeyAndSize.size());
 	controller_->variantsByKeyAndSize.erase(victimIt);
 	storage_->noteManagerMutation(InvalidWindowId);
 	return true;
@@ -814,6 +852,27 @@ void IconManager::init(
 		destroy();
 		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::IconManagerInitialize));
 	}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	controller_->capacity_demand.bind(storageSystem.memory_demand_control());
+#endif
+	detail::reserve_initial_capacity(
+		controller_->documentsByKey,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::icons_documents));
+	detail::reserve_initial_capacity(
+		controller_->requestTextureByKey,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::icons_requests));
+	detail::reserve_initial_capacity(
+		controller_->requestedKeyByTexture,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::icons_reverse_lookup));
+	detail::reserve_initial_capacity(
+		controller_->variantsByKeyAndSize,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::icons_variants));
+	detail::reserve_initial_capacity(
+		controller_->atlasPages,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::icons_pages));
+	detail::reserve_initial_capacity(
+		controller_->retiredRegions,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::icons_retired_regions));
 	try {
 		controller_->atlasPages.push_back(createAtlasPage(0u));
 	} catch (...) {
@@ -959,7 +1018,13 @@ Result<bool> IconManager::remove(ResourceKey key) {
 	const auto requestIdIt = controller_->requestTextureByKey.find(keyString);
 	if (requestIdIt != controller_->requestTextureByKey.end()) {
 		(void)storage_->removeTexture(normalized);
+		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
+									InitialCapacityTarget::icons_reverse_lookup,
+									controller_->requestedKeyByTexture.size());
 		controller_->requestedKeyByTexture.erase(requestIdIt->second.packed());
+		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
+									InitialCapacityTarget::icons_requests,
+									controller_->requestTextureByKey.size());
 		controller_->requestTextureByKey.erase(requestIdIt);
 	}
 
@@ -977,6 +1042,9 @@ Result<bool> IconManager::remove(ResourceKey key) {
 
 	plutosvg_document_destroy(it->second.document);
 	storage_->releaseBlob(it->second.source);
+	FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
+								InitialCapacityTarget::icons_documents,
+								controller_->documentsByKey.size());
 	controller_->documentsByKey.erase(it);
 	storage_->noteManagerMutation(InvalidWindowId);
 	return true;

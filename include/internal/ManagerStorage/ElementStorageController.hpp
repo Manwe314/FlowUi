@@ -1,4 +1,6 @@
 #pragma once
+#include "internal/InitialMemoryCapacity.hpp"
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -81,6 +83,7 @@ struct ResolvedElementState {
 };
 
 struct ElementStateFrameTransaction {
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	uint64_t epoch = 0;
 	bool active = false;
 	std::unordered_set<element::ElementInstanceKey, element::ElementInstanceKeyHash> touched{};
@@ -93,8 +96,14 @@ struct ElementStateFrameTransaction {
 	void clear() noexcept {
 		epoch = 0;
 		active = false;
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::elements_touched,
+									touched.size());
 		touched.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::elements_created,
+									created.size());
 		created.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::elements_policies,
+									policies.size());
 		policies.clear();
 	}
 };
@@ -138,7 +147,7 @@ struct WindowElementStateRegistry {
 
 class ElementStorageController {
 public:
-	explicit ElementStorageController(storage::IStorageSystem& storage) noexcept;
+	explicit ElementStorageController(storage::IStorageSystem& storage);
 	~ElementStorageController();
 
 	ElementStorageController(const ElementStorageController&) = delete;
@@ -186,6 +195,7 @@ private:
 	mutable std::mutex windowsMutex_{};
 	std::unordered_map<WindowId, std::shared_ptr<WindowElementStateRegistry>> windows_{};
 	ElementDefinitionRegistry definitions_{};
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand_{};
 };
 
 } // namespace FlowUi::detail::manager_storage

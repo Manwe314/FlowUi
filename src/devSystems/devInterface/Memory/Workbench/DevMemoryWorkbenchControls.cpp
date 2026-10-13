@@ -53,9 +53,10 @@ Clay_ElementDeclaration DevMemoryControl::constructElement(BuildContext& context
 		return surface;
 	}
 	Clay_ElementDeclaration root{};
-	root.layout.sizing = {.width = CLAY_SIZING_FIT(0, 200), .height = CLAY_SIZING_FIXED(24)};
+	root.layout.sizing = {.width = CLAY_SIZING_FIT(0), .height = CLAY_SIZING_FIT(24)};
 	root.layout.padding = {6, 6, 2, 2};
 	root.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
+	root.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
 	root.backgroundColor =
 		context.params.enabled ? interface_theme::kDepth3Elevated : interface_theme::kDepth2Ink;
 	root.cornerRadius = CLAY_CORNER_RADIUS(3);
@@ -69,7 +70,8 @@ void DevMemoryControl::buildElement(BuildContext& context) {
 	text.fontSize = 11;
 	text.textColor =
 		context.params.enabled ? interface_theme::kTextCanvas : interface_theme::kTextMuted;
-	text.wrapMode = CLAY_TEXT_WRAP_NONE;
+	text.wrapMode = CLAY_TEXT_WRAP_WORDS;
+	text.textAlignment = CLAY_TEXT_ALIGN_CENTER;
 	CLAY(context.clayID(), root) {
 		CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(text));
 	}
