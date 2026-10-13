@@ -24,12 +24,17 @@ function(flowui_configure_baking target)
 
 #include <cstdint>
 #include <string_view>
+#include <span>
+#include \"FlowUi/PublicStructs.hpp\"
 #include \"FlowUi/ElementID.hpp\"
 #include \"internal/ElementInstanceKey.hpp\"
 
 namespace FlowUi::baked {
 
 inline constexpr std::uint64_t schemaFingerprint = 0x0ull;
+[[nodiscard]] constexpr bool has_baked_memory_capacity() noexcept { return false; }
+[[nodiscard]] std::span<const MemoryCapacitySetting> baked_memory_capacity_settings() noexcept;
+void apply_baked_memory_policy(MemoryCapacityProfile& profile) noexcept;
 
 [[nodiscard]] constexpr bool hasBakedDefinitionChanges(FlowDefinitionID definition) noexcept {
 	switch (definition.value) {
@@ -69,6 +74,9 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
 
 namespace FlowUi::baked {
 
+std::span<const MemoryCapacitySetting> baked_memory_capacity_settings() noexcept { return {}; }
+void apply_baked_memory_policy(MemoryCapacityProfile& profile) noexcept { return; }
+
 void applyBakedParametersErased(FlowDefinitionID definition,
 	detail::element::ElementInstanceKey instance, void* parametersDraft) noexcept {
 	if (!parametersDraft) return;
@@ -91,17 +99,21 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
 
     set(FLOWUI_BAKED_CODEGEN_TARGET "${target}_baked_changes_codegen")
     add_custom_command(
-        OUTPUT "${FLOWUI_BAKED_CPP}" "${FLOWUI_BAKED_HPP}"
+        OUTPUT "${FLOWUI_BAKED_GENERATED_DIR}/generation.stamp"
+        BYPRODUCTS "${FLOWUI_BAKED_CPP}" "${FLOWUI_BAKED_HPP}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${FLOWUI_BAKED_GENERATED_DIR}"
         COMMAND $<TARGET_FILE:flowui-dev-generate>
             --manifest "${FLOWUI_MANIFEST_FILE}"
             --output-dir "${FLOWUI_BAKED_GENERATED_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E touch "${FLOWUI_BAKED_GENERATED_DIR}/generation.stamp"
         DEPENDS "${FLOWUI_MANIFEST_FILE}" flowui-dev-generate
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/MemoryCapacityTargets.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/MemoryCapacityManifest.hpp"
         COMMENT "Generating FlowUi baked C++ changes"
         VERBATIM
     )
     add_custom_target(${FLOWUI_BAKED_CODEGEN_TARGET}
-        DEPENDS "${FLOWUI_BAKED_CPP}" "${FLOWUI_BAKED_HPP}"
+        DEPENDS "${FLOWUI_BAKED_GENERATED_DIR}/generation.stamp"
     )
 
     set_source_files_properties(

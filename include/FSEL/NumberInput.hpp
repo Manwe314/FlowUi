@@ -74,6 +74,8 @@ struct NumberInputParameters {
 	std::optional<Clay_Padding> padding = std::nullopt;
 	std::optional<uint16_t> fontSize = std::nullopt;
 	std::optional<uint16_t> letterSpacing = std::nullopt;
+	/** Layer for text, caret and placeholder when nested in a floating surface. */
+	std::optional<int16_t> floatingZIndex = std::nullopt;
 	std::optional<FontStyle> fontStyle = std::nullopt;
 	std::optional<CursorType> cursor = std::nullopt;
 	std::optional<uint8_t> cursorPriority = std::nullopt;
@@ -266,6 +268,7 @@ struct NumberInput {
 				.viewportWidth = viewport.width,
 				.viewportHeight = viewport.height,
 				.tabWidth = theme.tabWidth,
+				.floatingZIndex = context.params.floatingZIndex.value_or(0),
 			},
 			.overlayStyle = detail::text_field::resolveOverlayStyle(
 				theme,
@@ -608,12 +611,10 @@ private:
 					}
 				}
 				if (field.text.empty() && !context.params.placeholder.empty()) {
-					CLAY(
-						placeholderId,
-						detail::text_field::makePlaceholderDeclaration()) {
-						CLAY_TEXT(
-							context.uiManager.toClayString(context.params.placeholder),
-							CLAY_TEXT_CONFIG(placeholderConfig));
+					CLAY(placeholderId, detail::text_field::makePlaceholderDeclaration(
+											context.params.floatingZIndex.value_or(0))) {
+						CLAY_TEXT(context.uiManager.toClayString(context.params.placeholder),
+								  CLAY_TEXT_CONFIG(placeholderConfig));
 					}
 				}
 			}

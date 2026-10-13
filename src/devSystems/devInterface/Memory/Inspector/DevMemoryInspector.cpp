@@ -1,6 +1,8 @@
 #include "devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp"
 #if FLOW_UI_DEV_MODE
+#include "FSEL/Button.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #include "managers/UiManager.hpp"
@@ -11,6 +13,41 @@
 namespace FlowUi::devSystems::interface_elements {
 namespace {
 using namespace memory_ui;
+constexpr auto toggle_disclosure =
+	UiAction("flowui.memory.inspector.disclosure", [](bool& expanded) { expanded = !expanded; });
+void disclosure(DevMemoryInspector::BuildContext& context, LocalElementName name,
+				std::string_view label, bool& expanded) {
+	FSEL::ButtonParameters parameters{};
+	const auto owned_label = std::string(expanded ? "-  " : "+  ") + std::string(label);
+	parameters.text = owned_label;
+	parameters.contentMode = FSEL::ButtonContentMode::TextOnly;
+	parameters.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(28)};
+	parameters.padding = Clay_Padding{12, 12, 8, 8};
+	parameters.labelFontSize = 12;
+	parameters.labelWrapMode = CLAY_TEXT_WRAP_WORDS;
+	parameters.labelAlignment = CLAY_TEXT_ALIGN_LEFT;
+	parameters.childAlignment = Clay_ChildAlignment{CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
+	parameters.cornerRadius = CLAY_CORNER_RADIUS(0);
+	parameters.idleOverrides.backgroundColor = interface_theme::kDepth2Ink;
+	parameters.idleOverrides.labelColor = interface_theme::kTextCanvas;
+	parameters.hoveredOverrides.backgroundColor = interface_theme::kHoverSurface;
+	parameters.hoveredOverrides.labelColor = interface_theme::kTextCanvas;
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	auto& icons = context.params.app->icons();
+	interface_icons::registerDevInterfaceIcons(icons);
+	parameters.icon =
+		icons.textureRef(expanded ? interface_icons::kCollapseKey : interface_icons::kExpandKey);
+	parameters.contentMode = FSEL::ButtonContentMode::IconThenText;
+	parameters.iconSize = 12;
+	parameters.text = label;
+#endif
+	parameters.onActivate =
+		ActionCall{context.params.app->actions().uiActions().make(toggle_disclosure, expanded)};
+	context.uiManager.createElement(FSEL::kButton, name)
+		.setParameters(parameters)
+		.setDevInternalCapture(true)
+		.draw();
+}
 constexpr auto presets = std::to_array<FSEL::ComboBoxOption>({{0, "Cover observed maximum"},
 															  {1, "Balanced: one growth"},
 															  {2, "Lean: up to two growths"},
@@ -27,6 +64,15 @@ constexpr auto weightings = std::to_array<FSEL::ComboBoxOption>(
 	{{0, "Equal sampled intervals"}, {1, "Elapsed observation time"}});
 constexpr auto preferences =
 	std::to_array<FSEL::ComboBoxOption>({{0, "Lower final reserve"}, {1, "Fewer resize events"}});
+[[nodiscard]] std::string public_key_label(std::string_view config_key) {
+	auto label = memory_public_config_key(config_key);
+	for (size_t position = 0; position < label.size(); ++position)
+		if (label[position] == '.') {
+			label.insert(position + 1, " ");
+			++position;
+		}
+	return label;
+}
 [[nodiscard]] const MemoryWorkbenchTrack*
 inspected_track(const DevMemoryWorkbenchState& state) noexcept {
 	if (state.focus) {
@@ -38,10 +84,19 @@ inspected_track(const DevMemoryWorkbenchState& state) noexcept {
 }
 [[nodiscard]] uint64_t metric_value(const MemoryValueSample& value,
 									const MemoryTuningTargetDescriptor& target) noexcept {
-	if (target.unit != MemoryCapacityUnit::Bytes)
+	switch (target.metric) {
+	case MemoryTuningMetric::LogicalLiveBytes:
+		return value.logicalLiveBytes;
+	case MemoryTuningMetric::BackingAllocatedBytes:
+		return value.backingAllocatedBytes;
+	case MemoryTuningMetric::PeakLogicalBytes:
+		return value.peakLogicalBytes;
+	case MemoryTuningMetric::ObjectCount:
+		return value.objectCount;
+	case MemoryTuningMetric::CapacityCount:
 		return value.capacityCount;
-	return target.metric == MemoryTuningMetric::BackingAllocatedBytes ? value.backingAllocatedBytes
-																	  : value.logicalLiveBytes;
+	}
+	return 0;
 }
 void refresh_planner(MemoryAnalysisState& analysis, const DevMemoryWorkbenchState& state,
 					 const MemoryWorkbenchTrack& track, const MemoryTuningTargetDescriptor& target,
@@ -71,12 +126,16 @@ void refresh_planner(MemoryAnalysisState& analysis, const DevMemoryWorkbenchStat
 	} else if (!saved || !saved->snapshot) {
 		const auto append = [&](const MemorySampleSegment& segment) {
 			if (analysis.evidence.size() == 4096 || segment.value.source != target.source ||
-				(uint16_t(segment.value.flags) & uint16_t(MemorySampleFlag::TuningAggregate)))
+				((uint16_t(segment.value.flags) & uint16_t(MemorySampleFlag::TuningAggregate)) &&
+				 !find_initial_capacity(segment.value.source)))
+				return;
+			if (find_initial_capacity(target.source) && !track.window_scoped &&
+				segment.value.window != InvalidWindowId)
 				return;
 			if (track.window_scoped &&
 				(!segment.value.window || (state.window && state.window != segment.value.window)))
 				return;
-			if (track.included &&
+			if (track.included && !find_initial_capacity(target.source) &&
 				(track.keys.empty() ||
 				 std::ranges::find(track.keys,
 								   MemorySourceKey{segment.value.source, segment.value.window}) ==
@@ -89,10 +148,14 @@ void refresh_planner(MemoryAnalysisState& analysis, const DevMemoryWorkbenchStat
 				state.range_end_ns ? std::min(segment.endNs, state.range_end_ns) : segment.endNs;
 			if (end <= begin)
 				return;
-			const auto field = target.unit != MemoryCapacityUnit::Bytes ? MemoryValueField::Capacity
-							   : target.metric == MemoryTuningMetric::BackingAllocatedBytes
-								   ? MemoryValueField::Backing
-								   : MemoryValueField::LogicalLive;
+			const auto field =
+				target.metric == MemoryTuningMetric::ObjectCount	 ? MemoryValueField::Objects
+				: target.metric == MemoryTuningMetric::CapacityCount ? MemoryValueField::Capacity
+				: target.metric == MemoryTuningMetric::PeakLogicalBytes
+					? MemoryValueField::PeakLogical
+				: target.metric == MemoryTuningMetric::BackingAllocatedBytes
+					? MemoryValueField::Backing
+					: MemoryValueField::LogicalLive;
 			if (!(segment.value.value_fields & uint16_t(field)))
 				return;
 			analysis.evidence.emplace_back(MemoryDemandObservation{
@@ -119,7 +182,10 @@ void refresh_planner(MemoryAnalysisState& analysis, const DevMemoryWorkbenchStat
 		if (calculated) {
 			analysis.plan = *calculated;
 			analysis.planner_message =
-				"Local geometric model; production adapter validation pending.";
+				target.unit == MemoryCapacityUnit::Bytes && !find_initial_capacity(target.source)
+					? "Storage growth replay; sampled evidence."
+					: "Probe-interval demand maxima; STL growth counts are estimates. Storage "
+					  "growthFactor does not change STL growth.";
 		} else
 			analysis.planner_message = "No valid proposal: check reserve, factor, budget and "
 									   "growth objective. Percentiles need a demand distribution.";
@@ -218,7 +284,11 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 	if (track)
 		for (const auto& target : analysis.targets)
 			if (std::ranges::find(track->history_sources, target.source) !=
-				track->history_sources.end())
+					track->history_sources.end() ||
+				(find_initial_capacity(target.source) &&
+				 std::ranges::find(track->history_sources,
+								   memory_sources::initial_capacity_parent(*find_initial_capacity(
+									   target.source))) != track->history_sources.end()))
 				analysis.target_options.emplace_back(
 					FSEL::ComboBoxOption{.value = target.id,
 										 .text = std::string_view(target.configKey)
@@ -236,12 +306,6 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 	const auto action = analysis.ui_action >= 110 && analysis.ui_action < 200
 							? std::exchange(analysis.ui_action, 0)
 							: 0;
-	if (action == 115)
-		analysis.show_quality = !analysis.show_quality;
-	if (action == 116)
-		analysis.show_planner = !analysis.show_planner;
-	if (action == 133)
-		analysis.show_review = !analysis.show_review;
 	if (action == 132) {
 		analysis.staged.clear();
 		++analysis.staged_revision;
@@ -303,261 +367,301 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 		if (!staged && analysis.planner_message.empty())
 			analysis.planner_message = "Proposal could not be staged.";
 	}
-	auto root = column(8);
-	root.layout.sizing.height = CLAY_SIZING_GROW(0);
-	root.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	root.layout.padding = {12, 12, 12, 12};
-	root.clip = {.horizontal = true, .vertical = true};
+	auto root = column(0);
+	root.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_PERCENT(1)};
+	root.backgroundColor = interface_theme::kDepth1Panel;
+	auto content = column(8);
+	content.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+	content.layout.padding = {12, 12, 10, 12};
+	auto section = column(0);
+	section.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+	root.clip = {.vertical = true};
 	const auto scroll = Clay_GetScrollContainerData(context.clayID());
 	if (scroll.found && scroll.scrollPosition)
 		root.clip.childOffset = *scroll.scrollPosition;
 	CLAY(context.clayID(), root) {
-		text(context, track ? track->title : "Memory overview", interface_theme::kTextCanvas, 14);
 		const auto* saved = selected_memory_dataset(analysis);
-		text(context,
-			 saved					? saved->name
-			 : state.range_begin_ns ? "Selected range · retained samples"
-			 : state.selected_ns	? "At selected time · retained samples"
-									: "Live measurements",
-			 interface_theme::kAccentSeaGlass);
-		text(context,
-			 track && !track->window_scoped ? "Application-wide · window modifier does not apply"
-			 : state.window					? "Window " + std::to_string(state.window)
-											: "All attributed windows",
-			 interface_theme::kTextMuted, 10);
-		if (!track)
-			text(
-				context,
-				"Choose a scope or track. CPU, GPU and process views overlap and cannot be added.");
-		else {
-			if (!track->available)
-				text(
-					context,
-					"No supported observation for this subject/time. Live data is not substituted.",
-					interface_theme::kStatusAmber);
-			else {
-				text(context,
-					 track->value.logicalLiveBytes ? "Measured reading" : "Idle / measured zero",
-					 interface_theme::kTextCanvas, 12);
-				const auto fields = track->value.value_fields;
-				reading(context, "Active", track->value.logicalLiveBytes,
-						fields & uint16_t(MemoryValueField::LogicalLive), true, state.decimal);
-				reading(context, "Backing", track->value.backingAllocatedBytes,
-						fields & uint16_t(MemoryValueField::Backing), true, state.decimal);
-				reading(context, "Reusable", track->value.reusableBytes,
-						fields & uint16_t(MemoryValueField::Reusable), true, state.decimal);
-				reading(context, "Retired", track->value.retiredBytes,
-						fields & uint16_t(MemoryValueField::Retired), true, state.decimal);
-				reading(context, "Objects", track->value.objectCount,
-						fields & uint16_t(MemoryValueField::Objects), false, state.decimal);
-				reading(context, "Capacity count", track->value.capacityCount,
-						fields & uint16_t(MemoryValueField::Capacity), false, state.decimal);
-			}
-			button(context, state, 137, "Copy reading", track->available);
-			text(context, "Accounting", interface_theme::kTextCanvas, 12);
-			text(context, track->note.empty()
-							  ? "Independent accounting view; group totals may overlap."
-							  : track->note);
-			if (track->included)
-				text(context, "Included/overlapping child: do not add this reading to its parent.",
+		CLAY(context.clayID("subject-content"), content) {
+			text(context, track ? track->title : "Memory overview", interface_theme::kTextCanvas,
+				 14);
+			text(context,
+				 saved					? saved->name
+				 : state.range_begin_ns ? "Selected range · retained samples"
+				 : state.selected_ns	? "At selected time · retained samples"
+										: "Live measurements",
+				 interface_theme::kAccentSeaGlass);
+			if (saved && !saved->complete)
+				text(context, "Partial coverage: some observations were not retained.",
 					 interface_theme::kStatusAmber, 10);
-			if (track->parent_identity)
-				button(context, state, 134, "Inspect parent");
-			button(context, state, 115,
-				   analysis.show_quality ? "Hide measurement details" : "Measurement details");
-			if (analysis.show_quality) {
-				text(context, track->estimated ? "Estimated container/resource footprint"
-											   : "Producer-reported measurement");
-				text(context, "Report tick " + std::to_string(track->sampled_tick) + " · " +
-								  std::to_string(track->keys.size()) + " attributed producer(s)");
-				text(context, "History contains sampled/held source values. Allocator reset "
-							  "boundaries and interval burst peaks are not retained yet.");
-				const auto status = saved ? saved->live.status : reporting.status();
-				text(context, "Retained segments " + std::to_string(status.segments.retainedCount) +
-								  " · overwritten " +
-								  std::to_string(status.segments.overwriteCount));
-			}
-		}
-		if (analysis.baseline_dataset && track) {
-			const auto baseline = std::ranges::find(analysis.datasets, analysis.baseline_dataset,
-													&MemoryDataset::identity);
-			if (baseline != analysis.datasets.end()) {
-				uint64_t active = 0;
-				bool found = false;
-				for (const auto& source : baseline->live.sources)
-					if (std::ranges::find(track->keys, source.key) != track->keys.end()) {
-						active += source.value.logicalLiveBytes;
-						found = true;
-					}
-				text(context, found ? "Baseline active: " + memory_bytes(active, state.decimal)
-									: "Baseline subject unavailable");
-			}
-		}
-		button(context, state, 116,
-			   analysis.show_planner ? "Initial capacity & growth ▾"
-									 : "Initial capacity & growth ▸");
-		if (analysis.show_planner) {
-			if (!target)
-				text(context, "This subject has no mapped startup-capacity target. Select a "
-							  "storage/manager track.");
+			text(context,
+				 track && !track->window_scoped
+					 ? "Application-wide · window modifier does not apply"
+				 : state.window ? "Window " + std::to_string(state.window)
+								: "All attributed windows",
+				 interface_theme::kTextMuted, 10);
+			if (!track)
+				text(context, "Choose a scope or track. CPU, GPU and process views overlap and "
+							  "cannot be added.");
 			else {
-				choice(context, "planner-target", "Configuration target", analysis.target,
-					   analysis.target_options);
-				auto public_key = memory_public_config_key(target->configKey);
-				for (size_t position = 0; position < public_key.size(); ++position)
-					if (public_key[position] == '.') {
-						public_key.insert(position + 1, " ");
-						++position;
-					}
-				text(context, public_key, interface_theme::kAccentSeaGlass, 10);
-				choice(context, "planner-evidence", "Evidence domain (independent of plot zoom)",
-					   analysis.evidence_mode, evidence_choices);
-				text(context,
-					 analysis.evidence_mode == 2
-						 ? "PREVIEW DATA · deterministic demand, not application usage"
-					 : analysis.evidence_mode == 1
-						 ? "Lifetime maximum: no percentile distribution or chronological guarantee"
-						 : "Sampled demand only; short bursts may be missed. Per-allocator epochs "
-						   "are unavailable.",
-					 interface_theme::kStatusAmber, 10);
-				choice(context, "planner-preset", "Optimization preset", analysis.planner.preset,
-					   presets);
-				choice(context, "planner-initial", "Initial reserve basis",
-					   analysis.planner.initial_mode, initials);
-				if (analysis.planner.initial_mode == 1)
-					number(context, "planner-percentile", "Percentile Pq",
-						   analysis.planner.percentile, 1.0, 100.0);
-				if (analysis.planner.initial_mode == 3)
-					number(context, "planner-manual-initial", "Initial capacity (native units)",
-						   analysis.planner.manual_initial, uint64_t{0}, target->maximum);
-				choice(context, "planner-weighting", "Distribution weighting",
-					   analysis.planner.weighting, weightings);
-				choice(context, "planner-margin-mode", "Margin", analysis.planner.margin_mode,
-					   margins);
-				if (!analysis.planner.margin_mode)
-					number(context, "planner-margin", "Margin percent",
-						   analysis.planner.margin_percent, 0.0, 1000.0);
-				else
-					number(context, "planner-margin-absolute", "Additional native units",
-						   analysis.planner.absolute_margin, uint64_t{0}, target->maximum);
-				choice(context, "planner-factor-mode", "Shared growth factor",
-					   analysis.planner.factor_mode, factors);
-				if (analysis.planner.factor_mode == 2)
-					number(context, "planner-factor", "Manual factor", analysis.planner.factor, 1.1,
-						   64.0);
-				if (analysis.planner.factor_mode == 1)
-					number(context, "planner-factor-limit", "Auto-fit maximum factor",
-						   analysis.planner.maximum_factor, 1.1, 64.0);
-				number(context, "planner-next-target", "Next growth target (0 = observed maximum)",
-					   analysis.planner.next_target, uint64_t{0}, target->maximum);
-				number(context, "planner-budget", "Final reserve budget (0 = unconstrained)",
-					   analysis.planner.final_budget, uint64_t{0}, target->maximum);
-				if (analysis.planner.preset == 3)
-					number(context, "planner-growth-count", "Maximum growths per modeled instance",
-						   analysis.planner.maximum_growths, uint64_t{0}, uint64_t{64});
-				choice(context, "planner-preference", "Candidate preference",
-					   analysis.planner.preference, preferences);
-				text(
-					context,
-					"Alignment " + std::to_string(target->alignment) + " · default " +
-						memory_target_value(target->productionDefault, target->unit, state.decimal),
-					interface_theme::kTextMuted, 10);
-				text(context, analysis.planner_message,
-					 analysis.plan ? interface_theme::kTextSecondary
-								   : interface_theme::kStatusAmber,
-					 10);
-				if (analysis.plan) {
-					const auto& plan = *analysis.plan;
+				if (!track->available)
 					text(context,
-						 "Proposed initial " +
-							 memory_target_value(plan.initial, target->unit, state.decimal),
+						 "No supported observation for this subject/time. Live data is not "
+						 "substituted.",
+						 interface_theme::kStatusAmber);
+				else {
+					text(context,
+						 track->value.logicalLiveBytes ? "Measured reading"
+													   : "Idle / measured zero",
 						 interface_theme::kTextCanvas, 12);
-					text(context, "Factor " + std::to_string(plan.factor).substr(0, 5) +
-									  " · shared AppConfig profile setting");
-					text(context, "Initial coverage " +
-									  std::to_string(int(plan.initial_coverage * 100)) + "% · " +
-									  std::to_string(plan.growth_count) + " modeled resize(s) · " +
-									  std::to_string(plan.maximum_instance_growths) +
-									  " maximum per sampled source");
+					const auto fields = track->value.value_fields;
+					reading(context, "Active", track->value.logicalLiveBytes,
+							fields & uint16_t(MemoryValueField::LogicalLive), true, state.decimal);
+					reading(context, "Backing", track->value.backingAllocatedBytes,
+							fields & uint16_t(MemoryValueField::Backing), true, state.decimal);
+					reading(context, "Reusable", track->value.reusableBytes,
+							fields & uint16_t(MemoryValueField::Reusable), true, state.decimal);
+					reading(context, "Retired", track->value.retiredBytes,
+							fields & uint16_t(MemoryValueField::Retired), true, state.decimal);
+					reading(context, "Objects", track->value.objectCount,
+							fields & uint16_t(MemoryValueField::Objects), false, state.decimal);
+					reading(context, "Capacity count", track->value.capacityCount,
+							fields & uint16_t(MemoryValueField::Capacity), false, state.decimal);
+				}
+				button(context, state, 137, "Copy reading", track->available);
+				text(context, "Accounting", interface_theme::kTextCanvas, 12);
+				text(context, track->note.empty()
+								  ? "Independent accounting view; group totals may overlap."
+								  : track->note);
+				if (track->included)
 					text(context,
-						 "Final reserve " +
-							 memory_target_value(plan.final_capacity, target->unit, state.decimal));
-					replay_plot(context, analysis);
-					text(context, "Alternative starting points", interface_theme::kTextCanvas, 12);
-					for (size_t candidate = 0; candidate < analysis.candidates.size(); ++candidate)
-						if (analysis.candidates[candidate]) {
-							const auto& alternative = *analysis.candidates[candidate];
-							text(context,
-								 memory_target_value(alternative.initial, target->unit,
-													 state.decimal) +
-									 " · factor " +
-									 std::to_string(alternative.factor).substr(0, 5) + " · " +
-									 std::to_string(alternative.growth_count) +
-									 " resize(s) · final " +
-									 memory_target_value(alternative.final_capacity, target->unit,
-														 state.decimal),
-								 interface_theme::kTextSecondary, 10);
-							button(context, state, uint32_t(140 + candidate),
-								   candidate == 0	? "Use calculated pair"
-								   : candidate == 1 ? "Use factor 1.5 pair"
-													: "Use maximum reserve pair");
-						}
-					text(context, "Projected growth ladder", interface_theme::kTextCanvas, 12);
-					for (size_t step = 0; step < plan.ladder.size(); ++step) {
-						if (step && !plan.ladder[step])
-							break;
-						text(context, (step ? "Growth " + std::to_string(step) : "Initial") + "  " +
-										  memory_target_value(plan.ladder[step], target->unit,
-															  state.decimal) +
-										  (step ? " (+" +
-													  memory_target_value(
-														  plan.ladder[step] - plan.ladder[step - 1],
-														  target->unit, state.decimal) +
-													  ")"
-												: ""));
+						 "Included/overlapping child: do not add this reading to its parent.",
+						 interface_theme::kStatusAmber, 10);
+				if (track->parent_identity)
+					button(context, state, 134, "Inspect parent");
+			}
+		}
+		if (track)
+			CLAY(context.clayID("measurement-section"), section) {
+				disclosure(context, LocalElementName{"measurement-header"}, "Measurement Details",
+						   analysis.show_quality);
+				if (analysis.show_quality) {
+					CLAY(context.clayID("measurement-content"), content) {
+						text(context, track->estimated ? "Estimated container/resource footprint"
+													   : "Producer-reported measurement");
+						text(context, "Report tick " + std::to_string(track->sampled_tick) + " · " +
+										  std::to_string(track->keys.size()) +
+										  " attributed producer(s)");
+						text(context,
+							 "History contains sampled/held source values. Allocator reset "
+							 "boundaries and interval burst peaks are not retained yet.");
+						const auto status = saved ? saved->live.status : reporting.status();
+						text(context, "Retained segments " +
+										  std::to_string(status.segments.retainedCount) +
+										  " · overwritten " +
+										  std::to_string(status.segments.overwriteCount));
 					}
-					if (plan.ladder_overflow)
-						text(context, "Further projected growth exceeds target limits.",
-							 interface_theme::kStatusAmber, 10);
-					text(context,
-						 "Later ladder steps are hypothetical minimal-overflow requests, not "
-						 "observed events.",
-						 interface_theme::kTextMuted, 10);
-					button(context, state, 135, "Jump to sampled maximum",
-						   analysis.evidence_mode == 0);
-					button(context, state, 136, "Jump to first modeled growth",
-						   analysis.evidence_mode == 0 && !plan.steps.empty());
-					button(context, state, 130, "Add to settings review");
-					if (analysis.replace_pending || analysis.shared_factor_pending)
-						button(context, state, 131, "Confirm shared settings");
+				}
+			}
+		if (analysis.baseline_dataset && track) {
+			CLAY(context.clayID("baseline-content"), content) {
+				const auto baseline = std::ranges::find(
+					analysis.datasets, analysis.baseline_dataset, &MemoryDataset::identity);
+				if (baseline != analysis.datasets.end()) {
+					uint64_t active = 0;
+					bool found = false;
+					for (const auto& source : baseline->live.sources)
+						if (std::ranges::find(track->keys, source.key) != track->keys.end()) {
+							active += source.value.logicalLiveBytes;
+							found = true;
+						}
+					text(context, found ? "Baseline active: " + memory_bytes(active, state.decimal)
+										: "Baseline subject unavailable");
 				}
 			}
 		}
-		button(context, state, 133,
-			   "Settings review (" + std::to_string(analysis.staged.size()) + ")");
-		if (analysis.show_review) {
-			text(context, "Draft AppConfig settings", interface_theme::kTextCanvas, 12);
-			for (const auto& staged : analysis.staged) {
-				text(context, memory_public_config_key(staged.target.configKey),
-					 interface_theme::kAccentSeaGlass, 10);
-				text(context, (staged.plan.uses_default ? "Use default · " : "Explicit · ") +
-								  memory_target_value(staged.plan.initial, staged.target.unit,
-													  state.decimal) +
-								  " (" + std::to_string(staged.plan.initial) + " native units)");
-				text(context,
-					 staged.provenance + " · " + std::to_string(staged.plan.growth_count) +
-						 " modeled resize(s)",
-					 interface_theme::kTextMuted, 10);
+		CLAY(context.clayID("planner-section"), section) {
+			disclosure(context, LocalElementName{"planner-header"}, "Initial Capacity & Growth",
+					   analysis.show_planner);
+			if (analysis.show_planner) {
+				CLAY(context.clayID("planner-content"), content) {
+					if (!target)
+						text(context,
+							 "This subject has no mapped startup-capacity target. Select a "
+							 "storage/manager track.");
+					else {
+						choice(context, "planner-target", "Configuration target", analysis.target,
+							   analysis.target_options);
+						text(context, public_key_label(target->configKey),
+							 interface_theme::kAccentSeaGlass, 10);
+						choice(context, "planner-evidence",
+							   "Evidence domain (independent of plot zoom)", analysis.evidence_mode,
+							   evidence_choices);
+						text(context,
+							 analysis.evidence_mode == 2
+								 ? "PREVIEW DATA · deterministic demand, not application usage"
+							 : analysis.evidence_mode == 1
+								 ? "Lifetime maximum: no percentile distribution or chronological "
+								   "guarantee"
+								 : "Sampled demand only; short bursts may be missed. Per-allocator "
+								   "epochs "
+								   "are unavailable.",
+							 interface_theme::kStatusAmber, 10);
+						choice(context, "planner-preset", "Optimization preset",
+							   analysis.planner.preset, presets);
+						choice(context, "planner-initial", "Initial reserve basis",
+							   analysis.planner.initial_mode, initials);
+						if (analysis.planner.initial_mode == 1)
+							number(context, "planner-percentile", "Percentile Pq",
+								   analysis.planner.percentile, 1.0, 100.0);
+						if (analysis.planner.initial_mode == 3)
+							number(context, "planner-manual-initial",
+								   "Initial capacity (native units)",
+								   analysis.planner.manual_initial, uint64_t{0}, target->maximum);
+						choice(context, "planner-weighting", "Distribution weighting",
+							   analysis.planner.weighting, weightings);
+						choice(context, "planner-margin-mode", "Margin",
+							   analysis.planner.margin_mode, margins);
+						if (!analysis.planner.margin_mode)
+							number(context, "planner-margin", "Margin percent",
+								   analysis.planner.margin_percent, 0.0, 1000.0);
+						else
+							number(context, "planner-margin-absolute", "Additional native units",
+								   analysis.planner.absolute_margin, uint64_t{0}, target->maximum);
+						choice(context, "planner-factor-mode", "Shared growth factor",
+							   analysis.planner.factor_mode, factors);
+						if (analysis.planner.factor_mode == 2)
+							number(context, "planner-factor", "Manual factor",
+								   analysis.planner.factor, 1.1, 64.0);
+						if (analysis.planner.factor_mode == 1)
+							number(context, "planner-factor-limit", "Auto-fit maximum factor",
+								   analysis.planner.maximum_factor, 1.1, 64.0);
+						number(context, "planner-next-target",
+							   "Next growth target (0 = observed maximum)",
+							   analysis.planner.next_target, uint64_t{0}, target->maximum);
+						number(context, "planner-budget",
+							   "Final reserve budget (0 = unconstrained)",
+							   analysis.planner.final_budget, uint64_t{0}, target->maximum);
+						if (analysis.planner.preset == 3)
+							number(context, "planner-growth-count",
+								   "Maximum growths per modeled instance",
+								   analysis.planner.maximum_growths, uint64_t{0}, uint64_t{64});
+						choice(context, "planner-preference", "Candidate preference",
+							   analysis.planner.preference, preferences);
+						text(context,
+							 "Alignment " + std::to_string(target->alignment) + " · default " +
+								 memory_target_value(target->productionDefault, target->unit,
+													 state.decimal),
+							 interface_theme::kTextMuted, 10);
+						text(context, analysis.planner_message,
+							 analysis.plan ? interface_theme::kTextSecondary
+										   : interface_theme::kStatusAmber,
+							 10);
+						if (analysis.plan) {
+							const auto& plan = *analysis.plan;
+							text(context,
+								 "Proposed initial " +
+									 memory_target_value(plan.initial, target->unit, state.decimal),
+								 interface_theme::kTextCanvas, 12);
+							text(context, "Factor " + std::to_string(plan.factor).substr(0, 5) +
+											  " · shared AppConfig profile setting");
+							text(context, "Initial coverage " +
+											  std::to_string(int(plan.initial_coverage * 100)) +
+											  "% · " + std::to_string(plan.growth_count) +
+											  " modeled resize(s) · " +
+											  std::to_string(plan.maximum_instance_growths) +
+											  " maximum per sampled source");
+							text(context, "Final reserve " +
+											  memory_target_value(plan.final_capacity, target->unit,
+																  state.decimal));
+							replay_plot(context, analysis);
+							text(context, "Alternative starting points",
+								 interface_theme::kTextCanvas, 12);
+							for (size_t candidate = 0; candidate < analysis.candidates.size();
+								 ++candidate)
+								if (analysis.candidates[candidate]) {
+									const auto& alternative = *analysis.candidates[candidate];
+									text(context,
+										 memory_target_value(alternative.initial, target->unit,
+															 state.decimal) +
+											 " · factor " +
+											 std::to_string(alternative.factor).substr(0, 5) +
+											 " · " + std::to_string(alternative.growth_count) +
+											 " resize(s) · final " +
+											 memory_target_value(alternative.final_capacity,
+																 target->unit, state.decimal),
+										 interface_theme::kTextSecondary, 10);
+									button(context, state, uint32_t(140 + candidate),
+										   candidate == 0	? "Use calculated pair"
+										   : candidate == 1 ? "Use factor 1.5 pair"
+															: "Use maximum reserve pair");
+								}
+							text(context, "Projected growth ladder", interface_theme::kTextCanvas,
+								 12);
+							for (size_t step = 0; step < plan.ladder.size(); ++step) {
+								if (step && !plan.ladder[step])
+									break;
+								text(context,
+									 (step ? "Growth " + std::to_string(step) : "Initial") + "  " +
+										 memory_target_value(plan.ladder[step], target->unit,
+															 state.decimal) +
+										 (step ? " (+" +
+													 memory_target_value(
+														 plan.ladder[step] - plan.ladder[step - 1],
+														 target->unit, state.decimal) +
+													 ")"
+											   : ""));
+							}
+							if (plan.ladder_overflow)
+								text(context, "Further projected growth exceeds target limits.",
+									 interface_theme::kStatusAmber, 10);
+							text(context,
+								 "Later ladder steps are hypothetical minimal-overflow requests, "
+								 "not "
+								 "observed events.",
+								 interface_theme::kTextMuted, 10);
+							button(context, state, 135, "Jump to sampled maximum",
+								   analysis.evidence_mode == 0);
+							button(context, state, 136, "Jump to first modeled growth",
+								   analysis.evidence_mode == 0 && !plan.steps.empty());
+							button(context, state, 130, "Add to settings review");
+							if (analysis.replace_pending || analysis.shared_factor_pending)
+								button(context, state, 131, "Confirm shared settings");
+						}
+					}
+				}
 			}
-			text(context,
-				 "One shared growthFactor: " + std::to_string(analysis.shared_factor).substr(0, 5));
-			button(context, state, 132, "Clear staged settings", !analysis.staged.empty());
-			button(context, state, 120, "Export settings", false);
-			button(context, state, 121, "Bake settings", false);
-			text(context,
-				 "Export / Bake integration pending. Drafts do not change live or startup "
-				 "configuration.",
-				 interface_theme::kTextMuted, 10);
+		}
+		CLAY(context.clayID("review-section"), section) {
+			disclosure(context, LocalElementName{"review-header"},
+					   "Settings Review (" + std::to_string(analysis.staged.size()) + ")",
+					   analysis.show_review);
+			if (analysis.show_review) {
+				CLAY(context.clayID("review-content"), content) {
+					text(context, "Draft AppConfig settings", interface_theme::kTextCanvas, 12);
+					for (const auto& staged : analysis.staged) {
+						text(context, public_key_label(staged.target.configKey),
+							 interface_theme::kAccentSeaGlass, 10);
+						text(context,
+							 (staged.plan.uses_default ? "Use default · " : "Explicit · ") +
+								 memory_target_value(staged.plan.initial, staged.target.unit,
+													 state.decimal) +
+								 " (" + std::to_string(staged.plan.initial) + " native units)");
+						text(context,
+							 staged.provenance + " · " + std::to_string(staged.plan.growth_count) +
+								 " modeled resize(s)",
+							 interface_theme::kTextMuted, 10);
+					}
+					text(context, "One shared growthFactor: " +
+									  std::to_string(analysis.shared_factor).substr(0, 5));
+					button(context, state, 132, "Clear staged settings", !analysis.staged.empty());
+					button(context, state, 120, "Export settings", false);
+					button(context, state, 121, "Bake settings", false);
+					text(context,
+						 "Export / Bake integration pending. Drafts do not change live or startup "
+						 "configuration.",
+						 interface_theme::kTextMuted, 10);
+				}
+			}
 		}
 	}
 }

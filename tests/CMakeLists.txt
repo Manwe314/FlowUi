@@ -1150,3 +1150,24 @@ foreach(inspect_capture IN ITEMS 0 1)
         ${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/external)
     add_test(NAME flowui.dev.inspect_interaction_${inspect_capture} COMMAND ${inspect_test_target})
 endforeach()
+
+if(FLOW_UI_DEV_MODE AND FLOWUI_DEV_MEMORY_LEVEL GREATER_EQUAL 2)
+    add_executable(flowui_dev_memory_capacity_tests
+        DevSystemsTests/DevMemoryCapacityTests.cpp
+        ${PROJECT_SOURCE_DIR}/tools/flowui-dev-generate/ManifestParser.cpp
+        ${PROJECT_SOURCE_DIR}/tools/flowui-dev-generate/CppCodeGenerator.cpp)
+    target_compile_features(flowui_dev_memory_capacity_tests PRIVATE cxx_std_23)
+    target_include_directories(flowui_dev_memory_capacity_tests PRIVATE
+        ${PROJECT_SOURCE_DIR}/tools/flowui-dev-generate)
+    target_link_libraries(flowui_dev_memory_capacity_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.memory_capacity COMMAND flowui_dev_memory_capacity_tests
+        ${CMAKE_CURRENT_BINARY_DIR}/memory-capacity-fixture)
+    add_executable(flowui_dev_memory_capacity_storage_tests
+        DevSystemsTests/DevMemoryCapacityStorageTests.cpp HeadlessVulkanFixture.cpp)
+    target_compile_features(flowui_dev_memory_capacity_storage_tests PRIVATE cxx_std_23)
+    target_include_directories(flowui_dev_memory_capacity_storage_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_dev_memory_capacity_storage_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.memory_capacity_storage COMMAND flowui_dev_memory_capacity_storage_tests)
+    set_tests_properties(flowui.dev.memory_capacity_storage PROPERTIES SKIP_RETURN_CODE 77)
+
+endif()

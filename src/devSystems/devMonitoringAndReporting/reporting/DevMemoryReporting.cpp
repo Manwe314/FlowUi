@@ -232,6 +232,11 @@ struct DevMemoryReporting::Impl {
 		state.sessionPeak.objectCount = std::max(state.sessionPeak.objectCount, sample.objectCount);
 		state.sessionPeak.capacityCount = std::max(state.sessionPeak.capacityCount, sample.capacityCount);
 		state.sessionPeak.growthOps = std::max(state.sessionPeak.growthOps, sample.growthOps);
+		state.sessionPeak.peakLogicalBytes =
+			std::max(state.sessionPeak.peakLogicalBytes, sample.peakLogicalBytes);
+		state.sessionPeak.peakObjectCount = std::max(
+			{state.sessionPeak.peakObjectCount, sample.peakObjectCount, sample.objectCount});
+		state.sessionPeak.flags = state.sessionPeak.flags | sample.flags;
 		state.value = sample;
 		state.lastSampledTick = tick;
 		state.measured_at_ns = timestamp;
@@ -376,11 +381,40 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 				.detail = memoryConfig.level, .sink = sink};
 			for (const RegisteredMemoryProbe& probe : probes)
 				if (probe.owner && probe.sample) probe.sample(probe.owner, context);
+			std::vector<MemoryValueSample> unique_samples;
+			unique_samples.reserve(samples.size());
+			std::unordered_map<MemorySourceKey, size_t, SourceKeyHash> demand_indices;
+			for (const auto& value : samples) {
+				if (!find_initial_capacity(value.source)) {
+					unique_samples.emplace_back(value);
+					continue;
+				}
+				const MemorySourceKey key{value.source, value.window};
+				const auto [entry, inserted] =
+					demand_indices.try_emplace(key, unique_samples.size());
+				if (inserted)
+					unique_samples.emplace_back(value);
+				else {
+					auto& current = unique_samples[entry->second];
+					current.objectCount = std::max(current.objectCount, value.objectCount);
+					current.logicalLiveBytes =
+						std::max(current.logicalLiveBytes, value.logicalLiveBytes);
+					current.peakLogicalBytes =
+						std::max(current.peakLogicalBytes, value.peakLogicalBytes);
+					current.capacityCount = std::max(current.capacityCount, value.capacityCount);
+					current.backingAllocatedBytes =
+						std::max(current.backingAllocatedBytes, value.backingAllocatedBytes);
+					current.flags = current.flags | value.flags;
+					current.value_fields &= value.value_fields;
+				}
+			}
+			samples.swap(unique_samples);
 			std::unordered_map<MemorySourceId, MemoryValueSample> tuningAggregates;
 			for (const auto& value : samples) if (value.window != InvalidWindowId) {
 					auto& aggregate = tuningAggregates[value.source];
 					aggregate.source = value.source;
-					aggregate.flags = MemorySampleFlag::TuningAggregate;
+					aggregate.flags =
+						aggregate.flags | value.flags | MemorySampleFlag::TuningAggregate;
 					aggregate.value_fields &= value.value_fields;
 					aggregate.logicalLiveBytes =
 						std::max(aggregate.logicalLiveBytes, value.logicalLiveBytes);
@@ -389,6 +423,10 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 					aggregate.reusableBytes =
 						std::max(aggregate.reusableBytes, value.reusableBytes);
 					aggregate.objectCount = std::max(aggregate.objectCount, value.objectCount);
+					aggregate.peakObjectCount =
+						std::max(aggregate.peakObjectCount, value.peakObjectCount);
+					aggregate.peakLogicalBytes =
+						std::max(aggregate.peakLogicalBytes, value.peakLogicalBytes);
 					aggregate.capacityCount =
 						std::max(aggregate.capacityCount, value.capacityCount);
 			}
@@ -428,6 +466,40 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 					: ::FlowUi::detail::storage::StorageMemoryDetail::Summary}, storage);
 			storageDuration = nowNs() - begin;
 			if (hasStorage) {
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+				if (impl_->memory->config().level >= MemoryMonitoringLevel::SubsystemCapacity) {
+					for (const auto& demand : storage.capacity_demands)
+						samples.emplace_back(MemoryValueSample{
+							.source = demand.target,
+							.window = demand.window,
+							.backingAllocatedBytes = demand.backing_bytes,
+							.objectCount = demand.entries,
+							.capacityCount = demand.capacity,
+							.flags = MemorySampleFlag::Estimate | MemorySampleFlag::TuningAggregate,
+							.value_fields = uint16_t(MemoryValueField::Objects) |
+											uint16_t(MemoryValueField::Capacity) |
+											uint16_t(MemoryValueField::Backing)});
+				}
+#endif
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+				if (impl_->memory->config().level >= MemoryMonitoringLevel::SubsystemCapacity) {
+					std::unordered_map<MemorySourceId, MemoryValueSample> demand_maxima;
+					for (const auto& demand : storage.capacity_demands)
+						if (demand.window != InvalidWindowId) {
+							auto& maximum = demand_maxima[demand.target];
+							maximum.source = demand.target;
+							maximum.objectCount = std::max(maximum.objectCount, demand.entries);
+							maximum.capacityCount =
+								std::max(maximum.capacityCount, demand.capacity);
+							maximum.flags =
+								MemorySampleFlag::Estimate | MemorySampleFlag::TuningAggregate;
+							maximum.value_fields = uint16_t(MemoryValueField::Objects) |
+												   uint16_t(MemoryValueField::Capacity);
+						}
+					for (const auto& [source, maximum] : demand_maxima)
+						samples.emplace_back(maximum);
+				}
+#endif
 				std::unordered_map<MemorySourceKey, MemoryValueSample, SourceKeyHash> aggregated;
 				std::unordered_map<MemorySourceId, MemoryValueSample> tuningAggregates;
 				for (const auto& allocator : storage.allocators) {
@@ -446,7 +518,7 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 					if (allocator.window != InvalidWindowId) {
 						auto& tuning = tuningAggregates[source];
 						tuning.source = source;
-						tuning.flags = MemorySampleFlag::TuningAggregate;
+						tuning.flags = tuning.flags | MemorySampleFlag::TuningAggregate;
 						tuning.logicalLiveBytes = std::max(tuning.logicalLiveBytes, allocator.liveBytes);
 						tuning.backingAllocatedBytes = std::max(tuning.backingAllocatedBytes, allocator.reservedBytes);
 						tuning.peakLogicalBytes = std::max(tuning.peakLogicalBytes, allocator.peakLiveBytes);

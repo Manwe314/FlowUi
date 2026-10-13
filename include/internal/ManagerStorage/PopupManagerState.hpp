@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <cstdint>
 #include <unordered_map>
@@ -34,10 +35,12 @@ struct PopupSubmission {
 };
 
 struct PopupManagerState {
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	std::unordered_map<uint64_t, PopupRecord> committedRecords{};
 	std::unordered_map<uint64_t, PopupRecord> workingRecords{};
 	std::unordered_map<uint64_t, size_t> currentSubmissionByKey{};
 	std::vector<uint64_t> committedStack{};
+	std::vector<uint64_t> nextStack{};
 	std::vector<PopupSubmission> currentSubmissions{};
 	uint64_t nextSubmissionOrder = 1;
 	Clay_Vector2 pointerPosition{};

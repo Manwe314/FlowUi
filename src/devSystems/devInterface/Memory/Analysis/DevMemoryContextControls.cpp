@@ -48,7 +48,7 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 			.draw();
 		button(context, workbench, 100, state.recording ? "Stop & save" : "Record",
 			   reporting.status().runtimeLevel != MemoryMonitoringLevel::Disabled);
-		button(context, workbench, 106, "…");
+		button(context, workbench, 106, "...");
 		if (state.show_recording_settings) {
 			auto panel = column(8);
 			panel.layout.sizing.width = CLAY_SIZING_FIXED(300);
@@ -65,6 +65,10 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 				FSEL::TextInputParameters name{};
 				name.value = &state.capture_name;
 				name.maxBytes = 80;
+				name.fontSize = 11;
+				name.floatingZIndex = 91;
+				name.padding = Clay_Padding{8, 8, 4, 4};
+				name.centerText = true;
 				name.sizing =
 					Clay_Sizing{.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(28)};
 				context.uiManager.createElement(FSEL::kTextInput, "capture-name")
@@ -72,7 +76,7 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 					.setDevInternalCapture(true)
 					.draw();
 				number(context, "record-duration", "Duration seconds (0 = manual)",
-					   state.recording_seconds, 0.0, 3600.0);
+					   state.recording_seconds, 0.0, 3600.0, 91);
 				button(context, workbench, 108,
 					   state.include_recent ? "Pre-start history: 5 s" : "Pre-start history: off");
 				button(context, workbench, 109,

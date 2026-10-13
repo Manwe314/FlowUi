@@ -28,7 +28,7 @@ namespace FlowUi {
 #if FLOW_UI_DEV_MODE
 namespace devSystems { namespace tooling { struct DevOverlayCommandBuffer; } }
 #endif
-#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+#if FLOW_UI_DEV_MODE
 namespace devSystems { class DevTimingRecorder; class MemorySampleSink; struct GpuTimingCommandContext; }
 #endif
 }
@@ -144,7 +144,7 @@ void destroySharedUiByteResources(
 	SharedUiByteResources& resources) noexcept;
 
 struct VulkanUiRenderer {
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(
 		FlowUi::devSystems::MemorySampleSink& sink,
 		const PreparedUiFrame* prepared = nullptr) const noexcept;

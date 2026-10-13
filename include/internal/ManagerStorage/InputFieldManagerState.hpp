@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -118,6 +119,7 @@ struct InputPointerDragState {
 };
 
 struct InputFieldManagerState {
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	FrameInput currentInput{};
 	FrameInput previousInput{};
 	FontFrameView fontView{};

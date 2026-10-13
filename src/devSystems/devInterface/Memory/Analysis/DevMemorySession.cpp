@@ -17,6 +17,7 @@ Status save_memory_dataset(MemoryAnalysisState& state, DevMemoryReporting& repor
 	}
 	MemoryDataset saved;
 	saved.live = reporting.read_live();
+	saved.sample_every_ticks = reporting.config().managerSampleEveryTicks;
 	saved.end_ns = end_ns ? end_ns : saved.live.status.last_consumed_ns;
 	saved.begin_ns = begin_ns							? begin_ns
 					 : saved.end_ns > 30'000'000'000ull ? saved.end_ns - 30'000'000'000ull
@@ -67,6 +68,7 @@ void delete_memory_dataset(MemoryAnalysisState& state) {
 	state.message = "Saved dataset removed; live collection continues.";
 }
 void update_memory_session(MemoryAnalysisState& state, DevMemoryReporting& reporting) {
+	state.sample_every_ticks = reporting.config().managerSampleEveryTicks;
 	const auto action = std::exchange(state.pending_action, 0);
 	if (action == 1) {
 		if (!state.recording) {
@@ -130,8 +132,10 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 			"This configuration key already has a proposal. Confirm replacement.";
 		return unexpectedError(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::None));
 	}
-	const bool factor_changed =
-		!state.staged.empty() && std::abs(state.plan->factor - state.shared_factor) > .000001;
+	const auto* definition = find_initial_capacity(target.id);
+	const bool storage_policy = !definition || !definition->storage_member.empty();
+	const bool factor_changed = storage_policy && !state.staged.empty() &&
+								std::abs(state.plan->factor - state.shared_factor) > .000001;
 	if (factor_changed && !confirm_factor) {
 		state.shared_factor_pending = true;
 		state.planner_message =
@@ -143,6 +147,11 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 	for (const auto& staged : state.staged) {
 		if (staged.target.id == target.id) {
 			reevaluated.emplace_back(*state.plan);
+			continue;
+		}
+		const auto* staged_definition = find_initial_capacity(staged.target.id);
+		if (!storage_policy || (staged_definition && staged_definition->storage_member.empty())) {
+			reevaluated.emplace_back(staged.plan);
 			continue;
 		}
 		auto result = replay_memory_plan(staged.evidence, staged.target, staged.plan.initial,
@@ -159,8 +168,39 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 		state.staged[index].plan = std::move(reevaluated[index]);
 	MemorySettingDraft draft;
 	draft.target = target;
+	draft.synthetic = state.evidence_mode == 2;
+	draft.selection_policy = state.planner.initial_mode == 1   ? "percentile"
+							 : state.planner.initial_mode == 0 ? "manual"
+															   : "observed_maximum";
+	draft.percentile = state.planner.percentile;
+	draft.export_evidence.source_name = "Retained live samples";
+	draft.export_evidence.kind = state.evidence_mode == 1		  ? "maximum"
+								 : selected_memory_dataset(state) ? "recording"
+																  : "live";
+	draft.export_evidence.sample_every_ticks =
+		selected_memory_dataset(state) ? selected_memory_dataset(state)->sample_every_ticks
+									   : state.sample_every_ticks;
+	if (const auto* dataset = selected_memory_dataset(state)) {
+		if (dataset->snapshot)
+			draft.export_evidence.kind = "maximum";
+		draft.export_evidence.end_tick_exclusive = dataset->live.status.lastConsumedAppTick + 1;
+		draft.export_evidence.source_name = dataset->name;
+		draft.export_evidence.dataset_id = dataset->identity;
+		draft.export_evidence.begin_ns = dataset->begin_ns;
+		draft.export_evidence.end_ns = dataset->end_ns;
+		uint64_t begin_tick = UINT64_MAX;
+		for (const auto& segment : dataset->segments)
+			begin_tick = std::min(begin_tick, segment.beginTick);
+		draft.export_evidence.begin_tick = begin_tick == UINT64_MAX ? 0 : begin_tick;
+	}
 	draft.evidence = state.evidence;
 	draft.plan = *state.plan;
+	if (draft.selection_policy == "percentile" &&
+		draft.plan.initial >= draft.plan.percentile_demand)
+		draft.headroom = draft.plan.initial - draft.plan.percentile_demand;
+	if (draft.selection_policy == "observed_maximum" &&
+		draft.plan.initial >= draft.plan.observed_maximum)
+		draft.headroom = draft.plan.initial - draft.plan.observed_maximum;
 	draft.maximum_growths =
 		state.planner.preset == 3 ? state.planner.maximum_growths : state.planner.preset;
 	draft.final_budget = state.planner.final_budget;
@@ -168,16 +208,57 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 					   : selected_memory_dataset(state) ? selected_memory_dataset(state)->name
 														: "Retained live samples";
 	draft.complete = selected_memory_dataset(state) && selected_memory_dataset(state)->complete;
+	draft.export_evidence.complete = draft.complete;
 	if (existing != state.staged.end())
 		*existing = std::move(draft);
 	else
 		state.staged.emplace_back(std::move(draft));
-	state.shared_factor = state.plan->factor;
+	if (storage_policy)
+		state.shared_factor = state.plan->factor;
 	state.replace_pending = state.shared_factor_pending = false;
 	state.show_review = true;
-	state.planner_message = "Staged locally; Export / Bake backend is not connected.";
+	state.planner_message =
+		"Staged locally for the next build; inspector Export / Bake controls remain unwired.";
 	++state.staged_revision;
 	return {};
 }
+
+Result<MemoryCapacityManifest>
+export_staged_memory_capacities(const MemoryAnalysisState& state,
+								bool acknowledge_incomplete) noexcept {
+	try {
+		MemoryCapacityManifest result{};
+		result.targets.reserve(state.staged.size());
+		bool has_storage = false;
+		for (const auto& draft : state.staged) {
+			const auto* definition = find_initial_capacity(draft.target.id);
+			if (!definition || draft.synthetic || draft.evidence.empty())
+				return unexpectedError(
+					makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::None));
+			MemoryCapacitySelection selection{};
+			selection.key = std::string(definition->key);
+			selection.policy = draft.selection_policy;
+			selection.value = draft.plan.initial;
+			selection.observed_maximum = draft.plan.observed_maximum;
+			selection.headroom = draft.headroom;
+			selection.percentile = draft.percentile;
+			selection.evidence = draft.export_evidence;
+			selection.evidence.acknowledge_incomplete = acknowledge_incomplete;
+			result.targets.emplace_back(std::move(selection));
+			has_storage = has_storage || !definition->storage_member.empty();
+		}
+		// Geometric policy belongs only to the storage byte targets.
+		if (has_storage)
+			result.growth_factor = static_cast<float>(state.shared_factor);
+		std::string diagnostic;
+		if (!validate_memory_capacity_manifest(result, diagnostic))
+			return unexpectedError(
+				makeError(ErrorCode::StorageConfigurationInvalid, ErrorSite::None));
+		return result;
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::None));
+	}
+}
+
 } // namespace FlowUi::devSystems::interface_elements
 #endif

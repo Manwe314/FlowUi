@@ -59,7 +59,8 @@ void choice(Context& context, LocalElementName identity, std::string_view label,
 }
 template <class Context, class Number>
 void number(Context& context, LocalElementName identity, std::string_view label, Number& value,
-			Number minimum, Number maximum) {
+			Number minimum, Number maximum,
+			std::optional<int16_t> floating_z_index = std::nullopt) {
 	text(context, label, interface_theme::kTextMuted, 10);
 	FSEL::NumberInputParameters<Number> parameters{};
 	parameters.value = &value;
@@ -68,7 +69,11 @@ void number(Context& context, LocalElementName identity, std::string_view label,
 	parameters.sizing =
 		Clay_Sizing{.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(28)};
 	parameters.fontSize = 11;
+	parameters.floatingZIndex = floating_z_index;
+	parameters.padding = Clay_Padding{8, 8, 4, 4};
+	parameters.centerText = true;
 	parameters.stepButtons = FSEL::NumberInputStepButtons::TrailingVertical;
+	parameters.stepIconSize = 10;
 	if constexpr (std::same_as<Number, double>) {
 		parameters.step = .1;
 		context.uiManager.createElement(kDoubleInput, identity)

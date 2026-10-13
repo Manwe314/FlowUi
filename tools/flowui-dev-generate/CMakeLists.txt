@@ -7,6 +7,7 @@ add_executable(flowui-dev-generate
 	ManifestParser.cpp
 	CppCodeGenerator.cpp
 )
+target_include_directories(flowui-dev-generate PRIVATE ../../include)
 target_compile_features(flowui-dev-generate PRIVATE cxx_std_23)
 target_compile_options(flowui-dev-generate PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 if(MSVC)

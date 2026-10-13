@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include "FlowUi/BuildConfig.hpp"
 
@@ -25,6 +26,10 @@ public:
 	DevMemory& operator=(const DevMemory&) = delete;
 
 	void setConfig(const DevMemoryConfig& config) noexcept;
+#if FLOWUI_DEV_MEMORY_LEVEL >= 2
+	/** Stable gate whose lifetime matches this monitoring service. */
+	[[nodiscard]] const ::FlowUi::detail::MemoryDemandControl* demand_control() const noexcept;
+#endif
 	[[nodiscard]] DevMemoryConfig config() const noexcept;
 	[[nodiscard]] MemoryMonitoringLevel compiledLevel() const noexcept;
 

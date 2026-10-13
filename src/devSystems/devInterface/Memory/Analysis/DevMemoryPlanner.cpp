@@ -204,6 +204,8 @@ std::string memory_target_value(uint64_t value, MemoryCapacityUnit unit, bool de
 																		   : " pages");
 }
 std::string memory_public_config_key(std::string_view key) {
+	if (key.starts_with("flowui.tuning."))
+		return "AppConfig.memoryCapacityProfile.settings[" + std::string(key) + "]";
 	std::string result(key);
 	if (result.ends_with("Reserve"))
 		result.resize(result.size() - 7);

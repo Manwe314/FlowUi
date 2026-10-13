@@ -1,4 +1,5 @@
 #include "managers/InputFieldManager.hpp"
+#include "internal/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -22,6 +23,29 @@
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 
 namespace {
+
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+/** Retain one field's final demand before replacement or removal. */
+void record_field_demand(FlowUi::detail::MemoryDemandPeaks& peaks,
+						 const FlowUi::detail::manager_storage::InputFieldState& field) noexcept {
+	peaks.record(FlowUi::InitialCapacityTarget::field_carets, field.carets.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_focus_retention_element_ids,
+				 field.focusRetentionElementIds.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_visible_line_strings,
+				 field.visibleLineStrings.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_visible_lines, field.visibleLines.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_submitted_text_spans,
+				 field.submittedTextSpans.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_frame_transactions,
+				 field.frameTransactions.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_frame_transaction_views,
+				 field.frameTransactionViews.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_frame_command_requests,
+				 field.frameCommandRequests.size());
+	peaks.record(FlowUi::InitialCapacityTarget::field_wrap_cache_by_hard_line,
+				 field.wrapCacheByHardLine.size());
+}
+#endif
 
 constexpr float kBoundsEpsilon = 0.5f;
 constexpr double kKeyRepeatInitialDelaySeconds = 0.35;
@@ -187,13 +211,89 @@ namespace FlowUi {
 void InputFieldManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!state_) return;
 	try {
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::input_fields_registry,
+										   state_->fieldsById, state_->capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, InitialCapacityTarget::input_fields_pending_commands, state_->pendingCommands,
+			state_->capacity_demand, window_);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::input_fields_selected_text,
+										   state_->selectedTextScratch, state_->capacity_demand,
+										   window_);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::input_fields_rect_override,
+										   state_->frameOverrides.rects, state_->capacity_demand,
+										   window_);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::input_fields_color_override,
+										   state_->frameOverrides.textColorOverrides,
+										   state_->capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, InitialCapacityTarget::input_fields_layout_override,
+			state_->frameOverrides.textLayoutOverrides, state_->capacity_demand, window_);
 		devSystems::DevContainerMemoryAccumulator memory{};
+		constexpr std::array field_targets{
+			InitialCapacityTarget::field_carets,
+			InitialCapacityTarget::field_focus_retention_element_ids,
+			InitialCapacityTarget::field_visible_line_strings,
+			InitialCapacityTarget::field_visible_lines,
+			InitialCapacityTarget::field_submitted_text_spans,
+			InitialCapacityTarget::field_frame_transactions,
+			InitialCapacityTarget::field_frame_transaction_views,
+			InitialCapacityTarget::field_frame_command_requests,
+			InitialCapacityTarget::field_wrap_cache_by_hard_line,
+		};
+		std::array<devSystems::MemoryValueSample, field_targets.size()> field_demands{};
+		const auto observe_field = [&](size_t target_index, const auto& container) {
+			devSystems::DevContainerMemoryAccumulator estimate{};
+			if constexpr (requires { container.bucket_count(); })
+				estimate.addNodeContainer(container);
+			else
+				estimate.add(container);
+			auto& demand = field_demands[target_index];
+			demand.objectCount = std::max<uint64_t>(demand.objectCount, container.size());
+			demand.logicalLiveBytes = std::max(demand.logicalLiveBytes, estimate.liveBytes);
+			demand.backingAllocatedBytes =
+				std::max(demand.backingAllocatedBytes, estimate.capacityBytes);
+			if constexpr (requires { container.capacity(); })
+				demand.capacityCount =
+					std::max<uint64_t>(demand.capacityCount, container.capacity());
+			else
+				demand.capacityCount =
+					std::max<uint64_t>(demand.capacityCount, container.bucket_count());
+		};
+		for (const auto& [field_id, field] : state_->fieldsById) {
+			observe_field(0, field.carets);
+			observe_field(1, field.focusRetentionElementIds);
+			observe_field(2, field.visibleLineStrings);
+			observe_field(3, field.visibleLines);
+			observe_field(4, field.submittedTextSpans);
+			observe_field(5, field.frameTransactions);
+			observe_field(6, field.frameTransactionViews);
+			observe_field(7, field.frameCommandRequests);
+			observe_field(8, field.wrapCacheByHardLine);
+		}
+		for (size_t target_index = 0; target_index < field_targets.size(); ++target_index) {
+			auto& demand = field_demands[target_index];
+			const auto target = field_targets[target_index];
+			demand.source = initial_capacity_definitions[static_cast<size_t>(target)].id();
+			demand.window = window_;
+			demand.objectCount = state_->capacity_demand.consume(target, demand.objectCount);
+			demand.flags = devSystems::MemorySampleFlag::TuningAggregate |
+						   devSystems::MemorySampleFlag::Estimate;
+			demand.value_fields = uint16_t(devSystems::MemoryValueField::Objects) |
+								  uint16_t(devSystems::MemoryValueField::Capacity) |
+								  uint16_t(devSystems::MemoryValueField::LogicalLive) |
+								  uint16_t(devSystems::MemoryValueField::Backing);
+			(void)sink.append(demand);
+		}
 		devSystems::DevContainerMemoryAccumulator textPayload{};
 		memory.addNodeContainer(state_->fieldsById);
 		memory.add(state_->pendingCommands);
+		memory.add(state_->frameOverrides.rects);
+		memory.add(state_->frameOverrides.textColorOverrides);
+		memory.add(state_->frameOverrides.textLayoutOverrides);
+		for (const auto& overlay : state_->frameOverrides.textColorOverrides)
+			memory.add(overlay.ranges);
 		memory.add(state_->selectedTextScratch);
 		for (const auto& [_, field] : state_->fieldsById) {
-			textPayload.liveBytes += detail::text::byteCount(field.storage);
 			std::visit([&](const auto& storage) {
 				using Storage = std::decay_t<decltype(storage)>;
 				if constexpr (std::is_same_v<Storage, detail::text::SingleLineStorage>) {
@@ -215,6 +315,16 @@ void InputFieldManager::appendDevMemorySamples(devSystems::MemorySampleSink& sin
 			memory.addNodeContainer(field.wrapCacheByHardLine);
 			for (const auto& [__, wrap] : field.wrapCacheByHardLine) memory.add(wrap.visualRanges);
 			memory.add(field.frameTransactions);
+			for (const auto& transaction : field.frameTransactions) {
+				memory.add(transaction.replacements);
+				memory.add(transaction.replacementViews);
+				memory.add(transaction.selectionsBefore);
+				memory.add(transaction.selectionsAfter);
+				for (const auto& replacement : transaction.replacements) {
+					memory.add(replacement.removedText);
+					memory.add(replacement.insertedText);
+				}
+			}
 			memory.add(field.frameTransactionViews);
 			memory.add(field.frameCommandRequests);
 		}
@@ -252,6 +362,27 @@ void InputFieldManager::init(
 		destroy();
 		throw FlowUiException(makeError(ErrorCode::ResourcePublicationFailed, ErrorSite::InputManagerInitialize));
 	}
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	state_->capacity_demand.bind(storageSystem.memory_demand_control());
+#endif
+	detail::reserve_initial_capacity(
+		state_->fieldsById,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::input_fields_registry));
+	detail::reserve_initial_capacity(state_->pendingCommands,
+									 storageSystem.initial_memory_capacity(
+										 InitialCapacityTarget::input_fields_pending_commands));
+	detail::reserve_initial_capacity(
+		state_->selectedTextScratch,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::input_fields_selected_text));
+	detail::reserve_initial_capacity(
+		state_->frameOverrides.rects,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::input_fields_rect_override));
+	detail::reserve_initial_capacity(
+		state_->frameOverrides.textColorOverrides,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::input_fields_color_override));
+	detail::reserve_initial_capacity(
+		state_->frameOverrides.textLayoutOverrides,
+		storageSystem.initial_memory_capacity(InitialCapacityTarget::input_fields_layout_override));
 	state_->config = config;
 	state_->pointsToPixelsScale = std::max(pointsToPixelsScale, 1.0e-6f);
 	textLayoutService_ = &textLayoutService;
@@ -367,11 +498,26 @@ void InputFieldManager::beginFrame(
 		++state_->currentTouchEpoch;
 	}
 
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_pending_commands,
+								state_->pendingCommands.size());
 	state_->pendingCommands.clear();
 	for (auto& [_, field] : state_->fieldsById) {
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::field_frame_transactions,
+									field.frameTransactions.size());
 		field.frameTransactions.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::field_frame_transaction_views,
+									field.frameTransactionViews.size());
 		field.frameTransactionViews.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::field_frame_command_requests,
+									field.frameCommandRequests.size());
 		field.frameCommandRequests.clear();
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::field_submitted_text_spans,
+									field.submittedTextSpans.size());
 		field.submittedTextSpans.clear();
 	}
 	if (!hasPrimaryFieldFocus()) {
@@ -400,8 +546,17 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		storage_->noteManagerMutation(window_);
 		state_->dirty = false;
 	};
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_rect_override,
+								state_->frameOverrides.rects.size());
 	state_->frameOverrides.rects.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_color_override,
+								state_->frameOverrides.textColorOverrides.size());
 	state_->frameOverrides.textColorOverrides.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_layout_override,
+								state_->frameOverrides.textLayoutOverrides.size());
 	state_->frameOverrides.textLayoutOverrides.clear();
 
 	const bool isPrimaryPointerDown = state_->currentInput.mouseDown[0];
@@ -417,6 +572,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		if (primaryIt == state_->fieldsById.end() ||
 			primaryIt->second.lastTouchedEpoch != state_->currentTouchEpoch) {
 			for (auto& [_, field] : state_->fieldsById) {
+				FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+											InitialCapacityTarget::field_carets,
+											field.carets.size());
 				field.carets.clear();
 			}
 			state_->primaryFieldId = {};
@@ -539,6 +697,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 	if (runtimes.empty()) {
 		if (pointerPressed) {
 			for (auto& [_, field] : state_->fieldsById) {
+				FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+											InitialCapacityTarget::field_carets,
+											field.carets.size());
 				field.carets.clear();
 			}
 			state_->primaryFieldId = {};
@@ -762,6 +923,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 
 		if ((!targetRuntime || !targetRuntime->field) && !retainPrimaryFocus) {
 			for (auto& [_, field] : state_->fieldsById) {
+				FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+											InitialCapacityTarget::field_carets,
+											field.carets.size());
 				field.carets.clear();
 			}
 			state_->primaryFieldId = {};
@@ -770,6 +934,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			FieldState& field = *targetRuntime->field;
 			const size_t hitOffset = resolvePointerOffsetInRuntime(*targetRuntime, state_->currentInput.mouseX, state_->currentInput.mouseY);
 			for (auto& [_, candidate] : state_->fieldsById) {
+				FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+											InitialCapacityTarget::field_carets,
+											candidate.carets.size());
 				candidate.carets.clear();
 			}
 			field.carets = { CaretState{hitOffset, hitOffset} };
@@ -803,6 +970,9 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 					markCaretBlinkReset();
 				}
 				if (dragField.carets.size() > 1u) {
+					FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+												InitialCapacityTarget::field_carets,
+												dragField.carets.size());
 					dragField.carets.resize(1u);
 				}
 			}
@@ -858,8 +1028,6 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		return renderCommands;
 	}
 
-	state_->frameOverrides.rects.reserve(64u);
-	state_->frameOverrides.textColorOverrides.reserve(32u);
 	const int32_t maxInsertionIndex = std::max<int32_t>(0, renderCommands.length);
 
 	auto pushRectOverride = [&](int32_t insertBeforeCommandIndex, float x, float y, float w, float h, const Clay_Color& color) {
@@ -1211,6 +1379,38 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 
 	auto [it, inserted] = state_->fieldsById.try_emplace(fieldId);
 	FieldState& field = it->second;
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	record_field_demand(state_->capacity_demand, field);
+#endif
+	if (inserted) {
+		detail::reserve_initial_capacity(
+			field.carets, storage_->initial_memory_capacity(InitialCapacityTarget::field_carets));
+		detail::reserve_initial_capacity(
+			field.focusRetentionElementIds,
+			storage_->initial_memory_capacity(
+				InitialCapacityTarget::field_focus_retention_element_ids));
+		detail::reserve_initial_capacity(
+			field.visibleLineStrings,
+			storage_->initial_memory_capacity(InitialCapacityTarget::field_visible_line_strings));
+		detail::reserve_initial_capacity(
+			field.visibleLines,
+			storage_->initial_memory_capacity(InitialCapacityTarget::field_visible_lines));
+		detail::reserve_initial_capacity(
+			field.submittedTextSpans,
+			storage_->initial_memory_capacity(InitialCapacityTarget::field_submitted_text_spans));
+		detail::reserve_initial_capacity(
+			field.frameTransactions,
+			storage_->initial_memory_capacity(InitialCapacityTarget::field_frame_transactions));
+		detail::reserve_initial_capacity(field.frameTransactionViews,
+										 storage_->initial_memory_capacity(
+											 InitialCapacityTarget::field_frame_transaction_views));
+		detail::reserve_initial_capacity(
+			field.frameCommandRequests,
+			storage_->initial_memory_capacity(InitialCapacityTarget::field_frame_command_requests));
+		detail::reserve_initial_capacity(field.wrapCacheByHardLine,
+										 storage_->initial_memory_capacity(
+											 InitialCapacityTarget::field_wrap_cache_by_hard_line));
+	}
 	FieldConfig normalizedConfig = request.config;
 	if (normalizedConfig.allowNewline) normalizedConfig.mode = TextFieldMode::MultiLine;
 	normalizedConfig.allowNewline = normalizedConfig.mode == TextFieldMode::MultiLine;
@@ -1231,13 +1431,21 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 			normalizedConfig.mode = text_storage::storageMode(field.storage);
 			normalizedConfig.allowNewline = normalizedConfig.mode == TextFieldMode::MultiLine;
 		} else {
+			FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+										InitialCapacityTarget::field_wrap_cache_by_hard_line,
+										field.wrapCacheByHardLine.size());
 			field.wrapCacheByHardLine.clear();
 			field.scrollOffset = {};
 		}
 	} else {
 		field.modeChangeRejected = false;
 	}
-	if (!sameLayoutDescriptor(field.layout, request.layout)) field.wrapCacheByHardLine.clear();
+	if (!sameLayoutDescriptor(field.layout, request.layout)) {
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+									InitialCapacityTarget::field_wrap_cache_by_hard_line,
+									field.wrapCacheByHardLine.size());
+		field.wrapCacheByHardLine.clear();
+	}
 	field.config = normalizedConfig;
 	field.layout = request.layout;
 	field.overlayStyle = normalizeOverlayStyle(request.overlayStyle.value_or(
@@ -1382,8 +1590,16 @@ std::string_view InputFieldManager::getSelectedText() const {
 	if (const auto textView = text_storage::contiguous(field.storage)) {
 		return textView->substr(selectedStart, selectedEnd - selectedStart);
 	}
-	state_->selectedTextScratch = text_storage::copy(
-		field.storage, TextRange{selectedStart, selectedEnd});
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_selected_text,
+								state_->selectedTextScratch.size());
+	state_->selectedTextScratch.clear();
+	text_storage::forEachChunk(
+		field.storage, TextRange{selectedStart, selectedEnd},
+		[&](std::string_view chunk) { state_->selectedTextScratch.append(chunk); });
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_selected_text,
+								state_->selectedTextScratch.size());
 	return state_->selectedTextScratch;
 }
 
@@ -1585,6 +1801,9 @@ EditResult InputFieldManager::commitEdits(
 	for (auto it = prepared.rbegin(); it != prepared.rend(); ++it) {
 		text_storage::replace(field.storage, it->range, it->inserted);
 	}
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::field_wrap_cache_by_hard_line,
+								field.wrapCacheByHardLine.size());
 	for (auto cache = field.wrapCacheByHardLine.begin(); cache != field.wrapCacheByHardLine.end();) {
 		if (cache->first >= firstChangedLine) cache = field.wrapCacheByHardLine.erase(cache);
 		else ++cache;
@@ -1607,6 +1826,9 @@ EditResult InputFieldManager::commitEdits(
 }
 
 void InputFieldManager::refreshTransactionViews(FieldState& field) {
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::field_frame_transaction_views,
+								field.frameTransactionViews.size());
 	field.frameTransactionViews.clear();
 	field.frameTransactionViews.reserve(field.frameTransactions.size());
 	for (auto& transaction : field.frameTransactions) {
@@ -1638,6 +1860,8 @@ void InputFieldManager::requestCaretByKey(
 	CaretRequestKind kind) {
 	if (kind == CaretRequestKind::ClearAll) {
 		for (auto& [_, field] : state_->fieldsById) {
+			FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+										InitialCapacityTarget::field_carets, field.carets.size());
 			field.carets.clear();
 		}
 		state_->primaryFieldId = {};
@@ -1662,6 +1886,8 @@ void InputFieldManager::requestCaretByKey(
 		}
 
 		for (auto& [_, entry] : state_->fieldsById) {
+			FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+										InitialCapacityTarget::field_carets, entry.carets.size());
 			entry.carets.clear();
 		}
 		if (hadExistingCaret) {
@@ -1718,6 +1944,12 @@ bool InputFieldManager::removeFieldByKey(field_key::InputFieldKey fieldId) {
 	if (it == state_->fieldsById.end()) {
 		return false;
 	}
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_registry,
+								state_->fieldsById.size());
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	record_field_demand(state_->capacity_demand, it->second);
+#endif
 	state_->fieldsById.erase(it);
 
 	if (state_->primaryFieldId == fieldId) {
@@ -1816,6 +2048,8 @@ bool InputFieldManager::replaceTextByKey(
 	if (preserveCaret) {
 		clampCaretsToText(field);
 	} else {
+		FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand, InitialCapacityTarget::field_carets,
+									field.carets.size());
 		field.carets.clear();
 		if (state_->primaryFieldId == fieldId) {
 			state_->primaryFieldId = {};
@@ -1853,6 +2087,13 @@ bool InputFieldManager::replaceText(ResourceKey key, std::string_view text, bool
 }
 
 void InputFieldManager::clear() {
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_registry,
+								state_->fieldsById.size());
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	for (const auto& [field_id, field] : state_->fieldsById)
+		record_field_demand(state_->capacity_demand, field);
+#endif
 	state_->fieldsById.clear();
 	state_->primaryFieldId = {};
 	state_->previousInput = FrameInput{};
@@ -1869,10 +2110,25 @@ void InputFieldManager::clear() {
 	state_->caretBlinkElapsedSeconds = 0.0;
 	state_->caretBlinkResetPending = true;
 	state_->emitCaretsThisFrame = true;
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_rect_override,
+								state_->frameOverrides.rects.size());
 	state_->frameOverrides.rects.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_color_override,
+								state_->frameOverrides.textColorOverrides.size());
 	state_->frameOverrides.textColorOverrides.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_layout_override,
+								state_->frameOverrides.textLayoutOverrides.size());
 	state_->frameOverrides.textLayoutOverrides.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_pending_commands,
+								state_->pendingCommands.size());
 	state_->pendingCommands.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::input_fields_selected_text,
+								state_->selectedTextScratch.size());
 	state_->selectedTextScratch.clear();
 }
 
@@ -1958,6 +2214,8 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 		if (pending.fieldId != fieldId) continue;
 		switch (pending.command) {
 		case TextCommand::SelectAll:
+			FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+										InitialCapacityTarget::field_carets, field.carets.size());
 			field.carets = {CaretState{0, text_storage::byteCount(field.storage)}};
 			field.caretRevealPending = true;
 			markCaretBlinkReset();
@@ -2416,7 +2674,12 @@ void InputFieldManager::revealPrimaryCaret(FieldState& field) {
 }
 
 void InputFieldManager::materializeVisibleLines(FieldState& field) {
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
+								InitialCapacityTarget::field_visible_line_strings,
+								field.visibleLineStrings.size());
 	field.visibleLineStrings.clear();
+	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand, InitialCapacityTarget::field_visible_lines,
+								field.visibleLines.size());
 	field.visibleLines.clear();
 	const float lineHeight = fieldLineHeight(field);
 	const float viewportHeight = field.layout.viewportHeight > 0.0f

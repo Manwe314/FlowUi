@@ -1,10 +1,11 @@
 #pragma once
 
-#include <filesystem>
+#include "FlowUi/MemoryCapacityTargets.hpp"
 #include "FlowUi/Resources.hpp"
 #include <cstddef>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -156,18 +157,6 @@ struct DefaultTextShortcutConfig {
 struct ShortcutManagerConfig {
 	DefaultTextShortcutConfig textEditing{};
 };
-
-using MemoryCapacityTargetId = uint64_t;
-
-[[nodiscard]] consteval MemoryCapacityTargetId makeMemoryCapacityTargetId(
-	std::string_view stableName) {
-	uint64_t hash = 14695981039346656037ull;
-	for (const char character : stableName) {
-		hash ^= static_cast<uint64_t>(static_cast<unsigned char>(character));
-		hash *= 1099511628211ull;
-	}
-	return hash == 0u ? 1u : hash;
-}
 
 struct MemoryCapacitySetting {
 	MemoryCapacityTargetId target = 0u;
@@ -796,6 +785,8 @@ struct AppConfig {
 
 	/** Optional profiled startup capacities; zero fields preserve library defaults. */
 	MemoryCapacityProfile memoryCapacityProfile{};
+	/** Present compiled capacities override caller hints before any owner is created. */
+	bool prefer_baked_capacities = true;
 
 	/** Resolution and centralized reporting choices used for the App lifetime. */
 	ErrorContract errors{};

@@ -27,6 +27,14 @@ public:
 	}
 
 	DevCommandResult bake() noexcept;
+	/** Upsert selected capacities without requiring an element schema; review export does not
+	 * activate. */
+	[[nodiscard]] DevCommandResult
+	save_memory_capacities(const FlowUi::MemoryCapacityManifest& selections,
+						   std::span<const std::string_view> removed = {},
+						   const std::filesystem::path& review_path = {}) noexcept;
+	/** Remove all memory settings while retaining element/theme entries. */
+	[[nodiscard]] DevCommandResult reset_memory_capacities() noexcept;
 	[[nodiscard]] DevBakeStatusSnapshot queryStatus() const noexcept;
 	[[nodiscard]] std::vector<DevBakeDiffEntry> queryDiff() const noexcept;
 	[[nodiscard]] const DevBakeManifest& manifest() const noexcept { return manifest_; }

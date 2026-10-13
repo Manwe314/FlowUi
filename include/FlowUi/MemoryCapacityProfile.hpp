@@ -9,9 +9,94 @@
 #include <string_view>
 #include <vector>
 
+#include "FlowUi/Error.hpp"
 #include "FlowUi/PublicStructs.hpp"
 
 namespace FlowUi {
+
+/** Resolve startup precedence once. Conflicting caller duplicates and unknown active hints are
+ * errors. */
+[[nodiscard]] inline Result<MemoryCapacityProfile>
+resolve_memory_capacity_profile(const MemoryCapacityProfile& caller,
+								std::span<const MemoryCapacitySetting> compiled = {}) noexcept {
+	try {
+		if (!std::isfinite(caller.growthFactor) || caller.growthFactor <= 1)
+			return unexpectedError(
+				makeError(ErrorCode::StorageConfigurationInvalid, ErrorSite::StorageInitialize));
+		MemoryCapacityProfile effective = caller;
+		effective.settings.clear();
+		effective.settings.reserve(initial_capacity_definitions.size());
+		for (const auto& definition : initial_capacity_definitions) {
+			uint64_t typed = 0;
+			if (definition.target == InitialCapacityTarget::storage_persistent_bytes)
+				typed = caller.storage.initialPersistentCpuBytes;
+			if (definition.target == InitialCapacityTarget::storage_strings_bytes)
+				typed = caller.storage.initialStringBytes;
+			if (definition.target == InitialCapacityTarget::storage_frame_bytes)
+				typed = caller.storage.transientBytesPerFramePerWindow;
+			if (definition.target == InitialCapacityTarget::storage_worker_bytes)
+				typed = caller.storage.transientBytesPerWorker;
+			if (definition.target == InitialCapacityTarget::storage_decode_bytes)
+				typed = caller.storage.initialDecodeScratchBytes;
+			if (definition.target == InitialCapacityTarget::storage_staging_bytes)
+				typed = caller.storage.initialUploadStagingBytes;
+			if (definition.target == InitialCapacityTarget::storage_instance_bytes)
+				typed = caller.storage.initialInstanceBytesPerFrame;
+			if (typed) {
+				if (!valid_initial_capacity(definition, typed))
+					return unexpectedError(makeError(ErrorCode::StorageConfigurationInvalid,
+													 ErrorSite::StorageInitialize));
+				effective.settings.emplace_back(MemoryCapacitySetting{definition.id(), typed});
+			}
+		}
+		for (size_t index = 0; index < caller.settings.size(); ++index) {
+			const auto& setting = caller.settings[index];
+			const auto* definition = find_initial_capacity(setting.target);
+			if (!definition || !valid_initial_capacity(*definition, setting.value))
+				return unexpectedError(makeError(ErrorCode::StorageConfigurationInvalid,
+												 ErrorSite::StorageInitialize));
+			for (size_t prior = 0; prior < index; ++prior)
+				if (caller.settings[prior].target == setting.target &&
+					caller.settings[prior].value != setting.value)
+					return unexpectedError(makeError(ErrorCode::StorageConfigurationInvalid,
+													 ErrorSite::StorageInitialize));
+			std::erase_if(effective.settings,
+						  [&](const auto& current) { return current.target == setting.target; });
+			effective.settings.emplace_back(setting);
+		}
+		for (const auto& setting : compiled) {
+			const auto* definition = find_initial_capacity(setting.target);
+			if (!definition || !valid_initial_capacity(*definition, setting.value))
+				return unexpectedError(makeError(ErrorCode::StorageConfigurationInvalid,
+												 ErrorSite::StorageInitialize));
+			std::erase_if(effective.settings,
+						  [&](const auto& current) { return current.target == setting.target; });
+			effective.settings.emplace_back(setting);
+		}
+		for (const auto& setting : effective.settings) {
+			const auto* definition = find_initial_capacity(setting.target);
+			const auto value = setting.value ? setting.value : definition->default_value;
+			if (definition->target == InitialCapacityTarget::storage_persistent_bytes)
+				effective.storage.initialPersistentCpuBytes = value;
+			if (definition->target == InitialCapacityTarget::storage_strings_bytes)
+				effective.storage.initialStringBytes = value;
+			if (definition->target == InitialCapacityTarget::storage_frame_bytes)
+				effective.storage.transientBytesPerFramePerWindow = value;
+			if (definition->target == InitialCapacityTarget::storage_worker_bytes)
+				effective.storage.transientBytesPerWorker = value;
+			if (definition->target == InitialCapacityTarget::storage_decode_bytes)
+				effective.storage.initialDecodeScratchBytes = value;
+			if (definition->target == InitialCapacityTarget::storage_staging_bytes)
+				effective.storage.initialUploadStagingBytes = value;
+			if (definition->target == InitialCapacityTarget::storage_instance_bytes)
+				effective.storage.initialInstanceBytesPerFrame = value;
+		}
+		return effective;
+	} catch (...) {
+		return unexpectedError(
+			makeError(ErrorCode::AllocationFailed, ErrorSite::StorageInitialize));
+	}
+}
 
 struct MemoryGrowthSimulation {
 	uint64_t initialCapacity = 0u;

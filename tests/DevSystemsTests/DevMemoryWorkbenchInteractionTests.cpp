@@ -153,6 +153,12 @@ int main() {
 		assert(session.memory_workbench.held_data->segments[index].endNs == held[index].endNs);
 	click(5);
 	assert(!session.memory_workbench.following);
+	const auto zoomed_duration =
+		session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns;
+	session.memory_workbench.navigator = .5;
+	draw();
+	assert(session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns ==
+		   zoomed_duration);
 	click(2);
 	assert(session.memory_workbench.following);
 	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);

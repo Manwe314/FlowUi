@@ -1,4 +1,5 @@
 #pragma once
+#include "internal/MemoryDemandPeaks.hpp"
 
 #include <algorithm>
 #include <array>
@@ -80,6 +81,7 @@ public:
 	void retireTargets(ViewportTargetGeneration&& generation);
 	void collectRetired();
 
+	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	storage::IStorageSystem* storage = nullptr;
 	VulkanContext* vk = nullptr;
 	WindowId window = InvalidWindowId;

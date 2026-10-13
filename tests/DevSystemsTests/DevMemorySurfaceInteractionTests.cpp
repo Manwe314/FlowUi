@@ -1,12 +1,14 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
+#include "FSEL/Button.hpp"
 #include "FlowUi/Flow.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
 #include "devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp"
 #include <cassert>
+#include <cmath>
 #include <iostream>
 using namespace FlowUi;
 using namespace FlowUi::devSystems;
@@ -68,6 +70,7 @@ int main() {
 				auto inspector = memory_ui::column();
 				inspector.layout.sizing = {.width = CLAY_SIZING_FIXED(inspector_width),
 										   .height = CLAY_SIZING_GROW(0)};
+				inspector.clip = {.horizontal = true, .vertical = true};
 				CLAY(CLAY_ID("memory-test-inspector"), inspector)
 				app.ui()
 					.createElement(kDevMemoryInspector, inspector_id)
@@ -83,6 +86,29 @@ int main() {
 		draw(identity, 2);
 		draw();
 	};
+	const auto local_control = [&](FlowElementID parent, FlowDefinitionID definition,
+								   LocalElementName name) {
+		return ::FlowUi::detail::element_id::resolveLocal(parent, definition, name.token);
+	};
+	const auto check_field_text = [&](const auto& element, FlowElementID identity) {
+		using Element = std::remove_cvref_t<decltype(element)>;
+		const auto field = Clay_GetElementData(app.ui().toClayEID(identity));
+		const auto content = Clay_GetElementData(Clay_ElementId{
+			.id = FlowIDToClayID(PartID(element, identity, Element::Parts::content))});
+		const auto label = Clay_GetElementData(
+			Clay_ElementId{.id = FlowIDToClayID(PartID(element, identity, Element::Parts::text))});
+		assert(field.found && content.found && label.found);
+		assert(label.boundingBox.y >= field.boundingBox.y &&
+			   label.boundingBox.y + label.boundingBox.height <=
+				   field.boundingBox.y + field.boundingBox.height);
+		assert(label.boundingBox.x >= field.boundingBox.x &&
+			   label.boundingBox.x + label.boundingBox.width <=
+				   field.boundingBox.x + field.boundingBox.width);
+		assert(std::abs(label.boundingBox.y + label.boundingBox.height / 2 -
+						(content.boundingBox.y + content.boundingBox.height / 2)) < 1);
+		assert(std::abs(label.boundingBox.x + label.boundingBox.width / 2 -
+						(content.boundingBox.x + content.boundingBox.width / 2)) < 1);
+	};
 	draw();
 	draw();
 	auto& analysis = session.memory_workbench.analysis;
@@ -95,6 +121,10 @@ int main() {
 	analysis.planner.percentile = 50;
 	draw();
 	assert(analysis.plan && analysis.plan->initial_coverage == .5);
+	check_field_text(memory_ui::kDoubleInput,
+					 local_control(FlowElementID{inspector_id.value},
+								   decltype(memory_ui::kDoubleInput)::definitionId,
+								   LocalElementName{"planner-percentile"}));
 	click(action_id(FlowElementID{inspector_id.value}, 130));
 	assert(analysis.staged.size() == 1 && analysis.show_review);
 	const auto staged_factor = analysis.shared_factor;
@@ -102,6 +132,13 @@ int main() {
 	assert(analysis.staged.size() == 1 && analysis.shared_factor == staged_factor);
 	click(action_id(FlowElementID{context_id.value}, 106));
 	assert(analysis.show_recording_settings);
+	check_field_text(FSEL::kTextInput,
+					 local_control(FlowElementID{context_id.value}, FSEL::TextInput::definitionId,
+								   LocalElementName{"capture-name"}));
+	check_field_text(memory_ui::kDoubleInput,
+					 local_control(FlowElementID{context_id.value},
+								   decltype(memory_ui::kDoubleInput)::definitionId,
+								   LocalElementName{"record-duration"}));
 	click(action_id(FlowElementID{context_id.value}, 101));
 	assert(analysis.datasets.size() == 1 && analysis.datasets.front().snapshot);
 	assert(!analysis.datasets.front().live.sources.empty());
@@ -126,9 +163,28 @@ int main() {
 	assert(analysis.dataset == 0 && analysis.datasets.size() == 1 && !analysis.baseline_dataset);
 	analysis.show_review = true;
 	analysis.evidence_mode = 2;
+	for (const auto name :
+		 {LocalElementName{"measurement-header"}, LocalElementName{"planner-header"},
+		  LocalElementName{"review-header"}}) {
+		bool& expanded =
+			name.token == LocalElementName{"measurement-header"}.token ? analysis.show_quality
+			: name.token == LocalElementName{"planner-header"}.token   ? analysis.show_planner
+																	   : analysis.show_review;
+		const auto original = expanded;
+		const auto header =
+			local_control(FlowElementID{inspector_id.value}, FSEL::Button::definitionId, name);
+		click(header);
+		assert(expanded != original);
+		click(header);
+		assert(expanded == original);
+	}
 	for (const auto width : {280.0f, 360.0f, 480.0f}) {
 		draw({}, 0, width);
 		draw({}, 0, width);
+		const auto inspector_scroll =
+			Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+		assert(inspector_scroll.found && inspector_scroll.contentDimensions.width <=
+											 inspector_scroll.scrollContainerDimensions.width + 1);
 	}
 	const auto scroll =
 		Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));

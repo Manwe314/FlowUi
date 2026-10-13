@@ -1,4 +1,5 @@
 #include "internal/ManagerStorage/ThemeStorageController.hpp"
+#include "internal/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -16,6 +17,18 @@ void ThemeStorageController::appendDevMemorySamples(
 		std::scoped_lock lock(mutex_);
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.addNodeContainer(typeRegistry_);
+		devSystems::append_capacity_demand(sink, InitialCapacityTarget::themes_types, typeRegistry_,
+										   detail::MemoryDemandPeaks{});
+		uint64_t variant_maximum = 0;
+		for (const auto& [type_id, type] : typeRegistry_)
+			variant_maximum = std::max<uint64_t>(variant_maximum, type.variants.size());
+		(void)sink.append(devSystems::MemoryValueSample{
+			.source = initial_capacity_definitions[static_cast<size_t>(
+													   InitialCapacityTarget::themes_variants)]
+						  .id(),
+			.objectCount = variant_maximum,
+			.flags = devSystems::MemorySampleFlag::TuningAggregate,
+			.value_fields = uint16_t(devSystems::MemoryValueField::Objects)});
 		for (const auto& [_, type] : typeRegistry_) memory.addNodeContainer(type.variants);
 		memory.add(stagedMutations_);
 		devSystems::appendManagerSample(sink, devSystems::memory_sources::kThemes.id, memory);
@@ -26,6 +39,8 @@ void ThemeStorageController::appendDevMemorySamples(
 void ThemeStorageController::init(storage::IStorageSystem& storage) {
 	std::lock_guard<std::mutex> lock(mutex_);
 	storage_ = &storage;
+	::FlowUi::detail::reserve_initial_capacity(
+		typeRegistry_, storage.initial_memory_capacity(InitialCapacityTarget::themes_types));
 	typeRegistry_.clear();
 	stagedMutations_.clear();
 }
