@@ -8,8 +8,8 @@
 #include <unordered_map>
 
 #include "CppCodeGenerator.hpp"
-#include "FlowUi/MemoryCapacityManifest.hpp"
-#include "FlowUi/MemoryCapacityProfile.hpp"
+#include "internal/MemoryCapacityManifest.hpp"
+#include "internal/MemoryCapacityProfile.hpp"
 #include "ManifestParser.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemorySession.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -39,30 +39,31 @@ void check_resolution() {
 	MemoryCapacityProfile caller;
 	caller.storage.initialStringBytes = 256;
 	caller.settings = {{bytes, 512}, {entries, 17}, {entries, 17}};
-	auto result = resolve_memory_capacity_profile(caller);
+	auto result = FlowUi::detail::resolve_memory_capacity_profile(caller);
 	assert(result && result->storage.initialStringBytes == 512 && result->settings.size() == 2);
 	const std::array compiled{MemoryCapacitySetting{bytes, 1024},
 							  MemoryCapacitySetting{entries, 128}};
-	result = resolve_memory_capacity_profile(caller, compiled);
+	result = FlowUi::detail::resolve_memory_capacity_profile(caller, compiled);
 	assert(result && result->storage.initialStringBytes == 1024 && result->settings.size() == 2);
 	caller.settings.emplace_back(MemoryCapacitySetting{entries, 18});
-	assert(!resolve_memory_capacity_profile(caller));
+	assert(!FlowUi::detail::resolve_memory_capacity_profile(caller));
 	caller.settings = {{bytes, 0}};
-	result = resolve_memory_capacity_profile(caller);
+	result = FlowUi::detail::resolve_memory_capacity_profile(caller);
 	assert(result && result->storage.initialStringBytes == 1024 * 1024);
 	caller.settings = {{entries, UINT64_MAX}};
-	assert(!resolve_memory_capacity_profile(caller));
+	assert(!FlowUi::detail::resolve_memory_capacity_profile(caller));
 	caller.settings = {{makeMemoryCapacityTargetId("flowui.tuning.elements"), 16}};
-	assert(!resolve_memory_capacity_profile(caller));
+	assert(!FlowUi::detail::resolve_memory_capacity_profile(caller));
 	caller.settings.clear();
-	for (const auto& definition : initial_capacity_definitions) {
+	for (const auto& definition : FlowUi::detail::initial_capacity_definitions) {
 		assert(definition.id() != 0 &&
-			   valid_initial_capacity(definition, definition.default_value));
-		assert(&initial_capacity_definitions[static_cast<size_t>(definition.target)] ==
-			   &definition);
+			   FlowUi::detail::valid_initial_capacity(definition, definition.default_value));
+		assert(
+			&FlowUi::detail::initial_capacity_definitions[static_cast<size_t>(definition.target)] ==
+			&definition);
 	}
 	caller.growthFactor = NAN;
-	assert(!resolve_memory_capacity_profile(caller));
+	assert(!FlowUi::detail::resolve_memory_capacity_profile(caller));
 }
 void check_demand_and_growth() {
 	Samples samples;
@@ -70,18 +71,21 @@ void check_demand_and_growth() {
 	std::vector<uint64_t> vector;
 	for (uint64_t index = 0; index < 112; ++index)
 		vector.emplace_back(index);
-	peaks.record(InitialCapacityTarget::input_fields_rect_override, vector.size());
+	peaks.record(FlowUi::detail::InitialCapacityTarget::input_fields_rect_override, vector.size());
 	vector.clear();
-	append_capacity_demand(samples, InitialCapacityTarget::input_fields_rect_override, vector,
-						   peaks, 7);
+	append_capacity_demand(samples,
+						   FlowUi::detail::InitialCapacityTarget::input_fields_rect_override,
+						   vector, peaks, 7);
 	assert(samples.values.back().objectCount == 112 && samples.values.back().logicalLiveBytes == 0);
-	append_capacity_demand(samples, InitialCapacityTarget::input_fields_rect_override, vector,
-						   peaks, 7);
+	append_capacity_demand(samples,
+						   FlowUi::detail::InitialCapacityTarget::input_fields_rect_override,
+						   vector, peaks, 7);
 	assert(samples.values.back().objectCount == 0);
 	std::unordered_map<uint64_t, uint64_t> hash;
 	hash.reserve(128);
 	hash.emplace(1, 2);
-	append_capacity_demand(samples, InitialCapacityTarget::input_fields_registry, hash, peaks);
+	append_capacity_demand(samples, FlowUi::detail::InitialCapacityTarget::input_fields_registry,
+						   hash, peaks);
 	assert(samples.values.back().objectCount == 1 && samples.values.back().capacityCount >= 128);
 	const auto vector_transitions = [](size_t initial) {
 		std::vector<uint64_t> values;
@@ -124,7 +128,8 @@ void check_demand_and_growth() {
 		makeMemoryCapacityTargetId("flowui.tuning.input_fields.registry_entries");
 	const auto probe = +[](const void* owner, MemoryProbeContext& context) noexcept {
 		const auto& value = *static_cast<const Owner*>(owner);
-		append_capacity_demand(context.sink, InitialCapacityTarget::input_fields_registry,
+		append_capacity_demand(context.sink,
+							   FlowUi::detail::InitialCapacityTarget::input_fields_registry,
 							   value.values, value.peaks, value.window);
 	};
 	DevMemory memory(DevMemoryConfig{.gpuMemory = false, .processMemory = false});
@@ -141,25 +146,25 @@ void check_demand_and_growth() {
 	assert(uint16_t(found->value.flags) & uint16_t(MemorySampleFlag::Estimate));
 	FlowUi::detail::MemoryDemandPeaks gated;
 	gated.bind(memory.demand_control());
-	gated.record(InitialCapacityTarget::input_fields_registry, 112);
+	gated.record(FlowUi::detail::InitialCapacityTarget::input_fields_registry, 112);
 	memory.setConfig(memory.config());
-	assert(gated.consume(InitialCapacityTarget::input_fields_registry, 0) == 112);
-	gated.record(InitialCapacityTarget::input_fields_registry, 112);
+	assert(gated.consume(FlowUi::detail::InitialCapacityTarget::input_fields_registry, 0) == 112);
+	gated.record(FlowUi::detail::InitialCapacityTarget::input_fields_registry, 112);
 	auto disabled = memory.config();
 	disabled.level = MemoryMonitoringLevel::Disabled;
 	memory.setConfig(disabled);
-	gated.record(InitialCapacityTarget::input_fields_registry, 512);
+	gated.record(FlowUi::detail::InitialCapacityTarget::input_fields_registry, 512);
 	disabled.level = MemoryMonitoringLevel::SubsystemCapacity;
 	memory.setConfig(disabled);
-	assert(gated.consume(InitialCapacityTarget::input_fields_registry, 0) == 0);
+	assert(gated.consume(FlowUi::detail::InitialCapacityTarget::input_fields_registry, 0) == 0);
 }
-MemoryCapacityManifest selection() {
-	MemoryCapacityManifest result;
-	result.targets.emplace_back(
-		MemoryCapacitySelection{.key = "flowui.tuning.input_fields.registry_entries",
-								.value = 128,
-								.observed_maximum = 112,
-								.headroom = 16});
+FlowUi::detail::MemoryCapacityManifest selection() {
+	FlowUi::detail::MemoryCapacityManifest result;
+	result.targets.emplace_back(FlowUi::detail::MemoryCapacitySelection{
+		.key = "flowui.tuning.input_fields.registry_entries",
+		.value = 128,
+		.observed_maximum = 112,
+		.headroom = 16});
 	return result;
 }
 void check_manifest_and_pipeline(const std::filesystem::path& directory) {
@@ -201,7 +206,7 @@ void check_manifest_and_pipeline(const std::filesystem::path& directory) {
 	assert(flowui::bake_tool::generateCpp(parsed, directory / "generated", error));
 	assert(std::filesystem::last_write_time(generated) == timestamp);
 	const std::array<std::string_view, 1> removed{"flowui.tuning.popups.stack_entries"};
-	MemoryCapacityManifest empty;
+	FlowUi::detail::MemoryCapacityManifest empty;
 	assert(pipeline.save_memory_capacities(empty, removed).applied);
 	assert(pipeline.manifest().memoryCapacity->targets.size() == 1);
 	const auto old = pipeline.manifest().memoryCapacity->targets.front().value;
@@ -234,23 +239,24 @@ void check_manifest_and_pipeline(const std::filesystem::path& directory) {
 	// Invalid values and previews are rejected by the same validator in runtime and generator.
 	section = selection();
 	section.targets.emplace_back(section.targets.front());
-	assert(!validate_memory_capacity_manifest(section, error));
+	assert(!FlowUi::detail::validate_memory_capacity_manifest(section, error));
 	section = selection();
 	section.targets.front().evidence.kind = "synthetic";
-	assert(!validate_memory_capacity_manifest(section, error));
+	assert(!FlowUi::detail::validate_memory_capacity_manifest(section, error));
 	section = selection();
 	section.targets.front().evidence.complete = false;
-	assert(!validate_memory_capacity_manifest(section, error));
+	assert(!FlowUi::detail::validate_memory_capacity_manifest(section, error));
 	section.targets.front().evidence.acknowledge_incomplete = true;
-	assert(validate_memory_capacity_manifest(section, error));
+	assert(FlowUi::detail::validate_memory_capacity_manifest(section, error));
 	section.targets.front().observed_maximum = UINT64_MAX;
 	section.targets.front().headroom = 1;
-	assert(!validate_memory_capacity_manifest(section, error));
+	assert(!FlowUi::detail::validate_memory_capacity_manifest(section, error));
 	uint64_t decimal = 0;
-	assert(parse_capacity_unsigned("18446744073709551615", decimal) && decimal == UINT64_MAX);
-	assert(!parse_capacity_unsigned("18446744073709551616", decimal));
-	assert(!parse_capacity_unsigned("-1", decimal));
-	assert(!parse_capacity_unsigned("1e2", decimal));
+	assert(FlowUi::detail::parse_capacity_unsigned("18446744073709551615", decimal) &&
+		   decimal == UINT64_MAX);
+	assert(!FlowUi::detail::parse_capacity_unsigned("18446744073709551616", decimal));
+	assert(!FlowUi::detail::parse_capacity_unsigned("-1", decimal));
+	assert(!FlowUi::detail::parse_capacity_unsigned("1e2", decimal));
 	{
 		std::ofstream output(active);
 		output << R"({"manifestVersion":2,"manifestVersion":1,"bakedChanges":[]})";

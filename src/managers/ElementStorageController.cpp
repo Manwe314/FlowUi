@@ -305,7 +305,7 @@ void removeGcCandidateAt(
 		}
 	}
 	FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-								InitialCapacityTarget::elements_gc_candidates,
+								FlowUi::detail::InitialCapacityTarget::elements_gc_candidates,
 								registry.gcCandidates.size());
 	registry.gcCandidates.pop_back();
 	if (index < registry.gcCursor && registry.gcCursor != 0) --registry.gcCursor;
@@ -406,7 +406,8 @@ ElementStorageController::ElementStorageController(storage::IStorageSystem& stor
 	capacity_demand_.bind(storage.memory_demand_control());
 #endif
 	::FlowUi::detail::reserve_initial_capacity(
-		windows_, storage.initial_memory_capacity(InitialCapacityTarget::elements_windows));
+		windows_,
+		storage.initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::elements_windows));
 }
 
 ElementStorageController::~ElementStorageController() {
@@ -429,22 +430,24 @@ void ElementStorageController::registerWindow(WindowId window) {
 #endif
 	::FlowUi::detail::reserve_initial_capacity(
 		registry->byInstance,
-		storage_->initial_memory_capacity(InitialCapacityTarget::elements_states));
+		storage_->initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::elements_states));
 	::FlowUi::detail::reserve_initial_capacity(
 		registry->deferredErases,
-		storage_->initial_memory_capacity(InitialCapacityTarget::elements_deferred_erases));
+		storage_->initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::elements_deferred_erases));
 	::FlowUi::detail::reserve_initial_capacity(
-		registry->gcCandidates,
-		storage_->initial_memory_capacity(InitialCapacityTarget::elements_gc_candidates));
+		registry->gcCandidates, storage_->initial_memory_capacity(
+									FlowUi::detail::InitialCapacityTarget::elements_gc_candidates));
 	::FlowUi::detail::reserve_initial_capacity(
 		registry->transaction.touched,
-		storage_->initial_memory_capacity(InitialCapacityTarget::elements_touched));
+		storage_->initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::elements_touched));
 	::FlowUi::detail::reserve_initial_capacity(
 		registry->transaction.created,
-		storage_->initial_memory_capacity(InitialCapacityTarget::elements_created));
+		storage_->initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::elements_created));
 	::FlowUi::detail::reserve_initial_capacity(
 		registry->transaction.policies,
-		storage_->initial_memory_capacity(InitialCapacityTarget::elements_policies));
+		storage_->initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::elements_policies));
 	windows_.try_emplace(window, std::move(registry));
 }
 
@@ -462,8 +465,9 @@ void ElementStorageController::destroyWindow(WindowId window) noexcept {
 			if (found->second->activeInvocations != 0) {
 				found->second->destroyRequested = true;
 			} else {
-				FLOWUI_MEMORY_DEMAND_RECORD(
-					capacity_demand_, InitialCapacityTarget::elements_windows, windows_.size());
+				FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+											FlowUi::detail::InitialCapacityTarget::elements_windows,
+											windows_.size());
 				windows_.erase(found);
 				releaseRecords = true;
 			}
@@ -589,7 +593,7 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 		existing != registry.byInstance.end()) {
 		resolved = resolveExistingState(*storage_, existing->second, instanceKey, descriptor);
 		FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-									InitialCapacityTarget::elements_states,
+									FlowUi::detail::InitialCapacityTarget::elements_states,
 									registry.byInstance.size());
 		if (!resolved.payload) registry.byInstance.erase(existing);
 	}
@@ -613,13 +617,14 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 			created = true;
 		} catch (...) {
 			FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-										InitialCapacityTarget::elements_states,
+										FlowUi::detail::InitialCapacityTarget::elements_states,
 										registry.byInstance.size());
 			registry.byInstance.erase(instanceKey);
 			if (!registry.gcCandidates.empty() && registry.gcCandidates.back() == instanceKey) {
-				FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-											InitialCapacityTarget::elements_gc_candidates,
-											registry.gcCandidates.size());
+				FLOWUI_MEMORY_DEMAND_RECORD(
+					registry.transaction.capacity_demand,
+					FlowUi::detail::InitialCapacityTarget::elements_gc_candidates,
+					registry.gcCandidates.size());
 				registry.gcCandidates.pop_back();
 			}
 			(void)storage_->removePersistentRecord(
@@ -639,7 +644,7 @@ ResolvedElementState ElementStorageController::resolveOrCreateStateForInvocation
 					removeGcCandidate(registry, *storage_, instanceKey, *header);
 				}
 				FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-											InitialCapacityTarget::elements_states,
+											FlowUi::detail::InitialCapacityTarget::elements_states,
 											registry.byInstance.size());
 				registry.byInstance.erase(indexed);
 			}
@@ -683,18 +688,21 @@ void ElementStorageController::endStateInvocation(WindowId window) noexcept {
 							removeGcCandidate(registry, *storage, state->first, *header);
 						}
 					}
-					FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-												InitialCapacityTarget::elements_states,
-												registry.byInstance.size());
+					FLOWUI_MEMORY_DEMAND_RECORD(
+						registry.transaction.capacity_demand,
+						FlowUi::detail::InitialCapacityTarget::elements_states,
+						registry.byInstance.size());
 					registry.byInstance.erase(state);
 				}
-				FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-											InitialCapacityTarget::elements_deferred_erases,
-											registry.deferredErases.size());
+				FLOWUI_MEMORY_DEMAND_RECORD(
+					registry.transaction.capacity_demand,
+					FlowUi::detail::InitialCapacityTarget::elements_deferred_erases,
+					registry.deferredErases.size());
 				registry.deferredErases.erase(deferred);
 			} else if (registry.destroyRequested) {
-				FLOWUI_MEMORY_DEMAND_RECORD(
-					capacity_demand_, InitialCapacityTarget::elements_windows, windows_.size());
+				FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+											FlowUi::detail::InitialCapacityTarget::elements_windows,
+											windows_.size());
 				windows_.erase(windowEntry);
 				releaseWindow = true;
 			} else {
@@ -807,9 +815,10 @@ void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch
 			if (!transactionClosed) {
 				if (!registry.transaction.active || registry.transaction.epoch != epoch) return;
 				registry.transaction.active = false;
-				FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-											InitialCapacityTarget::elements_deferred_erases,
-											registry.deferredErases.size());
+				FLOWUI_MEMORY_DEMAND_RECORD(
+					registry.transaction.capacity_demand,
+					FlowUi::detail::InitialCapacityTarget::elements_deferred_erases,
+					registry.deferredErases.size());
 				registry.deferredErases.clear();
 				transactionClosed = true;
 			}
@@ -821,7 +830,7 @@ void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch
 			const auto created = registry.transaction.created.begin();
 			const element::ElementInstanceKey instanceKey = *created;
 			FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-										InitialCapacityTarget::elements_created,
+										FlowUi::detail::InitialCapacityTarget::elements_created,
 										registry.transaction.created.size());
 			registry.transaction.created.erase(created);
 			const auto state = registry.byInstance.find(instanceKey);
@@ -834,7 +843,7 @@ void ElementStorageController::cancelWindowFrame(WindowId window, uint64_t epoch
 					}
 				}
 				FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-											InitialCapacityTarget::elements_states,
+											FlowUi::detail::InitialCapacityTarget::elements_states,
 											registry.byInstance.size());
 				registry.byInstance.erase(state);
 			}
@@ -897,9 +906,10 @@ size_t ElementStorageController::collectEligibleStates(
 				if (!header || isStateExpired(*header, registry.committedFrameNumber)) {
 					if (state != registry.byInstance.end()) {
 						removals[removalCount++] = state->second;
-						FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-													InitialCapacityTarget::elements_states,
-													registry.byInstance.size());
+						FLOWUI_MEMORY_DEMAND_RECORD(
+							registry.transaction.capacity_demand,
+							FlowUi::detail::InitialCapacityTarget::elements_states,
+							registry.byInstance.size());
 						registry.byInstance.erase(state);
 					}
 					removeGcCandidateAt(registry, *storage, candidateIndex);
@@ -939,7 +949,8 @@ const void* ElementStorageController::readState(
 	const ResolvedElementState resolved =
 		resolveExistingState(*storage_, existing->second, instanceKey, descriptor);
 	FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-								InitialCapacityTarget::elements_states, registry.byInstance.size());
+								FlowUi::detail::InitialCapacityTarget::elements_states,
+								registry.byInstance.size());
 	if (!resolved.payload) registry.byInstance.erase(existing);
 	return resolved.payload;
 }
@@ -979,7 +990,7 @@ bool ElementStorageController::eraseState(
 			removeGcCandidate(registry, *storage, instanceKey, *header);
 		}
 		FLOWUI_MEMORY_DEMAND_RECORD(registry.transaction.capacity_demand,
-									InitialCapacityTarget::elements_states,
+									FlowUi::detail::InitialCapacityTarget::elements_states,
 									registry.byInstance.size());
 		registry.byInstance.erase(existing);
 	}
@@ -1004,7 +1015,8 @@ void ElementStorageController::shutdown() noexcept {
 			auto entry = windows_.begin();
 			window = entry->first;
 			registry = std::move(entry->second);
-			FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_, InitialCapacityTarget::elements_windows,
+			FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+										FlowUi::detail::InitialCapacityTarget::elements_windows,
 										windows_.size());
 			windows_.erase(entry);
 		}
@@ -1035,29 +1047,30 @@ void ElementStorageController::appendDevMemorySamples(
 		memory.capacityBytes += memory.liveBytes;
 		std::scoped_lock windowsLock(windowsMutex_);
 		memory.addNodeContainer(windows_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::elements_windows, windows_,
-										   detail::MemoryDemandPeaks{});
+		devSystems::append_capacity_demand(sink,
+										   FlowUi::detail::InitialCapacityTarget::elements_windows,
+										   windows_, detail::MemoryDemandPeaks{});
 		for (const auto& [_, window] : windows_) {
 			if (!window) continue;
 			std::scoped_lock windowLock(window->mutex);
-			devSystems::append_capacity_demand(sink, InitialCapacityTarget::elements_states,
-											   window->byInstance,
-											   window->transaction.capacity_demand, window->window);
 			devSystems::append_capacity_demand(
-				sink, InitialCapacityTarget::elements_deferred_erases, window->deferredErases,
+				sink, FlowUi::detail::InitialCapacityTarget::elements_states, window->byInstance,
 				window->transaction.capacity_demand, window->window);
-			devSystems::append_capacity_demand(sink, InitialCapacityTarget::elements_gc_candidates,
-											   window->gcCandidates,
-											   window->transaction.capacity_demand, window->window);
-			devSystems::append_capacity_demand(sink, InitialCapacityTarget::elements_touched,
-											   window->transaction.touched,
-											   window->transaction.capacity_demand, window->window);
-			devSystems::append_capacity_demand(sink, InitialCapacityTarget::elements_created,
-											   window->transaction.created,
-											   window->transaction.capacity_demand, window->window);
-			devSystems::append_capacity_demand(sink, InitialCapacityTarget::elements_policies,
-											   window->transaction.policies,
-											   window->transaction.capacity_demand, window->window);
+			devSystems::append_capacity_demand(
+				sink, FlowUi::detail::InitialCapacityTarget::elements_deferred_erases,
+				window->deferredErases, window->transaction.capacity_demand, window->window);
+			devSystems::append_capacity_demand(
+				sink, FlowUi::detail::InitialCapacityTarget::elements_gc_candidates,
+				window->gcCandidates, window->transaction.capacity_demand, window->window);
+			devSystems::append_capacity_demand(
+				sink, FlowUi::detail::InitialCapacityTarget::elements_touched,
+				window->transaction.touched, window->transaction.capacity_demand, window->window);
+			devSystems::append_capacity_demand(
+				sink, FlowUi::detail::InitialCapacityTarget::elements_created,
+				window->transaction.created, window->transaction.capacity_demand, window->window);
+			devSystems::append_capacity_demand(
+				sink, FlowUi::detail::InitialCapacityTarget::elements_policies,
+				window->transaction.policies, window->transaction.capacity_demand, window->window);
 			memory.addNodeContainer(window->byInstance);
 			memory.addNodeContainer(window->deferredErases);
 			memory.add(window->gcCandidates);

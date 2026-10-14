@@ -1098,6 +1098,11 @@ if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
     add_test(NAME flowui.dev.memory_surface_interaction COMMAND flowui_dev_memory_surface_interaction_tests)
     set_tests_properties(flowui.dev.memory_surface_interaction PROPERTIES TIMEOUT 60)
 
+    add_executable(flowui_dev_memory_capacity_policy_tests DevSystemsTests/DevMemoryCapacityPolicyTests.cpp)
+    target_compile_features(flowui_dev_memory_capacity_policy_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_memory_capacity_policy_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.memory_capacity_policy COMMAND flowui_dev_memory_capacity_policy_tests)
+
     add_executable(flowui_dev_memory_planner_tests DevSystemsTests/DevMemoryPlannerTests.cpp)
     target_compile_features(flowui_dev_memory_planner_tests PRIVATE cxx_std_23)
     target_link_libraries(flowui_dev_memory_planner_tests PRIVATE FlowUi::FlowUi)

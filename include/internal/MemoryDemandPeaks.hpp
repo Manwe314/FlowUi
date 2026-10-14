@@ -1,6 +1,6 @@
 #pragma once
 #include "FlowUi/BuildConfig.hpp"
-#include "FlowUi/MemoryCapacityTargets.hpp"
+#include "internal/MemoryCapacityTargets.hpp"
 #include <algorithm>
 #include <atomic>
 #include <utility>
@@ -13,7 +13,8 @@ struct MemoryDemandControl {
 /** Interval maxima; the empty array removes instrumentation in production and levels 0/1. */
 struct MemoryDemandPeaks {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
-	static constexpr size_t target_count = static_cast<size_t>(InitialCapacityTarget::count);
+	static constexpr size_t target_count =
+		static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::count);
 #else
 	static constexpr size_t target_count = 0;
 #endif
@@ -46,12 +47,13 @@ struct MemoryDemandPeaks {
 #endif
 		return target_count != 0;
 	}
-	void record(InitialCapacityTarget target, uint64_t demand) const noexcept {
+	void record(FlowUi::detail::InitialCapacityTarget target, uint64_t demand) const noexcept {
 		const auto index = static_cast<size_t>(target);
 		if (enabled() && index < values.size())
 			values[index] = std::max(values[index], demand);
 	}
-	[[nodiscard]] uint64_t consume(InitialCapacityTarget target, uint64_t current) const noexcept {
+	[[nodiscard]] uint64_t consume(FlowUi::detail::InitialCapacityTarget target,
+								   uint64_t current) const noexcept {
 		const auto index = static_cast<size_t>(target);
 		return enabled() && index < values.size()
 				   ? std::max(current, std::exchange(values[index], 0))

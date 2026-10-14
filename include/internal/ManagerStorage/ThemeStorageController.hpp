@@ -73,8 +73,8 @@ public:
 		TypeRegistrationRecord& typeRecord = type_iterator->second;
 		if (new_type)
 			::FlowUi::detail::reserve_initial_capacity(
-				typeRecord.variants,
-				storage_->initial_memory_capacity(InitialCapacityTarget::themes_variants));
+				typeRecord.variants, storage_->initial_memory_capacity(
+										 FlowUi::detail::InitialCapacityTarget::themes_variants));
 		typeRecord.typeHash = typeHash;
 		typeRecord.typeNameId = typeNameId;
 

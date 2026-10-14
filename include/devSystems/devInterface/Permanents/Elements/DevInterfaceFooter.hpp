@@ -15,6 +15,7 @@ namespace FlowUi::devSystems::interface_elements {
 struct DevInterfaceFooterParameters {
 	uint32_t errorCount = 0u;
 	uint32_t unbakedChangeCount = 0u;
+	uint32_t prepared_capacity_count = 0;
 	std::string_view lastActionMessage = "Developer interface initialized";
 };
 

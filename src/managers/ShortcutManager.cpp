@@ -85,14 +85,15 @@ void ShortcutManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink)
 	if (!storage_ || stateHandle_ == 0u) return;
 	try {
 		const auto& current = state();
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::shortcuts_chords,
+		devSystems::append_capacity_demand(sink,
+										   FlowUi::detail::InitialCapacityTarget::shortcuts_chords,
 										   current.chordBuckets, current.capacity_demand, window_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::shortcuts_registrations,
-										   current.registrationsById, current.capacity_demand,
-										   window_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::shortcuts_keys,
-										   current.registeredKeyRefCount, current.capacity_demand,
-										   window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::shortcuts_registrations,
+			current.registrationsById, current.capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::shortcuts_keys,
+			current.registeredKeyRefCount, current.capacity_demand, window_);
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.addNodeContainer(current.chordBuckets);
 		memory.addNodeContainer(current.registrationsById);
@@ -120,15 +121,16 @@ void ShortcutManager::init(storage::IStorageSystem& storageSystem, WindowId wind
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	state().capacity_demand.bind(storageSystem.memory_demand_control());
 #endif
-	detail::reserve_initial_capacity(
-		state().chordBuckets,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::shortcuts_chords));
+	detail::reserve_initial_capacity(state().chordBuckets,
+									 storageSystem.initial_memory_capacity(
+										 FlowUi::detail::InitialCapacityTarget::shortcuts_chords));
 	detail::reserve_initial_capacity(
 		state().registrationsById,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::shortcuts_registrations));
-	detail::reserve_initial_capacity(
-		state().registeredKeyRefCount,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::shortcuts_keys));
+		storageSystem.initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::shortcuts_registrations));
+	detail::reserve_initial_capacity(state().registeredKeyRefCount,
+									 storageSystem.initial_memory_capacity(
+										 FlowUi::detail::InitialCapacityTarget::shortcuts_keys));
 }
 
 void ShortcutManager::installDefaultTextShortcuts(const DefaultTextShortcutConfig& config) {
@@ -310,10 +312,11 @@ bool ShortcutManager::unregisterShortcut(ShortcutId id) {
 	const uint32_t packed = registration->packedChord;
 	const int key = unpackKey(packed);
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::shortcuts_registrations,
+								FlowUi::detail::InitialCapacityTarget::shortcuts_registrations,
 								current.registrationsById.size());
 	current.registrationsById.erase(registrationIt);
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::shortcuts_chords,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::shortcuts_chords,
 								current.chordBuckets.size());
 	if (const auto bucketIt = current.chordBuckets.find(packed); bucketIt != current.chordBuckets.end()) {
 		manager_storage::ShortcutBucket bucket = *bucketIt->second;
@@ -321,7 +324,8 @@ bool ShortcutManager::unregisterShortcut(ShortcutId id) {
 		if (bucket.empty()) current.chordBuckets.erase(bucketIt);
 		else bucketIt->second = std::make_shared<const manager_storage::ShortcutBucket>(std::move(bucket));
 	}
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::shortcuts_keys,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::shortcuts_keys,
 								current.registeredKeyRefCount.size());
 	if (const auto keyIt = current.registeredKeyRefCount.find(key); keyIt != current.registeredKeyRefCount.end()) {
 		if (keyIt->second <= 1u) current.registeredKeyRefCount.erase(keyIt);
@@ -335,14 +339,16 @@ void ShortcutManager::clear() {
 	auto& current = state();
 	if (current.registrationsById.empty() && current.focusedElementId.id == 0u) return;
 	for (auto& [_, registration] : current.registrationsById) registration->tombstoned = true;
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::shortcuts_chords,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::shortcuts_chords,
 								current.chordBuckets.size());
 	current.chordBuckets.clear();
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::shortcuts_registrations,
+								FlowUi::detail::InitialCapacityTarget::shortcuts_registrations,
 								current.registrationsById.size());
 	current.registrationsById.clear();
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::shortcuts_keys,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::shortcuts_keys,
 								current.registeredKeyRefCount.size());
 	current.registeredKeyRefCount.clear();
 	current.focusedElementId = {};

@@ -344,21 +344,21 @@ void PopupManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) co
 	if (!storage_ || stateHandle_ == 0u) return;
 	try {
 		const auto& current = state();
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::popups_committed_records,
-										   current.committedRecords, current.capacity_demand,
-										   window_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::popups_working_records,
-										   current.workingRecords, current.capacity_demand,
-										   window_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::popups_submission_lookup,
-										   current.currentSubmissionByKey, current.capacity_demand,
-										   window_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::popups_stack,
-										   current.committedStack, current.capacity_demand,
-										   window_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::popups_submissions,
-										   current.currentSubmissions, current.capacity_demand,
-										   window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::popups_committed_records,
+			current.committedRecords, current.capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::popups_working_records,
+			current.workingRecords, current.capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::popups_submission_lookup,
+			current.currentSubmissionByKey, current.capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::popups_stack, current.committedStack,
+			current.capacity_demand, window_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::popups_submissions,
+			current.currentSubmissions, current.capacity_demand, window_);
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.addNodeContainer(current.committedRecords);
 		memory.addNodeContainer(current.workingRecords);
@@ -392,22 +392,26 @@ void PopupManager::init(
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	state().capacity_demand.bind(storageSystem.memory_demand_control());
 #endif
-	const auto record_hint = std::max(
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::popups_committed_records),
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::popups_working_records));
+	const auto record_hint =
+		std::max(storageSystem.initial_memory_capacity(
+					 FlowUi::detail::InitialCapacityTarget::popups_committed_records),
+				 storageSystem.initial_memory_capacity(
+					 FlowUi::detail::InitialCapacityTarget::popups_working_records));
 	detail::reserve_initial_capacity(state().committedRecords, record_hint);
 	detail::reserve_initial_capacity(state().workingRecords, record_hint);
 	detail::reserve_initial_capacity(
 		state().currentSubmissionByKey,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::popups_submission_lookup));
+		storageSystem.initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::popups_submission_lookup));
 	detail::reserve_initial_capacity(
 		state().committedStack,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::popups_stack));
+		storageSystem.initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::popups_stack));
 	detail::reserve_initial_capacity(
-		state().currentSubmissions,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::popups_submissions));
-	detail::reserve_initial_capacity(state().nextStack, storageSystem.initial_memory_capacity(
-															InitialCapacityTarget::popups_stack));
+		state().currentSubmissions, storageSystem.initial_memory_capacity(
+										FlowUi::detail::InitialCapacityTarget::popups_submissions));
+	detail::reserve_initial_capacity(
+		state().nextStack,
+		storageSystem.initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::popups_stack));
 }
 
 void PopupManager::destroy() noexcept {
@@ -453,15 +457,16 @@ void PopupManager::beginFrame(
 		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSite::PopupBeginFrame));
 	}
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::popups_working_records,
+								FlowUi::detail::InitialCapacityTarget::popups_working_records,
 								current.workingRecords.size());
 	current.workingRecords.clear();
 	current.workingRecords.insert(current.committedRecords.begin(), current.committedRecords.end());
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::popups_submissions,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::popups_submissions,
 								current.currentSubmissions.size());
 	current.currentSubmissions.clear();
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::popups_submission_lookup,
+								FlowUi::detail::InitialCapacityTarget::popups_submission_lookup,
 								current.currentSubmissionByKey.size());
 	current.currentSubmissionByKey.clear();
 	current.pointerPosition = Clay_Vector2{currentInput.mouseX, currentInput.mouseY};
@@ -753,7 +758,7 @@ void PopupManager::endFrame() {
 	}
 
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::popups_working_records,
+								FlowUi::detail::InitialCapacityTarget::popups_working_records,
 								current.workingRecords.size());
 	for (auto it = current.workingRecords.begin(); it != current.workingRecords.end();) {
 		if (!current.currentSubmissionByKey.contains(it->first)) {
@@ -771,21 +776,23 @@ void PopupManager::endFrame() {
 	});
 
 	FLOWUI_MEMORY_DEMAND_RECORD(
-		current.capacity_demand, InitialCapacityTarget::popups_committed_records,
+		current.capacity_demand, FlowUi::detail::InitialCapacityTarget::popups_committed_records,
 		std::max(current.committedRecords.size(), current.workingRecords.size()));
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::popups_stack,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::popups_stack,
 								std::max(current.committedStack.size(), nextStack.size()));
 	current.committedRecords.swap(current.workingRecords);
 	current.committedStack.swap(nextStack);
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::popups_working_records,
+								FlowUi::detail::InitialCapacityTarget::popups_working_records,
 								current.workingRecords.size());
 	current.workingRecords.clear();
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::popups_submissions,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::popups_submissions,
 								current.currentSubmissions.size());
 	current.currentSubmissions.clear();
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-								InitialCapacityTarget::popups_submission_lookup,
+								FlowUi::detail::InitialCapacityTarget::popups_submission_lookup,
 								current.currentSubmissionByKey.size());
 	current.currentSubmissionByKey.clear();
 	current.frameActive = false;
@@ -797,15 +804,15 @@ void PopupManager::cancelFrame() noexcept {
 	try {
 		auto& current = state();
 		FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-									InitialCapacityTarget::popups_working_records,
+									FlowUi::detail::InitialCapacityTarget::popups_working_records,
 									current.workingRecords.size());
 		current.workingRecords.clear();
 		FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-									InitialCapacityTarget::popups_submissions,
+									FlowUi::detail::InitialCapacityTarget::popups_submissions,
 									current.currentSubmissions.size());
 		current.currentSubmissions.clear();
 		FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
-									InitialCapacityTarget::popups_submission_lookup,
+									FlowUi::detail::InitialCapacityTarget::popups_submission_lookup,
 									current.currentSubmissionByKey.size());
 		current.currentSubmissionByKey.clear();
 		current.frameActive = false;

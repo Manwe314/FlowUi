@@ -21,10 +21,12 @@ void ActionManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) c
 	if (!storage_ || stateHandle_ == 0u) return;
 	try {
 		const auto& current = state();
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::actions_bindings,
+		devSystems::append_capacity_demand(sink,
+										   FlowUi::detail::InitialCapacityTarget::actions_bindings,
 										   current.bindings, current.capacity_demand);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::actions_deferred_removals,
-										   current.deferredRemovals, current.capacity_demand);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::actions_deferred_removals,
+			current.deferredRemovals, current.capacity_demand);
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.addNodeContainer(current.bindings);
 		memory.add(current.deferredRemovals);
@@ -193,12 +195,13 @@ void ActionManager::init(App& app, storage::IStorageSystem& storageSystem) {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	state().capacity_demand.bind(storageSystem.memory_demand_control());
 #endif
-	detail::reserve_initial_capacity(
-		state().bindings,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::actions_bindings));
+	detail::reserve_initial_capacity(state().bindings,
+									 storageSystem.initial_memory_capacity(
+										 FlowUi::detail::InitialCapacityTarget::actions_bindings));
 	detail::reserve_initial_capacity(
 		state().deferredRemovals,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::actions_deferred_removals));
+		storageSystem.initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::actions_deferred_removals));
 
 	stateName_ = name;
 }
@@ -384,9 +387,9 @@ void ActionManager::releaseInvocation(
 	if (!stateHandle_) return;
 	try {
 		auto& deferred = state().deferredRemovals;
-		FLOWUI_MEMORY_DEMAND_RECORD(state().capacity_demand,
-									InitialCapacityTarget::actions_deferred_removals,
-									deferred.size());
+		FLOWUI_MEMORY_DEMAND_RECORD(
+			state().capacity_demand,
+			FlowUi::detail::InitialCapacityTarget::actions_deferred_removals, deferred.size());
 		std::erase(deferred, handle);
 	} catch (...) {
 	}
@@ -654,7 +657,8 @@ bool AppActions::unbind(AppActionID id) {
 	const auto found = current.bindings.find(id);
 	if (found == current.bindings.end()) return false;
 	const storage::PersistentRecordHandle handle = found->second;
-	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand, InitialCapacityTarget::actions_bindings,
+	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::actions_bindings,
 								current.bindings.size());
 	current.bindings.erase(found);
 	owner_->retireBinding(handle);

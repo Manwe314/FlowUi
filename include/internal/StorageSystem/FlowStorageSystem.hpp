@@ -22,7 +22,7 @@ public:
 	void shutdown() noexcept override;
 	/** Effective startup hint, resolved before storage initialization. */
 	[[nodiscard]] uint64_t
-	initial_memory_capacity(FlowUi::InitialCapacityTarget target) const noexcept override;
+	initial_memory_capacity(FlowUi::detail::InitialCapacityTarget target) const noexcept override;
 	[[nodiscard]] uint32_t interfaceVersion() const noexcept override;
 	[[nodiscard]] uint64_t capabilities() const noexcept override;
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "FlowUi/Error.hpp"
-#include "FlowUi/MemoryCapacityTargets.hpp"
+#include "internal/MemoryCapacityTargets.hpp"
 namespace FlowUi::detail {
 /** Reserve at owner creation; preserve the container's load factor and growth policy. */
 template <class Container>

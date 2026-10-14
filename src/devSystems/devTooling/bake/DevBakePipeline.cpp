@@ -501,9 +501,9 @@ bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, 
 	if (const auto* memory = root.find("memoryCapacity")) {
 		if (manifest.manifestVersion != 2)
 			return false;
-		FlowUi::MemoryCapacityManifest decoded;
+		FlowUi::detail::MemoryCapacityManifest decoded;
 		std::string error;
-		if (!FlowUi::decode_memory_capacity_manifest(*memory, decoded, error))
+		if (!FlowUi::detail::decode_memory_capacity_manifest(*memory, decoded, error))
 			return false;
 		manifest.memoryCapacity = std::move(decoded);
 	}
@@ -565,7 +565,7 @@ std::string encodeManifest(const DevBakeManifest& manifest) {
 	output += "  ]";
 	if (manifest.memoryCapacity)
 		output += ",\n  \"memoryCapacity\": " +
-				  FlowUi::encode_memory_capacity_manifest(*manifest.memoryCapacity);
+				  FlowUi::detail::encode_memory_capacity_manifest(*manifest.memoryCapacity);
 	output += "\n}\n";
 	return output;
 }
@@ -620,13 +620,13 @@ void DevBakePipeline::setManifestPath(std::filesystem::path path) {
 }
 
 DevCommandResult
-DevBakePipeline::save_memory_capacities(const FlowUi::MemoryCapacityManifest& selections,
+DevBakePipeline::save_memory_capacities(const FlowUi::detail::MemoryCapacityManifest& selections,
 										std::span<const std::string_view> removed,
 										const std::filesystem::path& review_path) noexcept {
 	status_ = {};
 	try {
 		std::string diagnostic;
-		if (!FlowUi::validate_memory_capacity_manifest(selections, diagnostic)) {
+		if (!FlowUi::detail::validate_memory_capacity_manifest(selections, diagnostic)) {
 			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid, diagnostic});
 			return {.status = DevCommandStatus::BakeManifestInvalid};
 		}
@@ -647,7 +647,7 @@ DevBakePipeline::save_memory_capacities(const FlowUi::MemoryCapacityManifest& se
 			section.allow_runtime_growth = selections.allow_runtime_growth;
 		for (const auto key : removed) {
 			const auto* definition =
-				FlowUi::find_initial_capacity(FlowUi::memory_capacity_target_id(key));
+				FlowUi::detail::find_initial_capacity(FlowUi::memory_capacity_target_id(key));
 			if (!definition || definition->key != key) {
 				status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid,
 												   "Unknown remove target: " + std::string(key)});
@@ -664,7 +664,7 @@ DevBakePipeline::save_memory_capacities(const FlowUi::MemoryCapacityManifest& se
 			else
 				*found = target;
 		}
-		if (!FlowUi::validate_memory_capacity_manifest(section, diagnostic)) {
+		if (!FlowUi::detail::validate_memory_capacity_manifest(section, diagnostic)) {
 			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid, diagnostic});
 			return {.status = DevCommandStatus::BakeManifestInvalid};
 		}

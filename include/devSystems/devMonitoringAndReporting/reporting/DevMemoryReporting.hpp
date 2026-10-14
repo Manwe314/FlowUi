@@ -1,7 +1,7 @@
 #pragma once
 #include "FlowUi/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
-#include "FlowUi/MemoryCapacityProfile.hpp"
+#include "internal/MemoryCapacityProfile.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryTypes.hpp"
 #include "internal/StorageSystem/StorageTypes.hpp"
 #include <array>
@@ -139,7 +139,7 @@ struct MemoryCapacityRecommendation {
 		proposedInitialCapacity = 0u;
 	int64_t deltaFromProductionDefault = 0;
 	double predictedNoGrowthCoverage = 0.0;
-	MemoryGrowthSimulation simulation{};
+	FlowUi::detail::MemoryGrowthSimulation simulation{};
 	MemoryReportFlag flags = MemoryReportFlag::None;
 };
 struct MemoryCapacityPreview {
@@ -170,8 +170,21 @@ struct MemoryReportingStatus {
 	bool hasStorageSnapshot = false;
 };
 
+/** Run-owned active demand maxima; independent of history and owner destruction. */
+struct MemoryCapacityHighWater {
+	uint64_t active_bytes = 0, active_entries = 0, first_measured_ns = 0, peak_ns = 0;
+	uint64_t revision = 0;
+	uint16_t valid_fields = 0;
+};
 /** Coherent live inputs; deliberately contains no retained history copy. */
 struct MemoryLiveRead {
+	std::array<MemoryCapacityHighWater,
+			   static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::count)>
+		capacity_high_water{};
+	FlowUi::detail::InitialMemoryCapacities initial_capacities{};
+	float storage_growth_factor = 1.5f;
+	bool allow_runtime_growth = true;
+
 	std::vector<MemoryCurrentSource> sources{};
 	std::optional<::FlowUi::detail::storage::StorageMemorySnapshot> storage{};
 	std::optional<MemoryEnvironmentSnapshot> environment{};
@@ -222,6 +235,8 @@ public:
 	/** Current 60-second tick-weighted active demand; continues while frozen. */
 	[[nodiscard]] std::optional<MemoryLiveStatistics> live_statistics(MemorySourceKey key) const;
 	[[nodiscard]] MemoryReportingConfig config() const;
+	/** Capture resolved startup hints before owners are created. */
+	void set_capacity_baseline(const MemoryCapacityProfile& profile);
 	void consume(AppTickId appTick) noexcept;
 	void requestEnvironmentCheckpoint() noexcept;
 	[[nodiscard]] MemoryCaptureId beginCapture(std::string_view name, uint64_t warmUpTicks = 0u);

@@ -1,5 +1,5 @@
 #pragma once
-#include "FlowUi/MemoryCapacityManifest.hpp"
+#include "internal/MemoryCapacityManifest.hpp"
 #include <optional>
 
 #include "FlowUi/BuildConfig.hpp"
@@ -59,7 +59,7 @@ struct DevBakeEntry {
 };
 
 struct DevBakeManifest {
-	std::optional<FlowUi::MemoryCapacityManifest> memoryCapacity{};
+	std::optional<FlowUi::detail::MemoryCapacityManifest> memoryCapacity{};
 	std::uint32_t manifestVersion = 1;
 	std::uint64_t schemaFingerprint = 0;
 	std::string buildFingerprint{};

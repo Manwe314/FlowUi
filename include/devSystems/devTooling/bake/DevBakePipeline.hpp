@@ -30,7 +30,7 @@ public:
 	/** Upsert selected capacities without requiring an element schema; review export does not
 	 * activate. */
 	[[nodiscard]] DevCommandResult
-	save_memory_capacities(const FlowUi::MemoryCapacityManifest& selections,
+	save_memory_capacities(const FlowUi::detail::MemoryCapacityManifest& selections,
 						   std::span<const std::string_view> removed = {},
 						   const std::filesystem::path& review_path = {}) noexcept;
 	/** Remove all memory settings while retaining element/theme entries. */

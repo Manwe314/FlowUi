@@ -150,7 +150,7 @@ uint64_t saturatedAdd(uint64_t left, uint64_t right) noexcept {
 }
 uint64_t alignedProposal(uint64_t value, const MemoryTuningTargetDescriptor& target) noexcept {
 	value = saturatedAdd(value, 0u);
-	value = alignMemoryCapacity(value, std::max<uint64_t>(1u, target.alignment));
+	value = FlowUi::detail::alignMemoryCapacity(value, std::max<uint64_t>(1u, target.alignment));
 	return std::clamp(value, target.minimum, target.maximum);
 }
 bool assignTypedCapacity(MemoryCapacityProfile& profile, MemoryTuningTargetId id, uint64_t value) noexcept {
@@ -208,6 +208,14 @@ struct DevMemoryReporting::Impl {
 	::FlowUi::detail::storage::StorageMemorySnapshot storageSnapshot{};
 	std::vector<MemoryValueSample> managerSamples{};
 	std::optional<MemoryEnvironmentSnapshot> environmentSnapshot{};
+	const std::vector<MemoryTuningTargetDescriptor> capacity_targets =
+		memory_sources::tuningTargets();
+	std::array<MemoryCapacityHighWater,
+			   static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::count)>
+		capacity_high_water{};
+	FlowUi::detail::InitialMemoryCapacities initial_capacities{};
+	float storage_growth_factor = 1.5f;
+	bool allow_runtime_growth = true;
 	std::unordered_map<MemorySourceKey, MemoryCurrentSource, SourceKeyHash> current{};
 	SequenceRing<MemorySampleSegment> segments;
 	SequenceRing<RetainedMemoryEvent> events;
@@ -218,25 +226,90 @@ struct DevMemoryReporting::Impl {
 	uint64_t lastManagerSampleTick = 0u;
 
 	void publishSample(const MemoryValueSample& sample, AppTickId tick, uint64_t timestamp) {
+		const FlowUi::detail::InitialCapacityDefinition* definition =
+			FlowUi::detail::find_initial_capacity(sample.source);
+		if (!definition) {
+			for (const auto& descriptor : capacity_targets) {
+				if (descriptor.source != sample.source)
+					continue;
+				for (const auto& candidate : FlowUi::detail::initial_capacity_definitions)
+					if (!candidate.storage_member.empty() &&
+						descriptor.configKey == "storage." + std::string(candidate.storage_member))
+						definition = &candidate;
+			}
+		}
+		if (definition) {
+			auto& peak = capacity_high_water[static_cast<size_t>(definition->target)];
+			const auto previous_fields = peak.valid_fields;
+			bool increased = false;
+			if (sample.value_fields & (uint16_t(MemoryValueField::LogicalLive) |
+									   uint16_t(MemoryValueField::PeakLogical))) {
+				const auto active = sample.value_fields & uint16_t(MemoryValueField::PeakLogical)
+										? std::max(sample.logicalLiveBytes, sample.peakLogicalBytes)
+										: sample.logicalLiveBytes;
+				increased = active > peak.active_bytes;
+				peak.active_bytes = std::max(peak.active_bytes, active);
+				peak.valid_fields |= uint16_t(MemoryValueField::LogicalLive);
+			}
+			if (sample.value_fields & uint16_t(MemoryValueField::Objects)) {
+				increased = increased || std::max(sample.objectCount, sample.peakObjectCount) >
+											 peak.active_entries;
+				peak.active_entries =
+					std::max({peak.active_entries, sample.objectCount, sample.peakObjectCount});
+				peak.valid_fields |= uint16_t(MemoryValueField::Objects);
+			}
+			if (!previous_fields && peak.valid_fields)
+				peak.first_measured_ns = timestamp;
+			if (increased || previous_fields != peak.valid_fields) {
+				peak.peak_ns = timestamp;
+				++peak.revision;
+			}
+		}
 		const MemorySourceKey key{sample.source, sample.window};
 		auto [it, inserted] = current.try_emplace(key);
 		MemoryCurrentSource& state = it->second;
 		if (timestamp < state.measured_at_ns)
 			timestamp = state.measured_at_ns;
-		if (inserted) { state.key = key; state.sessionPeak = sample; }
-		state.sessionPeak.logicalLiveBytes = std::max(state.sessionPeak.logicalLiveBytes, sample.logicalLiveBytes);
-		state.sessionPeak.backingAllocatedBytes = std::max(
-			state.sessionPeak.backingAllocatedBytes, sample.backingAllocatedBytes);
-		state.sessionPeak.retiredBytes = std::max(state.sessionPeak.retiredBytes, sample.retiredBytes);
-		state.sessionPeak.reusableBytes = std::max(state.sessionPeak.reusableBytes, sample.reusableBytes);
-		state.sessionPeak.objectCount = std::max(state.sessionPeak.objectCount, sample.objectCount);
-		state.sessionPeak.capacityCount = std::max(state.sessionPeak.capacityCount, sample.capacityCount);
+		if (inserted) {
+			state.key = key;
+			state.sessionPeak = {};
+			state.sessionPeak.source = sample.source;
+			state.sessionPeak.window = sample.window;
+			state.sessionPeak.value_fields = 0;
+		}
+		const auto supports = [&](MemoryValueField field) {
+			return (sample.value_fields & uint16_t(field)) != 0;
+		};
+		if (supports(MemoryValueField::LogicalLive)) {
+			state.sessionPeak.logicalLiveBytes =
+				std::max(state.sessionPeak.logicalLiveBytes, sample.logicalLiveBytes);
+			state.sessionPeak.peakLogicalBytes =
+				std::max(state.sessionPeak.peakLogicalBytes, sample.logicalLiveBytes);
+		}
+		if (supports(MemoryValueField::PeakLogical))
+			state.sessionPeak.peakLogicalBytes =
+				std::max(state.sessionPeak.peakLogicalBytes, sample.peakLogicalBytes);
+		if (supports(MemoryValueField::Backing))
+			state.sessionPeak.backingAllocatedBytes =
+				std::max(state.sessionPeak.backingAllocatedBytes, sample.backingAllocatedBytes);
+		if (supports(MemoryValueField::Retired))
+			state.sessionPeak.retiredBytes =
+				std::max(state.sessionPeak.retiredBytes, sample.retiredBytes);
+		if (supports(MemoryValueField::Reusable))
+			state.sessionPeak.reusableBytes =
+				std::max(state.sessionPeak.reusableBytes, sample.reusableBytes);
+		if (supports(MemoryValueField::Objects)) {
+			state.sessionPeak.objectCount =
+				std::max(state.sessionPeak.objectCount, sample.objectCount);
+			state.sessionPeak.peakObjectCount = std::max(
+				{state.sessionPeak.peakObjectCount, sample.peakObjectCount, sample.objectCount});
+		}
+		if (supports(MemoryValueField::Capacity))
+			state.sessionPeak.capacityCount =
+				std::max(state.sessionPeak.capacityCount, sample.capacityCount);
 		state.sessionPeak.growthOps = std::max(state.sessionPeak.growthOps, sample.growthOps);
-		state.sessionPeak.peakLogicalBytes =
-			std::max(state.sessionPeak.peakLogicalBytes, sample.peakLogicalBytes);
-		state.sessionPeak.peakObjectCount = std::max(
-			{state.sessionPeak.peakObjectCount, sample.peakObjectCount, sample.objectCount});
 		state.sessionPeak.flags = state.sessionPeak.flags | sample.flags;
+		state.sessionPeak.value_fields |= sample.value_fields;
 		state.value = sample;
 		state.lastSampledTick = tick;
 		state.measured_at_ns = timestamp;
@@ -385,7 +458,7 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 			unique_samples.reserve(samples.size());
 			std::unordered_map<MemorySourceKey, size_t, SourceKeyHash> demand_indices;
 			for (const auto& value : samples) {
-				if (!find_initial_capacity(value.source)) {
+				if (!FlowUi::detail::find_initial_capacity(value.source)) {
 					unique_samples.emplace_back(value);
 					continue;
 				}
@@ -912,9 +985,23 @@ bool DevMemoryReporting::visit_history_chunks(
 	impl_->status.history_max_lock_ns = longest_lock;
 	return true;
 }
+void DevMemoryReporting::set_capacity_baseline(const MemoryCapacityProfile& profile) {
+	std::scoped_lock lock(impl_->mutex);
+	for (const auto& setting : profile.settings)
+		if (const auto* definition = FlowUi::detail::find_initial_capacity(setting.target))
+			impl_->initial_capacities.values[static_cast<size_t>(definition->target)] =
+				setting.value;
+	impl_->storage_growth_factor = std::max(1.1f, profile.growthFactor);
+	impl_->allow_runtime_growth = profile.allowRuntimeGrowth;
+}
+
 MemoryLiveRead DevMemoryReporting::read_live() const {
 	std::scoped_lock lock(impl_->mutex);
 	MemoryLiveRead read;
+	read.capacity_high_water = impl_->capacity_high_water;
+	read.initial_capacities = impl_->initial_capacities;
+	read.storage_growth_factor = impl_->storage_growth_factor;
+	read.allow_runtime_growth = impl_->allow_runtime_growth;
 	read.sources.reserve(impl_->current.size());
 	for (const auto& [key, value] : impl_->current)
 		read.sources.emplace_back(value);
@@ -1113,14 +1200,21 @@ MemoryCapacityPreview DevMemoryReporting::previewCapacityProfile(const CapacityP
 			if (demand <= proposed) coveredWeight = saturatedAdd(coveredWeight, weight);
 		}
 		const float targetFactor = preview.profile.growthFactor;
-		MemoryCapacityRecommendation recommendation{.target = target, .observedMinimum = stats->minimum,
-			.observedMaximum = stats->maximum, .percentileDemand = stats->percentiles.front().value,
+		MemoryCapacityRecommendation recommendation{
+			.target = target,
+			.observedMinimum = stats->minimum,
+			.observedMaximum = stats->maximum,
+			.percentileDemand = stats->percentiles.front().value,
 			.proposedInitialCapacity = proposed,
-			.deltaFromProductionDefault = proposed >= target.productionDefault
-				? static_cast<int64_t>(std::min<uint64_t>(proposed - target.productionDefault, INT64_MAX))
-				: -static_cast<int64_t>(std::min<uint64_t>(target.productionDefault - proposed, INT64_MAX)),
+			.deltaFromProductionDefault =
+				proposed >= target.productionDefault
+					? static_cast<int64_t>(
+						  std::min<uint64_t>(proposed - target.productionDefault, INT64_MAX))
+					: -static_cast<int64_t>(
+						  std::min<uint64_t>(target.productionDefault - proposed, INT64_MAX)),
 			.predictedNoGrowthCoverage = static_cast<double>(stats->totalWeight == 0u ? 0u : 1u),
-			.simulation = simulateMemoryGrowth(trace, proposed, targetFactor, target.alignment),
+			.simulation = FlowUi::detail::simulateMemoryGrowth(trace, proposed, targetFactor,
+															   target.alignment),
 			.flags = stats->flags};
 		recommendation.predictedNoGrowthCoverage = totalWeight == 0u ? 0.0
 			: static_cast<double>(coveredWeight) / static_cast<double>(totalWeight);

@@ -3,6 +3,7 @@
 #endif
 #include "FSEL/Button.hpp"
 #include "FlowUi/Flow.hpp"
+#include "devSystems/devInterface/Memory/Analysis/DevMemoryCapacityTool.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
 #include "devSystems/devInterface/Memory/Inspector/DevMemoryInspector.hpp"
@@ -82,6 +83,25 @@ int main() {
 		assert(app.drawFrame());
 	};
 	const auto click = [&](FlowElementID identity) {
+		// Exercise clipping realistically: bring Inspector controls into its visible viewport.
+		for (int attempt = 0; attempt < 2; ++attempt) {
+			const auto control = Clay_GetElementData(app.ui().toClayEID(identity));
+			const auto inspector =
+				Clay_GetElementData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+			const auto scroll =
+				Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+			if (control.found && inspector.found && scroll.found && scroll.scrollPosition &&
+				control.boundingBox.x >= inspector.boundingBox.x) {
+				const auto bottom = inspector.boundingBox.y + inspector.boundingBox.height;
+				if (control.boundingBox.y + control.boundingBox.height > bottom)
+					scroll.scrollPosition->y -=
+						control.boundingBox.y + control.boundingBox.height - bottom + 16;
+				else if (control.boundingBox.y < inspector.boundingBox.y)
+					scroll.scrollPosition->y +=
+						inspector.boundingBox.y - control.boundingBox.y + 16;
+			}
+			draw();
+		}
 		draw(identity, 1);
 		draw(identity, 2);
 		draw();
@@ -112,24 +132,25 @@ int main() {
 	draw();
 	draw();
 	auto& analysis = session.memory_workbench.analysis;
-	assert(!analysis.target_options.empty());
-	analysis.evidence_mode = 2;
-	analysis.planner.preset = 1;
-	analysis.previous_preset = UINT64_MAX;
-	draw();
-	draw();
-	analysis.planner.percentile = 50;
-	draw();
-	assert(analysis.plan && analysis.plan->initial_coverage == .5);
+	auto& tool = analysis.capacity_tool;
+	assert(tool.editor.evidence_mode == 1 && !tool.target_options.empty());
+	assert(std::ranges::any_of(tool.proposals, [](const auto& value) { return value.available; }));
+	click(action_id(FlowElementID{inspector_id.value}, 402));
+	assert(tool.editor.planner.margin_percent == 0);
 	check_field_text(memory_ui::kDoubleInput,
 					 local_control(FlowElementID{inspector_id.value},
 								   decltype(memory_ui::kDoubleInput)::definitionId,
-								   LocalElementName{"planner-percentile"}));
-	click(action_id(FlowElementID{inspector_id.value}, 130));
-	assert(analysis.staged.size() == 1 && analysis.show_review);
+								   LocalElementName{"capacity-headroom"}));
+	click(action_id(FlowElementID{inspector_id.value}, 400));
+	assert(!analysis.staged.empty() && tool.rules.size() == 1);
+	const auto prepared_count = analysis.staged.size();
 	const auto staged_factor = analysis.shared_factor;
-	click(action_id(FlowElementID{inspector_id.value}, 120));
-	assert(analysis.staged.size() == 1 && analysis.shared_factor == staged_factor);
+	const auto exact_prepared = analysis.staged.front().plan.initial;
+	click(action_id(FlowElementID{inspector_id.value}, 408));
+	assert(tool.rules.front().locked);
+	click(action_id(FlowElementID{inspector_id.value}, 400));
+	assert(analysis.staged.front().plan.initial == exact_prepared);
+	assert(analysis.shared_factor == staged_factor);
 	click(action_id(FlowElementID{context_id.value}, 106));
 	assert(analysis.show_recording_settings);
 	check_field_text(FSEL::kTextInput,
@@ -142,9 +163,14 @@ int main() {
 	click(action_id(FlowElementID{context_id.value}, 101));
 	assert(analysis.datasets.size() == 1 && analysis.datasets.front().snapshot);
 	assert(!analysis.datasets.front().live.sources.empty());
-	analysis.evidence_mode = 0;
+	tool.editor.evidence_mode = 0;
+	tool.editor.dataset = analysis.dataset;
+	tool.strategy = 1;
 	draw();
-	assert(!analysis.plan); // instant snapshots cannot drive chronological replay
+	draw();
+	assert(std::ranges::none_of(tool.proposals, [](const auto& value) {
+		return value.available && !value.locked;
+	})); // snapshots cannot supply percentiles
 	analysis.dataset = 0;
 	click(action_id(FlowElementID{context_id.value}, 100));
 	assert(analysis.recording);
@@ -161,23 +187,19 @@ int main() {
 	assert(analysis.baseline_dataset == analysis.dataset);
 	click(action_id(FlowElementID{context_id.value}, 103));
 	assert(analysis.dataset == 0 && analysis.datasets.size() == 1 && !analysis.baseline_dataset);
-	analysis.show_review = true;
-	analysis.evidence_mode = 2;
-	for (const auto name :
-		 {LocalElementName{"measurement-header"}, LocalElementName{"planner-header"},
-		  LocalElementName{"review-header"}}) {
-		bool& expanded =
-			name.token == LocalElementName{"measurement-header"}.token ? analysis.show_quality
-			: name.token == LocalElementName{"planner-header"}.token   ? analysis.show_planner
-																	   : analysis.show_review;
-		const auto original = expanded;
-		const auto header =
-			local_control(FlowElementID{inspector_id.value}, FSEL::Button::definitionId, name);
-		click(header);
-		assert(expanded != original);
-		click(header);
-		assert(expanded == original);
-	}
+	tool.editor.evidence_mode = 1;
+	tool.strategy = 0;
+	tool.show_targets = tool.advanced = true;
+	draw();
+	tool.show_diagnostics = true;
+	draw();
+	const auto original = analysis.show_quality;
+	const auto header = local_control(FlowElementID{inspector_id.value}, FSEL::Button::definitionId,
+									  LocalElementName{"measurement-header"});
+	click(header);
+	assert(analysis.show_quality != original);
+	click(header);
+	assert(analysis.show_quality == original);
 	for (const auto width : {280.0f, 360.0f, 480.0f}) {
 		draw({}, 0, width);
 		draw({}, 0, width);
@@ -190,7 +212,8 @@ int main() {
 		Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
 	assert(scroll.found &&
 		   scroll.contentDimensions.height > scroll.scrollContainerDimensions.height);
-	assert(analysis.staged.size() == 1); // navigation/capture does not discard settings
-	std::cout << "Inspector, preview planner, staging, disabled export, independent recording, "
-				 "immutable snapshot, baseline and narrow layout verified\n";
+	assert(analysis.staged.size() ==
+		   prepared_count); // navigation/capture does not discard settings
+	std::cout << "Five-stage Inspector, prepared scope lock, independent recording, snapshot "
+				 "percentile rejection and narrow layout verified\n";
 }

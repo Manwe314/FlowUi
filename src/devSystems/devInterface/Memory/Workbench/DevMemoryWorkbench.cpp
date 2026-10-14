@@ -86,8 +86,9 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 		state.next_live_ns = state.next_history_ns = 0;
 		state.analysis.last_refresh_ns = 0;
 	}
-	const auto history_action =
-		state.analysis.ui_action >= 200 ? std::exchange(state.analysis.ui_action, 0) : 0;
+	const auto history_action = state.analysis.ui_action >= 200 && state.analysis.ui_action < 300
+									? std::exchange(state.analysis.ui_action, 0)
+									: 0;
 	if (history_action == 200 || history_action == 201) {
 		hold_memory_history(state, reporting);
 		pan_memory_view(state, history_action == 200 ? -1 : 1);

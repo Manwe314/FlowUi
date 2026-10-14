@@ -85,18 +85,18 @@ void ViewPortManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink)
 		memory.addNodeContainer(controller_->facades);
 		memory.addNodeContainer(controller_->textureOwners);
 		memory.add(controller_->retired);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::viewports_records,
-										   controller_->records, controller_->capacity_demand,
-										   windowId_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::viewports_facades,
-										   controller_->facades, controller_->capacity_demand,
-										   windowId_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::viewports_texture_owners,
-										   controller_->textureOwners, controller_->capacity_demand,
-										   windowId_);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::viewports_retired,
-										   controller_->retired, controller_->capacity_demand,
-										   windowId_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::viewports_records, controller_->records,
+			controller_->capacity_demand, windowId_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::viewports_facades, controller_->facades,
+			controller_->capacity_demand, windowId_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::viewports_texture_owners,
+			controller_->textureOwners, controller_->capacity_demand, windowId_);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::viewports_retired, controller_->retired,
+			controller_->capacity_demand, windowId_);
 
 		for (const auto& [_, record] : controller_->records) {
 			memory.add(record.state.key);

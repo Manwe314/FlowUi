@@ -75,7 +75,7 @@ bool generateCpp(
 	const std::filesystem::path& outputDirectory,
 	std::string& error) {
 	if (manifest.memoryCapacity &&
-		!FlowUi::validate_memory_capacity_manifest(*manifest.memoryCapacity, error))
+		!FlowUi::detail::validate_memory_capacity_manifest(*manifest.memoryCapacity, error))
 		return false;
 	std::map<std::uint64_t, ElementGroup> elements;
 	std::map<std::uint64_t, ThemeVariantGroup> themes;
@@ -196,7 +196,7 @@ bool generateCpp(
 
 	std::string generated_source = source.str();
 	std::ostringstream memory_source;
-	std::vector<FlowUi::MemoryCapacitySelection> selections;
+	std::vector<FlowUi::detail::MemoryCapacitySelection> selections;
 	if (has_memory)
 		selections = manifest.memoryCapacity->targets;
 	std::sort(selections.begin(), selections.end(),

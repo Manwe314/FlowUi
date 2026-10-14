@@ -56,7 +56,7 @@ DevMemory::DevMemory(DevMemoryConfig config)
 		impl_->config.level >= MemoryMonitoringLevel::SubsystemCapacity, std::memory_order_relaxed);
 	for (const auto& source : memory_sources::kAll) (void)registerSource(source);
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
-	for (const auto& definition : initial_capacity_definitions) {
+	for (const auto& definition : FlowUi::detail::initial_capacity_definitions) {
 		if (!definition.storage_member.empty())
 			continue;
 		const std::string label = std::string(definition.key) + " (probe interval maximum; " +
