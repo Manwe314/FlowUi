@@ -1,5 +1,5 @@
 #pragma once
-#include "FlowUi/MemoryCapacityManifest.hpp"
+#include "internal/MemoryCapacityManifest.hpp"
 #include <optional>
 
 #include <cstdint>
@@ -28,7 +28,7 @@ struct Entry {
 };
 
 struct Manifest {
-	std::optional<FlowUi::MemoryCapacityManifest> memoryCapacity{};
+	std::optional<FlowUi::detail::MemoryCapacityManifest> memoryCapacity{};
 	std::uint32_t version = 0;
 	std::uint64_t schemaFingerprint = 0;
 	std::vector<Entry> entries{};

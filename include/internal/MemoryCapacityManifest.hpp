@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "FlowUi/MemoryCapacityTargets.hpp"
+#include "internal/MemoryCapacityTargets.hpp"
 
-namespace FlowUi {
+namespace FlowUi::detail {
 /** Evidence belongs to each selection so partial updates preserve earlier provenance. */
 struct MemoryCapacityEvidence {
 	std::string kind{"recording"}, source_name{};
@@ -288,4 +288,4 @@ encode_memory_capacity_manifest(const MemoryCapacityManifest& section) {
 				  std::string(*section.allow_runtime_growth ? "true" : "false");
 	return output + '}';
 }
-} // namespace FlowUi
+} // namespace FlowUi::detail

@@ -108,7 +108,8 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
         COMMAND ${CMAKE_COMMAND} -E touch "${FLOWUI_BAKED_GENERATED_DIR}/generation.stamp"
         DEPENDS "${FLOWUI_MANIFEST_FILE}" flowui-dev-generate
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/MemoryCapacityTargets.hpp"
-            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/MemoryCapacityManifest.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/internal/MemoryCapacityTargets.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/internal/MemoryCapacityManifest.hpp"
         COMMENT "Generating FlowUi baked C++ changes"
         VERBATIM
     )

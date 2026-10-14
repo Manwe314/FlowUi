@@ -96,13 +96,16 @@ struct ElementStateFrameTransaction {
 	void clear() noexcept {
 		epoch = 0;
 		active = false;
-		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::elements_touched,
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand,
+									FlowUi::detail::InitialCapacityTarget::elements_touched,
 									touched.size());
 		touched.clear();
-		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::elements_created,
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand,
+									FlowUi::detail::InitialCapacityTarget::elements_created,
 									created.size());
 		created.clear();
-		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::elements_policies,
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand,
+									FlowUi::detail::InitialCapacityTarget::elements_policies,
 									policies.size());
 		policies.clear();
 	}

@@ -4,7 +4,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "FlowUi/MemoryCapacityProfile.hpp"
+#include "internal/MemoryCapacityProfile.hpp"
 #include "HeadlessVulkanFixture.hpp"
 #include "internal/StorageSystem/FlowStorageSystem.hpp"
 
@@ -16,7 +16,7 @@ namespace {
 	profile.settings = {
 		{makeMemoryCapacityTargetId("flowui.tuning.storage.strings_entries"), hint},
 		{makeMemoryCapacityTargetId("flowui.tuning.storage.string_ids_entries"), hint}};
-	auto resolved = resolve_memory_capacity_profile(profile);
+	auto resolved = FlowUi::detail::resolve_memory_capacity_profile(profile);
 	assert(resolved);
 	storage::StorageConfig config;
 	assert(storage::applyMemoryCapacityProfile(config, *resolved) >= 2);

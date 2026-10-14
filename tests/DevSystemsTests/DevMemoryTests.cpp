@@ -275,7 +275,7 @@ void testCaptureProfileAndProductionGrowthReplay() {
 	FLOWUI_CHECK(recommendation->observedMaximum == 1024u);
 	FLOWUI_CHECK(recommendation->simulation.finalCapacity >= 1024u);
 	const uint64_t replay[] = {64u, 64u, 1024u};
-	const auto replayed = FlowUi::simulateMemoryGrowth(
+	const auto replayed = FlowUi::detail::simulateMemoryGrowth(
 		replay, recommendation->proposedInitialCapacity, preview.profile.growthFactor,
 		recommendation->target.alignment);
 	FLOWUI_CHECK(replayed.finalCapacity == recommendation->simulation.finalCapacity);

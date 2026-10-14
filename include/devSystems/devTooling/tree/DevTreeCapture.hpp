@@ -46,7 +46,7 @@ public:
 	};
 
 	explicit DevTreeCapture(DevTreeCaptureConfig config = {},
-							const InitialMemoryCapacities& capacities = {});
+							const FlowUi::detail::InitialMemoryCapacities& capacities = {});
 
 	/** Bind the owning application monitoring gate before capture. */
 	void bind_memory_demand(const ::FlowUi::detail::MemoryDemandControl* control) noexcept {

@@ -81,17 +81,18 @@ FontManager::DevAtlasView FontManager::devAtlas() const noexcept {
 void FontManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!controller_) return;
 	try {
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::fonts_family_lookup,
-										   controller_->familyIdByName,
-										   controller_->capacity_demand);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::fonts_id_lookup,
-										   controller_->fontIndexById,
-										   controller_->capacity_demand);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::fonts_name_lookup,
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::fonts_family_lookup,
+			controller_->familyIdByName, controller_->capacity_demand);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::fonts_id_lookup,
+			controller_->fontIndexById, controller_->capacity_demand);
+		devSystems::append_capacity_demand(sink,
+										   FlowUi::detail::InitialCapacityTarget::fonts_name_lookup,
 										   controller_->fontIdByName, controller_->capacity_demand);
-		devSystems::append_capacity_demand(sink, InitialCapacityTarget::fonts_atlas_layers,
-										   controller_->atlasLayerPixels,
-										   controller_->capacity_demand);
+		devSystems::append_capacity_demand(
+			sink, FlowUi::detail::InitialCapacityTarget::fonts_atlas_layers,
+			controller_->atlasLayerPixels, controller_->capacity_demand);
 		devSystems::DevContainerMemoryAccumulator memory{};
 		memory.liveBytes += controller_->families.size() * sizeof(detail::manager_storage::FontFamilyRecord);
 		memory.capacityBytes += memory.liveBytes;
@@ -109,9 +110,10 @@ void FontManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) con
 		for (const auto& family : controller_->families)
 			face_maximum = std::max<uint64_t>(face_maximum, family.faces.size());
 		(void)sink.append(devSystems::MemoryValueSample{
-			.source = initial_capacity_definitions[static_cast<size_t>(
-													   InitialCapacityTarget::fonts_family_faces)]
-						  .id(),
+			.source =
+				FlowUi::detail::initial_capacity_definitions
+					[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::fonts_family_faces)]
+						.id(),
 			.objectCount = face_maximum,
 			.flags = devSystems::MemorySampleFlag::TuningAggregate,
 			.value_fields = uint16_t(devSystems::MemoryValueField::Objects)});
@@ -407,16 +409,18 @@ void FontManager::init(storage::IStorageSystem& storageSystem, uint32_t atlasSiz
 #endif
 	detail::reserve_initial_capacity(
 		controller_->familyIdByName,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::fonts_family_lookup));
-	detail::reserve_initial_capacity(
-		controller_->fontIndexById,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::fonts_id_lookup));
-	detail::reserve_initial_capacity(
-		controller_->fontIdByName,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::fonts_name_lookup));
+		storageSystem.initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::fonts_family_lookup));
+	detail::reserve_initial_capacity(controller_->fontIndexById,
+									 storageSystem.initial_memory_capacity(
+										 FlowUi::detail::InitialCapacityTarget::fonts_id_lookup));
+	detail::reserve_initial_capacity(controller_->fontIdByName,
+									 storageSystem.initial_memory_capacity(
+										 FlowUi::detail::InitialCapacityTarget::fonts_name_lookup));
 	detail::reserve_initial_capacity(
 		controller_->atlasLayerPixels,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::fonts_atlas_layers));
+		storageSystem.initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::fonts_atlas_layers));
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	controller_->setDevMemoryRecorder(devMemoryRecorder_);
 #endif
@@ -438,8 +442,8 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCrea
 	family.id = familyId;
 	family.name = std::move(familyName);
 	family.faces.reserve(std::max<uint64_t>(
-		createInfo.faces.size(),
-		storage_->initial_memory_capacity(InitialCapacityTarget::fonts_family_faces)));
+		createInfo.faces.size(), storage_->initial_memory_capacity(
+									 FlowUi::detail::InitialCapacityTarget::fonts_family_faces)));
 	controller_->families.push_back(std::move(family));
 	try {
 		controller_->familyIdByName.emplace(controller_->families.back().name, familyId);
@@ -453,23 +457,23 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCrea
 		controller_->familyTransaction = false;
 		for (size_t index = oldFontCount; index < controller_->fonts.size(); ++index) {
 			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-										InitialCapacityTarget::fonts_id_lookup,
+										FlowUi::detail::InitialCapacityTarget::fonts_id_lookup,
 										controller_->fontIndexById.size());
 			controller_->fontIndexById.erase(controller_->fonts[index].id);
 			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-										InitialCapacityTarget::fonts_name_lookup,
+										FlowUi::detail::InitialCapacityTarget::fonts_name_lookup,
 										controller_->fontIdByName.size());
 			controller_->fontIdByName.erase(controller_->fonts[index].name);
 		}
 		controller_->fonts.resize(oldFontCount);
 		controller_->nextFontId = oldNextFontId;
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_atlas_layers,
+									FlowUi::detail::InitialCapacityTarget::fonts_atlas_layers,
 									controller_->atlasLayerPixels.size());
 		controller_->atlasLayerPixels.resize(oldLayerCount);
 		controller_->borrowedAtlas.layersUsed = static_cast<uint32_t>(oldLayerCount);
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_family_lookup,
+									FlowUi::detail::InitialCapacityTarget::fonts_family_lookup,
 									controller_->familyIdByName.size());
 		controller_->familyIdByName.erase(controller_->families.back().name);
 		controller_->families.pop_back();
@@ -478,23 +482,23 @@ Result<FontManager::FontFamilyId> FontManager::createFamily(const FontFamilyCrea
 		controller_->familyTransaction = false;
 		for (size_t index = oldFontCount; index < controller_->fonts.size(); ++index) {
 			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-										InitialCapacityTarget::fonts_id_lookup,
+										FlowUi::detail::InitialCapacityTarget::fonts_id_lookup,
 										controller_->fontIndexById.size());
 			controller_->fontIndexById.erase(controller_->fonts[index].id);
 			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-										InitialCapacityTarget::fonts_name_lookup,
+										FlowUi::detail::InitialCapacityTarget::fonts_name_lookup,
 										controller_->fontIdByName.size());
 			controller_->fontIdByName.erase(controller_->fonts[index].name);
 		}
 		controller_->fonts.resize(oldFontCount);
 		controller_->nextFontId = oldNextFontId;
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_atlas_layers,
+									FlowUi::detail::InitialCapacityTarget::fonts_atlas_layers,
 									controller_->atlasLayerPixels.size());
 		controller_->atlasLayerPixels.resize(oldLayerCount);
 		controller_->borrowedAtlas.layersUsed = static_cast<uint32_t>(oldLayerCount);
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_family_lookup,
+									FlowUi::detail::InitialCapacityTarget::fonts_family_lookup,
 									controller_->familyIdByName.size());
 		controller_->familyIdByName.erase(controller_->families.back().name);
 		controller_->families.pop_back();
@@ -880,16 +884,16 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 		++controller_->nextFontId;
 	} catch (...) {
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_name_lookup,
+									FlowUi::detail::InitialCapacityTarget::fonts_name_lookup,
 									controller_->fontIdByName.size());
 		controller_->fontIdByName.erase(committedName);
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_id_lookup,
+									FlowUi::detail::InitialCapacityTarget::fonts_id_lookup,
 									controller_->fontIndexById.size());
 		controller_->fontIndexById.erase(committedId);
 		if (controller_->atlasLayerPixels.size() > assignedLayer) {
 			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-										InitialCapacityTarget::fonts_atlas_layers,
+										FlowUi::detail::InitialCapacityTarget::fonts_atlas_layers,
 										controller_->atlasLayerPixels.size());
 			controller_->atlasLayerPixels.resize(assignedLayer);
 			controller_->borrowedAtlas.layersUsed = assignedLayer;
@@ -1071,16 +1075,16 @@ FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& 
 		++controller_->nextFontId;
 	} catch (...) {
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_name_lookup,
+									FlowUi::detail::InitialCapacityTarget::fonts_name_lookup,
 									controller_->fontIdByName.size());
 		controller_->fontIdByName.erase(committedName);
 		FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-									InitialCapacityTarget::fonts_id_lookup,
+									FlowUi::detail::InitialCapacityTarget::fonts_id_lookup,
 									controller_->fontIndexById.size());
 		controller_->fontIndexById.erase(committedId);
 		if (controller_->atlasLayerPixels.size() > assignedLayer) {
 			FLOWUI_MEMORY_DEMAND_RECORD(controller_->capacity_demand,
-										InitialCapacityTarget::fonts_atlas_layers,
+										FlowUi::detail::InitialCapacityTarget::fonts_atlas_layers,
 										controller_->atlasLayerPixels.size());
 			controller_->atlasLayerPixels.resize(assignedLayer);
 			controller_->borrowedAtlas.layersUsed = assignedLayer;

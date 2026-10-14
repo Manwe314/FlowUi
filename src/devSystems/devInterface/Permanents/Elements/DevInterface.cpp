@@ -151,11 +151,12 @@ void DevInterface::buildContent(BuildContext& context) {
 
 void DevInterface::buildPermanentFooter(BuildContext& context) {
 	const DevInterfaceState& state = *context.params.interface_state;
-	context.uiManager.createElement(
-		kDevInterfaceFooter, LocalElementName{"permanent-footer"})
+	context.uiManager.createElement(kDevInterfaceFooter, LocalElementName{"permanent-footer"})
 		.setParameters(DevInterfaceFooterParameters{
 			.errorCount = state.activeErrorCount,
 			.unbakedChangeCount = state.unbakedChangeCount,
+			.prepared_capacity_count =
+				static_cast<uint32_t>(state.memory_workbench.analysis.staged.size()),
 			.lastActionMessage = state.lastActionMessage,
 		})
 		.draw();

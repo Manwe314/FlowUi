@@ -131,7 +131,7 @@ void drawUnbakedStatusTag(
 	DevInterfaceFooter::BuildContext& context,
 	uint32_t unbakedChangeCount,
 	std::string_view statusText) {
-	const bool hasChanges = unbakedChangeCount != 0u;
+	const bool hasChanges = unbakedChangeCount != 0u || context.params.prepared_capacity_count != 0;
 	Clay_ElementDeclaration tag{};
 	tag.layout.sizing = {
 		.width = CLAY_SIZING_FIT(0),
@@ -217,7 +217,15 @@ void DevInterfaceFooter::buildElement(BuildContext& context) {
 	char statusBuffer[64]{};
 	std::snprintf(errorBuffer, sizeof(errorBuffer), "%u", context.params.errorCount);
 	std::snprintf(changesBuffer, sizeof(changesBuffer), "%u", context.params.unbakedChangeCount);
-	if (context.params.unbakedChangeCount == 0u) {
+	if (context.params.prepared_capacity_count) {
+		if (context.params.unbakedChangeCount)
+			std::snprintf(statusBuffer, sizeof(statusBuffer), "%u UI / %u CAPACITY PROPOSALS",
+						  context.params.unbakedChangeCount,
+						  context.params.prepared_capacity_count);
+		else
+			std::snprintf(statusBuffer, sizeof(statusBuffer), "%u CAPACITY PROPOSALS",
+						  context.params.prepared_capacity_count);
+	} else if (context.params.unbakedChangeCount == 0u) {
 		std::snprintf(statusBuffer, sizeof(statusBuffer), "NO UNBAKED CHANGES");
 	} else {
 		std::snprintf(

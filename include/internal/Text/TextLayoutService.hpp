@@ -46,7 +46,8 @@ public:
 	[[nodiscard]] size_t cache_entry_capacity() const noexcept { return cache_.capacity(); }
 
 	[[nodiscard]] uint64_t consume_entry_demand() const noexcept {
-		return capacity_demand_.consume(InitialCapacityTarget::ui_text_cache, cache_.size());
+		return capacity_demand_.consume(FlowUi::detail::InitialCapacityTarget::ui_text_cache,
+										cache_.size());
 	}
 	[[nodiscard]] size_t cacheEntryCount() const noexcept { return cache_.size(); }
 	[[nodiscard]] size_t cacheBytes() const noexcept { return cacheBytes_; }

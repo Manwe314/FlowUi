@@ -4,7 +4,7 @@
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/MemoryCapacityTargets.hpp"
+#include "internal/MemoryCapacityTargets.hpp"
 #include <utility>
 
 namespace FlowUi::devSystems::memory_sources {
@@ -151,7 +151,7 @@ inline constexpr StaticMemorySourceDescriptor kAll[] = {
 
 /** Physical parent for a diagnostic demand child; child bytes must not be added again. */
 [[nodiscard]] constexpr MemorySourceId
-initial_capacity_parent(const InitialCapacityDefinition& definition) noexcept {
+initial_capacity_parent(const FlowUi::detail::InitialCapacityDefinition& definition) noexcept {
 	const auto key = definition.key;
 	if (key.starts_with("flowui.tuning.storage.") || key.starts_with("flowui.tuning.allocator."))
 		return kStorageMetadata.id;
@@ -208,13 +208,14 @@ inline std::vector<MemoryTuningTargetDescriptor> tuningTargets() {
 					  kRendererFramePayload.id, 256u, SIZE_MAX / 2ull, 256u, 1024ull * 1024ull,
 					  Metric::LogicalLiveBytes, Unit::Bytes, Policy::RestartRequired});
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
-	for (const auto& definition : initial_capacity_definitions) {
+	for (const auto& definition : FlowUi::detail::initial_capacity_definitions) {
 		if (!definition.storage_member.empty())
 			continue;
 		result.push_back(
 			{std::string(definition.key), definition.id(), definition.id(), 0u, definition.maximum,
 			 definition.alignment, definition.default_value, Metric::ObjectCount,
-			 definition.unit == InitialCapacityUnit::Bytes ? Unit::Bytes : Unit::Entries,
+			 definition.unit == FlowUi::detail::InitialCapacityUnit::Bytes ? Unit::Bytes
+																		   : Unit::Entries,
 			 Policy::RestartRequired});
 	}
 #endif

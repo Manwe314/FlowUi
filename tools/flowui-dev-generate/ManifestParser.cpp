@@ -153,8 +153,8 @@ bool parseManifest(const std::filesystem::path& path, Manifest& output, std::str
 			error = "memoryCapacity requires manifestVersion 2";
 			return false;
 		}
-		FlowUi::MemoryCapacityManifest decoded;
-		if (!FlowUi::decode_memory_capacity_manifest(*memory, decoded, error))
+		FlowUi::detail::MemoryCapacityManifest decoded;
+		if (!FlowUi::detail::decode_memory_capacity_manifest(*memory, decoded, error))
 			return false;
 		output.memoryCapacity = std::move(decoded);
 	}

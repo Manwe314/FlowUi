@@ -384,6 +384,9 @@ target_sources(flowui
 		include/internal/Text/TextLayoutRecords.hpp
 		include/internal/Text/TextLayoutService.hpp
 		include/internal/Text/TextStorage.hpp
+		include/internal/MemoryCapacityProfile.hpp
+		include/internal/MemoryCapacityManifest.hpp
+		include/internal/MemoryCapacityTargets.hpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
@@ -391,7 +394,7 @@ target_sources(flowui
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ElementID.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/MemoryCapacityProfile.hpp>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/MemoryCapacityTargets.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ResourceKey.hpp>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/TextureHandle.hpp>
@@ -494,6 +497,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.cpp
 			src/devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.cpp
 			src/devSystems/devInterface/Memory/Inspector/DevMemoryInspector.cpp
+			src/devSystems/devInterface/Memory/Analysis/DevMemoryCapacityTool.cpp
 			src/devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.cpp
 			src/devSystems/devInterface/Memory/Analysis/DevMemorySession.cpp
 			src/devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.cpp

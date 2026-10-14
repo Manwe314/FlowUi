@@ -132,7 +132,7 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 			"This configuration key already has a proposal. Confirm replacement.";
 		return unexpectedError(makeError(ErrorCode::ObjectAlreadyInitialized, ErrorSite::None));
 	}
-	const auto* definition = find_initial_capacity(target.id);
+	const auto* definition = FlowUi::detail::find_initial_capacity(target.id);
 	const bool storage_policy = !definition || !definition->storage_member.empty();
 	const bool factor_changed = storage_policy && !state.staged.empty() &&
 								std::abs(state.plan->factor - state.shared_factor) > .000001;
@@ -149,7 +149,7 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 			reevaluated.emplace_back(*state.plan);
 			continue;
 		}
-		const auto* staged_definition = find_initial_capacity(staged.target.id);
+		const auto* staged_definition = FlowUi::detail::find_initial_capacity(staged.target.id);
 		if (!storage_policy || (staged_definition && staged_definition->storage_member.empty())) {
 			reevaluated.emplace_back(staged.plan);
 			continue;
@@ -223,22 +223,26 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 	return {};
 }
 
-Result<MemoryCapacityManifest>
+Result<FlowUi::detail::MemoryCapacityManifest>
 export_staged_memory_capacities(const MemoryAnalysisState& state,
 								bool acknowledge_incomplete) noexcept {
 	try {
-		MemoryCapacityManifest result{};
+		FlowUi::detail::MemoryCapacityManifest result{};
 		result.targets.reserve(state.staged.size());
 		bool has_storage = false;
 		for (const auto& draft : state.staged) {
-			const auto* definition = find_initial_capacity(draft.target.id);
+			const auto* definition = FlowUi::detail::find_initial_capacity(draft.target.id);
 			if (!definition || draft.synthetic || draft.evidence.empty())
 				return unexpectedError(
 					makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::None));
-			MemoryCapacitySelection selection{};
+			FlowUi::detail::MemoryCapacitySelection selection{};
 			selection.key = std::string(definition->key);
 			selection.policy = draft.selection_policy;
-			selection.value = draft.plan.initial;
+			selection.value = (draft.recipe.initial_mode == 4 ||
+							   (draft.recipe.initial_mode == 3 && !draft.recipe.manual_initial &&
+								(!draft.recipe.margin_mode || !draft.recipe.absolute_margin)))
+								  ? 0
+								  : draft.plan.initial;
 			selection.observed_maximum = draft.plan.observed_maximum;
 			selection.headroom = draft.headroom;
 			selection.percentile = draft.percentile;
@@ -251,7 +255,7 @@ export_staged_memory_capacities(const MemoryAnalysisState& state,
 		if (has_storage)
 			result.growth_factor = static_cast<float>(state.shared_factor);
 		std::string diagnostic;
-		if (!validate_memory_capacity_manifest(result, diagnostic))
+		if (!FlowUi::detail::validate_memory_capacity_manifest(result, diagnostic))
 			return unexpectedError(
 				makeError(ErrorCode::StorageConfigurationInvalid, ErrorSite::None));
 		return result;

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "FlowUi/BuildConfig.hpp"
-#include "FlowUi/MemoryCapacityProfile.hpp"
+#include "internal/MemoryCapacityProfile.hpp"
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
 
@@ -495,7 +495,7 @@ struct StorageConfig {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	const ::FlowUi::detail::MemoryDemandControl* memory_demand_control = nullptr;
 #endif
-	FlowUi::InitialMemoryCapacities initial_capacities{};
+	FlowUi::detail::InitialMemoryCapacities initial_capacities{};
 	uint64_t initialPersistentCpuBytes = 4ull * 1024ull * 1024ull;
 	uint64_t initialStringBytes = 1ull * 1024ull * 1024ull;
 	uint64_t initialDecodeScratchBytes = 8ull * 1024ull * 1024ull;
@@ -538,8 +538,8 @@ struct WindowStorageDesc {
 
 /** Applies the storage portion of a generated or handwritten capacity profile. */
 inline bool applyMemoryCapacitySetting(StorageConfig& config, const FlowUi::MemoryCapacitySetting& setting) noexcept {
-	const auto* definition = FlowUi::find_initial_capacity(setting.target);
-	if (!definition || !FlowUi::valid_initial_capacity(*definition, setting.value))
+	const auto* definition = FlowUi::detail::find_initial_capacity(setting.target);
+	if (!definition || !FlowUi::detail::valid_initial_capacity(*definition, setting.value))
 		return false;
 	config.initial_capacities.values[static_cast<size_t>(definition->target)] = setting.value;
 	const uint64_t effective = setting.value == 0 ? definition->default_value : setting.value;
@@ -585,47 +585,50 @@ inline uint32_t applyMemoryCapacityProfile(
 	apply(profile.storage.initialInstanceBytesPerFrame, config.initialInstanceBytesPerFrame);
 	for (const auto& setting : profile.settings) if (applyMemoryCapacitySetting(config, setting)) ++applied;
 	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_blobs)] != 0)
+			.values[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::storage_blobs)] != 0)
 		config.expectedBlobs = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_blobs));
+			config.initial_capacities.get(FlowUi::detail::InitialCapacityTarget::storage_blobs));
 	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_buffers)] != 0)
+			.values[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::storage_buffers)] !=
+		0)
 		config.expectedBuffers = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_buffers));
+			config.initial_capacities.get(FlowUi::detail::InitialCapacityTarget::storage_buffers));
 	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_images)] != 0)
+			.values[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::storage_images)] !=
+		0)
 		config.expectedImages = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_images));
-	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_image_views)] != 0)
-		config.expectedImageViews = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_image_views));
-	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_samplers)] != 0)
-		config.expectedSamplers = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_samplers));
-	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_textures)] != 0)
-		config.expectedTextureViews = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_textures));
-	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_renderer_objects)] !=
-		0)
-		config.expectedRendererObjects = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_renderer_objects));
-	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_manager_records)] !=
-		0)
-		config.expectedManagerRecords = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_manager_records));
+			config.initial_capacities.get(FlowUi::detail::InitialCapacityTarget::storage_images));
 	if (config.initial_capacities.values[static_cast<size_t>(
-			FlowUi::InitialCapacityTarget::storage_persistent_records)] != 0)
-		config.expectedPersistentRecords = static_cast<uint32_t>(config.initial_capacities.get(
-			FlowUi::InitialCapacityTarget::storage_persistent_records));
+			FlowUi::detail::InitialCapacityTarget::storage_image_views)] != 0)
+		config.expectedImageViews = static_cast<uint32_t>(config.initial_capacities.get(
+			FlowUi::detail::InitialCapacityTarget::storage_image_views));
 	if (config.initial_capacities
-			.values[static_cast<size_t>(FlowUi::InitialCapacityTarget::storage_windows)] != 0)
+			.values[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::storage_samplers)] !=
+		0)
+		config.expectedSamplers = static_cast<uint32_t>(
+			config.initial_capacities.get(FlowUi::detail::InitialCapacityTarget::storage_samplers));
+	if (config.initial_capacities
+			.values[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::storage_textures)] !=
+		0)
+		config.expectedTextureViews = static_cast<uint32_t>(
+			config.initial_capacities.get(FlowUi::detail::InitialCapacityTarget::storage_textures));
+	if (config.initial_capacities.values[static_cast<size_t>(
+			FlowUi::detail::InitialCapacityTarget::storage_renderer_objects)] != 0)
+		config.expectedRendererObjects = static_cast<uint32_t>(config.initial_capacities.get(
+			FlowUi::detail::InitialCapacityTarget::storage_renderer_objects));
+	if (config.initial_capacities.values[static_cast<size_t>(
+			FlowUi::detail::InitialCapacityTarget::storage_manager_records)] != 0)
+		config.expectedManagerRecords = static_cast<uint32_t>(config.initial_capacities.get(
+			FlowUi::detail::InitialCapacityTarget::storage_manager_records));
+	if (config.initial_capacities.values[static_cast<size_t>(
+			FlowUi::detail::InitialCapacityTarget::storage_persistent_records)] != 0)
+		config.expectedPersistentRecords = static_cast<uint32_t>(config.initial_capacities.get(
+			FlowUi::detail::InitialCapacityTarget::storage_persistent_records));
+	if (config.initial_capacities
+			.values[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::storage_windows)] !=
+		0)
 		config.expectedWindows = static_cast<uint32_t>(
-			config.initial_capacities.get(FlowUi::InitialCapacityTarget::storage_windows));
+			config.initial_capacities.get(FlowUi::detail::InitialCapacityTarget::storage_windows));
 	config.growthFactor = std::max(1.1f, profile.growthFactor);
 	config.allowRuntimeGrowth = profile.allowRuntimeGrowth;
 	config.allowPersistentGrowth = profile.allowRuntimeGrowth;

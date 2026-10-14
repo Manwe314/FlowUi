@@ -39,9 +39,10 @@ void VulkanUiRenderer::appendDevMemorySamples(
 		memory.objectCount += textLayoutService_.cacheEntryCount();
 		memory.capacityCount += textLayoutService_.cache_entry_capacity();
 		(void)sink.append(FlowUi::devSystems::MemoryValueSample{
-			.source = FlowUi::initial_capacity_definitions
-						  [static_cast<size_t>(FlowUi::InitialCapacityTarget::ui_text_cache)]
-							  .id(),
+			.source =
+				FlowUi::detail::initial_capacity_definitions
+					[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::ui_text_cache)]
+						.id(),
 			.window = windowId_,
 			.objectCount = textLayoutService_.consume_entry_demand(),
 			.capacityCount = textLayoutService_.cache_entry_capacity(),
@@ -1325,9 +1326,9 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 
 } // namespace
 
-FlowUi::detail::UiConversionCapacity FlowUi::detail::measureUiConversionCapacity(
-	const Clay_RenderCommandArray& commands,
-	const InputFieldFrameOverrides& overrides) {
+FlowUi::detail::UiConversionCapacity
+FlowUi::detail::measureUiConversionCapacity(const Clay_RenderCommandArray& commands,
+											const InputFieldFrameOverrides& overrides) {
 	const UiBuildUpperBound upper = ComputeBuildUpperBound(commands, overrides);
 	return UiConversionCapacity{
 		.instances = upper.instances,
@@ -1370,10 +1371,8 @@ FlowUi::detail::UiConversionResult FlowUi::detail::buildUiInstancesDirect(
 	};
 }
 
-uint64_t FlowUi::detail::growUiInstanceCapacity(
-	uint64_t currentBytes,
-	uint64_t requiredBytes,
-	uint64_t initialBytes) {
+uint64_t FlowUi::detail::growUiInstanceCapacity(uint64_t currentBytes, uint64_t requiredBytes,
+												uint64_t initialBytes) {
 	if (requiredBytes == 0) return currentBytes;
 	uint64_t result = currentBytes > 0 ? currentBytes : std::max<uint64_t>(initialBytes, 1u);
 	while (result < requiredBytes) {
@@ -1521,8 +1520,8 @@ void VulkanUiRenderer::init(
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 		textLayoutService_.bind_memory_demand(storageSystem.memory_demand_control());
 #endif
-		textLayoutService_.reserve_initial_entries(
-			storageSystem.initial_memory_capacity(FlowUi::InitialCapacityTarget::ui_text_cache));
+		textLayoutService_.reserve_initial_entries(storageSystem.initial_memory_capacity(
+			FlowUi::detail::InitialCapacityTarget::ui_text_cache));
 		windowId_ = windowId;
 		sharedByteResources_ = &sharedResources;
 		initialInstanceBytes_ = std::max<uint64_t>(1u, initialInstanceBytes);

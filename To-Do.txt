@@ -168,7 +168,7 @@ things i want to do:
 	- DevTimelines
 		- double check probe level selection and compilation.
 	- DevMonitoring and DevTooling
-		- move Memory capacity targets and json orchestration from FlowUi namespace to internal or detail
+		[Done] - move Memory capacity targets and json orchestration from FlowUi namespace to internal or detail
 		
 
 

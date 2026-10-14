@@ -32,7 +32,8 @@ public:
 
 	[[nodiscard]] size_t depth() const noexcept { return scopes_.size(); }
 	[[nodiscard]] uint64_t consume_demand() const noexcept {
-		return capacity_demand_.consume(InitialCapacityTarget::ui_flow_scope_depth, scopes_.size());
+		return capacity_demand_.consume(FlowUi::detail::InitialCapacityTarget::ui_flow_scope_depth,
+										scopes_.size());
 	}
 	[[nodiscard]] size_t capacity() const noexcept { return scopes_.capacity(); }
 
@@ -40,7 +41,8 @@ public:
 		if (!id) throw FlowUiException(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerOpenElement));
 		const size_t priorDepth = scopes_.size();
 		scopes_.push_back(id);
-		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_, InitialCapacityTarget::ui_flow_scope_depth,
+		FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand_,
+									FlowUi::detail::InitialCapacityTarget::ui_flow_scope_depth,
 									scopes_.size());
 		return priorDepth;
 	}

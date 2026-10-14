@@ -49,14 +49,17 @@ ViewportStorageController::ViewportStorageController(
 	capacity_demand.bind(storageSystem.memory_demand_control());
 #endif
 	::FlowUi::detail::reserve_initial_capacity(
-		records, storageSystem.initial_memory_capacity(InitialCapacityTarget::viewports_records));
+		records, storageSystem.initial_memory_capacity(
+					 FlowUi::detail::InitialCapacityTarget::viewports_records));
 	::FlowUi::detail::reserve_initial_capacity(
-		facades, storageSystem.initial_memory_capacity(InitialCapacityTarget::viewports_facades));
+		facades, storageSystem.initial_memory_capacity(
+					 FlowUi::detail::InitialCapacityTarget::viewports_facades));
 	::FlowUi::detail::reserve_initial_capacity(
-		textureOwners,
-		storageSystem.initial_memory_capacity(InitialCapacityTarget::viewports_texture_owners));
+		textureOwners, storageSystem.initial_memory_capacity(
+						   FlowUi::detail::InitialCapacityTarget::viewports_texture_owners));
 	::FlowUi::detail::reserve_initial_capacity(
-		retired, storageSystem.initial_memory_capacity(InitialCapacityTarget::viewports_retired));
+		retired, storageSystem.initial_memory_capacity(
+					 FlowUi::detail::InitialCapacityTarget::viewports_retired));
 	const storage::StringId name = storageSystem.intern("flowui.viewport.sampler");
 	sampler = storageSystem.acquireSampler(storage::SamplerDesc{ .debugName = name,
 		.minFilter = storage::FilterMode::Linear, .magFilter = storage::FilterMode::Linear,
@@ -213,8 +216,8 @@ void ViewportStorageController::retireTargets(ViewportTargetGeneration&& generat
 }
 
 void ViewportStorageController::collectRetired() {
-	FLOWUI_MEMORY_DEMAND_RECORD(capacity_demand, InitialCapacityTarget::viewports_retired,
-								retired.size());
+	FLOWUI_MEMORY_DEMAND_RECORD(
+		capacity_demand, FlowUi::detail::InitialCapacityTarget::viewports_retired, retired.size());
 	for (auto it = retired.begin(); it != retired.end();) {
 		const bool complete = std::all_of(
 			it->targets.textures.begin(), it->targets.textures.end(),

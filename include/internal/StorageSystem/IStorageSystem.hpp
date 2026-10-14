@@ -19,8 +19,8 @@ public:
 	virtual void shutdown() noexcept = 0;
 	/** Startup reserve hint. Alternate storage implementations retain library defaults. */
 	[[nodiscard]] virtual uint64_t
-	initial_memory_capacity(FlowUi::InitialCapacityTarget target) const noexcept {
-		return FlowUi::InitialMemoryCapacities{}.get(target);
+	initial_memory_capacity(FlowUi::detail::InitialCapacityTarget target) const noexcept {
+		return FlowUi::detail::InitialMemoryCapacities{}.get(target);
 	}
 	[[nodiscard]] virtual uint32_t interfaceVersion() const noexcept = 0;
 	[[nodiscard]] virtual uint64_t capabilities() const noexcept = 0;

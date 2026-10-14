@@ -67,7 +67,7 @@ struct DevContainerMemoryAccumulator {
 
 /** Sample actual entries, preserving pre-clear demand. Hash buckets remain diagnostic backing. */
 template <class Container>
-void append_capacity_demand(MemorySampleSink& sink, InitialCapacityTarget target,
+void append_capacity_demand(MemorySampleSink& sink, FlowUi::detail::InitialCapacityTarget target,
 							const Container& container,
 							const ::FlowUi::detail::MemoryDemandPeaks& peaks,
 							WindowId window = InvalidWindowId, uint64_t sentinel = 0) noexcept {
@@ -77,16 +77,16 @@ void append_capacity_demand(MemorySampleSink& sink, InitialCapacityTarget target
 	else
 		estimate.add(container);
 	const auto count = container.size() > sentinel ? container.size() - sentinel : 0;
-	auto sample =
-		estimate.sample(initial_capacity_definitions[static_cast<size_t>(target)].id(), window);
+	auto sample = estimate.sample(
+		FlowUi::detail::initial_capacity_definitions[static_cast<size_t>(target)].id(), window);
 	sample.objectCount = peaks.consume(target, count);
 	sample.peakObjectCount = sample.objectCount;
 	sample.flags = sample.flags | MemorySampleFlag::TuningAggregate;
 	sample.value_fields =
 		uint16_t(MemoryValueField::Objects) | uint16_t(MemoryValueField::Capacity) |
 		uint16_t(MemoryValueField::Backing) | uint16_t(MemoryValueField::LogicalLive);
-	if (initial_capacity_definitions[static_cast<size_t>(target)].unit ==
-		InitialCapacityUnit::Bytes) {
+	if (FlowUi::detail::initial_capacity_definitions[static_cast<size_t>(target)].unit ==
+		FlowUi::detail::InitialCapacityUnit::Bytes) {
 		sample.peakLogicalBytes = sample.objectCount;
 		sample.value_fields |= uint16_t(MemoryValueField::PeakLogical);
 	}

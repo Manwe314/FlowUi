@@ -2,7 +2,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
 #include "FlowUi/App.hpp"
-#include "FlowUi/MemoryCapacityProfile.hpp"
+#include "internal/MemoryCapacityProfile.hpp"
 #include "internal/InitialMemoryCapacity.hpp"
 #include "internal/MemoryDemandPeaks.hpp"
 #if FLOW_UI_DEV_MODE
@@ -861,7 +861,9 @@ struct App::Impl {
 		  platformErrorAttachment(devMonitoring.errors().attachCurrentThread("flowui.platform")),
 		  errorObserver(initialConfig.errors.observer, &devMonitoring.errors()),
 		  platformTimingAttachment(devMonitoring.timing().attachCurrentThread("flowui.platform")),
-		  config(initialConfig) {}
+		  config(initialConfig) {
+		devMonitoring.memoryReporting().set_capacity_baseline(initialConfig.memoryCapacityProfile);
+	}
 #else
 		: errorObserver(initialConfig.errors.observer), config(initialConfig) {}
 #endif
@@ -880,11 +882,14 @@ struct App::Impl {
 	static void sample_app_memory(const void* owner,
 								  devSystems::MemoryProbeContext& context) noexcept {
 		const auto& app = *static_cast<const Impl*>(owner);
-		devSystems::append_capacity_demand(context.sink, InitialCapacityTarget::app_windows,
+		devSystems::append_capacity_demand(context.sink,
+										   FlowUi::detail::InitialCapacityTarget::app_windows,
 										   app.windows, app.capacity_demand);
-		devSystems::append_capacity_demand(context.sink, InitialCapacityTarget::app_managed,
+		devSystems::append_capacity_demand(context.sink,
+										   FlowUi::detail::InitialCapacityTarget::app_managed,
 										   app.managedWindows, app.capacity_demand);
-		devSystems::append_capacity_demand(context.sink, InitialCapacityTarget::app_dispatch,
+		devSystems::append_capacity_demand(context.sink,
+										   FlowUi::detail::InitialCapacityTarget::app_dispatch,
 										   app.dispatch_order, app.capacity_demand);
 	}
 	static void sampleElementMemory(const void* owner, devSystems::MemoryProbeContext& context) noexcept {
@@ -918,8 +923,9 @@ struct App::Impl {
 	void registerAppMemoryProbes() {
 		auto& memory = devMonitoring.memory();
 		(void)memory.registerProbe(
-			{initial_capacity_definitions[static_cast<size_t>(InitialCapacityTarget::app_windows)]
-				 .id(),
+			{FlowUi::detail::initial_capacity_definitions
+				 [static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::app_windows)]
+					 .id(),
 			 this, &sample_app_memory});
 		(void)memory.registerProbe({devSystems::memory_sources::kElements.id, &elementManager, &sampleElementMemory});
 		(void)memory.registerProbe({devSystems::memory_sources::kFonts.id, &fonts, &sampleFontMemory});
@@ -1093,12 +1099,15 @@ struct App::Impl {
 		capacity_demand.bind(storageConfig.memory_demand_control);
 #endif
 		storageSystem->initialize(storageConfig);
-		detail::reserve_initial_capacity(
-			windows, storageSystem->initial_memory_capacity(InitialCapacityTarget::app_windows));
-		detail::reserve_initial_capacity(managedWindows, storageSystem->initial_memory_capacity(
-															 InitialCapacityTarget::app_managed));
-		detail::reserve_initial_capacity(dispatch_order, storageSystem->initial_memory_capacity(
-															 InitialCapacityTarget::app_dispatch));
+		detail::reserve_initial_capacity(windows,
+										 storageSystem->initial_memory_capacity(
+											 FlowUi::detail::InitialCapacityTarget::app_windows));
+		detail::reserve_initial_capacity(managedWindows,
+										 storageSystem->initial_memory_capacity(
+											 FlowUi::detail::InitialCapacityTarget::app_managed));
+		detail::reserve_initial_capacity(dispatch_order,
+										 storageSystem->initial_memory_capacity(
+											 FlowUi::detail::InitialCapacityTarget::app_dispatch));
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 1
 		devMonitoring.memory().setStorageSystem(storageSystem.get());
 #endif
@@ -2620,7 +2629,8 @@ Status App::dispatchManagedWindows() {
 	} dispatch_scope{impl_->dispatching_managed_windows,
 					 std::exchange(impl_->dispatching_managed_windows, true)};
 	auto& dispatchOrder = recursive ? recursive_dispatch_order : impl_->dispatch_order;
-	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand, InitialCapacityTarget::app_dispatch,
+	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
+								FlowUi::detail::InitialCapacityTarget::app_dispatch,
 								dispatchOrder.size());
 	dispatchOrder.clear();
 	for (const Impl::ManagedWindowEntry& entry : impl_->managedWindows) {
@@ -3222,7 +3232,7 @@ App makeApplication(const AppConfig& cfg) {
 	App app;
 	AppConfig effective_config = cfg;
 	const bool use_baked = cfg.prefer_baked_capacities && baked::has_baked_memory_capacity();
-	auto resolved = resolve_memory_capacity_profile(
+	auto resolved = FlowUi::detail::resolve_memory_capacity_profile(
 		cfg.memoryCapacityProfile, use_baked ? baked::baked_memory_capacity_settings()
 											 : std::span<const MemoryCapacitySetting>{});
 	if (!resolved)
@@ -3234,17 +3244,17 @@ App makeApplication(const AppConfig& cfg) {
 #endif
 #if FLOW_UI_DEV_MODE
 	for (const auto& setting : effective_config.memoryCapacityProfile.settings) {
-		const auto* definition = find_initial_capacity(setting.target);
+		const auto* definition = FlowUi::detail::find_initial_capacity(setting.target);
 		const auto value = setting.value ? setting.value : definition->default_value;
 		switch (definition->target) {
-		case InitialCapacityTarget::development_tree_flow_nodes:
+		case FlowUi::detail::InitialCapacityTarget::development_tree_flow_nodes:
 			effective_config.dev.tooling.treeCapture.flowNodeReserve = static_cast<uint32_t>(value);
 			break;
-		case InitialCapacityTarget::development_tree_strings:
+		case FlowUi::detail::InitialCapacityTarget::development_tree_strings:
 			effective_config.dev.tooling.treeCapture.stringByteReserve =
 				static_cast<uint32_t>(value);
 			break;
-		case InitialCapacityTarget::development_tree_diagnostics:
+		case FlowUi::detail::InitialCapacityTarget::development_tree_diagnostics:
 			effective_config.dev.tooling.treeCapture.diagnosticReserve =
 				static_cast<uint32_t>(value);
 			break;
