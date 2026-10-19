@@ -18,6 +18,7 @@ namespace FlowUi::devSystems::interface_elements {
 
 inline constexpr uint64_t kDevInterfaceFlowForest = 0u;
 inline constexpr uint64_t kDevInterfaceClayForest = 1u;
+inline constexpr uint64_t kDevInterfaceThemeForest = 2u;
 inline constexpr uint64_t kDevInterfaceAllDefinitions = 0u;
 inline constexpr uint64_t kDevInterfaceFlowNodeKind = 1u;
 inline constexpr uint64_t kDevInterfaceClayNodeKind = 2u;

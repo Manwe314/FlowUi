@@ -26,13 +26,37 @@
 namespace FlowUi::devSystems { class MemorySampleSink; }
 namespace FlowUi::detail::manager_storage {
 
+#if FLOW_UI_DEV_MODE
+/** Typed baseline storage preserves owning fields and their alignment. */
+struct DevThemeBaseline {
+	virtual ~DevThemeBaseline() = default;
+	[[nodiscard]] virtual const void* payload() const noexcept = 0;
+};
+template <typename T>
+struct DevTypedThemeBaseline final : DevThemeBaseline {
+	T value;
+	explicit DevTypedThemeBaseline(const T& source) : value(source) {}
+	[[nodiscard]] const void* payload() const noexcept override { return &value; }
+};
+#endif
+
 struct ThemeVariantRegistrationRecord {
 	storage::ManagerRecordHandle handle{};
 	storage::ResourceKey resourceKey{};
+#if FLOW_UI_DEV_MODE
+	std::unique_ptr<DevThemeBaseline> authored{};
+	std::unique_ptr<DevThemeBaseline> startup{};
+#endif
 };
+
+class ThemeStorageController;
 
 struct TypeRegistrationRecord {
 	uint64_t typeHash = 0;
+#if FLOW_UI_DEV_MODE
+	storage::ManagerRecordHandle (*clone_variant)(ThemeStorageController&, storage::StringId,
+												  storage::StringId) = nullptr;
+#endif
 	storage::StringId typeNameId = 0;
 	storage::StringId activeVariantNameId = 0;
 	std::unordered_map<storage::StringId, ThemeVariantRegistrationRecord> variants{};
@@ -56,10 +80,13 @@ public:
 	void shutdown() noexcept;
 
 	template <typename T>
-	storage::ManagerRecordHandle registerThemeVariant(
-		storage::StringId variantNameId,
-		T themeData,
-		bool makeActive) {
+	storage::ManagerRecordHandle registerThemeVariant(storage::StringId variantNameId, T themeData,
+													  bool makeActive
+#if FLOW_UI_DEV_MODE
+													  ,
+													  const T* authored = nullptr
+#endif
+	) {
 		std::lock_guard<std::mutex> lock(mutex_);
 		if (!storage_) {
 			throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
@@ -77,13 +104,31 @@ public:
 										 FlowUi::detail::InitialCapacityTarget::themes_variants));
 		typeRecord.typeHash = typeHash;
 		typeRecord.typeNameId = typeNameId;
+#if FLOW_UI_DEV_MODE
+		typeRecord.clone_variant = [](ThemeStorageController& controller, storage::StringId source,
+									  storage::StringId destination) {
+			const T* payload = controller.getThemeVariant<T>(source);
+			if (!payload)
+				return storage::ManagerRecordHandle{};
+			return controller.registerThemeVariant<T>(destination, *payload, false);
+		};
+#endif
 
+#if FLOW_UI_DEV_MODE
+		auto authored_baseline =
+			std::make_unique<DevTypedThemeBaseline<T>>(authored ? *authored : themeData);
+		auto startup_baseline = std::make_unique<DevTypedThemeBaseline<T>>(themeData);
+#endif
 		auto existingIt = typeRecord.variants.find(variantNameId);
 		if (existingIt != typeRecord.variants.end()) {
 			void* rawRecord = storage_->managerRecordData(existingIt->second.handle, storage::ResourceKind::UiTheme);
 			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
 			auto* payload = reinterpret_cast<T*>(header->payload());
 			*payload = std::move(themeData);
+#if FLOW_UI_DEV_MODE
+			existingIt->second.authored = std::move(authored_baseline);
+			existingIt->second.startup = std::move(startup_baseline);
+#endif
 			header->revision++;
 
 			if (makeActive || typeRecord.activeVariantNameId == 0) {
@@ -151,6 +196,10 @@ public:
 		typeRecord.variants[variantNameId] = ThemeVariantRegistrationRecord{
 			.handle = handle,
 			.resourceKey = key,
+#if FLOW_UI_DEV_MODE
+			.authored = std::move(authored_baseline),
+			.startup = std::move(startup_baseline),
+#endif
 		};
 
 		if (makeActive || typeRecord.activeVariantNameId == 0) {
@@ -278,12 +327,20 @@ public:
 		std::string_view typeName{};
 		std::string_view variant{};
 		const void* payload = nullptr;
+		const void* authored = nullptr;
+		const void* startup = nullptr;
 		std::size_t payloadSize = 0;
 		std::uint64_t revision = 0;
 		bool active = false;
 	};
 	using DevPayloadVisitor = bool (*)(void*, const DevPayloadView&) noexcept;
 
+	/** Clone a registered variant without replacing an existing destination. */
+	[[nodiscard]] bool clone_dev_variant(std::uint64_t type, std::string_view source,
+										 std::string_view destination);
+	/** Select an existing variant through its reflected type. */
+	[[nodiscard]] bool set_dev_active_variant(std::uint64_t type,
+											  std::string_view variant) noexcept;
 	bool visitDevPayloads(void* userData, DevPayloadVisitor visitor) const noexcept;
 	[[nodiscard]] std::size_t devPayloadCount() const noexcept;
 	devMode::DevValueOperationStatus assignDevField(

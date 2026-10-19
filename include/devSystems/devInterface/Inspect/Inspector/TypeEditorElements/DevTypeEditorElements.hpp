@@ -39,6 +39,8 @@ enum class DevEditorRole : uint8_t {
 
 struct DevEditorBinding {
 	std::string elementName{};
+	std::string theme_variant{};
+	devMode::DevTypeId theme_type = 0;
 	std::vector<devMode::DevFieldId> nestedPath{};
 	FlowDefinitionID definition{};
 	WindowId window = InvalidWindowId;

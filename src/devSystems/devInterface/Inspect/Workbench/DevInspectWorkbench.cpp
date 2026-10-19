@@ -1,6 +1,7 @@
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
 
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp"
 
 #include "devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp"
 
@@ -3086,6 +3087,15 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 }
 
 void DevInspectWorkbench::buildElement(BuildContext& context) {
+	if (context.params.interfaceState &&
+		context.params.interfaceState->inspectForest == kDevInterfaceThemeForest) {
+		context.uiManager.createElement(kDevThemeWorkbench, "themes")
+			.setParameters(context.params)
+			.setDevInternalCapture(true)
+			.draw();
+		return;
+	}
+
 	DevInterfaceState* state = context.params.interfaceState;
 
 	if (state && state->inspectSelectedNodeKind == kDevInterfaceClayNodeKind &&

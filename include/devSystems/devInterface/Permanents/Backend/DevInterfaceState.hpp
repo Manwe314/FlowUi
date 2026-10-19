@@ -80,6 +80,13 @@ struct DevInterfaceState {
 	// Inspect selector controls use unsigned values to bind directly to FSEL.
 	// Forest: 0 = Flow, 1 = Clay. Definition 0 means no filter.
 	uint64_t inspectForest = 0u;
+	devMode::DevTypeId inspect_theme_type = 0;
+	std::string inspect_theme_variant{};
+	uint64_t inspect_theme_key = 0;
+	uint64_t inspect_theme_filter = 0;
+	uint64_t inspect_theme_tab = 0;
+	devMode::DevFieldId inspect_theme_group = 0;
+	bool inspect_theme_all_variants = false;
 	uint64_t inspectDefinitionFilter = 0u;
 	// Selection is intentionally independent from the active tab. A key of zero
 	// means that no tree node is selected; kind is 1 for Flow and 2 for Clay.

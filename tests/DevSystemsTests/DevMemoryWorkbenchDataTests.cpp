@@ -33,8 +33,9 @@ int main() {
 									 .processMemory = false});
 	Probe probe;
 	assert(memory.registerProbe({memory_sources::kInputFields.id, &probe, &sample}));
-	DevMemoryReporting reporting(
-		memory, MemoryReportingConfig{.segmentCapacity = 128, .managerSampleEveryTicks = 1});
+	DevMemoryReporting reporting(memory, MemoryReportingConfig{.segmentCapacity = 128,
+															   .managerSampleEveryTicks = 1,
+															   .retainLifetimeEvents = true});
 	reporting.consume(1);
 	reporting.consume(2);
 	DevMemorySelection selection;
@@ -55,12 +56,25 @@ int main() {
 	resolve_memory_tracks(state, selection, reporting.read_live());
 	probe.first = 30;
 	probe.second = 10;
+	const auto event_time = memory_now_ns();
+	assert(memory.recorder().tryRecord(
+		MemoryOperationRecord{.source = memory_sources::kInputFields.id,
+							  .operation = MemoryOperation::BackingGrow,
+							  .detailLevel = MemoryMonitoringLevel::SubsystemCapacity,
+							  .appTick = 3,
+							  .frame = {.window = 1},
+							  .timestampNs = event_time,
+							  .bytesBefore = 32,
+							  .bytesAfter = 64,
+							  .bytesChanged = 32}));
 	reporting.consume(3);
 	reporting.consume(4);
 	build_memory_history(state, reporting, 64);
 	assert(state.all_lanes.size() == 2);
 	assert(state.lanes.size() == 1);
 	assert(state.lanes.front().columns.size() == 64);
+	assert(state.lanes.front().events.size() == 1);
+	assert(state.lanes.front().events.front().timestampNs == event_time);
 	assert(std::ranges::any_of(state.lanes.front().columns, [](const auto& column) {
 		return column.available && column.active_max == 30;
 	}));
@@ -135,7 +149,7 @@ int main() {
 	assert(state.all_lanes.size() == 2);
 	assert(state.lanes.size() == 1);
 	DevMemoryWorkbenchState counts;
-	counts.history_metric = 2;
+	counts.lane_settings[0].metric = 1;
 	MemoryWorkbenchTrack count_track;
 	count_track.identity = uint64_t(DevMemoryNodeId::InputFields);
 	count_track.history_sources = {memory_sources::kInputFields.id};
@@ -158,10 +172,62 @@ int main() {
 	build_memory_history(counts, reporting, 64);
 	assert(counts.lanes.size() == 1 && counts.lanes.front().columns.front().active_max == 5);
 	assert(counts.lanes.front().columns.front().backing_max == 8);
-	counts.history_metric = 0;
+	counts.lane_settings[0].metric = 0;
 	build_memory_history(counts, reporting, 64);
 	assert(!(counts.lanes.front().columns.front().value_fields &
 			 uint16_t(MemoryValueField::LogicalLive)));
+	// Two metrics of the same scope remain independent, including unsupported byte fields.
+	counts.lane_count = 3;
+	counts.lane_settings[1].metric = 1;
+	counts.lane_settings[2].metric = 1;
+	build_memory_history(counts, reporting, 64);
+	assert(counts.lanes.size() == 3);
+	assert(counts.lanes[0].columns.front().value_fields == 0);
+	assert(counts.lanes[1].columns.front().active_first == 5);
+	assert(counts.lanes[1].columns.front().active_last == 5);
+	assert(counts.lanes[1].columns.front().backing_min == 8);
+	assert(counts.lanes[1].columns.front().backing_first == 8);
+	assert(counts.lanes[1].overview.front().backing_max == 8);
+	// Exact endpoints, a compressed spike, a hole and a change of epoch are distinct evidence.
+	auto& deterministic = counts.analysis.datasets.front();
+	deterministic.segments.clear();
+	deterministic.live.status.last_consumed_ns = 1000;
+	const auto append = [&](uint64_t begin, uint64_t end, uint64_t objects, uint64_t epoch) {
+		auto segment = count_segment;
+		segment.beginNs = begin;
+		segment.endNs = end;
+		segment.history_epoch = epoch;
+		segment.value.objectCount = objects;
+		deterministic.segments.emplace_back(segment);
+	};
+	append(10, 100, 5, 1);
+	append(100, 101, 90, 1);
+	append(101, 400, 8, 1);
+	append(500, 700, 2, 1);
+	append(700, 1000, 1, 2);
+	counts.hovered_ns = 100;
+	counts.range_begin_ns = 50;
+	counts.range_end_ns = 550;
+	build_memory_history(counts, reporting, 32);
+	const auto& exact = counts.lanes[1];
+	assert(exact.point_available && exact.point.objectCount == 90);
+	assert(exact.range.valid && exact.range.incomplete);
+	assert(exact.range.active_before == 5 && exact.range.active_after == 2);
+	assert(std::ranges::any_of(exact.columns, [](const auto& column) {
+		return column.active_max == 90 && column.active_min == 5;
+	}));
+	assert(
+		std::ranges::any_of(exact.columns, [](const auto& column) { return !column.available; }));
+	assert(
+		std::ranges::any_of(exact.columns, [](const auto& column) { return column.mixed_epochs; }));
+	counts.range_begin_ns = 450;
+	counts.range_end_ns = 550;
+	build_memory_history(counts, reporting, 32);
+	assert(!counts.lanes[1].range.valid);
+	counts.range_begin_ns = 550;
+	counts.range_end_ns = 1000;
+	build_memory_history(counts, reporting, 32);
+	assert(counts.lanes[1].range.valid && counts.lanes[1].range.active_after == 1);
 	std::cout << "Footprint/tuning separation, source lanes, resume epochs and removed producer "
 				 "verified\n";
 #else

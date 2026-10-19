@@ -595,6 +595,18 @@ bool writeAtomically(const std::filesystem::path& destination, std::string_view 
 
 } // namespace
 
+std::optional<DevSerializedValue> serialize_dev_value(const devMode::DevSchemaGeneration& schema,
+													  devMode::DevTypeIndex type,
+													  const void* value) noexcept {
+	try {
+		if (const auto formatted = serializeValue(schema, type, value))
+			return DevSerializedValue{formatted->json, formatted->cpp};
+	} catch (...) {
+		return std::nullopt;
+	}
+	return std::nullopt;
+}
+
 DevBakePipeline::DevBakePipeline(
 	devMode::DevSchemaRegistry& schemas,
 	DevOverrideEngine& overrides) noexcept
@@ -746,6 +758,8 @@ DevCommandResult DevBakePipeline::bake() noexcept {
 			}
 		}
 		for (const auto& record : overrides_.themeBakeRecords()) {
+			if (record.preview_only || record.remove_baked)
+				continue;
 			++status_.activeLiveOverrideCount;
 			DevBakeDiagnostic diagnostic;
 			if (auto entry = makeThemeEntry(*schema, record, diagnostic)) {
@@ -816,6 +830,8 @@ DevBakeStatusSnapshot DevBakePipeline::queryStatus() const noexcept {
 			}
 		}
 		for (const auto& record : overrides_.themeBakeRecords()) {
+			if (record.preview_only || record.remove_baked)
+				continue;
 			++result.activeLiveOverrideCount;
 			DevBakeDiagnostic diagnostic;
 			if (makeThemeEntry(*schema, record, diagnostic)) ++result.bakeableOverrideCount;
@@ -891,8 +907,27 @@ std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const noexcept {
 			if (auto entry = makeElementEntry(*schema, record, ignored)) mergeLive(*entry);
 		}
 		for (const auto& record : overrides_.themeBakeRecords()) {
+			if (record.preview_only || record.remove_baked)
+				continue;
 			DevBakeDiagnostic ignored;
-			if (auto entry = makeThemeEntry(*schema, record, ignored)) mergeLive(*entry);
+			if (auto entry = makeThemeEntry(*schema, record, ignored)) {
+				mergeLive(*entry);
+				const auto* field =
+					(record.fieldIndex && record.fieldIndex.value <= schema->fields.size()
+						 ? &schema->fields[record.fieldIndex.value - 1]
+						 : nullptr);
+				const auto original = field
+										  ? serializeValue(*schema, field->valueType,
+														   record.authored ? record.authored.data()
+																		   : record.original.data())
+										  : std::nullopt;
+				for (auto& diff : result)
+					if (diff.targetKind == DevBakeTargetKind::Theme &&
+						diff.themeType == entry->themeType &&
+						diff.themeVariant == entry->themeVariant &&
+						diff.fieldPath == entry->fieldPath && original)
+						diff.authoredValueString = original->json;
+			}
 		}
 		return result;
 	} catch (...) {

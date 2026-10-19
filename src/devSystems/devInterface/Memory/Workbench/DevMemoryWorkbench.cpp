@@ -1,13 +1,13 @@
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
-#include "FSEL/Slider.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "managers/UiManager.hpp"
+#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -89,32 +89,19 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 	const auto history_action = state.analysis.ui_action >= 200 && state.analysis.ui_action < 300
 									? std::exchange(state.analysis.ui_action, 0)
 									: 0;
-	if (history_action == 200 || history_action == 201) {
-		hold_memory_history(state, reporting);
-		pan_memory_view(state, history_action == 200 ? -1 : 1);
-	}
-	if (history_action == 202) {
-		state.scale_mode = 0;
+	if (history_action == 204)
+		state.history_settings_open = !state.history_settings_open;
+	if (history_action == 205 && state.lane_count < 3) {
+		state.lane_settings[state.lane_count] = {};
+		++state.lane_count;
 		state.next_history_ns = 0;
 	}
-	if (history_action == 203) {
-		state.show_backing = !state.show_backing;
+	if (history_action >= 210 && history_action < 213 && state.lane_count > 1) {
+		const auto removed = history_action - 210;
+		for (size_t lane_index = removed; lane_index + 1 < state.lane_count; ++lane_index)
+			state.lane_settings[lane_index] = state.lane_settings[lane_index + 1];
+		--state.lane_count;
 		state.next_history_ns = 0;
-	}
-	if (state.navigator != state.navigator_applied &&
-		state.retained_end_ns > state.retained_begin_ns) {
-		hold_memory_history(state, reporting);
-		const auto width = std::min(state.view_end_ns > state.view_begin_ns
-										? state.view_end_ns - state.view_begin_ns
-										: state.duration_ns,
-									state.retained_end_ns - state.retained_begin_ns);
-		const auto available = state.retained_end_ns - state.retained_begin_ns - width;
-		state.view_begin_ns =
-			state.retained_begin_ns + uint64_t(available * std::clamp(state.navigator, 0.0, 1.0));
-		state.view_end_ns = state.view_begin_ns + width;
-		state.following = false;
-		state.next_history_ns = 0;
-		state.navigator_applied = state.navigator;
 	}
 	const auto previous_width = Clay_GetElementData(context.clayID()).boundingBox.width;
 	const bool compact = previous_width > 0 && previous_width < 640;
@@ -129,7 +116,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 			hold_memory_history(state, reporting);
 		if (state.following) {
 			state.held_data.reset();
-			state.selected_ns = 0;
+			state.selected_ns = state.range_begin_ns = state.range_end_ns = 0;
 			state.next_live_ns = 0;
 		}
 		state.next_history_ns = 0;
@@ -156,7 +143,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 		state.scope != selection.selected_node || state.window != selection.window_scope;
 	if (scope_changed) {
 		state.focus = 0;
-		state.series_index = 0;
+		state.lane_settings[0].source_index = 0;
 		state.held_data.reset();
 		state.next_live_ns = 0;
 		state.next_history_ns = 0;
@@ -424,39 +411,48 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 			}
 		}
 		auto history = column();
-		history.layout.sizing.height = CLAY_SIZING_FIT(0);
+		history.layout.childGap = 0;
+		history.backgroundColor = interface_theme::kDepth1Panel;
+		history.border = {.color = interface_theme::kBorderPrimary, .width = {1, 1, 1, 1, 0}};
 		CLAY(context.clayID("history"), history) {
-			CLAY(context.clayID("history-controls"), row()) {
-				text(context, "History", interface_theme::kTextCanvas, 12);
-				button(context, state, 2, state.following ? "Hold view" : "Follow latest");
-				button(context, state, 3, "Fit time");
-				memory_ui::button(context, state, 202, "Fit values");
+			auto toolbar = row(28);
+			toolbar.layout.padding = {8, 8, 2, 2};
+			toolbar.backgroundColor = interface_theme::kDepth2Ink;
+			CLAY(context.clayID("history-controls"), toolbar) {
+				text(context, "History", interface_theme::kTextCanvas);
+				if (!compact)
+					text(context,
+						 state.lanes.empty() ? "Selected scope" : state.lanes.front().label,
+						 interface_theme::kTextSecondary, 10);
+				auto spacer = row(1);
+				spacer.layout.sizing.width = CLAY_SIZING_GROW(0);
+				CLAY(context.clayID("history-spacer"), spacer) {}
+				static constexpr auto windows = std::to_array<FSEL::ComboBoxOption>(
+					{{0, "1s"}, {1, "5s"}, {2, "30s"}, {3, "All"}});
+				FSEL::ComboBoxParameters window{};
+				window.options = windows;
+				window.selectedValue = &state.duration_choice;
+				window.open = &state.history_window_open;
+				window.fontSize = 11;
+				window.sizing =
+					Clay_Sizing{.width = CLAY_SIZING_FIXED(65), .height = CLAY_SIZING_FIXED(24)};
+				context.uiManager.createElement(FSEL::kComboBox, "history-window")
+					.setParameters(window)
+					.setDevInternalCapture(true)
+					.draw();
+				button(context, state, 3, "Fit");
+				auto follow = row(24);
+				follow.layout.sizing.width = CLAY_SIZING_FIT(0);
+				if (state.following) {
+					follow.backgroundColor = interface_theme::kSelectedRow;
+					follow.border = {.color = interface_theme::kAccentCurrent,
+									 .width = {0, 0, 0, 1, 0}};
+				}
+				CLAY(context.clayID("history-follow"), follow) {
+					button(context, state, 2, state.following ? "Live" : "Follow live");
+				}
+				memory_ui::button(context, state, 204, "Settings");
 			}
-			CLAY(context.clayID("history-navigation"), row()) {
-				memory_ui::button(context, state, 200, "Pan left");
-				memory_ui::button(context, state, 201, "Pan right");
-				button(context, state, 4, "Zoom out");
-				button(context, state, 5, "Zoom in");
-			}
-			static constexpr auto windows =
-				std::to_array<FSEL::ComboBoxOption>({{0, "1 second"},
-													 {1, "5 seconds"},
-													 {2, "30 seconds"},
-													 {3, "All retained / capture"}});
-			static constexpr auto gestures = std::to_array<FSEL::ComboBoxOption>(
-				{{0, "Pan / click to inspect"}, {1, "Select range"}});
-			static constexpr auto modes = std::to_array<FSEL::ComboBoxOption>(
-				{{0, "Focused series"}, {1, "Compare up to 3"}});
-			static constexpr auto metrics =
-				std::to_array<FSEL::ComboBoxOption>({{0, "Active / backing bytes"},
-													 {1, "Backing bytes"},
-													 {2, "Objects / capacity count"}});
-			static constexpr auto scales =
-				std::to_array<FSEL::ComboBoxOption>({{0, "Auto: independent scales"},
-													 {1, "Manual value scale"},
-													 {2, "Shared comparison scale"}});
-			memory_ui::choice(context, "history-window", "Time window", state.duration_choice,
-							  windows);
 			if (state.duration_choice != state.previous_duration_choice) {
 				state.previous_duration_choice = state.duration_choice;
 				state.duration_ns = state.duration_choice == 0	 ? 1'000'000'000ull
@@ -470,158 +466,187 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 													   : 0);
 				state.next_history_ns = 0;
 			}
-			memory_ui::choice(context, "history-mode", "Chart presentation", state.history_mode,
-							  modes);
-			if (!state.lane_options.empty()) {
-				if (!state.history_mode)
-					memory_ui::choice(context, "history-series",
-									  "Constituent measurement (independent views)",
-									  state.series_index, state.lane_options);
-				else
-					for (size_t index = 0; index < state.comparison_indices.size(); ++index) {
-						const auto identity = index == 0   ? LocalElementName{"compare-first"}
-											  : index == 1 ? LocalElementName{"compare-second"}
-														   : LocalElementName{"compare-third"};
-						memory_ui::choice(context, identity, "Compare series",
-										  state.comparison_indices[index], state.lane_options);
-					}
-			}
-			memory_ui::choice(context, "history-metric", "Measurement", state.history_metric,
-							  metrics);
-			memory_ui::choice(context, "history-gesture", "Pointer mode", state.gesture_mode,
-							  gestures);
-			memory_ui::choice(context, "history-scale", "Value axis", state.scale_mode, scales);
-			if (state.scale_mode == 1)
-				memory_ui::number(context, "history-manual-scale",
-								  "Axis maximum (bytes / native count)", state.manual_scale, 1.0,
-								  9e18);
-			memory_ui::button(context, state, 203,
-							  state.show_backing ? "Backing / capacity outline: on"
-												 : "Backing / capacity outline: off");
-			const auto settings_key =
-				state.series_index ^ (state.history_mode << 8) ^ (state.history_metric << 10) ^
-				(state.scale_mode << 12) ^ (uint64_t(state.show_backing) << 14) ^
-				(state.comparison_indices[0] << 16) ^ (state.comparison_indices[1] << 24) ^
-				(state.comparison_indices[2] << 32) ^ uint64_t(state.manual_scale);
-			if (settings_key != state.history_settings_key) {
-				state.history_settings_key = settings_key;
-				state.next_history_ns = 0;
-			}
-			if (now >= state.next_history_ns) {
-				const auto plot_width =
-					Clay_GetElementData(context.clayID("history-image")).boundingBox.width;
-				build_memory_history(state, reporting, plot_width > 0 ? size_t(plot_width) : 512);
-				state.next_history_ns = now + 500'000'000ull;
-			}
-			for (const auto& lane : state.lanes)
-				memory_ui::text(context, lane.label, interface_theme::kTextCanvas, 11);
-			auto plot = row();
-			plot.layout.sizing.height =
-				CLAY_SIZING_FIXED(state.lanes.size() > 1 ? float(state.lanes.size()) * 160
-								  : state.expanded		 ? 340
-														 : 220);
-			plot.clip = {.horizontal = true, .vertical = true};
-			CLAY(context.clayID("history-plot"), plot) {
-				auto value_rulers = column();
-				value_rulers.layout.sizing = {.width = CLAY_SIZING_FIXED(78),
-											  .height = CLAY_SIZING_GROW(0)};
-				value_rulers.layout.childGap = 0;
-				CLAY(context.clayID("value-rulers"), value_rulers) {
-					for (size_t lane_index = 0;
-						 lane_index < std::max<size_t>(1, state.lanes.size()); ++lane_index) {
-						auto ruler = column();
-						ruler.layout.sizing.height =
-							CLAY_SIZING_PERCENT(1.0f / std::max<size_t>(1, state.lanes.size()));
-						ruler.layout.childGap = 0;
-						ruler.layout.padding = {0, 4, 1, 1};
-						CLAY(context.clayID(Keyed("value-ruler", lane_index)), ruler) {
-							for (size_t tick = 0; tick < 5; ++tick) {
-								auto cell = column();
-								cell.layout.sizing.height =
-									tick == 4 ? CLAY_SIZING_FIXED(14) : CLAY_SIZING_GROW(0);
-								const auto maximum = lane_index < state.lanes.size()
-														 ? state.lanes[lane_index].scale
-														 : 1;
-								CLAY(context.clayID(Keyed("value-tick", lane_index * 5 + tick)),
-									 cell) {
-									text(context,
-										 state.history_metric == 2
-											 ? std::to_string(
-												   uint64_t(static_cast<long double>(maximum) *
-															(4 - tick) / 4))
-											 : memory_bytes(
-												   uint64_t(static_cast<long double>(maximum) *
-															(4 - tick) / 4),
-												   state.decimal),
-										 interface_theme::kTextSecondary, 10);
+			const auto popup_id = ::FlowUi::detail::element_id::resolveLocal(
+				context.id, DevMemoryWorkbench::definitionId,
+				LocalElementName{"history-settings"}.token);
+			if (context.uiManager.popups().consumeDismissed(popup_id))
+				state.history_settings_open = false;
+			if (state.history_settings_open) {
+				const auto anchor = ::FlowUi::detail::element_id::resolveLocal(
+					context.id, DevMemoryControl::definitionId, Keyed("memory-action", 204).token);
+				PopupRequest request{};
+				request.anchor = PopupAnchor::element(anchor);
+				request.placement = {
+					PopupAttachmentPoint::BottomRight, PopupAttachmentPoint::TopRight, {0, 4}};
+				request.expectedSize = Clay_Dimensions{340, float(68 + state.lane_count * 140)};
+				request.outsidePress = PopupOutsidePressPolicy::DismissAndConsume;
+				const auto frame =
+					context.uiManager.popups().request(popup_id, request).value_or(PopupFrame{});
+				if (frame.visible) {
+					auto panel = column();
+					panel.layout.sizing.width =
+						CLAY_SIZING_FIXED(std::min(340.0f, std::max(260.0f, previous_width - 16)));
+					panel.layout.padding = {10, 10, 10, 10};
+					panel.layout.childGap = 8;
+					panel.backgroundColor = interface_theme::kDepth3Elevated;
+					panel.border = {.color = interface_theme::kBorderVisible,
+									.width = {1, 1, 1, 1, 0}};
+					panel.floating = frame.floating;
+					CLAY(context.uiManager.toClayEID(popup_id), panel) {
+						CLAY(context.clayID("lane-settings-title"), row(24)) {
+							text(context, "History lanes", interface_theme::kTextCanvas, 12);
+							memory_ui::button(context, state, 205, "+ Lane", state.lane_count < 3);
+							memory_ui::button(context, state, 204, "Done");
+						}
+						static const auto scope_labels = [] {
+							std::vector<std::string> labels;
+							labels.reserve(memory_selector_nodes.size());
+							for (const auto& node : memory_selector_nodes)
+								labels.emplace_back(
+									std::string(node.label) +
+									(node.application_wide ? " · Application" : " · Window scope"));
+							return labels;
+						}();
+						static const auto scopes = [] {
+							std::vector<FSEL::ComboBoxOption> options;
+							options.reserve(memory_selector_nodes.size() + 2);
+							options.emplace_back(
+								FSEL::ComboBoxOption{UINT64_MAX, "Follow selector"});
+							options.emplace_back(FSEL::ComboBoxOption{0, "Overview"});
+							for (size_t node_index = 0; node_index < memory_selector_nodes.size();
+								 ++node_index)
+								options.emplace_back(FSEL::ComboBoxOption{
+									uint64_t(memory_selector_nodes[node_index].id),
+									scope_labels[node_index]});
+							return options;
+						}();
+						for (size_t lane_index = 0; lane_index < state.lane_count; ++lane_index) {
+							auto& settings = state.lane_settings[lane_index];
+							auto lane_panel = column();
+							lane_panel.layout.childGap = 4;
+							lane_panel.layout.padding = {6, 6, 6, 6};
+							lane_panel.backgroundColor = interface_theme::kDepth1Panel;
+							CLAY(context.clayID(Keyed("lane-settings", lane_index)), lane_panel) {
+								CLAY(context.clayID(Keyed("lane-heading", lane_index)), row(22)) {
+									text(context, "Lane " + std::to_string(lane_index + 1),
+										 interface_theme::kTextCanvas);
+									memory_ui::button(context, state, 210 + uint32_t(lane_index),
+													  "Remove", state.lane_count > 1);
+								}
+								FSEL::ComboBoxParameters scope{};
+								scope.options = scopes;
+								scope.selectedValue = &settings.scope;
+								scope.fontSize = 11;
+								scope.sizing = Clay_Sizing{.width = CLAY_SIZING_GROW(0),
+														   .height = CLAY_SIZING_FIXED(26)};
+								const auto old_scope = settings.scope;
+								context.uiManager
+									.createElement(FSEL::kComboBox, Keyed("lane-scope", lane_index))
+									.setParameters(scope)
+									.setDevInternalCapture(true)
+									.draw();
+								if (old_scope != settings.scope)
+									settings.source_index = 0;
+								if (state.source_options[lane_index].size() > 1) {
+									scope.options = state.source_options[lane_index];
+									scope.selectedValue = &settings.source_index;
+									context.uiManager
+										.createElement(FSEL::kComboBox,
+													   Keyed("lane-source", lane_index))
+										.setParameters(scope)
+										.setDevInternalCapture(true)
+										.draw();
+								}
+								CLAY(context.clayID(Keyed("lane-measurement", lane_index)),
+									 row(24)) {
+									for (uint64_t metric = 0; metric < 2; ++metric) {
+										FSEL::RadioChoiceParameters radio{};
+										radio.choiceValue = metric;
+										radio.selectedValue = &settings.metric;
+										radio.style.sizing = {.width = CLAY_SIZING_GROW(0),
+															  .height = CLAY_SIZING_FIXED(24)};
+										radio.style.padding = Clay_Padding{6, 6, 2, 2};
+										context.uiManager
+											.createElement(
+												FSEL::kRadioChoice,
+												Keyed("lane-metric", lane_index * 2 + metric))
+											.setParameters(radio)
+											.setDevInternalCapture(true)
+											.construct();
+										text(context,
+											 metric ? "Objects / capacity" : "Active / backing",
+											 interface_theme::kTextCanvas, 10);
+										context.uiManager.drawConstructed();
+									}
 								}
 							}
 						}
 					}
 				}
+			} else
+				context.uiManager.popups().dismiss(popup_id);
+			uint64_t settings_key = state.lane_count;
+			for (const auto& settings : state.lane_settings)
+				for (const auto value : {settings.scope, settings.source_index, settings.metric})
+					settings_key = (settings_key ^ value) * 1099511628211ull;
+			if (settings_key != state.history_settings_key) {
+				state.history_settings_key = settings_key;
+				state.history_scales = {1, 1, 1};
+				state.next_history_ns = 0;
+			}
+			if (now >= state.next_history_ns) {
+				const auto plot_width =
+					Clay_GetElementData(context.clayID("history-image")).boundingBox.width;
+				build_memory_history(state, reporting,
+									 plot_width > 68 ? size_t(plot_width - 68) : 512);
+				state.next_history_ns = now + 100'000'000ull;
+			}
+			auto plot = row();
+			plot.layout.sizing.height =
+				CLAY_SIZING_FIXED(state.lane_count == 1 ? 238 : 18 + float(state.lane_count) * 160);
+			plot.clip = {.horizontal = true, .vertical = true};
+			CLAY(context.clayID("history-plot"), plot) {
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 				if (controller)
 					controller->draw(context.uiManager, context.clayID("history-image"), state,
 									 reporting);
 #endif
-				if (!state.viewport_error.empty())
-					text(context, state.viewport_error, interface_theme::kStatusAmber);
 				if (!controller)
-					text(context, "History viewport unavailable in this build",
-						 interface_theme::kStatusAmber);
+					text(context, "History viewport unavailable", interface_theme::kStatusAmber);
 			}
-			if (state.retained_end_ns > state.retained_begin_ns) {
-				text(context, "Retained time navigator", interface_theme::kTextMuted, 10);
-				FSEL::SliderParameters navigator{};
-				navigator.value = &state.navigator;
-				navigator.minimum = 0;
-				navigator.maximum = 1;
-				navigator.length = std::max(120.0f, previous_width - 40);
-				context.uiManager.createElement(FSEL::kSlider, "history-navigator")
-					.setParameters(navigator)
-					.setDevInternalCapture(true)
-					.draw();
-			}
-			if (state.selected_ns || state.range_begin_ns)
-				button(context, state, 7, "Clear selection");
-			if (!state.lanes.empty()) {
-				auto time_ruler = row(16);
-				time_ruler.layout.padding.left = 84;
-				time_ruler.layout.childGap = 0;
-				CLAY(context.clayID("time-ruler"), time_ruler) {
-					for (int tick = 0; tick < 3; ++tick) {
-						auto cell = row(16);
-						cell.layout.sizing.width = CLAY_SIZING_PERCENT(1.0f / 3);
-						cell.layout.childAlignment.x = tick == 0   ? CLAY_ALIGN_X_LEFT
-													   : tick == 1 ? CLAY_ALIGN_X_CENTER
-																   : CLAY_ALIGN_X_RIGHT;
-						char label[48];
-						std::snprintf(label, sizeof(label), "%+.2f s",
-									  -double(state.view_end_ns - state.view_begin_ns) / 1e9 *
-										  (1 - double(tick) / 2));
-						CLAY(context.clayID(Keyed("time-tick", tick)), cell) {
-							text(context, label, interface_theme::kTextMuted, 10);
-						}
-					}
+			auto status = row(22);
+			status.layout.padding = {8, 8, 2, 2};
+			status.backgroundColor = interface_theme::kDepth2Ink;
+			status.clip = {.horizontal = true, .vertical = true};
+			CLAY(context.clayID("history-context"), status) {
+				Clay_Color context_color = interface_theme::kTextSecondary;
+				if (state.range_end_ns > state.range_begin_ns && !state.lanes.empty()) {
+					const auto& range =
+						state.lanes[std::min<size_t>(state.inspected_lane, state.lanes.size() - 1)]
+							.range;
+					if (range.incomplete || !range.valid)
+						context_color = interface_theme::kStatusAmber;
+					else if (range.backing_after < range.backing_before ||
+							 range.active_after < range.active_before)
+						context_color = interface_theme::kAccentSeaGlass;
+					else if (range.backing_after > range.backing_before)
+						context_color = interface_theme::kStatusAmber;
 				}
+				char retained_label[100];
+				std::snprintf(retained_label, sizeof(retained_label), "Retained %.1fs (%s) · ",
+							  double(state.retained_end_ns - state.retained_begin_ns) / 1e9,
+							  state.following ? "live" : "held");
+				text(context,
+					 !state.viewport_error.empty() ? state.viewport_error
+					 : !state.tooltip.empty()	   ? state.tooltip
+					 : state.lanes.empty()
+						 ? state.message
+						 : std::string(retained_label) +
+							   "Drag: range · Middle/right: pan · Scroll: zoom · Click: cursor",
+					 context_color, 10);
 			}
-			text(context, "Time relative to visible interval end", interface_theme::kTextMuted, 10);
-			text(context,
-				 state.lanes.empty()
-					 ? state.message
-					 : "0 — " + memory_bytes(state.history_scale_bytes, state.decimal) + " · " +
-						   std::to_string(double(state.view_end_ns - state.view_begin_ns) / 1e9) +
-						   " s · " + state.message,
-				 interface_theme::kTextMuted, 10);
-			text(context, state.statistics_label, interface_theme::kTextMuted, 10);
-			text(context,
-				 state.tooltip.empty()
-					 ? (state.following
-							? "Ctrl + wheel to zoom · drag to pan · click to inspect"
-							: "View held · collection continues · Ctrl + wheel zooms time")
-					 : state.tooltip,
-				 interface_theme::kTextSecondary, 10);
 		}
+
 		if (!track_tooltip.empty()) {
 			const auto& input = context.uiManager.getCurrentFrameInput();
 			auto tooltip = column();

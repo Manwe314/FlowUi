@@ -678,24 +678,36 @@ void hold_memory_history(DevMemoryWorkbenchState& state, DevMemoryReporting& rep
 		return;
 	MemoryDataset held;
 	held.live = reporting.read_live();
-	held.begin_ns = state.view_begin_ns;
+	held.begin_ns = state.retained_begin_ns;
 	held.end_ns = state.view_end_ns ? state.view_end_ns : held.live.status.last_consumed_ns;
 	held.name = "Held recent observations";
 	held.segments.reserve(8192);
 	bool limited = false;
+	size_t replacement = 0;
 	const bool coherent = reporting.visit_history_chunks(held.live.status, [&](auto records) {
 		for (auto segment : records) {
 			if (segment.beginNs >= held.end_ns || segment.endNs <= held.begin_ns)
 				continue;
 			if (held.segments.size() == 8192) {
 				limited = true;
+				segment.endNs = std::min(segment.endNs, held.end_ns);
+				held.segments[replacement] = segment;
+				replacement = (replacement + 1) % held.segments.size();
 				continue;
 			}
 			segment.endNs = std::min(segment.endNs, held.end_ns);
 			held.segments.emplace_back(segment);
 		}
 	});
+	if (limited)
+		std::rotate(held.segments.begin(), held.segments.begin() + replacement,
+					held.segments.end());
+	state.held_events.clear();
+	const auto event_read = reporting.append_event_range(
+		UINT64_MAX, 0, 0, held.live.status.lastConsumedAppTick, 8192, state.held_events);
 	held.complete = coherent && !limited;
+	if (event_read.reset)
+		state.held_events.clear();
 	state.message = held.complete ? "View held; live collection continues"
 								  : "Held view has missing/limited observations";
 	state.held_data = std::move(held);
@@ -743,236 +755,283 @@ void resolve_memory_history_tracks(DevMemoryWorkbenchState& state, DevMemoryRepo
 void build_memory_history(DevMemoryWorkbenchState& state, DevMemoryReporting& reporting,
 						  size_t count) {
 	count = std::clamp<size_t>(count, 32, 2048);
-	auto track = std::ranges::find(state.tracks, state.focus, &MemoryWorkbenchTrack::identity);
-	if (track == state.tracks.end())
-		track = std::ranges::find_if(
-			state.tracks, [](const auto& item) { return !item.history_sources.empty(); });
-	if (track == state.tracks.end() || track->history_sources.empty()) {
-		state.lanes.clear();
-		state.all_lanes.clear();
-		state.lane_options.clear();
-		state.statistics_label.clear();
-		state.view_begin_ns = 0;
-		state.view_end_ns = 0;
-		state.message = "No retained series for this scope";
-		++state.layout_revision;
-		return;
-	}
-	std::vector<MemoryHistoryLane> lanes;
-	lanes.reserve(12);
-	uint64_t view_begin = state.view_begin_ns, view_end = state.view_end_ns, maximum = 0;
-	uint64_t observed_maximum = 0, history_revision = 0;
-	long double weighted_sum = 0, total_weight = 0;
-	bool omitted = false;
-	const auto project = [&](const auto& walk, const MemoryReportingStatus& snapshot) {
-		uint64_t oldest = UINT64_MAX, newest = 0;
-		if (!walk([&](const auto& segment) {
-				if (uint16_t(segment.value.flags) & uint16_t(MemorySampleFlag::TuningAggregate))
-					return;
-				if (std::ranges::find(track->history_sources, segment.value.source) ==
-					track->history_sources.end())
-					return;
-				if (track->window_scoped &&
-					(!segment.value.window ||
-					 (state.window && segment.value.window != state.window)))
-					return;
-				const auto end_ns = std::min(segment.endNs, snapshot.last_consumed_ns);
-				if (end_ns <= segment.beginNs)
-					return;
-				const MemorySourceKey key{segment.value.source, segment.value.window};
-				if (track->included && !track->keys.empty() &&
-					std::ranges::find(track->keys, key) == track->keys.end())
-					return;
-				auto lane = std::ranges::find(lanes, key, &MemoryHistoryLane::key);
-				if (lane == lanes.end()) {
-					if (lanes.size() == 12) {
-						omitted = true;
-						return;
-					}
-					MemoryHistoryLane row;
-					row.key = key;
-					row.independent = track->recipe == Recipe::Independent;
-					row.label = track->title;
-					for (const auto& entry : mappings)
-						if (entry.source == key.source) {
-							row.label = std::string(memory_node(uint64_t(entry.node))->label);
-							row.independent = entry.recipe == Recipe::Independent;
-						}
-					if (key.window)
-						row.label += " · Window " + std::to_string(key.window);
-					if (key.source == memory_sources::kVulkanHeaps.id)
-						row.label += " · Allocations / Blocks";
-					if (key.source == memory_sources::kProcess.id)
-						row.label += " · Resident / Virtual";
-					else if (row.independent)
-						row.label += " · independent Active / Backing";
-					row.columns.resize(count);
-					lanes.emplace_back(std::move(row));
-				}
-				oldest = std::min(oldest, segment.beginNs);
-				newest = std::max(newest, end_ns);
-			}))
-			return false;
-		if (oldest == UINT64_MAX || newest <= oldest)
-			return true;
-		if (state.following || !view_end || state.fit_pending) {
-			view_end = newest;
-			view_begin =
-				state.fit_pending
-					? oldest
-					: std::max(oldest, newest > state.duration_ns ? newest - state.duration_ns : 0);
-		}
-		state.retained_begin_ns = oldest;
-		state.retained_end_ns = newest;
-		if (view_begin < oldest)
-			view_begin = oldest;
-		if (view_end > newest)
-			view_end = newest;
-		if (view_end <= view_begin) {
-			view_begin = oldest;
-			view_end = newest;
-		}
-		const auto duration = std::max<uint64_t>(1, view_end - view_begin);
-		const auto statistics_begin = state.range_begin_ns ? state.range_begin_ns : view_begin;
-		const auto statistics_end = state.range_end_ns ? state.range_end_ns : view_end;
-		if (!walk([&](const auto& segment) {
-				const auto end_ns = std::min(segment.endNs, snapshot.last_consumed_ns);
-				if (end_ns <= view_begin || segment.beginNs >= view_end)
-					return;
-				auto lane = std::ranges::find(
-					lanes, MemorySourceKey{segment.value.source, segment.value.window},
-					&MemoryHistoryLane::key);
-				if (lane == lanes.end())
-					return;
-				const auto demand_field = state.history_metric == 2 ? MemoryValueField::Objects
-										  : state.history_metric == 1
-											  ? MemoryValueField::Backing
-											  : MemoryValueField::LogicalLive;
-				const auto backing_field = state.history_metric == 2 ? MemoryValueField::Capacity
-																	 : MemoryValueField::Backing;
-				const auto demand = state.history_metric == 2 ? segment.value.objectCount
-									: state.history_metric == 1
-										? segment.value.backingAllocatedBytes
-										: segment.value.logicalLiveBytes;
-				const auto backing = state.history_metric == 2
-										 ? segment.value.capacityCount
-										 : segment.value.backingAllocatedBytes;
-				if (lane == lanes.begin() + std::min<size_t>(state.history_mode
-																 ? state.comparison_indices[0]
-																 : state.series_index,
-															 lanes.size() - 1) &&
-					(segment.value.value_fields & uint16_t(demand_field))) {
-					const auto from = std::max(segment.beginNs, statistics_begin),
-							   to = std::min(end_ns, statistics_end);
-					if (to > from) {
-						total_weight += to - from;
-						weighted_sum += static_cast<long double>(to - from) * demand;
-						observed_maximum = std::max(observed_maximum, demand);
-					}
-				}
-				const auto begin = std::max(segment.beginNs, view_begin),
-						   end = std::min(end_ns, view_end);
-				const auto first =
-					std::min(count - 1, size_t(static_cast<long double>(begin - view_begin) *
-											   count / duration));
-				const auto last =
-					std::min(count - 1, size_t(static_cast<long double>(end - view_begin - 1) *
-											   count / duration));
-				for (size_t column = first; column <= last; ++column) {
-					auto& pixel = lane->columns[column];
-					pixel.mixed_epochs |= pixel.available && pixel.epoch != segment.history_epoch;
-					if (segment.value.value_fields & uint16_t(demand_field))
-						pixel.value_fields |= uint16_t(MemoryValueField::LogicalLive);
-					if (segment.value.value_fields & uint16_t(backing_field))
-						pixel.value_fields |= uint16_t(MemoryValueField::Backing);
-					pixel.flags = pixel.flags | segment.value.flags;
-					pixel.available = true;
-					pixel.epoch = segment.history_epoch;
-					pixel.sequence = segment.sequence;
-					pixel.first_ns = pixel.first_ns ? std::min(pixel.first_ns, begin) : begin;
-					pixel.last_ns = std::max(pixel.last_ns, end);
-					if (segment.value.value_fields & uint16_t(demand_field)) {
-						pixel.active_min = std::min(pixel.active_min, demand);
-						pixel.active_max = std::max(pixel.active_max, demand);
-					}
-					if (segment.value.value_fields & uint16_t(backing_field))
-						pixel.backing_max = std::max(pixel.backing_max, backing);
-					maximum = std::max({maximum, pixel.active_max, pixel.backing_max});
-				}
-			}))
-			return false;
-		history_revision = snapshot.history_revision;
-		return true;
-	};
+	state.lane_count = std::clamp<uint64_t>(state.lane_count, 1, 3);
 	const auto* saved = selected_memory_dataset(state.analysis);
 	if (!saved && state.held_data)
 		saved = &*state.held_data;
 	const auto snapshot = saved ? saved->live.status : reporting.status();
-	const auto walk = [&](const auto& visitor) {
-		return visit_memory_history(state, reporting, visitor);
+	std::array<MemoryWorkbenchTrack, 3> targets{};
+	for (size_t lane_index = 0; lane_index < state.lane_count; ++lane_index) {
+		auto& settings = state.lane_settings[lane_index];
+		const auto* tracks = &state.tracks;
+		DevMemoryWorkbenchState scoped;
+		if (settings.scope != UINT64_MAX) {
+			DevMemorySelection selection;
+			selection.selected_node = settings.scope;
+			selection.window_scope = state.window == UINT64_MAX ? 0 : state.window;
+			resolve_memory_tracks(scoped, selection, saved ? saved->live : reporting.read_live());
+			tracks = &scoped.tracks;
+		}
+		auto track =
+			std::ranges::find(*tracks, settings.scope == UINT64_MAX ? state.focus : settings.scope,
+							  &MemoryWorkbenchTrack::identity);
+		if (track == tracks->end() && !tracks->empty())
+			track = tracks->begin();
+		if (track != tracks->end())
+			targets[lane_index] = *track;
+		state.lane_sources[lane_index].clear();
+		state.lane_sources[lane_index].reserve(128);
+		state.source_options[lane_index].reserve(128);
+	}
+	uint64_t oldest = UINT64_MAX, newest = 0;
+	const auto matches = [&](const MemoryWorkbenchTrack& track,
+							 const MemorySampleSegment& segment) {
+		const MemorySourceKey key{segment.value.source, segment.value.window};
+		return !(uint16_t(segment.value.flags) & uint16_t(MemorySampleFlag::TuningAggregate)) &&
+			   std::ranges::find(track.history_sources, key.source) !=
+				   track.history_sources.end() &&
+			   (!track.window_scoped ||
+				(key.window &&
+				 (!state.window || state.window == UINT64_MAX || key.window == state.window))) &&
+			   (!track.included || track.keys.empty() ||
+				std::ranges::find(track.keys, key) != track.keys.end());
 	};
-	const bool complete = project(walk, snapshot);
-	if (!complete) {
-		state.lanes.clear();
-		state.all_lanes.clear();
-		state.lane_options.clear();
-		state.statistics_label.clear();
-		state.message = "History refresh pending: retention changed during traversal";
+	const bool discovered = visit_memory_history(state, reporting, [&](const auto& segment) {
+		const auto end = std::min(segment.endNs, snapshot.last_consumed_ns);
+		if (end <= segment.beginNs)
+			return;
+		for (size_t lane_index = 0; lane_index < state.lane_count; ++lane_index) {
+			if (!matches(targets[lane_index], segment))
+				continue;
+			auto& sources = state.lane_sources[lane_index];
+			const MemorySourceKey key{segment.value.source, segment.value.window};
+			if (std::ranges::find(sources, key, &MemoryHistoryLane::key) == sources.end()) {
+				if (sources.size() == 128)
+					continue;
+				MemoryHistoryLane lane;
+				lane.key = key;
+				lane.label = targets[lane_index].title;
+				for (const auto& mapping : mappings)
+					if (mapping.source == key.source)
+						lane.label = memory_node(uint64_t(mapping.node))->label;
+				if (key.window)
+					lane.label += " · Window " + std::to_string(key.window);
+				sources.emplace_back(std::move(lane));
+			}
+			oldest = std::min(oldest, segment.beginNs);
+			newest = std::max(newest, end);
+		}
+	});
+	state.lanes.clear();
+	state.all_lanes = state.lane_sources[0];
+	if (!discovered || oldest == UINT64_MAX || newest <= oldest) {
+		state.message = discovered ? "No retained history for this scope"
+								   : "History changed during traversal; retrying";
+		state.view_begin_ns = state.view_end_ns = 0;
+		state.retained_begin_ns = state.retained_end_ns = 0;
+		for (auto& options : state.source_options)
+			options.clear();
 		++state.layout_revision;
 		return;
 	}
-	state.all_lanes = std::move(lanes);
-	state.lane_options.clear();
-	state.lane_options.reserve(state.all_lanes.size());
-	for (size_t index = 0; index < state.all_lanes.size(); ++index) {
-		auto& lane = state.all_lanes[index];
+	state.retained_begin_ns = oldest;
+	state.retained_end_ns = newest;
+	if (state.following || !state.view_end_ns || state.fit_pending) {
+		state.view_end_ns = newest;
+		state.view_begin_ns =
+			state.fit_pending || state.duration_choice == 3
+				? oldest
+				: std::max(oldest, newest > state.duration_ns ? newest - state.duration_ns : 0);
+	}
+	state.view_begin_ns = std::clamp(state.view_begin_ns, oldest, newest - 1);
+	state.view_end_ns = std::clamp(state.view_end_ns, state.view_begin_ns + 1, newest);
+	for (size_t lane_index = 0; lane_index < state.lane_count; ++lane_index) {
+		auto& sources = state.lane_sources[lane_index];
+		auto& options = state.source_options[lane_index];
+		options.clear();
+		options.reserve(sources.size());
+		for (size_t source_index = 0; source_index < sources.size(); ++source_index)
+			options.emplace_back(FSEL::ComboBoxOption{source_index, sources[source_index].label});
+		auto& settings = state.lane_settings[lane_index];
+		MemoryHistoryLane lane;
+		if (!sources.empty()) {
+			if (settings.scope != settings.resolved_scope)
+				settings.source_index = 0;
+			else if (settings.source_index == settings.applied_source_index) {
+				const auto retained =
+					std::ranges::find(sources, settings.selected_key, &MemoryHistoryLane::key);
+				if (retained != sources.end())
+					settings.source_index = size_t(retained - sources.begin());
+			}
+			settings.source_index = std::min<uint64_t>(settings.source_index, sources.size() - 1);
+			settings.selected_key = sources[settings.source_index].key;
+			settings.resolved_scope = settings.scope;
+			settings.applied_source_index = settings.source_index;
+			lane = sources[settings.source_index];
+		} else
+			lane.label = targets[lane_index].title + " · No retained observations";
+		lane.metric = settings.metric;
+		lane.columns.resize(count);
+		lane.overview.resize(256);
+		state.lanes.emplace_back(std::move(lane));
+	}
+	const auto project = [](MemoryHistoryColumn& pixel, const MemorySampleSegment& segment,
+							uint64_t begin, uint64_t end, uint64_t active, uint64_t backing,
+							uint16_t fields) {
+		pixel.mixed_epochs |= pixel.available && pixel.epoch != segment.history_epoch;
+		pixel.gap |= pixel.available && (begin > pixel.last_ns || end < pixel.first_ns);
+		if (!pixel.available || begin < pixel.first_ns) {
+			pixel.active_first = active;
+			pixel.backing_first = backing;
+			pixel.first_ns = begin;
+		}
+		if (!pixel.available || end >= pixel.last_ns) {
+			pixel.active_last = active;
+			pixel.backing_last = backing;
+			pixel.last_ns = end;
+		}
+		pixel.epoch = segment.history_epoch;
+		pixel.sequence = segment.sequence;
+		pixel.flags = pixel.flags | segment.value.flags;
+		// Missing metric observations are gaps, even when another metric is supported.
+		if (pixel.available && pixel.value_fields != fields)
+			pixel.gap = true;
+		pixel.value_fields = fields;
+		pixel.available = true;
+		if (fields & uint16_t(MemoryValueField::LogicalLive)) {
+			pixel.active_min = std::min(pixel.active_min, active);
+			pixel.active_max = std::max(pixel.active_max, active);
+		}
+		if (fields & uint16_t(MemoryValueField::Backing)) {
+			pixel.backing_min = std::min(pixel.backing_min, backing);
+			pixel.backing_max = std::max(pixel.backing_max, backing);
+		}
+	};
+	uint64_t first_tick = UINT64_MAX, last_tick = 0;
+	const bool complete = visit_memory_history(state, reporting, [&](const auto& segment) {
+		const auto end = std::min(segment.endNs, snapshot.last_consumed_ns);
+		if (end <= segment.beginNs)
+			return;
+		for (auto& lane : state.lanes) {
+			if (lane.key != MemorySourceKey{segment.value.source, segment.value.window})
+				continue;
+			if (uint16_t(segment.value.flags) & uint16_t(MemorySampleFlag::TuningAggregate))
+				continue;
+			const bool counts = lane.metric == 1;
+			const uint64_t active =
+				counts ? segment.value.objectCount : segment.value.logicalLiveBytes;
+			const uint64_t backing =
+				counts ? segment.value.capacityCount : segment.value.backingAllocatedBytes;
+			uint16_t fields = 0;
+			if (segment.value.value_fields &
+				uint16_t(counts ? MemoryValueField::Objects : MemoryValueField::LogicalLive))
+				fields |= uint16_t(MemoryValueField::LogicalLive);
+			if (segment.value.value_fields &
+				uint16_t(counts ? MemoryValueField::Capacity : MemoryValueField::Backing))
+				fields |= uint16_t(MemoryValueField::Backing);
+			const auto fill = [&](auto& columns, uint64_t from, uint64_t to) {
+				if (end <= from || segment.beginNs >= to)
+					return;
+				const auto begin = std::max(from, segment.beginNs), finish = std::min(to, end);
+				const auto first =
+					std::min(columns.size() - 1, size_t(static_cast<long double>(begin - from) *
+														columns.size() / (to - from)));
+				const auto last = std::min(columns.size() - 1,
+										   size_t(static_cast<long double>(finish - from - 1) *
+												  columns.size() / (to - from)));
+				for (size_t column = first; column <= last; ++column)
+					project(columns[column], segment, begin, finish, active, backing, fields);
+			};
+			fill(lane.columns, state.view_begin_ns, state.view_end_ns);
+			fill(lane.overview, oldest, newest);
+			const auto point_ns = state.hovered_ns ? state.hovered_ns : state.selected_ns;
+			lane.point_ns = point_ns;
+			if (point_ns && segment.beginNs <= point_ns && end > point_ns) {
+				lane.point = segment.value;
+				lane.point_available = true;
+			}
+			if (segment.beginNs < state.view_end_ns && end > state.view_begin_ns) {
+				first_tick = std::min(first_tick, segment.beginTick);
+				last_tick = std::max(last_tick,
+									 segment.endTickExclusive ? segment.endTickExclusive - 1 : 0);
+			}
+			auto& range = lane.range;
+			if (state.range_end_ns > state.range_begin_ns) {
+				range.duration_ns = state.range_end_ns - state.range_begin_ns;
+				if (segment.beginNs < state.range_end_ns && end > state.range_begin_ns) {
+					if (range.covered_until_ns && segment.beginNs > range.covered_until_ns)
+						range.incomplete = true;
+					range.covered_until_ns = std::max(range.covered_until_ns, end);
+				}
+				if (segment.beginNs <= state.range_begin_ns && end > state.range_begin_ns) {
+					range.active_before = active;
+					range.backing_before = backing;
+					range.before_fields = fields;
+					range.before_epoch = segment.history_epoch;
+				}
+				if (segment.beginNs <= state.range_end_ns &&
+					(end > state.range_end_ns ||
+					 (end == state.range_end_ns && end == snapshot.last_consumed_ns))) {
+					range.active_after = active;
+					range.backing_after = backing;
+					range.after_fields = fields;
+					range.after_epoch = segment.history_epoch;
+				}
+				if (segment.beginNs < state.range_end_ns && end > state.range_begin_ns &&
+					(uint16_t(segment.value.flags) & uint16_t(MemorySampleFlag::Incomplete)))
+					range.incomplete = true;
+			}
+		}
+	});
+	std::vector<RetainedMemoryEvent> events = state.held_data && saved == &*state.held_data
+												  ? state.held_events
+												  : std::vector<RetainedMemoryEvent>{};
+	if (!saved) {
+		const auto read = reporting.append_event_range(snapshot.history_storage_generation, 0,
+													   first_tick == UINT64_MAX ? 0 : first_tick,
+													   last_tick, 8192, events);
+		if (read.reset)
+			events.clear();
+	}
+	for (size_t lane_index = 0; lane_index < state.lanes.size(); ++lane_index) {
+		auto& lane = state.lanes[lane_index];
 		uint64_t extent = 0;
 		for (const auto& value : lane.columns)
 			if (value.available)
-				extent = std::max(
-					{extent, value.active_max, state.show_backing ? value.backing_max : 0});
-		lane.scale = state.scale_mode == 1 ? std::max<uint64_t>(1, uint64_t(state.manual_scale))
-										   : memory_axis_max(extent);
-		state.lane_options.emplace_back(FSEL::ComboBoxOption{.value = index, .text = lane.label});
+				extent = std::max({extent, value.active_max, value.backing_max});
+		const auto fitted = memory_axis_max(extent);
+		// Grow immediately, shrink only after two seconds while following live data.
+		if (state.following && !state.fit_pending && lane_index < state.history_scales.size()) {
+			auto& scale = state.history_scales[lane_index];
+			if (fitted >= scale ||
+				memory_now_ns() - state.scale_changed_ns[lane_index] > 2'000'000'000ull) {
+				if (fitted != scale)
+					state.scale_changed_ns[lane_index] = memory_now_ns();
+				scale = fitted;
+			}
+			lane.scale = std::max<uint64_t>(1, scale);
+		} else
+			lane.scale = fitted;
+		lane.range.valid = lane.range.before_fields && lane.range.after_fields;
+		lane.range.incomplete |=
+			lane.range.before_epoch != lane.range.after_epoch || !lane.range.valid;
+		for (const auto& event : events) {
+			const auto& operation = event.operation;
+			if (operation.source == lane.key.source && operation.frame.window == lane.key.window &&
+				operation.timestampNs >= state.view_begin_ns &&
+				operation.timestampNs <= state.view_end_ns)
+				lane.events.emplace_back(operation);
+		}
 	}
-	state.lanes.clear();
-	if (!state.all_lanes.empty()) {
-		state.series_index = std::min<uint64_t>(state.series_index, state.all_lanes.size() - 1);
-		if (!state.history_mode)
-			state.lanes.emplace_back(state.all_lanes[state.series_index]);
-		else
-			for (auto index : state.comparison_indices)
-				if (index < state.all_lanes.size() &&
-					!std::ranges::any_of(
-						state.lanes,
-						[&](const auto& lane) { return lane.key == state.all_lanes[index].key; }))
-					state.lanes.emplace_back(state.all_lanes[index]);
-	}
-	if (state.scale_mode == 2)
-		for (auto& lane : state.lanes)
-			lane.scale = memory_axis_max(maximum);
-	state.view_begin_ns = view_begin;
-	state.view_end_ns = view_end;
+	if (!complete) {
+		state.lanes.clear();
+		state.message = "History changed during traversal; retrying";
+	} else
+		state.message =
+			saved && !saved->complete ? "Partial retained coverage" : "Retained sampled history";
 	state.fit_pending = false;
-	state.history_revision = history_revision;
+	state.history_revision = snapshot.history_revision;
 	state.history_scale_bytes = state.lanes.empty() ? 1 : state.lanes.front().scale;
-	state.statistics_label =
-		total_weight
-			? "Selected series · observed maximum " +
-				  (state.history_metric == 2 ? std::to_string(observed_maximum)
-											 : memory_bytes(observed_maximum, state.decimal)) +
-				  " · time-weighted mean " +
-				  (state.history_metric == 2
-					   ? std::to_string(uint64_t(weighted_sum / total_weight))
-					   : memory_bytes(uint64_t(weighted_sum / total_weight), state.decimal))
-			: "No interval statistics for this range";
-	state.message = state.lanes.empty() ? "No retained history"
-					: omitted			? "12 available constituents; choose a narrower scope"
-					: state.lanes.size() > 1
-						? "Constituent source lanes — independent peaks are not summed"
-						: "Sampled intervals · independent demand/backing outlines";
-	if (saved && !saved->complete)
-		state.message += " · Partial coverage: missing observations are unavailable";
 	++state.history_reads;
 	++state.layout_revision;
 }

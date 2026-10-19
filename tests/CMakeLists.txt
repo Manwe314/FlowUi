@@ -1137,6 +1137,20 @@ if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
     add_test(NAME flowui.dev.memory_selector_interaction COMMAND flowui_dev_memory_selector_interaction_tests)
     set_tests_properties(flowui.dev.memory_selector_interaction PROPERTIES TIMEOUT 60)
 
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(Python3_Interpreter_FOUND AND NOT MSVC AND TARGET flowui-dev-generate)
+        add_test(NAME flowui.dev.theme_codegen COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/DevSystemsTests/ThemeCodegenTests.py
+            --generator $<TARGET_FILE:flowui-dev-generate> --compiler ${CMAKE_CXX_COMPILER}
+            --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR})
+    endif()
+    add_executable(flowui_dev_theme_editor_interaction_tests DevSystemsTests/DevThemeEditorInteractionTests.cpp)
+    target_compile_features(flowui_dev_theme_editor_interaction_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_theme_editor_interaction_tests PRIVATE FlowUi::FlowUi)
+    flowui_package_resources(flowui_dev_theme_editor_interaction_tests)
+    add_test(NAME flowui.dev.theme_editor_interaction COMMAND flowui_dev_theme_editor_interaction_tests)
+    set_tests_properties(flowui.dev.theme_editor_interaction PROPERTIES TIMEOUT 90)
+
     add_executable(flowui_dev_inspect_overlay_menu_tests DevSystemsTests/DevInspectOverlayMenuTests.cpp)
     target_compile_features(flowui_dev_inspect_overlay_menu_tests PRIVATE cxx_std_23)
     target_link_libraries(flowui_dev_inspect_overlay_menu_tests PRIVATE FlowUi::FlowUi)

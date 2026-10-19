@@ -27,6 +27,9 @@ int main() {
 	constexpr auto workbench_id = Global<kDevMemoryWorkbench>("surface.memory.workbench");
 	constexpr auto inspector_id = Global<kDevMemoryInspector>("surface.memory.inspector");
 	constexpr auto context_id = Global<kDevMemoryContextControls>("surface.memory.context");
+	const auto inspector_body_id = app.ui().toClayEID(::FlowUi::detail::element_id::resolveLocal(
+		FlowElementID{inspector_id.value}, DevMemoryInspector::definitionId,
+		LocalElementName{"scroll-body"}.token));
 	const auto action_id = [&](FlowElementID parent, uint32_t action) {
 		return ::FlowUi::detail::element_id::resolveLocal(parent, DevMemoryControl::definitionId,
 														  Keyed("memory-action", action).token);
@@ -86,10 +89,8 @@ int main() {
 		// Exercise clipping realistically: bring Inspector controls into its visible viewport.
 		for (int attempt = 0; attempt < 2; ++attempt) {
 			const auto control = Clay_GetElementData(app.ui().toClayEID(identity));
-			const auto inspector =
-				Clay_GetElementData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
-			const auto scroll =
-				Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+			const auto inspector = Clay_GetElementData(inspector_body_id);
+			const auto scroll = Clay_GetScrollContainerData(inspector_body_id);
 			if (control.found && inspector.found && scroll.found && scroll.scrollPosition &&
 				control.boundingBox.x >= inspector.boundingBox.x) {
 				const auto bottom = inspector.boundingBox.y + inspector.boundingBox.height;
@@ -203,13 +204,35 @@ int main() {
 	for (const auto width : {280.0f, 360.0f, 480.0f}) {
 		draw({}, 0, width);
 		draw({}, 0, width);
-		const auto inspector_scroll =
-			Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+		const auto inspector_scroll = Clay_GetScrollContainerData(inspector_body_id);
 		assert(inspector_scroll.found && inspector_scroll.contentDimensions.width <=
 											 inspector_scroll.scrollContainerDimensions.width + 1);
 	}
-	const auto scroll =
-		Clay_GetScrollContainerData(app.ui().toClayEID(FlowElementID{inspector_id.value}));
+	const auto summary_id = app.ui().toClayEID(::FlowUi::detail::element_id::resolveLocal(
+		FlowElementID{inspector_id.value}, DevMemoryInspector::definitionId,
+		LocalElementName{"subject-content"}.token));
+	const auto summary_before = Clay_GetElementData(summary_id);
+	for (const auto name : {LocalElementName{"capacity-tuning-header"},
+							LocalElementName{"capacity-scope-settings-header"}}) {
+		const auto control =
+			local_control(FlowElementID{inspector_id.value}, FSEL::Button::definitionId, name);
+		click(control);
+		const auto* presentation = app.ui().elements().getStatePointerConst(
+			kDevMemoryInspector, app.ui().windowId(), FlowElementID{inspector_id.value});
+		assert(presentation);
+		assert(name.token == LocalElementName{"capacity-tuning-header"}.token
+				   ? !presentation->capacity_tuning_expanded
+				   : !presentation->capacity_scope_settings_expanded);
+		const auto bounds = Clay_GetElementData(app.ui().toClayEID(control));
+		const auto body_bounds = Clay_GetElementData(inspector_body_id);
+		assert(bounds.found && body_bounds.found &&
+			   std::abs(bounds.boundingBox.width - body_bounds.boundingBox.width) <= 1);
+		click(control);
+	}
+	const auto summary_after = Clay_GetElementData(summary_id);
+	assert(summary_before.found && summary_after.found &&
+		   summary_before.boundingBox.y == summary_after.boundingBox.y);
+	const auto scroll = Clay_GetScrollContainerData(inspector_body_id);
 	assert(scroll.found &&
 		   scroll.contentDimensions.height > scroll.scrollContainerDimensions.height);
 	assert(analysis.staged.size() ==

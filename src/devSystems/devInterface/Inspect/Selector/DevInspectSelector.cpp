@@ -2,6 +2,7 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <vector>
@@ -98,9 +99,10 @@ SelectorBuildData selectorBuildData(
 		state.inspectDefinitionFilter = kDevInterfaceAllDefinitions;
 	}
 #if !FLOW_UI_DEV_CAPTURE_CLAY
-	state.inspectForest = kDevInterfaceFlowForest;
+	if (state.inspectForest == kDevInterfaceClayForest)
+		state.inspectForest = kDevInterfaceFlowForest;
 #else
-	if (state.inspectForest > kDevInterfaceClayForest) {
+	if (state.inspectForest > kDevInterfaceThemeForest) {
 		state.inspectForest = kDevInterfaceFlowForest;
 	}
 #endif
@@ -110,6 +112,14 @@ SelectorBuildData selectorBuildData(
 } // namespace
 
 void DevInspectSelector::buildElement(BuildContext& context) {
+	if (context.params.interfaceState &&
+		context.params.interfaceState->inspectForest == kDevInterfaceThemeForest) {
+		context.uiManager.createElement(kDevThemeSelector, "themes")
+			.setParameters(context.params)
+			.setDevInternalCapture(true)
+			.draw();
+		return;
+	}
 	DevInterfaceState* state = context.params.interfaceState;
 	DevInspectSelectorState& cache = context.state();
 	SelectorBuildData data{};

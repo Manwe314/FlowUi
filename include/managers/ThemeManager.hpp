@@ -48,11 +48,19 @@ public:
 		std::string_view typeName{};
 		std::string_view variant{};
 		const void* payload = nullptr;
+		const void* authored = nullptr;
+		const void* startup = nullptr;
 		std::size_t payloadSize = 0;
 		std::uint64_t revision = 0;
 		bool active = false;
 	};
 	using DevThemePayloadVisitor = bool (*)(void*, const DevThemePayloadView&) noexcept;
+	/** Clone the live payload into a new named variant; existing names are rejected. */
+	[[nodiscard]] Status clone_dev_variant(devMode::DevTypeId type, std::string_view source,
+										   std::string_view destination) noexcept;
+	/** Switch the active variant of a reflected theme type. */
+	[[nodiscard]] Status set_dev_active_variant(devMode::DevTypeId type,
+												std::string_view variant) noexcept;
 	[[nodiscard]] std::uint64_t devRevision() const noexcept;
 	[[nodiscard]] std::size_t devThemeCount() const noexcept;
 	bool visitDevCatalogueThemes(void* userData, DevThemePayloadVisitor visitor) const noexcept;
@@ -83,11 +91,19 @@ public:
 		if (devSchemaRegistry_) devSchemaRegistry_->ensureTheme<T>();
 #endif
 		try {
+#if FLOW_UI_DEV_MODE
+			const T authored = themeData;
+#endif
 #if FLOW_UI_HAS_BAKED_CHANGES
 			baked::applyBakedThemeDefaults<T>(variantName, themeData);
 #endif
 			const auto variantId = controller_->internString(variantName);
-			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive);
+			controller_->registerThemeVariant<T>(variantId, std::move(themeData), makeActive
+#if FLOW_UI_DEV_MODE
+												 ,
+												 &authored
+#endif
+			);
 			storage_->noteManagerMutation(InvalidWindowId);
 			return {};
 		} catch (const FlowUiException& exception) {

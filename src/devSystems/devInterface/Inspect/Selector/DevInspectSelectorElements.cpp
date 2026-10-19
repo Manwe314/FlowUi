@@ -198,7 +198,7 @@ void DevInterfaceSelectorControls::buildElement(BuildContext& context) {
 
 	CLAY(context.clayID(), controls) {
 		Clay_ElementDeclaration toggle = selector_choice_track();
-		toggle.layout.sizing.width = CLAY_SIZING_FIXED(108);
+		toggle.layout.sizing.width = CLAY_SIZING_FIXED(176);
 
 		CLAY(context.clayID(kForestToggle), toggle) {
 			drawForestChoice(
@@ -206,6 +206,8 @@ void DevInterfaceSelectorControls::buildElement(BuildContext& context) {
 			drawForestChoice(
 				context, kClayChoice, "Clay", kDevInterfaceClayForest,
 				context.params.clayForestAvailable);
+			drawForestChoice(context, LocalElementName{"themes-choice"}, "Themes",
+							 kDevInterfaceThemeForest, true);
 		}
 
 		FSEL::ComboBoxParameters definitionFilter{};

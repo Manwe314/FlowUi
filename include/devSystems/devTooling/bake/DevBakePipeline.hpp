@@ -14,6 +14,16 @@ namespace FlowUi::devSystems::tooling { class DevOverrideEngine; }
 
 namespace FlowUi::devSystems::tooling {
 
+/** Serializable reflected value, shared by bake diffs and theme exports. */
+struct DevSerializedValue {
+	std::string json;
+	std::string cpp;
+};
+/** Format a reflected value without making byte-level assumptions about its type. */
+[[nodiscard]] std::optional<DevSerializedValue>
+serialize_dev_value(const devMode::DevSchemaGeneration& schema, devMode::DevTypeIndex type,
+					const void* value) noexcept;
+
 /** Runtime capture/coalescing side of the manifest-driven baking pipeline. */
 class DevBakePipeline {
 public:

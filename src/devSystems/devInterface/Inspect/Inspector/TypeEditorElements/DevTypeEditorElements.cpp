@@ -621,6 +621,13 @@ tooling::DevOverrideCommand resolvedOverrideCommand(
 	const devMode::DevFieldSchema* field = fieldAt(schema, binding.field);
 	tooling::DevOverrideCommand command{};
 	command.kind = kind;
+	if (binding.theme_type != 0) {
+		command.theme = {binding.theme_type, binding.theme_variant};
+		if (kind == tooling::DevOverrideCommandKind::SetElementField)
+			command.kind = tooling::DevOverrideCommandKind::SetThemeField;
+		if (kind == tooling::DevOverrideCommandKind::ClearElementField)
+			command.kind = tooling::DevOverrideCommandKind::ClearThemeField;
+	}
 	command.element = tooling::DevElementOverrideTarget{
 		.definition = binding.definition,
 		.window = binding.window,
@@ -689,27 +696,37 @@ void cancelEditorPreview(DevTypeEditorState& editor) {
 	}
 }
 
-const tooling::DevOverrideApply::Record* currentEditorOverride(
-	const App& app,
-	const devMode::DevSchemaGeneration& schema,
-	const DevTypeEditorState& editor) {
+const tooling::DevOwnedValue* currentEditorOverride(const App& app,
+													const devMode::DevSchemaGeneration& schema,
+													const DevTypeEditorState& editor) {
 	const tooling::DevOverrideCommand key = editorFieldCommand(
 		schema, editor, tooling::DevOverrideCommandKind::ClearElementField);
+	if (key.theme.themeType != 0) {
+		for (const auto& record : app.devTooling().overrides().themeBakeRecords())
+			if (record.target == key.theme && record.field == key.field && !record.preview_only)
+				return &record.value;
+		return nullptr;
+	}
 	const auto& records = app.devTooling().overrides().appliedOverrides().records();
 	const auto found = std::ranges::find_if(records,
 		[&key](const tooling::DevOverrideApply::Record& record) {
 			return record.target == key.element && record.field == key.field &&
 				record.layer == key.layer;
 		});
-	return found == records.end() ? nullptr : &*found;
+	return found == records.end() ? nullptr : &found->value;
 }
 
-const tooling::DevOverrideApply::Record* currentOverride(
-	const App& app,
-	const devMode::DevSchemaGeneration& schema,
-	const DevEditorCardState& card) {
+const tooling::DevOwnedValue* currentOverride(const App& app,
+											  const devMode::DevSchemaGeneration& schema,
+											  const DevEditorCardState& card) {
 	const tooling::DevOverrideCommand key = fieldCommand(
 		schema, card, tooling::DevOverrideCommandKind::ClearElementField);
+	if (key.theme.themeType != 0) {
+		for (const auto& record : app.devTooling().overrides().themeBakeRecords())
+			if (record.target == key.theme && record.field == key.field && !record.preview_only)
+				return &record.value;
+		return nullptr;
+	}
 	const auto& records = app.devTooling().overrides().appliedOverrides().records();
 	const auto found = std::ranges::find_if(
 		records,
@@ -717,7 +734,7 @@ const tooling::DevOverrideApply::Record* currentOverride(
 			return record.target == key.element && record.field == key.field &&
 				record.layer == key.layer;
 		});
-	return found == records.end() ? nullptr : &*found;
+	return found == records.end() ? nullptr : &found->value;
 }
 
 enum class OverrideRelation : std::uint8_t { None, Exact, Descendant };
@@ -749,6 +766,31 @@ DevOverridePresence overridePresence(
 		schema, card, tooling::DevOverrideCommandKind::ClearElementField);
 	const auto& records = app.devTooling().overrides().appliedOverrides().records();
 	DevOverridePresence result{};
+	if (key.theme.themeType != 0) {
+		for (const auto& record : app.devTooling().overrides().themeBakeRecords()) {
+			if (record.target.themeType != key.theme.themeType ||
+				(record.target.variant != key.theme.variant && record.target.variant != "*"))
+				continue;
+			tooling::DevOverrideApply::Record proxy{};
+			proxy.target = key.element;
+			proxy.field = record.field;
+			const auto relation = overrideRelation(proxy, key);
+			if (relation == OverrideRelation::None)
+				continue;
+			result.preview |= static_cast<bool>(record.preview_value);
+			if (record.preview_only)
+				continue;
+			result.definitionLive = true;
+			if (record.target.variant != key.theme.variant)
+				continue;
+			result.exactLive |= relation == OverrideRelation::Exact;
+			if (relation == OverrideRelation::Descendant) {
+				result.descendantLive = true;
+				++result.descendantCount;
+			}
+		}
+		return result;
+	}
 	for (const tooling::DevOverrideApply::Record& record : records) {
 		const OverrideRelation relation = overrideRelation(record, key);
 		if (relation == OverrideRelation::None) continue;
@@ -801,11 +843,9 @@ bool commitEditorValue(DevTypeEditorState& editor, std::string description) {
 			? tooling::DevOverrideCommandKind::EndBatchDrag
 			: tooling::DevOverrideCommandKind::SetElementField,
 		editor.currentValue));
-	if (const tooling::DevOverrideApply::Record* prior =
-		currentEditorOverride(app, *schema, editor)) {
+	if (const tooling::DevOwnedValue* prior = currentEditorOverride(app, *schema, editor)) {
 		transaction.inverse.push_back(editorFieldCommand(
-			*schema, editor, tooling::DevOverrideCommandKind::SetElementField,
-			prior->value));
+			*schema, editor, tooling::DevOverrideCommandKind::SetElementField, *prior));
 	} else {
 		transaction.inverse.push_back(editorFieldCommand(
 			*schema, editor, tooling::DevOverrideCommandKind::ClearElementField));
@@ -1461,11 +1501,9 @@ constexpr auto kPasteField = UiAction(
 		transaction.forward.push_back(fieldCommand(
 			*schema, card, tooling::DevOverrideCommandKind::SetElementField,
 			state.editorClipboard.value));
-		if (const tooling::DevOverrideApply::Record* prior =
-			currentOverride(app, *schema, card)) {
+		if (const tooling::DevOwnedValue* prior = currentOverride(app, *schema, card)) {
 			transaction.inverse.push_back(fieldCommand(
-				*schema, card, tooling::DevOverrideCommandKind::SetElementField,
-				prior->value));
+				*schema, card, tooling::DevOverrideCommandKind::SetElementField, *prior));
 		} else {
 			transaction.inverse.push_back(fieldCommand(
 				*schema, card, tooling::DevOverrideCommandKind::ClearElementField));
@@ -1492,9 +1530,29 @@ constexpr auto kResetField = UiAction(
 			!card.overridePresence.exactLive
 			? "Reset nested changes in " + card.typeName
 			: "Reset " + card.typeName;
-		const tooling::DevOverrideLayer winningLayer = card.overridePresence.instanceLive
-			? tooling::DevOverrideLayer::LiveInstance
-			: tooling::DevOverrideLayer::LiveDefinition;
+		if (scope.theme.themeType != 0) {
+			for (const auto& record : app.devTooling().overrides().themeBakeRecords()) {
+				if (record.target != scope.theme || record.preview_only)
+					continue;
+				tooling::DevOverrideApply::Record proxy{};
+				proxy.target = scope.element;
+				proxy.field = record.field;
+				if (overrideRelation(proxy, scope) == OverrideRelation::None)
+					continue;
+				auto clear = scope;
+				clear.field = record.field;
+				transaction.forward.emplace_back(clear);
+				clear.kind = tooling::DevOverrideCommandKind::SetThemeField;
+				clear.value = record.value;
+				transaction.inverse.emplace_back(std::move(clear));
+			}
+			if (!transaction.forward.empty())
+				(void)submitEditTransaction(app, state, std::move(transaction));
+			return;
+		}
+		const tooling::DevOverrideLayer winningLayer =
+			card.overridePresence.instanceLive ? tooling::DevOverrideLayer::LiveInstance
+											   : tooling::DevOverrideLayer::LiveDefinition;
 		for (const tooling::DevOverrideApply::Record& record :
 			app.devTooling().overrides().appliedOverrides().records()) {
 			if (record.layer != winningLayer ||
@@ -3249,6 +3307,10 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 	if (!schema || !field || !declaredType) return;
 
 	DevTypeEditorState& state = context.state();
+	if (state.previewActive &&
+		(state.binding.theme_type != context.params.binding.theme_type ||
+		 state.binding.theme_variant != context.params.binding.theme_variant))
+		cancelEditorPreview(state);
 	state.app = context.params.app;
 	state.interfaceState = context.params.interfaceState;
 	state.binding = context.params.binding;

@@ -468,6 +468,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp
 			src/devSystems/devInterface/Permanents/Elements/DevContent.cpp
 			src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp
+			src/devSystems/devInterface/Inspect/Themes/DevThemeEditor.cpp
 			src/devSystems/devInterface/Inspect/Selector/DevInspectSelector.cpp
 			src/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.cpp
 			src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp
@@ -568,6 +569,7 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevContent.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevContentAreas.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevInspectContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp>

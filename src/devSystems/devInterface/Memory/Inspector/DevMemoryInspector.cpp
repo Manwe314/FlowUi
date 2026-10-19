@@ -439,348 +439,393 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 		else
 			++eligible;
 	}
-	CLAY(context.clayID("capacity-tool"), panel) {
-		text(context, "Capacity tuning", interface_theme::kTextCanvas, 14);
-		text(context,
-			 "Application draft · " + std::string(memory_capacity_scope_name(tool.scope)) +
-				 (tool.editor_target ? " · Target specialization" : " · Scope policy"),
-			 interface_theme::kAccentSeaGlass, 11);
-		text(context, "Five steps to prepare startup values. Live allocations stay unchanged.",
-			 interface_theme::kTextMuted, 10);
-		CLAY(context.clayID("capacity-stage-evidence"), capacity_stage()) {
-			text(context, "1  Evidence", interface_theme::kTextCanvas, 12);
-			if (context.params.app->devMonitoring().memory().config().level <
-				MemoryMonitoringLevel::SubsystemCapacity) {
+	auto section = column(0);
+	section.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+	CLAY(context.clayID("capacity-tuning-section"), section) {
+		disclosure(context, LocalElementName{"capacity-tuning-header"}, "Capacity tuning",
+				   context.state().capacity_tuning_expanded);
+		if (context.state().capacity_tuning_expanded) {
+			CLAY(context.clayID("capacity-tool"), panel) {
+				text(context,
+					 "Application draft · " + std::string(memory_capacity_scope_name(tool.scope)) +
+						 (tool.editor_target ? " · Target specialization" : " · Scope policy"),
+					 interface_theme::kAccentSeaGlass, 11);
+				text(context,
+					 "Five steps to prepare startup values. Live allocations stay unchanged.",
+					 interface_theme::kTextMuted, 10);
+				CLAY(context.clayID("capacity-stage-evidence"), capacity_stage()) {
+					text(context, "1  Evidence", interface_theme::kTextCanvas, 12);
+					if (context.params.app->devMonitoring().memory().config().level <
+						MemoryMonitoringLevel::SubsystemCapacity) {
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
-				button(context, state, 413, "Enable detailed demand monitoring");
+						button(context, state, 413, "Enable detailed demand monitoring");
 #else
-				text(context,
-					 "Container demand requires a build with memory monitoring level 2 or above.",
-					 interface_theme::kStatusAmber, 10);
+						text(context,
+							 "Container demand requires a build with memory monitoring level 2 or "
+							 "above.",
+							 interface_theme::kStatusAmber, 10);
 #endif
-			}
-			choice(context, "capacity-evidence", "Choose the measured workload",
-				   tool.editor.evidence_mode, capacity_evidence_choices);
-			if (tool.editor.evidence_mode == 1) {
-				text(context, "Active-demand maxima over this application run; independent of "
-							  "retained history.");
-				text(context,
-					 "Highest measured demand. Sampling and late monitoring can miss peaks.",
-					 interface_theme::kStatusAmber, 10);
-			} else {
-				choice(context, "capacity-recording",
-					   "Saved recording (snapshots cannot supply percentiles)", tool.editor.dataset,
-					   analysis.dataset_options);
-				text(context,
-					 "Record or save a snippet using Memory's context controls. Plot zoom does not "
-					 "change this evidence.",
-					 interface_theme::kTextMuted, 10);
-			}
-		}
-		stage_connector(context, 0);
-		CLAY(context.clayID("capacity-stage-strategy"), capacity_stage()) {
-			text(context, "2  Scope strategy", interface_theme::kTextCanvas, 12);
-			const auto existing = std::ranges::find_if(tool.rules, [&](const auto& rule) {
-				return tool.editor_target ? rule.target == tool.editor_target
-										  : rule.scope == tool.scope && !rule.target;
-			});
-			text(context,
-				 existing != tool.rules.end()
-					 ? "Explicit policy · preparing updates keeps specific descendants"
-					 : "Inherited policy · prepare to specialize this scope",
-				 interface_theme::kTextMuted, 10);
-			if (existing != tool.rules.end() && existing->recipe != tool.editor)
-				text(context, "Edited preview · prepared values stay unchanged until updated.",
-					 interface_theme::kAccentSeaGlass, 10);
-			const auto origin =
-				memory_capacity_policy_origin(analysis, tool.scope, tool.editor_target);
-			if (existing == tool.rules.end())
-				text(context,
-					 origin.empty()
-						 ? "Using the tool's default strategy"
-						 : "Policy inherited from " +
-							   std::string(memory_capacity_scope_name(origin.front().scope)),
-					 interface_theme::kAccentSeaGlass, 10);
-			choice(context, "capacity-strategy", "Choose the memory / growth tradeoff",
-				   tool.strategy, capacity_strategies);
-			if (tool.strategy == 0) {
-				if (tool.editor.planner.margin_mode == 0)
-					number(context, "capacity-headroom", "Headroom above PMax (%)",
-						   tool.editor.planner.margin_percent, 0.0, 100.0);
-				else
-					number(context, "capacity-primary-absolute",
-						   "Headroom above PMax (native units)",
-						   tool.editor.planner.absolute_margin, uint64_t{0}, UINT64_MAX);
-				button(context, state, 402, "Exact PMax · 0% headroom");
-			} else if (tool.strategy == 1) {
-				number(context, "capacity-percentile", "Typical-use percentile (P50, P70, P95...)",
-					   tool.editor.planner.percentile, 1.0, 100.0);
-				if (tool.editor.evidence_mode == 1)
+					}
+					choice(context, "capacity-evidence", "Choose the measured workload",
+						   tool.editor.evidence_mode, capacity_evidence_choices);
+					if (tool.editor.evidence_mode == 1) {
+						text(context,
+							 "Active-demand maxima over this application run; independent of "
+							 "retained history.");
+						text(
+							context,
+							"Highest measured demand. Sampling and late monitoring can miss peaks.",
+							interface_theme::kStatusAmber, 10);
+					} else {
+						choice(context, "capacity-recording",
+							   "Saved recording (snapshots cannot supply percentiles)",
+							   tool.editor.dataset, analysis.dataset_options);
+						text(context,
+							 "Record or save a snippet using Memory's context controls. Plot zoom "
+							 "does not "
+							 "change this evidence.",
+							 interface_theme::kTextMuted, 10);
+					}
+				}
+				stage_connector(context, 0);
+				CLAY(context.clayID("capacity-stage-strategy"), capacity_stage()) {
+					text(context, "2  Scope strategy", interface_theme::kTextCanvas, 12);
+					const auto existing = std::ranges::find_if(tool.rules, [&](const auto& rule) {
+						return tool.editor_target ? rule.target == tool.editor_target
+												  : rule.scope == tool.scope && !rule.target;
+					});
 					text(context,
-						 "Choose a recorded snippet: one maximum cannot provide a percentile.",
-						 interface_theme::kStatusAmber);
-			}
-			if (tool.editor_target)
-				button(context, state, 406, "Back to scope policy");
-		}
-		stage_connector(context, 1);
-		CLAY(context.clayID("capacity-stage-result"), capacity_stage()) {
-			text(context, "3  Result", interface_theme::kTextCanvas, 12);
-			text(context, std::to_string(eligible) + " eligible · " +
-							  std::to_string(protected_count) + " specific · " +
-							  std::to_string(locked_count) + " locked · " +
-							  std::to_string(unavailable) + " unavailable");
-			if (selected != tool.proposals.end()) {
-				const auto& proposal = *selected;
-				text(context, proposal.label, interface_theme::kTextCanvas, 11);
-				text(context,
-					 memory_target_value(proposal.current, proposal.draft.target.unit,
-										 state.decimal) +
-						 " -> " +
-						 (proposal.available
-							  ? memory_target_value(proposal.draft.plan.initial,
-													proposal.draft.target.unit, state.decimal)
-							  : "Keep current · needs evidence"),
-					 interface_theme::kAccentSeaGlass, 13);
-				if (proposal.available) {
-					capacity_comparison(context, proposal);
-					text(context,
-						 "Exact proposed value: " + std::to_string(proposal.draft.plan.initial) +
-							 (proposal.draft.target.unit == MemoryCapacityUnit::Bytes
-								  ? " bytes"
-								  : " entries"));
-					text(context,
-						 "Measured maximum: " +
-							 memory_target_value(proposal.draft.plan.observed_maximum,
-												 proposal.draft.target.unit, state.decimal));
-					const auto* definition =
-						FlowUi::detail::find_initial_capacity(proposal.draft.target.id);
-					text(context,
-						 "Applied to " + std::string(definition->scope) + " · " +
-							 (proposal.locked			? "Locked"
-							  : proposal.protected_rule ? "Specific policy preserved"
-														: "Preview"),
+						 existing != tool.rules.end()
+							 ? "Explicit policy · preparing updates keeps specific descendants"
+							 : "Inherited policy · prepare to specialize this scope",
 						 interface_theme::kTextMuted, 10);
-					if (!proposal.draft.maximum_only) {
+					if (existing != tool.rules.end() && existing->recipe != tool.editor)
 						text(context,
-							 "Initial reserve covers " +
-								 std::to_string(int(proposal.draft.plan.initial_coverage * 100)) +
-								 "% of weighted measured observations.",
-							 interface_theme::kTextMuted, 10);
-						if (!definition->storage_member.empty())
+							 "Edited preview · prepared values stay unchanged until updated.",
+							 interface_theme::kAccentSeaGlass, 10);
+					const auto origin =
+						memory_capacity_policy_origin(analysis, tool.scope, tool.editor_target);
+					if (existing == tool.rules.end())
+						text(context,
+							 origin.empty() ? "Using the tool's default strategy"
+											: "Policy inherited from " +
+												  std::string(memory_capacity_scope_name(
+													  origin.front().scope)),
+							 interface_theme::kAccentSeaGlass, 10);
+					choice(context, "capacity-strategy", "Choose the memory / growth tradeoff",
+						   tool.strategy, capacity_strategies);
+					if (tool.strategy == 0) {
+						if (tool.editor.planner.margin_mode == 0)
+							number(context, "capacity-headroom", "Headroom above PMax (%)",
+								   tool.editor.planner.margin_percent, 0.0, 100.0);
+						else
+							number(context, "capacity-primary-absolute",
+								   "Headroom above PMax (native units)",
+								   tool.editor.planner.absolute_margin, uint64_t{0}, UINT64_MAX);
+						button(context, state, 402, "Exact PMax · 0% headroom");
+					} else if (tool.strategy == 1) {
+						number(context, "capacity-percentile",
+							   "Typical-use percentile (P50, P70, P95...)",
+							   tool.editor.planner.percentile, 1.0, 100.0);
+						if (tool.editor.evidence_mode == 1)
 							text(context,
-								 "Modeled final capacity: " +
-									 memory_target_value(proposal.draft.plan.final_capacity,
-														 proposal.draft.target.unit,
-														 state.decimal) +
-									 " · factor " + std::to_string(proposal.draft.plan.factor),
+								 "Choose a recorded snippet: one maximum cannot provide a "
+								 "percentile.",
+								 interface_theme::kStatusAmber);
+					}
+					if (tool.editor_target)
+						button(context, state, 406, "Back to scope policy");
+				}
+				stage_connector(context, 1);
+				CLAY(context.clayID("capacity-stage-result"), capacity_stage()) {
+					text(context, "3  Result", interface_theme::kTextCanvas, 12);
+					text(context, std::to_string(eligible) + " eligible · " +
+									  std::to_string(protected_count) + " specific · " +
+									  std::to_string(locked_count) + " locked · " +
+									  std::to_string(unavailable) + " unavailable");
+					if (selected != tool.proposals.end()) {
+						const auto& proposal = *selected;
+						text(context, proposal.label, interface_theme::kTextCanvas, 11);
+						text(context,
+							 memory_target_value(proposal.current, proposal.draft.target.unit,
+												 state.decimal) +
+								 " -> " +
+								 (proposal.available
+									  ? memory_target_value(proposal.draft.plan.initial,
+															proposal.draft.target.unit,
+															state.decimal)
+									  : "Keep current · needs evidence"),
+							 interface_theme::kAccentSeaGlass, 13);
+						if (proposal.available) {
+							capacity_comparison(context, proposal);
+							text(context,
+								 "Exact proposed value: " +
+									 std::to_string(proposal.draft.plan.initial) +
+									 (proposal.draft.target.unit == MemoryCapacityUnit::Bytes
+										  ? " bytes"
+										  : " entries"));
+							text(context, "Measured maximum: " +
+											  memory_target_value(
+												  proposal.draft.plan.observed_maximum,
+												  proposal.draft.target.unit, state.decimal));
+							const auto* definition =
+								FlowUi::detail::find_initial_capacity(proposal.draft.target.id);
+							text(context,
+								 "Applied to " + std::string(definition->scope) + " · " +
+									 (proposal.locked			? "Locked"
+									  : proposal.protected_rule ? "Specific policy preserved"
+																: "Preview"),
 								 interface_theme::kTextMuted, 10);
-					}
-					if (proposal.draft.maximum_only)
-						text(
-							context,
-							"Maximum-only evidence: no growth chronology or event-count guarantee.",
-							interface_theme::kTextMuted, 10);
-					else if (definition->storage_member.empty())
-						text(
-							context,
-							"Backend-managed container growth; storage factor does not control it.",
-							interface_theme::kTextMuted, 10);
-					else
+							if (!proposal.draft.maximum_only) {
+								text(context,
+									 "Initial reserve covers " +
+										 std::to_string(
+											 int(proposal.draft.plan.initial_coverage * 100)) +
+										 "% of weighted measured observations.",
+									 interface_theme::kTextMuted, 10);
+								if (!definition->storage_member.empty())
+									text(context,
+										 "Modeled final capacity: " +
+											 memory_target_value(proposal.draft.plan.final_capacity,
+																 proposal.draft.target.unit,
+																 state.decimal) +
+											 " · factor " +
+											 std::to_string(proposal.draft.plan.factor),
+										 interface_theme::kTextMuted, 10);
+							}
+							if (proposal.draft.maximum_only)
+								text(context,
+									 "Maximum-only evidence: no growth chronology or event-count "
+									 "guarantee.",
+									 interface_theme::kTextMuted, 10);
+							else if (definition->storage_member.empty())
+								text(context,
+									 "Backend-managed container growth; storage factor does not "
+									 "control it.",
+									 interface_theme::kTextMuted, 10);
+							else
+								text(context,
+									 "Sampled scalar replay: " +
+										 std::to_string(
+											 proposal.draft.plan.maximum_instance_growths) +
+										 " growths per modeled owner; allocator verification "
+										 "required.",
+									 interface_theme::kTextMuted, 10);
+							if (proposal.exceeded)
+								text(context,
+									 "New runtime peak exceeds locked reserve. Unlock and "
+									 "re-evaluate.",
+									 interface_theme::kStatusAmber);
+						} else
+							text(context, proposal.message, interface_theme::kStatusAmber);
+					} else
 						text(context,
-							 "Sampled scalar replay: " +
-								 std::to_string(proposal.draft.plan.maximum_instance_growths) +
-								 " growths per modeled owner; allocator verification required.",
+							 "No bakeable capacities in this scope. Choose Overview, a manager or "
+							 "CPU storage.");
+					text(context,
+						 tool.runtime_growth ? "Runtime storage growth enabled; error policies may "
+											   "further restrict it."
+											 : "Runtime storage growth disabled.",
+						 interface_theme::kTextMuted, 10);
+					text(context,
+						 "Values are per configured owner; entry costs and physical totals are not "
+						 "inferred from reserve hints.",
+						 interface_theme::kTextMuted, 10);
+				}
+				stage_connector(context, 2);
+				CLAY(context.clayID("capacity-stage-refine"), capacity_stage()) {
+					text(context, "4  Refine capacities", interface_theme::kTextCanvas, 12);
+					if (!tool.target_options.empty())
+						choice(context, "capacity-target", "Inspect an affected capacity",
+							   tool.selected_target, tool.target_options);
+					button(context, state, 403,
+						   tool.show_targets ? "Hide grouped capacities"
+											 : "Show grouped capacities");
+					if (tool.show_targets) {
+						uint64_t previous_owner = UINT64_MAX;
+						for (const auto& proposal : tool.proposals) {
+							const auto* definition =
+								FlowUi::detail::find_initial_capacity(proposal.draft.target.id);
+							const auto owner = memory_capacity_owner(*definition);
+							if (owner != previous_owner) {
+								text(context, memory_capacity_scope_name(owner),
+									 interface_theme::kAccentSeaGlass, 11);
+								previous_owner = owner;
+							}
+							button(context, state, 1000 + uint32_t(definition->target),
+								   proposal.label +
+									   (proposal.locked			  ? " · Locked"
+										: proposal.protected_rule ? " · Specific"
+										: !proposal.available
+											? " · Needs evidence"
+											: " · " + std::to_string(proposal.draft.plan.initial)));
+						}
+					}
+					button(context, state, 412, "Use library default for selected capacity",
+						   selected != tool.proposals.end() && !selected->locked);
+					button(context, state, 407, "Customize selected capacity",
+						   selected != tool.proposals.end() && !selected->locked);
+					button(context, state, 404,
+						   tool.advanced ? "Hide advanced controls" : "Advanced tuning");
+					if (tool.advanced) {
+						const auto* definition =
+							selected == tool.proposals.end()
+								? nullptr
+								: FlowUi::detail::find_initial_capacity(selected->draft.target.id);
+						if (definition) {
+							button(context, state, 415, "Copy canonical configuration key");
+							text(context, definition->key, interface_theme::kTextMuted, 10);
+							text(context,
+								 "Library default " + std::to_string(definition->default_value) +
+									 " · alignment " + std::to_string(definition->alignment));
+						}
+						choice(context, "capacity-margin-mode", "Headroom basis",
+							   tool.editor.planner.margin_mode, capacity_margin_modes);
+						if (tool.editor.planner.margin_mode == 1)
+							number(context, "capacity-absolute-margin",
+								   "Additional native bytes / entries",
+								   tool.editor.planner.absolute_margin, uint64_t{0}, UINT64_MAX);
+						if (tool.strategy == 3)
+							number(context, "capacity-manual",
+								   "Exact native capacity (zero resolves to default)",
+								   tool.editor.planner.manual_initial, uint64_t{0},
+								   definition ? definition->maximum : UINT64_MAX);
+						if (tool.editor.evidence_mode == 0) {
+							choice(context, "capacity-weighting", "Distribution weighting",
+								   tool.editor.planner.weighting, capacity_weightings);
+							number(context, "capacity-range-begin",
+								   "Snippet start timestamp ns (0 = entire snippet)",
+								   tool.editor.begin_ns, uint64_t{0}, UINT64_MAX);
+							number(context, "capacity-range-end",
+								   "Snippet end timestamp ns (0 = entire snippet)",
+								   tool.editor.end_ns, uint64_t{0}, UINT64_MAX);
+							if (definition && !definition->storage_member.empty()) {
+								choice(context, "capacity-factor", "Storage overflow policy",
+									   tool.editor.planner.factor_mode, capacity_factors);
+								if (tool.strategy != 2 && tool.strategy != 4)
+									number(context, "capacity-growths",
+										   "Maximum modeled growths per owner",
+										   tool.editor.planner.maximum_growths, uint64_t{0},
+										   uint64_t{64});
+								if (tool.editor.planner.factor_mode == 2)
+									number(context, "capacity-factor-value",
+										   "Shared storage growth factor",
+										   tool.editor.planner.factor, 1.1, 64.0);
+								if (tool.editor.planner.factor_mode == 1)
+									number(context, "capacity-factor-limit",
+										   "Factor search upper bound",
+										   tool.editor.planner.maximum_factor, 1.1, 64.0);
+								number(context, "capacity-next",
+									   "First overflow target (0 = unconstrained)",
+									   tool.editor.planner.next_target, uint64_t{0}, UINT64_MAX);
+							}
+						}
+						number(context, "capacity-budget",
+							   (definition && !definition->storage_member.empty() &&
+										tool.editor.evidence_mode == 0
+									? "Per-owner modeled final budget (0 = unconstrained)"
+									: "Per-owner initial reserve budget (0 = unconstrained)"),
+							   tool.editor.planner.final_budget, uint64_t{0}, UINT64_MAX);
+						text(context,
+							 "Keep current preserves resolved startup hints. Library defaults and "
+							 "custom "
+							 "values use native registered units.",
 							 interface_theme::kTextMuted, 10);
-					if (proposal.exceeded)
+					}
+				}
+				stage_connector(context, 3);
+				CLAY(context.clayID("capacity-stage-prepare"), capacity_stage()) {
+					text(context, "5  Prepare settings", interface_theme::kTextCanvas, 12);
+					button(context, state, 400,
+						   (tool.editor_target
+								? "Prepare selected capacity"
+								: "Add / update " +
+									  std::string(memory_capacity_scope_name(tool.scope)) +
+									  " draft"),
+						   eligible != 0 && capacity_inputs_valid(context, tool));
+					button(context, state, 411, "Prepare and lock exact values",
+						   eligible != 0 && capacity_inputs_valid(context, tool));
+					if (!capacity_inputs_valid(context, tool))
 						text(context,
-							 "New runtime peak exceeds locked reserve. Unlock and re-evaluate.",
-							 interface_theme::kStatusAmber);
-				} else
-					text(context, proposal.message, interface_theme::kStatusAmber);
-			} else
-				text(context, "No bakeable capacities in this scope. Choose Overview, a manager or "
-							  "CPU storage.");
-			text(context,
-				 tool.runtime_growth
-					 ? "Runtime storage growth enabled; error policies may further restrict it."
-					 : "Runtime storage growth disabled.",
-				 interface_theme::kTextMuted, 10);
-			text(context,
-				 "Values are per configured owner; entry costs and physical totals are not "
-				 "inferred from reserve hints.",
-				 interface_theme::kTextMuted, 10);
-		}
-		stage_connector(context, 2);
-		CLAY(context.clayID("capacity-stage-refine"), capacity_stage()) {
-			text(context, "4  Refine capacities", interface_theme::kTextCanvas, 12);
-			if (!tool.target_options.empty())
-				choice(context, "capacity-target", "Inspect an affected capacity",
-					   tool.selected_target, tool.target_options);
-			button(context, state, 403,
-				   tool.show_targets ? "Hide grouped capacities" : "Show grouped capacities");
-			if (tool.show_targets) {
-				uint64_t previous_owner = UINT64_MAX;
-				for (const auto& proposal : tool.proposals) {
-					const auto* definition =
-						FlowUi::detail::find_initial_capacity(proposal.draft.target.id);
-					const auto owner = memory_capacity_owner(*definition);
-					if (owner != previous_owner) {
-						text(context, memory_capacity_scope_name(owner),
-							 interface_theme::kAccentSeaGlass, 11);
-						previous_owner = owner;
-					}
-					button(context, state, 1000 + uint32_t(definition->target),
-						   proposal.label +
-							   (proposal.locked			  ? " · Locked"
-								: proposal.protected_rule ? " · Specific"
-								: !proposal.available
-									? " · Needs evidence"
-									: " · " + std::to_string(proposal.draft.plan.initial)));
+							 "Correct incomplete or out-of-range numeric text before preparing.",
+							 interface_theme::kStatusAmber, 10);
+					text(context,
+						 std::to_string(analysis.staged.size()) +
+							 " prepared capacity values. Final review and bake belong in Changes.");
+					text(context,
+						 "Changes integration is planned; prepared values do not modify startup or "
+						 "live "
+						 "allocations.",
+						 interface_theme::kTextMuted, 10);
+					if (!tool.message.empty())
+						text(context, tool.message, interface_theme::kStatusAmber, 10);
 				}
 			}
-			button(context, state, 412, "Use library default for selected capacity",
-				   selected != tool.proposals.end() && !selected->locked);
-			button(context, state, 407, "Customize selected capacity",
-				   selected != tool.proposals.end() && !selected->locked);
-			button(context, state, 404,
-				   tool.advanced ? "Hide advanced controls" : "Advanced tuning");
-			if (tool.advanced) {
-				const auto* definition =
-					selected == tool.proposals.end()
-						? nullptr
-						: FlowUi::detail::find_initial_capacity(selected->draft.target.id);
-				if (definition) {
-					button(context, state, 415, "Copy canonical configuration key");
-					text(context, definition->key, interface_theme::kTextMuted, 10);
-					text(context, "Library default " + std::to_string(definition->default_value) +
-									  " · alignment " + std::to_string(definition->alignment));
-				}
-				choice(context, "capacity-margin-mode", "Headroom basis",
-					   tool.editor.planner.margin_mode, capacity_margin_modes);
-				if (tool.editor.planner.margin_mode == 1)
-					number(context, "capacity-absolute-margin", "Additional native bytes / entries",
-						   tool.editor.planner.absolute_margin, uint64_t{0}, UINT64_MAX);
-				if (tool.strategy == 3)
-					number(context, "capacity-manual",
-						   "Exact native capacity (zero resolves to default)",
-						   tool.editor.planner.manual_initial, uint64_t{0},
-						   definition ? definition->maximum : UINT64_MAX);
-				if (tool.editor.evidence_mode == 0) {
-					choice(context, "capacity-weighting", "Distribution weighting",
-						   tool.editor.planner.weighting, capacity_weightings);
-					number(context, "capacity-range-begin",
-						   "Snippet start timestamp ns (0 = entire snippet)", tool.editor.begin_ns,
-						   uint64_t{0}, UINT64_MAX);
-					number(context, "capacity-range-end",
-						   "Snippet end timestamp ns (0 = entire snippet)", tool.editor.end_ns,
-						   uint64_t{0}, UINT64_MAX);
-					if (definition && !definition->storage_member.empty()) {
-						choice(context, "capacity-factor", "Storage overflow policy",
-							   tool.editor.planner.factor_mode, capacity_factors);
-						if (tool.strategy != 2 && tool.strategy != 4)
-							number(context, "capacity-growths", "Maximum modeled growths per owner",
-								   tool.editor.planner.maximum_growths, uint64_t{0}, uint64_t{64});
-						if (tool.editor.planner.factor_mode == 2)
-							number(context, "capacity-factor-value", "Shared storage growth factor",
-								   tool.editor.planner.factor, 1.1, 64.0);
-						if (tool.editor.planner.factor_mode == 1)
-							number(context, "capacity-factor-limit", "Factor search upper bound",
-								   tool.editor.planner.maximum_factor, 1.1, 64.0);
-						number(context, "capacity-next",
-							   "First overflow target (0 = unconstrained)",
-							   tool.editor.planner.next_target, uint64_t{0}, UINT64_MAX);
-					}
-				}
-				number(context, "capacity-budget",
-					   (definition && !definition->storage_member.empty() &&
-								tool.editor.evidence_mode == 0
-							? "Per-owner modeled final budget (0 = unconstrained)"
-							: "Per-owner initial reserve budget (0 = unconstrained)"),
-					   tool.editor.planner.final_budget, uint64_t{0}, UINT64_MAX);
-				text(context,
-					 "Keep current preserves resolved startup hints. Library defaults and custom "
-					 "values use native registered units.",
-					 interface_theme::kTextMuted, 10);
-			}
-		}
-		stage_connector(context, 3);
-		CLAY(context.clayID("capacity-stage-prepare"), capacity_stage()) {
-			text(context, "5  Prepare settings", interface_theme::kTextCanvas, 12);
-			button(context, state, 400,
-				   (tool.editor_target
-						? "Prepare selected capacity"
-						: "Add / update " + std::string(memory_capacity_scope_name(tool.scope)) +
-							  " draft"),
-				   eligible != 0 && capacity_inputs_valid(context, tool));
-			button(context, state, 411, "Prepare and lock exact values",
-				   eligible != 0 && capacity_inputs_valid(context, tool));
-			if (!capacity_inputs_valid(context, tool))
-				text(context, "Correct incomplete or out-of-range numeric text before preparing.",
-					 interface_theme::kStatusAmber, 10);
-			text(context,
-				 std::to_string(analysis.staged.size()) +
-					 " prepared capacity values. Final review and bake belong in Changes.");
-			text(context,
-				 "Changes integration is planned; prepared values do not modify startup or live "
-				 "allocations.",
-				 interface_theme::kTextMuted, 10);
-			if (!tool.message.empty())
-				text(context, tool.message, interface_theme::kStatusAmber, 10);
 		}
 	}
 	auto ledger = column(8);
 	ledger.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 	ledger.layout.padding = {12, 12, 10, 12};
-	CLAY(context.clayID("scope-settings"), ledger) {
-		text(context, "Scope settings", interface_theme::kTextCanvas, 14);
-		text(context, "Specific policies survive parent edits. Locks freeze prepared exact values.",
-			 interface_theme::kTextMuted, 10);
-		button(context, state, 405, tool.show_ledger ? "Hide set scopes" : "All set scopes");
-		if (tool.exceeded_locks)
-			text(context,
-				 std::to_string(tool.exceeded_locks) +
-					 " locked capacities exceeded by new runtime peaks.",
-				 interface_theme::kStatusAmber);
-		if (tool.show_ledger) {
-			tool.rule_options.clear();
-			tool.rule_options.reserve(tool.rules.size());
-			tool.rule_labels.clear();
-			tool.rule_labels.reserve(tool.rules.size());
-			for (const auto& rule : tool.rules) {
-				const auto* target_definition = FlowUi::detail::find_initial_capacity(rule.target);
-				tool.rule_labels.emplace_back(
-					std::string(memory_capacity_scope_name(rule.scope)) +
-					(target_definition ? " / " + memory_capacity_label(*target_definition) : ""));
-				tool.rule_options.emplace_back(FSEL::ComboBoxOption{
-					rule.target ? rule.target : rule.scope + 1, tool.rule_labels.back()});
-				const auto policy =
-					rule.recipe.planner.initial_mode == 1
-						? "P" + std::to_string(int(rule.recipe.planner.percentile))
-					: rule.recipe.planner.initial_mode == 2
-						? "PMax + " + std::to_string(int(rule.recipe.planner.margin_percent)) + "%"
-					: rule.recipe.planner.initial_mode == 4 ? "Library default"
-															: "Current / custom";
+	CLAY(context.clayID("capacity-scope-settings-section"), section) {
+		disclosure(context, LocalElementName{"capacity-scope-settings-header"},
+				   "Capacity Scope Settings", context.state().capacity_scope_settings_expanded);
+		if (context.state().capacity_scope_settings_expanded) {
+			CLAY(context.clayID("scope-settings"), ledger) {
 				text(context,
-					 std::string(memory_capacity_scope_name(rule.scope)) +
-						 (rule.target ? " · Target override" : "") + " · " + policy +
-						 (rule.recipe.evidence_mode == 1 ? " · Overall high-water"
-														 : " · Recording") +
-						 (rule.locked ? " · Locked" : " · Prepared"),
-					 interface_theme::kTextCanvas, 11);
+					 "Specific policies survive parent edits. Locks freeze prepared exact values.",
+					 interface_theme::kTextMuted, 10);
+				button(context, state, 405,
+					   tool.show_ledger ? "Hide set scopes" : "All set scopes");
+				if (tool.exceeded_locks)
+					text(context,
+						 std::to_string(tool.exceeded_locks) +
+							 " locked capacities exceeded by new runtime peaks.",
+						 interface_theme::kStatusAmber);
+				if (tool.show_ledger) {
+					tool.rule_options.clear();
+					tool.rule_options.reserve(tool.rules.size());
+					tool.rule_labels.clear();
+					tool.rule_labels.reserve(tool.rules.size());
+					for (const auto& rule : tool.rules) {
+						const auto* target_definition =
+							FlowUi::detail::find_initial_capacity(rule.target);
+						tool.rule_labels.emplace_back(
+							std::string(memory_capacity_scope_name(rule.scope)) +
+							(target_definition ? " / " + memory_capacity_label(*target_definition)
+											   : ""));
+						tool.rule_options.emplace_back(FSEL::ComboBoxOption{
+							rule.target ? rule.target : rule.scope + 1, tool.rule_labels.back()});
+						const auto policy =
+							rule.recipe.planner.initial_mode == 1
+								? "P" + std::to_string(int(rule.recipe.planner.percentile))
+							: rule.recipe.planner.initial_mode == 2
+								? "PMax + " +
+									  std::to_string(int(rule.recipe.planner.margin_percent)) + "%"
+							: rule.recipe.planner.initial_mode == 4 ? "Library default"
+																	: "Current / custom";
+						text(context,
+							 std::string(memory_capacity_scope_name(rule.scope)) +
+								 (rule.target ? " · Target override" : "") + " · " + policy +
+								 (rule.recipe.evidence_mode == 1 ? " · Overall high-water"
+																 : " · Recording") +
+								 (rule.locked ? " · Locked" : " · Prepared"),
+							 interface_theme::kTextCanvas, 11);
+					}
+					if (!tool.rule_options.empty()) {
+						if (std::ranges::find(tool.rule_options, tool.selected_rule,
+											  &FSEL::ComboBoxOption::value) ==
+							tool.rule_options.end())
+							tool.selected_rule = tool.rule_options.front().value;
+						choice(context, "capacity-rule", "Choose a prepared scope or target rule",
+							   tool.selected_rule, tool.rule_options);
+						button(context, state, 410, "Edit selected rule");
+						button(context, state, 408, "Lock / unlock prepared values");
+						button(context, state, 409, "Revert selected rule to inherited");
+					} else
+						text(context, "No explicit scopes prepared yet.");
+					button(context, state, 401, "Undo last authoring edit", !tool.undo.empty());
+				}
 			}
-			if (!tool.rule_options.empty()) {
-				if (std::ranges::find(tool.rule_options, tool.selected_rule,
-									  &FSEL::ComboBoxOption::value) == tool.rule_options.end())
-					tool.selected_rule = tool.rule_options.front().value;
-				choice(context, "capacity-rule", "Choose a prepared scope or target rule",
-					   tool.selected_rule, tool.rule_options);
-				button(context, state, 410, "Edit selected rule");
-				button(context, state, 408, "Lock / unlock prepared values");
-				button(context, state, 409, "Revert selected rule to inherited");
-			} else
-				text(context, "No explicit scopes prepared yet.");
-			button(context, state, 401, "Undo last authoring edit", !tool.undo.empty());
 		}
 	}
 }
@@ -809,10 +854,7 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 	content.layout.padding = {12, 12, 10, 12};
 	auto section = column(0);
 	section.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	root.clip = {.vertical = true};
-	const auto scroll = Clay_GetScrollContainerData(context.clayID());
-	if (scroll.found && scroll.scrollPosition)
-		root.clip.childOffset = *scroll.scrollPosition;
+	root.clip.scrollInputDisabled = true;
 	CLAY(context.clayID(), root) {
 		const auto* saved = selected_memory_dataset(analysis);
 		CLAY(context.clayID("subject-content"), content) {
@@ -836,90 +878,114 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 			if (!track)
 				text(context, "Choose a scope or track. CPU, GPU and process views overlap and "
 							  "cannot be added.");
-			else {
+		}
+		auto body = column(0);
+		body.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_GROW(0)};
+		body.clip = {.vertical = true};
+		const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll-body"));
+		if (scroll.found && scroll.scrollPosition)
+			body.clip.childOffset = *scroll.scrollPosition;
+		CLAY(context.clayID("scroll-body"), body) {
+			CLAY(context.clayID("scope-diagnostics-section"), section) {
 				disclosure(context, LocalElementName{"scope-diagnostics"}, "Scope diagnostics",
 						   analysis.capacity_tool.show_diagnostics);
 				if (analysis.capacity_tool.show_diagnostics) {
-					if (!track->available)
-						text(context,
-							 "No supported observation for this subject/time. Live data is not "
-							 "substituted.",
-							 interface_theme::kStatusAmber);
-					else {
-						text(context,
-							 track->value.logicalLiveBytes ? "Measured reading"
-														   : "Idle / measured zero",
-							 interface_theme::kTextCanvas, 12);
-						const auto fields = track->value.value_fields;
-						reading(context, "Active", track->value.logicalLiveBytes,
-								fields & uint16_t(MemoryValueField::LogicalLive), true,
-								state.decimal);
-						reading(context, "Backing", track->value.backingAllocatedBytes,
-								fields & uint16_t(MemoryValueField::Backing), true, state.decimal);
-						reading(context, "Reusable", track->value.reusableBytes,
-								fields & uint16_t(MemoryValueField::Reusable), true, state.decimal);
-						reading(context, "Retired", track->value.retiredBytes,
-								fields & uint16_t(MemoryValueField::Retired), true, state.decimal);
-						reading(context, "Objects", track->value.objectCount,
-								fields & uint16_t(MemoryValueField::Objects), false, state.decimal);
-						reading(context, "Capacity count", track->value.capacityCount,
-								fields & uint16_t(MemoryValueField::Capacity), false,
-								state.decimal);
-					}
-					button(context, state, 137, "Copy reading", track->available);
-					text(context, "Accounting", interface_theme::kTextCanvas, 12);
-					text(context, track->note.empty()
-									  ? "Independent accounting view; group totals may overlap."
-									  : track->note);
-					if (track->included)
-						text(context,
-							 "Included/overlapping child: do not add this reading to its parent.",
-							 interface_theme::kStatusAmber, 10);
-					if (track->parent_identity)
-						button(context, state, 134, "Inspect parent");
-				}
-			}
-		}
-		if (track && analysis.capacity_tool.show_diagnostics)
-			CLAY(context.clayID("measurement-section"), section) {
-				disclosure(context, LocalElementName{"measurement-header"}, "Measurement Details",
-						   analysis.show_quality);
-				if (analysis.show_quality) {
-					CLAY(context.clayID("measurement-content"), content) {
-						text(context, track->estimated ? "Estimated container/resource footprint"
-													   : "Producer-reported measurement");
-						text(context, "Report tick " + std::to_string(track->sampled_tick) + " · " +
-										  std::to_string(track->keys.size()) +
-										  " attributed producer(s)");
-						text(context,
-							 "History contains sampled/held source values. Allocator reset "
-							 "boundaries and interval burst peaks are not retained yet.");
-						const auto status = saved ? saved->live.status : reporting.status();
-						text(context, "Retained segments " +
-										  std::to_string(status.segments.retainedCount) +
-										  " · overwritten " +
-										  std::to_string(status.segments.overwriteCount));
-					}
-				}
-			}
-		if (analysis.baseline_dataset && track) {
-			CLAY(context.clayID("baseline-content"), content) {
-				const auto baseline = std::ranges::find(
-					analysis.datasets, analysis.baseline_dataset, &MemoryDataset::identity);
-				if (baseline != analysis.datasets.end()) {
-					uint64_t active = 0;
-					bool found = false;
-					for (const auto& source : baseline->live.sources)
-						if (std::ranges::find(track->keys, source.key) != track->keys.end()) {
-							active += source.value.logicalLiveBytes;
-							found = true;
+					CLAY(context.clayID("scope-diagnostics-content"), content) {
+						if (!track)
+							text(context, "Choose a scope or track to view diagnostics.");
+						else {
+							if (!track->available)
+								text(context,
+									 "No supported observation for this subject/time. Live data is "
+									 "not "
+									 "substituted.",
+									 interface_theme::kStatusAmber);
+							else {
+								text(context,
+									 track->value.logicalLiveBytes ? "Measured reading"
+																   : "Idle / measured zero",
+									 interface_theme::kTextCanvas, 12);
+								const auto fields = track->value.value_fields;
+								reading(context, "Active", track->value.logicalLiveBytes,
+										fields & uint16_t(MemoryValueField::LogicalLive), true,
+										state.decimal);
+								reading(context, "Backing", track->value.backingAllocatedBytes,
+										fields & uint16_t(MemoryValueField::Backing), true,
+										state.decimal);
+								reading(context, "Reusable", track->value.reusableBytes,
+										fields & uint16_t(MemoryValueField::Reusable), true,
+										state.decimal);
+								reading(context, "Retired", track->value.retiredBytes,
+										fields & uint16_t(MemoryValueField::Retired), true,
+										state.decimal);
+								reading(context, "Objects", track->value.objectCount,
+										fields & uint16_t(MemoryValueField::Objects), false,
+										state.decimal);
+								reading(context, "Capacity count", track->value.capacityCount,
+										fields & uint16_t(MemoryValueField::Capacity), false,
+										state.decimal);
+							}
+							button(context, state, 137, "Copy reading", track->available);
+							text(context, "Accounting", interface_theme::kTextCanvas, 12);
+							text(context,
+								 track->note.empty()
+									 ? "Independent accounting view; group totals may overlap."
+									 : track->note);
+							if (track->included)
+								text(context,
+									 "Included/overlapping child: do not add this reading to its "
+									 "parent.",
+									 interface_theme::kStatusAmber, 10);
+							if (track->parent_identity)
+								button(context, state, 134, "Inspect parent");
 						}
-					text(context, found ? "Baseline active: " + memory_bytes(active, state.decimal)
-										: "Baseline subject unavailable");
+					}
+				}
+				if (track && analysis.capacity_tool.show_diagnostics)
+					CLAY(context.clayID("measurement-section"), section) {
+						disclosure(context, LocalElementName{"measurement-header"},
+								   "Measurement Details", analysis.show_quality);
+						if (analysis.show_quality) {
+							CLAY(context.clayID("measurement-content"), content) {
+								text(context, track->estimated
+												  ? "Estimated container/resource footprint"
+												  : "Producer-reported measurement");
+								text(context, "Report tick " + std::to_string(track->sampled_tick) +
+												  " · " + std::to_string(track->keys.size()) +
+												  " attributed producer(s)");
+								text(context,
+									 "History contains sampled/held source values. Allocator reset "
+									 "boundaries and interval burst peaks are not retained yet.");
+								const auto status = saved ? saved->live.status : reporting.status();
+								text(context, "Retained segments " +
+												  std::to_string(status.segments.retainedCount) +
+												  " · overwritten " +
+												  std::to_string(status.segments.overwriteCount));
+							}
+						}
+					}
+				if (analysis.capacity_tool.show_diagnostics && analysis.baseline_dataset && track) {
+					CLAY(context.clayID("baseline-content"), content) {
+						const auto baseline = std::ranges::find(
+							analysis.datasets, analysis.baseline_dataset, &MemoryDataset::identity);
+						if (baseline != analysis.datasets.end()) {
+							uint64_t active = 0;
+							bool found = false;
+							for (const auto& source : baseline->live.sources)
+								if (std::ranges::find(track->keys, source.key) !=
+									track->keys.end()) {
+									active += source.value.logicalLiveBytes;
+									found = true;
+								}
+							text(context,
+								 found ? "Baseline active: " + memory_bytes(active, state.decimal)
+									   : "Baseline subject unavailable");
+						}
+					}
 				}
 			}
+			build_capacity_tool(context, state);
 		}
-		build_capacity_tool(context, state);
 	}
 }
 } // namespace FlowUi::devSystems::interface_elements

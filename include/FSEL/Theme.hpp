@@ -2,6 +2,9 @@
 
 #include "FlowUi/PublicStructs.hpp"
 #include "FlowUi/App.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
+#endif
 #include "managers/structs/InputFieldManagerStructs.hpp"
 
 namespace FlowUi::FSEL {
@@ -506,5 +509,249 @@ struct FSELTheme {
 	FSELPopupSurfaceTheme popupSurfaceTheme{};
 	FSELComboBoxTheme comboBoxTheme{};
 };
+
+#if FLOW_UI_DEV_MODE
+FLOWUI_DEV_SCHEMA(FSELBoxTheme, FLOWUI_DEV_FIELD(FSELBoxTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELBoxTheme, borderColor),
+				  FLOWUI_DEV_FIELD(FSELBoxTheme, borderWidth),
+				  FLOWUI_DEV_FIELD(FSELBoxTheme, cornerRadius))
+
+FLOWUI_DEV_SCHEMA(FSELPopupSurfaceTheme, FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, layoutDirection),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, borderColor),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, cornerRadius),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, borderWidth),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, padding),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, childGap),
+				  FLOWUI_DEV_FIELD(FSELPopupSurfaceTheme, childAlignment))
+
+FLOWUI_DEV_SCHEMA(FSELSplitterHandleTheme,
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, hoverColor),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, draggingColor),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, borderColor),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, borderWidth),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, cornerRadius),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, horizontalResizeCursor),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, verticalResizeCursor),
+				  FLOWUI_DEV_FIELD(FSELSplitterHandleTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELButtonStateTheme, FLOWUI_DEV_FIELD(FSELButtonStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELButtonStateTheme, labelColor),
+				  FLOWUI_DEV_FIELD(FSELButtonStateTheme, iconColor),
+				  FLOWUI_DEV_FIELD(FSELButtonStateTheme, borderColor))
+
+FLOWUI_DEV_SCHEMA(
+	FSELButtonTheme, FLOWUI_DEV_FIELD(FSELButtonTheme, layoutDirection),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, labelFontFamily,
+					 FlowUi::devMode::DevFieldOptions{}
+						 .withEditor(FlowUi::devMode::DevEditorKind::FontChoice)
+						 .withChoiceDomain(FlowUi::devMode::DevChoiceDomain::FontFamily)),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, labelWrapMode),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, labelAlignment), FLOWUI_DEV_FIELD(FSELButtonTheme, idle),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, hovered), FLOWUI_DEV_FIELD(FSELButtonTheme, pressed),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, disabled), FLOWUI_DEV_FIELD(FSELButtonTheme, cornerRadius),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, labelFontWeight),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, labelFontStyle), FLOWUI_DEV_FIELD(FSELButtonTheme, iconSize),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, cursor), FLOWUI_DEV_FIELD(FSELButtonTheme, borderWidth),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, padding), FLOWUI_DEV_FIELD(FSELButtonTheme, contentGap),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, labelFontSize),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, childAlignment),
+	FLOWUI_DEV_FIELD(FSELButtonTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELCheckboxStateTheme, FLOWUI_DEV_FIELD(FSELCheckboxStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELCheckboxStateTheme, borderColor),
+				  FLOWUI_DEV_FIELD(FSELCheckboxStateTheme, iconColor))
+
+FLOWUI_DEV_SCHEMA(FSELCheckboxValueTheme, FLOWUI_DEV_FIELD(FSELCheckboxValueTheme, idle),
+				  FLOWUI_DEV_FIELD(FSELCheckboxValueTheme, hovered),
+				  FLOWUI_DEV_FIELD(FSELCheckboxValueTheme, pressed),
+				  FLOWUI_DEV_FIELD(FSELCheckboxValueTheme, disabled))
+
+FLOWUI_DEV_SCHEMA(FSELCheckboxTheme, FLOWUI_DEV_FIELD(FSELCheckboxTheme, unchecked),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, checked),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, cornerRadius),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, size),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, iconSize),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, cursor),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, borderWidth),
+				  FLOWUI_DEV_FIELD(FSELCheckboxTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELSwitchStateTheme, FLOWUI_DEV_FIELD(FSELSwitchStateTheme, trackColor),
+				  FLOWUI_DEV_FIELD(FSELSwitchStateTheme, trackBorderColor),
+				  FLOWUI_DEV_FIELD(FSELSwitchStateTheme, knobColor),
+				  FLOWUI_DEV_FIELD(FSELSwitchStateTheme, knobBorderColor))
+
+FLOWUI_DEV_SCHEMA(FSELSwitchValueTheme, FLOWUI_DEV_FIELD(FSELSwitchValueTheme, idle),
+				  FLOWUI_DEV_FIELD(FSELSwitchValueTheme, hovered),
+				  FLOWUI_DEV_FIELD(FSELSwitchValueTheme, pressed),
+				  FLOWUI_DEV_FIELD(FSELSwitchValueTheme, disabled))
+
+FLOWUI_DEV_SCHEMA(
+	FSELSwitchTheme, FLOWUI_DEV_FIELD(FSELSwitchTheme, off), FLOWUI_DEV_FIELD(FSELSwitchTheme, on),
+	FLOWUI_DEV_FIELD(FSELSwitchTheme, trackWidth), FLOWUI_DEV_FIELD(FSELSwitchTheme, trackHeight),
+	FLOWUI_DEV_FIELD(FSELSwitchTheme, roundness), FLOWUI_DEV_FIELD(FSELSwitchTheme, cursor),
+	FLOWUI_DEV_FIELD(FSELSwitchTheme, trackBorderWidth),
+	FLOWUI_DEV_FIELD(FSELSwitchTheme, knobBorderWidth),
+	FLOWUI_DEV_FIELD(FSELSwitchTheme, knobInset), FLOWUI_DEV_FIELD(FSELSwitchTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELSliderStateTheme, FLOWUI_DEV_FIELD(FSELSliderStateTheme, trackColor),
+				  FLOWUI_DEV_FIELD(FSELSliderStateTheme, trackBorderColor),
+				  FLOWUI_DEV_FIELD(FSELSliderStateTheme, fillColor),
+				  FLOWUI_DEV_FIELD(FSELSliderStateTheme, fillBorderColor),
+				  FLOWUI_DEV_FIELD(FSELSliderStateTheme, thumbColor),
+				  FLOWUI_DEV_FIELD(FSELSliderStateTheme, thumbBorderColor))
+
+FLOWUI_DEV_SCHEMA(FSELSliderTheme, FLOWUI_DEV_FIELD(FSELSliderTheme, idle),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, hovered),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, dragging),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, disabled),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, length),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, hitThickness),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, trackThickness),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, thumbLength),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, thumbThickness),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, trackRoundness),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, thumbRoundness),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, trackBorderWidth),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, fillBorderWidth),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, thumbBorderWidth),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, cursor),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, draggingCursor),
+				  FLOWUI_DEV_FIELD(FSELSliderTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELProgressBarTheme, FLOWUI_DEV_FIELD(FSELProgressBarTheme, baseColor),
+				  FLOWUI_DEV_FIELD(FSELProgressBarTheme, borderColor),
+				  FLOWUI_DEV_FIELD(FSELProgressBarTheme, fillColor),
+				  FLOWUI_DEV_FIELD(FSELProgressBarTheme, length),
+				  FLOWUI_DEV_FIELD(FSELProgressBarTheme, thickness),
+				  FLOWUI_DEV_FIELD(FSELProgressBarTheme, borderWidth),
+				  FLOWUI_DEV_FIELD(FSELProgressBarTheme, cornerRadius))
+
+FLOWUI_DEV_SCHEMA(
+	FSELLabelTheme, FLOWUI_DEV_FIELD(FSELLabelTheme, textColor),
+	FLOWUI_DEV_FIELD(FSELLabelTheme, fontFamily,
+					 FlowUi::devMode::DevFieldOptions{}
+						 .withEditor(FlowUi::devMode::DevEditorKind::FontChoice)
+						 .withChoiceDomain(FlowUi::devMode::DevChoiceDomain::FontFamily)),
+	FLOWUI_DEV_FIELD(FSELLabelTheme, fontWeight), FLOWUI_DEV_FIELD(FSELLabelTheme, fontStyle),
+	FLOWUI_DEV_FIELD(FSELLabelTheme, fontSize), FLOWUI_DEV_FIELD(FSELLabelTheme, letterSpacing),
+	FLOWUI_DEV_FIELD(FSELLabelTheme, wrapMode), FLOWUI_DEV_FIELD(FSELLabelTheme, textAlignment))
+
+FLOWUI_DEV_SCHEMA(FSELTextFieldStateTheme,
+				  FLOWUI_DEV_FIELD(FSELTextFieldStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELTextFieldStateTheme, textColor),
+				  FLOWUI_DEV_FIELD(FSELTextFieldStateTheme, placeholderColor),
+				  FLOWUI_DEV_FIELD(FSELTextFieldStateTheme, borderColor))
+
+FLOWUI_DEV_SCHEMA(
+	FSELTextFieldTheme, FLOWUI_DEV_FIELD(FSELTextFieldTheme, overlayStyle),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, fontFamily,
+					 FlowUi::devMode::DevFieldOptions{}
+						 .withEditor(FlowUi::devMode::DevEditorKind::FontChoice)
+						 .withChoiceDomain(FlowUi::devMode::DevChoiceDomain::FontFamily)),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, idle), FLOWUI_DEV_FIELD(FSELTextFieldTheme, hovered),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, focused), FLOWUI_DEV_FIELD(FSELTextFieldTheme, readOnly),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, invalid), FLOWUI_DEV_FIELD(FSELTextFieldTheme, disabled),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, cornerRadius), FLOWUI_DEV_FIELD(FSELTextFieldTheme, width),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, height), FLOWUI_DEV_FIELD(FSELTextFieldTheme, fontWeight),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, fontStyle), FLOWUI_DEV_FIELD(FSELTextFieldTheme, cursor),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, borderWidth),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, padding), FLOWUI_DEV_FIELD(FSELTextFieldTheme, fontSize),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, letterSpacing),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, tabWidth),
+	FLOWUI_DEV_FIELD(FSELTextFieldTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELNumberInputStepButtonStateTheme,
+				  FLOWUI_DEV_FIELD(FSELNumberInputStepButtonStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELNumberInputStepButtonStateTheme, foregroundColor))
+
+FLOWUI_DEV_SCHEMA(FSELNumberInputTheme, FLOWUI_DEV_FIELD(FSELNumberInputTheme, field),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepIdle),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepHovered),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepPressed),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepDisabled),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepSeparatorColor),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepButtonWidth),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepIconSize),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepTextSize),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepCursor),
+				  FLOWUI_DEV_FIELD(FSELNumberInputTheme, stepCursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELDragValueTheme, FLOWUI_DEV_FIELD(FSELDragValueTheme, field),
+				  FLOWUI_DEV_FIELD(FSELDragValueTheme, dragging),
+				  FLOWUI_DEV_FIELD(FSELDragValueTheme, dragCursor),
+				  FLOWUI_DEV_FIELD(FSELDragValueTheme, editCursor),
+				  FLOWUI_DEV_FIELD(FSELDragValueTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(FSELSelectableSurfaceStateTheme,
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceStateTheme, borderColor))
+
+FLOWUI_DEV_SCHEMA(FSELSelectableSurfaceTheme, FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, idle),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, hovered),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, pressed),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, selected),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, disabled),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, selectedDisabled),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, padding),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, childAlignment),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, layoutDirection),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, contentGap),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, borderWidth),
+				  FLOWUI_DEV_FIELD(FSELSelectableSurfaceTheme, cornerRadius))
+
+FLOWUI_DEV_SCHEMA(FSELComboBoxStateTheme, FLOWUI_DEV_FIELD(FSELComboBoxStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELComboBoxStateTheme, textColor),
+				  FLOWUI_DEV_FIELD(FSELComboBoxStateTheme, iconColor),
+				  FLOWUI_DEV_FIELD(FSELComboBoxStateTheme, borderColor))
+
+FLOWUI_DEV_SCHEMA(FSELComboBoxOptionStateTheme,
+				  FLOWUI_DEV_FIELD(FSELComboBoxOptionStateTheme, backgroundColor),
+				  FLOWUI_DEV_FIELD(FSELComboBoxOptionStateTheme, textColor),
+				  FLOWUI_DEV_FIELD(FSELComboBoxOptionStateTheme, iconColor))
+
+FLOWUI_DEV_SCHEMA(
+	FSELComboBoxTheme,
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, fontFamily,
+					 FlowUi::devMode::DevFieldOptions{}
+						 .withEditor(FlowUi::devMode::DevEditorKind::FontChoice)
+						 .withChoiceDomain(FlowUi::devMode::DevChoiceDomain::FontFamily)),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, idle), FLOWUI_DEV_FIELD(FSELComboBoxTheme, hovered),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, open), FLOWUI_DEV_FIELD(FSELComboBoxTheme, disabled),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionIdle),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionHovered),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionPressed),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionSelected),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionDisabled),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, placeholderColor),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, scrollTrackColor),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, scrollThumbColor),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, cornerRadius), FLOWUI_DEV_FIELD(FSELComboBoxTheme, width),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, height),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, popupMaxHeight),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionHeight),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, iconSize),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, scrollTrackWidth),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, scrollThumbMinimum),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, fontWeight), FLOWUI_DEV_FIELD(FSELComboBoxTheme, fontStyle),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, cursor), FLOWUI_DEV_FIELD(FSELComboBoxTheme, borderWidth),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, triggerPadding),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionPadding),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, contentGap), FLOWUI_DEV_FIELD(FSELComboBoxTheme, optionGap),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, popupGap), FLOWUI_DEV_FIELD(FSELComboBoxTheme, scrollGap),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, fontSize),
+	FLOWUI_DEV_FIELD(FSELComboBoxTheme, cursorPriority))
+
+FLOWUI_DEV_SCHEMA(
+	FSELTheme, FLOWUI_DEV_FIELD(FSELTheme, boxTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, splitterHandleTheme), FLOWUI_DEV_FIELD(FSELTheme, buttonTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, checkboxTheme), FLOWUI_DEV_FIELD(FSELTheme, switchTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, sliderTheme), FLOWUI_DEV_FIELD(FSELTheme, progressBarTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, labelTheme), FLOWUI_DEV_FIELD(FSELTheme, textInputTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, numberInputTheme), FLOWUI_DEV_FIELD(FSELTheme, dragValueTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, textAreaTheme), FLOWUI_DEV_FIELD(FSELTheme, selectableSurfaceTheme),
+	FLOWUI_DEV_FIELD(FSELTheme, popupSurfaceTheme), FLOWUI_DEV_FIELD(FSELTheme, comboBoxTheme))
+#endif
 
 } // namespace FlowUi::FSEL

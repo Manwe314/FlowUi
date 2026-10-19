@@ -1627,7 +1627,8 @@ struct App::Impl {
 				window.memory_history_controller =
 					std::make_unique<devSystems::interface_elements::DevMemoryHistoryController>();
 			window.ui.memory_history_controller_ = window.memory_history_controller.get();
-			window.memory_history_controller->begin_frame(window.viewPorts);
+			window.memory_history_controller->begin_frame(window.viewPorts, window.renderer,
+														  storageSystem->completedSerial());
 			if (!window.timeline_controller)
 				window.timeline_controller =
 					std::make_unique<devSystems::interface_elements::DevTimelineController>();
@@ -1877,7 +1878,11 @@ struct App::Impl {
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 			if (window.memory_history_controller)
-				window.memory_history_controller->prepare();
+				window.memory_history_controller->prepare(
+					window.fontFrameView,
+					std::max(0.01f, window.config.ui.fontScale) *
+						std::max(1.0f, window.config.ui.dpi) / 72.0f,
+					window.frames.currentFrame);
 			if (window.timeline_controller)
 				window.timeline_controller->prepare(window.fontFrameView,
 													std::max(0.01f, window.config.ui.fontScale) *
@@ -2173,7 +2178,7 @@ struct App::Impl {
 		}
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 		if (window.memory_history_controller)
-			window.memory_history_controller->submitted();
+			window.memory_history_controller->submitted(frame.storageSubmission.serial);
 		if (window.timeline_controller)
 			window.timeline_controller->submitted(frame.storageSubmission.serial);
 #endif

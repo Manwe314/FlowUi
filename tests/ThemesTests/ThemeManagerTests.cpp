@@ -188,6 +188,45 @@ void testFlowUiThemeDefaultRegistration(FlowUi::test::HeadlessVulkanFixture& vul
 }
 
 #if FLOW_UI_DEV_MODE
+void testPreBakeBaselines(FlowUi::test::HeadlessVulkanFixture& vulkan) {
+	using namespace FlowUi;
+	struct alignas(64) OwnedTheme {
+		std::string label;
+		float radius;
+	};
+	detail::storage::FlowStorageSystem storage(vulkan.context());
+	storage.initialize({});
+	detail::manager_storage::ThemeStorageController controller;
+	controller.init(storage);
+	const OwnedTheme authored{"authored-owned-string", 4};
+	const OwnedTheme startup{"baked-owned-string", 12};
+	(void)controller.registerThemeVariant<OwnedTheme>(controller.internString("default"), startup,
+													  true, &authored);
+	struct Context {
+		bool checked = false;
+		bool correct = false;
+	} context;
+	const auto visitor =
+		[](void* data,
+		   const detail::manager_storage::ThemeStorageController::DevPayloadView& view) noexcept {
+			auto& context = *static_cast<Context*>(data);
+			const auto* authored = static_cast<const OwnedTheme*>(view.authored);
+			const auto* startup = static_cast<const OwnedTheme*>(view.startup);
+			const auto* live = static_cast<const OwnedTheme*>(view.payload);
+			context.checked = true;
+			context.correct =
+				authored && startup && live && authored->label == "authored-owned-string" &&
+				authored->radius == 4 && startup->label == "baked-owned-string" &&
+				startup->radius == 12 && live->radius == 12 &&
+				reinterpret_cast<std::uintptr_t>(authored) % alignof(OwnedTheme) == 0 &&
+				reinterpret_cast<std::uintptr_t>(startup) % alignof(OwnedTheme) == 0;
+			return true;
+		};
+	FLOWUI_CHECK(controller.visitDevPayloads(&context, visitor));
+	FLOWUI_CHECK(context.checked && context.correct);
+	controller.shutdown();
+}
+
 void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	using namespace FlowUi;
 	using namespace FlowUi::devSystems::tooling;
@@ -302,6 +341,7 @@ int main() {
 		runner.run("staged frame boundary theme mutations", [&] { testStagedMutations(vulkan); });
 		runner.run("built-in FlowUiTheme dark/light variants", [&] { testFlowUiThemeDefaultRegistration(vulkan); });
 #if FLOW_UI_DEV_MODE
+		runner.run("typed pre-bake theme baselines", [&] { testPreBakeBaselines(vulkan); });
 		runner.run("developer theme override and capture", [&] {
 			testDevThemeOverrideAndCapture(vulkan);
 		});

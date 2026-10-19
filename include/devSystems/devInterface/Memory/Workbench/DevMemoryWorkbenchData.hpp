@@ -22,44 +22,65 @@ struct MemoryWorkbenchTrack {
 };
 /** Pixel envelope of one actual source, never a sum of independent maxima. */
 struct MemoryHistoryColumn {
-	uint64_t active_min = UINT64_MAX, active_max = 0, backing_max = 0;
+	uint64_t active_first = 0, active_last = 0, backing_first = 0, backing_last = 0;
+	uint64_t active_min = UINT64_MAX, active_max = 0, backing_min = UINT64_MAX, backing_max = 0;
 	uint64_t epoch = 0, sequence = 0, first_ns = 0, last_ns = 0;
 	MemorySampleFlag flags = MemorySampleFlag::None;
 	uint16_t value_fields = 0;
-	bool available = false, mixed_epochs = false;
+	bool available = false, mixed_epochs = false, gap = false;
+};
+/** Exact endpoint evidence; invalid endpoints are never replaced with invented zeros. */
+struct MemoryHistoryRangeSummary {
+	uint64_t duration_ns = 0, active_before = 0, active_after = 0;
+	uint64_t backing_before = 0, backing_after = 0;
+	uint64_t before_epoch = 0, after_epoch = 0, covered_until_ns = 0;
+	uint16_t before_fields = 0, after_fields = 0;
+	bool valid = false, incomplete = false;
+};
+/** Persistent lane configuration. UINT64_MAX follows the workbench selector. */
+struct MemoryHistoryLaneSettings {
+	MemorySourceKey selected_key{};
+	uint64_t scope = UINT64_MAX, source_index = 0, metric = 0;
+	uint64_t resolved_scope = UINT64_MAX, applied_source_index = UINT64_MAX;
 };
 struct MemoryHistoryLane {
 	std::string label{};
 	MemorySourceKey key{};
-	std::vector<MemoryHistoryColumn> columns{};
+	std::vector<MemoryHistoryColumn> columns{}, overview{};
+	std::vector<MemoryOperationRecord> events{};
+	MemoryHistoryRangeSummary range{};
+	MemoryValueSample point{};
+	uint64_t point_ns = 0;
+	uint64_t metric = 0;
 	uint64_t scale = 1;
-	bool independent = false;
+	bool independent = false, point_available = false;
 };
 /** Persistent presentation state; inspection is independent of live collection. */
 struct DevMemoryWorkbenchState {
 	MemoryAnalysisState analysis{};
 	std::vector<MemoryWorkbenchTrack> tracks{};
 	std::vector<MemoryHistoryLane> lanes{}, all_lanes{};
-	std::vector<FSEL::ComboBoxOption> lane_options{};
 	std::optional<MemoryDataset> held_data{};
-	std::array<uint64_t, 3> comparison_indices{0, 1, 2};
-	std::string message{}, tooltip{}, statistics_label{}, viewport_error{}, live_summary{};
+	std::vector<RetainedMemoryEvent> held_events{};
+	std::array<MemoryHistoryLaneSettings, 3> lane_settings{};
+	std::array<std::vector<MemoryHistoryLane>, 3> lane_sources{};
+	std::array<std::vector<FSEL::ComboBoxOption>, 3> source_options{};
+	std::array<uint64_t, 3> history_scales{1, 1, 1}, scale_changed_ns{};
+	uint64_t lane_count = 1;
+	bool history_settings_open = false, history_window_open = false;
+	std::string message{}, tooltip{}, viewport_error{}, live_summary{};
 	uint64_t scope = UINT64_MAX, window = UINT64_MAX, focus = 0;
 	uint64_t scale_bytes = 1, history_scale_bytes = 1, shrink_since_ns = 0;
 	uint64_t next_live_ns = 0, next_history_ns = 0, history_reads = 0, layout_revision = 0;
 	uint64_t view_begin_ns = 0, view_end_ns = 0, duration_ns = 30'000'000'000ull;
+	uint64_t hovered_ns = 0, inspected_lane = 0;
 	uint64_t selected_ns = 0, history_revision = 0, range_begin_ns = 0, range_end_ns = 0;
 	bool decimal = false, expanded = false, following = true, fit_pending = false,
 		 externally_paused = false;
 	uint64_t units_choice = 0;
-	uint64_t gesture_mode = 0, history_metric = 0, series_index = 0, history_mode = 0,
-			 scale_mode = 0;
 	uint64_t retained_begin_ns = 0, retained_end_ns = 0;
 	uint64_t duration_choice = 2, previous_duration_choice = 2;
 	uint64_t history_settings_key = UINT64_MAX;
-	double navigator_applied = 1;
-	double navigator = 1, manual_scale = 1;
-	bool show_backing = true;
 	uint32_t pending_action = 0;
 };
 /** Byte formatting shared by ruler, tracks and history. */

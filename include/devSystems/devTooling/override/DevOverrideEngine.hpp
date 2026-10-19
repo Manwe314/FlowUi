@@ -26,8 +26,11 @@ namespace FlowUi::devSystems::tooling {
 class DevOverrideEngine {
 public:
 	struct ThemeBakeRecord {
+		std::vector<std::pair<std::string, DevOwnedValue>> variant_originals{};
 		DevOwnedValue original{};
+		DevOwnedValue authored{};
 		DevOwnedValue value{};
+		DevOwnedValue preview_value{};
 		DevThemeOverrideTarget target{};
 		DevOverrideFieldKey field{};
 		std::vector<const devMode::DevFieldOps*> ownerPath{};
@@ -35,6 +38,8 @@ public:
 		devMode::DevFieldIndex fieldIndex{};
 		bool schemaValid = false;
 		bool dirty = false;
+		bool preview_only = false;
+		bool remove_baked = false;
 	};
 
 	explicit DevOverrideEngine(
@@ -112,6 +117,8 @@ private:
 		devMode::DevFieldIndex index{};
 		std::vector<const devMode::DevFieldOps*> ownerPath{};
 		DevOwnedValue originalThemeValue{};
+		DevOwnedValue authoredThemeValue{};
+		std::vector<std::pair<std::string, DevOwnedValue>> variant_originals{};
 	};
 	void syncSchema();
 	[[nodiscard]] DevCommandStatus validate(
@@ -134,11 +141,11 @@ private:
 	[[nodiscard]] bool themeVariantExists(
 		const ThemeManager& themes,
 		const DevThemeOverrideTarget& target) const noexcept;
-	[[nodiscard]] bool captureOriginalThemeField(
-		const ThemeManager& themes,
-		const DevThemeOverrideTarget& target,
-		const ResolvedField& field,
-		DevOwnedValue& destination) const noexcept;
+	[[nodiscard]] bool captureOriginalThemeField(const ThemeManager& themes,
+												 const DevThemeOverrideTarget& target,
+												 const ResolvedField& field,
+												 DevOwnedValue& destination,
+												 bool authored = false) const noexcept;
 	[[nodiscard]] static bool themeFieldIsOverridden(
 		const void* owner,
 		devMode::DevTypeId themeType,

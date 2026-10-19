@@ -136,6 +136,7 @@ enum class DevOverrideCommandKind : std::uint8_t {
 	EndBatchDrag,
 	SetThemeField,
 	ClearThemeField,
+	ResetThemeField,
 };
 
 struct DevOverrideCommand {

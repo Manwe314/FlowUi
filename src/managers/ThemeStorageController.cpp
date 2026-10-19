@@ -128,6 +128,50 @@ void ThemeStorageController::applyStagedMutations() {
 }
 
 #if FLOW_UI_DEV_MODE
+bool ThemeStorageController::clone_dev_variant(std::uint64_t type, std::string_view source,
+											   std::string_view destination) {
+	if (destination.empty() || destination == "*")
+		return false;
+	const auto source_id = internString(source);
+	const auto destination_id = internString(destination);
+	decltype(TypeRegistrationRecord::clone_variant) clone = nullptr;
+	{
+		std::lock_guard lock(mutex_);
+		const auto found = typeRegistry_.find(type);
+		if (found == typeRegistry_.end() || !found->second.variants.contains(source_id) ||
+			found->second.variants.contains(destination_id))
+			return false;
+		clone = found->second.clone_variant;
+	}
+	if (!clone)
+		return false;
+	(void)clone(*this, source_id, destination_id);
+	storage_->noteManagerMutation(InvalidWindowId);
+	return true;
+}
+
+bool ThemeStorageController::set_dev_active_variant(std::uint64_t type,
+													std::string_view variant) noexcept {
+	try {
+		std::lock_guard lock(mutex_);
+		if (!storage_)
+			return false;
+		const auto found = typeRegistry_.find(type);
+		if (found == typeRegistry_.end())
+			return false;
+		for (const auto& [variant_id, registration] : found->second.variants) {
+			if (storage_->string(variant_id) != variant)
+				continue;
+			found->second.activeVariantNameId = variant_id;
+			storage_->noteManagerMutation(InvalidWindowId);
+			return true;
+		}
+	} catch (...) {
+		return false;
+	}
+	return false;
+}
+
 bool ThemeStorageController::visitDevPayloads(
 	void* userData,
 	DevPayloadVisitor visitor) const noexcept {
@@ -142,15 +186,20 @@ bool ThemeStorageController::visitDevPayloads(
 				if (!rawRecord) continue;
 				const auto* header =
 					reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
-				if (!visitor(userData, DevPayloadView{
-					.type = typeHash,
-					.typeName = storage_->string(type.typeNameId),
-					.variant = storage_->string(variantId),
-					.payload = header->payload(),
-					.payloadSize = header->dataSize,
-					.revision = header->revision,
-					.active = type.activeVariantNameId == variantId,
-				})) return false;
+				if (!visitor(
+						userData,
+						DevPayloadView{
+							.type = typeHash,
+							.typeName = storage_->string(type.typeNameId),
+							.variant = storage_->string(variantId),
+							.payload = header->payload(),
+							.authored = variant.authored ? variant.authored->payload() : nullptr,
+							.startup = variant.startup ? variant.startup->payload() : nullptr,
+							.payloadSize = header->dataSize,
+							.revision = header->revision,
+							.active = type.activeVariantNameId == variantId,
+						}))
+					return false;
 			}
 		}
 		return true;
@@ -182,8 +231,10 @@ devMode::DevValueOperationStatus ThemeStorageController::assignDevField(
 		if (!storage_) return devMode::DevValueOperationStatus::NullDestination;
 		const auto typeIt = typeRegistry_.find(type);
 		if (typeIt == typeRegistry_.end()) return devMode::DevValueOperationStatus::Unsupported;
+		bool assigned = false;
 		for (const auto& [variantId, registration] : typeIt->second.variants) {
-			if (storage_->string(variantId) != variant) continue;
+			if (variant != "*" && storage_->string(variantId) != variant)
+				continue;
 			void* rawRecord = storage_->managerRecordData(
 				registration.handle, storage::ResourceKind::UiTheme);
 			if (!rawRecord) return devMode::DevValueOperationStatus::NullDestination;
@@ -199,9 +250,12 @@ devMode::DevValueOperationStatus ThemeStorageController::assignDevField(
 				++header->revision;
 				storage_->noteManagerMutation(InvalidWindowId);
 			}
-			return status;
+			if (status != devMode::DevValueOperationStatus::Success)
+				return status;
+			assigned = true;
 		}
-		return devMode::DevValueOperationStatus::Unsupported;
+		return assigned ? devMode::DevValueOperationStatus::Success
+						: devMode::DevValueOperationStatus::Unsupported;
 	} catch (...) {
 		return devMode::DevValueOperationStatus::Failed;
 	}

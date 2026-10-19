@@ -1,6 +1,7 @@
 #include "devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp"
 
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -23,6 +24,15 @@ std::string_view localDebugName(std::string_view name) {
 } // namespace
 
 void DevInspectInspector::buildElement(BuildContext& context) {
+	if (context.params.interfaceState &&
+		context.params.interfaceState->inspectForest == kDevInterfaceThemeForest) {
+		context.uiManager.createElement(kDevThemeInspector, "themes")
+			.setParameters(context.params)
+			.setDevInternalCapture(true)
+			.draw();
+		return;
+	}
+
 	DevInterfaceState* state = context.params.interfaceState;
 
 	if (state && state->inspectSelectedNodeKind == kDevInterfaceClayNodeKind &&

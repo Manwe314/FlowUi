@@ -50,14 +50,16 @@ bool visitDevThemePayload(
 	const detail::manager_storage::ThemeStorageController::DevPayloadView& view) noexcept {
 	auto& bridge = *static_cast<DevThemeVisitBridge*>(userData);
 	return bridge.visitor(bridge.userData, ThemeManager::DevThemePayloadView{
-		.type = view.type,
-		.typeName = view.typeName,
-		.variant = view.variant,
-		.payload = view.payload,
-		.payloadSize = view.payloadSize,
-		.revision = view.revision,
-		.active = view.active,
-	});
+											   .type = view.type,
+											   .typeName = view.typeName,
+											   .variant = view.variant,
+											   .payload = view.payload,
+											   .authored = view.authored,
+											   .startup = view.startup,
+											   .payloadSize = view.payloadSize,
+											   .revision = view.revision,
+											   .active = view.active,
+										   });
 }
 } // namespace
 
@@ -67,6 +69,35 @@ bool ThemeManager::visitDevThemePayloads(
 	if (!controller_ || !visitor) return false;
 	DevThemeVisitBridge bridge{.userData = userData, .visitor = visitor};
 	return controller_->visitDevPayloads(&bridge, &visitDevThemePayload);
+}
+
+Status ThemeManager::clone_dev_variant(devMode::DevTypeId type, std::string_view source,
+									   std::string_view destination) noexcept {
+	if (!controller_)
+		return unexpectedError(
+			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
+	try {
+		if (controller_->clone_dev_variant(type, source, destination))
+			return {};
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(
+			makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeRegisterVariant));
+	}
+	return unexpectedError(
+		makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeRegisterVariant));
+}
+
+Status ThemeManager::set_dev_active_variant(devMode::DevTypeId type,
+											std::string_view variant) noexcept {
+	if (!controller_)
+		return unexpectedError(
+			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeSetActiveVariant));
+	if (!controller_->set_dev_active_variant(type, variant))
+		return unexpectedError(
+			makeError(ErrorCode::ThemeVariantNotFound, ErrorSite::ThemeSetActiveVariant));
+	return {};
 }
 
 std::uint64_t ThemeManager::devRevision() const noexcept {

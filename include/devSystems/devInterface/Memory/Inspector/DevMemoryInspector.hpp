@@ -11,7 +11,13 @@
 
 namespace FlowUi::devSystems::interface_elements {
 
+/** Persistent presentation state for the Memory inspector sections. */
+struct DevMemoryInspectorState {
+	bool capacity_tuning_expanded = true, capacity_scope_settings_expanded = true;
+};
+
 struct DevMemoryInspector {
+	using State = DevMemoryInspectorState;
 	using Parameters = DevMemoryContentParameters;
 	using BuildContext = ElementBuildContext<DevMemoryInspector>;
 

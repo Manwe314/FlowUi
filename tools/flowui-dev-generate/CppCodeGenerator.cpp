@@ -185,7 +185,12 @@ bool generateCpp(
 		"\tvoid* themeDraft) noexcept {\n\tif (!themeDraft) return;\n\tswitch (themeType) {\n";
 	for (const auto& [type, group] : themes) {
 		source << "\tcase " << hexLiteral(type) << ": {\n\t\tauto& p = *static_cast<" << group.owner << "*>(themeDraft);\n";
+		const auto general = group.variants.find("*");
+		if (general != group.variants.end())
+			emitAssignments(source, general->second, "\t\t");
 		for (const auto& [variant, entries] : group.variants) {
+			if (variant == "*")
+				continue;
 			source << "\t\tif (variant == \"" << escaped(variant) << "\") {\n";
 			emitAssignments(source, entries, "\t\t\t");
 			source << "\t\t\treturn;\n\t\t}\n";
