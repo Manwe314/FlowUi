@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <mutex>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -49,6 +50,12 @@ public:
 		T& value = values_[(sequence - 1u) % values_.size()];
 		return value.sequence == sequence ? &value : nullptr;
 	}
+	const T* retained(uint64_t sequence) const noexcept {
+		if (!sequence || !count_ || sequence < oldest() || sequence >= next_)
+			return nullptr;
+		const auto& value = values_[(sequence - 1) % values_.size()];
+		return value.sequence == sequence ? &value : nullptr;
+	}
 	uint64_t oldest() const noexcept { return count_ == 0u ? 0u : next_ - count_; }
 	MemoryRetentionStatus status() const noexcept {
 		return {.retainedCount = count_, .capacity = values_.size(),
@@ -73,7 +80,7 @@ public:
 	}
 	std::vector<T> snapshot() const {
 		std::vector<T> result; result.reserve(count_);
-		for (uint64_t sequence = oldest(); sequence < next_; ++sequence) {
+		for (uint64_t sequence = oldest(); count_ && sequence < next_; ++sequence) {
 			const T& value = values_[(sequence - 1u) % values_.size()];
 			if (value.sequence == sequence) result.push_back(value);
 		}
@@ -82,6 +89,201 @@ public:
 private:
 	std::vector<T> values_{};
 	uint64_t count_ = 0u, next_ = 1u, overwritten_ = 0u;
+};
+
+/** Intrusive sequence chains share the authoritative event ring; eviction removes only heads. */
+class MemoryEventIndex {
+	struct Chain {
+		uint64_t first = 0, last = 0, count = 0;
+	};
+	struct FrameHash {
+		[[nodiscard]] size_t operator()(WindowFrameKey frame) const noexcept {
+			return size_t(frame.window ^ (frame.frameNumber + 0x9e3779b97f4a7c15ull +
+										  (frame.window << 6) + (frame.window >> 2)));
+		}
+	};
+	using ScalarIndex = std::unordered_map<uint64_t, Chain>;
+	std::vector<std::array<uint64_t, 5>> next_{};
+	ScalarIndex sources_{}, lifetimes_{}, submissions_{}, ticks_{};
+	std::unordered_map<WindowFrameKey, Chain, FrameHash> frames_{};
+	template <class Index, class Key>
+	void remove(Index& index, Key key, uint64_t sequence, size_t column) {
+		const auto found = index.find(key);
+		if (found == index.end())
+			return;
+		auto& chain = found->second;
+		if (chain.first != sequence)
+			return;
+		chain.first = next_[(sequence - 1) % next_.size()][column];
+		if (!--chain.count)
+			index.erase(found);
+	}
+	template <class Index, class Key>
+	void insert(Index& index, Key key, uint64_t sequence, size_t column) {
+		auto& chain = index[key];
+		if (chain.last)
+			next_[(chain.last - 1) % next_.size()][column] = sequence;
+		else
+			chain.first = sequence;
+		chain.last = sequence;
+		++chain.count;
+	}
+	template <class Index, class Key>
+	[[nodiscard]] static Chain lookup(const Index& index, Key key) noexcept {
+		const auto found = index.find(key);
+		return found == index.end() ? Chain{} : found->second;
+	}
+	void select_chain(Chain chain, size_t column, uint64_t timestamp,
+					  const SequenceRing<RetainedMemoryEvent>& events, uint64_t& first,
+					  uint64_t& preceding, MemoryCorrelationWork& work) const noexcept {
+		for (auto sequence = chain.first; sequence;) {
+			const auto* event = events.retained(sequence);
+			if (!event)
+				break;
+			++work.event_candidates;
+			if (!first || sequence < first)
+				first = sequence;
+			if (event->operation.timestampNs <= timestamp && sequence > preceding)
+				preceding = sequence;
+			sequence = next_[(sequence - 1) % next_.size()][column];
+		}
+	}
+
+public:
+	bool valid = false;
+	void reset(size_t capacity) {
+		valid = false;
+		const bool shrinking = capacity < next_.size();
+		if (capacity != next_.size())
+			std::vector<std::array<uint64_t, 5>>(capacity).swap(next_);
+		else
+			std::fill(next_.begin(), next_.end(), std::array<uint64_t, 5>{});
+		sources_.clear();
+		lifetimes_.clear();
+		submissions_.clear();
+		frames_.clear();
+		ticks_.clear();
+		if (shrinking) {
+			sources_.rehash(0);
+			lifetimes_.rehash(0);
+			submissions_.rehash(0);
+			frames_.rehash(0);
+			ticks_.rehash(0);
+		}
+		valid = true;
+	}
+	void erase(const RetainedMemoryEvent& event) {
+		const auto& operation = event.operation;
+		if (operation.source)
+			remove(sources_, operation.source, event.sequence, 0);
+		if (operation.lifetime)
+			remove(lifetimes_, operation.lifetime, event.sequence, 1);
+		if (operation.submissionSerial)
+			remove(submissions_, operation.submissionSerial, event.sequence, 2);
+		if (operation.frame)
+			remove(frames_, operation.frame, event.sequence, 3);
+		remove(ticks_, operation.appTick, event.sequence, 4);
+	}
+	void append(const RetainedMemoryEvent& event) {
+		next_[(event.sequence - 1) % next_.size()] = {};
+		const auto& operation = event.operation;
+		if (operation.source)
+			insert(sources_, operation.source, event.sequence, 0);
+		if (operation.lifetime)
+			insert(lifetimes_, operation.lifetime, event.sequence, 1);
+		if (operation.submissionSerial)
+			insert(submissions_, operation.submissionSerial, event.sequence, 2);
+		if (operation.frame)
+			insert(frames_, operation.frame, event.sequence, 3);
+		insert(ticks_, operation.appTick, event.sequence, 4);
+	}
+	void rebuild(const SequenceRing<RetainedMemoryEvent>& events) {
+		reset(events.status().capacity);
+		valid = false;
+		events.visit([&](const auto& event) { append(event); });
+		valid = true;
+	}
+	[[nodiscard]] std::pair<uint64_t, uint64_t> range_bounds(uint64_t first_tick,
+															 uint64_t last_tick) const noexcept {
+		uint64_t first = 0, last = 0;
+		const auto include = [&](Chain chain) {
+			if (chain.first && (!first || chain.first < first))
+				first = chain.first;
+			last = std::max(last, chain.last);
+		};
+		if (last_tick < first_tick)
+			return {};
+		if (last_tick - first_tick < ticks_.size()) {
+			for (auto tick = first_tick;; ++tick) {
+				include(lookup(ticks_, tick));
+				if (tick == last_tick)
+					break;
+			}
+		} else {
+			for (const auto& [tick, chain] : ticks_)
+				if (tick >= first_tick && tick <= last_tick)
+					include(chain);
+		}
+		return {first, last};
+	}
+	[[nodiscard]] uint64_t estimated_bytes() const noexcept {
+		const auto index_bytes = [](const auto& index) {
+			return index.size() * (sizeof(typename std::decay_t<decltype(index)>::value_type) +
+								   sizeof(void*) * 2) +
+				   index.bucket_count() * sizeof(void*);
+		};
+		return next_.capacity() * sizeof(next_[0]) + index_bytes(sources_) +
+			   index_bytes(lifetimes_) + index_bytes(submissions_) + index_bytes(frames_) +
+			   index_bytes(ticks_);
+	}
+	void correlate(MemoryCorrelationQuery& query, const SequenceRing<RetainedMemoryEvent>& events,
+				   MemoryCorrelationWork& work) const noexcept {
+		if (!valid) {
+			query.result.incomplete = true;
+			return;
+		}
+		uint64_t selected = 0;
+		if (query.subject) {
+			const auto source = lookup(sources_, query.subject).first;
+			const auto lifetime = lookup(lifetimes_, query.subject).first;
+			selected = source && lifetime ? std::min(source, lifetime) : std::max(source, lifetime);
+		}
+		if (selected) {
+			++work.event_candidates;
+			query.result.match = MemoryCorrelationMatch::Explicit;
+		} else {
+			const auto submission =
+				query.submission ? lookup(submissions_, query.submission) : Chain{};
+			const auto frame = query.frame ? lookup(frames_, query.frame) : Chain{};
+			uint64_t first = 0, preceding = 0;
+			select_chain(submission, 2, query.timestamp_ns, events, first, preceding, work);
+			select_chain(frame, 3, query.timestamp_ns, events, first, preceding, work);
+			selected = preceding ? preceding : first;
+			if (selected) {
+				const bool ambiguous =
+					submission.count > 1 || frame.count > 1 ||
+					(submission.first && frame.first && submission.first != frame.first);
+				query.result.match = ambiguous ? MemoryCorrelationMatch::Ambiguous
+											   : MemoryCorrelationMatch::SharedContext;
+			} else {
+				select_chain(lookup(ticks_, query.app_tick), 4, query.timestamp_ns, events, first,
+							 preceding, work);
+				selected = preceding ? preceding : first;
+				if (selected)
+					query.result.match = MemoryCorrelationMatch::TemporalNearby;
+			}
+		}
+		if (const auto* event = events.retained(selected)) {
+			query.result.event_sequence = event->sequence;
+			query.result.source = event->operation.source;
+			query.result.operation = event->operation.operation;
+		} else if (events.status().overwriteCount) {
+			const auto* oldest = events.retained(events.oldest());
+			if (oldest && (query.app_tick < oldest->operation.appTick ||
+						   query.timestamp_ns < oldest->operation.timestampNs))
+				query.result.match = MemoryCorrelationMatch::Evicted;
+		}
+	}
 };
 
 bool equalValue(const MemoryValueSample& a, const MemoryValueSample& b) noexcept {
@@ -187,8 +389,12 @@ struct DevMemoryReporting::Impl {
 	explicit Impl(DevMemory& owner, MemoryReportingConfig initial)
 		: memory(&owner), reportingConfig(normalize(initial)),
 		  segments(owner.compiledLevel() == MemoryMonitoringLevel::Disabled ||
-			owner.config().level == MemoryMonitoringLevel::Disabled ? 1u : reportingConfig.segmentCapacity),
-		  events(eventCapacity(reportingConfig)) {}
+						   owner.config().level == MemoryMonitoringLevel::Disabled
+					   ? 1u
+					   : reportingConfig.segmentCapacity),
+		  events(eventCapacity(reportingConfig)) {
+		event_index.reset(events.status().capacity);
+	}
 	static MemoryReportingConfig normalize(MemoryReportingConfig config) noexcept {
 		config.segmentCapacity = std::max(1u, config.segmentCapacity);
 		config.managerSampleEveryTicks = std::max(1u, config.managerSampleEveryTicks);
@@ -219,6 +425,7 @@ struct DevMemoryReporting::Impl {
 	std::unordered_map<MemorySourceKey, MemoryCurrentSource, SourceKeyHash> current{};
 	SequenceRing<MemorySampleSegment> segments;
 	SequenceRing<RetainedMemoryEvent> events;
+	MemoryEventIndex event_index{};
 	std::vector<MemoryCaptureInfo> captures{};
 	MemoryCaptureId nextCapture = 1u;
 	bool forceEnvironmentCheckpoint = true;
@@ -415,8 +622,11 @@ bool DevMemoryReporting::setConfig(const MemoryReportingConfig& config) {
 	}
 	const size_t effectiveEventCapacity = impl_->memory->compiledLevel() == MemoryMonitoringLevel::Disabled
 		? 1u : Impl::eventCapacity(normalized);
-	if (effectiveEventCapacity != impl_->events.status().capacity)
+	if (effectiveEventCapacity != impl_->events.status().capacity ||
+		normalized.retainLifetimeEvents != impl_->reportingConfig.retainLifetimeEvents) {
 		impl_->events.reset(effectiveEventCapacity);
+		impl_->event_index.reset(effectiveEventCapacity);
+	}
 	impl_->status.segments = impl_->segments.status();
 	impl_->status.events = impl_->events.status();
 	impl_->reportingConfig = normalized;
@@ -424,6 +634,7 @@ bool DevMemoryReporting::setConfig(const MemoryReportingConfig& config) {
 	++impl_->status.history_revision;
 	++impl_->status.history_epoch;
 	++impl_->status.history_storage_generation;
+	++impl_->status.correlation_revision;
 	return true;
 }
 MemoryReportingConfig DevMemoryReporting::config() const {
@@ -678,6 +889,8 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 
 		std::scoped_lock lock(impl_->mutex);
 		const auto runtime_level = impl_->memory->config().level;
+		if (!impl_->event_index.valid)
+			impl_->event_index.rebuild(impl_->events);
 		if (runtime_level != impl_->status.runtimeLevel) {
 			for (auto& [key, source] : impl_->current)
 				source.activeSegment = 0;
@@ -691,8 +904,19 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 			impl_->applyOperation(operation, appTick);
 			if (impl_->status.freeze_owner_count)
 				++impl_->status.operations_not_retained;
-			else if (impl_->reportingConfig.retainLifetimeEvents)
-				impl_->events.append(RetainedMemoryEvent{.operation = operation});
+			else if (impl_->reportingConfig.retainLifetimeEvents) {
+				if (!impl_->event_index.valid)
+					impl_->event_index.rebuild(impl_->events);
+				impl_->event_index.valid = false;
+				const auto retention = impl_->events.status();
+				if (retention.retainedCount == retention.capacity)
+					impl_->event_index.erase(
+						*impl_->events.retained(retention.oldestRetainedSequence));
+				const auto& event =
+					impl_->events.append(RetainedMemoryEvent{.operation = operation});
+				impl_->event_index.append(event);
+				impl_->event_index.valid = true;
+			}
 		}
 		for (size_t index = 0u; index < managerSampleCount; ++index) {
 			MemoryValueSample& sample = samples[index];
@@ -777,6 +1001,7 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 			}
 		}
 		impl_->status.lastConsumedAppTick = appTick;
+		++impl_->status.correlation_revision;
 		impl_->status.last_consumed_ns = timestamp;
 		impl_->status.runtimeLevel = impl_->memory->config().level;
 		impl_->status.quality = impl_->memory->qualitySnapshot();
@@ -802,7 +1027,8 @@ void DevMemoryReporting::consume(AppTickId appTick) noexcept {
 		impl_->status.overhead.gpuProbeDurationNs = impl_->environmentSnapshot ? impl_->environmentSnapshot->gpu.sampleDurationNs : 0u;
 		impl_->status.overhead.retainedCapacityBytes =
 			impl_->status.segments.capacity * sizeof(MemorySampleSegment) +
-			impl_->status.events.capacity * sizeof(RetainedMemoryEvent);
+			impl_->status.events.capacity * sizeof(RetainedMemoryEvent) +
+			impl_->event_index.estimated_bytes();
 		impl_->status.overhead.currentTableEstimatedBytes = impl_->current.size() *
 			(sizeof(MemoryCurrentSource) + sizeof(MemorySourceKey) + sizeof(void*) * 3u);
 		impl_->status.overhead.lastConsumeDurationNs = nowNs() - consumeBegin;
@@ -1039,6 +1265,94 @@ MemoryReportingStatus DevMemoryReporting::status() const noexcept { std::scoped_
 std::vector<MemoryCaptureInfo> DevMemoryReporting::captureSnapshot() const { std::scoped_lock lock(impl_->mutex); return impl_->captures; }
 std::vector<MemorySourceDescriptor> DevMemoryReporting::descriptorSnapshot() const { return impl_->memory->descriptorSnapshot(); }
 std::vector<MemoryTuningTargetDescriptor> DevMemoryReporting::tuningTargetSnapshot() const { return impl_->memory->tuningTargetSnapshot(); }
+MemoryCorrelationWork
+DevMemoryReporting::correlate_errors(std::span<MemoryCorrelationQuery> queries) const noexcept {
+	MemoryCorrelationWork work{};
+	if (queries.empty())
+		return work;
+	std::scoped_lock lock(impl_->mutex);
+	for (auto& query : queries) {
+		query.result = {};
+		query.result.storage_revision = impl_->status.storageMutationSequence;
+		query.result.history_generation = impl_->status.history_storage_generation;
+		query.result.consumed_tick = impl_->status.lastConsumedAppTick;
+		query.result.revision = impl_->status.correlation_revision;
+		query.result.event_capture_enabled =
+			impl_->reportingConfig.retainLifetimeEvents &&
+			impl_->status.runtimeLevel != MemoryMonitoringLevel::Disabled;
+		impl_->event_index.correlate(query, impl_->events, work);
+		query.result.incomplete = query.result.incomplete || impl_->status.freeze_owner_count != 0;
+	}
+	// Only read the metadata used by checkpoint eligibility. Do not copy/sort source payloads.
+	for (const auto& [key, source] : impl_->current) {
+		for (auto& query : queries) {
+			++work.source_checks;
+			if (source.lastSampledTick > query.app_tick ||
+				(key.window && query.frame && key.window != query.frame.window))
+				continue;
+			query.result.checkpoint_tick =
+				std::max(query.result.checkpoint_tick, source.lastSampledTick);
+		}
+	}
+	return work;
+}
+
+MemoryEventRead
+DevMemoryReporting::append_event_range(uint64_t generation, uint64_t cursor, AppTickId first_tick,
+									   AppTickId last_tick, size_t maximum_events,
+									   std::vector<RetainedMemoryEvent>& destination) const {
+	std::scoped_lock lock(impl_->mutex);
+	const auto retention = impl_->events.status();
+	MemoryEventRead result{.generation = impl_->status.history_storage_generation,
+						   .cursor = retention.newestRetainedSequence,
+						   .consumed_tick = impl_->status.lastConsumedAppTick};
+	if (generation != UINT64_MAX && generation != result.generation) {
+		result.reset = result.evicted = true;
+		return result;
+	}
+	if (!retention.hasRetained)
+		return result;
+	const auto* oldest = impl_->events.retained(retention.oldestRetainedSequence);
+	result.evicted =
+		retention.overwriteCount && ((cursor && cursor < retention.oldestRetainedSequence - 1) ||
+									 (!cursor && oldest->operation.appTick > first_tick));
+	if (!impl_->event_index.valid) {
+		result.truncated = true;
+		return result;
+	}
+	auto begin =
+		std::max(cursor == UINT64_MAX ? cursor : cursor + 1, retention.oldestRetainedSequence);
+	auto end = retention.newestRetainedSequence;
+	if (!cursor) {
+		const auto bounds = impl_->event_index.range_bounds(first_tick, last_tick);
+		if (!bounds.first)
+			return result;
+		begin = std::max(begin, bounds.first);
+		end = std::min(end, bounds.second);
+	}
+	for (auto sequence = begin; sequence <= end; ++sequence) {
+		const auto* event = impl_->events.retained(sequence);
+		if (!event || event->operation.appTick < first_tick || event->operation.appTick > last_tick)
+			continue;
+		if (destination.size() >= maximum_events) {
+			result.truncated = true;
+			break;
+		}
+		destination.emplace_back(*event);
+		if (sequence == UINT64_MAX)
+			break;
+	}
+	return result;
+}
+
+uint64_t DevMemoryReporting::current_backing_bytes() const noexcept {
+	std::scoped_lock lock(impl_->mutex);
+	uint64_t current = 0;
+	for (const auto& entry : impl_->current)
+		current += entry.second.value.backingAllocatedBytes;
+	return current;
+}
+
 std::vector<MemoryCurrentSource> DevMemoryReporting::currentSourceSnapshot() const {
 	std::scoped_lock lock(impl_->mutex); std::vector<MemoryCurrentSource> result; result.reserve(impl_->current.size());
 	for (const auto& [_, value] : impl_->current) result.push_back(value);

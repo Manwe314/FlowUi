@@ -1400,12 +1400,31 @@ struct App::Impl {
 		requireQuiescent();
 #if FLOW_UI_DEV_MODE
 		{
+			// Reporting closes the previous cadence interval, after its window frames.
+			// Frame teardown clears the recorder context, so restore the owning tick.
+			timingRecorder().setFrameContext({}, appTick);
+			TimingContextExitGuard reporting_context_exit(timingRecorder());
 			FLOWUI_DEV_TIMING_ZONE(
 				timingRecorder(), devSystems::TimingCategory::DevTool,
 				devSystems::TimingZoneRole::DevToolWork, "flowui.dev.reporting.consume");
-			devMonitoring.timingReporting().consumeThrough(appTick);
-			devMonitoring.memoryReporting().consume(appTick);
-			devMonitoring.errorReporting().consumeThrough(appTick);
+			{
+				FLOWUI_DEV_TIMING_ZONE(timingRecorder(), devSystems::TimingCategory::DevTool,
+									   devSystems::TimingZoneRole::DevToolWork,
+									   "flowui.dev.reporting.timing");
+				devMonitoring.timingReporting().consumeThrough(appTick);
+			}
+			{
+				FLOWUI_DEV_TIMING_ZONE(timingRecorder(), devSystems::TimingCategory::DevTool,
+									   devSystems::TimingZoneRole::DevToolWork,
+									   "flowui.dev.reporting.memory");
+				devMonitoring.memoryReporting().consume(appTick);
+			}
+			{
+				FLOWUI_DEV_TIMING_ZONE(timingRecorder(), devSystems::TimingCategory::DevTool,
+									   devSystems::TimingZoneRole::DevToolWork,
+									   "flowui.dev.reporting.errors");
+				devMonitoring.errorReporting().consumeThrough(appTick);
+			}
 		}
 		if (appTick == std::numeric_limits<devSystems::AppTickId>::max()) {
 			detail::terminateForFatalError(makeError(ErrorCode::AppTickSpaceExhausted, ErrorSite::AppPollEvents));

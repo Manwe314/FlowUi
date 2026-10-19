@@ -2,10 +2,13 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "devSystems/devMonitoringAndReporting/reporting/DevReportingRing.hpp"
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <limits>
 #include <mutex>
+#include <unordered_map>
 #include <utility>
 
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
@@ -68,24 +71,306 @@ struct DevErrorReporting::Impl {
 		return config;
 	}
 
-	void refreshRetainedBytes() noexcept {
-		reportingStatus.retainedBytes = 0u;
-		for (const auto& occurrence : occurrences) {
-			reportingStatus.retainedBytes += retainedBytes(occurrence);
+	struct PendingHandle {
+		DevErrorOccurrenceId id = 0;
+		uint64_t admission = 0;
+	};
+	struct PendingState {
+		DevErrorOccurrence* occurrence = nullptr;
+		uint64_t admission = 0;
+		uint64_t deadline = 0, memory_revision = UINT64_MAX, timing_revision = UINT64_MAX;
+		uint64_t timing_generation = UINT64_MAX;
+		size_t bytes = 0;
+		bool scheduled = false, advice_dirty = true, event_capture_enabled = false;
+	};
+	void schedule(PendingState& state) {
+		if (!state.scheduled) {
+			pending_ids.emplace_back(PendingHandle{state.occurrence->id, state.admission});
+			state.scheduled = true;
 		}
-		reportingStatus.retainedOccurrences = static_cast<uint32_t>(occurrences.size());
 	}
-
-	void enforceBudget() {
-		refreshRetainedBytes();
-		while (!occurrences.empty() &&
-			(occurrences.size() > reportingConfig.retainedOccurrenceCapacity ||
-			 reportingStatus.retainedBytes > reportingConfig.retainedByteBudget)) {
-			reportingStatus.retainedBytes -= retainedBytes(occurrences.front());
-			occurrences.erase(occurrences.begin());
-			++reportingStatus.evictedOccurrences;
+	void evict_front() {
+		const auto id = occurrences.front().id;
+		const auto found = states.find(id);
+		if (found != states.end()) {
+			reportingStatus.retainedBytes -= found->second.bytes;
+			states.erase(found);
 		}
-		reportingStatus.retainedOccurrences = static_cast<uint32_t>(occurrences.size());
+		auto& occurrence = occurrences.front();
+		const auto reusable_budget = reportingConfig.retainedByteBudget / occurrences.capacity();
+		const auto buffer_bytes = occurrence.steps.capacity() * sizeof(DevErrorRecord) +
+								  occurrence.breadcrumbs.capacity() * sizeof(DevErrorBreadcrumb) +
+								  occurrence.snapshots.capacity() * sizeof(DevErrorSnapshot) +
+								  occurrence.advice.capacity() * sizeof(DevErrorAdviceResult);
+		if (buffer_bytes > reusable_budget) {
+			std::vector<DevErrorRecord>{}.swap(occurrence.steps);
+			std::vector<DevErrorBreadcrumb>{}.swap(occurrence.breadcrumbs);
+			std::vector<DevErrorSnapshot>{}.swap(occurrence.snapshots);
+			std::vector<DevErrorAdviceResult>{}.swap(occurrence.advice);
+		} else {
+			occurrence.steps.clear();
+			occurrence.breadcrumbs.clear();
+			occurrence.snapshots.clear();
+			occurrence.advice.clear();
+		}
+		occurrences.pop_front();
+		++reportingStatus.evictedOccurrences;
+	}
+	void enforceBudget() {
+		while (!occurrences.empty() &&
+			   reportingStatus.retainedBytes > reportingConfig.retainedByteBudget)
+			evict_front();
+		reportingStatus.retainedOccurrences = uint32_t(occurrences.size());
+	}
+	[[nodiscard]] DevErrorOccurrence& admit(const DevErrorRecord& record) {
+		if (occurrences.size() == occurrences.capacity())
+			evict_front();
+		auto& slot = occurrences.append_slot();
+		DevErrorOccurrence fresh{.id = record.occurrence,
+								 .error = record.error,
+								 .firstAppTick = record.context.appTick,
+								 .lastAppTick = record.context.appTick,
+								 .firstTimestampNs = record.timestampNs,
+								 .lastTimestampNs = record.timestampNs,
+								 .productionKind = record.productionKind,
+								 .resolution = record.resolution,
+								 .flags = record.flags};
+		fresh.steps.swap(slot.steps);
+		fresh.steps.clear();
+		fresh.breadcrumbs.swap(slot.breadcrumbs);
+		fresh.breadcrumbs.clear();
+		fresh.snapshots.swap(slot.snapshots);
+		fresh.snapshots.clear();
+		fresh.advice.swap(slot.advice);
+		fresh.advice.clear();
+		slot = std::move(fresh);
+		const auto room = UINT64_MAX - slot.firstAppTick;
+		try {
+			auto [entry, inserted] = states.emplace(
+				slot.id, PendingState{.occurrence = &slot,
+									  .admission = next_admission++,
+									  .deadline = slot.firstAppTick +
+												  std::min<uint64_t>(
+													  room, reportingConfig.postOccurrenceTicks),
+									  .bytes = retainedBytes(slot)});
+			assert(inserted);
+			reportingStatus.retainedBytes += entry->second.bytes;
+		} catch (...) {
+			occurrences.pop_back();
+			throw;
+		}
+		return slot;
+	}
+	void refresh_bytes(PendingState& state) noexcept {
+		const auto bytes = retainedBytes(*state.occurrence);
+		reportingStatus.retainedBytes -= state.bytes;
+		reportingStatus.retainedBytes += bytes;
+		state.bytes = bytes;
+	}
+	void apply_memory(DevErrorOccurrence& occurrence, const MemoryCorrelationResult& result) {
+		auto& correlation = occurrence.memory;
+		correlation = {.eventSequence = result.event_sequence,
+					   .source = result.source,
+					   .checkpointTick =
+						   std::max(correlation.checkpointTick, result.checkpoint_tick),
+					   .storageMutationSequence = result.storage_revision,
+					   .history_generation = result.history_generation,
+					   .operation = result.operation,
+					   .incomplete = correlation.incomplete || result.incomplete};
+		switch (result.match) {
+		case MemoryCorrelationMatch::Explicit:
+			correlation.state = DevErrorCorrelationState::Available;
+			correlation.confidence = DevErrorCorrelationConfidence::Explicit;
+			break;
+		case MemoryCorrelationMatch::SharedContext:
+			correlation.state = DevErrorCorrelationState::Available;
+			correlation.confidence = DevErrorCorrelationConfidence::SharedContext;
+			break;
+		case MemoryCorrelationMatch::Ambiguous:
+			correlation.state = DevErrorCorrelationState::Ambiguous;
+			correlation.confidence = DevErrorCorrelationConfidence::SharedContext;
+			break;
+		case MemoryCorrelationMatch::TemporalNearby:
+			correlation.state = DevErrorCorrelationState::Available;
+			correlation.confidence = DevErrorCorrelationConfidence::TemporalNearby;
+			break;
+		case MemoryCorrelationMatch::Evicted:
+			correlation.state = DevErrorCorrelationState::Evicted;
+			++reportingStatus.memoryCorrelationEvictions;
+			break;
+		case MemoryCorrelationMatch::NotCaptured:
+			break;
+		}
+	}
+	void process_pending(AppTickId app_tick) {
+		const auto timing_status = timing ? timing->status() : TimingReportingStatus{};
+		const auto memory_status = memory ? memory->status() : MemoryReportingStatus{};
+		memory_queries.clear();
+		memory_query_ids.clear();
+		memory_queries.reserve(std::min(pending_ids.size(), states.size()));
+		memory_query_ids.reserve(std::min(pending_ids.size(), states.size()));
+		for (const auto handle : pending_ids) {
+			const auto found = states.find(handle.id);
+			if (found == states.end() || found->second.admission != handle.admission)
+				continue;
+			auto& state = found->second;
+			auto& occurrence = *state.occurrence;
+			if (occurrence.steps.empty())
+				continue;
+			if (occurrence.state == DevErrorOccurrenceState::PostWindow &&
+				app_tick >= occurrence.closesAfterAppTick)
+				occurrence.state = DevErrorOccurrenceState::Closed;
+			if (memory && !occurrence.memory.sealed && state.memory_revision != UINT64_MAX &&
+				occurrence.memory.history_generation != memory_status.history_storage_generation) {
+				if (occurrence.memory.eventSequence)
+					occurrence.memory.state = DevErrorCorrelationState::Evicted;
+				occurrence.memory.sealed = occurrence.memory.incomplete = true;
+				state.advice_dirty = true;
+				++reportingStatus.overhead.sealedCorrelations;
+			}
+			if (memory && !occurrence.memory.sealed &&
+				state.memory_revision != memory_status.correlation_revision) {
+				const auto& raised = occurrence.steps.front();
+				memory_queries.emplace_back(
+					MemoryCorrelationQuery{.frame = raised.context.frame,
+										   .subject = raised.error.subject,
+										   .app_tick = raised.context.appTick,
+										   .submission = raised.context.submissionSerial,
+										   .timestamp_ns = raised.timestampNs});
+				memory_query_ids.emplace_back(handle);
+			}
+		}
+		const auto correlation_started = steadyNowNs();
+		const auto advice_before = reportingStatus.overhead.adviceTimeNs;
+		if (!memory_queries.empty()) {
+			const auto work = memory->correlate_errors(memory_queries);
+			++reportingStatus.overhead.memoryCorrelationBatches;
+			reportingStatus.overhead.memoryCorrelationQueries += memory_queries.size();
+			reportingStatus.overhead.memoryEventCandidates += work.event_candidates;
+			reportingStatus.overhead.memorySourceChecks += work.source_checks;
+			for (size_t offset = 0; offset < memory_queries.size(); ++offset) {
+				auto& state = states.at(memory_query_ids[offset].id);
+				auto& occurrence = *state.occurrence;
+				const auto& result = memory_queries[offset].result;
+				if (state.memory_revision != UINT64_MAX &&
+					occurrence.memory.history_generation != result.history_generation) {
+					if (occurrence.memory.eventSequence)
+						occurrence.memory.state = DevErrorCorrelationState::Evicted;
+					occurrence.memory.sealed = occurrence.memory.incomplete = true;
+					state.advice_dirty = true;
+					++reportingStatus.overhead.sealedCorrelations;
+					continue;
+				}
+				apply_memory(occurrence, result);
+				state.memory_revision = result.revision;
+				state.event_capture_enabled = result.event_capture_enabled;
+				state.advice_dirty = true;
+				if ((!result.event_capture_enabled &&
+					 result.consumed_tick >= occurrence.firstAppTick) ||
+					app_tick >= state.deadline) {
+					occurrence.memory.sealed = true;
+					occurrence.memory.incomplete =
+						occurrence.memory.incomplete ||
+						result.consumed_tick < (result.event_capture_enabled
+													? state.deadline
+													: occurrence.firstAppTick);
+					++reportingStatus.overhead.sealedCorrelations;
+				}
+			}
+		}
+		size_t pending_count = 0;
+		for (const auto handle : pending_ids) {
+			const auto found = states.find(handle.id);
+			if (found == states.end() || found->second.admission != handle.admission)
+				continue;
+			auto& state = found->second;
+			auto& occurrence = *state.occurrence;
+			if (!occurrence.timing.sealed && timing && state.timing_generation != UINT64_MAX &&
+				state.timing_generation != timing_status.capture_generation) {
+				if (occurrence.timing.capture_generation)
+					occurrence.timing.state = DevErrorCorrelationState::Evicted;
+				occurrence.timing.sealed = true;
+				state.advice_dirty = true;
+				++reportingStatus.overhead.sealedCorrelations;
+			}
+			if (!occurrence.timing.sealed) {
+				if (timing && state.timing_revision != timing_status.mutationSequence) {
+					state.timing_generation = timing_status.capture_generation;
+					correlateTiming(occurrence);
+					state.timing_revision = timing_status.mutationSequence;
+					++reportingStatus.overhead.timingCorrelationQueries;
+					state.advice_dirty = true;
+				}
+				const bool outside_capture =
+					!timing_status.capture_generation ||
+					occurrence.firstAppTick < timing_status.capture_first_app_tick ||
+					occurrence.firstAppTick >= timing_status.capture_end_app_tick_exclusive;
+				if (!timing || outside_capture || app_tick >= state.deadline) {
+					if (timing && !outside_capture &&
+						occurrence.timing.state == DevErrorCorrelationState::NotCaptured &&
+						!timing_status.capture_sealed) {
+						occurrence.timing.incomplete = true;
+						state.advice_dirty = true;
+					}
+					occurrence.timing.sealed = true;
+					++reportingStatus.overhead.sealedCorrelations;
+				}
+			}
+			if (!occurrence.memory.sealed && (!memory || app_tick >= state.deadline)) {
+				occurrence.memory.sealed = true;
+				if (memory &&
+					memory_status.lastConsumedAppTick <
+						(state.event_capture_enabled ? state.deadline : occurrence.firstAppTick)) {
+					occurrence.memory.incomplete = true;
+					state.advice_dirty = true;
+				}
+				++reportingStatus.overhead.sealedCorrelations;
+			}
+			if (state.advice_dirty) {
+				const auto advice_started = steadyNowNs();
+				occurrence.advice =
+					evaluateDevErrorAdvice(occurrence, reportingConfig.maximumAdvicePerOccurrence);
+				reportingStatus.overhead.adviceTimeNs += steadyNowNs() - advice_started;
+				++reportingStatus.overhead.adviceUpdates;
+				state.advice_dirty = false;
+				refresh_bytes(state);
+			}
+			state.scheduled = !occurrence.memory.sealed || !occurrence.timing.sealed ||
+							  occurrence.state == DevErrorOccurrenceState::PostWindow;
+			if (state.scheduled)
+				pending_ids[pending_count++] = handle;
+		}
+		pending_ids.resize(pending_count);
+		reportingStatus.pendingOccurrences = uint32_t(pending_count);
+		// Advice has its own counter; correlation timing excludes it.
+		reportingStatus.overhead.correlationTimeNs +=
+			steadyNowNs() - correlation_started -
+			(reportingStatus.overhead.adviceTimeNs - advice_before);
+	}
+	[[nodiscard]] DevErrorOccurrence project_occurrence(const DevErrorOccurrence& retained) const {
+		auto result = retained;
+		bool changed = false;
+		if (timing && result.timing.capture_generation) {
+			const auto status = timing->status();
+			if (result.timing.capture_generation != status.capture_generation ||
+				result.timing.appTick < status.oldestRetainedAppTick) {
+				changed = result.timing.state != DevErrorCorrelationState::Evicted;
+				result.timing.state = DevErrorCorrelationState::Evicted;
+			}
+		}
+		if (memory && result.memory.eventSequence) {
+			const auto status = memory->status();
+			if (result.memory.history_generation != status.history_storage_generation ||
+				!status.events.hasRetained ||
+				result.memory.eventSequence < status.events.oldestRetainedSequence) {
+				changed = changed || result.memory.state != DevErrorCorrelationState::Evicted;
+				result.memory.state = DevErrorCorrelationState::Evicted;
+			}
+		}
+		if (changed)
+			result.advice =
+				evaluateDevErrorAdvice(result, reportingConfig.maximumAdvicePerOccurrence);
+		return result;
 	}
 
 	void attachBreadcrumbs(DevErrorOccurrence& occurrence, const DevErrorRecord& record) {
@@ -120,7 +405,7 @@ struct DevErrorReporting::Impl {
 			[&](const auto& value) { return triggerMatches(value, occurrence.error); });
 		if (trigger == reportingConfig.triggers.end()) return;
 		if (captures.size() >= reportingConfig.retainedCaptureCapacity) {
-			captures.erase(captures.begin());
+			captures.pop_front();
 			++reportingStatus.evictedCaptures;
 		}
 		const AppTickId first = occurrence.firstAppTick > trigger->preOccurrenceTicks
@@ -129,12 +414,22 @@ struct DevErrorReporting::Impl {
 		const AppTickId last = occurrence.lastAppTick +
 			std::min<AppTickId>(room, trigger->postOccurrenceTicks);
 		const DevErrorCaptureId id = nextCaptureId++;
-		captures.push_back(DevErrorTriggeredCapture{
-			.id = id,
-			.triggerOccurrence = occurrence.id,
-			.firstAppTick = first,
-			.lastAppTick = last,
-		});
+		auto& slot = captures.append_slot();
+		DevErrorTriggeredCapture fresh{.id = id,
+									   .triggerOccurrence = occurrence.id,
+									   .firstAppTick = first,
+									   .lastAppTick = last};
+		try {
+			fresh.memoryEvents.swap(slot.memoryEvents);
+			fresh.memoryEvents.clear();
+			if (fresh.memoryEvents.capacity() > reportingConfig.maximumPinnedMemoryEvents)
+				std::vector<RetainedMemoryEvent>{}.swap(fresh.memoryEvents);
+			fresh.memoryEvents.reserve(reportingConfig.maximumPinnedMemoryEvents);
+			slot = std::move(fresh);
+		} catch (...) {
+			captures.pop_back();
+			throw;
+		}
 		occurrence.captureId = id;
 		++reportingStatus.triggeredCaptures;
 	}
@@ -158,6 +453,7 @@ struct DevErrorReporting::Impl {
 			return;
 		}
 		occurrence.timing = DevErrorTimingCorrelation{
+			.entity = report->entity,
 			.state = DevErrorCorrelationState::Available,
 			.confidence = DevErrorCorrelationConfidence::SharedContext,
 			.appTick = raised.context.appTick,
@@ -169,131 +465,65 @@ struct DevErrorReporting::Impl {
 		occurrence.timing.containingZone = report->zone;
 	}
 
-	void correlateMemory(DevErrorOccurrence& occurrence) {
-		if (!memory || occurrence.steps.empty()) return;
-		const DevErrorRecord& raised = occurrence.steps.front();
-		const MemoryReportingStatus memoryStatus = memory->status();
-		occurrence.memory.storageMutationSequence = memoryStatus.storageMutationSequence;
-		const auto events = memory->eventSnapshot();
-		const RetainedMemoryEvent* selected = nullptr;
-		bool explicitIdentity = false;
-		uint32_t sharedContextCandidates = 0u;
-		for (const RetainedMemoryEvent& retained : events) {
-			const MemoryOperationRecord& event = retained.operation;
-			if (raised.error.subject == 0u ||
-				(raised.error.subject != event.lifetime && raised.error.subject != event.source)) {
-				continue;
+	void project_capture_timing(DevErrorTriggeredCapture& capture, AppTickId app_tick) const {
+		const auto through = std::min(app_tick, capture.lastAppTick);
+		if (timing) {
+			const TimingReportingStatus timingStatus = timing->status();
+			capture.timingHistoryEvicted =
+				timingStatus.hasRetainedTicks &&
+				capture.firstAppTick >= timingStatus.capture_first_app_tick &&
+				capture.firstAppTick < timingStatus.oldestRetainedAppTick;
+			if (!capture.timing_generation && timingStatus.hasRetainedTicks &&
+				capture.firstAppTick <= timingStatus.newestRetainedAppTick &&
+				through >= timingStatus.oldestRetainedAppTick)
+				capture.timing_generation = timingStatus.capture_generation;
+			if (capture.timing_generation &&
+				capture.timing_generation != timingStatus.capture_generation) {
+				capture.timingHistoryEvicted = true;
+				capture.timing_state = DevErrorCorrelationState::Evicted;
+				capture.timing_retained_ticks = 0;
+			} else if (capture.timing_generation) {
+				const auto first =
+					std::max(capture.firstAppTick, timingStatus.oldestRetainedAppTick);
+				const auto last = std::min(through, timingStatus.newestRetainedAppTick);
+				const auto available_count = last >= first ? last - first + 1 : 0;
+				capture.timing_retained_ticks =
+					std::min<uint64_t>(available_count, reportingConfig.maximumPinnedTimingTicks);
+				const bool outside_capture =
+					capture.firstAppTick < timingStatus.capture_first_app_tick ||
+					through >= timingStatus.capture_end_app_tick_exclusive;
+				capture.timingTruncated =
+					outside_capture || available_count > reportingConfig.maximumPinnedTimingTicks;
+				capture.timing_state = capture.timingHistoryEvicted
+										   ? DevErrorCorrelationState::Evicted
+									   : outside_capture ? DevErrorCorrelationState::NotCaptured
+														 : DevErrorCorrelationState::Available;
 			}
-			selected = &retained;
-			explicitIdentity = true;
-			break;
-		}
-		for (const RetainedMemoryEvent& retained : events) {
-			if (explicitIdentity) break;
-			const MemoryOperationRecord& event = retained.operation;
-			const bool sameSubmission = raised.context.submissionSerial != 0u &&
-				event.submissionSerial == raised.context.submissionSerial;
-			const bool sameFrame = raised.context.frame && event.frame == raised.context.frame;
-			if (!sameSubmission && !sameFrame) continue;
-			++sharedContextCandidates;
-			if (!selected || event.timestampNs <= raised.timestampNs) selected = &retained;
-		}
-		if (!selected) {
-			for (const RetainedMemoryEvent& retained : events) {
-				if (retained.operation.appTick != raised.context.appTick) continue;
-				if (!selected || retained.operation.timestampNs <= raised.timestampNs) {
-					selected = &retained;
-				}
-			}
-		}
-		if (selected) {
-			occurrence.memory.state = !explicitIdentity && sharedContextCandidates > 1u
-				? DevErrorCorrelationState::Ambiguous
-				: DevErrorCorrelationState::Available;
-			occurrence.memory.confidence = explicitIdentity
-				? DevErrorCorrelationConfidence::Explicit
-				: (sharedContextCandidates != 0u
-					? DevErrorCorrelationConfidence::SharedContext
-					: DevErrorCorrelationConfidence::TemporalNearby);
-			occurrence.memory.eventSequence = selected->sequence;
-			occurrence.memory.source = selected->operation.source;
-			occurrence.memory.operation = selected->operation.operation;
-		} else if (memoryStatus.events.overwriteCount != 0u && !events.empty() &&
-			(raised.context.appTick < events.front().operation.appTick ||
-			 raised.timestampNs < events.front().operation.timestampNs)) {
-			occurrence.memory.state = DevErrorCorrelationState::Evicted;
-			++reportingStatus.memoryCorrelationEvictions;
-		} else {
-			occurrence.memory.state = DevErrorCorrelationState::NotCaptured;
-		}
-		for (const MemoryCurrentSource& source : memory->currentSourceSnapshot()) {
-			if (source.lastSampledTick > raised.context.appTick) continue;
-			if (source.key.window != InvalidWindowId && raised.context.frame &&
-				source.key.window != raised.context.frame.window) continue;
-			occurrence.memory.checkpointTick = std::max(
-				occurrence.memory.checkpointTick, source.lastSampledTick);
 		}
 	}
-
-	void updateTriggeredCaptures(AppTickId appTick) {
-		for (DevErrorTriggeredCapture& capture : captures) {
-			const AppTickId through = std::min(appTick, capture.lastAppTick);
-			if (timing) {
-				const TimingReportingStatus timingStatus = timing->status();
-				capture.timingHistoryEvicted =
-					timingStatus.hasRetainedTicks &&
-					capture.firstAppTick >= timingStatus.capture_first_app_tick &&
-					capture.firstAppTick < timingStatus.oldestRetainedAppTick;
-				if (!capture.timing_generation && timingStatus.hasRetainedTicks &&
-					capture.firstAppTick <= timingStatus.newestRetainedAppTick &&
-					through >= timingStatus.oldestRetainedAppTick)
-					capture.timing_generation = timingStatus.capture_generation;
-				if (capture.timing_generation &&
-					capture.timing_generation != timingStatus.capture_generation) {
-					capture.timingHistoryEvicted = true;
-					capture.timing_state = DevErrorCorrelationState::Evicted;
-					capture.timing_retained_ticks = 0;
-				} else if (capture.timing_generation) {
-					const auto first =
-						std::max(capture.firstAppTick, timingStatus.oldestRetainedAppTick);
-					const auto last = std::min(through, timingStatus.newestRetainedAppTick);
-					const auto available_count = last >= first ? last - first + 1 : 0;
-					capture.timing_retained_ticks = std::min<uint64_t>(
-						available_count, reportingConfig.maximumPinnedTimingTicks);
-					const bool outside_capture =
-						capture.firstAppTick < timingStatus.capture_first_app_tick ||
-						through >= timingStatus.capture_end_app_tick_exclusive;
-					capture.timingTruncated =
-						outside_capture ||
-						available_count > reportingConfig.maximumPinnedTimingTicks;
-					capture.timing_state = capture.timingHistoryEvicted
-											   ? DevErrorCorrelationState::Evicted
-										   : outside_capture ? DevErrorCorrelationState::NotCaptured
-															 : DevErrorCorrelationState::Available;
-				}
-			}
+	void updateTriggeredCaptures(AppTickId app_tick) {
+		for (auto& capture : captures) {
 			if (capture.state == DevErrorTriggeredCaptureState::Complete)
 				continue;
-			if (memory) {
-				const MemoryReportingStatus memoryStatus = memory->status();
-				const auto events = memory->eventSnapshot();
-				capture.memoryHistoryEvicted = memoryStatus.events.overwriteCount != 0u &&
-					!events.empty() && events.front().operation.appTick > capture.firstAppTick;
-				for (const RetainedMemoryEvent& event : events) {
-					if (event.operation.appTick < capture.firstAppTick ||
-						event.operation.appTick > through) continue;
-					const bool duplicate = std::any_of(
-						capture.memoryEvents.begin(), capture.memoryEvents.end(),
-						[&](const auto& value) { return value.sequence == event.sequence; });
-					if (duplicate) continue;
-					if (capture.memoryEvents.size() >= reportingConfig.maximumPinnedMemoryEvents) {
-						capture.memoryTruncated = true;
-						break;
-					}
-					capture.memoryEvents.push_back(event);
+			project_capture_timing(capture, app_tick);
+			if (memory && !capture.memory_sealed) {
+				const auto progress = memory->append_event_range(
+					capture.memory_generation, capture.memory_cursor, capture.firstAppTick,
+					capture.lastAppTick, reportingConfig.maximumPinnedMemoryEvents,
+					capture.memoryEvents);
+				if (!progress.reset) {
+					capture.memory_generation = progress.generation;
+					capture.memory_cursor = progress.cursor;
 				}
+				capture.memoryHistoryEvicted = capture.memoryHistoryEvicted || progress.evicted;
+				capture.memoryTruncated =
+					capture.memoryTruncated || progress.truncated || progress.reset;
+				capture.memory_sealed = progress.truncated || progress.reset;
+				if (app_tick >= capture.lastAppTick && progress.consumed_tick < capture.lastAppTick)
+					capture.memoryTruncated = true;
 			}
-			if (appTick >= capture.lastAppTick) {
+			if (app_tick >= capture.lastAppTick) {
+				capture.memory_sealed = true;
 				capture.state = DevErrorTriggeredCaptureState::Complete;
 			}
 		}
@@ -303,11 +533,19 @@ struct DevErrorReporting::Impl {
 	DevTimingReporting* timing = nullptr;
 	DevMemoryReporting* memory = nullptr;
 	mutable std::mutex mutex{};
+	std::mutex ingestion_mutex{};
 	DevErrorReportingConfig reportingConfig{};
 	DevErrorReportingStatus reportingStatus{};
-	std::vector<DevErrorOccurrence> occurrences{};
-	std::vector<DevErrorBreadcrumb> breadcrumbHistory{};
-	std::vector<DevErrorTriggeredCapture> captures{};
+	detail::ReportingRing<DevErrorOccurrence> occurrences{};
+	std::unordered_map<DevErrorOccurrenceId, PendingState> states{};
+	std::vector<PendingHandle> pending_ids{}, memory_query_ids{};
+	uint64_t next_admission = 1;
+	std::vector<MemoryCorrelationQuery> memory_queries{};
+	std::vector<DevErrorRecord> record_scratch{};
+	std::vector<DevErrorBreadcrumb> breadcrumb_scratch{};
+	std::vector<DevErrorSnapshot> snapshot_scratch{};
+	detail::ReportingRing<DevErrorBreadcrumb> breadcrumbHistory{};
+	detail::ReportingRing<DevErrorTriggeredCapture> captures{};
 	DevErrorCaptureId nextCaptureId = 1u;
 	uint64_t fatalSafePointRevision = 0u;
 };
@@ -318,9 +556,11 @@ DevErrorReporting::DevErrorReporting(
 	DevTimingReporting* timing,
 	DevMemoryReporting* memory)
 	: impl_(std::make_unique<Impl>(monitoring, std::move(config), timing, memory)) {
-	impl_->occurrences.reserve(impl_->reportingConfig.retainedOccurrenceCapacity);
-	impl_->breadcrumbHistory.reserve(impl_->reportingConfig.retainedBreadcrumbCapacity);
-	impl_->captures.reserve(impl_->reportingConfig.retainedCaptureCapacity);
+	impl_->occurrences.set_capacity(impl_->reportingConfig.retainedOccurrenceCapacity);
+	impl_->states.reserve(impl_->reportingConfig.retainedOccurrenceCapacity);
+	impl_->pending_ids.reserve(impl_->reportingConfig.retainedOccurrenceCapacity);
+	impl_->breadcrumbHistory.set_capacity(impl_->reportingConfig.retainedBreadcrumbCapacity);
+	impl_->captures.set_capacity(impl_->reportingConfig.retainedCaptureCapacity);
 }
 
 DevErrorReporting::~DevErrorReporting() = default;
@@ -328,19 +568,24 @@ DevErrorReporting::~DevErrorReporting() = default;
 void DevErrorReporting::setConfig(const DevErrorReportingConfig& config) {
 	std::scoped_lock lock(impl_->mutex);
 	impl_->reportingConfig = Impl::normalize(config);
-	if (impl_->breadcrumbHistory.size() > impl_->reportingConfig.retainedBreadcrumbCapacity) {
-		const size_t excess = impl_->breadcrumbHistory.size() -
-			impl_->reportingConfig.retainedBreadcrumbCapacity;
-		impl_->breadcrumbHistory.erase(
-			impl_->breadcrumbHistory.begin(), impl_->breadcrumbHistory.begin() + excess);
-	}
+	while (impl_->occurrences.size() > impl_->reportingConfig.retainedOccurrenceCapacity)
+		impl_->evict_front();
+	impl_->occurrences.set_capacity(impl_->reportingConfig.retainedOccurrenceCapacity);
+	impl_->states.reserve(impl_->reportingConfig.retainedOccurrenceCapacity);
+	impl_->breadcrumbHistory.set_capacity(impl_->reportingConfig.retainedBreadcrumbCapacity);
 	while (impl_->captures.size() > impl_->reportingConfig.retainedCaptureCapacity) {
-		impl_->captures.erase(impl_->captures.begin());
+		impl_->captures.pop_front();
 		++impl_->reportingStatus.evictedCaptures;
 	}
-	for (DevErrorOccurrence& occurrence : impl_->occurrences) {
-		occurrence.advice = evaluateDevErrorAdvice(
-			occurrence, impl_->reportingConfig.maximumAdvicePerOccurrence);
+	impl_->captures.set_capacity(impl_->reportingConfig.retainedCaptureCapacity);
+	for (auto& occurrence : impl_->occurrences) {
+		auto& state = impl_->states.at(occurrence.id);
+		state.occurrence = &occurrence;
+		occurrence.advice =
+			evaluateDevErrorAdvice(occurrence, impl_->reportingConfig.maximumAdvicePerOccurrence);
+		state.advice_dirty = false;
+		++impl_->reportingStatus.overhead.adviceUpdates;
+		impl_->refresh_bytes(state);
 	}
 	impl_->enforceBudget();
 }
@@ -353,11 +598,15 @@ DevErrorReportingConfig DevErrorReporting::config() const {
 void DevErrorReporting::consumeThrough(AppTickId appTick) noexcept {
 	const uint64_t consumeStarted = steadyNowNs();
 	try {
+		std::scoped_lock ingestion_lock(impl_->ingestion_mutex);
 		const uint64_t drainStarted = steadyNowNs();
 		impl_->monitoring->captureDeferredSnapshots();
-		auto breadcrumbs = impl_->monitoring->drainBreadcrumbs();
-		auto records = impl_->monitoring->drainRecords();
-		auto snapshots = impl_->monitoring->drainSnapshots();
+		auto& breadcrumbs = impl_->breadcrumb_scratch;
+		auto& records = impl_->record_scratch;
+		auto& snapshots = impl_->snapshot_scratch;
+		impl_->monitoring->drain_breadcrumbs_into(breadcrumbs);
+		impl_->monitoring->drain_records_into(records);
+		impl_->monitoring->drain_snapshots_into(snapshots);
 		const uint64_t drainElapsed = steadyNowNs() - drainStarted;
 		std::scoped_lock lock(impl_->mutex);
 		impl_->reportingStatus.overhead.drainTimeNs += drainElapsed;
@@ -366,44 +615,17 @@ void DevErrorReporting::consumeThrough(AppTickId appTick) noexcept {
 			breadcrumbs.size() * sizeof(DevErrorBreadcrumb) +
 			snapshots.size() * sizeof(DevErrorSnapshot);
 
-		impl_->breadcrumbHistory.insert(
-			impl_->breadcrumbHistory.end(), breadcrumbs.begin(), breadcrumbs.end());
-		if (impl_->breadcrumbHistory.size() > impl_->reportingConfig.retainedBreadcrumbCapacity) {
-			const size_t excess = impl_->breadcrumbHistory.size() -
-				impl_->reportingConfig.retainedBreadcrumbCapacity;
-			impl_->breadcrumbHistory.erase(
-				impl_->breadcrumbHistory.begin(), impl_->breadcrumbHistory.begin() + excess);
-		}
+		for (const auto& breadcrumb : breadcrumbs)
+			impl_->breadcrumbHistory.push_back(breadcrumb);
 		impl_->reportingStatus.consumedBreadcrumbs += breadcrumbs.size();
 
-		for (DevErrorOccurrence& occurrence : impl_->occurrences) {
-			if (occurrence.state == DevErrorOccurrenceState::PostWindow &&
-				appTick >= occurrence.closesAfterAppTick) {
-				occurrence.state = DevErrorOccurrenceState::Closed;
-			}
-		}
-
 		for (DevErrorRecord& record : records) {
-			auto found = std::find_if(
-				impl_->occurrences.begin(), impl_->occurrences.end(),
-				[&](const auto& occurrence) { return occurrence.id == record.occurrence; });
-			const bool created = found == impl_->occurrences.end();
-			if (created) {
-				impl_->occurrences.push_back(DevErrorOccurrence{
-					.id = record.occurrence,
-					.error = record.error,
-					.firstAppTick = record.context.appTick,
-					.lastAppTick = record.context.appTick,
-					.firstTimestampNs = record.timestampNs,
-					.lastTimestampNs = record.timestampNs,
-					.productionKind = record.productionKind,
-					.resolution = record.resolution,
-					.flags = record.flags,
-				});
-				found = std::prev(impl_->occurrences.end());
-			}
-
-			DevErrorOccurrence& occurrence = *found;
+			const bool created = !impl_->states.contains(record.occurrence);
+			DevErrorOccurrence& occurrence =
+				created ? impl_->admit(record) : *impl_->states.at(record.occurrence).occurrence;
+			auto& progress = impl_->states.at(occurrence.id);
+			progress.advice_dirty = true;
+			impl_->schedule(progress);
 			if (occurrence.error.code == ErrorCode::None && record.error.code != ErrorCode::None) {
 				occurrence.error = record.error;
 			}
@@ -437,46 +659,35 @@ void DevErrorReporting::consumeThrough(AppTickId appTick) noexcept {
 						std::min<AppTickId>(room, impl_->reportingConfig.postOccurrenceTicks);
 				}
 			}
+			if (!occurrence.timing.sealed || !occurrence.memory.sealed)
+				progress.deadline = std::max(progress.deadline, occurrence.closesAfterAppTick);
+			impl_->refresh_bytes(progress);
 		}
 
 		for (const DevErrorSnapshot& snapshot : snapshots) {
-			const auto found = std::find_if(
-				impl_->occurrences.begin(), impl_->occurrences.end(),
-				[&](const auto& occurrence) { return occurrence.id == snapshot.occurrence; });
-			if (found == impl_->occurrences.end()) continue;
-			found->snapshots.push_back(snapshot);
+			const auto found = impl_->states.find(snapshot.occurrence);
+			if (found == impl_->states.end())
+				continue;
+			auto& progress = found->second;
+			auto* occurrence = progress.occurrence;
+			occurrence->snapshots.emplace_back(snapshot);
+			progress.advice_dirty = true;
+			impl_->schedule(progress);
 			switch (snapshot.outcome) {
 			case DevErrorSnapshotOutcome::Unavailable:
 			case DevErrorSnapshotOutcome::StorageLost:
-				found->flags |= DevErrorRecordFlag::SnapshotUnavailable; break;
+				occurrence->flags |= DevErrorRecordFlag::SnapshotUnavailable;
+				break;
 			case DevErrorSnapshotOutcome::StaleRevision:
-				found->flags |= DevErrorRecordFlag::SnapshotStale; break;
+				occurrence->flags |= DevErrorRecordFlag::SnapshotStale;
+				break;
 			case DevErrorSnapshotOutcome::Truncated:
-				found->flags |= DevErrorRecordFlag::SnapshotTruncated; break;
+				occurrence->flags |= DevErrorRecordFlag::SnapshotTruncated;
+				break;
 			case DevErrorSnapshotOutcome::Available: break;
 			}
 		}
-		const auto correlation_status =
-			impl_->timing ? impl_->timing->status() : TimingReportingStatus{};
-		for (DevErrorOccurrence& occurrence : impl_->occurrences) {
-			if (occurrence.timing.capture_generation &&
-				(occurrence.timing.capture_generation != correlation_status.capture_generation ||
-				 occurrence.timing.appTick < correlation_status.oldestRetainedAppTick))
-				occurrence.timing.state = DevErrorCorrelationState::Evicted;
-			const uint64_t correlationStarted = steadyNowNs();
-			if (occurrence.timing.state == DevErrorCorrelationState::NotCaptured) {
-				impl_->correlateTiming(occurrence);
-			}
-			if (occurrence.memory.state == DevErrorCorrelationState::NotCaptured) {
-				impl_->correlateMemory(occurrence);
-			}
-			impl_->reportingStatus.overhead.correlationTimeNs +=
-				steadyNowNs() - correlationStarted;
-			const uint64_t adviceStarted = steadyNowNs();
-			occurrence.advice = evaluateDevErrorAdvice(
-				occurrence, impl_->reportingConfig.maximumAdvicePerOccurrence);
-			impl_->reportingStatus.overhead.adviceTimeNs += steadyNowNs() - adviceStarted;
-		}
+		impl_->process_pending(appTick);
 		impl_->updateTriggeredCaptures(appTick);
 
 		impl_->reportingStatus.consumedRecords += records.size();
@@ -520,9 +731,43 @@ DevErrorReportingStatus DevErrorReporting::status() const noexcept {
 	}
 }
 
+std::vector<DevErrorOccurrenceSummary> DevErrorReporting::occurrence_summaries() const {
+	std::scoped_lock lock(impl_->mutex);
+	const auto timing = impl_->timing ? impl_->timing->status() : TimingReportingStatus{};
+	const auto memory = impl_->memory ? impl_->memory->status() : MemoryReportingStatus{};
+	std::vector<DevErrorOccurrenceSummary> result;
+	result.reserve(impl_->occurrences.size());
+	for (const auto& occurrence : impl_->occurrences) {
+		auto correlation = occurrence.timing;
+		const bool timing_lost = correlation.capture_generation &&
+								 (correlation.capture_generation != timing.capture_generation ||
+								  correlation.appTick < timing.oldestRetainedAppTick);
+		const bool memory_lost =
+			occurrence.memory.eventSequence &&
+			(occurrence.memory.history_generation != memory.history_storage_generation ||
+			 !memory.events.hasRetained ||
+			 occurrence.memory.eventSequence < memory.events.oldestRetainedSequence);
+		if (timing_lost)
+			correlation.state = DevErrorCorrelationState::Evicted;
+		result.emplace_back(DevErrorOccurrenceSummary{
+			.timing = correlation,
+			.error = occurrence.error,
+			.suggested_action = !timing_lost && !memory_lost && !occurrence.advice.empty()
+									? occurrence.advice.front().suggestedAction
+									: std::string_view{},
+			.id = occurrence.id,
+			.last_app_tick = occurrence.lastAppTick});
+	}
+	return result;
+}
+
 std::vector<DevErrorOccurrence> DevErrorReporting::occurrenceSnapshot() const {
 	std::scoped_lock lock(impl_->mutex);
-	return impl_->occurrences;
+	std::vector<DevErrorOccurrence> result;
+	result.reserve(impl_->occurrences.size());
+	for (const auto& occurrence : impl_->occurrences)
+		result.emplace_back(impl_->project_occurrence(occurrence));
+	return result;
 }
 
 std::optional<DevErrorOccurrence> DevErrorReporting::occurrence(DevErrorOccurrenceId id) const {
@@ -531,7 +776,7 @@ std::optional<DevErrorOccurrence> DevErrorReporting::occurrence(DevErrorOccurren
 		impl_->occurrences.begin(), impl_->occurrences.end(),
 		[&](const auto& value) { return value.id == id; });
 	if (found == impl_->occurrences.end()) return std::nullopt;
-	return *found;
+	return impl_->project_occurrence(*found);
 }
 
 std::vector<DevErrorOccurrence> DevErrorReporting::occurrenceRange(
@@ -549,7 +794,7 @@ std::vector<DevErrorOccurrence> DevErrorReporting::occurrenceRange(
 				[&](const auto& step) { return step.context.frame.window == *query.window; });
 			if (!matches) continue;
 		}
-		result.push_back(occurrence);
+		result.emplace_back(impl_->project_occurrence(occurrence));
 		if (query.maximumResults != 0u && result.size() >= query.maximumResults) break;
 	}
 	return result;
@@ -608,7 +853,13 @@ std::vector<DevErrorStackTrace> DevErrorReporting::stackSnapshot() const {
 
 std::vector<DevErrorTriggeredCapture> DevErrorReporting::captureSnapshot() const {
 	std::scoped_lock lock(impl_->mutex);
-	return impl_->captures;
+	std::vector<DevErrorTriggeredCapture> result;
+	result.reserve(impl_->captures.size());
+	for (const auto& capture : impl_->captures) {
+		result.emplace_back(capture);
+		impl_->project_capture_timing(result.back(), impl_->reportingStatus.lastConsumedAppTick);
+	}
+	return result;
 }
 
 std::optional<DevErrorTriggeredCapture> DevErrorReporting::capture(
@@ -618,7 +869,9 @@ std::optional<DevErrorTriggeredCapture> DevErrorReporting::capture(
 		impl_->captures.begin(), impl_->captures.end(),
 		[&](const auto& value) { return value.id == id; });
 	if (found == impl_->captures.end()) return std::nullopt;
-	return *found;
+	auto result = *found;
+	impl_->project_capture_timing(result, impl_->reportingStatus.lastConsumedAppTick);
+	return result;
 }
 
 std::vector<DevErrorAdviceResult> DevErrorReporting::advice(DevErrorOccurrenceId id) const {
@@ -626,9 +879,8 @@ std::vector<DevErrorAdviceResult> DevErrorReporting::advice(DevErrorOccurrenceId
 	const auto found = std::find_if(
 		impl_->occurrences.begin(), impl_->occurrences.end(),
 		[&](const auto& occurrence) { return occurrence.id == id; });
-	return found == impl_->occurrences.end()
-		? std::vector<DevErrorAdviceResult>{}
-		: found->advice;
+	return found == impl_->occurrences.end() ? std::vector<DevErrorAdviceResult>{}
+											 : impl_->project_occurrence(*found).advice;
 }
 
 std::span<const DevErrorAdviceDescriptor> DevErrorReporting::adviceCatalogue() const noexcept {

@@ -34,6 +34,7 @@ enum class DevErrorCorrelationConfidence : uint8_t {
 };
 
 struct DevErrorTimingCorrelation {
+	TimingEntityRef entity{};
 	DevErrorCorrelationState state = DevErrorCorrelationState::NotCaptured;
 	DevErrorCorrelationConfidence confidence = DevErrorCorrelationConfidence::None;
 	AppTickId appTick = 0u;
@@ -42,6 +43,8 @@ struct DevErrorTimingCorrelation {
 	TimingZoneTypeId containingZone = 0u;
 	uint64_t reportRevision = 0u;
 	uint64_t capture_generation = 0;
+	/** Sealed evidence is not retried; late records still attach to the occurrence. */
+	bool sealed = false, incomplete = false;
 };
 
 struct DevErrorMemoryCorrelation {
@@ -49,9 +52,12 @@ struct DevErrorMemoryCorrelation {
 	MemorySourceId source = 0u;
 	AppTickId checkpointTick = 0u;
 	uint64_t storageMutationSequence = 0u;
+	uint64_t history_generation = 0;
 	DevErrorCorrelationState state = DevErrorCorrelationState::NotCaptured;
 	DevErrorCorrelationConfidence confidence = DevErrorCorrelationConfidence::None;
 	MemoryOperation operation = MemoryOperation::LogicalAllocate;
+	/** Correlation closes after the configured evidence window, independently of retention. */
+	bool sealed = false, incomplete = false;
 };
 
 enum class DevErrorOccurrenceState : uint8_t {
@@ -81,6 +87,14 @@ struct DevErrorOccurrence {
 	std::vector<DevErrorAdviceResult> advice{};
 };
 
+/** Compact chronological presentation row. Action text refers to the static advice catalogue. */
+struct DevErrorOccurrenceSummary {
+	DevErrorTimingCorrelation timing{};
+	FlowUiError error{};
+	std::string_view suggested_action{};
+	uint64_t id = 0, last_app_tick = 0;
+};
+
 enum class DevErrorTriggeredCaptureState : uint8_t {
 	Collecting = 0u,
 	Complete,
@@ -97,6 +111,9 @@ struct DevErrorTriggeredCapture {
 	bool timingTruncated = false;
 	bool memoryTruncated = false;
 	uint64_t timing_generation = 0, timing_retained_ticks = 0;
+	/** Append cursor and generation for explicitly pinned operation evidence. */
+	uint64_t memory_generation = UINT64_MAX, memory_cursor = 0;
+	bool memory_sealed = false;
 	DevErrorCorrelationState timing_state = DevErrorCorrelationState::NotCaptured;
 	std::vector<RetainedMemoryEvent> memoryEvents{};
 };
@@ -146,6 +163,9 @@ struct DevErrorReportingStatus {
 		uint64_t groupingCalls = 0u;
 		uint64_t groupingTimeNs = 0u;
 		uint64_t drainedBytes = 0u;
+		uint64_t memoryCorrelationBatches = 0, memoryCorrelationQueries = 0;
+		uint64_t memoryEventCandidates = 0, memorySourceChecks = 0;
+		uint64_t timingCorrelationQueries = 0, adviceUpdates = 0, sealedCorrelations = 0;
 	} overhead{};
 	uint64_t consumedRecords = 0u;
 	uint64_t consumedBreadcrumbs = 0u;
@@ -161,6 +181,7 @@ struct DevErrorReportingStatus {
 	AppTickId lastConsumedAppTick = 0u;
 	DevErrorQualitySnapshot quality{};
 	uint32_t retainedOccurrences = 0u;
+	uint32_t pendingOccurrences = 0;
 	uint64_t retainedBytes = 0u;
 };
 
@@ -179,6 +200,8 @@ public:
 	[[nodiscard]] DevErrorReportingConfig config() const;
 	void consumeThrough(AppTickId appTick) noexcept;
 	[[nodiscard]] DevErrorReportingStatus status() const noexcept;
+	/** Read scalar issue rows without copying steps, breadcrumbs, snapshots, or advice buffers. */
+	[[nodiscard]] std::vector<DevErrorOccurrenceSummary> occurrence_summaries() const;
 	[[nodiscard]] std::vector<DevErrorOccurrence> occurrenceSnapshot() const;
 	[[nodiscard]] std::optional<DevErrorOccurrence> occurrence(
 		DevErrorOccurrenceId id) const;

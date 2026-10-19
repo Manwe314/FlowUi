@@ -57,6 +57,13 @@ public:
 	[[nodiscard]] bool requestSnapshot(
 		const DevErrorSnapshotRequest& request) noexcept;
 	void captureDeferredSnapshots() noexcept;
+	/** Drain only newly produced data into reusable consumer storage. Each destination is cleared.
+	 */
+	void drain_snapshots_into(std::vector<DevErrorSnapshot>& destination);
+	/** Drain new records in sequence order without copying retained history. */
+	void drain_records_into(std::vector<DevErrorRecord>& destination);
+	/** Drain new breadcrumbs in sequence order into reusable consumer storage. */
+	void drain_breadcrumbs_into(std::vector<DevErrorBreadcrumb>& destination);
 	[[nodiscard]] std::vector<DevErrorSnapshot> drainSnapshots();
 	[[nodiscard]] std::vector<DevErrorRecord> drainRecords();
 	[[nodiscard]] std::vector<DevErrorBreadcrumb> drainBreadcrumbs();

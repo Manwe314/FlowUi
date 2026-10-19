@@ -855,35 +855,50 @@ void DevErrorMonitoring::captureDeferredSnapshots() noexcept {
 	}
 }
 
-std::vector<DevErrorSnapshot> DevErrorMonitoring::drainSnapshots() {
-	std::vector<DevErrorSnapshot> result;
+void DevErrorMonitoring::drain_snapshots_into(std::vector<DevErrorSnapshot>& result) {
+	result.clear();
 	std::scoped_lock lock(impl_->mutex);
 	result.reserve(impl_->completedSnapshots.size());
 	result.insert(
 		result.end(), impl_->completedSnapshots.begin(), impl_->completedSnapshots.end());
 	impl_->completedSnapshots.clear();
-	return result;
 }
 
-std::vector<DevErrorRecord> DevErrorMonitoring::drainRecords() {
-	std::vector<DevErrorRecord> result;
+void DevErrorMonitoring::drain_records_into(std::vector<DevErrorRecord>& result) {
+	result.clear();
 	std::scoped_lock lock(impl_->mutex);
 	impl_->fallback->drainRecordsInto(result);
 	for (const auto& recorder : impl_->recorders) recorder->drainRecordsInto(result);
 	std::sort(result.begin(), result.end(), [](const auto& left, const auto& right) {
 		return left.sequence < right.sequence;
 	});
-	return result;
 }
 
-std::vector<DevErrorBreadcrumb> DevErrorMonitoring::drainBreadcrumbs() {
-	std::vector<DevErrorBreadcrumb> result;
+void DevErrorMonitoring::drain_breadcrumbs_into(std::vector<DevErrorBreadcrumb>& result) {
+	result.clear();
 	std::scoped_lock lock(impl_->mutex);
 	impl_->fallback->drainBreadcrumbsInto(result);
 	for (const auto& recorder : impl_->recorders) recorder->drainBreadcrumbsInto(result);
 	std::sort(result.begin(), result.end(), [](const auto& left, const auto& right) {
 		return left.sequence < right.sequence;
 	});
+}
+
+std::vector<DevErrorSnapshot> DevErrorMonitoring::drainSnapshots() {
+	std::vector<DevErrorSnapshot> result;
+	drain_snapshots_into(result);
+	return result;
+}
+
+std::vector<DevErrorRecord> DevErrorMonitoring::drainRecords() {
+	std::vector<DevErrorRecord> result;
+	drain_records_into(result);
+	return result;
+}
+
+std::vector<DevErrorBreadcrumb> DevErrorMonitoring::drainBreadcrumbs() {
+	std::vector<DevErrorBreadcrumb> result;
+	drain_breadcrumbs_into(result);
 	return result;
 }
 

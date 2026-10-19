@@ -601,6 +601,8 @@ struct DevErrorReportingConfig {
 	uint64_t retainedByteBudget = 4u * 1024u * 1024u;
 	uint32_t retainedOccurrenceCapacity = 512u;
 	uint32_t retainedBreadcrumbCapacity = 4096u;
+	/** Grace window for automatic correlation after the initial context/final record.
+	 * Sealed correlations do not retry; later steps/snapshots still attach and update advice. */
 	uint32_t postOccurrenceTicks = 2u;
 	uint32_t maxStepsPerOccurrence = 64u;
 	uint32_t maximumAdvicePerOccurrence = 4u;

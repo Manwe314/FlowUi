@@ -112,6 +112,30 @@ int main() {
 		   last_tick.sorted_cadence.empty());
 	const auto window_frames = analyze_performance(view, 0, 1);
 	assert(window_frames.sorted_cadence == std::vector<uint64_t>({4000000, 4000000, 4000000}));
+	const auto reporting_descriptor = makeTimingDescriptor(
+		TimingCategory::DevTool, TimingZoneRole::DevToolWork, "flowui.dev.reporting.consume");
+	std::array reporting_descriptors{reporting_descriptor};
+	TimingAppTickReport reporting_tick{};
+	reporting_tick.occupied = true;
+	reporting_tick.appTick = 1;
+	reporting_tick.boundary_start_ns = 1'000'000;
+	reporting_tick.boundary_end_ns = 51'000'000;
+	reporting_tick.applicationCpuZones.emplace_back(
+		CpuTimingRecord{.startNs = 3'000'000,
+						.durationNs = 48'000'000,
+						.invocationId = 1,
+						.typeId = reporting_descriptor.typeId,
+						.appTick = 1,
+						.track = 1});
+	TimingCaptureReadView reporting_view;
+	reporting_view.first = std::span{&reporting_tick, size_t{1}};
+	reporting_view.descriptors = reporting_descriptors;
+	reporting_view.generation = 8;
+	const auto reporting_analysis = analyze_performance(reporting_view, 0, 0);
+	assert(reporting_analysis.zones.size() == 1);
+	assert(reporting_analysis.zones.front().total_ns == 48'000'000);
+	assert(reporting_analysis.zones.front().self_ns == 48'000'000);
+	assert(reporting_analysis.sorted_cadence == std::vector<uint64_t>{50'000'000});
 	DevTimelineState timeline;
 	timeline.snapshot = extract_timeline(view, {});
 	timeline.inspected_sample = 0;

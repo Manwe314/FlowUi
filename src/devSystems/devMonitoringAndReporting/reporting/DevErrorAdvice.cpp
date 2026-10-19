@@ -121,9 +121,9 @@ bool evaluatePredicate(
 		for (const DevErrorRecordFlag flag : incompleteFlags) {
 			if (hasFlag(occurrence.flags, flag)) flagBits |= static_cast<uint16_t>(flag);
 		}
-		const bool correlationLost =
-			occurrence.timing.state == DevErrorCorrelationState::Evicted ||
-			occurrence.memory.state == DevErrorCorrelationState::Evicted;
+		const bool correlationLost = occurrence.timing.state == DevErrorCorrelationState::Evicted ||
+									 occurrence.memory.state == DevErrorCorrelationState::Evicted ||
+									 occurrence.memory.incomplete || occurrence.timing.incomplete;
 		if (flagBits == 0u && !correlationLost) return false;
 		appendEvidence(result, DevErrorAdviceEvidenceKind::CaptureQuality, flagBits,
 			correlationLost ? 1u : 0u);

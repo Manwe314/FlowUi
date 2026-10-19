@@ -1572,6 +1572,7 @@ int main() {
 		config.ui.fontAtlasSize = 1024;
 #if FLOW_UI_DEV_MODE
 		config.dev.enabled = true;
+		config.dev.monitoring.timing.cpuLevel = devSystems::CpuTimingLevel::Deep;
 #endif
 
 		App app = makeApplication(config);

@@ -122,11 +122,7 @@ uint64_t currentMemoryBytes(const App& app) {
 		return environment->process.residentBytes;
 	}
 
-	uint64_t current = 0u;
-	for (const auto& source : app.devMonitoring().memoryReporting().currentSourceSnapshot()) {
-		current += source.value.backingAllocatedBytes;
-	}
-	return current;
+	return app.devMonitoring().memoryReporting().current_backing_bytes();
 }
 
 void drawInsetSeparator(DevInterfaceHeader::BuildContext& context) {

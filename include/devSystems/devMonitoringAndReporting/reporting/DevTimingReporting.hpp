@@ -97,6 +97,7 @@ struct TimingCaptureReadView {
 	uint64_t generation = 0;
 };
 struct TimingCorrelationSummary {
+	TimingEntityRef entity{};
 	uint64_t revision = 0, invocation = 0, zone = 0, generation = 0;
 };
 struct TimingBudgetEvent {

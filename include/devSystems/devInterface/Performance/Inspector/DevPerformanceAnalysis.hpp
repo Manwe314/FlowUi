@@ -81,8 +81,7 @@ struct PerformanceAnalysis {
 }
 /** Completed CPU records without cancellation or clock errors are duration-eligible. */
 [[nodiscard]] inline bool performance_sample_valid(const TimelineBlockSlice& block) noexcept {
-	if (block.synthetic_tick || block.category == TimingCategory::DevTool ||
-		block.role == TimingZoneRole::DevToolWork)
+	if (block.synthetic_tick)
 		return false;
 	const auto flags = block.details().quality_flags;
 	if (block.domain == TimingSampleDomain::Gpu)
@@ -147,8 +146,7 @@ struct PerformanceAnalysis {
 	result.samples.reserve(snapshot.blocks.size());
 	for (const auto& block : snapshot.blocks) {
 		if (block.synthetic_tick || block.app_tick < result.first_tick ||
-			block.app_tick > result.last_tick || block.category == TimingCategory::DevTool ||
-			block.role == TimingZoneRole::DevToolWork)
+			block.app_tick > result.last_tick)
 			continue;
 		if (!performance_sample_valid(block)) {
 			++result.excluded_samples;

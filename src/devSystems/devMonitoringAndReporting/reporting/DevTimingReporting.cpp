@@ -632,8 +632,15 @@ DevTimingReporting::correlate_sample(AppTickId app_tick, WindowFrameKey frame, T
 			timestamp_ns - sample.startNs <= sample.durationNs &&
 			(!containing || sample.depth >= containing->depth))
 			containing = &sample;
-	return TimingCorrelationSummary{report->revision, containing ? containing->invocationId : 0,
-									containing ? containing->typeId : 0, impl_->capture_generation};
+	return TimingCorrelationSummary{
+		.entity = containing ? TimingEntityRef{.kind = containing->entityKind,
+											   .primaryId = containing->primaryEntityId,
+											   .secondaryId = containing->secondaryEntityId}
+							 : TimingEntityRef{},
+		.revision = report->revision,
+		.invocation = containing ? containing->invocationId : 0,
+		.zone = containing ? containing->typeId : 0,
+		.generation = impl_->capture_generation};
 }
 std::optional<TimingAppTickReport> DevTimingReporting::appTickReport(AppTickId appTick) const {
 	std::shared_lock lock(impl_->mutex);

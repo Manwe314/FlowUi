@@ -972,6 +972,16 @@ set_tests_properties(flowui.storage.system PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+    # The integrated workload requires subsystem probes, causal errors, and CPU zones.
+    if(FLOWUI_DEV_MEMORY_LEVEL GREATER_EQUAL 2 AND FLOWUI_DEV_ERROR_LEVEL GREATER_EQUAL 2
+       AND FLOWUI_DEV_TIMING_LEVEL GREATER_EQUAL 1)
+        add_executable(flowui_dev_error_reporting_tests DevMonitoringTests/DevErrorReportingTests.cpp)
+        target_compile_features(flowui_dev_error_reporting_tests PRIVATE cxx_std_23)
+        target_link_libraries(flowui_dev_error_reporting_tests PRIVATE FlowUi::FlowUi)
+        add_test(NAME flowui.dev.error_reporting COMMAND flowui_dev_error_reporting_tests)
+        set_tests_properties(flowui.dev.error_reporting PROPERTIES TIMEOUT 30 LABELS "flowui;dev;errors;unit")
+    endif()
+
     add_executable(flowui_dev_error_tests
         DevMonitoringTests/DevErrorMonitoringTests.cpp
         DevSystemsTests/DevMemoryVulkanSupport.cpp

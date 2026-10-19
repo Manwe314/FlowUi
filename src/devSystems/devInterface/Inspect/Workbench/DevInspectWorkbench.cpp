@@ -1220,42 +1220,23 @@ bool diagnosticMatchesSelection(
 #endif
 }
 
-std::optional<tooling::DevOverrideScope> resolveOccurrenceScope(
-	const App& app,
-	const DevErrorOccurrence& occurrence,
-	FlowDefinitionID definition,
-	uint64_t instance,
-	WindowId window) {
-	const ErrorSubjectKind subjectKind = occurrence.error.subjectKind();
-	if (subjectKind == ErrorSubjectKind::ElementInstance &&
-		occurrence.error.subject == instance) {
+[[nodiscard]] std::optional<tooling::DevOverrideScope>
+resolve_occurrence_scope(const DevErrorOccurrenceSummary& occurrence, FlowDefinitionID definition,
+						 uint64_t instance, WindowId window) noexcept {
+	const auto subject_kind = occurrence.error.subjectKind();
+	if (subject_kind == ErrorSubjectKind::ElementInstance && occurrence.error.subject == instance)
 		return tooling::DevOverrideScope::ExactInstance;
-	}
-	if (subjectKind == ErrorSubjectKind::ElementDefinition &&
-		occurrence.error.subject == definition.value) {
+	if (subject_kind == ErrorSubjectKind::ElementDefinition &&
+		occurrence.error.subject == definition.value)
 		return tooling::DevOverrideScope::Definition;
-	}
-	if (occurrence.timing.state != DevErrorCorrelationState::Available ||
-		occurrence.timing.containingInvocation == 0u ||
-		occurrence.timing.frame.window != window) return std::nullopt;
-	const auto report = app.devMonitoring().timingReporting().appTickReport(
-		occurrence.timing.appTick);
-	if (!report) return std::nullopt;
-	for (const TimingWindowReport& windowReport : report->windows) {
-		if (!windowReport.occupied || windowReport.window != window) continue;
-		for (const TimingFrameReport& frame : windowReport.frames) {
-			for (const CpuTimingRecord& record : frame.cpuZones) {
-				if (record.invocationId != occurrence.timing.containingInvocation ||
-					record.entityKind != TimingEntityKind::ElementInstance) continue;
-				if (record.primaryEntityId == instance) {
-					return tooling::DevOverrideScope::ExactInstance;
-				}
-				if (record.secondaryEntityId == definition.value) {
-					return tooling::DevOverrideScope::Definition;
-				}
-			}
-		}
-	}
+	const auto& timing = occurrence.timing;
+	if (timing.state != DevErrorCorrelationState::Available || !timing.containingInvocation ||
+		timing.frame.window != window || timing.entity.kind != TimingEntityKind::ElementInstance)
+		return std::nullopt;
+	if (timing.entity.primaryId == instance)
+		return tooling::DevOverrideScope::ExactInstance;
+	if (timing.entity.secondaryId == definition.value)
+		return tooling::DevOverrideScope::Definition;
 	return std::nullopt;
 }
 
@@ -1358,25 +1339,25 @@ DevChangeAndIssuePanelData queryChangeAndIssueData(
 	}
 #endif
 
-	for (const DevErrorOccurrence& occurrence :
-		parameters.app->devMonitoring().errorReporting().occurrenceSnapshot()) {
-		const std::optional<tooling::DevOverrideScope> scope = resolveOccurrenceScope(
-			*parameters.app, occurrence, flow.definition, flow.instance.value, window);
+	for (const auto& occurrence :
+		 parameters.app->devMonitoring().errorReporting().occurrence_summaries()) {
+		const std::optional<tooling::DevOverrideScope> scope =
+			resolve_occurrence_scope(occurrence, flow.definition, flow.instance.value, window);
 		if (!scope) continue;
 		const ErrorDescriptor descriptor = occurrence.error.descriptor();
 		std::string action = "Inspect the related subsystem report and captured evidence.";
-		if (!occurrence.advice.empty() && !occurrence.advice.front().suggestedAction.empty()) {
-			action = std::string(occurrence.advice.front().suggestedAction);
+		if (!occurrence.suggested_action.empty()) {
+			action = std::string(occurrence.suggested_action);
 		}
 		result.resolvedIssues.push_back(DevResolvedElementIssue{
 			.issueId = occurrence.id,
 			.title = std::string(descriptor.name),
 			.message = std::string(descriptor.message),
-			.source = std::string(errorSiteName(occurrence.error.site)) +
-				" / tick " + std::to_string(occurrence.lastAppTick),
+			.source = std::string(errorSiteName(occurrence.error.site)) + " / tick " +
+					  std::to_string(occurrence.last_app_tick),
 			.target = *scope == tooling::DevOverrideScope::ExactInstance
-				? "Instance " + formatHex(flow.instance.value)
-				: "Definition " + formatHex(flow.definition.value),
+						  ? "Instance " + formatHex(flow.instance.value)
+						  : "Definition " + formatHex(flow.definition.value),
 			.suggestedAction = std::move(action),
 			.scope = *scope,
 			.severity = errorSeverity(occurrence.error),

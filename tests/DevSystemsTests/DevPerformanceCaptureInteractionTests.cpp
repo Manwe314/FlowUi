@@ -86,6 +86,7 @@ int main(int argument_count, char** arguments) {
 	}
 	AppConfig config;
 	config.dev.enabled = true;
+	config.dev.monitoring.timing.cpuLevel = CpuTimingLevel::Deep;
 	config.dev.excludeInternalDevElementsFromCapture = false;
 	config.window.title = "Capture lifecycle integration";
 	config.vk.enableValidation = true;
@@ -156,13 +157,34 @@ int main(int argument_count, char** arguments) {
 	{
 		auto view = app.devMonitoring().timingReporting().read_capture();
 		assert(view.generation == 1);
+		constexpr std::array reporting_names{std::string_view{"flowui.dev.reporting.consume"},
+											 std::string_view{"flowui.dev.reporting.timing"},
+											 std::string_view{"flowui.dev.reporting.memory"},
+											 std::string_view{"flowui.dev.reporting.errors"}};
+		std::array<size_t, reporting_names.size()> reporting_counts{};
 		for (const auto segment : {view.first, view.second})
 			for (const auto& tick : segment) {
 				assert(tick.appTick < capture.status().end_app_tick_exclusive);
+				for (const auto& record : tick.applicationCpuZones) {
+					const auto descriptor = std::ranges::find(view.descriptors, record.typeId,
+															  &TimingZoneDescriptor::typeId);
+					if (descriptor == view.descriptors.end())
+						continue;
+					const auto name = std::ranges::find(reporting_names, descriptor->name);
+					if (name == reporting_names.end())
+						continue;
+					++reporting_counts[size_t(name - reporting_names.begin())];
+					assert(record.appTick == tick.appTick && record.appTick != 0);
+					assert(!record.frame);
+					assert(record.startNs >= tick.boundary_start_ns);
+					assert(record.startNs + record.durationNs <= tick.boundary_end_ns);
+				}
 				for (const auto& captured_window : tick.windows)
 					if (captured_window.occupied)
 						assert(captured_window.window != window);
 			}
+		for (const auto count : reporting_counts)
+			assert(count == view.first.size() + view.second.size());
 	}
 	settings.start_mode = PerformanceCaptureStartMode::Shortcut;
 	assert(app.request_dev_performance_capture(settings));

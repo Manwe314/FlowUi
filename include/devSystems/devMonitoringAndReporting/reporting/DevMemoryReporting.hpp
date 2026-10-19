@@ -1,5 +1,6 @@
 #pragma once
 #include "FlowUi/BuildConfig.hpp"
+#include "devSystems/devMonitoringAndReporting/reporting/DevMemoryCorrelation.hpp"
 #if FLOW_UI_DEV_MODE
 #include "internal/MemoryCapacityProfile.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemoryTypes.hpp"
@@ -161,6 +162,8 @@ struct MemoryReportingStatus {
 	AppTickId lastConsumedAppTick = 0u;
 	uint64_t storageMutationSequence = 0u;
 	uint64_t last_consumed_ns = 0;
+	/** Advances on live publication and reconfiguration, including while history is frozen. */
+	uint64_t correlation_revision = 0;
 	uint64_t history_storage_generation = 0, history_max_lock_ns = 0;
 	uint64_t history_revision = 0, history_epoch = 1, freeze_owner_count = 0;
 	uint64_t frozen_at_ns = 0, operations_not_retained = 0, history_scan_ns = 0;
@@ -245,6 +248,19 @@ public:
 	[[nodiscard]] MemoryReportingStatus status() const noexcept;
 	[[nodiscard]] std::vector<MemorySourceDescriptor> descriptorSnapshot() const;
 	[[nodiscard]] std::vector<MemoryTuningTargetDescriptor> tuningTargetSnapshot() const;
+	/** Resolve a batch against indexed retained events and live checkpoint metadata without copies.
+	 */
+	[[nodiscard]] MemoryCorrelationWork
+	correlate_errors(std::span<MemoryCorrelationQuery> queries) const noexcept;
+	/** Append only events newer than cursor. Use UINT64_MAX generation for the initial read.
+	 * A reset never mixes generations in destination.
+	 * The caller owns destination; maximum_events bounds its total retained size. */
+	[[nodiscard]] MemoryEventRead
+	append_event_range(uint64_t generation, uint64_t cursor, AppTickId first_tick,
+					   AppTickId last_tick, size_t maximum_events,
+					   std::vector<RetainedMemoryEvent>& destination) const;
+	/** Sum current source backing values without allocating or copying source payloads. */
+	[[nodiscard]] uint64_t current_backing_bytes() const noexcept;
 	[[nodiscard]] std::vector<MemoryCurrentSource> currentSourceSnapshot() const;
 	[[nodiscard]] std::vector<MemorySampleSegment> segmentSnapshot() const;
 	[[nodiscard]] std::vector<RetainedMemoryEvent> eventSnapshot() const;
