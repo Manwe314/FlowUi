@@ -409,6 +409,7 @@ private:
 			},
 			.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH,
 			.attachTo = CLAY_ATTACH_TO_PARENT,
+			.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT,
 		};
 	}
 
@@ -465,6 +466,7 @@ private:
 		};
 		fill.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
 		fill.floating.attachTo = CLAY_ATTACH_TO_PARENT;
+		fill.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
 
 		const float endpointOffset = geometry.thumbLength * 0.5f;
 		if (context.params.axis == SliderAxis::Horizontal) {
@@ -523,6 +525,7 @@ private:
 		};
 		thumb.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
 		thumb.floating.attachTo = CLAY_ATTACH_TO_PARENT;
+		thumb.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
 		if (context.params.axis == SliderAxis::Horizontal) {
 			thumb.floating.offset.x = leadingOffset;
 			thumb.floating.attachPoints = {

@@ -26,6 +26,9 @@ void ThemeManager::init(detail::storage::IStorageSystem& storage) {
 }
 
 void ThemeManager::destroy() noexcept {
+#if FLOW_UI_DEV_MODE
+	dev_previews_.clear();
+#endif
 	if (controller_) {
 		controller_->shutdown();
 	}

@@ -126,3 +126,43 @@ app.themes().updateActiveTheme<AppTheme>([](AppTheme& theme) {
     theme.brandAccent = Flow_Color("#007accff");
 });
 ```
+
+
+## Development previews
+
+Register example scenes once per theme type, alongside your theme values. The
+Workbench offers vertical, horizontal, and individual-scene layouts. Each scene's
+name appears in the dropdown. Re-registering the same name replaces its callback.
+Normal theme registration and reflection remain sufficient for inspecting tokens.
+
+```cpp
+#if FLOW_UI_DEV_MODE
+const auto preview_status = app.themes().registerDevPreview<AppTheme>(
+    "Brand button", [](FlowUi::App&, FlowUi::UiManager& ui) {
+        const auto& theme = ui.theme<AppTheme>();
+        FlowUi::FSEL::ButtonParameters example{};
+        example.text = "Example action";
+        example.contentMode = FlowUi::FSEL::ButtonContentMode::TextOnly;
+        example.idleOverrides.backgroundColor = theme.brandAccent;
+        example.cornerRadius = CLAY_CORNER_RADIUS(theme.cardRadius);
+        ui.createElement(FlowUi::FSEL::kButton, "brand-button-example")
+            .setParameters(example).setDevInternalCapture(true).draw();
+    });
+if (!preview_status) return preview_status;
+#endif
+```
+
+Callbacks receive the current app and window UI manager and use the application's
+active theme. Selecting an inactive variant shows a centered activation message;
+All Variants shows the active variant's scene and labels it accordingly. Preview
+rendering never temporarily switches the application's theme. Without a scene,
+custom themes display registration guidance; reflected values remain available
+in Token Overview. FSEL has a built-in gallery.
+
+Capture owned example data/state by value, or keep borrowed resources alive until
+ThemeManager destruction. Use distinct element names for each example. Keep
+preview actions local to the example, and register scenes before rendering them.
+Callbacks must keep Clay scopes balanced and must not mutate the preview registry
+while drawing. Preview contents are clipped to the bounded card; select an
+individual scene when a group is too large. Registration is development-only and
+returns `Status` for invalid names/callbacks or allocation failures.

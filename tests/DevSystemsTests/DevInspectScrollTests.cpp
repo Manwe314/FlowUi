@@ -399,9 +399,64 @@ void check_clay_inspector_panel(float content_height) {
 	Clay_SetCurrentContext(nullptr);
 }
 
+void check_nested_floating_clip(float control_offset) {
+	std::vector<std::byte> memory(Clay_MinMemorySize());
+	Clay_Initialize(Clay_CreateArenaWithCapacityAndMemory(memory.size(), memory.data()), {320, 300},
+					{});
+	Clay_BeginLayout();
+	Clay_ElementDeclaration viewport{};
+	viewport.layout.sizing = {CLAY_SIZING_FIXED(200), CLAY_SIZING_FIXED(100)};
+	viewport.clip = {.horizontal = true, .vertical = true, .childOffset = {0, control_offset}};
+	CLAY(CLAY_ID("viewport"), viewport) {
+		Clay_ElementDeclaration control{};
+		control.layout.sizing = {CLAY_SIZING_FIXED(200), CLAY_SIZING_FIXED(200)};
+		control.clip = {.horizontal = true, .vertical = true};
+		CLAY(CLAY_ID("control"), control) {
+			Clay_ElementDeclaration floating{};
+			floating.layout.sizing = {CLAY_SIZING_FIXED(200), CLAY_SIZING_FIXED(200)};
+			floating.backgroundColor = {255, 255, 255, 255};
+			floating.floating.attachTo = CLAY_ATTACH_TO_PARENT;
+			floating.floating.clipTo = CLAY_CLIP_TO_ATTACHED_PARENT;
+			// Keep the floating content on screen even when its attached clip is offscreen.
+			floating.floating.offset.y = -control_offset;
+			CLAY(CLAY_ID("floating"), floating);
+		}
+	}
+	const auto commands = Clay_EndLayout(0.016f);
+	std::vector<Clay_BoundingBox> scissors;
+	scissors.reserve(commands.length);
+	bool found_floating = false;
+	for (int command_index = 0; command_index < commands.length; ++command_index) {
+		const auto& command = commands.internalArray[command_index];
+		if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_START)
+			scissors.emplace_back(command.boundingBox);
+		else if (command.commandType == CLAY_RENDER_COMMAND_TYPE_SCISSOR_END) {
+			require(!scissors.empty(), "Floating clips must produce balanced scissors");
+			scissors.pop_back();
+		} else if (command.id == CLAY_ID("floating").id) {
+			found_floating = true;
+			require(!scissors.empty(), "Floating controls must retain their scissor offscreen");
+			const auto clip = scissors.back();
+			require(clip.width <= 200 && clip.height <= 100,
+					"Floating control clip must intersect the enclosing viewport");
+			if (control_offset >= 100)
+				require(clip.height == 0, "Controls below a viewport must have an empty clip");
+		}
+	}
+	require(found_floating && scissors.empty(), "Floating clip regression must exercise rendering");
+	Clay_SetPointerState({50, 150}, false);
+	const auto hovered = Clay_GetPointerOverIds();
+	for (int pointer_index = 0; pointer_index < hovered.length; ++pointer_index)
+		require(hovered.internalArray[pointer_index].id != CLAY_ID("floating").id,
+				"Clipped floating content must not receive pointer input outside its viewport");
+	Clay_SetCurrentContext(nullptr);
+}
+
 } // namespace
 
 int main(int argument_count, char**) {
+	for (const float control_offset : {0.f, 80.f, 350.f})
+		check_nested_floating_clip(control_offset);
 	for (const float header_height : {126.0f, 150.0f}) {
 		for (const float content_height : {50.0f, 900.0f}) {
 			for (const int clip_count : {0, 150}) {

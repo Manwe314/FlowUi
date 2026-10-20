@@ -132,6 +132,21 @@ int main() {
 	};
 	draw();
 	draw();
+	// History commands survive the Inspector building later in the same frame.
+	click(action_id(FlowElementID{workbench_id.value}, 204));
+	assert(session.memory_workbench.history_settings_open);
+	click(action_id(FlowElementID{workbench_id.value}, 205));
+	click(action_id(FlowElementID{workbench_id.value}, 205));
+	assert(session.memory_workbench.lane_count == 3);
+	click(action_id(FlowElementID{workbench_id.value}, 205));
+	assert(session.memory_workbench.lane_count == 3);
+	click(action_id(FlowElementID{workbench_id.value}, 212));
+	click(action_id(FlowElementID{workbench_id.value}, 211));
+	assert(session.memory_workbench.lane_count == 1);
+	click(action_id(FlowElementID{workbench_id.value}, 210));
+	assert(session.memory_workbench.lane_count == 1);
+	click(action_id(FlowElementID{workbench_id.value}, 206));
+	assert(!session.memory_workbench.history_settings_open);
 	auto& analysis = session.memory_workbench.analysis;
 	auto& tool = analysis.capacity_tool;
 	assert(tool.editor.evidence_mode == 1 && !tool.target_options.empty());

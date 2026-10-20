@@ -2581,6 +2581,27 @@ bool Clay__ElementIsOffscreen(Clay_BoundingBox *boundingBox) {
            (boundingBox->y + boundingBox->height < 0);
 }
 
+// Floating roots render outside the ancestor traversal, so their scissor must
+// include every enclosing clip, including scroll viewports above nested controls.
+Clay_BoundingBox Clay__GetEffectiveClipBoundingBox(uint32_t clipElementId) {
+    Clay_Context* context = Clay_GetCurrentContext();
+    Clay_BoundingBox bounds = {0, 0, context->layoutDimensions.width, context->layoutDimensions.height};
+    while (clipElementId) {
+        Clay_LayoutElementHashMapItem *clipItem = Clay__GetHashMapItem(clipElementId);
+        if (clipItem == &Clay_LayoutElementHashMapItem_DEFAULT) break;
+        Clay_BoundingBox ancestor = clipItem->boundingBox;
+        float right = CLAY__MIN(bounds.x + bounds.width, ancestor.x + ancestor.width);
+        float bottom = CLAY__MIN(bounds.y + bounds.height, ancestor.y + ancestor.height);
+        bounds.x = CLAY__MAX(bounds.x, ancestor.x);
+        bounds.y = CLAY__MAX(bounds.y, ancestor.y);
+        bounds.width = CLAY__MAX(0, right - bounds.x);
+        bounds.height = CLAY__MAX(0, bottom - bounds.y);
+        clipElementId = Clay__int32_tArray_GetValue(&context->layoutElementClipElementIds,
+            (int32_t)(clipItem->layoutElement - context->layoutElements.internalArray));
+    }
+    return bounds;
+}
+
 void Clay__CalculateFinalLayout(float deltaTime, bool useStoredBoundingBoxes, bool generateRenderCommands) {
     Clay_Context* context = Clay_GetCurrentContext();
 
@@ -2791,7 +2812,7 @@ void Clay__CalculateFinalLayout(float deltaTime, bool useStoredBoundingBoxes, bo
         }
         if (root->clipElementId) {
             Clay_LayoutElementHashMapItem *clipHashMapItem = Clay__GetHashMapItem(root->clipElementId);
-            if (clipHashMapItem && !Clay__ElementIsOffscreen(&clipHashMapItem->boundingBox)) {
+            if (clipHashMapItem != &Clay_LayoutElementHashMapItem_DEFAULT) {
                 // Floating elements that are attached to scrolling contents won't be correctly positioned if external scroll handling is enabled, fix here
                 if (context->externalScrollHandlingEnabled) {
                     if (clipHashMapItem->layoutElement->config.clip.horizontal) {
@@ -2803,7 +2824,7 @@ void Clay__CalculateFinalLayout(float deltaTime, bool useStoredBoundingBoxes, bo
                 }
                 if (generateRenderCommands) {
                     Clay__AddRenderCommand(CLAY__INIT(Clay_RenderCommand) {
-                        .boundingBox = clipHashMapItem->boundingBox,
+                        .boundingBox = Clay__GetEffectiveClipBoundingBox(root->clipElementId),
                         .userData = 0,
                         .id = Clay__HashNumber(rootElement->id, rootElement->children.length + 10).id, // TODO need a better strategy for managing derived ids
                         .zIndex = root->zIndex,
@@ -3196,7 +3217,7 @@ void Clay__CalculateFinalLayout(float deltaTime, bool useStoredBoundingBoxes, bo
 
         if (root->clipElementId) {
             Clay_LayoutElementHashMapItem *clipHashMapItem = Clay__GetHashMapItem(root->clipElementId);
-            if (clipHashMapItem && !Clay__ElementIsOffscreen(&clipHashMapItem->boundingBox)) {
+            if (clipHashMapItem != &Clay_LayoutElementHashMapItem_DEFAULT) {
                 Clay__AddRenderCommand(CLAY__INIT(Clay_RenderCommand) { .id = Clay__HashNumber(rootElement->id, rootElement->children.length + 11).id, .commandType = CLAY_RENDER_COMMAND_TYPE_SCISSOR_END });
             }
         }
@@ -4117,7 +4138,7 @@ void Clay_SetPointerState(Clay_Vector2 position, bool isPointerDown) {
 
             Clay_LayoutElementHashMapItem *mapItem = Clay__GetHashMapItem(currentElement->id); // TODO think of a way around this, maybe the fact that it's essentially a binary tree limits the cost, but the worst case is not great
             int32_t clipElementId = Clay__int32_tArray_GetValue(&context->layoutElementClipElementIds, (int32_t)(currentElement - context->layoutElements.internalArray));
-            Clay_LayoutElementHashMapItem *clipItem = Clay__GetHashMapItem(clipElementId);
+            Clay_BoundingBox clipBounds = Clay__GetEffectiveClipBoundingBox(clipElementId);
             // This check skips mouse interactions for elements that are currently "exit transitioning"
             if (mapItem && mapItem->generation > context->generation) {
                 // Conditionally skip mouse interactions on non-exit transitions, based on user config
@@ -4146,7 +4167,7 @@ void Clay_SetPointerState(Clay_Vector2 position, bool isPointerDown) {
                 Clay_BoundingBox elementBox = mapItem->boundingBox;
                 elementBox.x -= root->pointerOffset.x;
                 elementBox.y -= root->pointerOffset.y;
-                if ((Clay__PointIsInsideRect(position, elementBox)) && (clipElementId == 0 || (Clay__PointIsInsideRect(position, clipItem->boundingBox)) || context->externalScrollHandlingEnabled)) {
+                if ((Clay__PointIsInsideRect(position, elementBox)) && (clipElementId == 0 || (Clay__PointIsInsideRect(position, clipBounds)) || context->externalScrollHandlingEnabled)) {
                     if (!skipTree) {
                         if (mapItem->onHoverFunction) {
                             mapItem->onHoverFunction(mapItem->elementId, context->pointerInfo, mapItem->hoverFunctionUserData);

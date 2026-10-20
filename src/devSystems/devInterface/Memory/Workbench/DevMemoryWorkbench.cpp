@@ -91,12 +91,14 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 									: 0;
 	if (history_action == 204)
 		state.history_settings_open = !state.history_settings_open;
+	if (history_action == 206)
+		state.history_settings_open = false;
 	if (history_action == 205 && state.lane_count < 3) {
 		state.lane_settings[state.lane_count] = {};
 		++state.lane_count;
 		state.next_history_ns = 0;
 	}
-	if (history_action >= 210 && history_action < 213 && state.lane_count > 1) {
+	if (history_action >= 210 && history_action < 210 + state.lane_count && state.lane_count > 1) {
 		const auto removed = history_action - 210;
 		for (size_t lane_index = removed; lane_index + 1 < state.lane_count; ++lane_index)
 			state.lane_settings[lane_index] = state.lane_settings[lane_index + 1];
@@ -496,7 +498,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 						CLAY(context.clayID("lane-settings-title"), row(24)) {
 							text(context, "History lanes", interface_theme::kTextCanvas, 12);
 							memory_ui::button(context, state, 205, "+ Lane", state.lane_count < 3);
-							memory_ui::button(context, state, 204, "Done");
+							memory_ui::button(context, state, 206, "Done");
 						}
 						static const auto scope_labels = [] {
 							std::vector<std::string> labels;
@@ -537,6 +539,7 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 								scope.options = scopes;
 								scope.selectedValue = &settings.scope;
 								scope.fontSize = 11;
+								scope.popupMaxHeight = 240;
 								scope.sizing = Clay_Sizing{.width = CLAY_SIZING_GROW(0),
 														   .height = CLAY_SIZING_FIXED(26)};
 								const auto old_scope = settings.scope;

@@ -43,6 +43,43 @@ namespace devSystems::tooling { class DevOverrideCapture; class DevOverrideEngin
 class ThemeManager {
 public:
 #if FLOW_UI_DEV_MODE
+	/** A reproducible component example. Captures own example data and local state.
+	 * Draw callbacks consume the application's active theme; they must not register
+	 * previews or trigger application operations while building the preview tree. */
+	struct DevThemePreview {
+		std::function<void(App&, UiManager&)> draw{};
+		std::string debug_name{};
+	};
+	/** Register or replace the named preview for every variant of T (development only).
+	 * Capture example state by value, or retain dependencies for the manager lifetime. */
+	template <typename T>
+	[[nodiscard]] Status registerDevPreview(std::string_view debug_name,
+											std::function<void(App&, UiManager&)> draw) noexcept {
+		if (debug_name.empty() || !draw)
+			return unexpectedError(
+				makeError(ErrorCode::ThemeMutationFailed, ErrorSite::ThemeRegisterVariant));
+		try {
+			for (auto& preview : dev_previews_)
+				if (preview.theme_type == detail::typeHash<T>() &&
+					preview.scene.debug_name == debug_name) {
+					preview.scene.draw = std::move(draw);
+					return {};
+				}
+			dev_previews_.emplace_back(DevPreviewEntry{
+				DevThemePreview{std::move(draw), std::string(debug_name)}, detail::typeHash<T>()});
+			return {};
+		} catch (...) {
+			return unexpectedError(
+				makeError(ErrorCode::ThemeMutationFailed, ErrorSite::ThemeRegisterVariant));
+		}
+	}
+	/** Visit registered component examples for a theme type, in registration order. */
+	template <typename Visitor>
+	void visitDevPreviews(devMode::DevTypeId theme_type, Visitor&& visitor) const {
+		for (const auto& preview : dev_previews_)
+			if (preview.theme_type == theme_type)
+				visitor(preview.scene);
+	}
 	struct DevThemePayloadView {
 		devMode::DevTypeId type = 0;
 		std::string_view typeName{};
@@ -267,6 +304,11 @@ private:
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	std::unique_ptr<detail::manager_storage::ThemeStorageController> controller_{};
 #if FLOW_UI_DEV_MODE
+	struct DevPreviewEntry {
+		DevThemePreview scene{};
+		devMode::DevTypeId theme_type = 0;
+	};
+	std::vector<DevPreviewEntry> dev_previews_{};
 	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;
 #endif
 };

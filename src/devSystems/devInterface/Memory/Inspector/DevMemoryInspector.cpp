@@ -837,7 +837,11 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 	auto& analysis = state.analysis;
 	auto& reporting = context.params.app->devMonitoring().memoryReporting();
 	const auto* track = inspected_track(state);
-	const auto action = analysis.ui_action >= 110 ? std::exchange(analysis.ui_action, 0) : 0;
+	// History actions belong to the Workbench, which may process them next frame.
+	const auto action =
+		analysis.ui_action >= 110 && (analysis.ui_action < 200 || analysis.ui_action >= 300)
+			? std::exchange(analysis.ui_action, 0)
+			: 0;
 	if (action == 137 && track)
 		context.params.app->setClipboardText(track->title + "\n" +
 											 memory_track_reading(*track, state.decimal));

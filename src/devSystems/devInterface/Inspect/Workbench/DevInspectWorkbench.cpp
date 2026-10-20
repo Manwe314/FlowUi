@@ -1,7 +1,7 @@
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
 
 #if FLOW_UI_DEV_MODE
-#include "devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp"
+#include "devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp"
 
 #include "devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp"
 

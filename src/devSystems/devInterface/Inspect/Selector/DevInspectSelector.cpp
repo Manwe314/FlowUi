@@ -2,7 +2,7 @@
 
 #if FLOW_UI_DEV_MODE
 
-#include "devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp"
+#include "devSystems/devInterface/Inspect/Selector/DevThemeSelector.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <vector>

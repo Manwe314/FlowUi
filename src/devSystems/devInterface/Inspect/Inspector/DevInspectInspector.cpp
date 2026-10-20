@@ -1,7 +1,7 @@
 #include "devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp"
 
 #if FLOW_UI_DEV_MODE
-#include "devSystems/devInterface/Inspect/Themes/DevThemeEditor.hpp"
+#include "devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp"
 
 #include <algorithm>
 #include <cstdio>

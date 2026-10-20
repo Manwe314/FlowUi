@@ -219,7 +219,7 @@ struct DevMemoryHistoryController::Impl {
 			 presented_retained_end = 0;
 	uint64_t presented_settings = 0, presented_scope = 0, presented_window = 0;
 	uint64_t press_ns = 0, press_begin = 0, press_end = 0, generation = 0, hover_ns = 0,
-			 last_click_ns = 0;
+			 last_click_ns = 0, navigator_offset_ns = 0;
 	float font_scale = 1, press_x = 0, last_click_x = 0;
 	uint32_t texture_slot = 0;
 	size_t hover_lane = 0;
@@ -355,14 +355,19 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 	const bool valid = controller.presented_scope == state.scope &&
 					   controller.presented_window == state.window &&
 					   controller.presented_settings == state.history_settings_key &&
+					   controller.presented_end > controller.presented_begin &&
+					   controller.presented_retained_end > controller.presented_retained_begin &&
 					   bounds.width > gutter && bounds.height > navigator_height;
 	const bool covered = state.history_settings_open || state.history_window_open;
 	if (!valid || covered || !input.windowFocused)
 		controller.drag_button = -1;
 	const bool hovered = valid && !covered && contains(bounds, input.mouseX, input.mouseY);
 	const float plot_width = std::max(1.0f, bounds.width - gutter - 8);
-	const bool navigator = hovered && input.mouseY >= bounds.y + bounds.height - navigator_height;
-	const bool plot = hovered && !navigator && input.mouseX >= bounds.x + gutter;
+	const bool navigator = hovered && input.mouseX >= bounds.x + gutter &&
+						   input.mouseX <= bounds.x + gutter + plot_width &&
+						   input.mouseY >= bounds.y + bounds.height - navigator_height;
+	const bool plot = hovered && input.mouseY < bounds.y + bounds.height - navigator_height &&
+					  input.mouseX >= bounds.x + gutter;
 	const auto fraction = [&](float horizontal) {
 		return std::clamp(double(horizontal - bounds.x - gutter) / plot_width, 0.0, 1.0);
 	};
@@ -379,7 +384,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 												std::max(1.0f, bounds.height - navigator_height) *
 												controller.presented_lanes.size()));
 	if ((plot || navigator) && controller.drag_button < 0) {
-		for (int button = 0; button < 3; ++button)
+		for (int button = 0; button < (navigator ? 1 : 3); ++button)
 			if (input.mouseDown[size_t(button)] && !previous.mouseDown[size_t(button)]) {
 				controller.pause();
 				controller.drag_button = button;
@@ -403,9 +408,18 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 													 controller.presented_retained_begin) /
 											  retained) *
 											plot_width;
-					controller.navigator_drag = std::abs(input.mouseX - left) <= 5	  ? 2
-												: std::abs(input.mouseX - right) <= 5 ? 3
-																					  : 1;
+					const auto left_distance = std::abs(input.mouseX - left);
+					const auto right_distance = std::abs(input.mouseX - right);
+					controller.navigator_drag = std::min(left_distance, right_distance) <= 5
+													? (left_distance <= right_distance ? 2 : 3)
+													: 1;
+					const auto timestamp = controller.presented_retained_begin +
+										   uint64_t(fraction(input.mouseX) * retained);
+					// Preserve the grab position inside the curtain; outside clicks center it.
+					controller.navigator_offset_ns =
+						input.mouseX >= left && input.mouseX <= right
+							? timestamp - controller.presented_begin
+							: (controller.press_end - controller.press_begin) / 2;
 				}
 				break;
 			}
@@ -429,11 +443,16 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 						 (controller.presented_retained_end - controller.presented_retained_begin));
 			const auto width = controller.press_end - controller.press_begin;
 			if (controller.navigator_drag == 2) {
-				state.view_begin_ns = std::min(timestamp, state.view_end_ns - 1);
-			} else if (controller.navigator_drag == 3)
-				state.view_end_ns = std::max(timestamp, state.view_begin_ns + 1);
-			else
-				move_view(static_cast<long double>(timestamp) - width / 2, width);
+				state.view_begin_ns =
+					std::clamp(timestamp, state.retained_begin_ns, controller.press_end - 1);
+				state.view_end_ns = controller.press_end;
+			} else if (controller.navigator_drag == 3) {
+				state.view_begin_ns = controller.press_begin;
+				state.view_end_ns =
+					std::clamp(timestamp, controller.press_begin + 1, state.retained_end_ns);
+			} else
+				move_view(static_cast<long double>(timestamp) - controller.navigator_offset_ns,
+						  width);
 			state.duration_ns = state.view_end_ns - state.view_begin_ns;
 			state.next_history_ns = 0;
 		} else if (controller.dragged && controller.drag_button == 0) {
@@ -672,8 +691,8 @@ void DevMemoryHistoryController::prepare(
 				   float(std::clamp(double(value) / std::max<uint64_t>(1, lane.scale), 0.0, 1.0)) *
 					   height;
 		};
-		const auto active_color = lane.metric ? Flow_Color("#47648F") : Flow_Color("#49B9FF");
-		const auto backing_color = lane.metric ? Flow_Color("#16856B") : Flow_Color("#BA8CFF");
+		const auto active_color = lane.metric ? Flow_Color("#33465F") : Flow_Color("#49B9FF");
+		const auto backing_color = lane.metric ? Flow_Color("#10B981") : Flow_Color("#BA8CFF");
 		label(lane.label, gutter + 2, top + 2, std::max(1.0f, plot_width - 175), 18,
 			  interface_theme::kTextSecondary);
 		rectangle(bounds.width - 172, top + 10, 8, 2, active_color);
@@ -788,19 +807,41 @@ void DevMemoryHistoryController::prepare(
 			for (const auto& value : lane.overview)
 				maximum = std::max({maximum, value.active_max, value.backing_max});
 			const float column_width = plot_width / std::max<size_t>(1, lane.overview.size());
-			for (size_t column = 0; column < lane.overview.size(); ++column) {
-				const auto& value = lane.overview[column];
-				if (!value.available || value.mixed_epochs || value.gap)
-					continue;
-				if (value.value_fields & uint16_t(MemoryValueField::Backing))
-					rectangle(gutter + column * column_width,
-							  nav_top + 15 - float(double(value.backing_max) / maximum) * 11,
-							  column_width, 1, interface_theme::kTextMuted);
-				if (value.value_fields & uint16_t(MemoryValueField::LogicalLive))
-					rectangle(gutter + column * column_width,
-							  nav_top + 15 - float(double(value.active_max) / maximum) * 11,
-							  column_width, 1, interface_theme::kTextSecondary);
-			}
+			const auto overview_series = [&](bool backing, Clay_Color color) {
+				color.a = 180;
+				const MemoryHistoryColumn* previous = nullptr;
+				const auto value_y = [&](uint64_t value) {
+					return nav_top + 15 - float(double(value) / maximum) * 11;
+				};
+				for (size_t column = 0; column < lane.overview.size(); ++column) {
+					const auto& value = lane.overview[column];
+					const auto field =
+						backing ? MemoryValueField::Backing : MemoryValueField::LogicalLive;
+					if (!value.available || value.mixed_epochs || value.gap ||
+						!(value.value_fields & uint16_t(field))) {
+						previous = nullptr;
+						continue;
+					}
+					const float left = gutter + column * column_width;
+					const float high = value_y(backing ? value.backing_max : value.active_max);
+					const float low = value_y(backing ? value.backing_min : value.active_min);
+					const float last = value_y(backing ? value.backing_last : value.active_last);
+					rectangle(left, last, column_width, 1, color);
+					rectangle(left, high, 1, std::max(1.0f, low - high), color);
+					if (previous && previous->epoch == value.epoch &&
+						previous->last_ns >= value.first_ns) {
+						const float previous_y =
+							value_y(backing ? previous->backing_last : previous->active_last);
+						const float first_y =
+							value_y(backing ? value.backing_first : value.active_first);
+						rectangle(left, std::min(previous_y, first_y), 1,
+								  std::max(1.0f, std::abs(previous_y - first_y)), color);
+					}
+					previous = &value;
+				}
+			};
+			overview_series(true, lane.metric ? Flow_Color("#10B981") : Flow_Color("#BA8CFF"));
+			overview_series(false, lane.metric ? Flow_Color("#33465F") : Flow_Color("#49B9FF"));
 		}
 		const auto nav_x = [&](uint64_t timestamp) {
 			return gutter + float(double(timestamp - state.retained_begin_ns) /
