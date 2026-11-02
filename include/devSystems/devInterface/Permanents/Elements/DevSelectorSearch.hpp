@@ -8,6 +8,8 @@ namespace FlowUi::devSystems::interface_elements {
 struct DevSelectorSearchParameters {
 	std::string* query = nullptr;
 	std::string_view placeholder = "Filter nodes...";
+	/** Center text and caret in this search field without changing other selector defaults. */
+	bool center_text = false;
 };
 
 struct DevSelectorSearch {

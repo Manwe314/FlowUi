@@ -185,13 +185,16 @@ struct TextInput {
 					}
 				}
 				if (field.text.empty() && !context.params.placeholder.empty()) {
-					CLAY(
-						placeholderId,
-						detail::text_field::makePlaceholderDeclaration(
-							context.params.floatingZIndex.value_or(0))) {
-						CLAY_TEXT(
-							context.uiManager.toClayString(context.params.placeholder),
-							CLAY_TEXT_CONFIG(placeholderConfig));
+					auto placeholder_declaration = detail::text_field::makePlaceholderDeclaration(
+						context.params.floatingZIndex.value_or(0));
+					if (context.params.centerText) {
+						placeholder_declaration.floating.attachPoints = {
+							CLAY_ATTACH_POINT_CENTER_CENTER, CLAY_ATTACH_POINT_CENTER_CENTER};
+						placeholder_declaration.floating.offset = {};
+					}
+					CLAY(placeholderId, placeholder_declaration) {
+						CLAY_TEXT(context.uiManager.toClayString(context.params.placeholder),
+								  CLAY_TEXT_CONFIG(placeholderConfig));
 					}
 				}
 			}

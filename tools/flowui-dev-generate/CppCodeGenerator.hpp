@@ -7,9 +7,9 @@
 
 namespace flowui::bake_tool {
 
-bool generateCpp(
-	const Manifest& manifest,
-	const std::filesystem::path& outputDirectory,
-	std::string& error);
+/** Generate ordered compiled assignments and immutable development metadata, writing only changed
+ * files. */
+[[nodiscard]] bool generateCpp(const Manifest& manifest,
+							   const std::filesystem::path& outputDirectory, std::string& error);
 
 } // namespace flowui::bake_tool

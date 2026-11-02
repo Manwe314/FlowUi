@@ -52,13 +52,13 @@ constexpr float gutter = 68, navigator_height = 18;
 		   reading(after >= before ? after - before : before - after, counts, decimal);
 }
 [[nodiscard]] std::string_view active_label(const MemoryHistoryLane& lane) noexcept {
-	return lane.metric											? "Objects"
+	return lane.metric											? "Sub-Allocations"
 		   : lane.key.source == memory_sources::kProcess.id		? "Resident"
 		   : lane.key.source == memory_sources::kVulkanHeaps.id ? "Allocations"
 																: "Active";
 }
 [[nodiscard]] std::string_view backing_label(const MemoryHistoryLane& lane) noexcept {
-	return lane.metric											? "Capacity"
+	return lane.metric											? "Pages"
 		   : lane.key.source == memory_sources::kProcess.id		? "Virtual"
 		   : lane.key.source == memory_sources::kVulkanHeaps.id ? "Blocks"
 																: "Backing";
@@ -223,7 +223,8 @@ struct DevMemoryHistoryController::Impl {
 	float font_scale = 1, press_x = 0, last_click_x = 0;
 	uint32_t texture_slot = 0;
 	size_t hover_lane = 0;
-	int drag_button = -1, navigator_drag = 0;
+	int drag_button = -1;
+	bool navigator_drag = false;
 	bool seen = false, was_seen = false, created = false, recorded = false, replay_failed = false,
 		 dragged = false, keyboard_focus = false;
 	void pause() {
@@ -394,7 +395,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 				controller.press_ns = time_at(input.mouseX);
 				controller.press_begin = state.view_begin_ns;
 				controller.press_end = state.view_end_ns;
-				controller.navigator_drag = 0;
+				controller.navigator_drag = false;
 				if (navigator) {
 					const auto retained = std::max<uint64_t>(
 						1, controller.presented_retained_end - controller.presented_retained_begin);
@@ -408,11 +409,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 													 controller.presented_retained_begin) /
 											  retained) *
 											plot_width;
-					const auto left_distance = std::abs(input.mouseX - left);
-					const auto right_distance = std::abs(input.mouseX - right);
-					controller.navigator_drag = std::min(left_distance, right_distance) <= 5
-													? (left_distance <= right_distance ? 2 : 3)
-													: 1;
+					controller.navigator_drag = true;
 					const auto timestamp = controller.presented_retained_begin +
 										   uint64_t(fraction(input.mouseX) * retained);
 					// Preserve the grab position inside the curtain; outside clicks center it.
@@ -442,19 +439,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 				uint64_t(fraction(input.mouseX) *
 						 (controller.presented_retained_end - controller.presented_retained_begin));
 			const auto width = controller.press_end - controller.press_begin;
-			if (controller.navigator_drag == 2) {
-				state.view_begin_ns =
-					std::clamp(timestamp, state.retained_begin_ns, controller.press_end - 1);
-				state.view_end_ns = controller.press_end;
-			} else if (controller.navigator_drag == 3) {
-				state.view_begin_ns = controller.press_begin;
-				state.view_end_ns =
-					std::clamp(timestamp, controller.press_begin + 1, state.retained_end_ns);
-			} else
-				move_view(static_cast<long double>(timestamp) - controller.navigator_offset_ns,
-						  width);
-			state.duration_ns = state.view_end_ns - state.view_begin_ns;
-			state.next_history_ns = 0;
+			move_view(static_cast<long double>(timestamp) - controller.navigator_offset_ns, width);
 		} else if (controller.dragged && controller.drag_button == 0) {
 			const auto current = time_at(input.mouseX);
 			state.selected_ns = 0;
@@ -492,7 +477,7 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 						  input.scrollY * .1 * (state.view_end_ns - state.view_begin_ns),
 					  state.view_end_ns - state.view_begin_ns);
 		else
-			zoom_memory_view(state, std::pow(1.25, -input.scrollY), fraction(input.mouseX));
+			zoom_memory_view(state, std::pow(1.08, -input.scrollY), fraction(input.mouseX));
 	}
 	if (controller.keyboard_focus && valid && !covered && input.windowFocused &&
 		!manager.inputFields().hasPrimaryFieldFocus()) {
@@ -560,10 +545,8 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 					size_t(static_cast<long double>(timestamp - state.view_begin_ns) *
 						   lane.columns.size() / (state.view_end_ns - state.view_begin_ns)));
 				const auto& value = lane.columns[index];
-				char time[48];
-				std::snprintf(time, sizeof(time), "t = %+.3f s",
-							  -double(state.view_end_ns - timestamp) / 1e9);
-				state.tooltip = time;
+				state.tooltip =
+					"t = " + memory_history_time_label(timestamp, state.retained_end_ns, 3);
 				if (lane.point_ns == timestamp && lane.point_available) {
 					const auto& point = lane.point;
 					const auto active_field =
@@ -691,12 +674,12 @@ void DevMemoryHistoryController::prepare(
 				   float(std::clamp(double(value) / std::max<uint64_t>(1, lane.scale), 0.0, 1.0)) *
 					   height;
 		};
-		const auto active_color = lane.metric ? Flow_Color("#33465F") : Flow_Color("#49B9FF");
+		const auto active_color = lane.metric ? Flow_Color("#3E6094") : Flow_Color("#49B9FF");
 		const auto backing_color = lane.metric ? Flow_Color("#10B981") : Flow_Color("#BA8CFF");
-		label(lane.label, gutter + 2, top + 2, std::max(1.0f, plot_width - 175), 18,
+		label(lane.label, gutter + 2, top + 2, std::max(1.0f, plot_width - 225), 18,
 			  interface_theme::kTextSecondary);
-		rectangle(bounds.width - 172, top + 10, 8, 2, active_color);
-		label(std::string(active_label(lane)), bounds.width - 161, top + 2, 75, 18, active_color);
+		rectangle(bounds.width - 222, top + 10, 8, 2, active_color);
+		label(std::string(active_label(lane)), bounds.width - 211, top + 2, 125, 18, active_color);
 		rectangle(bounds.width - 83, top + 10, 8, 2, backing_color);
 		label(std::string(backing_label(lane)), bounds.width - 72, top + 2, 66, 18, backing_color);
 		for (int tick = 0; tick < 5; ++tick) {
@@ -706,7 +689,7 @@ void DevMemoryHistoryController::prepare(
 							   lane.metric, state.decimal),
 				  0, vertical - 7, gutter - 6, 14, interface_theme::kTextMuted, true);
 		}
-		// Choose a 1/2/5 decade cadence in relative seconds; labels remain stable during panning.
+		// Choose a 1/2/5 decade cadence; all labels share the retained endpoint as zero.
 		const double seconds = double(duration) / 1e9;
 		const double rough = seconds / std::max(2.0f, plot_width / 110);
 		const double decade = std::pow(10.0, std::floor(std::log10(std::max(1e-9, rough))));
@@ -716,14 +699,18 @@ void DevMemoryHistoryController::prepare(
 								: normalized <= 5 ? 5
 												  : 10) *
 							   decade;
-		for (double offset = 0; offset <= seconds; offset += cadence) {
+		const auto time_label = [&](uint64_t timestamp, float horizontal, bool right = false) {
+			label(memory_history_time_label(timestamp, state.retained_end_ns,
+											cadence < 1 ? (cadence < .01 ? 3 : 2) : 1),
+				  horizontal, bottom + 9, 80, 16, interface_theme::kTextMuted, right);
+		};
+		time_label(state.view_begin_ns, gutter);
+		time_label(state.view_end_ns, gutter + plot_width - 80, true);
+		for (double offset = cadence; offset < seconds; offset += cadence) {
 			const float horizontal = gutter + plot_width * float(1 - offset / seconds);
 			rectangle(horizontal, graph_top, 1, height, interface_theme::kBorderPrimary);
-			char time[48];
-			std::snprintf(time, sizeof(time), "%.*fs", cadence < 1 ? (cadence < .01 ? 3 : 2) : 1,
-						  offset == 0 ? 0 : -offset);
-			label(time, std::clamp(horizontal - 25, gutter, bounds.width - 58), bottom + 9, 52, 16,
-				  interface_theme::kTextMuted);
+			if (horizontal > gutter + 100 && horizontal < gutter + plot_width - 100)
+				time_label(state.view_end_ns - uint64_t(offset * 1e9), horizontal - 25);
 		}
 		rectangle(gutter, graph_top, 1, height, interface_theme::kBorderVisible);
 		if (state.range_end_ns > state.range_begin_ns &&
@@ -779,7 +766,7 @@ void DevMemoryHistoryController::prepare(
 		const bool reported = std::ranges::any_of(
 			lane.columns, [](const auto& value) { return value.available && value.value_fields; });
 		if (!reported)
-			label(lane.metric ? "Objects / capacity not reported by this source"
+			label(lane.metric ? "Sub-Allocations / Pages not reported by this source"
 							  : "No retained byte observations",
 				  gutter + 8, graph_top + height / 2 - 8, plot_width - 16, 18,
 				  interface_theme::kTextSecondary);
@@ -841,7 +828,7 @@ void DevMemoryHistoryController::prepare(
 				}
 			};
 			overview_series(true, lane.metric ? Flow_Color("#10B981") : Flow_Color("#BA8CFF"));
-			overview_series(false, lane.metric ? Flow_Color("#33465F") : Flow_Color("#49B9FF"));
+			overview_series(false, lane.metric ? Flow_Color("#3E6094") : Flow_Color("#49B9FF"));
 		}
 		const auto nav_x = [&](uint64_t timestamp) {
 			return gutter + float(double(timestamp - state.retained_begin_ns) /

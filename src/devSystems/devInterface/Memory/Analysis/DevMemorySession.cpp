@@ -217,8 +217,7 @@ Status stage_memory_setting(MemoryAnalysisState& state, const MemoryTuningTarget
 		state.shared_factor = state.plan->factor;
 	state.replace_pending = state.shared_factor_pending = false;
 	state.show_review = true;
-	state.planner_message =
-		"Staged locally for the next build; inspector Export / Bake controls remain unwired.";
+	state.planner_message = "Prepared for final review in Changes; running allocations are unchanged.";
 	++state.staged_revision;
 	return {};
 }
@@ -252,8 +251,10 @@ export_staged_memory_capacities(const MemoryAnalysisState& state,
 			has_storage = has_storage || !definition->storage_member.empty();
 		}
 		// Geometric policy belongs only to the storage byte targets.
-		if (has_storage)
+		if (has_storage) {
 			result.growth_factor = static_cast<float>(state.shared_factor);
+			result.allow_runtime_growth = state.capacity_tool.runtime_growth;
+		}
 		std::string diagnostic;
 		if (!FlowUi::detail::validate_memory_capacity_manifest(result, diagnostic))
 			return unexpectedError(

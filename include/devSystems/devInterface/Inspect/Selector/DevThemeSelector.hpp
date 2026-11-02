@@ -10,6 +10,7 @@ struct DevThemeSelector {
 	using Parameters = DevInspectContentParameters;
 	struct State {
 		uint64_t resolved_key = 0;
+		uint64_t options_generation = ~uint64_t{0};
 		std::vector<std::string> labels{};
 		std::vector<FSEL::ComboBoxOption> options{};
 	};

@@ -29,6 +29,7 @@ void DevSelectorSearch::buildElement(BuildContext& context) {
 		input.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 		input.cornerRadius = CLAY_CORNER_RADIUS(3);
 		input.fontSize = 12;
+		input.centerText = context.params.center_text;
 		input.idleOverrides.backgroundColor = interface_theme::kDepth3Elevated;
 		input.idleOverrides.textColor = interface_theme::kTextCanvas;
 		input.idleOverrides.placeholderColor = interface_theme::kTextMuted;

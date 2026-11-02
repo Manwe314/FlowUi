@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <charconv>
 #include <cmath>
+#include <initializer_list>
 #include <optional>
 #include <string>
 #include <vector>
@@ -100,9 +101,23 @@ template <class Json>
 												   MemoryCapacityManifest& output,
 												   std::string& error) {
 	using Kind = typename Json::Kind;
+	error.clear();
 	const auto fail = [&](std::string_view message) {
-		error = "memoryCapacity: " + std::string(message);
+		if (error.empty())
+			error = "memoryCapacity: " + std::string(message);
 		return false;
+	};
+	const auto known_members = [&](const Json& object,
+								   std::initializer_list<std::string_view> allowed,
+								   std::string_view location) {
+		for (const auto& member : object.object) {
+			if (std::find(allowed.begin(), allowed.end(), member.first) == allowed.end()) {
+				error = "memoryCapacity: unknown v1 " + std::string(location) + " member '" +
+						member.first + "'; migrate the payload before rewriting";
+				return false;
+			}
+		}
+		return true;
 	};
 	const auto* version = value.find("version");
 	const auto* enabled = value.find("enabled");
@@ -111,6 +126,21 @@ template <class Json>
 		version->text != "1" || !enabled || enabled->kind != Kind::Boolean || !targets ||
 		targets->kind != Kind::Array)
 		return fail("expected version 1, boolean enabled and targets array");
+	if (!known_members(
+			value,
+			{"version", "enabled", "targets", "growthFactor", "allowRuntimeGrowth", "evidence"},
+			"section"))
+		return false;
+	const auto known_evidence_members = [&](const Json& evidence) {
+		return known_members(evidence,
+							 {"kind", "sourceName", "datasetId", "beginNs", "endNs", "beginTick",
+							  "endTickExclusive", "sampleEveryTicks", "complete",
+							  "acknowledgeIncomplete"},
+							 "evidence");
+	};
+	if (const auto* evidence = value.find("evidence");
+		evidence && (evidence->kind != Kind::Object || !known_evidence_members(*evidence)))
+		return fail("invalid legacy evidence");
 	MemoryCapacityManifest decoded{};
 	decoded.enabled = enabled->boolean;
 	const auto unsigned_member = [&](const Json& object, std::string_view name,
@@ -122,6 +152,8 @@ template <class Json>
 	};
 	const auto decode_evidence = [&](const Json* evidence, MemoryCapacityEvidence& destination) {
 		if (!evidence || evidence->kind != Kind::Object)
+			return false;
+		if (!known_evidence_members(*evidence))
 			return false;
 		const auto* kind = evidence->find("kind");
 		const auto* complete = evidence->find("complete");
@@ -159,6 +191,11 @@ template <class Json>
 		if (item.kind != Kind::Object || !key || key->kind != Kind::String || !policy ||
 			policy->kind != Kind::String)
 			return fail("target requires key and policy strings");
+		if (!known_members(item,
+						   {"key", "unit", "value", "policy", "observedMaximum", "headroom",
+							"percentile", "evidence"},
+						   "target"))
+			return false;
 		selection.key = key->text;
 		selection.policy = policy->text;
 		if (!unsigned_member(item, "value", selection.value, true) ||

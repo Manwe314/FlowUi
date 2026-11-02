@@ -15,6 +15,8 @@
 #include <utility>
 
 #include "FSEL/Button.hpp"
+#include "devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp"
+#include "devSystems/devInterface/Changes/DevChangesControls.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #include "FSEL/ComboBox.hpp"
@@ -44,8 +46,6 @@ inline constexpr LocalElementName kFrameSelector{"frame-selector"};
 inline constexpr LocalElementName kCpuReportingLevel{"cpu-reporting-level"};
 inline constexpr LocalElementName kCapturedState{"captured-state"};
 inline constexpr LocalElementName kCaptureState{"capture-state"};
-inline constexpr LocalElementName kBakeReview{"bake-review"};
-inline constexpr LocalElementName kBakeChanges{"bake-changes"};
 inline constexpr LocalElementName kRefreshCatalogue{"refresh-catalogue"};
 
 struct TabSpec {
@@ -109,29 +109,14 @@ constexpr auto kMainCapture = UiAction(
 		}
 	});
 
-constexpr auto kBakeActiveChanges = UiAction(
-	"flowui.dev_interface.bake-active-changes",
-	[](App& app, DevInterfaceState& state) {
-		const uint32_t requestedCount = state.unbakedChangeCount;
-		const tooling::DevCommandResult result = app.devTooling().bakeActiveEdits();
-		const tooling::DevBakeStatusSnapshot after = app.devTooling().queryBakeStatus();
-		state.unbakedChangeCount = static_cast<uint32_t>(std::min<std::size_t>(
-			after.activeLiveOverrideCount,
-			std::numeric_limits<uint32_t>::max()));
+constexpr auto kBackToDiagnostics =
+	UiAction("flowui.dev_interface.diagnostics.back", [](DevInterfaceState& state) {
+		state.diagnostics.pending = DevDiagnosticsCommand::Back;
+	});
 
-		if (result.status == tooling::DevCommandStatus::NothingToBake) {
-			state.lastActionMessage = "No changes to bake";
-			return;
-		}
-		if (result.applied) {
-			char message[80]{};
-			std::snprintf(
-				message, sizeof(message), "Baked %u change%s",
-				requestedCount, requestedCount == 1u ? "" : "s");
-			state.lastActionMessage = message;
-			return;
-		}
-		state.lastActionMessage = "Bake failed; review bake diagnostics";
+constexpr auto kBackToChanges =
+	UiAction("flowui.dev_interface.changes.back", [](DevInterfaceState& state) {
+		state.changes.pending = DevChangesCommand::Back;
 	});
 
 constexpr auto kApplyCpuReportingLevel = UiAction(
@@ -359,8 +344,7 @@ void drawContextualControls(
 	DevContentHeader::BuildContext& context,
 	App* app,
 	DevInterfaceState& state,
-	DevInterfaceTab activeTab,
-	std::size_t bakeableChangeCount) {
+	DevInterfaceTab activeTab) {
 	switch (activeTab) {
 	case DevInterfaceTab::Inspect:
 		context.uiManager.createElement(kDevInspectOverlayMenu, LocalElementName{"inspect-overlay-controls"})
@@ -389,23 +373,16 @@ void drawContextualControls(
 			.setParameters({app, &state}).setDevInternalCapture(true).draw();
 		break;
 	case DevInterfaceTab::Diagnostics:
+		context.uiManager
+			.createElement(kDevDiagnosticsControls, LocalElementName{"diagnostics-controls"})
+			.setParameters({app, &state})
+			.setDevInternalCapture(true)
+			.draw();
 		break;
-	case DevInterfaceTab::Changes: {
-		drawControl(context, kBakeReview, "Bake Review");
-		char bakeLabel[80]{};
-		std::snprintf(
-			bakeLabel, sizeof(bakeLabel), "Bake %zu Change%s",
-			bakeableChangeCount, bakeableChangeCount == 1u ? "" : "s");
-		ActionCall bakeAction{};
-		if (app) {
-			bakeAction = ActionCall{
-				app->actions().uiActions().make(kBakeActiveChanges, *app, state)};
-		}
-		drawControl(
-			context, kBakeChanges, bakeLabel, bakeAction,
-			app && bakeableChangeCount > 0u, true);
+	case DevInterfaceTab::Changes:
+		context.uiManager.createElement(kDevChangesControls, LocalElementName{"changes-controls"})
+			.setParameters({app, &state}).setDevInternalCapture(true).draw();
 		break;
-	}
 	case DevInterfaceTab::Catalogue:
 		drawControl(context, kRefreshCatalogue, "Refresh");
 		break;
@@ -419,18 +396,12 @@ void DevContentHeader::buildElement(BuildContext& context) {
 	if (!state) return;
 
 	const DevInterfaceTab activeTab = normalizedTab(*state);
-	std::size_t bakeableChangeCount = 0u;
 	if (context.params.app) {
 		state->cpuReportingLevel = std::min<uint64_t>(
 			static_cast<uint64_t>(
 				context.params.app->devMonitoring().timing().config().cpuLevel),
 			static_cast<uint64_t>(FLOWUI_DEV_TIMING_LEVEL));
-		const tooling::DevBakeStatusSnapshot bakeStatus =
-			context.params.app->devTooling().queryBakeStatus();
-		bakeableChangeCount = bakeStatus.bakeableOverrideCount;
-		state->unbakedChangeCount = static_cast<uint32_t>(std::min<std::size_t>(
-			bakeStatus.activeLiveOverrideCount,
-			std::numeric_limits<uint32_t>::max()));
+
 	}
 
 	Clay_ElementDeclaration header{};
@@ -466,9 +437,19 @@ void DevContentHeader::buildElement(BuildContext& context) {
 		};
 		controls.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		CLAY(context.clayID(kContextualControls), controls) {
-			drawContextualControls(
-				context, context.params.app, *state, activeTab,
-				bakeableChangeCount);
+			if (state->diagnostics.return_available &&
+				(activeTab == DevInterfaceTab::Performance ||
+				 activeTab == DevInterfaceTab::Memory) &&
+				context.params.app) {
+				drawControl(context, LocalElementName{"back-to-diagnostics"}, "Back to Diagnostics",
+							ActionCall{context.params.app->actions().uiActions().make(
+								kBackToDiagnostics, *state)});
+			}
+			if (state->changes.return_available && activeTab != DevInterfaceTab::Changes && context.params.app) {
+				drawControl(context, LocalElementName{"back-to-changes"}, "Back to Changes",
+					ActionCall{context.params.app->actions().uiActions().make(kBackToChanges, *state)});
+			}
+			drawContextualControls(context, context.params.app, *state, activeTab);
 		}
 	}
 }

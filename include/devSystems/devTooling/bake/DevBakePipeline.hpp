@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "devSystems/devTooling/bake/DevBakeTypes.hpp"
+#include "devSystems/devTooling/bake/DevChangesReview.hpp"
 
 namespace FlowUi::devMode { class DevSchemaRegistry; }
 namespace FlowUi::devSystems::tooling { class DevOverrideEngine; }
@@ -37,6 +38,14 @@ public:
 	}
 
 	DevCommandResult bake() noexcept;
+	/** Build one owned review snapshot for all domains without changing live values or disk. */
+	[[nodiscard]] DevChangesReviewPlan
+	query_review(const DevChangesReviewRequest& request = {}) const noexcept;
+	/** Commit the reviewed revision once. A supplied current memory revision guards staged edits.
+	 */
+	[[nodiscard]] DevCommandResult
+	commit_review(const DevChangesReviewPlan& plan,
+				  std::uint64_t current_memory_revision = 0) noexcept;
 	/** Upsert selected capacities without requiring an element schema; review export does not
 	 * activate. */
 	[[nodiscard]] DevCommandResult

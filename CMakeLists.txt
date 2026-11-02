@@ -454,6 +454,8 @@ if(FLOW_UI_DEV_MODE)
 	target_sources(flowui
 		PRIVATE
 			src/devSystems/devTooling/bake/DevBakePipeline.cpp
+			src/devSystems/devTooling/bake/DevChangesReview.cpp
+			src/devSystems/devTooling/bake/DevChangesRuntime.cpp
 			src/devSystems/devTooling/catalogue/DevCatalogues.cpp
 			src/devSystems/devTooling/overlay/DevOverlayService.cpp
 			src/devSystems/devTooling/inspect/DevInspectInteractionController.cpp
@@ -468,6 +470,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Permanents/Backend/DevInterface.cpp
 			src/devSystems/devInterface/Permanents/Elements/DevContent.cpp
 			src/devSystems/devInterface/Permanents/Elements/DevContentAreas.cpp
+			src/devSystems/devInterface/Inspect/DevThemeEditorModel.cpp
 			src/devSystems/devInterface/Inspect/Selector/DevThemeSelector.cpp
 			src/devSystems/devInterface/Inspect/Inspector/DevThemeInspector.cpp
 			src/devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.cpp
@@ -505,9 +508,13 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Memory/Analysis/DevMemorySession.cpp
 			src/devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.cpp
 			src/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.cpp
+			src/devSystems/devInterface/Diagnostics/DevDiagnosticsModel.cpp
+			src/devSystems/devInterface/Diagnostics/DevDiagnosticsControls.cpp
 			src/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.cpp
 			src/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.cpp
 			src/devSystems/devInterface/Changes/Selector/DevChangesSelector.cpp
+			src/devSystems/devInterface/Changes/DevChangesModel.cpp
+			src/devSystems/devInterface/Changes/DevChangesControls.cpp
 			src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp
 			src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp
 			src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp
@@ -530,6 +537,8 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdvice.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevErrorAdviceCatalogue.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevDiagnosticsReporting.cpp
+			src/devSystems/devMonitoringAndReporting/reporting/DevDiagnosticsExport.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevPerformanceExport.cpp
 			src/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.cpp
@@ -542,6 +551,13 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakedChanges.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakePipeline.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakeTypes.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakeValidation.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevBakedChangesMetadata.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevChangesReview.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/bake/DevChangesRuntime.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/DevChangesModel.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/DevChangesControls.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/DevChangesUi.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogLease.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogues.hpp>
@@ -573,6 +589,7 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevInspectContentParameters.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevThemeEditorData.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevThemeSelector.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevThemeEditorModel.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp>
@@ -614,6 +631,10 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Workbench/DevDiagnosticsWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.hpp>
@@ -645,6 +666,8 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevErrorAdvice.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevDiagnosticsReporting.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevDiagnosticsExport.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devMonitoringAndReporting/timing/DevTiming.hpp>

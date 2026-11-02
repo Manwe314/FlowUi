@@ -16,6 +16,8 @@
 namespace FlowUi::devSystems {
 
 class DevErrorMonitoring;
+struct DevDiagnosticsSnapshot;
+struct DevDiagnosticsInvestigation;
 
 using DevErrorCaptureId = uint64_t;
 
@@ -183,6 +185,8 @@ struct DevErrorReportingStatus {
 	uint32_t retainedOccurrences = 0u;
 	uint32_t pendingOccurrences = 0;
 	uint64_t retainedBytes = 0u;
+	/** Changes for ingestion, late evidence, reporting configuration and retention updates. */
+	uint64_t revision = 0u;
 };
 
 class DevErrorReporting {
@@ -200,6 +204,12 @@ public:
 	[[nodiscard]] DevErrorReportingConfig config() const;
 	void consumeThrough(AppTickId appTick) noexcept;
 	[[nodiscard]] DevErrorReportingStatus status() const noexcept;
+	/** Read all retained start rows and source contexts under one reporting lock. */
+	[[nodiscard]] Result<DevDiagnosticsSnapshot> diagnostics_snapshot() const noexcept;
+	/** Materialize all retained investigations, or one exact ID, within an owned byte budget. */
+	[[nodiscard]] Result<DevDiagnosticsInvestigation>
+	diagnostics_investigation(std::optional<DevErrorOccurrenceId> selected_id = std::nullopt,
+							  uint64_t byte_budget = 32u * 1024u * 1024u) const noexcept;
 	/** Read scalar issue rows without copying steps, breadcrumbs, snapshots, or advice buffers. */
 	[[nodiscard]] std::vector<DevErrorOccurrenceSummary> occurrence_summaries() const;
 	[[nodiscard]] std::vector<DevErrorOccurrence> occurrenceSnapshot() const;

@@ -215,6 +215,7 @@ struct ComboBox {
 		trigger.clip = {
 			.horizontal = true,
 			.vertical = true,
+			.scrollInputDisabled = true,
 		};
 
 		Clay_TextElementConfig textConfig =
@@ -237,6 +238,7 @@ struct ComboBox {
 			labelRoot.clip = {
 				.horizontal = true,
 				.vertical = false,
+				.scrollInputDisabled = true,
 			};
 			CLAY(context.clayID("label"), labelRoot) {
 				CLAY_TEXT(
@@ -573,7 +575,7 @@ private:
 			Clay_ElementDeclaration labelSlot{};
 			labelSlot.layout.sizing = {
 				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
-			labelSlot.clip = {.horizontal = true, .vertical = true};
+			labelSlot.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 			CLAY(context.clayID(Keyed("option-label", option.value)), labelSlot) {
 				CLAY_TEXT(context.uiManager.toClayString(option.text),
 					CLAY_TEXT_CONFIG(makeTextConfig(context, appearance.textColor)));

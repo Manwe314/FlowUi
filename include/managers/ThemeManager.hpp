@@ -298,6 +298,9 @@ private:
 		std::span<const devMode::DevFieldOps* const> ownerPath,
 		const devMode::DevFieldOps& field,
 		const void* source) noexcept;
+	/** Keep resource keys alive for assigned payloads and cloned startup baselines. */
+	[[nodiscard]] Result<std::string_view>
+	retain_dev_resource_key(std::string_view key) const noexcept;
 #endif
 
 private:

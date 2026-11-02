@@ -277,8 +277,21 @@ void check_staged_export() {
 	assert(!export_staged_memory_capacities(state));
 	auto exported = export_staged_memory_capacities(state, true);
 	assert(exported && exported->targets.front().value == 128 && !exported->growth_factor);
+	assert(!exported->allow_runtime_growth);
 	state.staged.front().synthetic = true;
 	assert(!export_staged_memory_capacities(state, true));
+	const auto storage = std::find_if(targets.begin(), targets.end(), [](const auto& target) {
+		const auto* definition = FlowUi::detail::find_initial_capacity(target.id);
+		return definition && !definition->storage_member.empty();
+	});
+	assert(storage != targets.end());
+	state.staged.clear();
+	state.plan = *replay_memory_plan(state.evidence, *storage, 128, 1.5);
+	state.capacity_tool.runtime_growth = false;
+	assert(stage_memory_setting(state, *storage));
+	exported = export_staged_memory_capacities(state, true);
+	assert(exported && exported->growth_factor == 1.5f);
+	assert(exported->allow_runtime_growth && !*exported->allow_runtime_growth);
 }
 } // namespace
 int main(int argument_count, char** arguments) {

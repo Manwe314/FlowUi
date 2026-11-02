@@ -87,6 +87,9 @@ struct DevMemoryWorkbenchState {
 [[nodiscard]] std::string memory_bytes(uint64_t bytes, bool decimal);
 /** Readings use producer-supported metrics, never unsupported zeros. */
 [[nodiscard]] std::string memory_track_reading(const MemoryWorkbenchTrack& track, bool decimal);
+/** Format time relative to the newest collected sample; only that endpoint is Now. */
+[[nodiscard]] std::string memory_history_time_label(uint64_t timestamp_ns, uint64_t newest_ns,
+													int precision = 1);
 /** Monotonic clock used for bounded presentation refresh. */
 [[nodiscard]] uint64_t memory_now_ns() noexcept;
 /** Resolve the complete selector catalogue against coherent live inputs. */

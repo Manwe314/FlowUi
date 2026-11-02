@@ -27,6 +27,13 @@ void sample(const void* pointer, MemoryProbeContext& context) noexcept {
 }
 } // namespace
 int main() {
+	// The same collected endpoint anchors panned, fitted, held and live labels.
+	constexpr uint64_t newest_ns = 150'000'000'000ull;
+	assert(memory_history_time_label(100'000'000'000ull, newest_ns) == "-50.0s");
+	assert(memory_history_time_label(101'000'000'000ull, newest_ns) == "-49.0s");
+	assert(memory_history_time_label(newest_ns, newest_ns) == "Now");
+	assert(memory_history_time_label(newest_ns - 1'000'000, newest_ns, 3) == "-0.001s");
+	assert(memory_history_time_label(newest_ns - 1, newest_ns) != "Now");
 #if FLOWUI_DEV_MEMORY_LEVEL >= 2
 	DevMemory memory(DevMemoryConfig{.level = MemoryMonitoringLevel::SubsystemCapacity,
 									 .gpuMemory = false,

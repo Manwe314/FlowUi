@@ -43,7 +43,8 @@ public:
 	void clear(
 		const DevElementOverrideTarget& target,
 		DevOverrideFieldKey field,
-		DevOverrideLayer layer) noexcept;
+		DevOverrideLayer layer,
+		bool preserve_baked_assignment = false) noexcept;
 	void resetDefinition(FlowDefinitionID definition) noexcept;
 	void resetInstance(const DevElementOverrideTarget& target) noexcept;
 	void clearAll() noexcept;

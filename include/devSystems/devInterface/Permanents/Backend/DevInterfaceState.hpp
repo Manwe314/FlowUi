@@ -12,6 +12,9 @@
 #include "FlowUi/App.hpp"
 #include "FlowUi/ElementID.hpp"
 #include "FlowUi/WindowId.hpp"
+#include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
+#include "devSystems/devInterface/Changes/DevChangesModel.hpp"
+#include "devSystems/devInterface/Inspect/DevThemeEditorModel.hpp"
 #include "devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
@@ -64,10 +67,13 @@ struct DevInterfaceState {
 	uint64_t capture_metadata_generation = 0;
 	uint64_t performance_export_generation = 0;
 	DevPerformanceSelection performance_selection{};
+	DevDiagnosticsState diagnostics{};
+	DevChangesState changes{};
 	DevMemorySelection memory_selection{};
 	interface_elements::DevMemoryWorkbenchState memory_workbench{};
 	interface_elements::DevTimelineState performance_timeline{};
 	DevInterfaceEditorClipboard editorClipboard{};
+	interface_elements::theme_editor::ThemeEditorModel theme_editor_model{};
 	std::string searchQuery{};
 	std::string lastActionMessage = "Developer interface initialized";
 	FlowElementID selectedElementId{};

@@ -14,51 +14,6 @@
 namespace FlowUi::devSystems::interface_elements {
 using namespace theme_editor;
 namespace {
-/** Compact typed values; raw serialization remains in the generated code. */
-[[nodiscard]] std::string token_value(const devMode::DevSchemaGeneration& schema,
-									  const ThemeLeaf& leaf, const void* value) {
-	const auto* type = schema.type(leaf.field->valueType);
-	if (value && type && type->id == ::FlowUi::detail::typeHash<Clay_Color>()) {
-		const auto color = *static_cast<const Clay_Color*>(value);
-		const auto channel = [](float component) noexcept {
-			return std::isfinite(component)
-					   ? static_cast<unsigned>(std::clamp(std::round(component), 0.0f, 255.0f))
-					   : 0u;
-		};
-		std::array<char, 32> buffer{};
-		std::snprintf(buffer.data(), buffer.size(), "#%02X%02X%02X", channel(color.r),
-					  channel(color.g), channel(color.b));
-		return std::string(buffer.data()) +
-			   (channel(color.a) == 255 ? "" : " · A " + std::to_string(channel(color.a)));
-	}
-	if (value && type && type->id == ::FlowUi::detail::typeHash<Clay_Padding>()) {
-		const auto padding = *static_cast<const Clay_Padding*>(value);
-		return "L " + std::to_string(padding.left) + " · R " + std::to_string(padding.right) +
-			   " · T " + std::to_string(padding.top) + " · B " + std::to_string(padding.bottom);
-	}
-	if (value && type && type->kind == devMode::DevTypeKind::Enumeration &&
-		type->enumeration.values.first <= schema.enumValues.size() &&
-		type->enumeration.values.count <=
-			schema.enumValues.size() - type->enumeration.values.first) {
-		const auto* operations = leaf.field->valueType.value < schema.typeOperations.size()
-									 ? schema.typeOperations[leaf.field->valueType.value]
-									 : nullptr;
-		long double numeric = 0;
-		if (operations && operations->numericValue && operations->numericValue(value, numeric)) {
-			for (const auto& option :
-				 std::span(schema.enumValues)
-					 .subspan(type->enumeration.values.first, type->enumeration.values.count)) {
-				const auto option_value =
-					type->enumeration.isSigned
-						? static_cast<long double>(static_cast<int64_t>(option.bits))
-						: static_cast<long double>(option.bits);
-				if (numeric == option_value)
-					return std::string(schema.string(option.name));
-			}
-		}
-	}
-	return format_value(schema, leaf, value);
-}
 constexpr auto kCopyThemeCode =
 	UiAction("flowui.dev_interface.theme.copy-code", [](App& app, DevThemeWorkbench::State& state) {
 		app.setClipboardText(state.code);
@@ -117,7 +72,10 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 		return;
 	auto& sandbox = context.state();
 	const auto schema = app->devTooling().schemas().view();
-	const auto catalogue = themes(*app);
+	auto& model = state->theme_editor_model;
+	if (!model.refresh(*app))
+		return;
+	const auto catalogue = model.catalogue();
 	const auto* selected = selected_theme(catalogue, *state);
 	auto root = column(true);
 	root.backgroundColor = interface_theme::kDepth0Keel;
@@ -144,16 +102,14 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 			.setDevInternalCapture(true)
 			.draw();
 		if (schema && selected) {
-			const auto selected_leaves = leaves(*schema, *selected);
-			struct VariantTokens {
-				std::vector<ThemeLeaf> fields{};
-				const ThemeView* theme = nullptr;
-			};
-			std::vector<VariantTokens> variant_tokens;
+			const auto* selected_presentation = model.find(*selected);
+			if (!selected_presentation)
+				return;
+			const auto& selected_leaves = selected_presentation->fields;
+			std::vector<const ThemePresentation*> variant_tokens;
 			variant_tokens.reserve(catalogue.size());
 			for (const auto& variant : catalogue)
-				if (variant.type == selected->type)
-					variant_tokens.emplace_back(VariantTokens{leaves(*schema, variant), &variant});
+				variant_tokens.emplace_back(model.find(variant));
 			if (sandbox.preview_theme_type != selected->type) {
 				sandbox.preview_theme_type = selected->type;
 				sandbox.preview_layout = 0;
@@ -341,16 +297,87 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					}
 				}
 			};
-			const auto matches = [&](const ThemeLeaf& leaf) {
-				return (!state->inspect_theme_group ||
-						(leaf.key.nestedPath.empty()
-							 ? leaf.key.field
-							 : leaf.key.nestedPath.front()) == state->inspect_theme_group) &&
-					   (state->searchQuery.empty() || contains(leaf.path, state->searchQuery) ||
-						contains(selected->typeName, state->searchQuery)) &&
-					   (sandbox.token_search.empty() || contains(leaf.path, sandbox.token_search) ||
-						contains(format_value(*schema, leaf, leaf.live), sandbox.token_search));
-			};
+			const bool filter_changed =
+				sandbox.filter_generation != model.generation() ||
+				sandbox.filter_type != selected->type ||
+				sandbox.filter_variant != selected->variant ||
+				sandbox.filter_group != state->inspect_theme_group ||
+				sandbox.filter_query != state->searchQuery ||
+				sandbox.filter_token_query != sandbox.token_search ||
+				sandbox.filter_all_variants != state->inspect_theme_all_variants;
+			if (filter_changed) {
+				const bool selection_changed =
+					sandbox.filter_type != selected->type ||
+					sandbox.filter_variant != selected->variant ||
+					sandbox.filter_group != state->inspect_theme_group ||
+					sandbox.filter_query != state->searchQuery ||
+					sandbox.filter_token_query != sandbox.token_search ||
+					sandbox.filter_all_variants != state->inspect_theme_all_variants;
+				sandbox.token_indices.clear();
+				sandbox.token_indices.reserve(selected_leaves.size());
+				sandbox.changed_fields.clear();
+				std::size_t changed_capacity = 0;
+				for (std::size_t variant_index = 0; variant_index < catalogue.size();
+					 ++variant_index) {
+					const auto& variant = catalogue[variant_index];
+					if (variant.type == selected->type &&
+						(state->inspect_theme_all_variants || variant.variant == selected->variant))
+						changed_capacity += variant_tokens[variant_index]->changed_indices.size();
+				}
+				sandbox.changed_fields.reserve(changed_capacity);
+				sandbox.live_count = 0;
+				sandbox.startup_count = 0;
+				const auto matches = [&](const ThemeLeaf& leaf, const ThemeTokenValue& value) {
+					return (!state->inspect_theme_group ||
+							(leaf.key.nestedPath.empty()
+								 ? leaf.key.field
+								 : leaf.key.nestedPath.front()) == state->inspect_theme_group) &&
+						   (state->searchQuery.empty() || contains(leaf.path, state->searchQuery) ||
+							contains(selected->typeName, state->searchQuery)) &&
+						   (sandbox.token_search.empty() ||
+							contains(leaf.path, sandbox.token_search) ||
+							contains(value.live_text, sandbox.token_search));
+				};
+				for (std::size_t leaf_index = 0; leaf_index < selected_leaves.size(); ++leaf_index)
+					if (matches(selected_leaves[leaf_index],
+								selected_presentation->values[leaf_index]))
+						sandbox.token_indices.emplace_back(leaf_index);
+				for (std::size_t variant_index = 0; variant_index < catalogue.size();
+					 ++variant_index) {
+					const auto& variant = catalogue[variant_index];
+					if (variant.type != selected->type || (!state->inspect_theme_all_variants &&
+														   variant.variant != selected->variant))
+						continue;
+					const auto* presentation = variant_tokens[variant_index];
+					for (const auto leaf_index : presentation->changed_indices) {
+						const auto& value = presentation->values[leaf_index];
+						if (!matches(presentation->fields[leaf_index], value))
+							continue;
+						sandbox.live_count += value.live_edit;
+						sandbox.startup_count += value.startup_edit;
+						sandbox.changed_fields.emplace_back(
+							State::FilteredChange{variant_index, leaf_index});
+					}
+				}
+				sandbox.filter_generation = model.generation();
+				sandbox.filter_type = selected->type;
+				sandbox.filter_variant = selected->variant;
+				sandbox.filter_group = state->inspect_theme_group;
+				sandbox.filter_query = state->searchQuery;
+				sandbox.filter_token_query = sandbox.token_search;
+				sandbox.filter_all_variants = state->inspect_theme_all_variants;
+				if (selection_changed) {
+					const auto scroll =
+						Clay_GetScrollContainerData(context.clayID("tokens-scroll"));
+					if (scroll.found && scroll.scrollPosition)
+						*scroll.scrollPosition = {};
+				}
+			}
+			Clay_TextElementConfig token_style{};
+			token_style.fontSize = 11;
+			const float token_line_height = context.uiManager.inputContentElement(token_style)
+												.layout.sizing.height.size.minMax.min;
+			const float token_value_height = std::max(18.0f, token_line_height) + 10.0f;
 			const auto token_toolbar = [&] {
 				FSEL::TextInputParameters search{};
 				search.value = &sandbox.token_search;
@@ -365,8 +392,19 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 			};
 			const auto value_row = [&](std::string_view identity, std::string_view label,
 									   const ThemeLeaf& leaf, const void* value,
-									   bool accent = false) {
+									   bool accent = false, std::string_view display = {},
+									   bool compact = false) {
 				auto line = row();
+				if (compact)
+					line.layout.sizing.height = CLAY_SIZING_FIXED(token_value_height);
+				const auto value_text = [&](std::string_view label, uint16_t size,
+											Clay_Color color) {
+					Clay_TextElementConfig style{};
+					style.fontSize = size;
+					style.textColor = color;
+					style.wrapMode = compact ? CLAY_TEXT_WRAP_NONE : CLAY_TEXT_WRAP_WORDS;
+					CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(style));
+				};
 				line.layout.padding = Clay_Padding{4, 4, 5, 5};
 				line.border = {interface_theme::kBorderPrimary, {0, 0, 0, 1, 0}};
 				CLAY(context.clayID(RuntimeName(identity)), line) {
@@ -374,7 +412,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					caption.layout.sizing.width = CLAY_SIZING_PERCENT(.32f);
 					caption.backgroundColor = {};
 					CLAY(context.clayID(RuntimeName(std::string(identity) + "-label")), caption) {
-						text(context.uiManager, label, 10);
+						value_text(label, 10, interface_theme::kTextSecondary);
 					}
 					const auto* type = schema->type(leaf.field->valueType);
 					if (value && type && type->id == ::FlowUi::detail::typeHash<Clay_Color>()) {
@@ -389,93 +427,143 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 					value_cell.backgroundColor = {};
 					CLAY(context.clayID(RuntimeName(std::string(identity) + "-value")),
 						 value_cell) {
-						text(context.uiManager, token_value(*schema, leaf, value), 11,
-							 accent ? interface_theme::kAccentSeaGlass
-									: interface_theme::kTextCanvas);
+						value_text(display, 11,
+								   accent ? interface_theme::kAccentSeaGlass
+										  : interface_theme::kTextCanvas);
 					}
 				}
 			};
 			const auto draw_tokens = [&] {
-				text(context.uiManager,
-					 state->inspect_theme_all_variants
-						 ? "Compare registered variants · active marked *"
-						 : "Effective values · " + std::string(selected->variant),
-					 10);
-				std::size_t count = 0;
-				for (const auto& leaf : selected_leaves) {
-					if (!matches(leaf))
-						continue;
-					++count;
-					CLAY(context.clayID(RuntimeName("token-" + leaf.path)), section()) {
-						text(context.uiManager, leaf.path, 11, interface_theme::kTextCanvas);
+				// Fixed single-line overview rows permit exact spacer heights at any font scale.
+				// Full reflected values remain available in the existing inspector editors.
+				const auto scroll = Clay_GetScrollContainerData(context.clayID("tokens-scroll"));
+				const std::size_t variant_count =
+					state->inspect_theme_all_variants
+						? std::ranges::count_if(
+							  catalogue,
+							  [&](const auto& variant) { return variant.type == selected->type; })
+						: 1;
+				const float row_height =
+					16.0f + token_line_height +
+					static_cast<float>(variant_count) * (token_value_height + 6.0f);
+				constexpr float row_gap = 7.0f;
+				const float stride = row_height + row_gap;
+				const float heading_height = token_line_height + 8.0f;
+				const float content_start = 8.0f + heading_height + row_gap;
+				const float viewport_height =
+					scroll.found ? scroll.scrollContainerDimensions.height : 600.0f;
+				const float scroll_offset =
+					scroll.found && scroll.scrollPosition ? -scroll.scrollPosition->y : 0.0f;
+				const std::size_t total = sandbox.token_indices.size();
+				const std::size_t estimated_first = static_cast<std::size_t>(
+					std::max(0.0f, scroll_offset - content_start) / stride);
+				const std::size_t first =
+					std::min(total ? total - 1 : 0, estimated_first > 2 ? estimated_first - 2 : 0);
+				const std::size_t visible_count =
+					static_cast<std::size_t>(std::ceil(std::max(0.0f, viewport_height) / stride)) +
+					5;
+				const std::size_t end = first + std::min(total - first, visible_count);
+				auto heading = row();
+				heading.layout.sizing.height = CLAY_SIZING_FIXED(heading_height);
+				CLAY(context.clayID("token-summary"), heading) {
+					Clay_TextElementConfig heading_style{};
+					heading_style.fontSize = 10;
+					heading_style.textColor = interface_theme::kTextSecondary;
+					heading_style.wrapMode = CLAY_TEXT_WRAP_NONE;
+					const std::string summary =
+						std::to_string(total) + " tokens · " +
+						(state->inspect_theme_all_variants
+							 ? "Compare registered variants · active marked *"
+							 : std::string(selected->variant));
+					CLAY_TEXT(context.uiManager.toClayString(summary),
+							  CLAY_TEXT_CONFIG(heading_style));
+				}
+				const auto spacer = [&](std::string_view identity, std::size_t count) {
+					if (!count)
+						return;
+					Clay_ElementDeclaration declaration{};
+					declaration.layout.sizing = {
+						CLAY_SIZING_GROW(0),
+						CLAY_SIZING_FIXED(static_cast<float>(count) * stride - row_gap)};
+					CLAY(context.clayID(RuntimeName(identity)), declaration);
+				};
+				spacer("tokens-before", first);
+				sandbox.emitted_token_rows = 0;
+				for (std::size_t row_index = first; row_index < end; ++row_index) {
+					const auto leaf_index = sandbox.token_indices[row_index];
+					const auto& leaf = selected_leaves[leaf_index];
+					auto token_section = section(row_height);
+					CLAY(context.clayID(RuntimeName("token-" + leaf.path)), token_section) {
+						Clay_TextElementConfig path_style{};
+						path_style.fontSize = 11;
+						path_style.textColor = interface_theme::kTextCanvas;
+						path_style.wrapMode = CLAY_TEXT_WRAP_NONE;
+						CLAY_TEXT(context.uiManager.toClayString(leaf.path),
+								  CLAY_TEXT_CONFIG(path_style));
 						if (!state->inspect_theme_all_variants)
-							value_row("effective-" + leaf.path, "Value", leaf, leaf.live);
+							value_row("effective-" + leaf.path, "Value", leaf, leaf.live, false,
+									  selected_presentation->values[leaf_index].live_display, true);
 						else
-							for (const auto& variant : catalogue) {
+							for (std::size_t variant_index = 0; variant_index < catalogue.size();
+								 ++variant_index) {
+								const auto& variant = catalogue[variant_index];
 								if (variant.type != selected->type)
 									continue;
-								const auto cached =
-									std::ranges::find_if(variant_tokens, [&](const auto& entry) {
-										return entry.theme == &variant;
-									});
-								const auto& tokens = cached->fields;
-								const auto found =
-									std::ranges::find_if(tokens, [&](const auto& token) {
-										return token.key == leaf.key;
-									});
-								if (found != tokens.end())
-									value_row(
-										"compare-" + std::string(variant.variant) + "-" + leaf.path,
-										std::string(variant.variant) + (variant.active ? " *" : ""),
-										*found, found->live);
+								const auto* presentation = variant_tokens[variant_index];
+								// Shared schema traversal gives the same field order for every
+								// variant.
+								if (leaf_index >= presentation->fields.size() ||
+									presentation->fields[leaf_index].key != leaf.key)
+									continue;
+								const auto& other = presentation->fields[leaf_index];
+								value_row(
+									"compare-" + std::string(variant.variant) + "-" + leaf.path,
+									std::string(variant.variant) + (variant.active ? " *" : ""),
+									other, other.live, false,
+									presentation->values[leaf_index].live_display, true);
 							}
 					}
+					++sandbox.emitted_token_rows;
 				}
-				if (!count)
+				spacer("tokens-after", total - end);
+				if (!total)
 					text(context.uiManager, "No tokens match this filter");
 			};
 			const auto draw_code = [&] {
-				sandbox.code.clear();
-				std::size_t assignment_count = 0;
-				std::size_t omitted_count = 0;
+				const bool source_usable_type = selected_presentation->source_usable;
 				text(context.uiManager,
 					 std::string(selected->typeName) + " / " +
 						 (state->inspect_theme_all_variants ? "All registered variants"
 															: std::string(selected->variant)),
 					 10);
-				const bool source_usable_type =
-					selected->typeName.find("{anonymous}") == std::string_view::npos &&
-					selected->typeName.find('(') == std::string_view::npos;
 				if (!source_usable_type)
 					text(context.uiManager, "This local theme type has no exportable C++ name.");
-				if (source_usable_type)
-					for (const auto& variant : catalogue) {
+				if (sandbox.code_generation != model.generation() ||
+					sandbox.code_type != selected->type ||
+					sandbox.code_variant != selected->variant ||
+					sandbox.code_all_variants != state->inspect_theme_all_variants) {
+					sandbox.code.clear();
+					sandbox.assignment_count = 0;
+					sandbox.omitted_count = 0;
+					for (std::size_t variant_index = 0; variant_index < catalogue.size();
+						 ++variant_index) {
+						const auto& variant = catalogue[variant_index];
 						if (variant.type != selected->type ||
 							(!state->inspect_theme_all_variants &&
 							 variant.variant != selected->variant))
 							continue;
-						const auto tokens = leaves(*schema, variant);
-						sandbox.code += "{\n  auto theme = app.themes().getTheme<" +
-										std::string(variant.typeName) + ">(" +
-										cpp_string(variant.variant) + ");\n";
-						for (const auto& leaf : tokens)
-							if (changed(*schema, leaf)) {
-								const auto value = tooling::serialize_dev_value(
-									*schema, leaf.field->valueType, leaf.live);
-								if (value) {
-									++assignment_count;
-									sandbox.code +=
-										"  theme." + leaf.path + " = " + value->cpp + ";\n";
-								} else {
-									++omitted_count;
-									sandbox.code +=
-										"  // Runtime-only value omitted: " + leaf.path + "\n";
-								}
-							}
-						sandbox.code += "  app.themes().registerTheme(" +
-										cpp_string(variant.variant) + ", theme, " +
-										(variant.active ? "true" : "false") + ");\n}\n";
+						const auto* presentation = variant_tokens[variant_index];
+						sandbox.code += presentation->code;
+						sandbox.assignment_count += presentation->assignment_count;
+						sandbox.omitted_count += presentation->omitted_count;
 					}
+					sandbox.code_generation = model.generation();
+					sandbox.code_type = selected->type;
+					sandbox.code_variant = selected->variant;
+					sandbox.code_all_variants = state->inspect_theme_all_variants;
+				}
+				const auto assignment_count = sandbox.assignment_count;
+				const auto omitted_count = sandbox.omitted_count;
 				CLAY(context.clayID("code-actions"), row()) {
 					button(
 						context.uiManager, "copy", "Copy C++",
@@ -502,51 +590,36 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 						  CLAY_TEXT_CONFIG(code_style));
 			};
 			const auto draw_changes = [&] {
-				std::size_t live_count = 0;
-				std::size_t startup_count = 0;
-				for (const auto& variant : catalogue) {
-					if (variant.type != selected->type || (!state->inspect_theme_all_variants &&
-														   variant.variant != selected->variant))
-						continue;
-					for (const auto& leaf : leaves(*schema, variant)) {
-						if (!matches(leaf))
-							continue;
-						live_count += format_value(*schema, leaf, leaf.live) !=
-									  format_value(*schema, leaf, leaf.startup);
-						startup_count += format_value(*schema, leaf, leaf.startup) !=
-										 format_value(*schema, leaf, leaf.authored);
-					}
-				}
 				text(context.uiManager,
-					 std::to_string(live_count) + " Live vs startup · " +
-						 std::to_string(startup_count) + " Startup vs authored",
+					 std::to_string(sandbox.live_count) + " Live vs startup · " +
+						 std::to_string(sandbox.startup_count) + " Startup vs authored",
 					 10);
-				for (const auto& variant : catalogue) {
-					if (variant.type != selected->type || (!state->inspect_theme_all_variants &&
-														   variant.variant != selected->variant))
-						continue;
-					for (const auto& leaf : leaves(*schema, variant)) {
-						if (!matches(leaf) || !changed(*schema, leaf))
-							continue;
-						const bool live_edit = format_value(*schema, leaf, leaf.live) !=
-											   format_value(*schema, leaf, leaf.startup);
-						const std::string identity =
-							"change-" + std::string(variant.variant) + "-" + leaf.path;
-						CLAY(context.clayID(RuntimeName(identity)), section()) {
-							text(context.uiManager,
-								 std::string(variant.variant) + " / " + leaf.path, 11,
-								 interface_theme::kTextCanvas);
-							text(context.uiManager,
-								 live_edit ? "Live edit" : "Startup customization", 10,
-								 live_edit ? interface_theme::kAccentSeaGlass
-										   : interface_theme::kTextMuted);
-							value_row(identity + "-authored", "Authored", leaf, leaf.authored);
-							value_row(identity + "-startup", "Startup", leaf, leaf.startup);
-							value_row(identity + "-live", "Live", leaf, leaf.live, live_edit);
-						}
+				for (const auto& change : sandbox.changed_fields) {
+					const auto& variant = catalogue[change.variant_index];
+					const auto* presentation = variant_tokens[change.variant_index];
+					const auto& leaf = presentation->fields[change.leaf_index];
+					const auto& value = presentation->values[change.leaf_index];
+					const std::string identity =
+						"change-" + std::string(variant.variant) + "-" + leaf.path;
+					CLAY(context.clayID(RuntimeName(identity)), section()) {
+						text(context.uiManager, std::string(variant.variant) + " / " + leaf.path,
+							 11, interface_theme::kTextCanvas);
+						text(context.uiManager,
+							 !value.comparison_available ? "Comparison unavailable"
+							 : value.live_edit			 ? "Live edit"
+														 : "Startup customization",
+							 10,
+							 value.live_edit ? interface_theme::kAccentSeaGlass
+											 : interface_theme::kTextMuted);
+						value_row(identity + "-authored", "Authored", leaf, leaf.authored, false,
+								  value.authored_display);
+						value_row(identity + "-startup", "Startup", leaf, leaf.startup, false,
+								  value.startup_display);
+						value_row(identity + "-live", "Live", leaf, leaf.live, value.live_edit,
+								  value.live_display);
 					}
 				}
-				if (!live_count)
+				if (!sandbox.live_count)
 					text(context.uiManager, "No live differences from startup in this selection");
 			};
 			auto content = column();

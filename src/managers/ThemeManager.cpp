@@ -126,6 +126,20 @@ devMode::DevValueOperationStatus ThemeManager::assignDevThemeField(
 	if (!controller_) return devMode::DevValueOperationStatus::NullDestination;
 	return controller_->assignDevField(type, variant, ownerPath, field, source);
 }
+
+Result<std::string_view> ThemeManager::retain_dev_resource_key(std::string_view key) const noexcept {
+	if (!storage_)
+		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
+	try {
+		const auto identity = storage_->intern(key);
+		const auto retained = storage_->string(identity);
+		if (retained != key)
+			return unexpectedError(makeError(ErrorCode::ThemeMutationFailed, ErrorSite::ThemeRegisterVariant));
+		return retained;
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::ThemeRegisterVariant));
+	}
+}
 #endif
 
 } // namespace FlowUi

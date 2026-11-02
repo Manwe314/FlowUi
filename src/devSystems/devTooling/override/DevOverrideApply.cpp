@@ -129,12 +129,17 @@ void DevOverrideApply::set(
 		.schemaValid = true,});
 }
 
-void DevOverrideApply::clear(
-	const DevElementOverrideTarget& target,
-	DevOverrideFieldKey field,
-	DevOverrideLayer layer) noexcept {
-	for (const Record& record : records_) {
-		if (sameStoredKey(record, target, field, layer)) bakeTombstones_.push_back(record);
+void DevOverrideApply::clear(const DevElementOverrideTarget& target, DevOverrideFieldKey field,
+							 DevOverrideLayer layer, bool preserve_baked_assignment) noexcept {
+	if (preserve_baked_assignment) {
+		std::erase_if(bakeTombstones_, [&](const Record& record) {
+			return sameStoredKey(record, target, field, layer);
+		});
+	} else {
+		for (const Record& record : records_) {
+			if (sameStoredKey(record, target, field, layer))
+				bakeTombstones_.push_back(record);
+		}
 	}
 	std::erase_if(records_, [&](const Record& record) {
 		return sameStoredKey(record, target, field, layer);

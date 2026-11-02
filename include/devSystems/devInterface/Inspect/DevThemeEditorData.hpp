@@ -2,6 +2,8 @@
 #include "FlowUi/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/Button.hpp"
+#include "devSystems/devInterface/Inspect/DevThemeEditorModel.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "managers/ThemeManager.hpp"
@@ -10,15 +12,6 @@
 #include <cctype>
 
 namespace FlowUi::devSystems::interface_elements::theme_editor {
-using ThemeView = ThemeManager::DevThemePayloadView;
-struct ThemeLeaf {
-	tooling::DevOverrideFieldKey key{};
-	std::string path{};
-	const devMode::DevFieldSchema* field = nullptr;
-	const void* live = nullptr;
-	const void* authored = nullptr;
-	const void* startup = nullptr;
-};
 [[nodiscard]] inline std::vector<ThemeView> themes(App& app) {
 	std::vector<ThemeView> result;
 	result.reserve(app.themes().devThemeCount());
@@ -45,7 +38,7 @@ struct ThemeLeaf {
 	});
 	return result;
 }
-[[nodiscard]] inline const ThemeView* selected_theme(const std::vector<ThemeView>& catalogue,
+[[nodiscard]] inline const ThemeView* selected_theme(std::span<const ThemeView> catalogue,
 													 const DevInterfaceState& state) noexcept {
 	for (const auto& theme : catalogue)
 		if (theme.type == state.inspect_theme_type &&
@@ -115,9 +108,11 @@ inline void collect_leaves(const devMode::DevSchemaGeneration& schema, devMode::
 	return result;
 }
 [[nodiscard]] inline bool changed(const devMode::DevSchemaGeneration& schema,
-								  const ThemeLeaf& leaf) {
-	return format_value(schema, leaf, leaf.live) != format_value(schema, leaf, leaf.authored) ||
-		   format_value(schema, leaf, leaf.startup) != format_value(schema, leaf, leaf.authored);
+								  const ThemeLeaf& leaf) noexcept {
+	return compare_values(schema, leaf.field->valueType, leaf.live, leaf.authored) !=
+			   ValueComparison::Equal ||
+		   compare_values(schema, leaf.field->valueType, leaf.startup, leaf.authored) !=
+			   ValueComparison::Equal;
 }
 [[nodiscard]] inline bool contains(std::string_view text, std::string_view query) {
 	return std::search(text.begin(), text.end(), query.begin(), query.end(),

@@ -11,28 +11,38 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 	if (!app || !state)
 		return;
 	const auto schema = app->devTooling().schemas().view();
-	const auto catalogue = themes(*app);
+	auto& model = state->theme_editor_model;
+	if (!model.refresh(*app))
+		return;
+	const auto catalogue = model.catalogue();
 	auto& cache = context.state();
 	if (state->inspect_theme_key == 0 && cache.resolved_key != 0) {
 		cache.resolved_key = 0;
 		state->inspect_theme_type = 0;
 		state->inspect_theme_group = 0;
 	}
-	cache.labels.clear();
-	cache.options.clear();
-	cache.labels.reserve(catalogue.size() + 3);
-	cache.options.reserve(catalogue.size() + 3);
-	cache.labels = {"All Themes", "Active Only", "Modified Only"};
 	std::vector<devMode::DevTypeId> types;
 	types.reserve(catalogue.size());
 	for (const auto& theme : catalogue)
-		if (types.empty() || types.back() != theme.type) {
+		if (types.empty() || types.back() != theme.type)
 			types.emplace_back(theme.type);
-			cache.labels.emplace_back(theme.typeName);
-		}
-	for (std::size_t index = 0; index < cache.labels.size(); ++index)
-		cache.options.emplace_back(
-			FSEL::ComboBoxOption{index < 3 ? index : types[index - 3], cache.labels[index]});
+	if (cache.options_generation != model.generation()) {
+		cache.labels.clear();
+		cache.options.clear();
+		cache.labels.reserve(types.size() + 3);
+		cache.options.reserve(types.size() + 3);
+		cache.labels = {"All Themes", "Active Only", "Modified Only"};
+		devMode::DevTypeId last_type = 0;
+		for (const auto& theme : catalogue)
+			if (theme.type != last_type) {
+				cache.labels.emplace_back(theme.typeName);
+				last_type = theme.type;
+			}
+		for (std::size_t index = 0; index < cache.labels.size(); ++index)
+			cache.options.emplace_back(
+				FSEL::ComboBoxOption{index < 3 ? index : types[index - 3], cache.labels[index]});
+		cache.options_generation = model.generation();
+	}
 	const auto panel = column(true);
 	CLAY(context.clayID(), panel) {
 		context.uiManager.createElement(kDevInterfaceSelectorTitle, "title")
@@ -65,12 +75,12 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 						continue;
 					if (state->inspect_theme_filter == 1 && !theme.active)
 						continue;
-					const auto fields = schema ? leaves(*schema, theme) : std::vector<ThemeLeaf>{};
+					const auto* presentation = model.find(theme);
+					const auto fields = presentation
+											? std::span<const ThemeLeaf>(presentation->fields)
+											: std::span<const ThemeLeaf>{};
 					const std::size_t modifications =
-						schema
-							? std::ranges::count_if(
-								  fields, [&](const auto& leaf) { return changed(*schema, leaf); })
-							: 0;
+						presentation ? presentation->changed_indices.size() : 0;
 					if (state->inspect_theme_filter == 2 && modifications == 0)
 						continue;
 					const bool match_theme = state->searchQuery.empty() ||

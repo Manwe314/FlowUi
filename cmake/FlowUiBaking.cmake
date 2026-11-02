@@ -110,6 +110,8 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/MemoryCapacityTargets.hpp"
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/internal/MemoryCapacityTargets.hpp"
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/internal/MemoryCapacityManifest.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/devSystems/devTooling/bake/DevBakeValidation.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/devSystems/devTooling/bake/DevBakedChangesMetadata.hpp"
         COMMENT "Generating FlowUi baked C++ changes"
         VERBATIM
     )

@@ -138,6 +138,9 @@ private:
 		ThemeManager& themes);
 	void bindThemeRecords();
 	void applyThemeRecords(ThemeManager& themes) noexcept;
+	/** Move referenced resource names to the manager's stable pool before payload assignment. */
+	[[nodiscard]] bool stabilize_theme_references(ThemeManager& themes, DevOwnedValue& value,
+		devMode::DevTypeIndex type) const noexcept;
 	[[nodiscard]] bool themeVariantExists(
 		const ThemeManager& themes,
 		const DevThemeOverrideTarget& target) const noexcept;

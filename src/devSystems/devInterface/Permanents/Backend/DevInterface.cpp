@@ -48,6 +48,11 @@ Status DevInterface::attachWindow(UiManager& ui) {
 Status DevInterface::synchronize(App& app) {
 	if (!enabled_)
 		return {};
+	service_diagnostics(app, *session_,
+						windowId_ != InvalidWindowId && !suspended_ &&
+							session_->activeTab ==
+								static_cast<uint64_t>(DevInterfaceTab::Diagnostics));
+	service_changes(app, *session_, windowId_ != InvalidWindowId && !suspended_);
 	auto& capture = app.devMonitoring().performance_capture();
 	const auto& progress = capture.status();
 	if (progress.generation && progress.generation != session_->capture_metadata_generation) {

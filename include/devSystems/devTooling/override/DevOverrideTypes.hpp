@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -94,11 +95,11 @@ public:
 	}
 	[[nodiscard]] const void* data() const noexcept;
 	[[nodiscard]] void* data() noexcept;
-	[[nodiscard]] std::size_t heapBytes() const noexcept {
-		return heap_ ? size_ : 0;
-	}
+	[[nodiscard]] std::size_t heapBytes() const noexcept;
 
 	void reset() noexcept;
+	/** Own a string view inside this value; copies and moves preserve its referent lifetime. */
+	[[nodiscard]] bool retain_text_reference(std::string_view& field, std::string text) noexcept;
 
 	static devMode::DevValueOperationStatus copyFrom(
 		const devMode::DevSchemaGeneration& schema,
@@ -107,6 +108,12 @@ public:
 		DevOwnedValue& destination) noexcept;
 
 private:
+	struct RetainedTextReference {
+		std::unique_ptr<const std::string> text{};
+		std::size_t offset = 0;
+	};
+	[[nodiscard]] bool retain_schema_text_references(const devMode::DevSchemaGeneration& schema,
+		devMode::DevTypeIndex type) noexcept;
 	devMode::DevValueOperationStatus initializeCopy(
 		const devMode::DevTypeSchema& schema,
 		const devMode::DevTypeOps& operations,
@@ -118,6 +125,7 @@ private:
 	void moveFrom(DevOwnedValue&& other) noexcept;
 
 	alignas(std::max_align_t) std::array<std::byte, InlineBytes> inline_{};
+	std::unique_ptr<std::vector<RetainedTextReference>> retained_text_{};
 	void* allocation_ = nullptr;
 	const devMode::DevTypeOps* operations_ = nullptr;
 	std::uint32_t size_ = 0;
@@ -146,6 +154,8 @@ struct DevOverrideCommand {
 	DevOverrideFieldKey field{};
 	DevOverrideLayer layer = DevOverrideLayer::LiveDefinition;
 	DevOwnedValue value{};
+	/** A live-only discard must not request deletion from the next manifest. */
+	bool preserve_baked_assignment = false;
 };
 
 struct DevChangeSet {

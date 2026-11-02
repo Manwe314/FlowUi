@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "FlowUi/ElementID.hpp"
@@ -37,6 +38,8 @@ struct DevBakeProvenance {
 	std::string author{"developer"};
 	std::string note{};
 	std::string timestamp{};
+	/** Unknown historical provenance members survive compatible manifest rewrites. */
+	std::vector<std::pair<std::string, std::string>> preserved_metadata{};
 };
 
 struct DevBakeEntry {
@@ -56,6 +59,8 @@ struct DevBakeEntry {
 	std::string valueJson{};
 	std::string cppValue{};
 	DevBakeProvenance provenance{};
+	/** Compatible extension members retained verbatim as encoded JSON values. */
+	std::vector<std::pair<std::string, std::string>> preserved_metadata{};
 };
 
 struct DevBakeManifest {
@@ -65,6 +70,8 @@ struct DevBakeManifest {
 	std::string buildFingerprint{};
 	std::string createdTimestamp{};
 	std::vector<DevBakeEntry> entries{};
+	/** Unknown envelope metadata is retained while supported manifest versions are rewritten. */
+	std::vector<std::pair<std::string, std::string>> preserved_metadata{};
 };
 
 struct DevBakeDiagnostic {

@@ -3,12 +3,14 @@
 #if FLOW_UI_DEV_MODE
 
 #include <algorithm>
+#include <cctype>
 #include <charconv>
 #include <chrono>
 #include <cmath>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <locale>
 #include <optional>
 #include <sstream>
@@ -17,14 +19,13 @@
 #include <tuple>
 #include <utility>
 
+#include "DevBakeInternals.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
 #include "managers/structs/ActionManagerStructs.hpp"
 
 namespace FlowUi::devSystems::tooling {
 namespace {
-
-constexpr std::uint32_t kManifestVersion = 1;
 
 struct JsonValue {
 	enum class Kind { Null, Boolean, Number, String, Array, Object } kind = Kind::Null;
@@ -87,6 +88,8 @@ private:
 		while (position_ < input_.size()) {
 			const char value = input_[position_++];
 			if (value == '"') return true;
+			if (static_cast<unsigned char>(value) < 32)
+				return false;
 			if (value != '\\') { output.push_back(value); continue; }
 			if (position_ >= input_.size()) return false;
 			switch (input_[position_++]) {
@@ -106,15 +109,28 @@ private:
 	bool parseNumber(JsonValue& output) {
 		const std::size_t first = position_;
 		if (position_ < input_.size() && input_[position_] == '-') ++position_;
-		while (position_ < input_.size() && input_[position_] >= '0' && input_[position_] <= '9') ++position_;
+		if (position_ >= input_.size() || input_[position_] < '0' || input_[position_] > '9')
+			return false;
+		if (input_[position_] == '0')
+			++position_;
+		else
+			while (position_ < input_.size() && input_[position_] >= '0' &&
+				   input_[position_] <= '9')
+				++position_;
 		if (position_ < input_.size() && input_[position_] == '.') {
 			++position_;
+			const auto fraction_start = position_;
 			while (position_ < input_.size() && input_[position_] >= '0' && input_[position_] <= '9') ++position_;
+			if (position_ == fraction_start)
+				return false;
 		}
 		if (position_ < input_.size() && (input_[position_] == 'e' || input_[position_] == 'E')) {
 			++position_;
 			if (position_ < input_.size() && (input_[position_] == '+' || input_[position_] == '-')) ++position_;
+			const auto exponent_start = position_;
 			while (position_ < input_.size() && input_[position_] >= '0' && input_[position_] <= '9') ++position_;
+			if (position_ == exponent_start)
+				return false;
 		}
 		if (position_ == first) return false;
 		output.kind = JsonValue::Kind::Number;
@@ -165,12 +181,181 @@ void appendEscaped(std::string& output, std::string_view value) {
 		case '\n': output += "\\n"; break;
 		case '\r': output += "\\r"; break;
 		case '\t': output += "\\t"; break;
+		case '\b': output += "\\b"; break;
+		case '\f': output += "\\f"; break;
 		default:
 			if (static_cast<unsigned char>(character) < 0x20u) output += '?';
 			else output.push_back(character);
 		}
 	}
 	output.push_back('"');
+}
+
+std::string encodeJsonValue(const JsonValue& value) {
+	if (value.kind == JsonValue::Kind::Null)
+		return "null";
+	if (value.kind == JsonValue::Kind::Boolean)
+		return value.boolean ? "true" : "false";
+	if (value.kind == JsonValue::Kind::Number)
+		return value.text;
+	std::string output;
+	if (value.kind == JsonValue::Kind::String) {
+		appendEscaped(output, value.text);
+		return output;
+	}
+	const bool object = value.kind == JsonValue::Kind::Object;
+	output += object ? '{' : '[';
+	std::size_t index = 0;
+	if (object) {
+		for (const auto& member : value.object) {
+			if (index++)
+				output += ',';
+			appendEscaped(output, member.first);
+			output += ':' + encodeJsonValue(member.second);
+		}
+	} else {
+		for (const auto& item : value.array) {
+			if (index++)
+				output += ',';
+			output += encodeJsonValue(item);
+		}
+	}
+	output += object ? '}' : ']';
+	return output;
+}
+
+std::string compactCpp(std::string_view expression) {
+	std::string output;
+	output.reserve(expression.size());
+	bool quoted = false, escaped = false;
+	for (const char character : expression) {
+		if (!quoted &&
+			(character == ' ' || character == '\t' || character == '\r' || character == '\n'))
+			continue;
+		output += character;
+		if (escaped)
+			escaped = false;
+		else if (quoted && character == '\\')
+			escaped = true;
+		else if (character == '"')
+			quoted = !quoted;
+	}
+	return output;
+}
+
+std::vector<std::string_view> splitCppArguments(std::string_view expression) {
+	std::vector<std::string_view> arguments;
+	arguments.reserve(8);
+	std::size_t start = 0;
+	int parentheses = 0, braces = 0, angles = 0;
+	bool quoted = false, escaped = false;
+	for (std::size_t index = 0; index < expression.size(); ++index) {
+		const char character = expression[index];
+		if (escaped) {
+			escaped = false;
+			continue;
+		}
+		if (quoted && character == '\\') {
+			escaped = true;
+			continue;
+		}
+		if (character == '"') {
+			quoted = !quoted;
+			continue;
+		}
+		if (quoted)
+			continue;
+		if (character == '(')
+			++parentheses;
+		else if (character == ')')
+			--parentheses;
+		else if (character == '{')
+			++braces;
+		else if (character == '}')
+			--braces;
+		else if (character == '<')
+			++angles;
+		else if (character == '>')
+			--angles;
+		else if (character == ',' && parentheses == 0 && braces == 0 && angles == 0) {
+			arguments.emplace_back(expression.substr(start, index - start));
+			start = index + 1;
+		}
+	}
+	if (start < expression.size())
+		arguments.emplace_back(expression.substr(start));
+	return arguments;
+}
+
+bool parseCppNumber(std::string_view expression, long double& number) {
+	if (expression.starts_with("static_cast<")) {
+		const auto opening = expression.find(">(");
+		if (opening == std::string_view::npos || !expression.ends_with(')'))
+			return false;
+		expression = expression.substr(opening + 2, expression.size() - opening - 3);
+	}
+	while (!expression.empty() &&
+		   std::string_view("uUlLfF").find(expression.back()) != std::string_view::npos)
+		expression.remove_suffix(1);
+	const auto parsed =
+		std::from_chars(expression.data(), expression.data() + expression.size(), number);
+	return !expression.empty() && parsed.ec == std::errc{} &&
+		   parsed.ptr == expression.data() + expression.size() && std::isfinite(number);
+}
+
+std::string normalizedCpp(std::string_view expression) {
+	const auto compact = compactCpp(expression);
+	std::string output;
+	output.reserve(compact.size());
+	bool quoted = false, escaped = false;
+	for (std::size_t index = 0; index < compact.size(); ++index) {
+		const char character = compact[index];
+		if (quoted) {
+			output += character;
+			if (escaped)
+				escaped = false;
+			else if (character == '\\')
+				escaped = true;
+			else if (character == '"')
+				quoted = false;
+			continue;
+		}
+		if (character == '"') {
+			quoted = true;
+			output += character;
+			continue;
+		}
+		const bool starts_number =
+			character >= '0' && character <= '9' &&
+			(index == 0 || (!std::isalnum(static_cast<unsigned char>(compact[index - 1])) &&
+							compact[index - 1] != '_'));
+		if (!starts_number) {
+			output += character;
+			continue;
+		}
+		const auto start = index;
+		while (index + 1 < compact.size()) {
+			const char next = compact[index + 1];
+			if ((next >= '0' && next <= '9') || next == '.' || next == 'e' || next == 'E' ||
+				((next == '+' || next == '-') && (compact[index] == 'e' || compact[index] == 'E')))
+				++index;
+			else
+				break;
+		}
+		long double number = 0;
+		const auto literal = std::string_view(compact).substr(start, index - start + 1);
+		if (parseCppNumber(literal, number)) {
+			std::ostringstream stream;
+			stream.imbue(std::locale::classic());
+			stream << std::setprecision(std::numeric_limits<long double>::max_digits10) << number;
+			output += stream.str();
+		} else
+			output += literal;
+		while (index + 1 < compact.size() &&
+			   std::string_view("uUlLfF").find(compact[index + 1]) != std::string_view::npos)
+			++index;
+	}
+	return output;
 }
 
 std::string hex64(std::uint64_t value) {
@@ -241,8 +426,7 @@ std::optional<SerializedValue> serializeValue(
 	if (!type || typeIndex.value >= schema.typeOperations.size()) return std::nullopt;
 	const devMode::DevTypeOps* operations = schema.typeOperations[typeIndex.value];
 	if (!operations) return std::nullopt;
-	const std::string_view cppType = schema.string(type->cppTypeName);
-	if (cppType.ends_with("ActionCall")) {
+	if (type->id == ::FlowUi::detail::typeHash<ActionCall>()) {
 		const auto& action = *static_cast<const ActionCall*>(value);
 		const ActionStableReference reference =
 			action.stableReference();
@@ -259,7 +443,7 @@ std::optional<SerializedValue> serializeValue(
 			"FlowUi::ActionCall::fromStable(FlowUi::ActionCallKind::" +
 				std::string(kindName) + "," + std::to_string(reference.id) + "ULL)"};
 	}
-	if (cppType.ends_with("TextureRef")) {
+	if (type->id == ::FlowUi::detail::typeHash<TextureRef>()) {
 		const auto& texture = *static_cast<const TextureRef*>(value);
 		if (texture.sourceKey.empty() ||
 			(texture.sourceDomain != ResourceDomain::Image &&
@@ -270,13 +454,16 @@ std::optional<SerializedValue> serializeValue(
 			? "Image" : "Icon";
 		return SerializedValue{
 			"{\"domain\":" + std::to_string(static_cast<unsigned>(texture.sourceDomain)) +
-				",\"key\":" + keyLiteral + "}",
-			"FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::" + domain +
-				"," + keyLiteral + ",static_cast<FlowUi::TextureFitMode>(" +
+				",\"key\":" + keyLiteral +
+				",\"fitMode\":" + std::to_string(static_cast<unsigned>(texture.fitMode)) +
+				",\"samplingMode\":" + std::to_string(static_cast<unsigned>(texture.samplingMode)) +
+				",\"tintEnabled\":" + (texture.tintEnabled ? "true" : "false") + "}",
+			"FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::" + domain + "," + keyLiteral +
+				",static_cast<FlowUi::TextureFitMode>(" +
 				std::to_string(static_cast<unsigned>(texture.fitMode)) +
 				"),static_cast<FlowUi::TextureSamplingMode>(" +
-				std::to_string(static_cast<unsigned>(texture.samplingMode)) +
-				")," + (texture.tintEnabled ? "true" : "false") + ")"};
+				std::to_string(static_cast<unsigned>(texture.samplingMode)) + ")," +
+				(texture.tintEnabled ? "true" : "false") + ")"};
 	}
 	long double numeric = 0.0L;
 	if (type->kind == devMode::DevTypeKind::Boolean) {
@@ -293,6 +480,9 @@ std::optional<SerializedValue> serializeValue(
 		stream.imbue(std::locale::classic());
 		stream << std::setprecision(20) << numeric;
 		std::string literal = stream.str();
+		if (type->kind == devMode::DevTypeKind::FloatingPoint && numeric == 0 &&
+			std::signbit(numeric))
+			literal = "-0.0";
 		if (type->kind == devMode::DevTypeKind::Enumeration) {
 			literal = "static_cast<" + std::string(schema.string(type->cppTypeName)) + ">(" + literal + ")";
 		}
@@ -450,6 +640,7 @@ std::optional<DevBakeEntry> makeThemeEntry(
 
 bool decodeEntry(const JsonValue& value, DevBakeEntry& entry) {
 	if (value.kind != JsonValue::Kind::Object) return false;
+	entry.provenance.author = "unknown";
 	const auto targetKind = stringMember(value, "targetKind");
 	const auto targetScope = stringMember(value, "targetScope");
 	const auto fieldPath = stringMember(value, "fieldPath");
@@ -461,6 +652,9 @@ bool decodeEntry(const JsonValue& value, DevBakeEntry& entry) {
 	const auto valueJson = stringMember(value, "valueJson");
 	if (!targetKind || !targetScope || !fieldPath || !fieldId || !valueType ||
 		!ownerType || !sourceHeader || !cppValue || !valueJson) return false;
+	if ((*targetKind != "Element" && *targetKind != "Theme") ||
+		(*targetScope != "Definition" && *targetScope != "ExactInstance"))
+		return false;
 	entry.targetKind = *targetKind == "Theme" ? DevBakeTargetKind::Theme : DevBakeTargetKind::Element;
 	entry.targetScope = *targetScope == "ExactInstance" ? DevOverrideScope::ExactInstance : DevOverrideScope::Definition;
 	entry.fieldPath = *fieldPath;
@@ -481,15 +675,38 @@ bool decodeEntry(const JsonValue& value, DevBakeEntry& entry) {
 		if (!parseHex(*key, entry.instanceKey.value)) return false;
 	}
 	if (const auto label = stringMember(value, "instanceDebugLabel")) entry.instanceDebugLabel = *label;
+	if (const auto* provenance = value.find("provenance")) {
+		if (provenance->kind != JsonValue::Kind::Object)
+			return false;
+		if (const auto author = stringMember(*provenance, "author"))
+			entry.provenance.author = *author;
+		if (const auto note = stringMember(*provenance, "note"))
+			entry.provenance.note = *note;
+		if (const auto timestamp = stringMember(*provenance, "timestamp"))
+			entry.provenance.timestamp = *timestamp;
+		for (const auto& member : provenance->object)
+			if (member.first != "author" && member.first != "note" && member.first != "timestamp")
+				entry.provenance.preserved_metadata.emplace_back(member.first,
+																 encodeJsonValue(member.second));
+	} else {
+		entry.provenance.author = "unknown";
+	}
+	constexpr std::array<std::string_view, 17> known_members{
+		"targetKind",	"targetScope",	"definitionId",		  "themeType",
+		"themeVariant", "instanceKey",	"instanceDebugLabel", "fieldId",
+		"fieldPath",	"valueTypeId",	"valueType",		  "value",
+		"ownerCppType", "sourceHeader", "cppValue",			  "valueJson",
+		"provenance"};
+	for (const auto& member : value.object) {
+		if (std::find(known_members.begin(), known_members.end(), member.first) ==
+			known_members.end())
+			entry.preserved_metadata.emplace_back(member.first, encodeJsonValue(member.second));
+	}
 	return true;
 }
 
-bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, bool& existed) {
-	existed = std::filesystem::exists(path);
-	if (!existed) { manifest = {}; return true; }
-	std::ifstream input(path, std::ios::binary);
-	if (!input) return false;
-	const std::string contents((std::istreambuf_iterator<char>(input)), {});
+bool decodeManifest(std::string_view contents, DevBakeManifest& manifest,
+					std::string* diagnostic = nullptr) {
 	JsonValue root;
 	if (!JsonParser(contents).parse(root) || root.kind != JsonValue::Kind::Object) return false;
 	const JsonValue* version = root.find("manifestVersion");
@@ -503,8 +720,11 @@ bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, 
 			return false;
 		FlowUi::detail::MemoryCapacityManifest decoded;
 		std::string error;
-		if (!FlowUi::detail::decode_memory_capacity_manifest(*memory, decoded, error))
+		if (!FlowUi::detail::decode_memory_capacity_manifest(*memory, decoded, error)) {
+			if (diagnostic)
+				*diagnostic = error;
 			return false;
+		}
 		manifest.memoryCapacity = std::move(decoded);
 	}
 	if (const auto fingerprint = stringMember(root, "schemaFingerprint")) {
@@ -519,7 +739,28 @@ bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, 
 		if (!decodeEntry(item, entry)) return false;
 		manifest.entries.push_back(std::move(entry));
 	}
+	constexpr std::array<std::string_view, 6> known_members{"manifestVersion",	"schemaFingerprint",
+															"buildFingerprint", "createdTimestamp",
+															"bakedChanges",		"memoryCapacity"};
+	for (const auto& member : root.object) {
+		if (std::find(known_members.begin(), known_members.end(), member.first) ==
+			known_members.end())
+			manifest.preserved_metadata.emplace_back(member.first, encodeJsonValue(member.second));
+	}
 	return true;
+}
+
+bool loadManifest(const std::filesystem::path& path, DevBakeManifest& manifest, bool& existed) {
+	existed = std::filesystem::exists(path);
+	if (!existed) {
+		manifest = {};
+		return true;
+	}
+	std::ifstream input(path, std::ios::binary);
+	if (!input)
+		return false;
+	const std::string contents((std::istreambuf_iterator<char>(input)), {});
+	return !input.bad() && decodeManifest(contents, manifest);
 }
 
 std::string encodeManifest(const DevBakeManifest& manifest) {
@@ -559,13 +800,29 @@ std::string encodeManifest(const DevBakeManifest& manifest) {
 		output += ",\n      \"provenance\": {\"author\": "; appendEscaped(output, entry.provenance.author);
 		output += ", \"note\": "; appendEscaped(output, entry.provenance.note);
 		output += ", \"timestamp\": "; appendEscaped(output, entry.provenance.timestamp);
-		output += "}\n    }";
+		for (const auto& member : entry.provenance.preserved_metadata) {
+			output += ", ";
+			appendEscaped(output, member.first);
+			output += ": " + member.second;
+		}
+		output += '}';
+		for (const auto& member : entry.preserved_metadata) {
+			output += ",\n      ";
+			appendEscaped(output, member.first);
+			output += ": " + member.second;
+		}
+		output += "\n    }";
 	}
 	if (!manifest.entries.empty()) output += '\n';
 	output += "  ]";
 	if (manifest.memoryCapacity)
 		output += ",\n  \"memoryCapacity\": " +
 				  FlowUi::detail::encode_memory_capacity_manifest(*manifest.memoryCapacity);
+	for (const auto& member : manifest.preserved_metadata) {
+		output += ",\n  ";
+		appendEscaped(output, member.first);
+		output += ": " + member.second;
+	}
 	output += "\n}\n";
 	return output;
 }
@@ -594,6 +851,369 @@ bool writeAtomically(const std::filesystem::path& destination, std::string_view 
 }
 
 } // namespace
+
+namespace bake_detail {
+std::string utc_timestamp() {
+	return nowUtc();
+}
+
+bool entry_cpp_value_consistent(const devMode::DevSchemaGeneration& schema,
+								const devMode::DevFieldSchema& field, const DevBakeEntry& entry) {
+	JsonValue value;
+	if (!JsonParser(entry.valueJson).parse(value))
+		return false;
+	const auto expression = compactCpp(entry.cppValue);
+	const auto json_number = [](const JsonValue* candidate, long double& number) {
+		return candidate && candidate->kind == JsonValue::Kind::Number &&
+			   parseCppNumber(candidate->text, number);
+	};
+	const auto compare = [&](const auto& self, const JsonValue& candidate,
+							 devMode::DevTypeIndex type_index, std::string_view cpp,
+							 std::uint32_t depth) -> bool {
+		const auto* type = schema.type(type_index);
+		if (!type || depth > 16)
+			return false;
+		const auto type_name = compactCpp(schema.string(type->cppTypeName));
+		if (type->id == ::FlowUi::detail::typeHash<ActionCall>()) {
+			long double kind = 0, identifier = 0;
+			if (!json_number(candidate.find("kind"), kind) ||
+				!json_number(candidate.find("id"), identifier))
+				return false;
+			if (kind == 0 && identifier == 0)
+				return cpp == "FlowUi::ActionCall{}";
+			constexpr std::string_view prefix = "FlowUi::ActionCall::fromStable(";
+			if ((kind != 1 && kind != 2) || identifier <= 0 || !cpp.starts_with(prefix) ||
+				!cpp.ends_with(')'))
+				return false;
+			const auto arguments =
+				splitCppArguments(cpp.substr(prefix.size(), cpp.size() - prefix.size() - 1));
+			long double generated_id = 0;
+			return arguments.size() == 2 &&
+				   arguments[0] ==
+					   (kind == 1 ? "FlowUi::ActionCallKind::App" : "FlowUi::ActionCallKind::Ui") &&
+				   parseCppNumber(arguments[1], generated_id) && generated_id == identifier;
+		}
+		if (type->id == ::FlowUi::detail::typeHash<TextureRef>()) {
+			constexpr std::string_view prefix = "FlowUi::TextureRef::fromStable(";
+			if (!cpp.starts_with(prefix) || !cpp.ends_with(')'))
+				return false;
+			const auto arguments =
+				splitCppArguments(cpp.substr(prefix.size(), cpp.size() - prefix.size() - 1));
+			long double domain = 0;
+			const auto* key = candidate.find("key");
+			JsonValue generated_key;
+			if (arguments.size() != 5 || !json_number(candidate.find("domain"), domain) ||
+				(domain != 1 && domain != 2) || !key || key->kind != JsonValue::Kind::String ||
+				arguments[0] != (domain == 1 ? "FlowUi::ResourceDomain::Image"
+											 : "FlowUi::ResourceDomain::Icon") ||
+				!JsonParser(arguments[1]).parse(generated_key) ||
+				generated_key.kind != JsonValue::Kind::String || generated_key.text != key->text)
+				return false;
+			long double generated_fit = 0, generated_sampling = 0;
+			if (!arguments[2].starts_with("static_cast<FlowUi::TextureFitMode>(") ||
+				!arguments[3].starts_with("static_cast<FlowUi::TextureSamplingMode>(") ||
+				!parseCppNumber(arguments[2], generated_fit) ||
+				!parseCppNumber(arguments[3], generated_sampling) || generated_fit < 0 ||
+				generated_fit > 3 || std::floor(generated_fit) != generated_fit ||
+				generated_sampling < 0 || generated_sampling > 1 ||
+				std::floor(generated_sampling) != generated_sampling ||
+				(arguments[4] != "true" && arguments[4] != "false"))
+				return false;
+			// Legacy JSON omitted these properties; generator metadata explicitly retains their
+			// values.
+			long double saved_setting = 0;
+			if (const auto* fit = candidate.find("fitMode");
+				fit && (!json_number(fit, saved_setting) || saved_setting != generated_fit))
+				return false;
+			if (const auto* sampling = candidate.find("samplingMode");
+				sampling &&
+				(!json_number(sampling, saved_setting) || saved_setting != generated_sampling))
+				return false;
+			if (const auto* tint = candidate.find("tintEnabled");
+				tint && (tint->kind != JsonValue::Kind::Boolean ||
+						 tint->boolean != (arguments[4] == "true")))
+				return false;
+			return true;
+		}
+		if (type->kind == devMode::DevTypeKind::Boolean)
+			return candidate.kind == JsonValue::Kind::Boolean &&
+				   cpp == (candidate.boolean ? "true" : "false");
+		if (type->kind == devMode::DevTypeKind::SignedInteger ||
+			type->kind == devMode::DevTypeKind::UnsignedInteger ||
+			type->kind == devMode::DevTypeKind::FloatingPoint ||
+			type->kind == devMode::DevTypeKind::Enumeration) {
+			long double saved_number = 0, generated_number = 0;
+			if (!json_number(std::addressof(candidate), saved_number) ||
+				!parseCppNumber(cpp, generated_number))
+				return false;
+			if (type->kind == devMode::DevTypeKind::Enumeration &&
+				!cpp.starts_with("static_cast<" + type_name + ">("))
+				return false;
+			if (type->kind != devMode::DevTypeKind::Enumeration && cpp.starts_with("static_cast<"))
+				return false;
+			if (type->kind == devMode::DevTypeKind::FloatingPoint) {
+				if (saved_number == 0 && std::signbit(saved_number) &&
+					cpp.find_first_of(".eE") == std::string_view::npos)
+					return false;
+				if (type->size <= sizeof(float)) {
+					saved_number = static_cast<float>(saved_number);
+					generated_number = static_cast<float>(generated_number);
+				} else if (type->size <= sizeof(double)) {
+					saved_number = static_cast<double>(saved_number);
+					generated_number = static_cast<double>(generated_number);
+				}
+			}
+			return saved_number == generated_number &&
+				   std::signbit(saved_number) == std::signbit(generated_number);
+		}
+		if (type->kind != devMode::DevTypeKind::Object ||
+			candidate.kind != JsonValue::Kind::Object || !cpp.starts_with(type_name + "{") ||
+			!cpp.ends_with('}'))
+			return false;
+		const auto assignments =
+			splitCppArguments(cpp.substr(type_name.size() + 1, cpp.size() - type_name.size() - 2));
+		if (assignments.size() != candidate.object.size())
+			return false;
+		std::uint32_t previous_order = 0;
+		bool first_assignment = true;
+		for (const auto assignment : assignments) {
+			const auto equal_sign = assignment.find('=');
+			if (equal_sign == std::string_view::npos || !assignment.starts_with('.'))
+				return false;
+			const auto name = assignment.substr(1, equal_sign - 1);
+			const auto* member = candidate.find(name);
+			const auto fields = schema.fieldsOf(type_index);
+			const auto found = std::find_if(fields.begin(), fields.end(), [&](const auto& child) {
+				return schema.string(child.name) == name;
+			});
+			if (!member || found == fields.end() ||
+				!self(self, *member, found->valueType, assignment.substr(equal_sign + 1),
+					  depth + 1))
+				return false;
+			if (!first_assignment && found->declarationOrder <= previous_order)
+				return false;
+			previous_order = found->declarationOrder;
+			first_assignment = false;
+		}
+		return true;
+	};
+	return compare(compare, value, field.valueType, expression, 0);
+}
+
+bool entry_value_valid(const devMode::DevSchemaGeneration& schema,
+					   const devMode::DevFieldSchema& field, const DevBakeEntry& entry,
+					   std::string& reason) {
+	JsonValue value;
+	if (!JsonParser(entry.valueJson).parse(value)) {
+		reason = "Saved valueJson is not valid JSON.";
+		return false;
+	}
+	const auto validate = [&](const auto& self, const JsonValue& candidate,
+							  devMode::DevTypeIndex type_index,
+							  const devMode::DevFieldSchema* member, std::uint32_t depth) -> bool {
+		const auto* type = schema.type(type_index);
+		if (!type || depth > 16)
+			return false;
+		long double numeric = 0;
+		const bool numeric_type = type->kind == devMode::DevTypeKind::SignedInteger ||
+								  type->kind == devMode::DevTypeKind::UnsignedInteger ||
+								  type->kind == devMode::DevTypeKind::FloatingPoint ||
+								  type->kind == devMode::DevTypeKind::Enumeration;
+		if (numeric_type) {
+			if (candidate.kind != JsonValue::Kind::Number)
+				return false;
+			const auto parsed = std::from_chars(
+				candidate.text.data(), candidate.text.data() + candidate.text.size(), numeric);
+			if (parsed.ec != std::errc{} ||
+				parsed.ptr != candidate.text.data() + candidate.text.size() ||
+				!std::isfinite(numeric))
+				return false;
+			if (type->kind != devMode::DevTypeKind::FloatingPoint && std::floor(numeric) != numeric)
+				return false;
+			if (type->kind == devMode::DevTypeKind::UnsignedInteger &&
+				(numeric < 0 || numeric >= std::ldexp(1.0L, static_cast<int>(type->size * 8))))
+				return false;
+			if (type->kind == devMode::DevTypeKind::SignedInteger) {
+				const auto bound = std::ldexp(1.0L, static_cast<int>(type->size * 8 - 1));
+				if (numeric < -bound || numeric >= bound)
+					return false;
+			}
+			if (type->kind == devMode::DevTypeKind::FloatingPoint &&
+				std::abs(numeric) >
+					(type->size <= sizeof(float)
+						 ? static_cast<long double>(std::numeric_limits<float>::max())
+						 : static_cast<long double>(std::numeric_limits<double>::max())))
+				return false;
+			if (type->kind == devMode::DevTypeKind::Enumeration && type->enumeration.values.count) {
+				bool matched = false;
+				for (std::uint32_t index = 0; index < type->enumeration.values.count; ++index) {
+					const auto enum_index = type->enumeration.values.first + index;
+					if (enum_index >= schema.enumValues.size())
+						return false;
+					const auto bits = schema.enumValues[enum_index].bits;
+					auto enumerator =
+						type->enumeration.isSigned
+							? static_cast<long double>(static_cast<std::int64_t>(bits))
+							: static_cast<long double>(bits);
+					const auto enum_width = static_cast<unsigned>(type->enumeration.widthBytes * 8);
+					if (type->enumeration.isSigned && enum_width > 0 && enum_width < 64 &&
+						(bits & (std::uint64_t{1} << (enum_width - 1))))
+						enumerator -= std::ldexp(1.0L, static_cast<int>(enum_width));
+					matched |= enumerator == numeric;
+				}
+				if (!matched)
+					return false;
+			}
+		} else if (type->kind == devMode::DevTypeKind::Boolean) {
+			if (candidate.kind != JsonValue::Kind::Boolean)
+				return false;
+		} else if (type->kind == devMode::DevTypeKind::Text) {
+			if (candidate.kind != JsonValue::Kind::String)
+				return false;
+		} else if (type->kind == devMode::DevTypeKind::Object ||
+				   type->id == ::FlowUi::detail::typeHash<ActionCall>()) {
+			if (candidate.kind != JsonValue::Kind::Object)
+				return false;
+			if (type->id != ::FlowUi::detail::typeHash<ActionCall>() &&
+				type->id != ::FlowUi::detail::typeHash<TextureRef>()) {
+				for (const auto& property : candidate.object) {
+					const auto fields = schema.fieldsOf(type_index);
+					const auto found =
+						std::find_if(fields.begin(), fields.end(), [&](const auto& child) {
+							return schema.string(child.name) == property.first;
+						});
+					if (found == fields.end() || !self(self, property.second, found->valueType,
+													   std::addressof(*found), depth + 1))
+						return false;
+				}
+			}
+		} else
+			return false;
+		if (member && member->constraint) {
+			if (member->constraint >= schema.constraints.size())
+				return false;
+			const auto& constraint = schema.constraints[member->constraint];
+			if (constraint.hasTextMaximum && (candidate.kind != JsonValue::Kind::String ||
+											  candidate.text.size() > constraint.textMaximum))
+				return false;
+			if (constraint.numeric.hasMinimum &&
+				(!numeric_type || numeric < constraint.numeric.minimum))
+				return false;
+			if (constraint.numeric.hasMaximum &&
+				(!numeric_type || numeric > constraint.numeric.maximum))
+				return false;
+			if (constraint.numeric.hasStep) {
+				const auto step = static_cast<long double>(constraint.numeric.step);
+				if (!numeric_type || !std::isfinite(step) || step <= 0)
+					return false;
+				const auto steps =
+					(numeric - (constraint.numeric.hasMinimum ? constraint.numeric.minimum : 0)) /
+					step;
+				if (std::abs(steps - std::round(steps)) > 1.0e-9L * std::max(1.0L, std::abs(steps)))
+					return false;
+			}
+		}
+		return true;
+	};
+	if (!validate(validate, value, field.valueType, std::addressof(field), 0)) {
+		reason = "Saved value does not match the current field shape, enum, range or constraints.";
+		return false;
+	}
+	if (!entry_cpp_value_consistent(schema, field, entry)) {
+		reason = "Saved JSON and generated C++ describe different values or an unsupported "
+				 "initializer; explicitly replace or remove this assignment.";
+		return false;
+	}
+	return true;
+}
+
+bool entry_values_equal(const DevBakeEntry& left, const DevBakeEntry& right) {
+	if (left.valueType != right.valueType)
+		return false;
+	if (normalizedCpp(left.cppValue) != normalizedCpp(right.cppValue))
+		return false;
+	JsonValue left_value, right_value;
+	if (!JsonParser(left.valueJson).parse(left_value) ||
+		!JsonParser(right.valueJson).parse(right_value))
+		return false;
+	const auto compare = [](const auto& self, const JsonValue& first,
+							const JsonValue& second) -> bool {
+		if (first.kind != second.kind)
+			return false;
+		if (first.kind == JsonValue::Kind::Null)
+			return true;
+		if (first.kind == JsonValue::Kind::Boolean)
+			return first.boolean == second.boolean;
+		if (first.kind == JsonValue::Kind::String)
+			return first.text == second.text;
+		if (first.kind == JsonValue::Kind::Number) {
+			long double first_number = 0, second_number = 0;
+			const auto first_parsed = std::from_chars(
+				first.text.data(), first.text.data() + first.text.size(), first_number);
+			const auto second_parsed = std::from_chars(
+				second.text.data(), second.text.data() + second.text.size(), second_number);
+			return first_parsed.ec == std::errc{} && second_parsed.ec == std::errc{} &&
+				   first_parsed.ptr == first.text.data() + first.text.size() &&
+				   second_parsed.ptr == second.text.data() + second.text.size() &&
+				   first_number == second_number;
+		}
+		if (first.kind == JsonValue::Kind::Array) {
+			if (first.array.size() != second.array.size())
+				return false;
+			for (std::size_t index = 0; index < first.array.size(); ++index)
+				if (!self(self, first.array[index], second.array[index]))
+					return false;
+			return true;
+		}
+		if (first.object.size() != second.object.size())
+			return false;
+		for (const auto& member : first.object) {
+			const auto* other = second.find(member.first);
+			if (!other || !self(self, member.second, *other))
+				return false;
+		}
+		return true;
+	};
+	return compare(compare, left_value, right_value);
+}
+bool decode_manifest(std::string_view contents, DevBakeManifest& manifest) {
+	return decodeManifest(contents, manifest);
+}
+bool read_manifest_snapshot(const std::filesystem::path& path, DevBakeManifest& manifest,
+							std::string& contents, bool& existed, std::string* diagnostic) {
+	std::error_code error;
+	existed = std::filesystem::exists(path, error);
+	if (error)
+		return false;
+	if (!existed) {
+		manifest = {};
+		contents.clear();
+		return true;
+	}
+	std::ifstream input(path, std::ios::binary);
+	if (!input)
+		return false;
+	contents.assign(std::istreambuf_iterator<char>(input), {});
+	return !input.bad() && decodeManifest(contents, manifest, diagnostic);
+}
+std::string encode_manifest(const DevBakeManifest& manifest) {
+	return encodeManifest(manifest);
+}
+bool write_manifest_atomically(const std::filesystem::path& destination,
+							   std::string_view contents) {
+	return writeAtomically(destination, contents);
+}
+std::optional<DevBakeEntry> element_proposal(const devMode::DevSchemaGeneration& schema,
+											 const DevOverrideApply::Record& record,
+											 DevBakeDiagnostic& diagnostic) {
+	return makeElementEntry(schema, record, diagnostic);
+}
+std::optional<DevBakeEntry> theme_proposal(const devMode::DevSchemaGeneration& schema,
+										   const DevOverrideEngine::ThemeBakeRecord& record,
+										   DevBakeDiagnostic& diagnostic) {
+	return makeThemeEntry(schema, record, diagnostic);
+}
+} // namespace bake_detail
 
 std::optional<DevSerializedValue> serialize_dev_value(const devMode::DevSchemaGeneration& schema,
 													  devMode::DevTypeIndex type,
@@ -642,6 +1262,14 @@ DevBakePipeline::save_memory_capacities(const FlowUi::detail::MemoryCapacityMani
 			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid, diagnostic});
 			return {.status = DevCommandStatus::BakeManifestInvalid};
 		}
+		const auto& destination = review_path.empty() ? manifestPath_ : review_path;
+		bake_detail::ManifestWriterLock writer_lock(destination);
+		if (!writer_lock.acquired()) {
+			status_.bakeDiagnostics.emplace_back(DevBakeDiagnostic{
+				DevBakeDiagnosticCode::ManifestWriteFailed,
+				"Another manifest writer holds " + destination.string() + ".lock."});
+			return {.status = DevCommandStatus::BakeWriteFailed};
+		}
 		bool existed = false;
 		DevBakeManifest updated;
 		if (!loadManifest(manifestPath_, updated, existed)) {
@@ -682,7 +1310,6 @@ DevBakePipeline::save_memory_capacities(const FlowUi::detail::MemoryCapacityMani
 		}
 		updated.manifestVersion = 2;
 		updated.createdTimestamp = nowUtc();
-		const auto& destination = review_path.empty() ? manifestPath_ : review_path;
 		if (!writeAtomically(destination, encodeManifest(updated))) {
 			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestWriteFailed,
 											   "Cannot replace manifest: " + destination.string()});
@@ -697,6 +1324,9 @@ DevBakePipeline::save_memory_capacities(const FlowUi::detail::MemoryCapacityMani
 }
 DevCommandResult DevBakePipeline::reset_memory_capacities() noexcept {
 	try {
+		bake_detail::ManifestWriterLock writer_lock(manifestPath_);
+		if (!writer_lock.acquired())
+			return {.status = DevCommandStatus::BakeWriteFailed};
 		bool existed = false;
 		DevBakeManifest updated;
 		if (!loadManifest(manifestPath_, updated, existed))
@@ -712,101 +1342,8 @@ DevCommandResult DevBakePipeline::reset_memory_capacities() noexcept {
 }
 
 DevCommandResult DevBakePipeline::bake() noexcept {
-	status_ = {};
-	try {
-		const devMode::DevSchemaView schema = schemas_.view();
-		if (!schema) {
-			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::SchemaUnavailable,
-				"Publish the developer schema before baking."});
-			return {.status = DevCommandStatus::SchemaUnavailable};
-		}
-		bool existed = false;
-		DevBakeManifest updated;
-		if (!loadManifest(manifestPath_, updated, existed)) {
-			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestInvalid,
-				"The active .flowchanges manifest is invalid or unreadable."});
-			return {.status = DevCommandStatus::BakeManifestInvalid};
-		}
-		if (updated.schemaFingerprint != 0 &&
-			updated.schemaFingerprint != schema->fingerprint) {
-			updated.entries.clear();
-			status_.bakeDiagnostics.push_back({
-				DevBakeDiagnosticCode::ManifestInvalid,
-				"Stale baked entries were ignored because the developer schema fingerprint changed."});
-		}
-		updated.manifestVersion = updated.memoryCapacity ? 2u : kManifestVersion;
-		updated.schemaFingerprint = schema->fingerprint;
-		updated.buildFingerprint = FLOWUI_BAKE_BUILD_FINGERPRINT;
-		updated.createdTimestamp = nowUtc();
-
-		const auto upsert = [&](DevBakeEntry entry) {
-			const auto found = std::find_if(updated.entries.begin(), updated.entries.end(),
-				[&](const DevBakeEntry& current) { return sameIdentity(current, entry); });
-			if (found == updated.entries.end()) updated.entries.push_back(std::move(entry));
-			else *found = std::move(entry);
-		};
-		for (const auto& record : overrides_.appliedOverrides().records()) {
-			if (!isLive(record.layer)) continue;
-			++status_.activeLiveOverrideCount;
-			DevBakeDiagnostic diagnostic;
-			if (auto entry = makeElementEntry(*schema, record, diagnostic)) {
-				++status_.bakeableOverrideCount;
-				upsert(std::move(*entry));
-			} else if (diagnostic.code != DevBakeDiagnosticCode::None) {
-				++status_.unbakeableOverrideCount;
-				status_.bakeDiagnostics.push_back(std::move(diagnostic));
-			}
-		}
-		for (const auto& record : overrides_.themeBakeRecords()) {
-			if (record.preview_only || record.remove_baked)
-				continue;
-			++status_.activeLiveOverrideCount;
-			DevBakeDiagnostic diagnostic;
-			if (auto entry = makeThemeEntry(*schema, record, diagnostic)) {
-				++status_.bakeableOverrideCount;
-				upsert(std::move(*entry));
-			} else if (diagnostic.code != DevBakeDiagnosticCode::None) {
-				++status_.unbakeableOverrideCount;
-				status_.bakeDiagnostics.push_back(std::move(diagnostic));
-			}
-		}
-		for (const auto& removed : overrides_.appliedOverrides().bakeTombstones()) {
-			DevBakeDiagnostic ignored;
-			if (auto entry = makeElementEntry(*schema, removed, ignored)) {
-				std::erase_if(updated.entries, [&](const DevBakeEntry& current) {
-					return sameIdentity(current, *entry);
-				});
-			}
-		}
-		for (const auto& removed : overrides_.themeBakeTombstones()) {
-			DevBakeDiagnostic ignored;
-			if (auto entry = makeThemeEntry(*schema, removed, ignored)) {
-				std::erase_if(updated.entries, [&](const DevBakeEntry& current) {
-					return sameIdentity(current, *entry);
-				});
-			}
-		}
-
-		std::sort(updated.entries.begin(), updated.entries.end(), [](const auto& left, const auto& right) {
-			return std::tie(left.targetKind, left.definition.value, left.themeType,
-				left.themeVariant, left.targetScope, left.instanceKey.value, left.fieldPath) <
-				std::tie(right.targetKind, right.definition.value, right.themeType,
-				right.themeVariant, right.targetScope, right.instanceKey.value, right.fieldPath);
-		});
-		if (!writeAtomically(manifestPath_, encodeManifest(updated))) {
-			status_.bakeDiagnostics.push_back({DevBakeDiagnosticCode::ManifestWriteFailed,
-				"Failed to atomically write the active .flowchanges manifest."});
-			return {.status = DevCommandStatus::BakeWriteFailed};
-		}
-		manifest_ = std::move(updated);
-		overrides_.appliedOverrides().clearBakeTombstones();
-		overrides_.clearThemeBakeTombstones();
-		return {.status = status_.bakeableOverrideCount == 0 && !existed
-			? DevCommandStatus::NothingToBake : DevCommandStatus::Applied,
-			.applied = true};
-	} catch (...) {
-		return {.status = DevCommandStatus::InternalFailure};
-	}
+	const auto plan = query_review();
+	return commit_review(plan);
 }
 
 DevBakeStatusSnapshot DevBakePipeline::queryStatus() const noexcept {

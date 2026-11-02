@@ -4,24 +4,31 @@
 #include "FSEL/Slider.hpp"
 #include "FSEL/Theme.hpp"
 #include "FlowUi/Flow.hpp"
+#include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp"
+#include "devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevThemeSelector.hpp"
-#include "devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp"
-#include "devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
+#include "devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include <GLFW/glfw3.h>
 #include <cassert>
+#include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 
 using namespace FlowUi;
 using namespace FlowUi::devSystems;
 using namespace FlowUi::devSystems::interface_elements;
+struct RuntimeTheme {
+	float radius = 4;
+};
+FLOWUI_DEV_SCHEMA(RuntimeTheme, FLOWUI_DEV_FIELD(RuntimeTheme, radius))
 namespace {
 struct BrandTheme {
 	std::string name = "Owned string baseline";
@@ -55,8 +62,10 @@ int main() {
 		"active.flowchanges";
 	pipeline.setManifestPath(manifest);
 	uint64_t frames = 0;
+	double last_ui_build_ms = 0, last_frame_ms = 0;
 	const auto draw = [&](FlowElementID control = {}, int event = 0, float inspector_width = 340,
 						  float panel_height = 940) {
+		const auto frame_start = std::chrono::steady_clock::now();
 		assert(app.beginFrame());
 		auto& ui = app.ui();
 		auto& interaction = const_cast<InteractionSnapshot&>(ui.getPreviousFramesInteraction());
@@ -78,6 +87,7 @@ int main() {
 			if (event == 2)
 				interaction.releasedElementIds.emplace_back(element.id);
 		}
+		const auto build_start = std::chrono::steady_clock::now();
 		Clay_ElementDeclaration root{};
 		root.layout.sizing = {CLAY_SIZING_FIXED(1440), CLAY_SIZING_FIXED(panel_height)};
 		root.backgroundColor = Flow_Color("#071A22");
@@ -111,8 +121,14 @@ int main() {
 					.draw();
 			}
 		}
+		last_ui_build_ms = std::chrono::duration<double, std::milli>(
+							   std::chrono::steady_clock::now() - build_start)
+							   .count();
 		assert(app.endFrame());
 		assert(app.drawFrame());
+		last_frame_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() -
+																  frame_start)
+							.count();
 		++frames;
 	};
 	const auto click = [&](FlowElementID control) {
@@ -129,6 +145,39 @@ int main() {
 		controls, FSEL::RadioChoice::definitionId, LocalElementName{"themes-choice"}.token);
 	click(themes_choice);
 	assert(session.inspectForest == kDevInterfaceThemeForest);
+	if (std::getenv("FLOWUI_THEME_BENCHMARK")) {
+		session.inspect_theme_type = ::FlowUi::detail::typeHash<FSEL::FSELTheme>();
+		session.inspect_theme_variant = "default";
+		std::vector<double> timings, frame_timings;
+		timings.reserve(40);
+		frame_timings.reserve(40);
+		uint64_t warm_refresh_count = 0, warm_serialization_count = 0, warm_leaf_count = 0;
+		for (std::size_t frame = 0; frame < 48; ++frame) {
+			draw();
+			if (frame == 8) {
+				warm_refresh_count = session.theme_editor_model.value_refresh_count();
+				warm_serialization_count = session.theme_editor_model.serialization_count();
+				warm_leaf_count = session.theme_editor_model.leaf_rebuild_count();
+			}
+			if (frame >= 8) {
+				timings.emplace_back(last_ui_build_ms);
+				frame_timings.emplace_back(last_frame_ms);
+			}
+		}
+		assert(session.theme_editor_model.value_refresh_count() == warm_refresh_count);
+		assert(session.theme_editor_model.serialization_count() == warm_serialization_count);
+		assert(session.theme_editor_model.leaf_rebuild_count() == warm_leaf_count);
+		std::ranges::sort(timings);
+		std::ranges::sort(frame_timings);
+		std::cout << "Theme benchmark: ui_build_median_ms=" << timings[timings.size() / 2]
+				  << " ui_build_p95_ms=" << timings[timings.size() * 95 / 100]
+				  << " frame_median_ms=" << frame_timings[frame_timings.size() / 2]
+				  << " frame_p95_ms=" << frame_timings[frame_timings.size() * 95 / 100]
+				  << " clay_nodes=" << app.ui().devTreeSnapshot().clay.nodes.size()
+				  << " idle_value_refreshes=0 idle_serializations=0 idle_leaf_rebuilds=0" << '\n';
+		return 0;
+	}
+
 	auto schema = app.devTooling().schemas().view();
 	const auto theme_type = ::FlowUi::detail::typeHash<BrandTheme>();
 	const auto* brand = schema->findTheme(theme_type);
@@ -153,6 +202,20 @@ int main() {
 		return result;
 	};
 	const auto radius = key(theme_type, {"radius"});
+	const auto cached_token = [&](devMode::DevTypeId type, std::string_view variant,
+								  std::string_view path) -> const theme_editor::ThemeTokenValue& {
+		for (const auto& view : session.theme_editor_model.catalogue())
+			if (view.type == type && view.variant == variant) {
+				const auto* presentation = session.theme_editor_model.find(view);
+				assert(presentation);
+				for (std::size_t leaf_index = 0; leaf_index < presentation->fields.size();
+					 ++leaf_index)
+					if (presentation->fields[leaf_index].path == path)
+						return presentation->values[leaf_index];
+			}
+		std::abort();
+	};
+
 	const auto submit = [&](tooling::DevOverrideCommandKind kind, std::string variant,
 							const tooling::DevOverrideFieldKey& field, const auto& value,
 							bool preview_clear = false) {
@@ -178,7 +241,15 @@ int main() {
 	submit(Kind::SetThemeField, "*", radius, 20.0f);
 	assert(app.themes().getTheme<BrandTheme>("dark").radius == 20);
 	assert(app.themes().getTheme<BrandTheme>("light").radius == 20);
+	assert(cached_token(theme_type, "dark", "radius").live_text == "20");
+	assert(cached_token(theme_type, "dark", "radius").live_edit);
+	assert(!cached_token(theme_type, "dark", "radius").startup_edit);
+	assert(session.theme_editor_model.mixed(theme_type, radius.field) == false);
+
 	submit(Kind::SetThemeField, "light", radius, 30.0f);
+	assert(cached_token(theme_type, "light", "radius").live_text == "30");
+	assert(session.theme_editor_model.mixed(theme_type, radius.field));
+
 	submit(Kind::SetThemeField, "*", radius, 22.0f);
 	assert(app.themes().getTheme<BrandTheme>("dark").radius == 22);
 	assert(app.themes().getTheme<BrandTheme>("light").radius == 30);
@@ -211,6 +282,10 @@ int main() {
 	assert(app.themes().getTheme<BrandTheme>("light").radius == 38);
 	assert(app.themes().getTheme<BrandTheme>("cloned").radius == 22);
 	assert(app.themes().getTheme<BrandTheme>("future").radius == 70);
+	assert(!cached_token(theme_type, "dark", "radius").changed);
+	assert(cached_token(theme_type, "light", "radius").changed);
+	assert(!cached_token(theme_type, "future", "radius").changed);
+
 	const auto name = key(theme_type, {"name"});
 	submit(Kind::SetThemeField, "dark", name, std::string("Changed owned value"));
 	submit(Kind::ClearThemeField, "dark", name, std::string{});
@@ -250,6 +325,38 @@ int main() {
 				   local_clay(theme_workbench, DevThemeWorkbench::definitionId, name))
 			.boundingBox;
 	};
+	for (std::size_t warm_frame = 0; warm_frame < 8; ++warm_frame)
+		draw();
+	const auto warm_refresh_count = session.theme_editor_model.value_refresh_count();
+	const auto warm_leaf_count = session.theme_editor_model.leaf_rebuild_count();
+	const auto warm_serialization_count = session.theme_editor_model.serialization_count();
+	draw();
+	draw();
+	assert(session.theme_editor_model.value_refresh_count() == warm_refresh_count);
+	assert(session.theme_editor_model.leaf_rebuild_count() == warm_leaf_count);
+	assert(session.theme_editor_model.serialization_count() == warm_serialization_count);
+	auto* token_state =
+		app.elements().getStatePointer(kDevThemeWorkbench, app.ui().windowId(), theme_workbench);
+	assert(token_state && token_state->token_indices.size() > token_state->emitted_token_rows);
+	assert(token_state->emitted_token_rows < 20);
+	const auto token_viewport_id =
+		local_clay(theme_workbench, DevThemeWorkbench::definitionId, "tokens-scroll");
+	const auto token_content_height =
+		Clay_GetScrollContainerData(token_viewport_id).contentDimensions.height;
+	const auto* cached_fsel = session.theme_editor_model.find(
+		*theme_editor::selected_theme(session.theme_editor_model.catalogue(), session));
+	assert(cached_fsel && !cached_fsel->fields.empty());
+	const auto final_token = cached_fsel->fields[token_state->token_indices.back()].path;
+	*Clay_GetScrollContainerData(token_viewport_id).scrollPosition = {0, -token_content_height};
+	draw();
+	draw();
+	assert(bounds("token-" + final_token).height > 0);
+	assert(std::abs(Clay_GetScrollContainerData(token_viewport_id).contentDimensions.height -
+					token_content_height) < 1);
+	assert(token_state->emitted_token_rows < 20);
+	*Clay_GetScrollContainerData(token_viewport_id).scrollPosition = {};
+	draw();
+	draw();
 	const auto specimen_card = bounds("specimens");
 	const auto tokens_card = bounds("tokens");
 	const auto changes_card = bounds("changes");
@@ -292,6 +399,7 @@ int main() {
 		const double pointer_x = viewport.x + viewport.width / 2;
 		const double pointer_y = viewport.y + viewport.height / 2;
 		glfwSetCursorPos(native_window, pointer_x, pointer_y);
+		glfwPollEvents(); // Drain the native cursor warp before synthesizing the wheel gesture.
 		cursor_callback(native_window, pointer_x, pointer_y);
 		// Let Clay update pointer-over IDs before dispatching a wheel event.
 		draw({}, 0, 340, panel_height);
@@ -323,7 +431,27 @@ int main() {
 	draw();
 	draw();
 	std::cout << "Theme review frame=" << frames - 1 << " phase=changes\n";
-	assert(pipeline.bake().applied);
+	const auto bake_reviewed_fsel_changes = [&] {
+		// This source-only anonymous theme intentionally remains live for later preview checks.
+		// Its retained edits cannot become generated defaults, so omit them explicitly.
+		tooling::DevChangesReviewRequest request{};
+		const auto pending = pipeline.query_review();
+		request.decisions.reserve(pending.rows.size());
+		for (const auto& row : pending.rows)
+			if (row.has_proposal && row.proposed_entry &&
+				row.proposed_entry->themeType == theme_type)
+				request.decisions.emplace_back(tooling::DevChangesDecisionEntry{
+					row.key, tooling::DevChangesDecision::OmitProposal, pending.disk_revision});
+		const auto reviewed = pipeline.query_review(request);
+		if (!reviewed.can_commit)
+			for (const auto& row : reviewed.rows)
+				if (row.blocking)
+					std::cerr << "Theme bake blocked: " << row.target_name << ' ' << row.field_path
+							  << ": " << row.reason << '\n';
+		assert(reviewed.can_commit);
+		assert(pipeline.commit_review(reviewed).applied);
+	};
+	bake_reviewed_fsel_changes();
 	bool saw_fsel = false;
 	for (const auto& entry : pipeline.manifest().entries)
 		if (entry.themeType == fsel_type) {
@@ -334,11 +462,11 @@ int main() {
 		}
 	assert(saw_fsel);
 	submit(Kind::ResetThemeField, "default", color_key, Clay_Color{});
-	assert(pipeline.bake().applied);
+	bake_reviewed_fsel_changes();
 	for (const auto& entry : pipeline.manifest().entries)
 		assert(entry.themeType != fsel_type);
 	submit(Kind::SetThemeField, "*", color_key, Flow_Color("#26a69a"));
-	assert(pipeline.bake().applied);
+	bake_reviewed_fsel_changes();
 	bool saw_general = false;
 	for (const auto& entry : pipeline.manifest().entries)
 		if (entry.themeType == fsel_type) {
@@ -558,6 +686,37 @@ int main() {
 	draw();
 	draw();
 	std::cout << "Theme review frame=" << frames - 1 << " phase=empty\n";
+	// Publish a new schema, mutate a retained payload, then replace its baselines.
+	const auto runtime_type = ::FlowUi::detail::typeHash<RuntimeTheme>();
+	assert(app.themes().registerTheme<RuntimeTheme>("runtime-cache", RuntimeTheme{}, true));
+	draw();
+	draw();
+	assert(!cached_token(runtime_type, "runtime-cache", "radius").changed);
+	const auto leaf_count_before_update = session.theme_editor_model.leaf_rebuild_count();
+	const auto refresh_count_before_update = session.theme_editor_model.value_refresh_count();
+	assert(app.themes().updateTheme<RuntimeTheme>("runtime-cache",
+												  [](RuntimeTheme& theme) { theme.radius = 9; }));
+	draw();
+	assert(cached_token(runtime_type, "runtime-cache", "radius").live_text == "9");
+	assert(cached_token(runtime_type, "runtime-cache", "radius").live_edit);
+	assert(session.theme_editor_model.leaf_rebuild_count() == leaf_count_before_update);
+	assert(session.theme_editor_model.value_refresh_count() == refresh_count_before_update + 1);
+	assert(app.themes().registerTheme<RuntimeTheme>("runtime-cache", RuntimeTheme{11}, true));
+	draw();
+	assert(cached_token(runtime_type, "runtime-cache", "radius").live_text == "11");
+	assert(!cached_token(runtime_type, "runtime-cache", "radius").changed);
+	assert(app.themes().clone_dev_variant(runtime_type, "runtime-cache", "runtime-clone"));
+	draw();
+	assert(cached_token(runtime_type, "runtime-clone", "radius").live_text == "11");
+	assert(app.themes().setActiveVariant<RuntimeTheme>("runtime-clone"));
+	draw();
+	for (const auto& view : session.theme_editor_model.catalogue())
+		if (view.type == runtime_type) {
+			const auto* presentation = session.theme_editor_model.find(view);
+			assert(presentation &&
+				   presentation->code.find(view.active ? ", theme, true)" : ", theme, false)") !=
+					   std::string::npos);
+		}
 	std::filesystem::remove_all(manifest.parent_path());
 	std::cout << "Theme editor verification passed in " << frames << " frames\n";
 }

@@ -2,6 +2,7 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include "devSystems/devMonitoringAndReporting/reporting/DevDiagnosticsReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevReportingRing.hpp"
 #include <algorithm>
 #include <cassert>
@@ -69,6 +70,64 @@ struct DevErrorReporting::Impl {
 		config.maximumPinnedMemoryEvents = std::max(1u, config.maximumPinnedMemoryEvents);
 		if (config.triggers.size() > 64u) config.triggers.resize(64u);
 		return config;
+	}
+	[[nodiscard]] DevDiagnosticsSnapshot
+	diagnostics_snapshot(std::optional<DevErrorOccurrenceId> selected_id = std::nullopt,
+						 std::span<const DevErrorSourceDescriptor> supplied_sources = {},
+						 std::span<const DevErrorBreadcrumbDescriptor> supplied_descriptors = {},
+						 bool descriptors_supplied = false) const {
+		DevDiagnosticsSnapshot result;
+		result.status = reportingStatus;
+		result.revision = reportingStatus.revision;
+		result.config = reportingConfig;
+		result.capture_config = monitoring->config();
+		result.stack_provider_available = result.capture_config.stackProvider != nullptr;
+		// The provider belongs to the application, never to an owned historical report.
+		result.capture_config.stackProvider = nullptr;
+		result.rows.reserve(selected_id ? 1 : occurrences.size());
+		for (const auto& occurrence : occurrences) {
+			if (selected_id && occurrence.id != *selected_id)
+				continue;
+			DevDiagnosticsOccurrenceRow row{.error = occurrence.error,
+											.id = occurrence.id,
+											.first_app_tick = occurrence.firstAppTick,
+											.last_app_tick = occurrence.lastAppTick,
+											.first_timestamp_ns = occurrence.firstTimestampNs,
+											.last_timestamp_ns = occurrence.lastTimestampNs,
+											.resolution = occurrence.resolution,
+											.state = occurrence.state,
+											.flags = occurrence.flags};
+			row.steps.reserve(occurrence.steps.size());
+			for (const auto& step : occurrence.steps)
+				row.steps.emplace_back(
+					DevDiagnosticsStepReference{.context = step.context,
+												.source_id = step.sourceId,
+												.sequence = step.sequence,
+												.thread_track = step.threadTrack});
+			result.rows.emplace_back(std::move(row));
+		}
+		const auto source_storage = descriptors_supplied ? std::vector<DevErrorSourceDescriptor>{}
+														 : monitoring->sourceSnapshot();
+		const auto sources = descriptors_supplied ? supplied_sources : std::span(source_storage);
+		result.sources.reserve(sources.size());
+		for (const auto& source : sources)
+			result.sources.emplace_back(
+				DevDiagnosticsSource{.name = std::string(source.name),
+									 .file = std::string(source.location.file),
+									 .function = std::string(source.location.function),
+									 .id = source.id,
+									 .line = source.location.line,
+									 .column = source.location.column});
+		const auto descriptor_storage = descriptors_supplied
+											? std::vector<DevErrorBreadcrumbDescriptor>{}
+											: monitoring->breadcrumbDescriptorSnapshot();
+		const auto descriptors =
+			descriptors_supplied ? supplied_descriptors : std::span(descriptor_storage);
+		result.breadcrumb_descriptors.reserve(descriptors.size());
+		for (const auto& descriptor : descriptors)
+			result.breadcrumb_descriptors.emplace_back(DevDiagnosticsBreadcrumbDescriptor{
+				.name = std::string(descriptor.name), .id = descriptor.id});
+		return result;
 	}
 
 	struct PendingHandle {
@@ -567,6 +626,7 @@ DevErrorReporting::~DevErrorReporting() = default;
 
 void DevErrorReporting::setConfig(const DevErrorReportingConfig& config) {
 	std::scoped_lock lock(impl_->mutex);
+	++impl_->reportingStatus.revision;
 	impl_->reportingConfig = Impl::normalize(config);
 	while (impl_->occurrences.size() > impl_->reportingConfig.retainedOccurrenceCapacity)
 		impl_->evict_front();
@@ -609,6 +669,7 @@ void DevErrorReporting::consumeThrough(AppTickId appTick) noexcept {
 		impl_->monitoring->drain_snapshots_into(snapshots);
 		const uint64_t drainElapsed = steadyNowNs() - drainStarted;
 		std::scoped_lock lock(impl_->mutex);
+		++impl_->reportingStatus.revision;
 		impl_->reportingStatus.overhead.drainTimeNs += drainElapsed;
 		impl_->reportingStatus.overhead.drainedBytes +=
 			records.size() * sizeof(DevErrorRecord) +
@@ -716,6 +777,7 @@ void DevErrorReporting::consumeThrough(AppTickId appTick) noexcept {
 		try {
 			std::scoped_lock lock(impl_->mutex);
 			++impl_->reportingStatus.consumeFailures;
+			++impl_->reportingStatus.revision;
 			++impl_->reportingStatus.overhead.consumeCalls;
 			impl_->reportingStatus.overhead.consumeTimeNs += steadyNowNs() - consumeStarted;
 		} catch (...) {}
@@ -728,6 +790,157 @@ DevErrorReportingStatus DevErrorReporting::status() const noexcept {
 		return impl_->reportingStatus;
 	} catch (...) {
 		return {};
+	}
+}
+
+Result<DevDiagnosticsSnapshot> DevErrorReporting::diagnostics_snapshot() const noexcept {
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		return impl_->diagnostics_snapshot();
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::None));
+	}
+}
+
+Result<DevDiagnosticsInvestigation>
+DevErrorReporting::diagnostics_investigation(std::optional<DevErrorOccurrenceId> selected_id,
+											 uint64_t byte_budget) const noexcept {
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		const auto selected = selected_id ? impl_->states.find(*selected_id) : impl_->states.end();
+		if (selected_id && selected == impl_->states.end())
+			return unexpectedError(
+				makeError(ErrorCode::ObjectNotInitialized, ErrorSite::None, *selected_id));
+		uint64_t minimum_bytes = sizeof(DevDiagnosticsInvestigation);
+		const auto sources = impl_->monitoring->sourceSnapshot();
+		const auto descriptors = impl_->monitoring->breadcrumbDescriptorSnapshot();
+		const auto stacks = impl_->monitoring->stackSnapshot();
+		const auto add_bytes = [&](uint64_t bytes) {
+			if (bytes > byte_budget || minimum_bytes > byte_budget - bytes)
+				return false;
+			minimum_bytes += bytes;
+			return true;
+		};
+		const auto budget_failure = [&]() {
+			return unexpectedError(makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::None,
+											 minimum_bytes, byte_budget));
+		};
+		// Preflight payload and descriptor lengths before materializing owned strings/vectors.
+		// Fixed slack covers short-string storage and terminators conservatively.
+		if (!add_bytes(impl_->reportingConfig.triggers.size() * sizeof(DevErrorTrigger)))
+			return budget_failure();
+		for (const auto& source : sources)
+			if (!add_bytes(sizeof(DevDiagnosticsSource) + source.name.size() +
+						   source.location.file.size() + source.location.function.size() + 96))
+				return budget_failure();
+		for (const auto& descriptor : descriptors)
+			if (!add_bytes(sizeof(DevDiagnosticsBreadcrumbDescriptor) + descriptor.name.size() +
+						   32))
+				return budget_failure();
+		uint64_t maximum_advice_bytes =
+			sizeof(DevErrorAdviceResult) + sizeof(DevDiagnosticsAdviceText) + 192;
+		for (const auto& advice : devErrorAdviceCatalogue())
+			maximum_advice_bytes = std::max<uint64_t>(
+				maximum_advice_bytes,
+				sizeof(DevErrorAdviceResult) + sizeof(DevDiagnosticsAdviceText) +
+					advice.title.size() + advice.explanation.size() +
+					advice.suggestedAction.size() + advice.configurationKey.size() +
+					advice.documentation.size() + advice.limitation.size() + 192);
+		size_t stack_count = 0, capture_count = 0;
+		for (const auto& stack : stacks) {
+			const bool referenced = std::any_of(
+				impl_->occurrences.begin(), impl_->occurrences.end(), [&](const auto& occurrence) {
+					return (!selected_id || occurrence.id == *selected_id) &&
+						   std::any_of(occurrence.steps.begin(), occurrence.steps.end(),
+									   [&](const auto& step) { return step.stackId == stack.id; });
+				});
+			if (referenced) {
+				if (!add_bytes(sizeof(DevErrorStackTrace)))
+					return budget_failure();
+				++stack_count;
+			}
+		}
+		for (const auto& capture : impl_->captures) {
+			const bool referenced = std::any_of(
+				impl_->occurrences.begin(), impl_->occurrences.end(), [&](const auto& occurrence) {
+					return (!selected_id || occurrence.id == *selected_id) &&
+						   occurrence.captureId == capture.id;
+				});
+			if (referenced) {
+				if (!add_bytes(sizeof(DevErrorTriggeredCapture) +
+							   capture.memoryEvents.size() * sizeof(RetainedMemoryEvent)))
+					return budget_failure();
+				++capture_count;
+			}
+		}
+		for (const auto& occurrence : impl_->occurrences) {
+			if (selected_id && occurrence.id != *selected_id)
+				continue;
+			if (!add_bytes(retainedBytes(occurrence) + sizeof(DevDiagnosticsOccurrenceRow) +
+						   occurrence.steps.size() * sizeof(DevDiagnosticsStepReference)))
+				return budget_failure();
+			// Projection may refresh advice when a correlation was evicted during this read.
+			// Reserve the configured maximum catalogue result size, including owned prose.
+			if (impl_->reportingConfig.maximumAdvicePerOccurrence >
+					byte_budget / maximum_advice_bytes ||
+				!add_bytes(impl_->reportingConfig.maximumAdvicePerOccurrence *
+						   maximum_advice_bytes))
+				return budget_failure();
+		}
+		DevDiagnosticsInvestigation result;
+		result.selected_id = selected_id;
+		result.snapshot = impl_->diagnostics_snapshot(selected_id, sources, descriptors, true);
+		result.occurrences.reserve(result.snapshot.rows.size());
+		size_t advice_count = 0;
+		for (const auto& occurrence : impl_->occurrences) {
+			if (selected_id && occurrence.id != *selected_id)
+				continue;
+			result.occurrences.emplace_back(impl_->project_occurrence(occurrence));
+			advice_count += result.occurrences.back().advice.size();
+		}
+		result.advice_text.reserve(advice_count);
+		for (const auto& occurrence : result.occurrences) {
+			for (const auto& advice : occurrence.advice)
+				result.advice_text.emplace_back(DevDiagnosticsAdviceText{
+					.title = std::string(advice.title),
+					.explanation = std::string(advice.explanation),
+					.suggested_action = std::string(advice.suggestedAction),
+					.configuration_key = std::string(advice.configurationKey),
+					.documentation = std::string(advice.documentation),
+					.limitation = std::string(advice.limitation)});
+		}
+		result.stacks.reserve(stack_count);
+		for (const auto& stack : stacks) {
+			const bool referenced = std::any_of(
+				result.occurrences.begin(), result.occurrences.end(), [&](const auto& occurrence) {
+					return std::any_of(occurrence.steps.begin(), occurrence.steps.end(),
+									   [&](const auto& step) { return step.stackId == stack.id; });
+				});
+			if (referenced)
+				result.stacks.emplace_back(stack);
+		}
+		result.captures.reserve(capture_count);
+		for (const auto& capture : impl_->captures) {
+			const bool referenced = std::any_of(
+				result.occurrences.begin(), result.occurrences.end(),
+				[&](const auto& occurrence) { return occurrence.captureId == capture.id; });
+			if (!referenced)
+				continue;
+			result.captures.emplace_back(capture);
+			impl_->project_capture_timing(result.captures.back(),
+										  impl_->reportingStatus.lastConsumedAppTick);
+		}
+		result.fatal_capsule = impl_->monitoring->fatalCapsuleSnapshot();
+		if (selected_id && result.fatal_capsule && result.fatal_capsule->occurrence != *selected_id)
+			result.fatal_capsule.reset();
+		result.bind_advice_text();
+		result.owned_bytes = diagnostics_owned_bytes(result);
+		if (result.owned_bytes > byte_budget)
+			return unexpectedError(makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::None,
+											 result.owned_bytes, byte_budget));
+		return result;
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::None));
 	}
 }
 

@@ -753,9 +753,8 @@ void build_capacity_tool(DevMemoryInspector::BuildContext& context,
 						 std::to_string(analysis.staged.size()) +
 							 " prepared capacity values. Final review and bake belong in Changes.");
 					text(context,
-						 "Changes integration is planned; prepared values do not modify startup or "
-						 "live "
-						 "allocations.",
+						 "Open Changes to review and bake prepared values for the next build; "
+						 "running allocations are unchanged.",
 						 interface_theme::kTextMuted, 10);
 					if (!tool.message.empty())
 						text(context, tool.message, interface_theme::kStatusAmber, 10);
@@ -862,6 +861,33 @@ void DevMemoryInspector::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), root) {
 		const auto* saved = selected_memory_dataset(analysis);
 		CLAY(context.clayID("subject-content"), content) {
+			const auto& diagnostics = context.params.interfaceState->diagnostics;
+			if (diagnostics.return_available &&
+				(diagnostics.navigation_memory_event || diagnostics.navigation_memory_checkpoint)) {
+				text(context, "Diagnostics · captured memory evidence",
+					 interface_theme::kAccentSeaGlass, 12);
+				if (diagnostics.navigation_memory_event) {
+					const auto& captured = *diagnostics.navigation_memory_event;
+					text(context, "Event #" + std::to_string(captured.sequence) + " · source " +
+									  std::to_string(captured.operation.source));
+					text(context,
+						 "Tick " + std::to_string(captured.operation.appTick) + " · window " +
+							 std::to_string(captured.operation.frame.window) + " · frame " +
+							 std::to_string(captured.operation.frame.frameNumber));
+					text(context,
+						 "Operation " +
+							 std::to_string(static_cast<uint64_t>(captured.operation.operation)) +
+							 " · timestamp " + std::to_string(captured.operation.timestampNs) +
+							 " ns");
+					text(context, "Bytes " + std::to_string(captured.operation.bytesBefore) +
+									  " → " + std::to_string(captured.operation.bytesAfter));
+				} else {
+					const auto& captured = *diagnostics.navigation_memory_checkpoint;
+					text(context, "Checkpoint source " + std::to_string(captured.value.source) +
+									  " · ticks " + std::to_string(captured.beginTick) + ".." +
+									  std::to_string(captured.endTickExclusive));
+				}
+			}
 			text(context, track ? track->title : "Memory overview", interface_theme::kTextCanvas,
 				 14);
 			text(context,

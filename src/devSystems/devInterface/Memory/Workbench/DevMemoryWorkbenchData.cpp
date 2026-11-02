@@ -469,6 +469,14 @@ void append_node(DevMemoryWorkbenchState& state, Node node, const DevMemorySelec
 	}
 }
 } // namespace
+std::string memory_history_time_label(uint64_t timestamp_ns, uint64_t newest_ns, int precision) {
+	if (timestamp_ns == newest_ns)
+		return "Now";
+	char label[64];
+	const auto seconds = (static_cast<long double>(timestamp_ns) - newest_ns) / 1e9L;
+	std::snprintf(label, sizeof(label), "%.*Lfs", std::clamp(precision, 0, 9), seconds);
+	return label;
+}
 uint64_t memory_now_ns() noexcept {
 	return uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(
 						std::chrono::steady_clock::now().time_since_epoch())

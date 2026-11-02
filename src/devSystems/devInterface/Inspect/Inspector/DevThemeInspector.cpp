@@ -117,7 +117,10 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 	if (!app || !state)
 		return;
 	const auto schema = app->devTooling().schemas().view();
-	const auto catalogue = themes(*app);
+	auto& model = state->theme_editor_model;
+	if (!model.refresh(*app))
+		return;
+	const auto catalogue = model.catalogue();
 	const auto* selected = selected_theme(catalogue, *state);
 	CLAY(context.clayID(), column(true)) {
 		context.uiManager.createElement(kDevInterfaceInspectorTitle, "title")
@@ -229,21 +232,9 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 													? operations->constAddress(selected->payload)
 													: nullptr;
 							std::string label(schema->string(field.displayName));
-							if (state->inspect_theme_all_variants && operations &&
-								operations->constAddress) {
-								const auto reference =
-									tooling::serialize_dev_value(*schema, field.valueType, value);
-								for (const auto& variant : catalogue)
-									if (variant.type == selected->type) {
-										const auto other = tooling::serialize_dev_value(
-											*schema, field.valueType,
-											operations->constAddress(variant.payload));
-										if (reference && other && reference->json != other->json) {
-											label += " · Mixed";
-											break;
-										}
-									}
-							}
+							if (state->inspect_theme_all_variants &&
+								model.mixed(selected->type, field.id))
+								label += " · Mixed";
 							context.uiManager
 								.createElement(
 									kDevEditorCard,
@@ -269,9 +260,10 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 						}
 					} else {
 						std::size_t count = 0;
-						for (const auto& leaf : leaves(*schema, *selected)) {
-							if (!changed(*schema, leaf))
-								continue;
+						const auto* presentation = model.find(*selected);
+						for (const auto leaf_index : presentation->changed_indices) {
+							const auto& leaf = presentation->fields[leaf_index];
+							const auto& value = presentation->values[leaf_index];
 							if (state->inspect_theme_group &&
 								(leaf.key.nestedPath.empty()
 									 ? leaf.key.field
@@ -282,12 +274,9 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 							CLAY(context.clayID(RuntimeName(leaf.path)), card()) {
 								text(context.uiManager, leaf.path, 12,
 									 interface_theme::kTextCanvas);
-								text(context.uiManager,
-									 "Authored  " + format_value(*schema, leaf, leaf.authored));
-								text(context.uiManager,
-									 "Baked  " + format_value(*schema, leaf, leaf.startup));
-								text(context.uiManager,
-									 "Live  " + format_value(*schema, leaf, leaf.live), 11,
+								text(context.uiManager, "Authored  " + value.authored_text);
+								text(context.uiManager, "Baked  " + value.startup_text);
+								text(context.uiManager, "Live  " + value.live_text, 11,
 									 interface_theme::kAccentSeaGlass);
 								CLAY(context.clayID(RuntimeName(leaf.path + "-actions")), row()) {
 									button(context.uiManager, "revert-" + leaf.path, "Revert Live",

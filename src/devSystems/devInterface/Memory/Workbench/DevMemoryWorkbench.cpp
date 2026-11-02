@@ -577,7 +577,8 @@ void DevMemoryWorkbench::buildElement(BuildContext& context) {
 											.setDevInternalCapture(true)
 											.construct();
 										text(context,
-											 metric ? "Objects / capacity" : "Active / backing",
+											 metric ? "Sub-Allocations / Pages"
+													: "Active / backing",
 											 interface_theme::kTextCanvas, 10);
 										context.uiManager.drawConstructed();
 									}

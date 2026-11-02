@@ -177,8 +177,10 @@ int main() {
 	const auto original_duration =
 		session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns;
 	draw(0, 0, 900, true, {}, .5f, .5f, 1);
-	assert(session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns <
-		   original_duration);
+	const auto wheel_duration =
+		session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns;
+	assert(wheel_duration < original_duration);
+	assert(double(wheel_duration) / original_duration > .9);
 	const auto zoomed_duration =
 		session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns;
 	draw(0, 1, 900, true, {}, .3f, .98f);
@@ -186,7 +188,7 @@ int main() {
 	draw(0, 0, 900, true, {}, .6f, .98f);
 	assert(session.memory_workbench.view_end_ns - session.memory_workbench.view_begin_ns ==
 		   zoomed_duration);
-	// Grabbing the curtain keeps the pointer offset; each handle changes only its edge.
+	// Grabbing the curtain or either edge pans without resizing the interval.
 	auto& history = session.memory_workbench;
 	const auto retained_span = history.retained_end_ns - history.retained_begin_ns;
 	const auto initial_begin = history.retained_begin_ns + retained_span / 4;
@@ -201,25 +203,30 @@ int main() {
 	assert(history.view_begin_ns > initial_begin);
 	assert(history.view_end_ns - history.view_begin_ns == initial_end - initial_begin);
 	draw(0, 0, 900, true, {}, .45f, .98f);
-	const auto dragged_end = history.view_end_ns;
+	const auto dragged_begin = history.view_begin_ns;
 	const auto left_fraction =
 		float(double(history.view_begin_ns - history.retained_begin_ns) / retained_span);
 	draw(0, 1, 900, true, {}, left_fraction, .98f);
 	draw(0, 1, 900, true, {}, .2f, .98f);
 	draw(0, 0, 900, true, {}, .2f, .98f);
-	assert(history.view_begin_ns < initial_begin && history.view_end_ns == dragged_end);
-	const auto resized_begin = history.view_begin_ns;
+	assert(history.view_begin_ns < dragged_begin);
+	assert(history.view_end_ns - history.view_begin_ns == initial_end - initial_begin);
+	const auto panned_begin = history.view_begin_ns;
 	const auto right_fraction =
 		float(double(history.view_end_ns - history.retained_begin_ns) / retained_span);
 	draw(0, 1, 900, true, {}, right_fraction, .98f);
 	draw(0, 1, 900, true, {}, .95f, .98f);
 	draw(0, 0, 900, true, {}, .95f, .98f);
-	assert(history.view_begin_ns == resized_begin && history.view_end_ns > dragged_end);
-	const auto resized_duration = history.view_end_ns - history.view_begin_ns;
+	assert(history.view_begin_ns > panned_begin);
+	assert(history.view_end_ns - history.view_begin_ns == initial_end - initial_begin);
+	const auto panned_duration = history.view_end_ns - history.view_begin_ns;
 	draw(0, 1, 900, true, {}, .02f, .98f);
 	draw(0, 0, 900, true, {}, .02f, .98f);
 	assert(history.view_begin_ns == history.retained_begin_ns);
-	assert(history.view_end_ns - history.view_begin_ns == resized_duration);
+	assert(history.view_end_ns - history.view_begin_ns == panned_duration);
+	// Scrolling over the navigator never changes zoom.
+	draw(0, 0, 900, true, {}, .5f, .98f, 5);
+	assert(history.view_end_ns - history.view_begin_ns == panned_duration);
 	click(2);
 	assert(session.memory_workbench.following);
 	assert(app.devMonitoring().memoryReporting().status().freeze_owner_count == 0);

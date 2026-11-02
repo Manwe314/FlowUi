@@ -72,7 +72,8 @@ int main() {
         invalid = copy.deepcopy(section)
         invalid["targets"][0]["value"] = value
         invalid_cases.append(invalid)
-    for alteration in ("duplicate", "unknown", "synthetic", "unit", "boolean"):
+    for alteration in ("duplicate", "unknown", "synthetic", "unit", "boolean",
+                       "section_extension", "target_extension", "evidence_extension"):
         invalid = copy.deepcopy(section)
         if alteration == "duplicate":
             invalid["targets"].append(copy.deepcopy(invalid["targets"][0]))
@@ -82,8 +83,14 @@ int main() {
             invalid["evidence"]["kind"] = "synthetic"
         elif alteration == "unit":
             invalid["targets"][0]["unit"] = "bytes"
-        else:
+        elif alteration == "boolean":
             invalid["enabled"] = "true"
+        elif alteration == "section_extension":
+            invalid["futureSectionSetting"] = 42
+        elif alteration == "target_extension":
+            invalid["targets"][0]["futureTargetSetting"] = 42
+        else:
+            invalid["evidence"]["futureEvidenceSetting"] = 42
         invalid_cases.append(invalid)
     for index, invalid in enumerate(invalid_cases):
         manifest = copy.deepcopy(base)
@@ -145,7 +152,8 @@ int main() { std::cout << capacity_value(); }
     manifest["createdTimestamp"] = "metadata-only-change"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     unchanged_build = build_fixture()
-    assert "Generating FlowUi baked" in unchanged_build and "Building CXX object" not in unchanged_build
+    # Exact compiled-content identity must advance even for metadata-only manifest edits.
+    assert "Generating FlowUi baked" in unchanged_build and "Building CXX object" in unchanged_build
     assert generated.stat().st_mtime_ns == unchanged_timestamp
     assert "Generating FlowUi baked" not in build_fixture()
 print("Changed-manifest regeneration and unchanged-value incremental builds passed.")

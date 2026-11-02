@@ -3,7 +3,28 @@
 #include "FlowUi/BuildConfig.hpp"
 
 #include "FlowUi/PublicStructs.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/bake/DevBakedChangesMetadata.hpp"
+#endif
 #include <span>
+#include <string_view>
+
+#if FLOW_UI_DEV_MODE && (!FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUiBakedChanges.hpp"))
+namespace FlowUi::baked {
+/** Exact manifest revision compiled into this executable, or zero without baked changes. */
+[[nodiscard]] constexpr std::uint64_t compiled_manifest_digest() noexcept {
+	return 0;
+}
+/** Development-only catalogue of compiled assignments. */
+[[nodiscard]] inline std::span<const CompiledChangeEntry> compiled_change_entries() noexcept {
+	return {};
+}
+/** Saved memory payload, including evidence and disabled settings. */
+[[nodiscard]] constexpr std::string_view compiled_memory_capacity_manifest_json() noexcept {
+	return {};
+}
+} // namespace FlowUi::baked
+#endif
 
 #if !FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUiBakedChanges.hpp")
 namespace FlowUi::baked {
