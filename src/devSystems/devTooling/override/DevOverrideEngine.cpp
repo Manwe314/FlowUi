@@ -178,7 +178,8 @@ void DevOverrideEngine::commitAtSafePoint(ThemeManager& themes,
 			}
 		}
 		applyThemeRecords(themes);
-		capture_.captureThemes(themes, schema_, this, &themeFieldIsOverridden, timing);
+		if (value_collection_enabled_)
+			capture_.captureThemes(themes, schema_, this, &themeFieldIsOverridden, timing);
 	} catch (...) {
 		++rejectedTransactions_;
 		results_.push_back({.status = DevCommandStatus::InternalFailure});
@@ -186,11 +187,15 @@ void DevOverrideEngine::commitAtSafePoint(ThemeManager& themes,
 }
 
 void DevOverrideEngine::beginWindowFrame(WindowId window, std::uint64_t frameNumber) {
+	if (!value_collection_enabled_)
+		return;
 	syncSchema();
 	capture_.beginWindowFrame(window, frameNumber, schema_);
 }
 
 void DevOverrideEngine::endWindowFrame(WindowId window) noexcept {
+	if (!value_collection_enabled_)
+		return;
 	capture_.endWindowFrame(window);
 }
 
@@ -212,6 +217,8 @@ void DevOverrideEngine::captureElement(
 	std::uint32_t flowNode,
 	const void* effectiveParameters,
 	DevTimingRecorder* timing) noexcept {
+	if (!value_collection_enabled_)
+		return;
 	capture_.captureElement(
 		definition, window, instance, flowNode, effectiveParameters, apply_, timing);
 }

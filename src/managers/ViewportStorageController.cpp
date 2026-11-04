@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "Vulkan/Vk_Context.hpp"
-#include "internal/AgenticDebug/FrameCapture.hpp"
+#include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
 
 namespace FlowUi::detail::manager_storage {
 
@@ -76,6 +76,10 @@ ViewportStorageController::ViewportStorageController(
 ViewportStorageController::~ViewportStorageController() noexcept {
 	if (!storage || !vk) return;
 	for (auto& [_, record] : records) {
+#if FLOW_UI_DEV_MODE
+		discard_dev_capture(record.pending_capture);
+		discard_dev_capture(record.published_capture);
+#endif
 		for (TextureHandle texture : record.active.textures) {
 			try { if (texture) storage->releaseAnonymousTexture(texture); } catch (...) {}
 		}
@@ -86,8 +90,150 @@ ViewportStorageController::~ViewportStorageController() noexcept {
 		destroyCommands(generation.targets.commands);
 		destroyImages(generation.targets.images);
 	}
+#if FLOW_UI_DEV_MODE
+	for (auto& capture : retired_dev_captures) {
+		capture.texture = {};
+		discard_dev_capture(capture);
+	}
+#endif
 	try { if (sampler) storage->releaseSampler(sampler); } catch (...) {}
 }
+
+#if FLOW_UI_DEV_MODE
+bool ViewportStorageController::supports_dev_capture(VkFormat format) const noexcept {
+	if (!vk || !vk->phys ||
+		(format != VK_FORMAT_R8G8B8A8_UNORM && format != VK_FORMAT_R8G8B8A8_SRGB &&
+		 format != VK_FORMAT_B8G8R8A8_UNORM && format != VK_FORMAT_B8G8R8A8_SRGB))
+		return false;
+	VkFormatProperties properties{};
+	vkGetPhysicalDeviceFormatProperties(vk->phys, format, &properties);
+	constexpr VkFormatFeatureFlags required = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+											  VK_FORMAT_FEATURE_TRANSFER_DST_BIT |
+											  VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT;
+	return (properties.optimalTilingFeatures & required) == required;
+}
+
+ViewportDevCapture ViewportStorageController::create_dev_capture(uint32_t width, uint32_t height,
+																 VkFormat format) {
+	if (!supports_dev_capture(format) || !width || !height)
+		throw FlowUiException(
+			makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportPrepare));
+	constexpr uint64_t maximum_bytes = 64ull * 1024 * 1024;
+	if (width > maximum_bytes / (static_cast<uint64_t>(height) * 4))
+		throw FlowUiException(
+			makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::ViewportPrepare));
+	const uint64_t bytes = static_cast<uint64_t>(width) * height * 4;
+	if (bytes > maximum_bytes || dev_capture_bytes() > maximum_bytes - bytes)
+		throw FlowUiException(
+			makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::ViewportPrepare));
+	ViewportDevCapture capture{};
+	const auto name = storage->intern("flowui.dev.viewport.observation");
+	const auto pixel_format = storageFormat(format);
+	try {
+		capture.image.image = storage->createImage(storage::ImageDesc{
+			.width = width,
+			.height = height,
+			.format = pixel_format,
+			.usage = storage::ImageUsage::Sampled | storage::ImageUsage::TransferDestination,
+			.memory = storage::MemoryPreference::DeviceLocal,
+			.sharing = storage::ResourceSharing::AppShared,
+			.access = storage::AccessMode::GpuWrite,
+			.debugName = name});
+		capture.image.view = storage->createImageView(
+			capture.image.image, storage::ImageViewDesc{.format = pixel_format, .debugName = name});
+		capture.image.nativeImage = reinterpret_cast<VkImage>(
+			static_cast<uintptr_t>(storage->nativeImage(capture.image.image).nativeImage));
+		capture.image.width = width;
+		capture.image.height = height;
+		capture.texture = storage->createAnonymousTexture(
+			storage::TextureViewDesc{.imageView = capture.image.view,
+									 .sampler = sampler,
+									 .sourceWidth = static_cast<int32_t>(width),
+									 .sourceHeight = static_cast<int32_t>(height)});
+		capture.format = static_cast<uint32_t>(format);
+		return capture;
+	} catch (...) {
+		discard_dev_capture(capture);
+		throw;
+	}
+}
+
+void ViewportStorageController::discard_dev_capture(ViewportDevCapture& capture) noexcept {
+	try {
+		if (capture.texture)
+			storage->releaseAnonymousTexture(capture.texture, capture.submission);
+	} catch (...) {}
+	try {
+		if (capture.image.view)
+			storage->releaseImageView(capture.image.view, capture.submission);
+	} catch (...) {}
+	try {
+		if (capture.image.image)
+			storage->releaseImage(capture.image.image, capture.submission);
+	} catch (...) {}
+	capture = {};
+}
+
+bool ViewportStorageController::retire_dev_capture(ViewportDevCapture& capture) noexcept {
+	if (!capture.texture)
+		return true;
+	if (retired_dev_captures.size() == retired_dev_captures.capacity())
+		return false;
+	try {
+		storage->releaseAnonymousTexture(capture.texture, capture.submission);
+		retired_dev_captures.emplace_back(capture);
+		capture = {};
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+void ViewportStorageController::collect_dev_captures() noexcept {
+	for (auto iterator = retired_dev_captures.begin(); iterator != retired_dev_captures.end();) {
+		if (!storage->textureRetirementComplete(iterator->texture)) {
+			++iterator;
+			continue;
+		}
+		iterator->texture = {};
+		discard_dev_capture(*iterator);
+		iterator = retired_dev_captures.erase(iterator);
+	}
+	for (auto& [name, record] : records) {
+		if (record.capture_release_requested) {
+			const bool pending_retired =
+				!record.pending_capture.texture ||
+				(record.pending_capture.submission && retire_dev_capture(record.pending_capture));
+			const bool published_retired = retire_dev_capture(record.published_capture);
+			if (pending_retired && published_retired)
+				record.capture_release_requested = false;
+			continue;
+		}
+		auto& pending = record.pending_capture;
+		if (pending.submission && pending.submission <= storage->completedSerial()) {
+			if (!retire_dev_capture(record.published_capture))
+				continue;
+			record.published_capture = pending;
+			pending = {};
+		}
+	}
+}
+
+uint64_t ViewportStorageController::dev_capture_bytes() const noexcept {
+	uint64_t bytes = 0;
+	const auto add = [&](const ViewportDevCapture& capture) {
+		if (capture.image.image)
+			bytes += static_cast<uint64_t>(capture.image.width) * capture.image.height * 4;
+	};
+	for (const auto& [name, record] : records) {
+		add(record.pending_capture);
+		add(record.published_capture);
+	}
+	for (const auto& capture : retired_dev_captures)
+		add(capture);
+	return bytes;
+}
+#endif
 
 std::vector<ViewportFrameCommands> ViewportStorageController::createCommands() const {
 	std::vector<ViewportFrameCommands> resources(framesInFlight);
@@ -123,20 +269,21 @@ ViewportImageResource ViewportStorageController::createImage(
 	const storage::PixelFormat pixelFormat = storageFormat(format);
 	const storage::StringId name = storage->intern("flowui.viewport.target");
 	ViewportImageResource result{};
-#if defined(AgenticDebug) && AgenticDebug
 	storage::ImageUsage image_usage = storage::ImageUsage::Sampled | storage::ImageUsage::ColorAttachment;
-	if (agentic_debug::requested() && agentic_debug::supports_format(*vk, format)) {
+#if FLOW_UI_DEV_MODE
+	if (supports_dev_capture(format))
+		image_usage = image_usage | storage::ImageUsage::TransferSource;
+#endif
+#if FLOW_UI_AGENTIC_WORKFLOW
+	if (devSystems::agentic::frame_capture::requested(*vk) &&
+		devSystems::agentic::frame_capture::supports_format(*vk, format)) {
 		image_usage = image_usage | storage::ImageUsage::TransferSource;
 	}
 #endif
 	try {
 		result.image = storage->createImage(storage::ImageDesc{
 			.width = width, .height = height, .format = pixelFormat,
-#if defined(AgenticDebug) && AgenticDebug
 			.usage = image_usage,
-#else
-			.usage = storage::ImageUsage::Sampled | storage::ImageUsage::ColorAttachment,
-#endif
 			.memory = storage::MemoryPreference::DeviceLocal,
 			.sharing = storage::ResourceSharing::WindowLocal,
 			.access = storage::AccessMode::GpuWrite, .window = window, .debugName = name,

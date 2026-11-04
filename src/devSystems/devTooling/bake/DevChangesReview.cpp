@@ -10,7 +10,7 @@
 #include <system_error>
 #include <tuple>
 
-#include "DevBakeInternals.hpp"
+#include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "devSystems/devTooling/bake/DevBakeValidation.hpp"
 #include "devSystems/devTooling/bake/DevBakedChanges.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"

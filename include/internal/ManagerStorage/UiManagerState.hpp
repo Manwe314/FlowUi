@@ -202,6 +202,10 @@ struct UiManagerState {
 	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	InteractionSnapshot previousInteractionSnapshot{};
 	InteractionSnapshot currentInteractionSnapshot{};
+#if FLOW_UI_AGENTIC_WORKFLOW
+	Clay_Dimensions agentic_layout_dimensions{};
+	std::uint64_t agentic_completed_window_frame = 0, agentic_completed_app_tick = 0;
+#endif
 #if FLOW_UI_DEV_MODE
 	FlowRootIdTrackerForDev flowRootIdTracker{};
 #endif

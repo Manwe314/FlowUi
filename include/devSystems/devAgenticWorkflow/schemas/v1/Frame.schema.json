@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Frame.schema.json",
+  "title": "FlowUi.Agentic.Frame",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "run_id",
+    "app_tick",
+    "window_id",
+    "window_frame",
+    "frame_slot",
+    "begin_ns",
+    "end_ns",
+    "observer_activity",
+    "submitted",
+    "presented",
+    "canceled",
+    "internal_window",
+    "interrupted"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Frame"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "app_tick": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "window_id": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "window_frame": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "begin_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "end_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "submit_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "present_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "cpu_duration_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "gpu_duration_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "tree_generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "frame_slot": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "observer_activity": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "submission": {
+      "type": "object",
+      "required": [
+        "device_id",
+        "queue_id",
+        "serial"
+      ],
+      "properties": {
+        "device_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "queue_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "serial": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        }
+      }
+    },
+    "submitted": {
+      "type": "boolean"
+    },
+    "presented": {
+      "type": "boolean"
+    },
+    "canceled": {
+      "type": "boolean"
+    },
+    "internal_window": {
+      "type": "boolean"
+    },
+    "interrupted": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

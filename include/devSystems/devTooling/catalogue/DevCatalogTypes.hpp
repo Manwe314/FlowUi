@@ -21,6 +21,8 @@ namespace FlowUi::devMode {
 enum class DevResourceStatus : std::uint8_t { Unloaded, Loading, Ready, Failed, Retiring };
 enum class DevAtlasKind : std::uint8_t { FontMsdfAtlas, IconVectorAtlas };
 enum class DevActionKind : std::uint8_t { AppActionBinding, UiActionRecipe };
+/** Independent cache observations, matching the query failure-bit positions. */
+enum class DevCatalogueQuery : std::uint8_t { Images, Icons, Atlases, Fonts, Actions, Themes, Elements };
 
 struct DevUvRect {
 	float x = 0.0f;
@@ -61,6 +63,7 @@ struct DevAtlasCatalogEntry {
 	std::uint32_t width = 0;
 	std::uint32_t height = 0;
 	std::uint32_t layerCount = 1;
+	std::uint32_t pageIndex = 0;
 	float msdfPixelRange = 4.0f;
 	float occupancyRatio = 0.0f;
 	std::uint32_t allocatedRegions = 0;

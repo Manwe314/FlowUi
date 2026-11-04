@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Sources.schema.json",
+  "title": "FlowUi.Agentic.Sources",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "source_id": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]{0,19})$",
+        "maxLength": 20,
+        "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+      },
+      "owner_scope": {
+        "enum": [
+          "timing_zone",
+          "runtime_diagnostic_source"
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "file": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+        "description": "Repository-relative source path, or null when unavailable/redacted."
+      },
+      "symbol": {
+        "type": "string"
+      },
+      "line": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967295
+      },
+      "column": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967295
+      },
+      "repository_id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "source_id",
+      "owner_scope",
+      "name",
+      "file",
+      "symbol",
+      "line",
+      "column",
+      "repository_id"
+    ],
+    "additionalProperties": false
+  }
+}

@@ -1,6 +1,6 @@
 #include "HeadlessVulkanFixture.hpp"
 #include "TestHarness.hpp"
-#include "internal/AgenticDebug/FrameCapture.hpp"
+#include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
 #include "internal/Vma.hpp"
 
 #include <algorithm>
@@ -14,7 +14,22 @@
 
 namespace {
 
-namespace capture = FlowUi::agentic_debug;
+namespace capture = FlowUi::devSystems::agentic::frame_capture;
+using FlowUi::devSystems::agentic::AgenticCompletedImage;
+
+struct CompletedImages {
+	std::vector<AgenticCompletedImage> images;
+};
+
+FlowUi::Status accept_image(void* owner, AgenticCompletedImage&& image) noexcept {
+	try {
+		static_cast<CompletedImages*>(owner)->images.emplace_back(std::move(image));
+		return {};
+	} catch (...) {
+		return FlowUi::unexpectedError(FlowUi::makeError(FlowUi::ErrorCode::AllocationFailed,
+														 FlowUi::ErrorSite::AgenticImage));
+	}
+}
 
 struct RenderTarget {
 	VulkanContext& context;
@@ -42,7 +57,20 @@ struct RenderTarget {
 };
 
 void render(VulkanContext& context, VkFormat format, VkExtent2D extent, uint64_t window,
-			uint32_t slot, const std::array<float, 4>& color, bool submit = true) {
+			uint32_t slot, uint64_t window_frame, uint64_t submission_serial,
+			CompletedImages& completed, const std::array<float, 4>& color, bool submit = true) {
+	capture::AgenticFrameCaptureRequest request;
+	request.stamp.run_id = "run_exact_identity";
+	request.stamp.capture_id = "capture_exact_identity";
+	request.stamp.app_tick = window_frame + 1000u;
+	request.stamp.window_id = static_cast<uint32_t>(window);
+	request.stamp.window_frame = window_frame;
+	request.stamp.frame_slot = slot;
+	request.stamp.tree_generation = window_frame + 23u;
+	request.stamp.tree_available = true;
+	request.completed_image = &accept_image;
+	request.owner = &completed;
+	FLOWUI_CHECK(capture::begin_frame(context, window, slot, request));
 	RenderTarget target{context};
 	VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
 	image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -115,9 +143,16 @@ void render(VulkanContext& context, VkFormat format, VkExtent2D extent, uint64_t
 	render_begin.pClearValues = &clear;
 	vkCmdBeginRenderPass(command_buffer, &render_begin, VK_SUBPASS_CONTENTS_INLINE);
 	vkCmdEndRenderPass(command_buffer);
-	capture::record(context, command_buffer, target.image, extent, format,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, window, slot, "viewport",
-					"quoted\"key\nline");
+	const FlowUi::devSystems::agentic::AgenticImageProducerStamp producer{
+		.source_image_revision = window_frame + 200u,
+		.app_tick = window_frame + 1000u,
+		.window_frame = window_frame,
+		.available = true,
+		.current_submission = true,
+	};
+	FLOWUI_CHECK(capture::record(context, command_buffer, target.image, extent, format,
+								 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, window, slot, "viewport",
+								 "quoted\"key\nline", VK_COLOR_SPACE_MAX_ENUM_KHR, producer));
 	FLOWUI_CHECK(vkEndCommandBuffer(command_buffer) == VK_SUCCESS);
 	if (submit) {
 		VkFenceCreateInfo fence_info{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
@@ -127,71 +162,79 @@ void render(VulkanContext& context, VkFormat format, VkExtent2D extent, uint64_t
 		submission.commandBufferCount = 1u;
 		submission.pCommandBuffers = &command_buffer;
 		FLOWUI_CHECK(vkQueueSubmit(context.graphicsQ, 1u, &submission, target.fence) == VK_SUCCESS);
-		capture::mark_submitted(context, window, slot);
+		capture::mark_submitted(context, window, slot, submission_serial, 3u, 9u);
 		FLOWUI_CHECK(vkWaitForFences(context.device, 1u, &target.fence, VK_TRUE, UINT64_MAX) ==
 					 VK_SUCCESS);
 	}
 	// The image can be destroyed now: capture owns a separate, completed readback buffer.
 }
 
-void verify_image(const std::filesystem::path& path, uint32_t width, uint32_t height,
-				  std::array<unsigned char, 3> expected) {
-	std::ifstream input(path, std::ios::binary);
-	std::string magic;
-	uint32_t actual_width{}, actual_height{}, maximum{};
-	input >> magic >> actual_width >> actual_height >> maximum;
-	FLOWUI_CHECK(input && magic == "P6" && actual_width == width && actual_height == height &&
-				 maximum == 255u);
-	input.get();
-	std::vector<unsigned char> pixels{std::istreambuf_iterator<char>(input),
-									  std::istreambuf_iterator<char>()};
-	FLOWUI_CHECK(pixels.size() == static_cast<size_t>(width) * height * 3u);
-	for (size_t offset = 0u; offset < pixels.size(); ++offset)
-		FLOWUI_CHECK(pixels[offset] == expected[offset % 3u]);
+void verify_image(const AgenticCompletedImage& image, uint32_t width, uint32_t height,
+				  std::array<unsigned char, 3> expected, uint64_t window_frame,
+				  uint64_t submission_serial) {
+	FLOWUI_CHECK(image.width == width && image.height == height);
+	FLOWUI_CHECK(image.rgb.size() == static_cast<size_t>(width) * height * 3u);
+	FLOWUI_CHECK(image.run_id == "run_exact_identity");
+	FLOWUI_CHECK(image.capture_id == "capture_exact_identity");
+	FLOWUI_CHECK(image.window_frame == window_frame);
+	FLOWUI_CHECK(image.app_tick == window_frame + 1000u);
+	FLOWUI_CHECK(image.tree_generation == window_frame + 23u && image.tree_available);
+	FLOWUI_CHECK(image.submission_serial == submission_serial && image.submission_available);
+	FLOWUI_CHECK(image.device_id == 3u && image.queue_id == 9u);
+	FLOWUI_CHECK(image.producer_available && image.producer_window_frame == window_frame);
+	FLOWUI_CHECK(image.producer_submission_serial == submission_serial);
+	FLOWUI_CHECK(image.source_image_revision == window_frame + 200u);
+	FLOWUI_CHECK(image.viewport_key == "quoted\"key\nline");
+	FLOWUI_CHECK(image.completed_monotonic_ns >= image.recorded_monotonic_ns);
+	for (size_t offset = 0; offset < image.rgb.size(); ++offset)
+		FLOWUI_CHECK(image.rgb[offset] == expected[offset % 3u]);
 }
 
 void test_capture(VulkanContext& context) {
-	FLOWUI_CHECK(capture::requested());
-	const std::filesystem::path root(std::getenv("FLOWUI_AGENTIC_DEBUG_DIR"));
-	std::vector<std::filesystem::path> previous;
-	if (std::filesystem::exists(root)) {
-		for (const auto& entry : std::filesystem::directory_iterator(root))
-			previous.emplace_back(entry.path());
-	}
-	render(context, VK_FORMAT_R8G8B8A8_UNORM, {4u, 3u}, 11u, 0u, {1.0f, 0.0f, 0.0f, 1.0f});
-	std::filesystem::path session;
-	for (const auto& entry : std::filesystem::directory_iterator(root)) {
-		if (std::find(previous.begin(), previous.end(), entry.path()) == previous.end())
-			session = entry.path();
-	}
-	FLOWUI_CHECK(!session.empty());
-	FLOWUI_CHECK(!std::filesystem::exists(session / "frames.jsonl"));
-	render(context, VK_FORMAT_B8G8R8A8_UNORM, {2u, 5u}, 11u, 1u, {0.0f, 1.0f, 0.0f, 1.0f});
+	FLOWUI_CHECK(!capture::requested(context));
+	FLOWUI_CHECK(capture::configure_resources(context, true));
+	FLOWUI_CHECK(capture::requested(context));
+	CompletedImages completed;
+	completed.images.reserve(8u);
+	render(context, VK_FORMAT_R8G8B8A8_UNORM, {4u, 3u}, 11u, 0u, 18u, 40u, completed,
+		   {1.0f, 0.0f, 0.0f, 1.0f});
+	FLOWUI_CHECK(completed.images.empty());
+	FLOWUI_CHECK(capture::pending_bytes(context) == 4u * 3u * 4u);
+	render(context, VK_FORMAT_B8G8R8A8_UNORM, {2u, 5u}, 11u, 1u, 20u, 42u, completed,
+		   {0.0f, 1.0f, 0.0f, 1.0f});
 	capture::complete_slot(context, 11u, 0u);
-	verify_image(session / "frame-0.ppm", 4u, 3u, {255u, 0u, 0u});
-	FLOWUI_CHECK(!std::filesystem::exists(session / "frame-1.ppm"));
-	// Reuse slot zero with a resized target while slot one's capture remains pending.
-	render(context, VK_FORMAT_R16G16B16A16_SFLOAT, {7u, 2u}, 11u, 0u, {0.0f, 0.5f, 2.0f, 1.0f});
-	render(context, VK_FORMAT_R8G8B8A8_UNORM, {3u, 1u}, 22u, 0u, {0.0f, 0.0f, 1.0f, 1.0f});
+	FLOWUI_CHECK(completed.images.size() == 1u);
+	verify_image(completed.images[0], 4u, 3u, {255u, 0u, 0u}, 18u, 40u);
+	// A canceled frame and submission gap must never be inferred from the reusable slot.
+	render(context, VK_FORMAT_R8G8B8A8_UNORM, {1u, 1u}, 11u, 0u, 21u, 43u, completed,
+		   {1.0f, 0.0f, 0.0f, 1.0f}, false);
+	capture::cancel_frame(context, 11u, 0u);
+	capture::complete_slot(context, 11u, 0u);
+	FLOWUI_CHECK(completed.images.size() == 1u);
+	render(context, VK_FORMAT_R16G16B16A16_SFLOAT, {7u, 2u}, 11u, 0u, 25u, 48u, completed,
+		   {0.0f, 0.5f, 2.0f, 1.0f});
+	render(context, VK_FORMAT_R8G8B8A8_UNORM, {3u, 1u}, 22u, 0u, 1u, 49u, completed,
+		   {0.0f, 0.0f, 1.0f, 1.0f});
 	capture::release_window(context, 11u);
-	verify_image(session / "frame-1.ppm", 2u, 5u, {0u, 255u, 0u});
-	verify_image(session / "frame-2.ppm", 7u, 2u, {0u, 128u, 255u});
-	FLOWUI_CHECK(!std::filesystem::exists(session / "frame-3.ppm"));
+	FLOWUI_CHECK(completed.images.size() == 3u);
+	verify_image(completed.images[1], 7u, 2u, {0u, 128u, 255u}, 25u, 48u);
+	FLOWUI_CHECK(completed.images[1].encoding == "linear-clamped-rgb8");
+	verify_image(completed.images[2], 2u, 5u, {0u, 255u, 0u}, 20u, 42u);
 	capture::complete_slot(context, 22u, 0u);
-	verify_image(session / "frame-3.ppm", 3u, 1u, {0u, 0u, 255u});
-	render(context, VK_FORMAT_R8G8B8A8_UNORM, {1u, 1u}, 22u, 0u, {1.0f, 0.0f, 0.0f, 1.0f}, false);
-	capture::complete_slot(context, 22u, 0u);
-	FLOWUI_CHECK(!std::filesystem::exists(session / "frame-4.ppm"));
+	FLOWUI_CHECK(completed.images.size() == 4u);
+	verify_image(completed.images[3], 3u, 1u, {0u, 0u, 255u}, 1u, 49u);
+	FLOWUI_CHECK(completed.images[3].window_id == 22u);
+	FLOWUI_CHECK(capture::pending_bytes(context) == 0u);
+	FLOWUI_CHECK(capture::failure_count(context) == 0u);
 	capture::release_device(context);
-	std::ifstream manifest(session / "frames.jsonl");
-	std::string line;
-	uint32_t records{};
-	while (std::getline(manifest, line)) {
-		FLOWUI_CHECK(line.find("\"schema\":1") != std::string::npos);
-		FLOWUI_CHECK(line.find("quoted\\\"key\\u000aline") != std::string::npos);
-		++records;
-	}
-	FLOWUI_CHECK(records == 4u);
+	FLOWUI_CHECK(!capture::requested(context));
+	FLOWUI_CHECK(capture::configure_resources(context, true));
+	render(context, VK_FORMAT_R8G8B8A8_UNORM, {1u, 1u}, 22u, 0u, 9u, 50u, completed,
+		   {0.0f, 0.0f, 1.0f, 1.0f});
+	FLOWUI_CHECK(capture::pending_bytes(context) != 0u);
+	capture::discard_device(context);
+	FLOWUI_CHECK(completed.images.size() == 4u);
+	FLOWUI_CHECK(!capture::requested(context) && capture::pending_bytes(context) == 0u);
 }
 
 } // namespace

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/CommandRequest.schema.json",
+  "title": "FlowUi.Agentic.CommandRequest",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.CommandRequest"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "arguments": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "request_id",
+    "operation",
+    "arguments"
+  ],
+  "additionalProperties": false
+}

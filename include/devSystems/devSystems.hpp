@@ -35,3 +35,7 @@
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
 #include "devSystems/devTooling/schema/DevSchemaTypes.hpp"
 #endif
+
+#if FLOW_UI_AGENTIC_WORKFLOW
+#include "devSystems/devAgenticWorkflow/AgenticWorkflow.hpp"
+#endif

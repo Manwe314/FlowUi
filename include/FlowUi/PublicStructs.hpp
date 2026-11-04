@@ -21,6 +21,9 @@
 #include "FlowUi/ResourceKey.hpp"
 #include "FlowUi/TextureHandle.hpp"
 #include "FlowUi/WindowId.hpp"
+#if FLOW_UI_AGENTIC_WORKFLOW
+#include "devSystems/devAgenticWorkflow/AgenticTypes.hpp"
+#endif
 
 namespace FlowUi {
 
@@ -799,6 +802,10 @@ struct AppConfig {
 	 * @see FlowUi::DevToolsConfig
 	 */
 	DevToolsConfig dev{};
+#if FLOW_UI_AGENTIC_WORKFLOW
+	/** Explicit, dormant-by-default agentic evidence and local attachment policy. */
+	devSystems::agentic::AgenticWorkflowConfig agentic_workflow{};
+#endif
 };
 
 /** @brief Texture layout mode inside a target rectangle. */

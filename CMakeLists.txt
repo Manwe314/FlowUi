@@ -8,6 +8,10 @@ option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generat
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
 option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+option(AGENTIC_WORKFLOW "Build FlowUi agentic workflow services and tools. Requires FLOW_UI_DEV_MODE." OFF)
+if(AGENTIC_WORKFLOW AND NOT FLOW_UI_DEV_MODE)
+    message(FATAL_ERROR "AGENTIC_WORKFLOW requires -DFLOW_UI_DEV_MODE=ON -DAGENTIC_WORKFLOW=ON.")
+endif()
 option(FLOW_UI_ENABLE_BAKED_CHANGES "Enable automatic compilation of baked FlowUi changes." ON)
 set(FLOW_UI_DEV_CAPTURE_CLAY_DEFAULT ${FLOW_UI_DEV_MODE})
 option(FLOW_UI_DEV_CAPTURE_CLAY
@@ -104,6 +108,11 @@ if(FLOW_UI_DEV_MODE)
     set(FLOW_UI_DEV_MODE_VALUE 1)
 else()
     set(FLOW_UI_DEV_MODE_VALUE 0)
+endif()
+
+set(FLOW_UI_AGENTIC_WORKFLOW_VALUE 0)
+if(AGENTIC_WORKFLOW)
+    set(FLOW_UI_AGENTIC_WORKFLOW_VALUE 1)
 endif()
 
 if(FLOW_UI_ENABLE_BAKED_CHANGES)
@@ -335,9 +344,6 @@ target_compile_options(flowui PUBLIC
     $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 target_link_libraries(flowui PRIVATE ${CMAKE_DL_LIBS})
 add_dependencies(flowui flowui_resources)
-if(AgenticDebug)
-    target_compile_definitions(flowui PRIVATE AgenticDebug=1)
-endif()
 set_target_properties(flowui PROPERTIES EXPORT_NAME FlowUi)
 add_dependencies(flowui flowui_shaders)
 
@@ -347,7 +353,6 @@ target_sources(flowui
         src/clay.cpp
         src/FlowUi.cpp
         src/Resources.cpp
-        src/internal/AgenticDebug/FrameCapture.cpp
         src/managers/FontManager.cpp
         src/managers/FontCatalogController.cpp
         src/managers/ElementManager.cpp
@@ -518,6 +523,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.cpp
 			src/devSystems/devInterface/Changes/Inspector/DevChangesInspector.cpp
 			src/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.cpp
+			src/devSystems/devInterface/Catalogue/DevCatalogueModel.cpp
 			src/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.cpp
 			src/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.cpp
 			src/devSystems/devInterface/Permanents/Elements/DevContentHeader.cpp
@@ -561,6 +567,8 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogLease.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevCatalogues.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/catalogue/DevElementPreviews.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Elements/DevFselThemeSpecimens.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayService.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/overlay/DevOverlayTypes.hpp>
@@ -643,6 +651,8 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Changes/Inspector/DevChangesInspector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/DevCatalogueContentParameters.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/DevCatalogueModel.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp>
@@ -764,6 +774,10 @@ target_compile_definitions(flowui
 )
 
 target_compile_features(flowui PUBLIC cxx_std_23)
+
+if(AGENTIC_WORKFLOW)
+    include(cmake/FlowUiAgentic.cmake)
+endif()
 
 include(cmake/FlowUiBaking.cmake)
 flowui_configure_baking(flowui)

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Comparison.schema.json",
+  "title": "FlowUi.Agentic.Comparison",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Comparison"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "algorithm_version": {
+      "const": "comparable_cadence_1"
+    },
+    "baseline_capture_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "candidate_capture_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "baseline_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "candidate_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "compatibility": {
+      "enum": [
+        "compatible",
+        "incompatible",
+        "inconclusive"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "baseline": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "candidate": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "visual_review": {
+      "const": "not_reviewed"
+    },
+    "diagnostic_regressions": {
+      "const": "query_diagnostic_diff_for_exercised_scenario"
+    },
+    "objective": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "algorithm_version",
+    "baseline_capture_id",
+    "candidate_capture_id",
+    "baseline_manifest_sha256",
+    "candidate_manifest_sha256",
+    "compatibility",
+    "reasons",
+    "baseline",
+    "candidate",
+    "visual_review",
+    "diagnostic_regressions"
+  ],
+  "additionalProperties": false
+}

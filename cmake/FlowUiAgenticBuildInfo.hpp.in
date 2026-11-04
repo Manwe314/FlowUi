@@ -1,0 +1,6 @@
+#pragma once
+namespace FlowUi::devSystems::agentic::build_info {
+inline constexpr const char* source_digest = "@FLOWUI_AGENTIC_SOURCE_DIGEST@";
+inline constexpr const char* knowledge_digest = "@FLOWUI_AGENTIC_KNOWLEDGE_DIGEST@";
+inline constexpr bool working_tree_dirty = @FLOWUI_AGENTIC_WORKTREE_DIRTY@;
+}

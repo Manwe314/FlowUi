@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flowui-agent-mcp"
+version = "1.0.0"
+description = "Official-SDK MCP stdio adapter for the FlowUi Agentic Workflow command registry"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["mcp==2.3.0", "jsonschema==4.26.0"]
+
+[project.scripts]
+flowui-agent-mcp = "flowui_agent_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+flowui_agent_mcp = ["schemas/*.json"]

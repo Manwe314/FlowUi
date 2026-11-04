@@ -98,7 +98,7 @@ void DevCatalogues::bindManagers(
 std::span<const DevImageCatalogEntry> DevCatalogues::queryImages() noexcept {
 	const std::uint64_t revision = imageManager_ ? imageManager_->devRevision() : 0;
 	if (imageRevision_ != revision) {
-		try { rebuildImageCache(); imageRevision_ = revision; } catch (...) { cachedImages_.clear(); }
+		try { rebuildImageCache(); imageRevision_ = revision; failedQueries_ &= ~(1u << 0); } catch (...) { cachedImages_.clear(); failedQueries_ |= 1u << 0; }
 	}
 	return cachedImages_;
 }
@@ -106,7 +106,7 @@ std::span<const DevImageCatalogEntry> DevCatalogues::queryImages() noexcept {
 std::span<const DevIconCatalogEntry> DevCatalogues::queryIcons() noexcept {
 	const std::uint64_t revision = iconManager_ ? iconManager_->devRevision() : 0;
 	if (iconRevision_ != revision) {
-		try { rebuildIconCache(); iconRevision_ = revision; } catch (...) { cachedIcons_.clear(); }
+		try { rebuildIconCache(); iconRevision_ = revision; failedQueries_ &= ~(1u << 1); } catch (...) { cachedIcons_.clear(); failedQueries_ |= 1u << 1; }
 	}
 	return cachedIcons_;
 }
@@ -116,7 +116,7 @@ std::span<const DevAtlasCatalogEntry> DevCatalogues::queryAtlases() noexcept {
 		fontManager_ ? fontManager_->devRevision() : 0,
 		iconManager_ ? iconManager_->devRevision() : 0);
 	if (atlasRevision_ != revision) {
-		try { rebuildAtlasCache(); atlasRevision_ = revision; } catch (...) { cachedAtlases_.clear(); }
+		try { rebuildAtlasCache(); atlasRevision_ = revision; failedQueries_ &= ~(1u << 2); } catch (...) { cachedAtlases_.clear(); failedQueries_ |= 1u << 2; }
 	}
 	return cachedAtlases_;
 }
@@ -124,8 +124,8 @@ std::span<const DevAtlasCatalogEntry> DevCatalogues::queryAtlases() noexcept {
 std::span<const DevFontCatalogEntry> DevCatalogues::queryFonts() noexcept {
 	const std::uint64_t revision = fontManager_ ? fontManager_->devRevision() : 0;
 	if (cachedRevisions_.fontRevision != revision) {
-		try { rebuildFontCache(); cachedRevisions_.fontRevision = revision; }
-		catch (...) { cachedFonts_.clear(); }
+		try { rebuildFontCache(); cachedRevisions_.fontRevision = revision; failedQueries_ &= ~(1u << 3); }
+		catch (...) { cachedFonts_.clear(); failedQueries_ |= 1u << 3; }
 	}
 	return cachedFonts_;
 }
@@ -133,7 +133,7 @@ std::span<const DevFontCatalogEntry> DevCatalogues::queryFonts() noexcept {
 std::span<const DevActionCatalogEntry> DevCatalogues::queryActions() noexcept {
 	const std::uint64_t revision = actionManager_ ? actionManager_->devRevision() : 0;
 	if (actionRevision_ != revision) {
-		try { rebuildActionCache(); actionRevision_ = revision; } catch (...) { cachedActions_.clear(); }
+		try { rebuildActionCache(); actionRevision_ = revision; failedQueries_ &= ~(1u << 4); } catch (...) { cachedActions_.clear(); failedQueries_ |= 1u << 4; }
 	}
 	return cachedActions_;
 }
@@ -144,7 +144,7 @@ std::span<const DevThemeCatalogEntry> DevCatalogues::queryThemes() noexcept {
 		themeManager_ ? themeManager_->devRevision() : 0,
 		schema ? schema->generation : 0);
 	if (themeRevision_ != revision) {
-		try { rebuildThemeCache(); themeRevision_ = revision; } catch (...) { cachedThemes_.clear(); }
+		try { rebuildThemeCache(); themeRevision_ = revision; failedQueries_ &= ~(1u << 5); } catch (...) { cachedThemes_.clear(); failedQueries_ |= 1u << 5; }
 	}
 	return cachedThemes_;
 }
@@ -161,7 +161,8 @@ std::span<const DevElementCatalogEntry> DevCatalogues::queryElements(
 			cachedRevisions_.schemaRevision = schemaRevision;
 			cachedRevisions_.treeRevision = treeRevision;
 			cachedElementTree_ = currentTree;
-		} catch (...) { cachedElements_.clear(); }
+			failedQueries_ &= ~(1u << 6);
+		} catch (...) { cachedElements_.clear(); failedQueries_ |= 1u << 6; }
 	}
 	return cachedElements_;
 }
@@ -261,6 +262,7 @@ void DevCatalogues::rebuildAtlasCache() {
 				.atlasTexture = atlas.texture,
 				.width = atlas.width,
 				.height = atlas.height,
+				.pageIndex = atlas.page,
 				.occupancyRatio = area == 0 ? 0.0f : static_cast<float>(atlas.usedArea) / static_cast<float>(area),
 				.allocatedRegions = atlas.allocatedRegions,
 				.gpuMemoryBytes = area * 4u,
@@ -434,6 +436,22 @@ DevCatalogLease DevCatalogues::acquireInspectionLease() noexcept {
 		for (TextureHandle texture : retained) {
 			try { storage_->releaseTextureFromDevInspection(texture); } catch (...) {}
 		}
+		return {};
+	}
+}
+
+DevCatalogLease DevCatalogues::acquireInspectionLease(std::span<const TextureHandle> textures) noexcept {
+	if (!storage_) return {};
+	std::vector<TextureHandle> retained;
+	try {
+		retained.reserve(textures.size());
+		for (const auto texture : textures) {
+			if (!texture || std::ranges::find(retained, texture) != retained.end()) continue;
+			if (storage_->retainTextureForDevInspection(texture)) retained.emplace_back(texture);
+		}
+		return DevCatalogLease(storage_, std::move(retained));
+	} catch (...) {
+		for (const auto texture : retained) storage_->releaseTextureFromDevInspection(texture);
 		return {};
 	}
 }

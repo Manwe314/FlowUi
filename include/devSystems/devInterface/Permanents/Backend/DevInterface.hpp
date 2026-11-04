@@ -14,6 +14,7 @@
 namespace FlowUi {
 class App;
 class UiManager;
+namespace detail::storage { class IStorageSystem; }
 }
 
 namespace FlowUi::devSystems {
@@ -34,6 +35,8 @@ public:
 	/** Reserve the panel chord in each window shortcut dispatcher. */
 	[[nodiscard]] Status attachWindow(UiManager& ui);
 	[[nodiscard]] Status synchronize(App& app);
+	/** Release borrowed backend inspection leases before App destroys its storage system. */
+	void release_inspection_resources(::FlowUi::detail::storage::IStorageSystem* storage) noexcept;
 	/** Queue a manual toggle for the next platform safe point. */
 	void request_toggle() noexcept { toggleRequested_ = true; }
 	/** Consume one post-arm native press edge. */

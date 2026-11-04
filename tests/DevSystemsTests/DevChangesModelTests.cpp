@@ -196,9 +196,85 @@ void verify_model_identity_and_scope() {
 	assert(!state.selected_outside_filter && selected_changes_row(state));
 	assert(changes_memory_owner("flowui.tuning.input_fields.registry_entries") == "Input fields");
 }
+
+void verify_queue_projection_and_explicit_scope() {
+	DevChangesState state;
+	state.review.rows.reserve(85);
+	for (std::size_t index = 0; index < 85; ++index) {
+		DevChangesReviewRow row;
+		row.key = "queue:" + std::to_string(index);
+		row.target_name = "Toolbar";
+		row.field_path = "field_" + std::to_string(index);
+		row.has_proposal = true;
+		row.operation = DevChangesOperation::Add;
+		state.review.rows.emplace_back(std::move(row));
+	}
+	rebuild_changes_model(state);
+	assert(state.matching_rows.size() == 85 && changes_queue_rows(state).size() == 85);
+	changes_select_key(state, "group:Elements");
+	const auto group = std::ranges::find(state.nodes, "group:Elements", &DevChangesNode::key);
+	assert(group != state.nodes.end());
+	group->expanded = false;
+	rebuild_changes_model(state);
+	assert(changes_queue_rows(state).size() == 85 && state.visible_nodes.size() == 1);
+	changes_select_key(state, "queue:45");
+	assert(state.workbench_page == 1 && state.workbench_page_changed);
+	state.workbench_page_changed = false;
+	state.workbench_scroll = -300;
+	changes_select_key(state, "queue:46");
+	assert(state.workbench_page == 1 && !state.workbench_page_changed &&
+		   state.workbench_scroll == -300);
+	state.search = "queue:45";
+	rebuild_changes_model(state);
+	assert(state.selected_outside_filter &&
+		   changes_queue_rows(state) == std::vector<std::size_t>{45});
+	state.review.rows.front().blocking = true;
+	queue_changes_scope_decision(state, "group:Elements", DevChangesDecision::IncludeProposal);
+	assert(state.pending_keys.size() == 84 && state.pending_skipped == 1);
+	queue_changes_decision(state, DevChangesDecision::OmitProposal);
+	assert(state.pending_keys == std::vector<std::string>{"queue:46"});
+	queue_changes_scope_decision(state, "missing-group", DevChangesDecision::OmitProposal);
+	assert(state.pending_keys.empty() && state.pending == DevChangesCommand::None);
+	assert(state.message_is_error);
+	state.search.clear();
+	state.reveal_selection_pending = true;
+	rebuild_changes_model(state);
+	assert(!state.selected_outside_filter && state.workbench_page == 1 && !state.model_dirty);
+	state.review.rows.back().domain = DevChangesDomain::Themes;
+	rebuild_changes_model(state);
+	const auto previous_scope = state.queue_scope_key;
+	changes_select_key(state, "queue:84");
+	assert(state.queue_scope_key != previous_scope && state.selected_key == "queue:84");
+	assert(changes_queue_rows(state) == std::vector<std::size_t>{84});
+	state.queue_scope_key.clear();
+	for (std::size_t index = 0; index < state.review.rows.size(); ++index)
+		state.review.rows[index].has_disk = index >= 10;
+	rebuild_changes_model(state);
+	changes_select_key(state, "queue:80");
+	assert(state.workbench_page == 2);
+	state.view = 1;
+	state.status = 2;
+	rebuild_changes_model(state);
+	assert(state.workbench_page == 1 && state.view == 1 && !state.selected_outside_filter);
+	state.queue_scope_key = "group:Elements";
+	state.message = "Rejected write remains visible";
+	state.message_is_error = true;
+	const auto selection_revision = state.selection_revision;
+	changes_select_key(state, "queue:84");
+	changes_select_key(state, "queue:84");
+	assert(state.selection_revision == selection_revision + 2);
+	assert(state.message == "Rejected write remains visible" && state.message_is_error);
+	state.message_is_error = false;
+	state.review.rows.pop_back();
+	rebuild_changes_model(state);
+	assert(state.selected_key == "queue:84" && state.selected_outside_filter);
+	assert(state.message.find("no longer") != std::string::npos &&
+		   changes_queue_rows(state).empty());
+}
 } // namespace changes_test
 int main() {
 	changes_test::verify_runtime_intents();
 	changes_test::verify_model_identity_and_scope();
+	changes_test::verify_queue_projection_and_explicit_scope();
 	std::cout << "Changes model identity, filter scope and typed runtime intents verified\n";
 }

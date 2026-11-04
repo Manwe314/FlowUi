@@ -99,6 +99,10 @@ using namespace tooling;
 						   std::string(changes_operation_name(row.operation)) + " " +
 						   std::string(changes_validity_name(row.validity)) + " " +
 						   std::string(changes_decision_name(row.decision));
+	if (row.operation == DevChangesOperation::Add)
+		haystack += " New";
+	if (row.operation == DevChangesOperation::Remove)
+		haystack += " Removal";
 	if (const auto& entry = row.proposed_entry ? row.proposed_entry : row.disk_entry)
 		haystack +=
 			" " + entry->ownerCppType + " " + entry->themeVariant + " " + entry->instanceDebugLabel;
@@ -426,9 +430,14 @@ const DevChangesReviewRow* selected_changes_row(const DevChangesState& state) no
 													 : nullptr;
 }
 void rebuild_changes_model(DevChangesState& state) {
+	const bool filters_changed = state.search != state.applied_search ||
+								 state.domain != state.applied_domain ||
+								 state.status != state.applied_status;
 	auto previous_nodes = std::move(state.nodes);
 	state.nodes.clear();
 	state.nodes.reserve(state.review.rows.size() * 4 + 3);
+	state.matching_rows.clear();
+	state.matching_rows.reserve(state.review.rows.size());
 	auto add_node = [&](std::string key, std::string parent, std::string label, bool leaf,
 						std::size_t row_index) {
 		auto found = std::ranges::find(state.nodes, key, &DevChangesNode::key);
@@ -451,6 +460,8 @@ void rebuild_changes_model(DevChangesState& state) {
 	};
 	for (std::size_t row_index = 0; row_index < state.review.rows.size(); ++row_index) {
 		const auto& row = state.review.rows[row_index];
+		if (row_matches(state, row))
+			state.matching_rows.emplace_back(row_index);
 		const std::string root_key = "group:" + std::string(domain_name(row.domain));
 		std::string parent =
 			add_node(root_key, {}, std::string(domain_name(row.domain)), false, row_index);
@@ -517,20 +528,117 @@ void rebuild_changes_model(DevChangesState& state) {
 	const auto selected = std::ranges::find(state.nodes, state.selected_key, &DevChangesNode::key);
 	state.selected_outside_filter =
 		!state.selected_key.empty() && (selected == state.nodes.end() || !selected->matches);
+	if (selected == state.nodes.end() && !state.selected_key.empty() && !state.message_is_error &&
+		std::ranges::find(previous_nodes, state.selected_key, &DevChangesNode::key) !=
+			previous_nodes.end()) {
+		state.message =
+			"The selected target is no longer present in this review: " + state.selected_key +
+			". Its context is retained; choose a group or Overview to continue.";
+	}
+	if (!state.queue_scope_key.empty() && !state.message_is_error &&
+		std::ranges::find(state.nodes, state.queue_scope_key, &DevChangesNode::key) ==
+			state.nodes.end() &&
+		std::ranges::find(previous_nodes, state.queue_scope_key, &DevChangesNode::key) !=
+			previous_nodes.end())
+		state.message =
+			"The review scope is no longer available: " + state.queue_scope_key +
+			". Choose a group or Overview to continue; existing decisions are retained.";
+	if (filters_changed && selected != state.nodes.end() && selected->leaf && selected->matches) {
+		const auto rows = changes_queue_rows(state);
+		const auto position = std::ranges::find(rows, selected->rows.front());
+		if (position != rows.end()) {
+			const auto page = static_cast<uint64_t>(position - rows.begin()) / 40;
+			if (page != state.workbench_page) {
+				state.workbench_page = page;
+				state.workbench_page_changed = true;
+			}
+		}
+	}
 	state.applied_search = state.search;
 	state.applied_domain = state.domain;
 	state.applied_status = state.status;
 	state.model_dirty = false;
+	if (std::exchange(state.reveal_selection_pending, false)) {
+		changes_select_key(state, state.selected_key);
+		state.model_dirty = false;
+	}
 	++state.model_revision;
 }
-void queue_changes_decision(DevChangesState& state, DevChangesDecision decision) {
+std::vector<std::size_t> changes_queue_rows(const DevChangesState& state) {
+	std::vector<std::size_t> rows;
+	rows.reserve(state.matching_rows.size());
+	const auto scope = std::ranges::find(state.nodes, state.queue_scope_key, &DevChangesNode::key);
+	if (!state.queue_scope_key.empty() && scope == state.nodes.end())
+		return rows;
+	for (const auto row_index : state.matching_rows)
+		if (scope == state.nodes.end() ||
+			std::ranges::find(scope->rows, row_index) != scope->rows.end())
+			rows.emplace_back(row_index);
+	return rows;
+}
+void changes_select_key(DevChangesState& state, std::string_view key) {
+	state.selected_key = key;
+	state.view = 0;
+	state.group_decisions_open = false;
+	++state.selection_revision;
+	const auto selected = std::ranges::find(state.nodes, state.selected_key, &DevChangesNode::key);
+	if (selected == state.nodes.end()) {
+		state.selected_outside_filter = !state.selected_key.empty();
+		state.model_dirty = true;
+		return;
+	}
+	state.focused_identity = selected->identity;
+	if (!selected->leaf) {
+		if (state.queue_scope_key != selected->key) {
+			state.queue_scope_key = selected->key;
+			state.workbench_page = 0;
+			state.workbench_page_changed = true;
+		}
+	} else {
+		const auto scope =
+			std::ranges::find(state.nodes, state.queue_scope_key, &DevChangesNode::key);
+		if (!state.queue_scope_key.empty() &&
+			(scope == state.nodes.end() ||
+			 std::ranges::find(scope->rows, selected->rows.front()) == scope->rows.end())) {
+			state.queue_scope_key = selected->parent;
+			if (!state.message_is_error)
+				state.message = "Queue scope changed to reveal the selected target.";
+		}
+		const auto rows = changes_queue_rows(state);
+		const auto found = std::ranges::find(rows, selected->rows.front());
+		if (found != rows.end()) {
+			const auto page = static_cast<uint64_t>(found - rows.begin()) / 40;
+			if (page != state.workbench_page) {
+				state.workbench_page = page;
+				state.workbench_page_changed = true;
+			}
+		}
+	}
+	state.selected_outside_filter = !selected->matches;
+	state.model_dirty = true;
+}
+void queue_changes_scope_decision(DevChangesState& state, std::string_view scope_key,
+								  DevChangesDecision decision) {
 	state.pending_keys.clear();
-	const auto* selected = selected_changes_node(state);
+	state.pending_skipped = 0;
+	state.pending = DevChangesCommand::None;
+	const auto scope = std::ranges::find(state.nodes, scope_key, &DevChangesNode::key);
+	const auto* selected = scope == state.nodes.end() ? nullptr : &*scope;
+	if (!scope_key.empty() && !selected) {
+		state.message = "This decision scope is no longer available. Refresh the review.";
+		state.message_is_error = true;
+		return;
+	}
 	state.pending_keys.reserve(selected ? selected->rows.size() : state.review.rows.size());
 	auto include = [&](const DevChangesReviewRow& row) {
-		if (decision == DevChangesDecision::IncludeProposal &&
-			(!row.has_proposal || (row.blocking && !(selected && selected->leaf))))
-			return;
+		if (decision == DevChangesDecision::IncludeProposal) {
+			if (!row.has_proposal)
+				return;
+			if (row.blocking && !(selected && selected->leaf)) {
+				++state.pending_skipped;
+				return;
+			}
+		}
 		if (decision == DevChangesDecision::OmitProposal && !row.has_proposal)
 			return;
 		if ((decision == DevChangesDecision::Remove ||
@@ -547,6 +655,21 @@ void queue_changes_decision(DevChangesState& state, DevChangesDecision decision)
 			include(row);
 	state.pending_decision = decision;
 	state.pending = DevChangesCommand::Decide;
+	const auto action = decision == DevChangesDecision::IncludeProposal ? "Use proposal"
+						: decision == DevChangesDecision::OmitProposal	? "Excluded"
+						: decision == DevChangesDecision::RetainDisk ? "Kept saved value"
+																	 : "Removed saved assignment";
+	state.feedback_label =
+		std::string(action) + " · " +
+		(selected && selected->leaf ? state.review.rows[selected->rows.front()].target_name + "." +
+										  state.review.rows[selected->rows.front()].field_path
+		 : selected					? selected->label
+									: "Whole plan");
+}
+void queue_changes_decision(DevChangesState& state, DevChangesDecision decision) {
+	const auto* selected = selected_changes_node(state);
+	queue_changes_scope_decision(
+		state, selected ? std::string_view(selected->key) : std::string_view{}, decision);
 }
 void service_changes(App& app, DevInterfaceState& interface_state, bool visible) {
 	auto& state = interface_state.changes;
@@ -606,14 +729,16 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 					state.runtime_undo.emplace_back(std::move(state.pending_runtime));
 					state.runtime_redo.clear();
 				}
-				state.message = "Live edit applied at the application safe point. Manifest "
-								"decisions are unchanged.";
-				state.message_is_error = false;
+				state.runtime_message = "Live command acknowledged for " +
+										state.runtime_target_label +
+										". Manifest decisions are unchanged.";
+				state.runtime_message_is_error = false;
 				refresh(app, interface_state);
 			} else {
-				state.message = "Live edit rejected: " + std::string(failure_reason) +
-					" Draft, manifest decisions and undo history are retained.";
-				state.message_is_error = true;
+				state.runtime_message = "Live command rejected for " + state.runtime_target_label +
+										": " + std::string(failure_reason) +
+										" Draft, manifest decisions and undo history are retained.";
+				state.runtime_message_is_error = true;
 			}
 		}
 	}
@@ -623,12 +748,15 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 							 : command == DevChangesCommand::RedoLive ? 2
 																	  : 0;
 		if (state.runtime_mode) {
+			state.runtime_target_label = state.runtime_mode == 1 ? "the previous live edit (Undo)"
+																 : "the recorded live edit (Redo)";
 			const auto& history = state.runtime_mode == 1 ? state.runtime_undo : state.runtime_redo;
 			if (!history.empty())
 				state.pending_runtime = history.back();
 			else
 				state.pending_runtime = {};
 		} else if (const auto* row = selected_changes_row(state)) {
+			state.runtime_target_label = row->target_name + "." + row->field_path;
 			const auto schema = app.devTooling().schemas().view();
 			if (schema) {
 				const auto action = command == DevChangesCommand::ApplySaved
@@ -656,16 +784,19 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 													  : state.pending_runtime.forward;
 			if (overrides.submit(change)) {
 				state.runtime_transaction = change.transaction;
-				state.message = "Live edit queued; waiting for safe-point acknowledgement.";
-				state.message_is_error = false;
+				state.runtime_message = "Live command queued for " + state.runtime_target_label +
+										"; waiting for application acknowledgement.";
+				state.runtime_message_is_error = false;
 			} else {
-				state.message = "Live edit queue is full; the draft is retained. Try again.";
-				state.message_is_error = true;
+				state.runtime_message =
+					"Live edit queue is full; the draft is retained. Try again.";
+				state.runtime_message_is_error = true;
 			}
 		} else {
-			state.message = state.pending_runtime.error.empty() ? "No live edit to restore."
-																: state.pending_runtime.error;
-			state.message_is_error = true;
+			state.runtime_message = state.pending_runtime.error.empty()
+										? "No live edit to restore."
+										: state.pending_runtime.error;
+			state.runtime_message_is_error = true;
 		}
 	}
 	if (command == DevChangesCommand::Refresh) {
@@ -678,6 +809,16 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 		state.message_is_error = !state.review.valid_disk || !state.memory_error.empty();
 	}
 	if (command == DevChangesCommand::Decide && !state.pending_keys.empty()) {
+		std::size_t affected_targets = state.pending_keys.size();
+		const bool removes_memory_section =
+			state.pending_decision == DevChangesDecision::Remove &&
+			std::ranges::find(state.pending_keys, "memory:policy.enabled") !=
+				state.pending_keys.end();
+		if (removes_memory_section)
+			for (const auto& row : state.review.rows)
+				if (row.domain == DevChangesDomain::Memory && row.has_disk &&
+					std::ranges::find(state.pending_keys, row.key) == state.pending_keys.end())
+					++affected_targets;
 		state.undo.emplace_back(DevChangesDecisionSnapshot{state.decisions, state.policies});
 		if (state.undo.size() > 100)
 			state.undo.erase(state.undo.begin());
@@ -693,8 +834,13 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 				found->disk_revision = state.review.disk_revision;
 			}
 		}
-		state.message = std::string(changes_decision_name(state.pending_decision)) + " · " +
-						std::to_string(state.pending_keys.size()) + " destinations";
+		state.message = state.feedback_label + " · " + std::to_string(affected_targets) +
+						" targets in next bake. Live behavior is unchanged.";
+		if (removes_memory_section)
+			state.message += " The entire saved memory section is removed.";
+		if (state.pending_skipped)
+			state.message += " Skipped " + std::to_string(state.pending_skipped) +
+							 " blocked proposals; resolve their issues before including them.";
 		state.message_is_error = false;
 		refresh(app, interface_state);
 	}
@@ -742,6 +888,8 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 			found->disk_revision = state.review.disk_revision;
 		}
 		refresh(app, interface_state);
+		state.view = 0;
+		changes_select_key(state, policy_key);
 		state.message = "Shared policy staged for the next manifest. Review the resulting "
 						"operation before baking.";
 		state.message_is_error = false;
@@ -772,7 +920,8 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 			if (result.applied) {
 				state.initialized = false;
 				refresh(app, interface_state);
-				state.message = "Manifest updated; rebuild required. " + changes_summary(counts);
+				state.message = "Manifest updated. Rebuild the application to use it. " +
+								changes_summary(counts);
 				state.message_is_error = false;
 				interface_state.lastActionMessage = state.message;
 			} else {
@@ -780,6 +929,10 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 				state.message =
 					"Bake rejected: the reviewed revision changed or the file could not be "
 					"written. Refresh to review the current disk state; pending work is retained.";
+				for (const auto& diagnostic :
+					 app.devTooling().bakePipeline().queryStatus().bakeDiagnostics)
+					if (!diagnostic.message.empty())
+						state.message += " " + diagnostic.message;
 				state.message_is_error = true;
 			}
 		}
@@ -805,8 +958,8 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 			current_request(interface_state).memory_revision != state.review.memory_revision) {
 			if (review_visible) {
 				state.stale = true;
-				state.message = "Sources changed since this review. Refresh before baking.";
-				state.message_is_error = false;
+				if (!state.message_is_error)
+					state.message = "Sources changed since this review. Refresh before baking.";
 			} else
 				refresh(app, interface_state);
 		}

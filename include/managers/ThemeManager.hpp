@@ -44,17 +44,22 @@ class ThemeManager {
 public:
 #if FLOW_UI_DEV_MODE
 	/** A reproducible component example. Captures own example data and local state.
-	 * Draw callbacks consume the application's active theme; they must not register
-	 * previews or trigger application operations while building the preview tree. */
+	 * Draw callbacks must not register previews or trigger application operations while building.
+	 * Scenes declaring uses_local_theme resolve themes exclusively through UiManager::theme(). */
 	struct DevThemePreview {
 		std::function<void(App&, UiManager&)> draw{};
 		std::string debug_name{};
+		bool uses_local_theme = false;
 	};
 	/** Register or replace the named preview for every variant of T (development only).
-	 * Capture example state by value, or retain dependencies for the manager lifetime. */
+	 * Capture example state by value, or retain dependencies for the manager lifetime.
+	 * Set uses_local_theme only when all nested scene theme reads use UiManager's resolver;
+	 * direct App::themes() reads bypass the local scope and restrict the scene to active variants.
+	 */
 	template <typename T>
 	[[nodiscard]] Status registerDevPreview(std::string_view debug_name,
-											std::function<void(App&, UiManager&)> draw) noexcept {
+											std::function<void(App&, UiManager&)> draw,
+											bool uses_local_theme = false) noexcept {
 		if (debug_name.empty() || !draw)
 			return unexpectedError(
 				makeError(ErrorCode::ThemeMutationFailed, ErrorSite::ThemeRegisterVariant));
@@ -63,10 +68,12 @@ public:
 				if (preview.theme_type == detail::typeHash<T>() &&
 					preview.scene.debug_name == debug_name) {
 					preview.scene.draw = std::move(draw);
+					preview.scene.uses_local_theme = uses_local_theme;
 					return {};
 				}
 			dev_previews_.emplace_back(DevPreviewEntry{
-				DevThemePreview{std::move(draw), std::string(debug_name)}, detail::typeHash<T>()});
+				DevThemePreview{std::move(draw), std::string(debug_name), uses_local_theme},
+				detail::typeHash<T>()});
 			return {};
 		} catch (...) {
 			return unexpectedError(

@@ -4,13 +4,15 @@
 
 #if FLOW_UI_DEV_MODE
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <vector>
-#include <span>
 #include <shared_mutex>
+#include <span>
+#include <string>
+#include <vector>
 
 #include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingTypes.hpp"
@@ -107,7 +109,38 @@ struct TimingBudgetEvent {
 struct TimingCaptureSnapshot {
 	std::vector<TimingAppTickReport> reports{};
 	std::vector<TimingZoneDescriptor> descriptors{};
+	std::vector<std::array<std::string, 3>> descriptor_text{};
 	uint64_t mutation_sequence = 0;
+	uint64_t generation = 0, first_app_tick = 0, end_app_tick_exclusive = 0;
+	bool sealed = false;
+
+	TimingCaptureSnapshot() = default;
+	TimingCaptureSnapshot(TimingCaptureSnapshot&&) noexcept = default;
+	TimingCaptureSnapshot& operator=(TimingCaptureSnapshot&&) noexcept = default;
+	TimingCaptureSnapshot(const TimingCaptureSnapshot& other)
+		: reports(other.reports), descriptors(other.descriptors),
+		  descriptor_text(other.descriptor_text), mutation_sequence(other.mutation_sequence),
+		  generation(other.generation), first_app_tick(other.first_app_tick),
+		  end_app_tick_exclusive(other.end_app_tick_exclusive), sealed(other.sealed) {
+		bind_descriptor_text();
+	}
+	TimingCaptureSnapshot& operator=(const TimingCaptureSnapshot& other) {
+		if (this != &other) {
+			TimingCaptureSnapshot owned(other);
+			*this = std::move(owned);
+		}
+		return *this;
+	}
+	/** Rebind descriptor views to this snapshot's owned strings after copying. */
+	void bind_descriptor_text() noexcept {
+		for (size_t descriptor_index = 0; descriptor_index < descriptor_text.size();
+			 ++descriptor_index) {
+			auto& descriptor = descriptors[descriptor_index];
+			descriptor.name = descriptor_text[descriptor_index][0];
+			descriptor.source.file = descriptor_text[descriptor_index][1];
+			descriptor.source.function = descriptor_text[descriptor_index][2];
+		}
+	}
 };
 /** Central retained-timeline owner and lightweight timing post-processor. */
 class DevTimingReporting {
@@ -147,6 +180,9 @@ public:
 																uint64_t budget_ns) const noexcept;
 	/** Acquire reports and descriptor metadata consistently. */
 	[[nodiscard]] TimingCaptureSnapshot capture_snapshot() const;
+	/** Copy a sealed generation and all nested descriptor text under one lock and byte limit. */
+	[[nodiscard]] Result<TimingCaptureSnapshot>
+	owned_capture_snapshot(uint64_t expected_generation, uint64_t maximum_bytes) const noexcept;
 
 	[[nodiscard]] TimingReportingStatus status() const noexcept;
 	/** Return compact error correlation evidence under one lock, without copying reports. */

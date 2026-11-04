@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.CommandResult"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "operation": {
+      "type": "string"
+    },
+    "operation_status": {
+      "enum": [
+        "completed",
+        "accepted",
+        "failed",
+        "canceled",
+        "timeout"
+      ]
+    },
+    "exit_code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    },
+    "result": {},
+    "error": {
+      "type": "object"
+    },
+    "limitations": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "request_id",
+    "operation",
+    "operation_status",
+    "result"
+  ]
+}

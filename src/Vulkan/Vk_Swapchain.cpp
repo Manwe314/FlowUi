@@ -1,5 +1,5 @@
 #include "Vulkan/Vk_Swapchain.hpp"
-#include "internal/AgenticDebug/FrameCapture.hpp"
+#include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -127,6 +127,7 @@ Swapchain& Swapchain::operator=(Swapchain&& other) noexcept {
 	if (this == &other) return *this;
 	std::swap(swapchain, other.swapchain);
 	std::swap(format, other.format);
+	std::swap(present_mode, other.present_mode);
 	std::swap(colorSpace, other.colorSpace);
 	std::swap(extent, other.extent);
 	images.swap(other.images);
@@ -198,8 +199,8 @@ void Swapchain::create(
 	createInfo.imageExtent = chosenExtent;
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-#if defined(AgenticDebug) && AgenticDebug
-	if (FlowUi::agentic_debug::requested() &&
+#if FLOW_UI_AGENTIC_WORKFLOW
+	if (FlowUi::devSystems::agentic::frame_capture::requested(vk) &&
 		(caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0u) {
 		createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	}
@@ -247,6 +248,7 @@ void Swapchain::create(
 	}
 
 	format = chosenFormat.format;
+	present_mode = presentMode;
 	colorSpace = chosenFormat.colorSpace;
 	extent = chosenExtent;
 }

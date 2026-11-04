@@ -397,6 +397,12 @@ private:
 		FlowScopeGuard flowScope{uiManager_, elementId_};
 
 #if FLOW_UI_DEV_MODE
+		if (uiManager_.isDevPassivePreview())
+			options = options | ElementDrawOptions::SkipEventCallbacks |
+					  ElementDrawOptions::SkipLogicCallback;
+		if constexpr (!detail::element::isDevInternal<ElementType>())
+			if (auto* registry = uiManager_.devSchemaRegistry())
+				registry->template registerElementPreview<ElementType>();
 		// Route header-only builder capture through the internal runtime bridge.
 		detail::claimFlowRootForDev(
 			uiManager_,
@@ -654,3 +660,43 @@ private:
 /** @} */
 
 } // namespace FlowUi
+
+#if FLOW_UI_DEV_MODE
+namespace FlowUi::devMode {
+template <FlowElement Element>
+void DevSchemaRegistry::registerElementPreview(std::string_view set_name, bool admitted) {
+	const auto found =
+		std::ranges::find(element_previews_, Element::definitionId, &ElementPreview::definition);
+	if (found != element_previews_.end()) {
+		if (admitted && !found->admitted) {
+			found->admitted = true;
+			++preview_revision_;
+		}
+		if (!set_name.empty() && found->set_name != set_name) {
+			found->set_name = set_name;
+			++preview_revision_;
+		}
+		return;
+	}
+	element_previews_.emplace_back(ElementPreview{
+		std::string(set_name), Element::definitionId,
+		+[](UiManager& ui, uint64_t specimen, bool construct) {
+			const UiManager::DevPassivePreviewScope passive(ui);
+			const auto identity = FlowElementID{specimen};
+			ElementBuilder<Element> builder(ui, ui.elements(), ui.windowId(), {}, identity);
+			builder.setDevInternalCapture(true);
+			if constexpr (ConstructibleFlowElement<Element>) {
+				if (construct || !DrawableFlowElement<Element>) {
+					builder.construct();
+					ui.drawConstructed();
+					return;
+				}
+			}
+			if constexpr (DrawableFlowElement<Element>)
+				builder.draw();
+		},
+		admitted, DrawableFlowElement<Element>, ConstructibleFlowElement<Element>});
+	++preview_revision_;
+}
+} // namespace FlowUi::devMode
+#endif

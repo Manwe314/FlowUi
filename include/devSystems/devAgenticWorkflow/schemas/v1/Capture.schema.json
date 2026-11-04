@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Capture.schema.json",
+  "title": "FlowUi.Agentic.Capture",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "store_layout_major",
+    "run_id",
+    "capture_id",
+    "job_id",
+    "status",
+    "requested_at_utc",
+    "published_at_utc",
+    "measurement",
+    "provenance",
+    "coverage",
+    "artifacts",
+    "entrypoints",
+    "required_features"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Capture"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "store_layout_major": {
+      "const": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "capture_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "status": {
+      "enum": [
+        "sealed",
+        "partial"
+      ]
+    },
+    "requested_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "measurement": {
+      "type": "object",
+      "required": [
+        "mode",
+        "profile",
+        "first_app_tick",
+        "end_app_tick_exclusive",
+        "begin_monotonic_ns",
+        "end_monotonic_ns",
+        "window_ids"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "offline",
+            "cpu_scenario",
+            "layout_scenario",
+            "offscreen_vulkan",
+            "windowed"
+          ]
+        },
+        "profile": {
+          "enum": [
+            "performance_diagnose",
+            "performance_verify",
+            "diagnostics_reproduce",
+            "visual_inspect",
+            "memory_diagnose",
+            "startup_diagnose"
+          ]
+        },
+        "first_app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "end_app_tick_exclusive": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "begin_monotonic_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "end_monotonic_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "window_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "uniqueItems": true
+        },
+        "timing_capture_generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "scenario_id": {
+          "type": "string"
+        },
+        "scenario_digest": {
+          "type": "string"
+        },
+        "fixture_id": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "complete",
+          "partial",
+          "not_requested",
+          "disabled",
+          "unsupported",
+          "failed"
+        ]
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "path",
+          "media_type",
+          "schema",
+          "schema_version",
+          "integer_encoding",
+          "bytes",
+          "sha256"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+            "not": {
+              "enum": [
+                ".",
+                ".."
+              ]
+            }
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 1024,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\:]).+$"
+          },
+          "media_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "integer_encoding": {
+            "enum": [
+              "decimal_strings",
+              "decimal_text",
+              "native_lossless",
+              "native_numbers"
+            ]
+          },
+          "bytes": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "entrypoints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "required_features": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "correlation_keys_v1",
+          "section_coverage_v1"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

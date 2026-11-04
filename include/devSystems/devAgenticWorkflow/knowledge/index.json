@@ -1,0 +1,341 @@
+{
+  "schema": "FlowUi.Agentic.KnowledgeIndex",
+  "schema_version": "1.0",
+  "pack_version": "1.0",
+  "topics": [
+    {
+      "topic_id": "runtime.frame_lifecycle",
+      "path": "systems/runtime.frame_lifecycle.md",
+      "summary": "Frame lifecycle and identity",
+      "keywords": [
+        "frames",
+        "window",
+        "cadence",
+        "performance",
+        "poll"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1537",
+      "sha256": "18279e8afaf350805d585b94d44256a3b57f8869dd1d2af1d02250d74e2afd3f"
+    },
+    {
+      "topic_id": "elements.identity_and_state",
+      "path": "systems/elements.identity_and_state.md",
+      "summary": "Element definitions, instances and persistent state",
+      "keywords": [
+        "elements",
+        "state",
+        "users",
+        "rows",
+        "identity",
+        "virtualization"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1554",
+      "sha256": "53e124d5c4d81b0c5195b6aa8d9365edd9e46edbc193e3e7d7db24b8463c45cd"
+    },
+    {
+      "topic_id": "layout.flow_and_clay",
+      "path": "systems/layout.flow_and_clay.md",
+      "summary": "Flow ownership and Clay layout",
+      "keywords": [
+        "layout",
+        "clay",
+        "flow",
+        "geometry",
+        "users",
+        "visual"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1488",
+      "sha256": "29535217522903dae97cd854672b013920f09d86ab795a5b296edfc560d9d1d2"
+    },
+    {
+      "topic_id": "timing.interpretation",
+      "path": "systems/timing.interpretation.md",
+      "summary": "Cadence, scoped cost and GPU clocks",
+      "keywords": [
+        "timing",
+        "fps",
+        "performance",
+        "work",
+        "wait",
+        "gpu"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1588",
+      "sha256": "cd74ef5efc831867d0ac21843171228f9a26d5fdbe3afe4a3eee3dc810aed17e"
+    },
+    {
+      "topic_id": "errors.causal_evidence",
+      "path": "systems/errors.causal_evidence.md",
+      "summary": "Runtime occurrences and causal records",
+      "keywords": [
+        "errors",
+        "warnings",
+        "diagnostics",
+        "causal",
+        "fatal"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1506",
+      "sha256": "77c69574eb107369b9d2bbfcefabed4c351e2b6080d2f5a8809fc505b3a320db"
+    },
+    {
+      "topic_id": "memory.capacity_and_lifetime",
+      "path": "systems/memory.capacity_and_lifetime.md",
+      "summary": "Memory capacity, samples and retirement",
+      "keywords": [
+        "memory",
+        "capacity",
+        "growth",
+        "retirement",
+        "leak"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1554",
+      "sha256": "4c4c4dee7914c244d72fd9d1f05f96e95be14624e52cb7a1e355407dabe219a0"
+    },
+    {
+      "topic_id": "themes.variants_and_overrides",
+      "path": "systems/themes.variants_and_overrides.md",
+      "summary": "Typed theme variants and durable changes",
+      "keywords": [
+        "theme",
+        "themes",
+        "variants",
+        "colors",
+        "users",
+        "visual",
+        "configuration"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "2128",
+      "sha256": "b44aeec33333b93558031ebff489f8d7616a0529adc340efe443717bd4fbd80c"
+    },
+    {
+      "topic_id": "resources.textures_fonts_icons",
+      "path": "systems/resources.textures_fonts_icons.md",
+      "summary": "Resource registration and frame-safe lifetime",
+      "keywords": [
+        "resources",
+        "textures",
+        "fonts",
+        "icons",
+        "startup"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1427",
+      "sha256": "98b9e95725247682b1e1a66b7f6bd47823f7b27875323d3fba682bac0b9662ff"
+    },
+    {
+      "topic_id": "input.actions_and_popups",
+      "path": "systems/input.actions_and_popups.md",
+      "summary": "Semantic actions, input and focus",
+      "keywords": [
+        "input",
+        "actions",
+        "keyboard",
+        "focus",
+        "hover",
+        "popup",
+        "scenario"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "2001",
+      "sha256": "41d8946826f32e5b5b954c50854e4fc9634a699845c863b8784c77ea510f5a27"
+    },
+    {
+      "topic_id": "viewports.rendering_and_capture",
+      "path": "systems/viewports.rendering_and_capture.md",
+      "summary": "Viewport production and visual evidence",
+      "keywords": [
+        "viewport",
+        "vulkan",
+        "capture",
+        "image",
+        "render"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1501",
+      "sha256": "96a241005ada2e4a37e6f84c7d448a081b1e6e0f027d23f8b741d57da93cce33"
+    },
+    {
+      "topic_id": "changes.review_and_baking",
+      "path": "systems/changes.review_and_baking.md",
+      "summary": "Revision-checked review and baking",
+      "keywords": [
+        "changes",
+        "baking",
+        "preview",
+        "apply",
+        "revision"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1464",
+      "sha256": "66be641d380dba9bc4875754faf828bca9ae77d71f4c770d534b73928a7b3e02"
+    },
+    {
+      "topic_id": "agentic.evidence_contract",
+      "path": "systems/agentic.evidence_contract.md",
+      "summary": "Agentic evidence, coverage and command contracts",
+      "keywords": [
+        "agentic",
+        "capture",
+        "manifest",
+        "evidence",
+        "performance",
+        "diagnostics",
+        "visual"
+      ],
+      "related_topics": [
+        "timing.interpretation",
+        "themes.variants_and_overrides",
+        "errors.causal_evidence"
+      ],
+      "bytes": "1748",
+      "sha256": "06f6d8fd855a83b7a2e607583686f3b34e7dd3c6c5b11e5901b92aa448ef1106"
+    },
+    {
+      "topic_id": "workflow.performance_improvement",
+      "path": "workflows/performance_improvement.md",
+      "summary": "Improve a measured frame-rate regression",
+      "keywords": [
+        "performance",
+        "fps",
+        "optimize"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1261",
+      "sha256": "f4931b2d98040b990e51ce56ba74a2896c78faf3cd7e8ff0f45d9843865d2772"
+    },
+    {
+      "topic_id": "workflow.diagnostic_cleanup",
+      "path": "workflows/diagnostic_cleanup.md",
+      "summary": "Resolve build and runtime diagnostics with replay",
+      "keywords": [
+        "diagnostics",
+        "warnings",
+        "errors"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1133",
+      "sha256": "cb44c0177d16ffe786f8a83299609e1b6b8c0e8978e63b9808f87133ec290c02"
+    },
+    {
+      "topic_id": "workflow.visual_modernization",
+      "path": "workflows/visual_modernization.md",
+      "summary": "Modernize an application surface with typed themes",
+      "keywords": [
+        "visual",
+        "users",
+        "theme",
+        "themes"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1278",
+      "sha256": "f2125fd6208c7ff22240fbe75e3c08ab401bbe63c09d36496d6bcd2ee3a1987a"
+    },
+    {
+      "topic_id": "workflow.memory_growth",
+      "path": "workflows/memory_growth.md",
+      "summary": "Investigate retained growth and capacity",
+      "keywords": [
+        "memory",
+        "growth",
+        "capacity"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1064",
+      "sha256": "12d7174224943698914faa6d46ee72e40686dddfbe36d97cc280f874d04ae715"
+    },
+    {
+      "topic_id": "workflow.startup_failure",
+      "path": "workflows/startup_failure.md",
+      "summary": "Investigate initialization and resource failures",
+      "keywords": [
+        "startup",
+        "failure",
+        "resource",
+        "fatal"
+      ],
+      "related_topics": [
+        "agentic.evidence_contract"
+      ],
+      "bytes": "1050",
+      "sha256": "1abc2374bdf242372038e3376be7049b37a033fafebfbf35b9dc3fc878833288"
+    },
+    {
+      "topic_id": "interaction.execution",
+      "path": "systems/interaction.execution.md",
+      "summary": "Frame-bound input, target resolution, observations, recording and release",
+      "keywords": [
+        "interaction",
+        "input",
+        "click",
+        "drag",
+        "replay",
+        "record",
+        "offset",
+        "actions"
+      ],
+      "related_topics": [
+        "input.actions_and_popups",
+        "runtime.frame_lifecycle",
+        "agentic.evidence_contract"
+      ],
+      "bytes": "4261",
+      "sha256": "b527e295c085fc71801a9dc1c85f9e3745a34a5de15c164a7c66278eae16a1e5"
+    },
+    {
+      "topic_id": "workflow.interaction_replay",
+      "path": "workflows/interaction_replay.md",
+      "summary": "Compile, execute, record and inspect a bounded interaction workload",
+      "keywords": [
+        "interaction",
+        "input",
+        "replay",
+        "record",
+        "click",
+        "offset"
+      ],
+      "related_topics": [
+        "interaction.execution",
+        "input.actions_and_popups",
+        "agentic.evidence_contract"
+      ],
+      "bytes": "2950",
+      "sha256": "58c53a8e4dc971c068e916c310bbd3f1c5c60da94377e96f76de33973b06fbe4"
+    }
+  ]
+}

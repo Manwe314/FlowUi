@@ -35,6 +35,14 @@ inline constexpr auto kMemoryWorkbench = makeMemorySourceDescriptor(
 inline constexpr auto kDevTreeCapture = makeMemorySourceDescriptor(
 	"flowui.memory.development.tooling.tree_capture", MemoryDomain::ManagerCpu,
 	MemorySourceKind::Development, MemoryAccuracy::AllocatorRequested, kDevTooling.id);
+#if FLOW_UI_AGENTIC_WORKFLOW
+inline constexpr auto kAgenticCpu = makeMemorySourceDescriptor(
+	"flowui.memory.development.agentic.cpu", MemoryDomain::ManagerCpu,
+	MemorySourceKind::Development, MemoryAccuracy::Estimate, kDevelopment.id);
+inline constexpr auto kAgenticReadback = makeMemorySourceDescriptor(
+	"flowui.memory.development.agentic.readback", MemoryDomain::GpuAllocation,
+	MemorySourceKind::Development, MemoryAccuracy::AllocatorRequested, kDevelopment.id);
+#endif
 
 #define FLOWUI_STORAGE_CLASS_SOURCE(Name, Stable, Parent, Target) \
 	inline constexpr auto Name = makeMemorySourceDescriptor(Stable, MemoryDomain::StorageCpu, \

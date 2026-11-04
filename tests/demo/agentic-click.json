@@ -1,0 +1,45 @@
+{
+  "schema": "FlowUi.Agentic.InteractionPlan",
+  "schema_version": "1.0",
+  "mode": "common_controls",
+  "window_id": "1",
+  "clock": "window_input_frames",
+  "coordinates": "window_logical",
+  "baseline": "neutral_before_start",
+  "deadline_ns": "30000000000",
+  "content": {
+    "persistence": "redact_text",
+    "record_observations": true
+  },
+  "steps": [
+    {
+      "step_id": "optional-startup-settle",
+      "operation": "wait",
+      "frames": "3",
+      "deadline_ns": "10000000000"
+    },
+    {
+      "step_id": "click-gallery-primary-button",
+      "operation": "click",
+      "target": {
+        "custom_id": "demo.primary_button"
+      },
+      "recipe": {
+        "button": 0,
+        "prepare_up_frames": "1",
+        "down_frames": "1",
+        "hold_frames": "2",
+        "up_frames": "1",
+        "repeat": "1",
+        "inter_click_gap_frames": "1"
+      },
+      "expect": [
+        "target_hovered",
+        "target_pressed",
+        "target_held",
+        "target_released"
+      ],
+      "deadline_ns": "10000000000"
+    }
+  ]
+}

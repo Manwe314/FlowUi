@@ -72,6 +72,9 @@ public:
 	void beginWindowFrame(WindowId window, std::uint64_t frameNumber);
 	void endWindowFrame(WindowId window) noexcept;
 	void cancelWindowFrame(WindowId window) noexcept;
+	/** Disable optional value snapshots; committed overrides continue to apply. */
+	void set_value_collection(bool enabled) noexcept { value_collection_enabled_ = enabled; }
+	[[nodiscard]] bool value_collection() const noexcept { return value_collection_enabled_; }
 
 	void applyElement(
 		FlowDefinitionID definition,
@@ -161,6 +164,7 @@ private:
 	devMode::DevSchemaView schema_{};
 	DevOverrideApply apply_{};
 	DevOverrideCapture capture_{};
+	bool value_collection_enabled_ = true;
 	std::vector<ThemeBakeRecord> themeRecords_{};
 	std::vector<ThemeBakeRecord> themeBakeTombstones_{};
 	mutable std::mutex ingressMutex_{};

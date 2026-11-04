@@ -16,6 +16,7 @@ struct Swapchain {
 	Swapchain& operator=(Swapchain&& other) noexcept;
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 	VkFormat format = VK_FORMAT_UNDEFINED;
+	VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
 	VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	VkExtent2D extent{};
 

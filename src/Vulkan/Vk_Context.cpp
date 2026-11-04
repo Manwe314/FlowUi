@@ -1,5 +1,5 @@
 #include "Vulkan/Vk_Context.hpp"
-#include "internal/AgenticDebug/FrameCapture.hpp"
+#include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -583,8 +583,12 @@ VkResult VulkanContext::waitForPresent(
 
 void VulkanContext::destroy() {
 	if (device != VK_NULL_HANDLE) {
-#if defined(AgenticDebug) && AgenticDebug
-		FlowUi::agentic_debug::release_device(*this);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (FlowUi::devSystems::agentic::frame_capture::pending_bytes(*this) != 0u &&
+			vkDeviceWaitIdle(device) != VK_SUCCESS)
+			FlowUi::devSystems::agentic::frame_capture::discard_device(*this);
+		else
+			FlowUi::devSystems::agentic::frame_capture::release_device(*this);
 #endif
 		if (allocator) {
 			vmaDestroyAllocator(allocator);

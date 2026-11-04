@@ -19,7 +19,7 @@
 #include <tuple>
 #include <utility>
 
-#include "DevBakeInternals.hpp"
+#include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
 #include "managers/structs/ActionManagerStructs.hpp"

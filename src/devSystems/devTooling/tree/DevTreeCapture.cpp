@@ -97,15 +97,15 @@ void DevTreeCapture::clearSnapshot(DevTreeSnapshot& snapshot) noexcept {
 	snapshot.stats = {};
 }
 
-void DevTreeCapture::beginFrame(
-	WindowId window,
-	uint64_t frameNumber,
-	Clay_Context& clay,
-	DevTimingRecorder* timing) noexcept {
+void DevTreeCapture::beginFrame(WindowId window, uint64_t frameNumber, Clay_Context& clay,
+								DevTimingRecorder* timing, uint64_t app_tick,
+								uint64_t ui_runtime_frame) noexcept {
 	if (frameActive_) cancelFrame();
 	clearSnapshot(building_);
 	building_.window = window;
 	building_.frameNumber = frameNumber;
+	building_.app_tick = app_tick;
+	building_.ui_runtime_frame = ui_runtime_frame;
 	building_.stats.frameNumber = frameNumber;
 	clearRetained(activeFlowScopes_);
 	clearRetained(lastFlowChild_);

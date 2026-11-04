@@ -8,13 +8,21 @@
 **/Build-*/
 /build/
 /build-*/
+/build-agentic
 /build_*
 /build_demo/
 /FlowPlotGUI/build/
 /FlowPlotGUI/build-*/
 **/build/
 **/build-*/
-.flowui*
+# Keep project configuration, scenarios and durable .flowchanges eligible for version control.
+.flowui/agentic/v1/runs/
+.flowui/agentic/v1/runtime/
+.flowui/agentic/v1/index.json
+.flowui/agentic/v1/.publication.lock
+.flowui/agentic/v1/.index.lock
+.flowui/agentic/v1/store.json
+.flowui_font_baker_build/
 
 # -----------------------------
 # CMake / Ninja generated files
@@ -96,3 +104,8 @@ notes.txt
 
 
 
+
+# Optional Python MCP adapter build/cache outputs.
+tools/flowui-agent-mcp/**/__pycache__/
+tools/flowui-agent-mcp/**/*.egg-info/
+tools/flowui-agent-mcp/dist/

@@ -1,0 +1,565 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Tree.schema.json",
+  "title": "FlowUi.Agentic.Tree",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Tree"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "window_id": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "window_frame": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "app_tick": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "ui_runtime_frame": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "text_policy": {
+      "enum": [
+        "included",
+        "redacted"
+      ]
+    },
+    "flow_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "parent": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "first_child": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "next_sibling": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "subtree_end_exclusive": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "definition_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "instance_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "debug_name": {
+            "type": "string"
+          },
+          "definition_name": {
+            "type": "string"
+          },
+          "definition_type": {
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/source_site"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "flags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "clay_root": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "direct_clay_nodes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "required": [
+          "index",
+          "parent",
+          "first_child",
+          "next_sibling",
+          "subtree_end_exclusive",
+          "depth",
+          "definition_id",
+          "instance_id",
+          "debug_name",
+          "definition_name",
+          "definition_type",
+          "source",
+          "flags"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "flow_roots": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967295
+      }
+    },
+    "clay_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "parent": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "first_child": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "next_sibling": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "subtree_end_exclusive": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "root_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "clay_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "name": {
+            "type": "string"
+          },
+          "flow_owner": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "bounds": {
+            "$ref": "#/$defs/geometry"
+          },
+          "dimensions": {
+            "$ref": "#/$defs/geometry"
+          },
+          "minimum_dimensions": {
+            "$ref": "#/$defs/geometry"
+          },
+          "clip_clay_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "text_present": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "wrapped_line_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "flags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "pointer_presence": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "boolean"
+              },
+              "custom": {
+                "type": "boolean"
+              },
+              "user": {
+                "type": "boolean"
+              },
+              "text_user": {
+                "type": "boolean"
+              },
+              "transition_handler": {
+                "type": "boolean"
+              },
+              "transition_initial": {
+                "type": "boolean"
+              },
+              "transition_final": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "image",
+              "custom",
+              "user",
+              "text_user",
+              "transition_handler",
+              "transition_initial",
+              "transition_final"
+            ],
+            "additionalProperties": false
+          },
+          "clip_axes": {
+            "type": "object",
+            "properties": {
+              "horizontal": {
+                "type": "boolean"
+              },
+              "vertical": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "horizontal",
+              "vertical"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "index",
+          "parent",
+          "first_child",
+          "next_sibling",
+          "subtree_end_exclusive",
+          "root_index",
+          "clay_id",
+          "name",
+          "flow_owner",
+          "bounds",
+          "dimensions",
+          "minimum_dimensions",
+          "clip_clay_id",
+          "text_present",
+          "text",
+          "wrapped_line_count",
+          "flags",
+          "pointer_presence",
+          "clip_axes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "clay_roots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "attachment_parent_clay_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "attachment_parent": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "clip_clay_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "clip_node": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "z_index": {
+            "type": "number"
+          },
+          "paint_order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          }
+        },
+        "required": [
+          "node",
+          "attachment_parent_clay_id",
+          "attachment_parent",
+          "clip_clay_id",
+          "clip_node",
+          "z_index",
+          "paint_order"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "clay_status": {
+      "const": "disabled"
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "flow_node": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "clay_node": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "expected": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "observed": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          }
+        },
+        "required": [
+          "code",
+          "flow_node",
+          "expected",
+          "observed"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "run_id",
+    "window_id",
+    "window_frame",
+    "app_tick",
+    "ui_runtime_frame",
+    "generation",
+    "complete",
+    "truncated",
+    "text_policy",
+    "flow_nodes",
+    "flow_roots",
+    "diagnostics"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "source_site": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+          "description": "Repository-relative source path, or null when unavailable/redacted."
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "repository_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "symbol",
+        "line",
+        "column",
+        "repository_id"
+      ],
+      "additionalProperties": false
+    },
+    "geometry": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "clay_nodes",
+        "clay_roots"
+      ]
+    },
+    {
+      "required": [
+        "clay_status"
+      ]
+    }
+  ]
+}

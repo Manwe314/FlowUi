@@ -1,0 +1,524 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Catalogue.schema.json",
+  "title": "FlowUi.Agentic.Catalogue",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Catalogue"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/resource_key"
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+            "description": "Repository-relative source path, or null when unavailable/redacted."
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "source_vk_format": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "gpu_memory_bytes": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "texture": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "anonymous": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "source",
+          "width",
+          "height",
+          "source_vk_format",
+          "gpu_memory_bytes",
+          "texture",
+          "status",
+          "anonymous"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "icons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/resource_key"
+          },
+          "name": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "texture": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "vector_svg": {
+            "type": "boolean"
+          },
+          "atlas_layer": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "uv": {
+            "$ref": "#/$defs/geometry"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "width",
+          "height",
+          "texture",
+          "vector_svg",
+          "atlas_layer",
+          "uv"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "font_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "family_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "family_name": {
+            "type": "string"
+          },
+          "face_name": {
+            "type": "string"
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+            "description": "Repository-relative source path, or null when unavailable/redacted."
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "italic": {
+            "type": "boolean"
+          },
+          "em_size_points": {
+            "type": "number"
+          },
+          "ascent": {
+            "type": "number"
+          },
+          "descent": {
+            "type": "number"
+          },
+          "line_gap": {
+            "type": "number"
+          },
+          "glyphs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "atlas_layer": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          }
+        },
+        "required": [
+          "font_id",
+          "family_id",
+          "family_name",
+          "face_name",
+          "source",
+          "weight",
+          "italic",
+          "em_size_points",
+          "ascent",
+          "descent",
+          "line_gap",
+          "glyphs",
+          "atlas_layer"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "atlases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/resource_key"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "layers": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "texture": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "gpu_memory_bytes": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "occupancy_ratio": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "msdf_pixel_range": {
+            "type": "number"
+          },
+          "allocated_regions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "kind",
+          "width",
+          "height",
+          "layers",
+          "texture",
+          "gpu_memory_bytes",
+          "occupancy_ratio",
+          "msdf_pixel_range",
+          "allocated_regions"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stable_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "bound": {
+            "type": "boolean"
+          },
+          "reconstructable": {
+            "type": "boolean"
+          },
+          "availability_flags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "callable_type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "result_type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "lifetime_invocations": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "definition_source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+            "description": "Repository-relative source path, or null when unavailable/redacted."
+          }
+        },
+        "required": [
+          "stable_id",
+          "name",
+          "kind",
+          "bound",
+          "reconstructable",
+          "availability_flags",
+          "callable_type_id",
+          "result_type_id",
+          "lifetime_invocations",
+          "definition_source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "definition_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters_type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "state_type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "reflected_fields": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "bakeable": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+            "description": "Repository-relative source path, or null when unavailable/redacted."
+          }
+        },
+        "required": [
+          "definition_id",
+          "name",
+          "parameters_type_id",
+          "state_type_id",
+          "reflected_fields",
+          "bakeable",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "revisions": {
+      "type": "object",
+      "properties": {
+        "storage": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "font": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "tree": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        }
+      },
+      "required": [
+        "storage",
+        "font",
+        "schema",
+        "tree"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "run_id",
+    "images",
+    "icons",
+    "fonts",
+    "atlases",
+    "actions",
+    "elements",
+    "revisions"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "resource_key": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        }
+      },
+      "required": [
+        "name",
+        "domain",
+        "window_id"
+      ],
+      "additionalProperties": false
+    },
+    "geometry": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

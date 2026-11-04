@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Store.schema.json",
+  "title": "FlowUi.Agentic.Store",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Store"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "layout_major": {
+      "const": 1
+    },
+    "store_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "created_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "layout_major",
+    "store_id",
+    "created_at_utc"
+  ],
+  "additionalProperties": false
+}

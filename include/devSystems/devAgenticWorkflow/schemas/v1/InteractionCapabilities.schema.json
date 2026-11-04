@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/InteractionCapabilities.schema.json",
+  "title": "FlowUi.Agentic.InteractionCapabilities",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.InteractionCapabilities"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "maximum_frames": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_spans": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_steps": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_target_candidates": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_text_codepoints": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_observations": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_artifact_bytes": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_duration_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "raw_frames": {
+      "type": "boolean"
+    },
+    "common_controls": {
+      "type": "boolean"
+    },
+    "geometry_targets": {
+      "type": "boolean"
+    },
+    "custom_targets": {
+      "type": "boolean"
+    },
+    "primary_observations": {
+      "type": "boolean"
+    },
+    "text_focus_observations": {
+      "type": "boolean"
+    },
+    "presented_observations": {
+      "type": "boolean"
+    },
+    "recording": {
+      "type": "boolean"
+    },
+    "exact_addresses": {
+      "type": "boolean"
+    },
+    "maximum_windows_per_plan": {
+      "const": 1
+    },
+    "key_mapping": {
+      "const": "GLFW_3_key_codes"
+    },
+    "dt_policy": {
+      "const": "application_clock"
+    },
+    "offset_zero": {
+      "const": "first_eligible_input_selection_after_baseline"
+    },
+    "input_control_enabled": {
+      "type": "boolean"
+    },
+    "action_control_enabled": {
+      "type": "boolean"
+    },
+    "physical_cancel_chord": {
+      "const": "Ctrl+Alt+Escape"
+    },
+    "one_app_per_process": {
+      "const": true
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "limits",
+    "raw_frames",
+    "common_controls",
+    "geometry_targets",
+    "custom_targets",
+    "primary_observations",
+    "text_focus_observations",
+    "presented_observations",
+    "recording",
+    "exact_addresses",
+    "maximum_windows_per_plan",
+    "key_mapping",
+    "dt_policy",
+    "offset_zero"
+  ],
+  "additionalProperties": false,
+  "$defs": {}
+}

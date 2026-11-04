@@ -119,6 +119,12 @@ constexpr auto kBackToChanges =
 		state.changes.pending = DevChangesCommand::Back;
 	});
 
+constexpr auto kRefreshCatalogueAction =
+	UiAction("flowui.dev_interface.catalogue.refresh", [](DevInterfaceState& state) {
+		state.catalogue.pending = DevCatalogueCommand::Refresh;
+		state.lastActionMessage = "Catalogue refresh requested";
+	});
+
 constexpr auto kApplyCpuReportingLevel = UiAction(
 	"flowui.dev_interface.apply-cpu-reporting-level",
 	[](App& app, DevInterfaceState& state) {
@@ -384,7 +390,8 @@ void drawContextualControls(
 			.setParameters({app, &state}).setDevInternalCapture(true).draw();
 		break;
 	case DevInterfaceTab::Catalogue:
-		drawControl(context, kRefreshCatalogue, "Refresh");
+		drawControl(context, kRefreshCatalogue, "Refresh",
+			app ? ActionCall{app->actions().uiActions().make(kRefreshCatalogueAction, state)} : ActionCall{}, app != nullptr);
 		break;
 	}
 }

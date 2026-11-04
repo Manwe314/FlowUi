@@ -107,6 +107,14 @@ public:
 	[[nodiscard]] const devSystems::tooling::DevTreeSnapshot& devTreeSnapshot() const noexcept;
 	[[nodiscard]] devSystems::tooling::DevTreeCapture& devTreeCapture() noexcept;
 	[[nodiscard]] const devSystems::tooling::DevTreeCapture& devTreeCapture() const noexcept;
+	/** Supply the authoritative App key before building a window frame. */
+	void set_dev_evidence_context(uint64_t app_tick, uint64_t window_frame) noexcept {
+		dev_evidence_tick_ = app_tick;
+		dev_evidence_frame_ = window_frame;
+	}
+	/** Gate optional inspection copies while keeping layout, state and overrides active. */
+	void set_dev_tree_collection(bool enabled) noexcept { dev_tree_collection_ = enabled; }
+	[[nodiscard]] bool dev_tree_collection() const noexcept { return dev_tree_collection_; }
 	[[nodiscard]] devSystems::tooling::DevOverrideEngine* devOverrideEngine() noexcept {
 		return devOverrideEngine_;
 	}
@@ -466,6 +474,15 @@ public:
 	 * @endcode
 	 */
     const InteractionSnapshot& getPreviousFramesInteraction() const;
+#if FLOW_UI_AGENTIC_WORKFLOW
+	/** Observe the just-completed layout; valid only until this window begins its next frame. */
+	[[nodiscard]] const InteractionSnapshot& dev_completed_interaction() const noexcept;
+	/** Layout-space window extent used by the most recent build, without switching Clay contexts. */
+	[[nodiscard]] Clay_Dimensions dev_layout_dimensions() const noexcept;
+	/** Last completed UI identity, independent of optional development-tree collection. */
+	[[nodiscard]] std::uint64_t dev_completed_window_frame() const noexcept;
+	[[nodiscard]] std::uint64_t dev_completed_app_tick() const noexcept;
+#endif
 
 	/**
 	 * @brief Return input for the current layout frame.
@@ -701,8 +718,57 @@ public:
 	 */
 	template <typename T>
 	[[nodiscard]] const T& theme() const {
+#if FLOW_UI_DEV_MODE
+		for (auto* scope = dev_theme_scope_; scope; scope = scope->previous_)
+			if (scope->payload_.type == detail::typeHash<T>() &&
+				scope->payload_.payloadSize == sizeof(T))
+				return *static_cast<const T*>(scope->payload_.payload);
+#endif
 		return appThemes().template getActiveTheme<T>();
 	}
+
+#if FLOW_UI_DEV_MODE
+	/** Frame-local variant resolution for nested builders; active application variants stay intact.
+	 */
+	class DevThemeScope {
+	public:
+		DevThemeScope(UiManager& ui, ThemeManager::DevThemePayloadView payload) noexcept
+			: ui_(ui), payload_(payload), previous_(ui.dev_theme_scope_) {
+			if (payload_.payload)
+				ui_.dev_theme_scope_ = this;
+		}
+		~DevThemeScope() { ui_.dev_theme_scope_ = previous_; }
+		DevThemeScope(const DevThemeScope&) = delete;
+		DevThemeScope& operator=(const DevThemeScope&) = delete;
+
+	private:
+		friend class UiManager;
+		UiManager& ui_;
+		ThemeManager::DevThemePayloadView payload_{};
+		DevThemeScope* previous_ = nullptr;
+	};
+	/** Propagate passive callback suppression to every nested typed builder. */
+	class DevPassivePreviewScope {
+	public:
+		explicit DevPassivePreviewScope(UiManager& ui) noexcept : ui_(ui) {
+			++ui_.dev_passive_preview_depth_;
+			ui_.enterDevInternalScope();
+		}
+		~DevPassivePreviewScope() {
+			ui_.leaveDevInternalScope();
+			--ui_.dev_passive_preview_depth_;
+		}
+		DevPassivePreviewScope(const DevPassivePreviewScope&) = delete;
+		DevPassivePreviewScope& operator=(const DevPassivePreviewScope&) = delete;
+
+	private:
+		UiManager& ui_;
+	};
+	/** Whether all nested element callbacks must remain passive. */
+	[[nodiscard]] bool isDevPassivePreview() const noexcept {
+		return dev_passive_preview_depth_ != 0;
+	}
+#endif
 
 	/**
 	 * @brief Access a specific named variant for theme type T.
@@ -888,6 +954,10 @@ private:
 	devMode::DevSchemaRegistry* devSchemaRegistry_ = nullptr;
 	devSystems::tooling::DevOverrideEngine* devOverrideEngine_ = nullptr;
 	uint32_t devInternalScopeDepth_ = 0;
+	uint32_t dev_passive_preview_depth_ = 0;
+	DevThemeScope* dev_theme_scope_ = nullptr;
+	uint64_t dev_evidence_tick_ = 0, dev_evidence_frame_ = 0;
+	bool dev_tree_collection_ = true;
 #endif
 	WindowId window_ = InvalidWindowId;
 	uint64_t stateHandle_ = 0;

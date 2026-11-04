@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Quality.schema.json",
+  "title": "FlowUi.Agentic.Quality",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "profile",
+    "sections",
+    "limitations",
+    "complete"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Quality"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "profile": {
+      "enum": [
+        "performance_diagnose",
+        "performance_verify",
+        "diagnostics_reproduce",
+        "visual_inspect",
+        "memory_diagnose",
+        "startup_diagnose"
+      ]
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "status",
+          "covered_ranges",
+          "gaps",
+          "pending_records",
+          "generation",
+          "uncertain"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "complete",
+              "partial",
+              "not_requested",
+              "disabled",
+              "unsupported",
+              "failed"
+            ]
+          },
+          "covered_ranges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "first_app_tick",
+                "end_app_tick_exclusive"
+              ],
+              "properties": {
+                "first_app_tick": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                },
+                "end_app_tick_exclusive": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                }
+              }
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "first_app_tick",
+                "end_app_tick_exclusive"
+              ],
+              "properties": {
+                "first_app_tick": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                },
+                "end_app_tick_exclusive": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                }
+              }
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "producer_records": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "retained_records": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "dropped_records": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "evicted_records": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "pending_records": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "generation": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "finalization_watermark": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "uncertain": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "publication_durability": {
+      "const": "atomic_visibility_without_power_loss_guarantee"
+    }
+  },
+  "additionalProperties": true
+}

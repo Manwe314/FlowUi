@@ -27,7 +27,11 @@
 #include "managers/UiManager.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #include "Ui/Vk_UiRenderer.hpp"
-#include "internal/AgenticDebug/FrameCapture.hpp"
+#if FLOW_UI_AGENTIC_WORKFLOW
+#include "FlowUi/AgenticBuildInfo.hpp"
+#include "devSystems/devAgenticWorkflow/AgenticService.hpp"
+#include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
+#endif
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
@@ -655,6 +659,9 @@ void captureDevUiReplayPacket(
 #endif
 
 struct AppWindow {
+#if FLOW_UI_AGENTIC_WORKFLOW
+	devSystems::agentic::AgenticFrameRecord agentic_frame{};
+#endif
 #if FLOW_UI_DEV_MODE
 	bool dev_suspended = false;
 #endif
@@ -746,27 +753,50 @@ private:
 
 class WindowFrameExitGuard {
 public:
-	WindowFrameExitGuard(
-		storage::IStorageSystem& storageSystem,
-		AppWindow& window,
-		WindowId& activeWindow
+	WindowFrameExitGuard(storage::IStorageSystem& storageSystem, AppWindow& window,
+						 WindowId& activeWindow
 #if FLOW_UI_DEV_MODE
-		, devSystems::DevTimingRecorder& timingRecorder,
-		devSystems::DevErrorRecorder& errorRecorder
+						 ,
+						 devSystems::DevTimingRecorder& timingRecorder,
+						 devSystems::DevErrorRecorder& errorRecorder
 #endif
-		) noexcept
+#if FLOW_UI_AGENTIC_WORKFLOW
+						 ,
+						 devSystems::agentic::AgenticWorkflowService* agentic_service,
+						 VulkanContext* agentic_context
+#endif
+						 ) noexcept
 		: storage_(&storageSystem), window_(&window), activeWindow_(&activeWindow)
 #if FLOW_UI_DEV_MODE
-		, timingRecorder_(&timingRecorder), errorRecorder_(&errorRecorder),
+		  ,
+		  timingRecorder_(&timingRecorder), errorRecorder_(&errorRecorder),
 		  uncaughtExceptions_(std::uncaught_exceptions())
 #endif
-		{}
+#if FLOW_UI_AGENTIC_WORKFLOW
+		  ,
+		  agentic_service_(agentic_service), agentic_context_(agentic_context)
+#endif
+	{
+	}
 
 #if FLOW_UI_DEV_MODE
 	void setTimingResult(devSystems::TimingRecordFlag result) noexcept { timingResult_ = result; }
 #endif
 
 	~WindowFrameExitGuard() {
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (agentic_service_ && window_->agentic_frame.key.window_frame) {
+			if (agentic_context_ && !window_->agentic_frame.submitted)
+				devSystems::agentic::frame_capture::cancel_frame(*agentic_context_, window_->id,
+																 window_->agentic_frame.frame_slot);
+			window_->agentic_frame.end_ns = devSystems::agentic::monotonic_nanoseconds();
+			window_->agentic_frame.cpu_duration_ns =
+				window_->agentic_frame.end_ns - window_->agentic_frame.begin_ns;
+			window_->agentic_frame.canceled = !window_->agentic_frame.presented;
+			agentic_service_->observe_frame(std::move(window_->agentic_frame));
+			window_->agentic_frame = {};
+		}
+#endif
 		if (window_->storageFrame) {
 			try { storage_->cancelFrame(window_->storageFrame); } catch (...) {}
 		}
@@ -797,6 +827,10 @@ public:
 
 private:
 	storage::IStorageSystem* storage_;
+#if FLOW_UI_AGENTIC_WORKFLOW
+	devSystems::agentic::AgenticWorkflowService* agentic_service_ = nullptr;
+	VulkanContext* agentic_context_ = nullptr;
+#endif
 	AppWindow* window_;
 	WindowId* activeWindow_;
 #if FLOW_UI_DEV_MODE
@@ -812,6 +846,9 @@ struct App::Impl {
 	devSystems::DevMonitoringAndReporting devMonitoring;
 	devSystems::DevTooling devTooling;
 	devSystems::DevInterface devInterface{};
+#if FLOW_UI_AGENTIC_WORKFLOW
+	std::unique_ptr<devSystems::agentic::AgenticWorkflowService> agentic_service;
+#endif
 	devSystems::DevErrorThreadAttachment platformErrorAttachment;
 #endif
 	AppErrorObserver errorObserver;
@@ -843,6 +880,9 @@ struct App::Impl {
 	std::vector<ManagedWindowEntry> managedWindows;
 	std::vector<WindowId> dispatch_order;
 	bool dispatching_managed_windows = false;
+#if FLOW_UI_AGENTIC_WORKFLOW
+	bool advancing_agentic = false;
+#endif
 	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	WindowId mainWindowId = MainWindowId;
 	WindowId nextWindowId = MainWindowId + 1;
@@ -920,8 +960,36 @@ struct App::Impl {
 		window.viewPorts.appendDevMemorySamples(context.sink);
 		window.renderer.appendDevMemorySamples(context.sink, &window.preparedUi);
 	}
+#if FLOW_UI_AGENTIC_WORKFLOW
+	static void sample_agentic_memory(const void* owner,
+									  devSystems::MemoryProbeContext& context) noexcept {
+		const auto& application = *static_cast<const Impl*>(owner);
+		const auto cpu_bytes =
+			application.agentic_service ? application.agentic_service->owned_memory_bytes() : 0;
+		context.sink.append(devSystems::MemoryValueSample{
+			.source = devSystems::memory_sources::kAgenticCpu.id,
+			.backingAllocatedBytes = cpu_bytes,
+			.flags = devSystems::MemorySampleFlag::Estimate,
+			.value_fields = static_cast<uint16_t>(devSystems::MemoryValueField::Backing)});
+		context.sink.append(devSystems::MemoryValueSample{
+			.source = devSystems::memory_sources::kAgenticReadback.id,
+			.backingAllocatedBytes =
+				devSystems::agentic::frame_capture::pending_bytes(application.vk),
+			.flags = devSystems::MemorySampleFlag::OverlapsProcessResident,
+			.value_fields = static_cast<uint16_t>(devSystems::MemoryValueField::Backing)});
+	}
+#endif
 	void registerAppMemoryProbes() {
 		auto& memory = devMonitoring.memory();
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (!memory.registerSource(devSystems::memory_sources::kAgenticCpu) ||
+			!memory.registerSource(devSystems::memory_sources::kAgenticReadback) ||
+			!memory.registerProbe(
+				{devSystems::memory_sources::kAgenticCpu.id, this, &sample_agentic_memory}))
+			detail::reportErrorEvent(ErrorEventView{
+				.error = makeError(ErrorCode::AgenticBudgetExhausted, ErrorSite::AgenticConfigure),
+				.kind = ErrorEventKind::Reported});
+#endif
 		(void)memory.registerProbe(
 			{FlowUi::detail::initial_capacity_definitions
 				 [static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::app_windows)]
@@ -946,6 +1014,9 @@ struct App::Impl {
 	}
 	void unregisterAppMemoryProbes() noexcept {
 		auto& memory = devMonitoring.memory();
+#if FLOW_UI_AGENTIC_WORKFLOW
+		memory.unregisterProbe(devSystems::memory_sources::kAgenticCpu.id, this);
+#endif
 		memory.unregisterProbe(devSystems::memory_sources::kElements.id, &elementManager);
 		memory.unregisterProbe(devSystems::memory_sources::kFonts.id, &fonts);
 #if FLOWUI_INCLUDE_ICON_MANAGER
@@ -1085,6 +1156,57 @@ struct App::Impl {
 #endif
 #endif
 		vk.createDevice(config);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		auto agentic_configuration = config.agentic_workflow;
+		VkPhysicalDeviceProperties agentic_device_properties{};
+		vkGetPhysicalDeviceProperties(vk.phys, &agentic_device_properties);
+		agentic_configuration.provenance.set("flowui_source_digest",
+											 devSystems::agentic::build_info::source_digest);
+		agentic_configuration.provenance.set("knowledge_pack_digest",
+											 devSystems::agentic::build_info::knowledge_digest);
+		agentic_configuration.provenance.set("flowui_working_tree_dirty",
+											 devSystems::agentic::build_info::working_tree_dirty);
+		agentic_configuration.provenance.set(
+			"hardware",
+			devSystems::agentic::Json::make_object(
+				{{"device_name", agentic_device_properties.deviceName},
+				 {"vendor_id",
+				  devSystems::agentic::Json::number(agentic_device_properties.vendorID)},
+				 {"device_id",
+				  devSystems::agentic::Json::number(agentic_device_properties.deviceID)},
+				 {"driver_version",
+				  devSystems::agentic::Json::number(agentic_device_properties.driverVersion)}}));
+		agentic_configuration.provenance.set(
+			"build_profile", devSystems::agentic::Json::make_object(
+								 {{"compiler", FLOWUI_AGENTIC_COMPILER},
+								  {"configuration", FLOWUI_AGENTIC_BUILD_TYPE},
+								  {"flags", FLOWUI_AGENTIC_BUILD_FLAGS},
+								  {"flowui_version", FLOWUI_AGENTIC_LIBRARY_VERSION},
+								  {"flowui_revision", FLOWUI_AGENTIC_LIBRARY_REVISION},
+								  {"validation", config.vk.enableValidation}}));
+		agentic_configuration.provenance.set(
+			"window_configuration",
+			devSystems::agentic::Json::make_object(
+				{{"width", devSystems::agentic::Json::number(config.window.width)},
+				 {"height", devSystems::agentic::Json::number(config.window.height)},
+				 {"present_mode",
+				  devSystems::agentic::Json::number(static_cast<uint64_t>(config.vk.presentMode))},
+				 {"frame_slots", devSystems::agentic::Json::number(config.vk.framesInFlight)},
+				 {"layout_dpi", devSystems::agentic::Json(static_cast<double>(config.ui.dpi))},
+				 {"font_scale",
+				  devSystems::agentic::Json(static_cast<double>(config.ui.fontScale))}}));
+		agentic_service = std::make_unique<devSystems::agentic::AgenticWorkflowService>(
+			devSystems::agentic::AgenticDependencies{&owner, &devMonitoring, &devTooling,
+													 &themeManager, &devInterface,
+													 &config.resources, &timingRecorder()});
+		const auto agentic_configured = agentic_service->configure(agentic_configuration);
+		if (!agentic_configured)
+			throw FlowUiException(agentic_configured.error());
+		const auto agentic_resources = devSystems::agentic::frame_capture::configure_resources(
+			vk, agentic_service->visual_capture_enabled());
+		if (!agentic_resources)
+			throw FlowUiException(agentic_resources.error());
+#endif
 #if FLOW_UI_DEV_MODE
 		devMonitoring.gpuTiming().initialize(vk);
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
@@ -1397,6 +1519,10 @@ struct App::Impl {
 
 	void pollEventsAndAdvanceSharedManagers() {
 		requirePlatformThread();
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (advancing_agentic)
+			throw FlowUiException(makeError(ErrorCode::AgenticBusy, ErrorSite::AgenticScenario));
+#endif
 		requireQuiescent();
 #if FLOW_UI_DEV_MODE
 		{
@@ -1453,6 +1579,7 @@ struct App::Impl {
 		themeManager.applyStagedMutations();
 #if FLOW_UI_DEV_MODE
 		devTooling.commitAtSafePoint(themeManager, &timingRecorder());
+		for (auto& [window_id, window] : windows) window->viewPorts.collect_dev_captures();
 #endif
 		if (storageSystem) storageSystem->collect();
 #if FLOWUI_INCLUDE_ICON_MANAGER
@@ -1478,6 +1605,15 @@ struct App::Impl {
 			elementManager.cancelWindowFrame(window.id, window.storageFrame.epoch);
 			if (storageSystem) storageSystem->cancelFrame(window.storageFrame);
 		}
+#if FLOW_UI_AGENTIC_WORKFLOW
+		devSystems::agentic::frame_capture::cancel_frame(vk, window.id, window.frames.currentFrame);
+		if (agentic_service && window.agentic_frame.key.window_frame) {
+			window.agentic_frame.canceled = true;
+			window.agentic_frame.end_ns = devSystems::agentic::monotonic_nanoseconds();
+			agentic_service->observe_frame(std::move(window.agentic_frame));
+			window.agentic_frame = {};
+		}
+#endif
 		window.ui.cancelFrameState();
 		window.preparedUi = {};
 		window.storageReadLease = {};
@@ -1540,6 +1676,10 @@ struct App::Impl {
 
 	void beginFrame(WindowId id) {
 		requirePlatformThread();
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (advancing_agentic)
+			throw FlowUiException(makeError(ErrorCode::AgenticBusy, ErrorSite::AgenticScenario));
+#endif
 		AppWindow& window = requireWindow(id);
 		if (window.phase != AppWindow::Phase::Idle) {
 			throw FlowUiException(makeError(ErrorCode::FramePhaseViolation, ErrorSite::AppBeginFrame, id));
@@ -1556,6 +1696,22 @@ struct App::Impl {
 				makeError(ErrorCode::FrameNumberSpaceExhausted, ErrorSite::AppBeginFrame, id));
 		}
 		const uint64_t nextFrameNumber = window.frameNumber + 1u;
+#if FLOW_UI_AGENTIC_WORKFLOW
+		window.frameNumber = nextFrameNumber;
+		window.agentic_frame = {};
+		window.agentic_frame.key = {{}, appTick, nextFrameNumber, window.id};
+		window.agentic_frame.begin_ns = devSystems::agentic::monotonic_nanoseconds();
+		window.agentic_frame.frame_slot = window.frames.currentFrame;
+		window.agentic_frame.width = window.swapchain.swapchain.extent.width;
+		window.agentic_frame.height = window.swapchain.swapchain.extent.height;
+		window.agentic_frame.internal_window = window.id == devInterface.windowId();
+		window.agentic_frame.interrupted = window.framebufferResized;
+		if (auto* native = static_cast<GLFWwindow*>(window.backend->nativeHandle()))
+			window.agentic_frame.interrupted =
+				window.agentic_frame.interrupted ||
+				glfwGetWindowAttrib(native, GLFW_VISIBLE) != GLFW_TRUE ||
+				glfwGetWindowAttrib(native, GLFW_ICONIFIED) == GLFW_TRUE;
+#endif
 
 #if FLOW_UI_DEV_MODE
 		window.timingFrame = devSystems::WindowFrameKey{window.id, nextFrameNumber};
@@ -1637,8 +1793,8 @@ struct App::Impl {
 													storageSystem->completedSerial());
 #endif
 			const uint32_t frameSlot = window.frames.currentFrame;
-#if defined(AgenticDebug) && AgenticDebug
-			agentic_debug::complete_slot(vk, window.id, frameSlot);
+#if FLOW_UI_AGENTIC_WORKFLOW
+			devSystems::agentic::frame_capture::complete_slot(vk, window.id, frameSlot);
 #endif
 			{
 #if FLOW_UI_DEV_MODE
@@ -1697,6 +1853,14 @@ struct App::Impl {
 				}
 			}
 			const float inverseClampedUiScale = 1 / std::max(1.0e-6f, window.config.ui.uiScale);
+#if FLOW_UI_AGENTIC_WORKFLOW
+			if (agentic_service) {
+				auto selected = agentic_service->select_frame_input(
+					window.agentic_frame.key, window.frameInput, window.config.ui.uiScale);
+				if (!selected)
+					throw FlowUiException(selected.error());
+			}
+#endif
 			constexpr float kBaseScrollSensitivity = 20.0f;
 			const VkExtent2D windowExtent = window.backend->windowExtent();
 			const VkExtent2D framebufferExtent = window.backend->framebufferExtent();
@@ -1725,14 +1889,28 @@ struct App::Impl {
 			}
 #if FLOW_UI_DEV_MODE
 			devTooling.inspect_interaction().set_interface_window(devInterface.windowId());
-			if (!devMonitoring.performance_capture().interface_work_suspended())
+			if (!devMonitoring.performance_capture().interface_work_suspended()
+#if FLOW_UI_AGENTIC_WORKFLOW
+				&& !(agentic_service && agentic_service->interaction_controls_window(window.id))
+#endif
+			)
 				devTooling.inspect_interaction().filter_input(
 					window.id, window.ui.devTreeSnapshot(), layoutInput, window.inspect_pointer);
+#endif
+#if FLOW_UI_DEV_MODE
+			window.ui.set_dev_evidence_context(appTick, nextFrameNumber);
+#if FLOW_UI_AGENTIC_WORKFLOW
+			if (agentic_service)
+				agentic_service->prepare_window_collection(window.id);
+#endif
 #endif
 			window.ui.beginFrame(
 				window.storageFrame, layoutInput, window.fontFrameView, layoutWidth, layoutHeight);
 #if FLOW_UI_DEV_MODE
 			if (!devMonitoring.performance_capture().interface_work_suspended() &&
+#if FLOW_UI_AGENTIC_WORKFLOW
+				!(agentic_service && agentic_service->interaction_controls_window(window.id)) &&
+#endif
 				devTooling.inspect_interaction().picking() &&
 				devTooling.inspect_interaction().eligible_window(window.id) &&
 				layoutInput.pointerInside)
@@ -1778,6 +1956,9 @@ struct App::Impl {
 #endif
 				window.viewPorts.prepareFrameTargets(
 					window.renderCommands, window.uiToFramebufferScaleX, window.uiToFramebufferScaleY);
+#if FLOW_UI_DEV_MODE
+				window.viewPorts.prepare_dev_captures(window.storageFrame);
+#endif
 			}
 #if FLOWUI_INCLUDE_ICON_MANAGER
 			{
@@ -1846,10 +2027,17 @@ struct App::Impl {
 			}
 			window.devOverlay.clear();
 			devSystems::tooling::DevOverlaySelectionSpec overlaySelection{};
-			if (!devMonitoring.performance_capture().interface_work_suspended())
+			if (!devMonitoring.performance_capture().interface_work_suspended()
+#if FLOW_UI_AGENTIC_WORKFLOW
+				&& !(agentic_service && agentic_service->interaction_controls_window(window.id))
+#endif
+			)
 				devTooling.inspect_interaction().finish_frame(window.ui.devTreeSnapshot(),
 															  window.inspect_pointer);
 			if (!devMonitoring.performance_capture().interface_work_suspended() &&
+#if FLOW_UI_AGENTIC_WORKFLOW
+				!(agentic_service && agentic_service->interaction_controls_window(window.id)) &&
+#endif
 				devTooling.inspect_interaction().eligible_window(window.id) &&
 				(devTooling.inspect_interaction().overlay_selection(window.ui.devTreeSnapshot(),
 																	overlaySelection) ||
@@ -1926,6 +2114,10 @@ struct App::Impl {
 				elementManager.commitWindowFrame(window.id, window.storageFrame.epoch);
 			}
 			window.phase = AppWindow::Phase::Prepared;
+#if FLOW_UI_AGENTIC_WORKFLOW
+			if (agentic_service)
+				agentic_service->observe_interaction(window.agentic_frame.key);
+#endif
 #if FLOW_UI_DEV_MODE
 			endTiming.end();
 			window.preparedGapTiming.begin(
@@ -1951,10 +2143,14 @@ struct App::Impl {
 #if FLOW_UI_DEV_MODE
 		window.preparedGapTiming.end();
 #endif
-		WindowFrameExitGuard frameExit(
-			*storageSystem, window, activeWindowFrame
+		WindowFrameExitGuard frameExit(*storageSystem, window, activeWindowFrame
 #if FLOW_UI_DEV_MODE
-			, timingRecorder(), errorRecorder()
+									   ,
+									   timingRecorder(), errorRecorder()
+#endif
+#if FLOW_UI_AGENTIC_WORKFLOW
+															 ,
+									   agentic_service.get(), &vk
 #endif
 		);
 #if FLOW_UI_DEV_MODE
@@ -2104,6 +2300,28 @@ struct App::Impl {
 			window.swapchain.layouts[swapchainImageIndex], VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 		window.swapchain.layouts[swapchainImageIndex] = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 
+#if FLOW_UI_AGENTIC_WORKFLOW
+		window.viewPorts.set_agentic_frame_context(window.timingAppTick, window.frameNumber);
+		window.agentic_frame.tree_generation =
+			window.ui.devTreeSnapshot().frameNumber == window.frameNumber
+				? window.ui.devTreeSnapshot().generation
+				: 0;
+		if (agentic_service) {
+			agentic_service->observe_tree(window.id);
+			auto image_request = agentic_service->image_request(window.agentic_frame);
+			image_request.stamp.logical_to_physical_scale_x = window.uiToFramebufferScaleX;
+			image_request.stamp.logical_to_physical_scale_y = window.uiToFramebufferScaleY;
+			if (image_request.completed_image) {
+				window.agentic_frame.observers =
+					window.agentic_frame.observers |
+					devSystems::agentic::ObserverActivity::image_readback;
+				const auto selected = devSystems::agentic::frame_capture::begin_frame(
+					vk, window.id, window.frames.currentFrame, image_request);
+				if (!selected)
+					window.agentic_frame.interrupted = true;
+			}
+		}
+#endif
 		window.viewPorts.recordFramePasses(
 			vk, frame.cmd, window.frames.currentFrame
 #if FLOW_UI_DEV_MODE
@@ -2121,11 +2339,16 @@ struct App::Impl {
 			, &timingRecorder(), &gpuTiming
 #endif
 		);
-#if defined(AgenticDebug) && AgenticDebug
-		if (agentic_debug::requested() && agentic_debug::supports_surface(vk, window.surface)) {
-			agentic_debug::record(vk, frame.cmd, window.swapchain.swapchain.images[swapchainImageIndex],
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (devSystems::agentic::frame_capture::requested(vk) &&
+			devSystems::agentic::frame_capture::supports_surface(vk, window.surface)) {
+			const auto readback = devSystems::agentic::frame_capture::record(
+				vk, frame.cmd, window.swapchain.swapchain.images[swapchainImageIndex],
 				window.swapchain.swapchain.extent, window.swapchain.swapchain.format,
-				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, window.id, window.frames.currentFrame, "window");
+				VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, window.id, window.frames.currentFrame,
+				"window");
+			if (!readback)
+				window.agentic_frame.interrupted = true;
 		}
 #endif
 
@@ -2167,10 +2390,21 @@ struct App::Impl {
 #endif
 			vkCheck(vkQueueSubmit(vk.graphicsQ, 1, &submitInfo, frame.inFlight),
 				ErrorSite::AppSubmitFrame);
-#if defined(AgenticDebug) && AgenticDebug
-			agentic_debug::mark_submitted(vk, window.id, window.frames.currentFrame);
-#endif
 			frame.storageSubmission = storageSystem->noteSubmission(window.storageReadLease);
+#if FLOW_UI_DEV_MODE
+			window.viewPorts.mark_dev_captures_submitted(frame.storageSubmission.serial);
+#endif
+#if FLOW_UI_AGENTIC_WORKFLOW
+			window.viewPorts.mark_agentic_submitted(frame.storageSubmission.serial);
+			window.agentic_frame.submitted = true;
+			window.agentic_frame.submission_serial = frame.storageSubmission.serial;
+			window.agentic_frame.submit_ns = devSystems::agentic::monotonic_nanoseconds();
+			window.agentic_frame.device_id = 1;
+			window.agentic_frame.queue_id = 1;
+			devSystems::agentic::frame_capture::mark_submitted(
+				vk, window.id, window.frames.currentFrame, frame.storageSubmission.serial,
+				window.agentic_frame.device_id, window.agentic_frame.queue_id);
+#endif
 #if FLOW_UI_DEV_MODE
 			devMonitoring.gpuTiming().markSubmitted(
 				frame.gpuTiming, frame.storageSubmission.serial);
@@ -2230,6 +2464,13 @@ struct App::Impl {
 				devSystems::TimingZoneRole::Wait, "flowui.wait.present_call");
 #endif
 			presentResult = vkQueuePresentKHR(vk.presentQ, &presentInfo);
+#if FLOW_UI_AGENTIC_WORKFLOW
+			window.agentic_frame.present_ns = devSystems::agentic::monotonic_nanoseconds();
+			window.agentic_frame.presented =
+				presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR;
+			window.agentic_frame.interrupted =
+				window.agentic_frame.interrupted || presentResult != VK_SUCCESS;
+#endif
 		}
 		if (presentId != 0 && (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR)) {
 			window.swapchain.lastPresentId = presentId;
@@ -2382,8 +2623,8 @@ struct App::Impl {
 		drainWindowGraphics(window);
 		collectRetiredSwapchains(window);
 		window.swapchain.waitForPresentCompletion(vk);
-#if defined(AgenticDebug) && AgenticDebug
-		agentic_debug::release_window(vk, id);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		devSystems::agentic::frame_capture::release_window(vk, id);
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 		if (window.memory_history_controller)
@@ -2420,6 +2661,10 @@ struct App::Impl {
 	void cleanup() noexcept {
 		if (cleanedUp) return;
 		cleanedUp = true;
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (agentic_service)
+			agentic_service->stop_admission();
+#endif
 		for (auto& [_, window] : windows) cancelStorageFrame(*window);
 #if FLOW_UI_DEV_MODE
 		devSystems::ManualTimingZone shutdownTiming(
@@ -2428,13 +2673,32 @@ struct App::Impl {
 				devSystems::TimingZoneRole::Work, devSystems::CpuTimingLevel::Summary,
 				"flowui.app.shutdown"));
 #endif
+#if FLOW_UI_AGENTIC_WORKFLOW
+		bool agentic_device_lost = false;
+#endif
 		if (vk.device != VK_NULL_HANDLE) {
-			(void)vkDeviceWaitIdle(vk.device);
-			try { completeAllSubmissionsAfterIdle(); } catch (...) {}
-#if defined(AgenticDebug) && AgenticDebug
-			agentic_debug::release_device(vk);
+			const auto drain_result = vkDeviceWaitIdle(vk.device);
+			if (drain_result == VK_SUCCESS)
+				try {
+					completeAllSubmissionsAfterIdle();
+				} catch (...) {}
+#if FLOW_UI_AGENTIC_WORKFLOW
+			agentic_device_lost = drain_result != VK_SUCCESS;
+			if (agentic_device_lost)
+				devSystems::agentic::frame_capture::discard_device(vk);
+			else
+				devSystems::agentic::frame_capture::release_device(vk);
 #endif
 		}
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (agentic_service) {
+			const auto agentic_stopped = agentic_service->shutdown(
+				{.publish_partial = true, .device_lost = agentic_device_lost});
+			if (!agentic_stopped)
+				std::fputs("FlowUi agentic publication incomplete during teardown\n", stderr);
+			agentic_service.reset();
+		}
+#endif
 		for (auto& [_, window] : windows) {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 			unregisterWindowMemoryProbe(*window);
@@ -2443,6 +2707,9 @@ struct App::Impl {
 		}
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 		unregisterAppMemoryProbes();
+#endif
+#if FLOW_UI_DEV_MODE
+		devInterface.release_inspection_resources(storageSystem.get());
 #endif
 		elementManager.destroy();
 		actionManager.destroy();
@@ -2517,6 +2784,10 @@ App::App(App&& other) noexcept
 	if (impl_) {
 		impl_->elementManager.rebindOwner(*this);
 		impl_->actionManager.rebindOwner(*this);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (impl_->agentic_service)
+			impl_->agentic_service->rebind_application(*this);
+#endif
 	}
 }
 
@@ -2526,11 +2797,23 @@ App& App::operator=(App&& other) noexcept {
 	if (impl_) {
 		impl_->elementManager.rebindOwner(*this);
 		impl_->actionManager.rebindOwner(*this);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (impl_->agentic_service)
+			impl_->agentic_service->rebind_application(*this);
+#endif
 	}
 	return *this;
 }
 
 App::~App() = default;
+#if FLOW_UI_AGENTIC_WORKFLOW
+devSystems::agentic::AgenticWorkflowService& App::agentic_workflow() noexcept {
+	return *impl_->agentic_service;
+}
+const devSystems::agentic::AgenticWorkflowService& App::agentic_workflow() const noexcept {
+	return *impl_->agentic_service;
+}
+#endif
 
 WindowId App::mainWindowId() const noexcept {
 	return impl_ ? impl_->mainWindowId : MainWindowId;
@@ -2762,6 +3045,10 @@ Status App::request_dev_performance_capture(
 		 settings.budget_window == impl_->devInterface.windowId()))
 		return unexpectedError(
 			makeError(ErrorCode::InvalidWindowConfiguration, ErrorSite::AppAccessWindow));
+#if FLOW_UI_AGENTIC_WORKFLOW
+	if (impl_->agentic_service && impl_->agentic_service->capture_lease_active())
+		return unexpectedError(makeError(ErrorCode::AgenticBusy, ErrorSite::AgenticCapture));
+#endif
 	return impl_->devMonitoring.performance_capture().request_capture(settings);
 }
 Status App::set_dev_window_suspended(WindowId window_id, bool suspended) {
@@ -2790,6 +3077,9 @@ bool App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept {
 		(chord.ctrl ? 1 : 0) | (chord.shift ? 2 : 0) | (chord.alt ? 4 : 0) | (chord.super ? 8 : 0);
 	for (const auto& [window_id, window] : impl_->windows)
 		if (!window->dev_suspended &&
+#if FLOW_UI_AGENTIC_WORKFLOW
+			!(impl_->agentic_service && impl_->agentic_service->interaction_controls_window(window_id)) &&
+#endif
 			(window->inputQueue.dev_shortcut_presses[static_cast<size_t>(chord.key)] &
 			 (1u << modifiers)))
 			return true;
@@ -2799,6 +3089,10 @@ bool App::dev_shortcut_down(const DevShortcutChord& chord) const noexcept {
 	if (!impl_ || chord.key < 32 || chord.key >= 349)
 		return false;
 	for (const auto& [window_id, window] : impl_->windows) {
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (impl_->agentic_service && impl_->agentic_service->interaction_controls_window(window_id))
+			continue;
+#endif
 		if (!window->backend || window->dev_suspended)
 			continue;
 		auto* native = static_cast<GLFWwindow*>(window->backend->nativeHandle());
@@ -2820,6 +3114,9 @@ Status App::advance_dev_capture() {
 		return synchronized;
 	auto& capture = impl_->devMonitoring.performance_capture();
 	const auto tick = impl_->appTick;
+	if (capture.status().phase == devSystems::PerformanceCapturePhase::ClosingInterface &&
+		(impl_->devInterface.windowId() == InvalidWindowId || impl_->devInterface.suspended()))
+		capture.interface_closed(tick);
 	const auto& settings = capture.status().settings;
 	if (settings.end_mode == devSystems::PerformanceCaptureEndMode::BudgetEvent &&
 		settings.budget_window && !impl_->windows.contains(settings.budget_window))
@@ -2847,6 +3144,22 @@ Status App::advance_dev_capture() {
 						 impl_->devInterface.windowId() != InvalidWindowId &&
 							 !impl_->devInterface.suspended(),
 						 impl_->devInterface.take_start_request(), pending);
+#if FLOW_UI_AGENTIC_WORKFLOW
+	if (impl_->agentic_service) {
+		for (auto& [window_id, window] : impl_->windows)
+			for (uint32_t frame_slot = 0; frame_slot < window->frames.frames.size(); ++frame_slot)
+				if (vkGetFenceStatus(impl_->vk.device,
+									 window->frames.frames[frame_slot].inFlight) == VK_SUCCESS)
+					devSystems::agentic::frame_capture::complete_slot(impl_->vk, window_id,
+																	  frame_slot);
+		impl_->advancing_agentic = true;
+		impl_->agentic_service->advance_safe_point(
+			{tick, impl_->devMonitoring.timingReporting().current_boundary_ns(),
+			 devSystems::agentic::frame_capture::pending_bytes(impl_->vk),
+			 devSystems::agentic::frame_capture::failure_count(impl_->vk)});
+		impl_->advancing_agentic = false;
+	}
+#endif
 	if (capture.status().phase == devSystems::PerformanceCapturePhase::Sealed)
 		return impl_->devInterface.synchronize(*this);
 	return {};
@@ -3020,10 +3333,67 @@ std::vector<DevWindowInfo> App::devWindowSnapshot() const {
 			.id = id,
 			.title = window->config.native.title,
 			.framesInFlight = window->config.vulkan.framesInFlight,
+			.actual_present_mode = static_cast<uint32_t>(window->swapchain.swapchain.present_mode),
+			.layout_dpi = window->config.ui.dpi,
+			.font_scale = window->config.ui.fontScale,
 		});
 	}
 	std::ranges::sort(result, {}, &DevWindowInfo::id);
 	return result;
+}
+
+std::vector<DevViewportInfo> App::devViewportSnapshot(WindowId id) const {
+	std::vector<DevViewportInfo> result;
+	if (!impl_)
+		return result;
+	const auto found = impl_->windows.find(id);
+	if (found == impl_->windows.end() || !found->second)
+		return result;
+	found->second->viewPorts.visitDevViewports(
+		&result, [](void* target, const ViewPortManager::DevViewportView& view) {
+			static_cast<std::vector<DevViewportInfo>*>(target)->emplace_back(
+				DevViewportInfo{.key = std::string(view.key), .capture_texture = view.capture_texture,
+					.generation = view.generation, .captured_frame = view.captured_frame,
+					.captured_generation = view.captured_generation, .captured_submission = view.captured_submission,
+					.width = view.width, .height = view.height, .format = view.format,
+					.captured_width = view.captured_width, .captured_height = view.captured_height,
+					.captured_format = view.captured_format,
+					.has_callback = view.has_callback, .clear_every_frame = view.clear_every_frame,
+					.capture_supported = view.capture_supported, .capture_pending = view.capture_pending,
+					.capture_failed = view.capture_failed});
+			return true;
+		});
+	std::ranges::sort(result, {}, &DevViewportInfo::key);
+	return result;
+}
+
+Status App::request_dev_viewport_capture(WindowId window, std::string_view key) noexcept {
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::ViewportPrepare));
+	const auto found = impl_->windows.find(window);
+	if (found == impl_->windows.end() || !found->second)
+		return unexpectedError(makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPrepare));
+	return found->second->viewPorts.request_dev_capture(key);
+}
+
+void App::release_dev_viewport_capture(WindowId window, std::string_view key) noexcept {
+	if (!impl_) return;
+	const auto found = impl_->windows.find(window);
+	if (found != impl_->windows.end() && found->second) found->second->viewPorts.release_dev_capture(key);
+}
+
+Result<TextureHandle> App::retain_dev_viewport_capture(WindowId window, std::string_view key, TextureHandle expected_capture) noexcept {
+	if (!impl_) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::ViewportPublish));
+	const auto found = impl_->windows.find(window);
+	if (found == impl_->windows.end() || !found->second)
+		return unexpectedError(makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPublish));
+	return found->second->viewPorts.retain_dev_capture(key, expected_capture);
+}
+
+Status App::release_dev_viewport_capture_texture(TextureHandle texture) noexcept {
+	if (!impl_ || !impl_->storageSystem) return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::ViewportPublish));
+	try { impl_->storageSystem->releaseAnonymousTexture(texture); return {}; }
+	catch (const FlowUiException& exception) { return unexpectedError(exception.error()); }
+	catch (...) { return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::ViewportPublish)); }
 }
 
 devSystems::DevUiReplaySource App::devUiReplaySource(WindowId id) noexcept {

@@ -5,6 +5,9 @@ set(_flowui_package_prefix "${PACKAGE_PREFIX_DIR}")
 
 find_dependency(Vulkan)
 find_dependency(glfw3)
+if(@FLOW_UI_AGENTIC_WORKFLOW_VALUE@)
+    find_dependency(Threads)
+endif()
 if(@FLOWUI_INCLUDE_ICON_MANAGER_VALUE@)
     find_dependency(plutosvg)
 endif()
@@ -14,6 +17,7 @@ endif()
 
 set(FLOWUI_PUBLIC_VULKAN_INTEROP @FLOWUI_PUBLIC_VULKAN_INTEROP_VALUE@)
 set(FLOWUI_INCLUDE_ICON_MANAGER @FLOWUI_INCLUDE_ICON_MANAGER_VALUE@)
+set(FLOW_UI_AGENTIC_WORKFLOW @FLOW_UI_AGENTIC_WORKFLOW_VALUE@)
 
 include("${CMAKE_CURRENT_LIST_DIR}/FlowUiTargets.cmake")
 set(PACKAGE_PREFIX_DIR "${_flowui_package_prefix}")

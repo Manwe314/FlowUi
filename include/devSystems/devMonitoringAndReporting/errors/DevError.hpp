@@ -13,6 +13,13 @@
 
 namespace FlowUi::devSystems {
 
+/** Producer scope at a consumer safe point; additional recorders need their own barrier. */
+struct DevErrorProducerScope {
+	uint64_t fallback_events = 0;
+	uint32_t recorder_count = 0;
+	bool current_thread_only = false;
+};
+
 class DevErrorMonitoring {
 public:
 	explicit DevErrorMonitoring(DevErrorConfig config = {});
@@ -72,6 +79,8 @@ public:
 	void publishFatalSafePoint(const DevErrorFatalSafePointSummary& summary) noexcept;
 	void setConfig(const DevErrorConfig& config) noexcept;
 	[[nodiscard]] DevErrorConfig config() const noexcept;
+	/** Identify when the current thread is the sole registered producer, without draining it. */
+	[[nodiscard]] DevErrorProducerScope producer_scope() const noexcept;
 
 private:
 	friend class DevErrorRecorder;

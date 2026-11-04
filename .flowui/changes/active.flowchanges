@@ -1,0 +1,43 @@
+{
+  "manifestVersion": 1,
+  "schemaFingerprint": "0xEB7FB92F381E9DC4",
+  "buildFingerprint": "FlowUi-0.1.0",
+  "createdTimestamp": "2026-09-04T15:25:22Z",
+  "bakedChanges": [
+    {
+      "targetKind": "Element",
+      "targetScope": "ExactInstance",
+      "definitionId": "0x97C8D9F31906E4B1",
+      "instanceKey": "0x37D03C562C82408C",
+      "instanceDebugLabel": "demo/gallery/reset",
+      "fieldPath": "sizing.width",
+      "fieldId": "0x8545E08D702F2E3B",
+      "valueType": "Clay_SizingAxis",
+      "valueTypeId": "0xF78763088FC87C9A",
+      "value": {"type":3},
+      "ownerCppType": "FlowUi::FSEL::ButtonParameters",
+      "sourceHeader": "/home/lkukhale/kodi/FlowUi/tests/demo/DemoElementSchemas.hpp",
+      "cppValue": "Clay_SizingAxis{.type=static_cast<Clay__SizingType>(3)}",
+      "valueJson": "{\"type\":3}",
+      "provenance": {"author": "developer", "note": "", "timestamp": "2026-09-04T15:25:22Z"}
+    },
+    {
+      "targetKind": "Element",
+      "targetScope": "ExactInstance",
+      "definitionId": "0x97C8D9F31906E4B1",
+      "instanceKey": "0xA175E1912DFC17CB",
+      "instanceDebugLabel": "demo/gallery/left/buttons/disabled",
+      "fieldPath": "sizing.width",
+      "fieldId": "0x8545E08D702F2E3B",
+      "valueType": "Clay_SizingAxis",
+      "valueTypeId": "0xF78763088FC87C9A",
+      "value": {"type":3},
+      "ownerCppType": "FlowUi::FSEL::ButtonParameters",
+      "sourceHeader": "/home/lkukhale/kodi/FlowUi/tests/demo/DemoElementSchemas.hpp",
+      "cppValue": "Clay_SizingAxis{.type=static_cast<Clay__SizingType>(3)}",
+      "valueJson": "{\"type\":3}",
+      "provenance": {"author": "developer", "note": "", "timestamp": "2026-09-04T15:25:22Z"}
+    }
+  ]
+}
+

@@ -1,6 +1,7 @@
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp"
+#include <algorithm>
 #include <limits>
 #include <utility>
 namespace FlowUi::devSystems {
@@ -15,7 +16,9 @@ Status DevPerformanceCapture::request_capture(const PerformanceCaptureSettings& 
 		settings.start_chord.key >= 349 ||
 		settings.start_chord.trigger != DevShortcutTrigger::Press ||
 		settings.duration_ns > uint64_t{86'400'000'000'000} ||
-		settings.post_event_ns > uint64_t{86'400'000'000'000})
+		settings.post_event_ns > uint64_t{86'400'000'000'000} ||
+		settings.finalization_timeout_ns == 0 ||
+		settings.finalization_timeout_ns > 60'000'000'000ull || settings.warmup_ticks > 1'000'000)
 		return unexpectedError(makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
 	startup_capture_ = startup_open_requested_ = false;
 	status_.settings = settings;
@@ -35,7 +38,10 @@ void DevPerformanceCapture::request_startup_capture() noexcept {
 void DevPerformanceCapture::interface_closed(uint64_t app_tick) noexcept {
 	if (status_.phase != PerformanceCapturePhase::ClosingInterface)
 		return;
-	earliest_start_tick_ = app_tick + 1;
+	const auto remaining = UINT64_MAX - app_tick;
+	earliest_start_tick_ =
+		remaining == 0 ? UINT64_MAX
+					   : app_tick + 1 + std::min(status_.settings.warmup_ticks, remaining - 1);
 	status_.phase = PerformanceCapturePhase::Armed;
 }
 void DevPerformanceCapture::request_interface_open(uint64_t app_tick,
@@ -113,12 +119,14 @@ void DevPerformanceCapture::advance_tick(uint64_t app_tick, uint64_t timestamp_n
 	if (status_.phase == PerformanceCapturePhase::Finalizing &&
 		timestamp_ns > finalization_start_ns_) {
 		status_.pending_measurements = pending_measurements;
-		if (pending_measurements == 0 || (timestamp_ns >= finalization_start_ns_ &&
-										  timestamp_ns - finalization_start_ns_ >= 2'000'000'000)) {
+		if (pending_measurements == 0 ||
+			(timestamp_ns >= finalization_start_ns_ &&
+			 timestamp_ns - finalization_start_ns_ >= status_.settings.finalization_timeout_ns)) {
 			status_.incomplete = pending_measurements != 0;
 			reporting_->seal_capture();
 			status_.phase = PerformanceCapturePhase::Sealed;
-			reopen_requested_ = !startup_capture_ || startup_open_requested_;
+			reopen_requested_ =
+				status_.settings.reopen_interface && (!startup_capture_ || startup_open_requested_);
 		}
 	}
 	if (status_.phase == PerformanceCapturePhase::Recording ||

@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Themes.schema.json",
+  "title": "FlowUi.Agentic.Themes",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Themes"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "theme_revision": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "schema_generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "schema_fingerprint": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "collection_available": {
+      "type": "boolean"
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "type_name": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "schema_generation": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "status": {
+            "enum": [
+              "reflected",
+              "schema_unavailable"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "field_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                },
+                "display_name": {
+                  "type": "string"
+                },
+                "hint": {
+                  "type": "string"
+                },
+                "type_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                },
+                "type_name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type_kind": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "edit_capability": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "capability_reason": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "constraints": {
+                  "type": "object",
+                  "properties": {
+                    "minimum": {
+                      "type": "number"
+                    },
+                    "maximum": {
+                      "type": "number"
+                    },
+                    "step": {
+                      "type": "number"
+                    },
+                    "maximum_text_bytes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4294967295
+                    }
+                  },
+                  "required": [],
+                  "additionalProperties": false
+                },
+                "source": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/source_site"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "choices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "bits": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,19})$",
+                        "maxLength": 20,
+                        "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "bits"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "value_kind": {
+                  "const": "object_fields"
+                },
+                "effective": {},
+                "authored": {},
+                "startup": {},
+                "preview": {
+                  "type": "null"
+                },
+                "preview_observation": {
+                  "const": "effective_payload_only"
+                }
+              },
+              "required": [
+                "path",
+                "field_id",
+                "display_name",
+                "hint",
+                "type_id",
+                "type_name",
+                "type_kind",
+                "edit_capability",
+                "capability_reason",
+                "constraints",
+                "source"
+              ],
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "value_kind"
+                  ]
+                },
+                {
+                  "required": [
+                    "effective",
+                    "authored",
+                    "startup",
+                    "preview",
+                    "preview_observation"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "type_id",
+          "type_name",
+          "variant",
+          "active",
+          "revision",
+          "schema_generation",
+          "status",
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "run_id",
+    "theme_revision",
+    "schema_generation",
+    "schema_fingerprint",
+    "collection_available",
+    "variants"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "source_site": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$",
+          "description": "Repository-relative source path, or null when unavailable/redacted."
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "repository_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "symbol",
+        "line",
+        "column",
+        "repository_id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

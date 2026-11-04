@@ -224,6 +224,9 @@ enum class ActionInvocationSourceKind : uint8_t {
 	ElementReleased,
 	ElementLogic,
 	Shortcut,
+#if FLOW_UI_AGENTIC_WORKFLOW
+	Agentic,
+#endif
 };
 
 struct ActionInvocationSource {

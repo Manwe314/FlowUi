@@ -99,6 +99,11 @@ class ImageManager;
 class ThemeManager;
 class ElementManager;
 class ActionManager;
+#if FLOW_UI_AGENTIC_WORKFLOW
+namespace devSystems::agentic {
+class AgenticWorkflowService;
+}
+#endif
 #if FLOW_UI_DEV_MODE
 namespace detail::manager_storage { struct FontFrameView; }
 namespace detail::storage { struct BindingHotRecord; }
@@ -131,6 +136,20 @@ struct DevWindowInfo {
 	WindowId id = InvalidWindowId;
 	std::string title{};
 	uint32_t framesInFlight = 1u;
+	uint32_t actual_present_mode = 0u;
+	float layout_dpi = 96.0f;
+	float font_scale = 1.0f;
+};
+/** Portable copied viewport metadata; discovery never causes viewport rendering. */
+struct DevViewportInfo {
+	std::string key{};
+	TextureHandle capture_texture{};
+	uint64_t generation = 0;
+	uint64_t captured_frame = 0, captured_generation = 0, captured_submission = 0;
+	uint32_t width = 0, height = 0, format = 0;
+	uint32_t captured_width = 0, captured_height = 0, captured_format = 0;
+	bool has_callback = false, clear_every_frame = true;
+	bool capture_supported = false, capture_pending = false, capture_failed = false;
 };
 #endif
 #if FLOWUI_INCLUDE_ICON_MANAGER
@@ -496,6 +515,13 @@ public:
 	 * @see @ref flowui_element_system "Element System"
 	 */
 	const ElementManager& elements() const;
+#if FLOW_UI_AGENTIC_WORKFLOW
+	/** App-owned evidence coordinator; mutations are admitted at application safe points. */
+	[[nodiscard]] devSystems::agentic::AgenticWorkflowService& agentic_workflow() noexcept;
+	/** Inspect the application's agentic service without activating it. */
+	[[nodiscard]] const devSystems::agentic::AgenticWorkflowService&
+	agentic_workflow() const noexcept;
+#endif
 	/** @brief Access the app-wide action manager. */
 	ActionManager& actions();
 	/** @brief Access the immutable app-wide action manager. */
@@ -520,6 +546,17 @@ public:
 	const devSystems::DevTooling& devTooling() const;
 	/** Snapshot registered windows in stable identity order for development UI. */
 	[[nodiscard]] std::vector<DevWindowInfo> devWindowSnapshot() const;
+	/** Observe window-local viewport metadata independently of public Vulkan interop. */
+	[[nodiscard]] std::vector<DevViewportInfo> devViewportSnapshot(WindowId window) const;
+	/** Request one immutable GPU copy at the viewport's next natural source render. */
+	[[nodiscard]] Status request_dev_viewport_capture(WindowId window, std::string_view key) noexcept;
+	/** Retire this tool's backend capture cache; submitted consumers retain their own leases. */
+	void release_dev_viewport_capture(WindowId window, std::string_view key) noexcept;
+	/** Own an independent binding of a completed immutable copy; survives source removal. */
+	[[nodiscard]] Result<TextureHandle> retain_dev_viewport_capture(
+		WindowId window, std::string_view key, TextureHandle expected_capture) noexcept;
+	/** Release a binding returned by retain_dev_viewport_capture(). */
+	[[nodiscard]] Status release_dev_viewport_capture_texture(TextureHandle texture) noexcept;
 	/** Return the latest owned raw-command packet captured for development replay. */
 	[[nodiscard]] devSystems::DevUiReplaySource devUiReplaySource(WindowId id) noexcept;
 	/** Request capture of raw Clay commands owned by the supplied subtree IDs. */

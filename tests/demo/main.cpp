@@ -1,8 +1,11 @@
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <exception>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -10,6 +13,9 @@
 #include <FlowUi/Flow.hpp>
 
 #include "DemoElementSchemas.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devTooling/catalogue/DevElementPreviews.hpp"
+#endif
 
 namespace {
 
@@ -1561,9 +1567,12 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(DemoResources, comboClosedIcon))
 #endif
 
+#include "AgenticScenarios.hpp"
+#include "AgenticInteractions.hpp"
+
 } // namespace
 
-int main() {
+int main(int argument_count, char** arguments) {
 	try {
 		AppConfig config{};
 		config.window.title = "FlowUi — FSEL Immediate Gallery";
@@ -1575,8 +1584,92 @@ int main() {
 		config.dev.monitoring.timing.cpuLevel = devSystems::CpuTimingLevel::Deep;
 #endif
 
-		App app = makeApplication(config);
 		DemoParameters parameters{};
+#if FLOW_UI_AGENTIC_WORKFLOW
+		DemoAgenticHarness agentic_harness;
+		DemoAgenticInteractionHarness interaction_harness;
+		std::filesystem::path agentic_changes_path;
+		config.agentic_workflow.application_id = "flowui.fsel.demo";
+		config.agentic_workflow.application_revision = FLOWUI_AGENTIC_APP_REVISION;
+		config.agentic_workflow.provenance.set(
+			"application_build_profile", devSystems::agentic::Json::make_object(
+											 {{"compiler", FLOWUI_AGENTIC_APP_COMPILER},
+											  {"configuration", FLOWUI_AGENTIC_APP_BUILD_TYPE},
+											  {"flags", FLOWUI_AGENTIC_APP_BUILD_FLAGS}}));
+#endif
+		for (int argument_index = 1; argument_index < argument_count; ++argument_index) {
+			const std::string_view argument(arguments[argument_index]);
+			if (argument == "--help") {
+				std::cout << "flowui_fsel_demo [--agentic-store PATH] [--agentic-visual] "
+							 "[--agentic-input] [--agentic-actions] [--agentic-changes PATH]\n";
+				return 0;
+			}
+#if FLOW_UI_AGENTIC_WORKFLOW
+			if (argument == "--agentic-input") {
+				config.agentic_workflow.input_control_enabled = true;
+				continue;
+			}
+			if (argument == "--agentic-actions") {
+				config.agentic_workflow.action_control_enabled = true;
+				continue;
+			}
+			if (argument == "--agentic-visual") {
+				config.agentic_workflow.visual_capture_enabled = true;
+				continue;
+			}
+			if (argument == "--agentic-changes" || argument.starts_with("--agentic-changes=")) {
+				std::string_view changes_path;
+				if (argument == "--agentic-changes" && argument_index + 1 < argument_count)
+					changes_path = arguments[++argument_index];
+				else if (argument.starts_with("--agentic-changes="))
+					changes_path = argument.substr(18u);
+				if (changes_path.empty()) {
+					std::cerr << "--agentic-changes requires an explicit manifest path\n";
+					return 2;
+				}
+				agentic_changes_path = changes_path;
+				continue;
+			}
+			if (argument == "--agentic-store" || argument.starts_with("--agentic-store=")) {
+				std::string_view store_path;
+				if (argument == "--agentic-store" && argument_index + 1 < argument_count)
+					store_path = arguments[++argument_index];
+				else if (argument.starts_with("--agentic-store="))
+					store_path = argument.substr(16u);
+				if (store_path.empty()) {
+					std::cerr << "--agentic-store requires an explicit directory\n";
+					return 2;
+				}
+				config.agentic_workflow.store_path = store_path;
+				config.agentic_workflow.enabled = true;
+				config.agentic_workflow.local_attachment_enabled = true;
+				continue;
+			}
+#endif
+			std::cerr << "Unsupported demo option: " << argument << '\n';
+			return 2;
+		}
+		App app = makeApplication(config);
+#if FLOW_UI_DEV_MODE
+		devMode::register_element_catalogue(app.devTooling().schemas(), "FSEL",
+			ElementSet<FSEL::Box, FSEL::Button, FSEL::Checkbox, FSEL::ComboBox,
+				FSEL::DragValue<int>, FSEL::DragValue<unsigned int>, FSEL::DragValue<float>, FSEL::Label,
+				FSEL::NumberInput<int>, FSEL::NumberInput<unsigned int>, FSEL::NumberInput<float>, FSEL::ProgressBar,
+				FSEL::RadioChoice, FSEL::SelectableSurface, FSEL::Slider, FSEL::Spacer,
+				FSEL::SplitterHandle, FSEL::Switch, FSEL::TextArea, FSEL::TextInput>{}, true);
+#endif
+#if FLOW_UI_AGENTIC_WORKFLOW
+		if (!agentic_changes_path.empty())
+			app.devTooling().bakePipeline().setManifestPath(std::move(agentic_changes_path));
+		const auto agentic_capabilities = app.agentic_workflow().capabilities();
+		if (agentic_capabilities && agentic_capabilities->enabled) {
+			requireStatus(register_demo_agentic_scenarios(app, parameters, agentic_harness));
+			requireStatus(
+				register_demo_agentic_interactions(app, agentic_harness, interaction_harness,
+												   config.agentic_workflow.input_control_enabled,
+												   config.agentic_workflow.action_control_enabled));
+		}
+#endif
 
 		while (!app.shouldClose()) {
 			requireStatus(app.beginFrame());
@@ -1585,6 +1678,10 @@ int main() {
 				.draw();
 			requireStatus(app.endFrame());
 			requireStatus(app.drawFrame());
+#if FLOW_UI_AGENTIC_WORKFLOW
+			requireStatus(publish_demo_agentic_targets(app, agentic_harness, interaction_harness,
+													   config.ui.uiScale));
+#endif
 		}
 		return 0;
 	} catch (const std::exception& error) {

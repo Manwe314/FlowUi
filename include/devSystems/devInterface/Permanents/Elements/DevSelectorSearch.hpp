@@ -10,6 +10,8 @@ struct DevSelectorSearchParameters {
 	std::string_view placeholder = "Filter nodes...";
 	/** Center text and caret in this search field without changing other selector defaults. */
 	bool center_text = false;
+	/** Fit a caller-owned horizontal filter section without adding a nested section border. */
+	bool inline_control = false;
 };
 
 struct DevSelectorSearch {

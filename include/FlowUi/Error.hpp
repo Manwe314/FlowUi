@@ -47,6 +47,7 @@ enum class ErrorDomain : std::uint8_t {
 	Popup,
 	Shortcut,
 	Viewport,
+	Agentic,
 };
 
 /** The boundary that is intended to decide the outcome of an error. */
@@ -450,6 +451,16 @@ enum class ErrorSite : std::uint16_t {
 	CleanupResourceRollback = 0x1309,
 	CleanupManagerShutdown = 0x130a,
 	CleanupAppShutdown = 0x130b,
+
+	AgenticConfigure = 0x1601,
+	AgenticCapture = 0x1602,
+	AgenticSnapshot = 0x1603,
+	AgenticPublish = 0x1604,
+	AgenticCommand = 0x1605,
+	AgenticTransport = 0x1606,
+	AgenticScenario = 0x1607,
+	AgenticImage = 0x1608,
+	AgenticCompare = 0x1609,
 };
 
 /** Static catalog data associated with one ErrorSite. */
@@ -721,6 +732,15 @@ struct ErrorSiteDescriptor {
 	FLOWUI_ERROR_SITE_CASE(CleanupResourceRollback, Resource);
 	FLOWUI_ERROR_SITE_CASE(CleanupManagerShutdown, None);
 	FLOWUI_ERROR_SITE_CASE(CleanupAppShutdown, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticConfigure, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticCapture, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticSnapshot, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticPublish, Resource);
+	FLOWUI_ERROR_SITE_CASE(AgenticCommand, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticTransport, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticScenario, App);
+	FLOWUI_ERROR_SITE_CASE(AgenticImage, Window);
+	FLOWUI_ERROR_SITE_CASE(AgenticCompare, Resource);
 	}
 #undef FLOWUI_ERROR_SITE_CASE
 	return {site, ErrorSubjectKind::None, "UnknownErrorSite"};
@@ -886,6 +906,19 @@ enum class ErrorCode : std::uint16_t {
 	ViewportGenerationIncomplete = 0x1405,
 	ViewportGenerationExhausted = 0x1406,
 	ViewportRecordingFailed = 0x1407,
+
+	AgenticInvalidRequest = 0x1501,
+	AgenticUnavailable = 0x1502,
+	AgenticBusy = 0x1503,
+	AgenticStaleGeneration = 0x1504,
+	AgenticInvalidScope = 0x1505,
+	AgenticBudgetExhausted = 0x1506,
+	AgenticIncompleteCapture = 0x1507,
+	AgenticPublicationFailed = 0x1508,
+	AgenticIncompatibleComparison = 0x1509,
+	AgenticCanceled = 0x150a,
+	AgenticTimeout = 0x150b,
+	AgenticIntegrityFailed = 0x150c,
 };
 
 /** Static catalog data associated with one ErrorCode. */
@@ -926,6 +959,8 @@ namespace detail {
 	case 0x12: return ErrorDomain::Popup;
 	case 0x13: return ErrorDomain::Shortcut;
 	case 0x14: return ErrorDomain::Viewport;
+	case 0x15:
+		return ErrorDomain::Agentic;
 	default: return ErrorDomain::None;
 	}
 }
@@ -1308,6 +1343,40 @@ namespace detail {
 			ErrorResolutionPolicy::None, ErrorResolution::Terminated,
 			code == ErrorCode::ViewportGenerationIncomplete ? "ViewportGenerationIncomplete" : "ViewportGenerationExhausted",
 			code == ErrorCode::ViewportGenerationIncomplete ? "A published viewport generation is incomplete." : "The viewport generation identity space was exhausted."};
+	case ErrorCode::AgenticInvalidRequest:
+		return localDescriptor(code, "AgenticInvalidRequest", "The agentic request is invalid.");
+	case ErrorCode::AgenticUnavailable:
+		return localDescriptor(code, "AgenticUnavailable",
+							   "The requested agentic capability or target is unavailable.");
+	case ErrorCode::AgenticBusy:
+		return localDescriptor(code, "AgenticBusy",
+							   "The application's capture lease or command queue is busy.");
+	case ErrorCode::AgenticStaleGeneration:
+		return localDescriptor(code, "AgenticStaleGeneration",
+							   "The requested evidence or tooling revision changed.");
+	case ErrorCode::AgenticInvalidScope:
+		return localDescriptor(code, "AgenticInvalidScope",
+							   "The request escapes its declared evidence scope.");
+	case ErrorCode::AgenticBudgetExhausted:
+		return localDescriptor(code, "AgenticBudgetExhausted",
+							   "The agentic operation exceeded its configured budget.");
+	case ErrorCode::AgenticIncompleteCapture:
+		return localDescriptor(code, "AgenticIncompleteCapture",
+							   "Required evidence has incomplete coverage.");
+	case ErrorCode::AgenticPublicationFailed:
+		return localDescriptor(code, "AgenticPublicationFailed",
+							   "The evidence publication failed.");
+	case ErrorCode::AgenticIncompatibleComparison:
+		return localDescriptor(code, "AgenticIncompatibleComparison",
+							   "The evidence is not comparable under the requested policy.");
+	case ErrorCode::AgenticCanceled:
+		return localDescriptor(code, "AgenticCanceled", "The agentic operation was canceled.");
+	case ErrorCode::AgenticTimeout:
+		return localDescriptor(code, "AgenticTimeout",
+							   "The agentic operation reached its deadline.");
+	case ErrorCode::AgenticIntegrityFailed:
+		return localDescriptor(code, "AgenticIntegrityFailed",
+							   "Evidence integrity or reference validation failed.");
 	case ErrorCode::ViewportRecordingFailed:
 		return {code, ErrorDomain::Viewport, ErrorCategory::Unwind, ErrorBoundary::WindowFrame,
 			ErrorResolvability::CallerResolvable, ErrorImpact::FrameCanceled,

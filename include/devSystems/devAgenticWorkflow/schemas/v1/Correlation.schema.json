@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Correlation.schema.json",
+  "title": "FlowUi.Agentic.Correlation",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "source",
+    "target",
+    "relationship",
+    "method",
+    "confidence",
+    "resolution"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Correlation"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "capture_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "artifact_id"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+          "not": {
+            "enum": [
+              ".",
+              ".."
+            ]
+          }
+        },
+        "app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "occurrence_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "record_sequence": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "invocation_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "submission_serial": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "artifact_id"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+          "not": {
+            "enum": [
+              ".",
+              ".."
+            ]
+          }
+        },
+        "app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "occurrence_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "record_sequence": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "invocation_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        },
+        "submission_serial": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+        }
+      }
+    },
+    "relationship": {
+      "type": "string",
+      "minLength": 1
+    },
+    "method": {
+      "enum": [
+        "explicit_identity",
+        "shared_context",
+        "temporal_proximity",
+        "unresolved"
+      ]
+    },
+    "confidence": {
+      "enum": [
+        "explicit",
+        "high",
+        "medium",
+        "low",
+        "candidate",
+        "unknown",
+        "none",
+        "shared_context",
+        "temporal_nearby"
+      ]
+    },
+    "resolution": {
+      "enum": [
+        "resolved",
+        "candidate",
+        "disabled",
+        "unsupported",
+        "not_requested",
+        "outside_capture",
+        "evicted",
+        "truncated",
+        "pending_at_timeout",
+        "unavailable",
+        "failed",
+        "unresolved",
+        "not_retained",
+        "not_captured",
+        "ambiguous"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

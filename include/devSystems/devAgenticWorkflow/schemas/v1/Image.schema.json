@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Image.schema.json",
+  "title": "FlowUi.Agentic.Image",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "run_id",
+    "capture_id",
+    "image_id",
+    "app_tick",
+    "window_id",
+    "window_frame",
+    "path",
+    "source",
+    "width",
+    "height",
+    "encoding",
+    "alpha",
+    "origin",
+    "frame_slot",
+    "source_vk_format",
+    "source_color_space",
+    "viewport_key",
+    "source_ppm_artifact_id",
+    "theme_revision",
+    "schema_generation",
+    "source_image_revision",
+    "recorded_monotonic_ns",
+    "completed_monotonic_ns",
+    "copy_duration_ns",
+    "crop",
+    "submission",
+    "tree",
+    "theme",
+    "producer_frame"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Image"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "capture_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "image_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "app_tick": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "window_id": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "window_frame": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "path": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "window",
+        "viewport",
+        "contact_sheet",
+        "crop",
+        "heatmap"
+      ]
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 16384
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 16384
+    },
+    "recorded_monotonic_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "completed_monotonic_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "encoding": {
+      "type": "string"
+    },
+    "alpha": {
+      "const": "discarded"
+    },
+    "origin": {
+      "const": "top-left"
+    },
+    "theme_revision": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+    },
+    "schema_generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+    },
+    "source_image_revision": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+    },
+    "copy_duration_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+    },
+    "frame_slot": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "source_vk_format": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "source_color_space": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "viewport_key": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4096
+    },
+    "source_ppm_artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "submission": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "device_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "queue_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "serial": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            }
+          },
+          "required": [
+            "device_id",
+            "queue_id",
+            "serial"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "tree": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "artifact_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+              "not": {
+                "enum": [
+                  ".",
+                  ".."
+                ]
+              }
+            },
+            "generation": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            }
+          },
+          "required": [
+            "artifact_id",
+            "generation"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "theme": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "artifact_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+              "not": {
+                "enum": [
+                  ".",
+                  ".."
+                ]
+              }
+            },
+            "revision": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "schema_generation": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            }
+          },
+          "required": [
+            "artifact_id",
+            "revision",
+            "schema_generation"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "producer_frame": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+              "not": {
+                "enum": [
+                  ".",
+                  ".."
+                ]
+              }
+            },
+            "window_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "app_tick": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "window_frame": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "submission_serial": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "source_image_revision": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "device_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            },
+            "queue_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+            }
+          },
+          "required": [
+            "run_id",
+            "window_id",
+            "app_tick",
+            "window_frame",
+            "submission_serial",
+            "source_image_revision",
+            "device_id",
+            "queue_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "crop": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "original_width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "original_height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "logical_to_physical_scale_x": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3.4028234663852886e+38
+        },
+        "logical_to_physical_scale_y": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3.4028234663852886e+38
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "original_width",
+        "original_height",
+        "logical_to_physical_scale_x",
+        "logical_to_physical_scale_y"
+      ],
+      "additionalProperties": false
+    },
+    "sampling_relationship": {
+      "type": "object",
+      "properties": {
+        "relationship": {
+          "const": "viewport_sampled_by_window"
+        },
+        "method": {
+          "const": "explicit_identity"
+        },
+        "resolution": {
+          "enum": [
+            "resolved",
+            "producer_unavailable"
+          ]
+        },
+        "same_frame": {
+          "type": "boolean"
+        },
+        "consumer_app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+        },
+        "consumer_window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+        },
+        "consumer_submission_serial": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Unsigned 64-bit decimal; codec rejects values above 18446744073709551615."
+        }
+      },
+      "required": [
+        "relationship",
+        "method",
+        "resolution",
+        "same_frame",
+        "consumer_app_tick",
+        "consumer_window_frame",
+        "consumer_submission_serial"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

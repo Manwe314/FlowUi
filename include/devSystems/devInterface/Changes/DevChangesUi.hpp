@@ -3,6 +3,7 @@
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
+#include "devSystems/devInterface/Changes/DevChangesViewportState.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
 #include "internal/Text/CurrentTextShaper.hpp"
@@ -14,6 +15,136 @@ using diagnostics_ui::column;
 using diagnostics_ui::kControl;
 using diagnostics_ui::row;
 using Icon = diagnostics_icons::Icon;
+
+/** Bind submitted controls to a panel viewport while its content is being built. */
+class FocusViewportScope {
+public:
+	FocusViewportScope(DevChangesState& changes, Clay_ElementId viewport) noexcept
+		: changes_(changes), previous_(changes.registration_viewport) {
+		changes_.registration_viewport = viewport;
+	}
+	~FocusViewportScope() { changes_.registration_viewport = previous_; }
+	FocusViewportScope(const FocusViewportScope&) = delete;
+	FocusViewportScope& operator=(const FocusViewportScope&) = delete;
+
+private:
+	DevChangesState& changes_;
+	Clay_ElementId previous_{};
+};
+
+/** Register a submitted, enabled control without reading optional captured developer trees. */
+template <class Context>
+void register_focus_target(Context& context, DevChangesState& changes, Clay_ElementId identity,
+						   bool enabled = true, FlowElementID text_input = {},
+						   uint64_t* radio_selection = nullptr, uint64_t radio_value = 0,
+						   Clay_ElementId viewport = {}) {
+	if (!enabled || !identity.id)
+		return;
+	const auto found = std::ranges::find(changes.focus_targets, identity.id,
+										 [](const auto& target) { return target.identity.id; });
+	const DevChangesFocusTarget target{identity,
+									   viewport.id ? viewport : changes.registration_viewport,
+									   text_input, radio_selection, radio_value};
+	if (found == changes.focus_targets.end())
+		changes.focus_targets.emplace_back(target);
+	else
+		*found = target;
+	if (context.uiManager.getPreviousFramesInteraction().isPressed(identity)) {
+		context.uiManager.shortcuts().setFocusedElement(identity);
+		if (!text_input.value && context.uiManager.inputFields().hasPrimaryFieldFocus())
+			context.uiManager.inputFields().requestCaret(FlowElementID{},
+														 CaretRequestKind::ClearAll);
+	}
+}
+
+/** Register a control whose enclosing Changes panel supplies its shared session. */
+template <class Context>
+void register_focus_target(Context& context, Clay_ElementId identity, bool enabled = true,
+						   FlowElementID text_input = {}, uint64_t* radio_selection = nullptr,
+						   uint64_t radio_value = 0, Clay_ElementId viewport = {}) {
+	if (context.params.interfaceState)
+		register_focus_target(context, context.params.interfaceState->changes, identity, enabled,
+							  text_input, radio_selection, radio_value, viewport);
+}
+
+/** Traverse the preceding submitted order, then collect this frame's live targets. */
+template <class Context>
+void begin_focus_frame(Context& context, DevChangesState& changes) {
+	const auto& input = context.uiManager.getCurrentFrameInput();
+	const auto& previous = context.uiManager.getPreviousFrameInput();
+	const auto focused = context.uiManager.shortcuts().focusedElement().id;
+	const auto found = std::ranges::find(changes.focus_targets, focused,
+										 [](const auto& target) { return target.identity.id; });
+	if (input.windowFocused && !changes.focus_targets.empty() && input.keyDown[GLFW_KEY_TAB] &&
+		!previous.keyDown[GLFW_KEY_TAB]) {
+		const bool reverse =
+			input.keyDown[GLFW_KEY_LEFT_SHIFT] || input.keyDown[GLFW_KEY_RIGHT_SHIFT];
+		const auto count = changes.focus_targets.size();
+		const auto position = found == changes.focus_targets.end()
+								  ? (reverse ? 0 : count - 1)
+								  : static_cast<std::size_t>(found - changes.focus_targets.begin());
+		const auto& target =
+			changes.focus_targets[(position + count + (reverse ? count - 1 : 1)) % count];
+		context.uiManager.inputFields().requestCaret(FlowElementID{}, CaretRequestKind::ClearAll);
+		context.uiManager.shortcuts().setFocusedElement(target.identity);
+		if (target.text_input.value)
+			context.uiManager.inputFields().requestCaret(target.text_input,
+														 CaretRequestKind::SetPrimary);
+		if (target.viewport.id) {
+			const auto bounds = Clay_GetElementData(target.identity);
+			const auto viewport = Clay_GetElementData(target.viewport);
+			const auto scroll = Clay_GetScrollContainerData(target.viewport);
+			if (bounds.found && viewport.found && scroll.found && scroll.scrollPosition) {
+				if (bounds.boundingBox.y < viewport.boundingBox.y)
+					scroll.scrollPosition->y += viewport.boundingBox.y - bounds.boundingBox.y;
+				else if (bounds.boundingBox.y + bounds.boundingBox.height >
+						 viewport.boundingBox.y + viewport.boundingBox.height)
+					scroll.scrollPosition->y -= bounds.boundingBox.y + bounds.boundingBox.height -
+												viewport.boundingBox.y -
+												viewport.boundingBox.height;
+			}
+		}
+	} else if (input.windowFocused && found != changes.focus_targets.end() &&
+			   found->radio_selection && !context.uiManager.inputFields().hasPrimaryFieldFocus() &&
+			   ((input.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) ||
+				(input.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE]))) {
+		*found->radio_selection = found->radio_value;
+		changes.model_dirty = true;
+	}
+	changes.focus_targets.clear();
+	if (changes.focus_targets.capacity() < 256)
+		changes.focus_targets.reserve(256);
+	changes.registration_viewport = {};
+}
+/** Output operation identity is shared by the selector, queue and context panel. */
+[[nodiscard]] inline Clay_Color operation_color(tooling::DevChangesOperation operation) noexcept {
+	switch (operation) {
+	case tooling::DevChangesOperation::Add:
+		return interface_theme::kAccentSeaGlass;
+	case tooling::DevChangesOperation::Update:
+		return interface_theme::kAccentSignalBlue;
+	case tooling::DevChangesOperation::Remove:
+		return interface_theme::kStatusAmber;
+	default:
+		return interface_theme::kTextSecondary;
+	}
+}
+/** Friendly operation names never replace the independent validity or decision dimensions. */
+[[nodiscard]] inline std::string_view
+operation_label(tooling::DevChangesOperation operation) noexcept {
+	switch (operation) {
+	case tooling::DevChangesOperation::Add:
+		return "New";
+	case tooling::DevChangesOperation::Update:
+		return "Update";
+	case tooling::DevChangesOperation::Remove:
+		return "Removal";
+	case tooling::DevChangesOperation::Keep:
+		return "Saved";
+	default:
+		return "Unchanged";
+	}
+}
 enum Action : uint64_t {
 	Select = 1,
 	Toggle,
@@ -41,7 +172,17 @@ enum Action : uint64_t {
 	StagePolicy,
 	PreviousPage,
 	NextPage,
-	CloseReview
+	CloseReview,
+	ClearSelection,
+	RevealSelection,
+	NextIssue,
+	GroupDecisions,
+	CloseGroupDecisions,
+	OpenPolicy,
+	ClosePolicy,
+	ToggleRawManifest,
+	ToggleOutputTechnical,
+	DismissMessage
 };
 
 /** UI callbacks retain only owned identities; commands are deferred to service_changes. */
@@ -50,12 +191,13 @@ inline void activate(void* target, uint64_t action, uint64_t value) {
 	if (action == Select || action == Toggle) {
 		const auto found = std::ranges::find(state.nodes, value, &DevChangesNode::identity);
 		if (found != state.nodes.end()) {
-			state.selected_key = found->key;
 			state.focused_identity = value;
 			state.keyboard_active = true;
-			state.workbench_page = 0;
 			if (action == Toggle && !found->leaf)
 				found->expanded = !found->expanded;
+			if (action == Select) {
+				changes_select_key(state, found->key);
+			}
 			state.model_dirty = true;
 		}
 	}
@@ -110,24 +252,82 @@ inline void activate(void* target, uint64_t action, uint64_t value) {
 	}
 	if (action == Overview) {
 		state.selected_key.clear();
+		state.queue_scope_key.clear();
 		state.selected_outside_filter = false;
+		state.workbench_page = 0;
+		state.workbench_page_changed = true;
+		state.group_decisions_open = false;
 	}
 	if (action == Section && value < state.inspector_expanded.size())
 		state.inspector_expanded[value] = !state.inspector_expanded[value];
-	if (action == Review)
-		state.review_open = !state.review_open;
+	if (action == Review) {
+		state.view = 1;
+		state.group_decisions_open = false;
+	}
 	if (action == CloseReview)
-		state.review_open = false;
+		state.view = 0;
 	if (action == Issues) {
 		state.status = 3;
 		state.domain = 0;
 		state.search.clear();
-		state.review_open = false;
 		state.model_dirty = true;
 	}
 	if (action == Acknowledge) {
 		state.acknowledge_incomplete = !state.acknowledge_incomplete;
 		state.pending = DevChangesCommand::Refresh;
+	}
+	if (action == ClearSelection) {
+		state.selected_key.clear();
+		state.selected_outside_filter = false;
+	}
+	if (action == RevealSelection) {
+		state.search.clear();
+		state.status = state.domain = 0;
+		std::string ancestor_key = state.selected_key;
+		while (!ancestor_key.empty()) {
+			const auto ancestor =
+				std::ranges::find(state.nodes, ancestor_key, &DevChangesNode::key);
+			if (ancestor == state.nodes.end())
+				break;
+			if (!ancestor->leaf)
+				ancestor->expanded = true;
+			ancestor_key = ancestor->parent;
+		}
+		state.reveal_selection_pending = true;
+		state.model_dirty = true;
+	}
+	if (action == NextIssue && !state.review.rows.empty()) {
+		const auto selected = std::ranges::find(state.review.rows, state.selected_key,
+												&tooling::DevChangesReviewRow::key);
+		const auto start = selected == state.review.rows.end()
+							   ? 0
+							   : static_cast<std::size_t>(selected - state.review.rows.begin()) + 1;
+		for (std::size_t offset = 0; offset < state.review.rows.size(); ++offset) {
+			const auto& candidate = state.review.rows[(start + offset) % state.review.rows.size()];
+			if (candidate.blocking) {
+				changes_select_key(state, candidate.key);
+				state.view = 0;
+				break;
+			}
+		}
+	}
+	if (action == GroupDecisions)
+		state.group_decisions_open = !state.group_decisions_open;
+	if (action == CloseGroupDecisions)
+		state.group_decisions_open = false;
+	if (action == OpenPolicy) {
+		state.view = 2;
+		state.group_decisions_open = false;
+	}
+	if (action == ClosePolicy)
+		state.view = 0;
+	if (action == ToggleRawManifest)
+		state.raw_manifest_open = !state.raw_manifest_open;
+	if (action == ToggleOutputTechnical)
+		state.output_technical_open = !state.output_technical_open;
+	if (action == DismissMessage) {
+		state.message.clear();
+		state.message_is_error = false;
 	}
 }
 
@@ -186,7 +386,8 @@ void text(Context& context, std::string_view label,
 	std::string display;
 	display.reserve(label.size() + label.size() / 24);
 	const auto parent = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
-	const float available = std::max(1.0f, parent.found ? parent.boundingBox.width - 30 : 180);
+	const float available = std::max(
+		1.0f, parent.found && parent.boundingBox.width > 30 ? parent.boundingBox.width - 30 : 180);
 	Clay_TextElementConfig config{};
 	config.fontSize = size;
 	const float resolved_height =
@@ -267,6 +468,22 @@ void text(Context& context, std::string_view label,
 	}
 	diagnostics_ui::text(context, display, color, size);
 }
+/** Keep explanatory prose on a labeled hover target using the Diagnostics pointer help. */
+template <class Context, class Identity>
+void hinted_text(Context& context, const Identity& identity, std::string_view label,
+				 std::string_view description, Clay_Color color = interface_theme::kTextSecondary,
+				 uint16_t size = 12) {
+	auto heading = row();
+	heading.layout.sizing.height = CLAY_SIZING_FIT(0);
+	CLAY(context.clayID(identity), heading) {
+		text(context, label, color, size);
+		diagnostics_ui::icon_with_identity(context, Keyed("hint-icon", identity.token), Icon::Info,
+										   interface_theme::kTextMuted, 12);
+		if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(identity)))
+			diagnostics_ui::pointer_tooltip(context, Keyed("hint-tooltip", identity.token),
+											description);
+	}
+}
 /** Shared release-inside control reuses the established Diagnostics/Memory treatment. */
 template <class Context, class Identity>
 void button(Context& context, const Identity& identity, std::string label, DevChangesState& state,
@@ -274,6 +491,9 @@ void button(Context& context, const Identity& identity, std::string label, DevCh
 			Icon icon = Icon::None) {
 	diagnostics_ui::button_with_identity(context, identity, std::move(label), &state, activate,
 										 action, value, enabled, std::move(tooltip), icon);
+	const auto element = ::FlowUi::detail::element_id::resolveLocal(
+		context.id, diagnostics_ui::Control::definitionId, identity.token);
+	register_focus_target(context, state, context.uiManager.toClayEID(element), enabled);
 }
 /** Shared centered segmented selector; filtering never changes candidate scope. */
 template <class Context>
@@ -284,6 +504,15 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 	parameters.selectedValue = &selected;
 	parameters.style = selector_choice_style();
 	parameters.style.padding = Clay_Padding{horizontal_padding, horizontal_padding, 0, 0};
+	const auto element = ::FlowUi::detail::element_id::resolveLocal(
+		context.id, FSEL::RadioChoice::definitionId, identity.token);
+	const auto clay_identity = context.uiManager.toClayEID(element);
+	if (context.uiManager.shortcuts().focusedElement().id == clay_identity.id) {
+		parameters.style.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
+		parameters.style.idleOverrides.borderColor = interface_theme::kAccentCurrent;
+		parameters.style.hoveredOverrides.borderColor = interface_theme::kAccentCurrent;
+		parameters.style.selectedOverrides.borderColor = interface_theme::kAccentCurrent;
+	}
 	context.uiManager.createElement(FSEL::kRadioChoice, identity)
 		.setParameters(parameters)
 		.setDevInternalCapture(true)
@@ -295,21 +524,56 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 	config.wrapMode = CLAY_TEXT_WRAP_NONE;
 	CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(config));
 	context.uiManager.drawConstructed();
+	register_focus_target(context, clay_identity, true, {}, &selected, value);
 }
 /** Three independent Clay scroll containers retain their positions across refreshed plans. */
 template <class Context>
 [[nodiscard]] Clay_ElementDeclaration viewport(Context& context, LocalElementName identity,
-											   float& retained_scroll) noexcept {
+											   float& retained_scroll,
+											   ViewportState* restoration = nullptr) noexcept {
 	auto result = column(0);
 	result.layout.sizing.height = CLAY_SIZING_GROW(0);
 	const auto scroll = Clay_GetScrollContainerData(context.clayID(identity));
-	if (scroll.found && scroll.scrollPosition)
+	if (restoration && !scroll.found) {
+		restoration->requested_offset = retained_scroll;
+		restoration->settling_frames = retained_scroll < 0 ? 4 : 0;
+	}
+	if (restoration && restoration->settling_frames) {
+		const auto& input = context.uiManager.getCurrentFrameInput();
+		const float lower_bound = std::min(0.0f, scroll.scrollContainerDimensions.height -
+													 scroll.contentDimensions.height);
+		const bool moved_without_clamping =
+			scroll.found && scroll.scrollPosition &&
+			std::abs(scroll.scrollPosition->y - restoration->requested_offset) > 0.5f &&
+			std::abs(scroll.scrollPosition->y - lower_bound) > 0.5f;
+		const bool navigating = input.mouseDown[0] || input.scrollY != 0 || input.scrollX != 0 ||
+								input.keyDown[GLFW_KEY_TAB] || input.keyDown[GLFW_KEY_UP] ||
+								input.keyDown[GLFW_KEY_DOWN] || input.keyDown[GLFW_KEY_PAGE_UP] ||
+								input.keyDown[GLFW_KEY_PAGE_DOWN] || input.keyDown[GLFW_KEY_HOME] ||
+								input.keyDown[GLFW_KEY_END] || input.keyDown[GLFW_KEY_ENTER] ||
+								input.keyDown[GLFW_KEY_SPACE];
+		if (navigating || moved_without_clamping)
+			restoration->settling_frames = 0;
+	}
+	if (restoration && restoration->settling_frames) {
+		retained_scroll = restoration->requested_offset;
+		if (scroll.found && scroll.scrollPosition)
+			scroll.scrollPosition->y = retained_scroll;
+		--restoration->settling_frames;
+	} else if (scroll.found && scroll.scrollPosition)
 		retained_scroll = scroll.scrollPosition->y;
 	result.clip = {.vertical = true,
 				   .childOffset = scroll.found && scroll.scrollPosition
 									  ? *scroll.scrollPosition
 									  : Clay_Vector2{0, retained_scroll}};
 	return result;
+}
+/** Seed newly recreated Clay scroll state after opening a retained panel viewport. */
+template <class Context, class Identity>
+void restore_viewport_scroll(Context& context, const Identity& identity, float retained_scroll) {
+	const auto scroll = Clay_GetScrollContainerData(context.clayID(identity));
+	if (scroll.found && scroll.scrollPosition && scroll.scrollContainerDimensions.height == 0)
+		scroll.scrollPosition->y = retained_scroll;
 }
 [[nodiscard]] inline Clay_Color validity_color(const tooling::DevChangesReviewRow& row) noexcept {
 	if (row.blocking)
@@ -322,7 +586,7 @@ template <class Context>
 }
 /** Explicit absence and zero/default semantics remain distinct. */
 [[nodiscard]] inline std::string value(std::string_view text_value, bool present) {
-	return present ? (text_value.empty() ? "Unavailable" : std::string(text_value)) : "Absent";
+	return present ? (text_value.empty() ? "\"\"" : std::string(text_value)) : "Absent";
 }
 } // namespace FlowUi::devSystems::interface_elements::changes_ui
 #endif

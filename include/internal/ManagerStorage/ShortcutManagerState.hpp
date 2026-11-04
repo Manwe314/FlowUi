@@ -35,6 +35,7 @@ struct ShortcutManagerState {
 	std::unordered_map<int, uint32_t> registeredKeyRefCount{};
 	uint64_t nextShortcutId = 1;
 	uint64_t nextRegistrationOrder = 1;
+	uint64_t registrationEpoch = 1;
 	Clay_ElementId focusedElementId{};
 };
 

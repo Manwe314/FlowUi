@@ -6,11 +6,15 @@
 namespace FlowUi::devSystems::interface_elements {
 void DevSelectorSearch::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration search{};
-	search.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(46)};
-	search.layout.padding = Clay_Padding{8, 8, 8, 8};
+	search.layout.sizing = {.width = CLAY_SIZING_GROW(0),
+							.height =
+								CLAY_SIZING_FIXED(context.params.inline_control ? 28.0f : 46.0f)};
+	search.layout.padding =
+		context.params.inline_control ? Clay_Padding{} : Clay_Padding{8, 8, 8, 8};
 	search.backgroundColor = interface_theme::kDepth1Panel;
 	search.border = {.color = interface_theme::kBorderPrimary,
-					 .width = Clay_BorderWidth{0, 0, 0, 1, 0}};
+					 .width = context.params.inline_control ? Clay_BorderWidth{}
+															: Clay_BorderWidth{0, 0, 0, 1, 0}};
 	search.layout.childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT,
 		.y = CLAY_ALIGN_Y_CENTER,
@@ -23,12 +27,12 @@ void DevSelectorSearch::buildElement(BuildContext& context) {
 		input.enabled = context.params.query != nullptr;
 		input.sizing = Clay_Sizing{
 			.width = CLAY_SIZING_GROW(0),
-			.height = CLAY_SIZING_FIXED(30),
+			.height = CLAY_SIZING_FIXED(context.params.inline_control ? 28.0f : 30.0f),
 		};
 		input.padding = Clay_Padding{8, 8, 5, 5};
 		input.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 		input.cornerRadius = CLAY_CORNER_RADIUS(3);
-		input.fontSize = 12;
+		input.fontSize = context.params.inline_control ? 11 : 12;
 		input.centerText = context.params.center_text;
 		input.idleOverrides.backgroundColor = interface_theme::kDepth3Elevated;
 		input.idleOverrides.textColor = interface_theme::kTextCanvas;

@@ -121,6 +121,7 @@ void separator(DevInspectOverlayMenu::BuildContext& context, uint64_t index) {
 	std::string label(role);
 	label += ": ";
 	if (target.kind == tooling::DevInspectTargetKind::Clay) {
+#if FLOW_UI_DEV_CAPTURE_CLAY
 		if (app.hasWindow(target.window)) {
 			const auto& snapshot = app.ui(target.window).devTreeSnapshot();
 			const auto resolved = tooling::resolve_inspect_target(target, snapshot);
@@ -135,6 +136,7 @@ void separator(DevInspectOverlayMenu::BuildContext& context, uint64_t index) {
 				label.append(name);
 			}
 		}
+#endif
 		char identity[72]{};
 		std::snprintf(identity, sizeof(identity), "\nWindow %llu · Clay #%u",
 					  static_cast<unsigned long long>(target.window),

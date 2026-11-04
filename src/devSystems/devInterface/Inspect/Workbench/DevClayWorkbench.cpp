@@ -1,6 +1,6 @@
 #include "devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp"
 
-#if FLOW_UI_DEV_MODE
+#if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
 
 #include <cstdio>
 #include <string>
@@ -32,7 +32,6 @@ Clay_TextElementConfig headerTextStyle(Clay_Color color, uint16_t size) {
 const tooling::DevClayNode* findClayNodeForWorkbench(
 	const tooling::DevTreeSnapshot& snapshot,
 	uint64_t selectionKey) noexcept {
-#if FLOW_UI_DEV_CAPTURE_CLAY
 	for (uint32_t nodeIndex = 0; nodeIndex < snapshot.clay.nodes.size(); ++nodeIndex) {
 		const tooling::DevClayNode& node = snapshot.clay.nodes[nodeIndex];
 		if (stableNodeKey((static_cast<uint64_t>(node.rootIndex) << 32u) | nodeIndex, node.clayId) ==
@@ -40,10 +39,6 @@ const tooling::DevClayNode* findClayNodeForWorkbench(
 			return &node;
 		}
 	}
-#else
-	(void)snapshot;
-	(void)selectionKey;
-#endif
 	return nullptr;
 }
 
@@ -194,6 +189,31 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 					.draw();
 			}
 		}
+	}
+}
+
+} // namespace FlowUi::devSystems::interface_elements
+
+#elif FLOW_UI_DEV_MODE
+
+#include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
+#include "managers/UiManager.hpp"
+
+namespace FlowUi::devSystems::interface_elements {
+
+void DevClayWorkbench::buildElement(BuildContext& context) {
+	Clay_ElementDeclaration panel{};
+	panel.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+	panel.layout.padding = CLAY_PADDING_ALL(12);
+	panel.backgroundColor = interface_theme::kDepth1Panel;
+	CLAY(context.clayID(), panel) {
+		CLAY_TEXT(CLAY_STRING("Clay workbench capture is disabled. Enable FLOW_UI_DEV_CAPTURE_CLAY "
+							  "to inspect raw layout."),
+				  CLAY_TEXT_CONFIG({
+					  .textColor = interface_theme::kTextMuted,
+					  .fontSize = 12,
+					  .wrapMode = CLAY_TEXT_WRAP_WORDS,
+				  }));
 	}
 }
 

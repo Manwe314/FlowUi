@@ -14,6 +14,7 @@
 #include "FlowUi/WindowId.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
+#include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorModel.hpp"
 #include "devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchData.hpp"
@@ -69,6 +70,7 @@ struct DevInterfaceState {
 	DevPerformanceSelection performance_selection{};
 	DevDiagnosticsState diagnostics{};
 	DevChangesState changes{};
+	DevCatalogueState catalogue{};
 	DevMemorySelection memory_selection{};
 	interface_elements::DevMemoryWorkbenchState memory_workbench{};
 	interface_elements::DevTimelineState performance_timeline{};

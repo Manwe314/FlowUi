@@ -1,0 +1,410 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/InteractionResult.schema.json",
+  "title": "FlowUi.Agentic.InteractionResult",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.InteractionResult"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "plan_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "window_id": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+    },
+    "phase": {
+      "enum": [
+        "queued",
+        "validating",
+        "acquiring_control",
+        "synchronizing",
+        "executing",
+        "draining_observations",
+        "releasing_control",
+        "completed",
+        "canceled",
+        "failed"
+      ]
+    },
+    "assertion_verdict": {
+      "enum": [
+        "pending",
+        "passed",
+        "failed",
+        "unavailable"
+      ]
+    },
+    "execution_succeeded": {
+      "type": "boolean"
+    },
+    "evidence_complete": {
+      "type": "boolean"
+    },
+    "cleanup_complete": {
+      "type": "boolean"
+    },
+    "handoff_complete": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 4096
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "expected": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "target_hovered",
+                "target_pressed",
+                "target_held",
+                "target_released",
+                "layout_completed",
+                "frame_presented",
+                "window_focused",
+                "text_focused"
+              ]
+            },
+            "maxItems": 8,
+            "uniqueItems": true
+          },
+          "observed": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "target_hovered",
+                "target_pressed",
+                "target_held",
+                "target_released",
+                "layout_completed",
+                "frame_presented",
+                "window_focused",
+                "text_focused"
+              ]
+            },
+            "maxItems": 8,
+            "uniqueItems": true
+          },
+          "first_offset": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+          },
+          "end_offset_exclusive": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+          },
+          "verdict": {
+            "enum": [
+              "pending",
+              "passed",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "step_id",
+          "expected",
+          "observed",
+          "first_offset",
+          "end_offset_exclusive",
+          "verdict",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 4096
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 4096
+      },
+      "maxItems": 4096
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "scheduled": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "consumed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "missed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "canceled": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "observed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "asserted": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "retained_inputs": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "retained_observations": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "lost": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [
+        "scheduled",
+        "consumed",
+        "missed",
+        "canceled",
+        "observed",
+        "asserted",
+        "retained_inputs",
+        "retained_observations",
+        "lost"
+      ],
+      "additionalProperties": false
+    },
+    "activation_frame": {
+      "$ref": "#/$defs/frame_key"
+    },
+    "first_divergence_offset": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        "source": {
+          "const": "agentic_exported_action"
+        },
+        "plan_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "step_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "invocation_sequence": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        "dispatched": {
+          "type": "boolean"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "completion_succeeded": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "result": {},
+        "dispatched_monotonic_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        "completed_monotonic_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        "deadline_monotonic_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        "result_redacted": {
+          "type": "boolean"
+        },
+        "arguments_redacted": {
+          "type": "boolean"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "completion_token": {}
+      },
+      "required": [
+        "action_id",
+        "revision",
+        "source",
+        "plan_id",
+        "step_id",
+        "request_id",
+        "invocation_sequence",
+        "window_id",
+        "dispatched",
+        "completed",
+        "completion_succeeded",
+        "reason",
+        "result",
+        "dispatched_monotonic_ns",
+        "completed_monotonic_ns",
+        "deadline_monotonic_ns"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "plan_digest",
+    "job_id",
+    "run_id",
+    "window_id",
+    "phase",
+    "assertion_verdict",
+    "execution_succeeded",
+    "evidence_complete",
+    "cleanup_complete",
+    "handoff_complete",
+    "reason",
+    "steps",
+    "limitations",
+    "coverage"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "frame_key": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+          "not": {
+            "enum": [
+              ".",
+              ".."
+            ]
+          }
+        },
+        "app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [
+        "run_id",
+        "app_tick",
+        "window_id",
+        "window_frame"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

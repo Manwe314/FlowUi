@@ -1,7 +1,7 @@
 #include "devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
 #if FLOW_UI_DEV_MODE
-#include "FSEL/Checkbox.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevFselThemeSpecimens.hpp"
 #include "FSEL/Label.hpp"
 #include "FSEL/ProgressBar.hpp"
 #include "FSEL/Slider.hpp"
@@ -19,8 +19,6 @@ constexpr auto kCopyThemeCode =
 		app.setClipboardText(state.code);
 		state.copy_feedback = "Copied C++";
 	});
-constexpr auto kToggleSample =
-	UiAction("flowui.dev_interface.theme.toggle-sample", [](bool& value) { value = !value; });
 
 template <typename Content>
 void workbench_card(DevThemeWorkbench::BuildContext& context, std::string_view name,
@@ -184,94 +182,7 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				examples.layout.layoutDirection =
 					sandbox.preview_layout == 1 ? CLAY_LEFT_TO_RIGHT : CLAY_TOP_TO_BOTTOM;
 				CLAY(context.clayID("preview-elements"), examples) {
-					if (builtin) {
-						if (sandbox.preview_layout < 2 || sandbox.preview_layout == 2 ||
-							sandbox.preview_layout == 3)
-							CLAY(context.clayID("buttons"), row()) {
-								for (uint32_t specimen = 0; specimen < 2; ++specimen) {
-									if (sandbox.preview_layout >= 2 &&
-										sandbox.preview_layout != specimen + 2)
-										continue;
-									FSEL::ButtonParameters parameters{};
-									parameters.text = specimen ? "Disabled" : "Interactive button";
-									parameters.contentMode = FSEL::ButtonContentMode::TextOnly;
-									parameters.enabled = specimen == 0;
-									parameters.onActivate =
-										ActionCall{app->actions().uiActions().make(
-											kToggleSample, sandbox.sample_checked)};
-									context.uiManager
-										.createElement(FSEL::kButton,
-													   RuntimeName("sample-button-" +
-																   std::to_string(specimen)))
-										.setParameters(parameters)
-										.setDevInternalCapture(true)
-										.draw();
-								}
-							}
-						if (sandbox.preview_layout < 2 || sandbox.preview_layout == 4 ||
-							sandbox.preview_layout == 5)
-							CLAY(context.clayID("toggles"), row()) {
-								if (sandbox.preview_layout < 2 || sandbox.preview_layout == 4) {
-									FSEL::CheckboxParameters checkbox{};
-									checkbox.isChecked = sandbox.sample_checked;
-									checkbox.onToggle = ActionCall{app->actions().uiActions().make(
-										kToggleSample, sandbox.sample_checked)};
-									context.uiManager
-										.createElement(FSEL::kCheckbox, "sample-checkbox")
-										.setParameters(checkbox)
-										.setDevInternalCapture(true)
-										.draw();
-								}
-								if (sandbox.preview_layout < 2 || sandbox.preview_layout == 5) {
-									FSEL::SwitchParameters toggle{};
-									toggle.isOn = sandbox.sample_switch;
-									toggle.onToggle = ActionCall{app->actions().uiActions().make(
-										kToggleSample, sandbox.sample_switch)};
-									context.uiManager.createElement(FSEL::kSwitch, "sample-switch")
-										.setParameters(toggle)
-										.setDevInternalCapture(true)
-										.draw();
-								}
-							}
-						if (sandbox.preview_layout < 2 || sandbox.preview_layout == 6) {
-							FSEL::SliderParameters slider{};
-							slider.value = &sandbox.sample_value;
-							slider.length = 260;
-							context.uiManager.createElement(FSEL::kSlider, "sample-slider")
-								.setParameters(slider)
-								.setDevInternalCapture(true)
-								.draw();
-						}
-						if (sandbox.preview_layout < 2 || sandbox.preview_layout == 7) {
-							FSEL::ProgressBarParameters progress{};
-							progress.value = sandbox.sample_value;
-							progress.sizing =
-								Clay_Sizing{CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(8)};
-							context.uiManager.createElement(FSEL::kProgressBar, "sample-progress")
-								.setParameters(progress)
-								.setDevInternalCapture(true)
-								.draw();
-						}
-						if (sandbox.preview_layout < 2 || sandbox.preview_layout == 8) {
-							FSEL::TextInputParameters input{};
-							input.fontSize = 12;
-							input.padding = Clay_Padding{8, 8, 4, 4};
-							input.value = &sandbox.sample_text;
-							input.sizing = Clay_Sizing{CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(34)};
-							context.uiManager.createElement(FSEL::kTextInput, "sample-input")
-								.setParameters(input)
-								.setDevInternalCapture(true)
-								.draw();
-						}
-						if (sandbox.preview_layout < 2 || sandbox.preview_layout == 9) {
-							FSEL::LabelParameters label{};
-							label.text = sandbox.sample_text;
-							context.uiManager.createElement(FSEL::kLabel, "sample-label")
-								.setParameters(label)
-								.setDevInternalCapture(true)
-								.draw();
-						}
-					}
+					if (builtin) draw_fsel_theme_specimens(context, *app, sandbox);
 					if (!builtin) {
 						for (std::size_t preview_index = 0; preview_index < previews.size();
 							 ++preview_index) {

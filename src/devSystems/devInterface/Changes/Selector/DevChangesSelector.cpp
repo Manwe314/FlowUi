@@ -8,9 +8,100 @@
 namespace FlowUi::devSystems::interface_elements {
 namespace {
 namespace ui = changes_ui;
+using Context = DevChangesSelector::BuildContext;
+constexpr float node_height = DevChangesSelectorNode::row_height;
+
+using ui::operation_color;
+using ui::operation_label;
+[[nodiscard]] Clay_ElementDeclaration
+section(float height, Clay_Color background = interface_theme::kDepth1Panel) noexcept {
+	auto declaration = ui::row(height);
+	declaration.layout.padding = {8, 8, 7, 7};
+	declaration.backgroundColor = background;
+	declaration.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
+	return declaration;
+}
+template <class BuildContext>
+void label(BuildContext& context, std::string_view value, Clay_Color color, uint16_t size = 11) {
+	Clay_TextElementConfig configuration{};
+	configuration.fontSize = size;
+	configuration.textColor = color;
+	configuration.wrapMode = CLAY_TEXT_WRAP_NONE;
+	CLAY_TEXT(context.uiManager.toClayString(value), CLAY_TEXT_CONFIG(configuration));
+}
+void summary(Context& context, DevChangesState& state, float panel_width) {
+	auto summary = section(88);
+	summary.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+	summary.layout.childGap = 8;
+	CLAY(context.clayID("summary"), summary) {
+		const auto& counts = state.review.counts;
+		CLAY(context.clayID("operation-counts"), ui::row(30)) {
+			const std::array<std::size_t, 3> values{counts.additions, counts.updates,
+													counts.removals};
+			static constexpr std::array<tooling::DevChangesOperation, 3> operations{
+				tooling::DevChangesOperation::Add, tooling::DevChangesOperation::Update,
+				tooling::DevChangesOperation::Remove};
+			for (std::size_t index = 0; index < values.size(); ++index) {
+				auto metric = ui::column(2);
+				metric.layout.sizing.height = CLAY_SIZING_GROW(0);
+				CLAY(context.clayID(Keyed("operation-count", index)), metric) {
+					label(context, operation_label(operations[index]),
+						  operation_color(operations[index]), 10);
+					label(context, std::to_string(values[index]), interface_theme::kTextCanvas, 14);
+				}
+			}
+		}
+		CLAY(context.clayID("actions"), ui::row(28)) {
+			ui::button(context, LocalElementName{"overview"}, "Overview", state, ui::Overview, 0,
+					   true,
+					   "Review the whole manifest. Display filters do not change bake scope.");
+			auto issues = ui::row(28);
+			issues.layout.childAlignment.x = CLAY_ALIGN_X_RIGHT;
+			CLAY(context.clayID("issue-count"), issues) {
+				const auto issue_count = counts.conflicts + counts.errors;
+				const bool compact = !FLOWUI_INCLUDE_ICON_MANAGER && panel_width < 250;
+				const auto description =
+					compact ? issue_count ? "! " + std::to_string(issue_count) : "OK"
+							: std::to_string(issue_count) + " issues";
+				label(context, description,
+					  issue_count ? interface_theme::kStatusRed : interface_theme::kTextMuted, 10);
+			}
+#if FLOWUI_INCLUDE_ICON_MANAGER
+			ui::button(context, LocalElementName{"refresh"}, "", state, ui::Refresh, 0, true,
+					   "Refresh review: accept current disk, live edits and prepared memory.",
+					   ui::Icon::Refresh);
+#else
+			ui::button(context, LocalElementName{"refresh"}, "Refresh", state, ui::Refresh, 0, true,
+					   "Refresh review: accept current disk, live edits and prepared memory.");
+#endif
+		}
+		if (context.uiManager.getPreviousFramesInteraction().isHovered(
+				context.clayID("operation-counts")) ||
+			context.uiManager.getPreviousFramesInteraction().isHovered(
+				context.clayID("issue-count")))
+			diagnostics_ui::pointer_tooltip(
+				context, LocalElementName{"summary-tooltip"},
+				"Whole manifest: " + std::to_string(counts.live_edits) + " live edits, " +
+					std::to_string(counts.prepared_memory) + " prepared memory, " +
+					std::to_string(counts.omitted) + " omitted proposals. " +
+					std::to_string(counts.conflicts) + " conflicts, " +
+					std::to_string(counts.errors) + " errors, " + std::to_string(counts.warnings) +
+					" warnings. New adds a missing assignment; "
+					"Update replaces a saved value; Removal deletes a saved assignment. "
+					"Red markers indicate errors independently of change type.");
+	}
+}
 void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state) {
 	if (!state.keyboard_active || state.visible_nodes.empty() ||
 		context.uiManager.inputFields().hasPrimaryFieldFocus())
+		return;
+	const auto focused = context.uiManager.shortcuts().focusedElement();
+	const bool owns_focus = std::ranges::any_of(state.visible_nodes, [&](auto index) {
+		return focused.id == FlowIDToClayID(::FlowUi::detail::element_id::resolveLocal(
+								 context.id, DevChangesSelectorNode::definitionId,
+								 Keyed("node", state.nodes[index].identity).token));
+	});
+	if (!owns_focus)
 		return;
 	const auto& current = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
@@ -33,7 +124,7 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 	auto& node = state.nodes[state.visible_nodes[position]];
 	const auto focus_node = [&](uint64_t identity) {
 		const auto element = ::FlowUi::detail::element_id::resolveLocal(
-			context.id, diagnostics_ui::Control::definitionId, Keyed("node", identity).token);
+			context.id, DevChangesSelectorNode::definitionId, Keyed("node", identity).token);
 		context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(element));
 	};
 	if (pressed(GLFW_KEY_LEFT)) {
@@ -60,10 +151,10 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 	}
 	if (pressed(GLFW_KEY_ENTER)) {
 		const auto element = ::FlowUi::detail::element_id::resolveLocal(
-			context.id, diagnostics_ui::Control::definitionId, Keyed("node", node.identity).token);
+			context.id, DevChangesSelectorNode::definitionId, Keyed("node", node.identity).token);
 		if (context.uiManager.shortcuts().focusedElement().id != FlowIDToClayID(element))
 			return;
-		state.selected_key = node.key;
+		changes_select_key(state, node.key);
 		rebuild_changes_model(state);
 		return;
 	}
@@ -71,15 +162,110 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 		const auto viewport = Clay_GetElementData(context.clayID("scroll"));
 		const auto scroll = Clay_GetScrollContainerData(context.clayID("scroll"));
 		if (viewport.found && scroll.found && scroll.scrollPosition) {
-			const float top = position * 48.0f + scroll.scrollPosition->y;
+			const float top = position * node_height + scroll.scrollPosition->y;
 			if (top < 0)
 				scroll.scrollPosition->y -= top;
-			if (top + 48 > viewport.boundingBox.height)
-				scroll.scrollPosition->y -= top + 48 - viewport.boundingBox.height;
+			if (top + node_height > viewport.boundingBox.height)
+				scroll.scrollPosition->y -= top + node_height - viewport.boundingBox.height;
 		}
 	}
 }
 } // namespace
+
+void DevChangesSelectorNode::onPressed(InteractionContext& context) {
+	FSEL::detail::selectable_surface::onPressed(context, context.params.changes != nullptr);
+	context.state().disclosure_armed =
+		!context.params.leaf && context.previousInteraction.isPressed(context.clayID("disclosure"));
+}
+void DevChangesSelectorNode::onReleased(InteractionContext& context) {
+	if (!FSEL::detail::selectable_surface::onReleased(context, context.params.changes != nullptr))
+		return;
+	const bool disclosure = !context.params.leaf &&
+							context.previousInteraction.isReleased(context.clayID("disclosure"));
+	if (disclosure != context.state().disclosure_armed)
+		return;
+	context.uiManager.shortcuts().setFocusedElement(context.clayID());
+	ui::activate(context.params.changes, disclosure ? ui::Toggle : ui::Select,
+				 context.params.identity);
+}
+void DevChangesSelectorNode::runLogic(InteractionContext& context) {
+	FSEL::detail::selectable_surface::runLogic(context, context.params.changes != nullptr);
+}
+void DevChangesSelectorNode::onHovered(InteractionContext& context) {
+	context.uiManager.requestCursor(CursorType::PointingHand, 4);
+}
+void DevChangesSelectorNode::buildElement(BuildContext& context) {
+	const auto& parameters = context.params;
+	if (parameters.changes) {
+		auto& changes = *parameters.changes;
+		const bool focused =
+			context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
+		if (focused) {
+			changes.keyboard_active = true;
+			changes.focused_identity = parameters.identity;
+		}
+		if (focused || parameters.selected || (!changes.focused_identity && parameters.depth == 0))
+			ui::register_focus_target(context, changes, context.clayID());
+	}
+	const bool hovered =
+		context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID());
+	auto row = ui::row(row_height);
+	row.layout.padding = {4, 8, 3, 3};
+	row.layout.childGap = 0;
+	row.border = {.color = parameters.selected ? interface_theme::kAccentCurrent : Clay_Color{},
+				  .width = {3, 0, 0, 0, 0}};
+	CLAY(context.clayID(), row) {
+		auto indent = ui::column(0);
+		indent.layout.sizing = {
+			.width = CLAY_SIZING_FIXED(std::min<uint16_t>(parameters.depth, 5) * 14.0f),
+			.height = CLAY_SIZING_GROW(0)};
+		CLAY(context.clayID("depth"), indent) {}
+		auto disclosure = ui::row(19);
+		disclosure.layout.sizing.width = CLAY_SIZING_FIXED(18);
+		disclosure.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
+		CLAY(context.clayID("disclosure"), disclosure) {
+			if (!parameters.leaf) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+				diagnostics_ui::icon(context, "disclosure-icon",
+									 parameters.expanded ? ui::Icon::Expanded : ui::Icon::Collapsed,
+									 interface_theme::kTextSecondary, 12);
+#else
+				label(context, parameters.expanded ? "v" : ">", interface_theme::kTextSecondary,
+					  10);
+#endif
+			}
+		}
+		auto title = ui::row(19);
+		title.clip = {.horizontal = true, .scrollInputDisabled = true};
+		CLAY(context.clayID("label"), title)
+		label(context, parameters.label,
+			  parameters.selected || hovered || parameters.focused
+				  ? interface_theme::kTextCanvas
+				  : interface_theme::kTextSecondary);
+		if (parameters.error) {
+			auto error = ui::row(19);
+			error.layout.sizing.width = CLAY_SIZING_FIXED(18);
+			error.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
+			CLAY(context.clayID("error"), error) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+				diagnostics_ui::icon(context, "error-icon", ui::Icon::Warning,
+									 interface_theme::kStatusRed, 12);
+#else
+				label(context, "!", interface_theme::kStatusRed, 11);
+#endif
+			}
+		}
+		auto trailing = ui::row(19);
+		trailing.layout.sizing.width = CLAY_SIZING_FIT(0);
+		trailing.layout.padding.left = 6;
+		CLAY(context.clayID("operation"), trailing)
+		label(context, parameters.trailing, parameters.operation_color, 10);
+		if (hovered && !parameters.tooltip.empty())
+			diagnostics_ui::pointer_tooltip(context, LocalElementName{"tooltip"},
+											parameters.tooltip);
+	}
+}
+
 void DevChangesSelector::buildElement(BuildContext& context) {
 	if (!context.params.interfaceState)
 		return;
@@ -94,13 +280,14 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 												   : context.params.interfaceState->selectorWidth;
 	auto root = ui::column(0);
 	root.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	root.layout.sizing.height = CLAY_SIZING_GROW(0);
+	root.layout.sizing.height = CLAY_SIZING_PERCENT(1);
 	root.backgroundColor = interface_theme::kDepth1Panel;
 	CLAY(context.clayID(), root) {
-		auto heading = ui::column(7);
-		heading.layout.padding = {10, 10, 10, 9};
-		CLAY(context.clayID("heading"), heading) {
-			ui::text(context, "CHANGES", interface_theme::kTextCanvas, 12);
+		auto title = section(34, interface_theme::kDepth2Ink);
+		title.layout.padding = {12, 12, 0, 0};
+		CLAY(context.clayID("title"), title)
+		label(context, "Changes", interface_theme::kTextCanvas, 14);
+		CLAY(context.clayID("domain-section"), section(44)) {
 			CLAY(context.clayID("domains"), selector_choice_track()) {
 				static constexpr std::array<std::string_view, 4> labels{"All", "Elements", "Themes",
 																		"Memory"};
@@ -111,136 +298,103 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 							   panel_width < 250 ? compact_labels[domain] : labels[domain], domain,
 							   state.domain, panel_width < 250 ? 4 : 6);
 			}
-			const auto& counts = state.review.counts;
-			ui::text(context,
-					 "Live edits " + std::to_string(counts.live_edits) + " · Prepared memory " +
-						 std::to_string(counts.prepared_memory),
-					 interface_theme::kTextSecondary, 10);
-			ui::text(context,
-					 "Ready " +
-						 std::to_string(std::ranges::count_if(
-							 state.review.rows,
-							 [](const auto& row) {
-								 return !row.blocking &&
-										(row.operation == tooling::DevChangesOperation::Add ||
-										 row.operation == tooling::DevChangesOperation::Update ||
-										 row.operation == tooling::DevChangesOperation::Remove);
-							 })) +
-						 " · Conflicts " + std::to_string(counts.conflicts) + " · Errors " +
-						 std::to_string(counts.errors) + " · Omitted " +
-						 std::to_string(counts.omitted),
-					 counts.conflicts || counts.errors ? interface_theme::kStatusAmber
-													   : interface_theme::kTextSecondary,
-					 10);
+		}
+		summary(context, state, panel_width);
+		CLAY(context.clayID("filters"), section(44)) {
 			context.uiManager.createElement(kDevSelectorSearch, LocalElementName{"search"})
 				.setParameters({.query = &state.search,
-								.placeholder = "Search changes...",
-								.center_text = true})
+								.placeholder = "Search...",
+								.center_text = true,
+								.inline_control = true})
 				.setDevInternalCapture(true)
 				.draw();
+			const auto search = ::FlowUi::detail::element_id::resolveLocal(
+				context.id, DevSelectorSearch::definitionId, LocalElementName{"search"}.token);
+			const auto search_input = ::FlowUi::detail::element_id::resolveLocal(
+				search, FSEL::TextInput::definitionId, LocalElementName{"search-input"}.token);
+			ui::register_focus_target(context, state, context.uiManager.toClayEID(search_input),
+									  true, search_input);
 			static constexpr std::array<FSEL::ComboBoxOption, 5> statuses{
-				{{0, "All changes"},
-				 {1, "Pending output"},
-				 {2, "Saved entries"},
-				 {3, "Issues"},
-				 {4, "Omitted proposals"}}};
+				{{0, "All"}, {1, "Pending"}, {2, "Saved"}, {3, "Issues"}, {4, "Omitted"}}};
 			FSEL::ComboBoxParameters status{};
 			status.options = statuses;
 			status.selectedValue = &state.status;
-			status.fontSize = 11;
+			status.fontSize = 10;
 			status.labelAlignment = CLAY_TEXT_ALIGN_CENTER;
-			status.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(28)};
+			status.popupWidthPolicy = FSEL::ComboBoxPopupWidthPolicy::ContentAtLeastTrigger;
+			status.sizing = {.width = CLAY_SIZING_FIXED(100), .height = CLAY_SIZING_FIXED(28)};
 			context.uiManager.createElement(FSEL::kComboBox, LocalElementName{"status"})
 				.setParameters(status)
 				.setDevInternalCapture(true)
 				.draw();
-			CLAY(context.clayID("actions"), ui::row(28)) {
-				ui::button(context, LocalElementName{"overview"}, "Overview", state, ui::Overview);
-				ui::button(context, LocalElementName{"refresh"}, "Refresh", state, ui::Refresh, 0,
-						   true,
-						   "Accept a fresh review of disk, live edits and frozen prepared memory.",
-						   ui::Icon::Refresh);
-			}
 		}
-		CLAY(context.clayID("scroll"), ui::viewport(context, "scroll", state.selector_scroll)) {
+		auto viewport = ui::viewport(context, "scroll", state.selector_scroll);
+		viewport.backgroundColor = interface_theme::kDepth0Keel;
+		CLAY(context.clayID("scroll"), viewport) {
+			ui::restore_viewport_scroll(context, LocalElementName{"scroll"}, state.selector_scroll);
+			ui::FocusViewportScope focus_scope{state, context.clayID("scroll")};
 			CLAY(context.clayID("tree"), ui::column(0)) {
 				const auto viewport_bounds = Clay_GetElementData(context.clayID("scroll"));
 				const float visible_height =
 					viewport_bounds.found ? viewport_bounds.boundingBox.height : 500;
 				const std::size_t render_begin =
 					std::min(state.visible_nodes.size(),
-							 static_cast<std::size_t>(
-								 std::max(0.0f, std::floor(-state.selector_scroll / 48) - 3)));
+							 static_cast<std::size_t>(std::max(
+								 0.0f, std::floor(-state.selector_scroll / node_height) - 3)));
 				const std::size_t render_end = std::min(
 					state.visible_nodes.size(),
-					render_begin + static_cast<std::size_t>(std::ceil(visible_height / 48)) + 8);
+					render_begin +
+						static_cast<std::size_t>(std::ceil(visible_height / node_height)) + 8);
 				if (render_begin) {
 					auto spacer = ui::column(0);
-					spacer.layout.sizing.height = CLAY_SIZING_FIXED(48.0f * render_begin);
+					spacer.layout.sizing.height = CLAY_SIZING_FIXED(node_height * render_begin);
 					CLAY(context.clayID("virtual-top"), spacer) {}
 				}
 				for (std::size_t navigation_index = render_begin; navigation_index < render_end;
 					 ++navigation_index) {
 					const auto node_index = state.visible_nodes[navigation_index];
 					const auto& node = state.nodes[node_index];
-					auto indentation = ui::column(0);
-					indentation.layout.padding.left =
-						static_cast<uint16_t>(std::min<uint16_t>(node.depth, 5) * 9);
-					CLAY(context.clayID(Keyed("indent", node.identity)), indentation) {
-						const auto& review_row = state.review.rows[node.rows.front()];
-						std::string badge =
-							node.leaf
-								? std::string(tooling::changes_operation_name(review_row.operation))
-								: std::to_string(node.rows.size());
-						if (node.leaf &&
-							review_row.decision == tooling::DevChangesDecision::OmitProposal)
-							badge = "OMITTED";
-						const auto& entry = review_row.proposed_entry ? review_row.proposed_entry
-																	  : review_row.disk_entry;
-						const std::string secondary =
-							!node.leaf ? "Select to review this group"
-							: entry && review_row.domain == tooling::DevChangesDomain::Themes &&
-									entry->themeVariant == "*"
-								? "All variants · " + std::string(tooling::changes_validity_name(
-														  review_row.validity))
-								: std::string(tooling::changes_validity_name(review_row.validity));
-						context.uiManager.createElement(ui::kControl, Keyed("node", node.identity))
-							.setParameters(
-								{.label = ui::ellipsize(context, node.label,
-														panel_width -
-															std::min<uint16_t>(node.depth, 5) * 9 -
-															62 - badge.size() * 8.0f,
-														12),
-								 .secondary = ui::ellipsize(
-									 context, secondary,
-									 panel_width - std::min<uint16_t>(node.depth, 5) * 9 - 28, 11),
-								 .badge = std::move(badge),
-								 .tooltip =
-									 node.label +
-									 (node.leaf ? "\n" + review_row.key + "\n" + review_row.reason
-												: "\n" + std::to_string(node.rows.size()) +
-													  " destinations"),
-								 .icon = node.leaf		 ? ui::Icon::None
-										 : node.expanded ? ui::Icon::Expanded
-														 : ui::Icon::Collapsed,
-								 .activate = ui::activate,
-								 .target = &state,
-								 .action = node.leaf ? ui::Select : ui::Toggle,
-								 .value = node.identity,
-								 .marker = ui::validity_color(review_row),
-								 .selected = state.selected_key == node.key,
-								 .focused = state.keyboard_active &&
-											state.focused_identity == node.identity,
-								 .issue_row = true,
-								 .keyboard_activation = false})
-							.setDevInternalCapture(true)
-							.draw();
-					}
+					const auto& review_row = state.review.rows[node.rows.front()];
+					const bool error = std::ranges::any_of(node.rows, [&](auto row_index) {
+						return state.review.rows[row_index].blocking;
+					});
+					const auto trailing = node.leaf
+											  ? std::string(operation_label(review_row.operation))
+											  : std::to_string(node.rows.size());
+					const auto description =
+						node.leaf
+							? node.label + "\n" + review_row.key + "\n" +
+								  std::string(changes_decision_name(review_row.decision)) + " · " +
+								  std::string(tooling::changes_validity_name(review_row.validity)) +
+								  "\n" + review_row.reason
+							: node.label + "\n" + std::to_string(node.rows.size()) +
+								  " destinations" + (error ? " · Contains blocking errors" : "");
+					const float label_width = panel_width - std::min<uint16_t>(node.depth, 5) * 14 -
+											  42 - trailing.size() * 7.0f - (error ? 18 : 0);
+					context.uiManager
+						.createElement(kDevChangesSelectorNode, Keyed("node", node.identity))
+						.setParameters(
+							{.label = ui::ellipsize(context, node.label, label_width, 11),
+							 .trailing = trailing,
+							 .tooltip = description,
+							 .changes = &state,
+							 .operation_color = node.leaf ? operation_color(review_row.operation)
+														  : interface_theme::kTextMuted,
+							 .identity = node.identity,
+							 .depth = node.depth,
+							 .leaf = node.leaf,
+							 .expanded = node.expanded,
+							 .selected = state.selected_key == node.key,
+							 .focused =
+								 state.keyboard_active && state.focused_identity == node.identity,
+							 .error = error})
+						.setDevInternalCapture(true)
+						.draw();
 				}
 				if (render_end < state.visible_nodes.size()) {
 					auto spacer = ui::column(0);
 					spacer.layout.sizing.height =
-						CLAY_SIZING_FIXED(48.0f * (state.visible_nodes.size() - render_end));
+						CLAY_SIZING_FIXED(node_height * (state.visible_nodes.size() - render_end));
 					CLAY(context.clayID("virtual-bottom"), spacer) {}
 				}
 				if (state.visible_nodes.empty()) {

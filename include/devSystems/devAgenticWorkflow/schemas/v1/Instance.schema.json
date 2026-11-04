@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Instance.schema.json",
+  "title": "FlowUi.Agentic.Instance",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Instance"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "protocol": {
+      "const": "FlowUi.Agentic.Local/1"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 256
+    },
+    "endpoint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "pid": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    },
+    "process_instance_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "last_safe_point_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "protocol",
+    "run_id",
+    "nonce",
+    "endpoint",
+    "pid",
+    "process_instance_id",
+    "last_safe_point_ns"
+  ],
+  "additionalProperties": false
+}

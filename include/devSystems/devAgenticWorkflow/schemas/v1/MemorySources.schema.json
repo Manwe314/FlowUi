@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/MemorySources.schema.json",
+  "title": "FlowUi.Agentic.MemorySources",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.MemorySources"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "parent_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Unsigned 64-bit decimal; the codec rejects values above 18446744073709551615."
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "kind": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "accuracy": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          }
+        },
+        "required": [
+          "source_id",
+          "parent_id",
+          "name",
+          "domain",
+          "kind",
+          "accuracy"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "sources"
+  ],
+  "additionalProperties": false
+}

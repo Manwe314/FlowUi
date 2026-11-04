@@ -13,11 +13,11 @@
 #include <utility>
 
 #include "Vulkan/Vk_Context.hpp"
-#include "internal/AgenticDebug/FrameCapture.hpp"
+#include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
+#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #include "internal/ManagerStorage/ManagerStateAccess.hpp"
 #include "internal/ManagerStorage/ResourceKeyNormalization.hpp"
 #include "internal/ManagerStorage/ViewportStorageController.hpp"
-#include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/timing/DevGpuTiming.hpp"
 #endif
@@ -56,6 +56,28 @@ void transitionViewportImageLayout(
 		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		srcAccess = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+	} else if (oldLayout == VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL &&
+			   newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+		srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		srcAccess = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
+	} else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+			   newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+	} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+			   newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+	} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+			   newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
 	} else {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ViewportRecordingFailed, FlowUi::ErrorSite::ViewportRecord));
 	}
@@ -76,6 +98,169 @@ void transitionViewportImageLayout(
 } // namespace
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE
+void ViewPortManager::visitDevViewports(void* target, DevViewportVisitor visitor) const {
+	if (!controller_ || !visitor)
+		return;
+	for (const auto& [key, record] : controller_->records) {
+		const auto& pending = record.pending_capture;
+		const auto& capture =
+			pending.submission && pending.submission <= storage_->completedSerial()
+				? pending
+				: record.published_capture;
+		const bool available = capture.texture && !record.capture_release_requested;
+		const DevViewportView view{
+			.key = key,
+			.capture_texture = available ? capture.texture : TextureHandle{},
+			.generation = record.active.generation,
+			.captured_frame = available ? capture.source_frame : 0,
+			.captured_generation = available ? capture.source_generation : 0,
+			.captured_submission = available ? capture.submission : 0,
+			.width = static_cast<uint32_t>(std::max(0, record.state.width)),
+			.height = static_cast<uint32_t>(std::max(0, record.state.height)),
+			.format = static_cast<uint32_t>(record.state.colorFormat),
+			.captured_width = available ? capture.image.width : 0,
+			.captured_height = available ? capture.image.height : 0,
+			.captured_format = available ? capture.format : 0,
+			.has_callback = static_cast<bool>(record.state.renderCallback),
+			.clear_every_frame = record.state.clearEveryFrame,
+			.capture_supported = controller_->supports_dev_capture(record.state.colorFormat),
+			.capture_pending =
+				record.capture_requested ||
+				(pending.texture &&
+				 (!pending.submission || pending.submission > storage_->completedSerial())),
+			.capture_failed = record.capture_failed};
+		if (!visitor(target, view))
+			break;
+	}
+}
+
+Status ViewPortManager::request_dev_capture(std::string_view key) noexcept {
+	if (!controller_ || !storage_)
+		return unexpectedError(
+			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportPrepare));
+	try {
+		controller_->collect_dev_captures();
+		const auto found = controller_->records.find(std::string(key));
+		if (found == controller_->records.end())
+			return unexpectedError(
+				makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPrepare));
+		auto& record = found->second;
+		if (!controller_->supports_dev_capture(record.state.colorFormat)) {
+			record.capture_failed = true;
+			return unexpectedError(
+				makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportPrepare));
+		}
+		const auto active_count = std::ranges::count_if(controller_->records, [](const auto& item) {
+			const auto& candidate = item.second;
+			return candidate.capture_requested || candidate.pending_capture.texture ||
+				   candidate.published_capture.texture;
+		});
+		if (active_count >= 16 && !record.capture_requested && !record.pending_capture.texture &&
+			!record.published_capture.texture)
+			return unexpectedError(
+				makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::ViewportPrepare));
+		if (controller_->retired_dev_captures.capacity() < 64)
+			controller_->retired_dev_captures.reserve(64);
+		record.capture_release_requested = false;
+		record.capture_failed = false;
+		if (!record.pending_capture.texture)
+			record.capture_requested = true;
+		return {};
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::ViewportPrepare));
+	}
+}
+
+void ViewPortManager::release_dev_capture(std::string_view key) noexcept {
+	if (!controller_)
+		return;
+	try {
+		const auto found = controller_->records.find(std::string(key));
+		if (found == controller_->records.end())
+			return;
+		found->second.capture_requested = false;
+		found->second.capture_release_requested = true;
+		controller_->collect_dev_captures();
+	} catch (...) {}
+}
+
+Result<TextureHandle> ViewPortManager::retain_dev_capture(std::string_view key,
+														  TextureHandle expected_capture) noexcept {
+	if (!controller_ || !storage_)
+		return unexpectedError(
+			makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ViewportPublish));
+	try {
+		const auto found = controller_->records.find(std::string(key));
+		if (found == controller_->records.end())
+			return unexpectedError(
+				makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPublish));
+		const auto& record = found->second;
+		const auto& pending = record.pending_capture;
+		const auto& capture =
+			pending.texture == expected_capture ? pending : record.published_capture;
+		if (!capture.texture || capture.texture != expected_capture || !capture.submission ||
+			capture.submission > storage_->completedSerial())
+			return unexpectedError(
+				makeError(ErrorCode::ResourceHandleInvalid, ErrorSite::ViewportPublish));
+		return storage_->createAnonymousTexture(detail::storage::TextureViewDesc{
+			.imageView = capture.image.view,
+			.sampler = controller_->sampler,
+			.sourceWidth = static_cast<int32_t>(capture.image.width),
+			.sourceHeight = static_cast<int32_t>(capture.image.height)});
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::ViewportPublish));
+	}
+}
+
+void ViewPortManager::prepare_dev_captures(const detail::storage::FrameToken& frame) noexcept {
+	if (!controller_)
+		return;
+	for (auto& [key, record] : controller_->records) {
+		if (!record.capture_requested || !record.referencedThisFrame ||
+			record.pending_capture.texture)
+			continue;
+		try {
+			const auto& source = record.active.images[controller_->currentFrameIndex];
+			auto capture = controller_->create_dev_capture(source.width, source.height,
+														   record.state.colorFormat);
+			capture.source_generation = record.active.generation;
+			capture.source_frame = frame.frameNumber;
+			capture.frame_slot = frame.frameSlot;
+			try {
+				storage_->trackUse(frame, capture.image.image);
+			} catch (...) {
+				controller_->discard_dev_capture(capture);
+				throw;
+			}
+			record.pending_capture = capture;
+			record.capture_requested = false;
+		} catch (...) {
+			record.capture_failed = true;
+			record.capture_requested = false;
+		}
+	}
+}
+
+void ViewPortManager::mark_dev_captures_submitted(uint64_t serial) noexcept {
+	if (!controller_)
+		return;
+	for (auto& [key, record] : controller_->records) {
+		auto& pending = record.pending_capture;
+		if (pending.recorded && !pending.submission &&
+			pending.frame_slot == controller_->currentFrameIndex)
+			pending.submission = serial;
+	}
+}
+void ViewPortManager::collect_dev_captures() noexcept {
+	if (controller_)
+		controller_->collect_dev_captures();
+}
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 void ViewPortManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!controller_) return;
@@ -290,6 +475,15 @@ Result<bool> ViewPortManager::remove(ResourceKey key) {
 	const std::string keyString(key.name);
 	const auto it = controller_->records.find(keyString);
 	if (it == controller_->records.end()) return false;
+#if FLOW_UI_DEV_MODE
+	if (it->second.pending_capture.texture && !it->second.pending_capture.submission)
+		return unexpectedError(
+			makeError(ErrorCode::FramePhaseViolation, ErrorSite::ViewportDestroy));
+	if (!controller_->retire_dev_capture(it->second.pending_capture) ||
+		!controller_->retire_dev_capture(it->second.published_capture))
+		return unexpectedError(
+			makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::ViewportDestroy));
+#endif
 	controller_->reserveRetirement();
 	if (it->second.facadeAddress) it->second.facadeAddress->state_ = nullptr;
 	controller_->retireTargets(std::move(it->second.active));
@@ -354,6 +548,12 @@ const ViewPortVulkanInterop& ViewPortManager::getVulkanInterop() const {
 
 void ViewPortManager::onFrameStart(VulkanContext&, uint32_t frameIndex) {
 	if (!controller_) return;
+#if FLOW_UI_DEV_MODE
+	for (auto& [key, record] : controller_->records)
+		if (record.pending_capture.texture && !record.pending_capture.submission)
+			controller_->discard_dev_capture(record.pending_capture);
+	controller_->collect_dev_captures();
+#endif
 	controller_->currentFrameIndex = frameIndex % controller_->framesInFlight;
 	controller_->collectRetired();
 	for (auto& [_, record] : controller_->records) {
@@ -494,6 +694,38 @@ static void ensureRenderTargetSize(
 	storageSystem.noteManagerMutation(window);
 }
 
+#if FLOW_UI_AGENTIC_WORKFLOW
+void ViewPortManager::set_agentic_frame_context(uint64_t app_tick, uint64_t window_frame) noexcept {
+	if (!controller_ || !controller_->vk ||
+		!devSystems::agentic::frame_capture::requested(*controller_->vk))
+		return;
+	agentic_app_tick_ = app_tick;
+	agentic_window_frame_ = window_frame;
+	for (auto& entry : controller_->records)
+		for (auto& image : entry.second.active.images)
+			if (image.agentic_pending_window_frame != window_frame) {
+				image.agentic_pending_app_tick = 0;
+				image.agentic_pending_window_frame = 0;
+				image.agentic_pending_revision = 0;
+			}
+}
+
+void ViewPortManager::mark_agentic_submitted(uint64_t submission_serial) noexcept {
+	if (!controller_ || !agentic_window_frame_)
+		return;
+	for (auto& entry : controller_->records)
+		for (auto& image : entry.second.active.images)
+			if (image.agentic_pending_revision &&
+				image.agentic_pending_window_frame == agentic_window_frame_) {
+				image.agentic_producer_app_tick = image.agentic_pending_app_tick;
+				image.agentic_producer_window_frame = image.agentic_pending_window_frame;
+				image.agentic_producer_submission_serial = submission_serial;
+				image.agentic_content_revision = image.agentic_pending_revision;
+				image.agentic_pending_revision = 0;
+			}
+}
+#endif
+
 void ViewPortManager::recordFramePasses(
 	VulkanContext& vk, VkCommandBuffer primary, uint32_t frameIndex
 #if FLOW_UI_DEV_MODE
@@ -552,6 +784,25 @@ void ViewPortManager::recordFramePasses(
 		}
 		vkCheck(vkEndCommandBuffer(frame.commandBuffer));
 		const VkImageLayout previousLayout = image.layout;
+#if FLOW_UI_AGENTIC_WORKFLOW
+		// LOAD without a callback preserves a prior producer's content even though the
+		// viewport is sampled by this window frame. Commit new identities on submit only.
+		if (agentic_window_frame_ &&
+			(record.state.clearEveryFrame || previousLayout == VK_IMAGE_LAYOUT_UNDEFINED ||
+			 record.state.renderCallback)) {
+			image.agentic_pending_app_tick = agentic_app_tick_;
+			image.agentic_pending_window_frame = agentic_window_frame_;
+			if (record.agentic_next_content_revision != UINT64_MAX)
+				image.agentic_pending_revision = record.agentic_next_content_revision++;
+			else {
+				image.agentic_pending_revision = 0;
+				image.agentic_content_revision = 0;
+				image.agentic_producer_app_tick = 0;
+				image.agentic_producer_window_frame = 0;
+				image.agentic_producer_submission_serial = 0;
+			}
+		}
+#endif
 		transitionViewportImageLayout(primary, image.nativeImage, image.layout, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 		image.layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 		VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
@@ -568,11 +819,50 @@ void ViewPortManager::recordFramePasses(
 		vkCmdBeginRendering(primary, &rendering);
 		if (record.state.renderCallback) vkCmdExecuteCommands(primary, 1, &frame.commandBuffer);
 		vkCmdEndRendering(primary);
+#if FLOW_UI_DEV_MODE
+		auto& capture = record.pending_capture;
+		if (capture.texture && !capture.recorded && !capture.submission &&
+			capture.frame_slot == slot && capture.source_generation == record.active.generation) {
+			transitionViewportImageLayout(primary, image.nativeImage, image.layout,
+										  VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+			image.layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			transitionViewportImageLayout(primary, capture.image.nativeImage,
+										  VK_IMAGE_LAYOUT_UNDEFINED,
+										  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+			VkImageCopy region{};
+			region.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+			region.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+			region.extent = {image.width, image.height, 1};
+			vkCmdCopyImage(primary, image.nativeImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						   capture.image.nativeImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+						   &region);
+			transitionViewportImageLayout(primary, capture.image.nativeImage,
+										  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+										  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			capture.image.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			capture.recorded = true;
+		}
+#endif
 		transitionViewportImageLayout(primary, image.nativeImage, image.layout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		image.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-#if defined(AgenticDebug) && AgenticDebug
-		agentic_debug::record(vk, primary, image.nativeImage, {image.width, image.height},
-			record.state.colorFormat, image.layout, windowId_, slot, "viewport", key);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		const devSystems::agentic::AgenticImageProducerStamp producer{
+			.source_image_revision = image.agentic_pending_revision
+										 ? image.agentic_pending_revision
+										 : image.agentic_content_revision,
+			.app_tick = image.agentic_pending_revision ? image.agentic_pending_app_tick
+													   : image.agentic_producer_app_tick,
+			.window_frame = image.agentic_pending_revision ? image.agentic_pending_window_frame
+														   : image.agentic_producer_window_frame,
+			.submission_serial =
+				image.agentic_pending_revision ? 0u : image.agentic_producer_submission_serial,
+			.available =
+				image.agentic_pending_revision != 0u || image.agentic_content_revision != 0u,
+			.current_submission = image.agentic_pending_revision != 0u,
+		};
+		// The producer counts failures for the service's visual coverage report.
+		static_cast<void>(devSystems::agentic::frame_capture::record(vk, primary, image.nativeImage, {image.width, image.height},
+			record.state.colorFormat, image.layout, windowId_, slot, "viewport", key, VK_COLOR_SPACE_MAX_ENUM_KHR, producer));
 #endif
 	}
 }

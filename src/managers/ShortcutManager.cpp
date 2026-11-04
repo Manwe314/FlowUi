@@ -57,29 +57,67 @@ uint32_t packChord(int key, uint8_t modsMask, FlowUi::ShortcutTrigger trigger) {
 
 int unpackKey(uint32_t packedChord) { return static_cast<int>(packedChord & 0x3FFu); }
 
+bool scopeEligible(FlowUi::ShortcutScope scope, bool focused_input, bool focused_element) noexcept {
+	switch (scope) {
+	case FlowUi::ShortcutScope::FocusedInput: return focused_input;
+	case FlowUi::ShortcutScope::FocusedElement: return focused_element;
+	case FlowUi::ShortcutScope::Global: return true;
+	}
+	return false;
+}
+bool precedenceLess(FlowUi::ShortcutScope left_scope, int32_t left_priority, uint64_t left_order,
+	FlowUi::ShortcutScope right_scope, int32_t right_priority, uint64_t right_order) noexcept {
+	if (left_scope != right_scope) return left_scope < right_scope;
+	if (left_priority != right_priority) return left_priority > right_priority;
+	return left_order < right_order;
+}
+
 bool executableOrderLess(
 	const FlowUi::detail::manager_storage::ShortcutRegistration& a,
 	const FlowUi::detail::manager_storage::ShortcutRegistration& b) {
-	if (a->scope != b->scope) return static_cast<uint8_t>(a->scope) < static_cast<uint8_t>(b->scope);
-	if (a->priority != b->priority) return a->priority > b->priority;
-	return a->registrationOrder < b->registrationOrder;
+	return precedenceLess(a->scope, a->priority, a->registrationOrder, b->scope, b->priority, b->registrationOrder);
 }
 
 bool scopeIsActive(
 	const FlowUi::detail::manager_storage::ShortcutRegistrationRecord& executable,
 	const FlowUi::ShortcutContext& context,
 	FlowUi::UiManager& ui) {
-	switch (executable.scope) {
-	case FlowUi::ShortcutScope::FocusedInput: return ui.inputFields().hasPrimaryFieldFocus();
-	case FlowUi::ShortcutScope::FocusedElement: return context.focusedElementId.id != 0u;
-	case FlowUi::ShortcutScope::Global: return true;
-	default: return false;
-	}
+	return scopeEligible(executable.scope, ui.inputFields().hasPrimaryFieldFocus(), context.focusedElementId.id != 0u);
 }
 
 } // namespace
 
 namespace FlowUi {
+#if FLOW_UI_DEV_MODE
+bool ShortcutManager::devMatches(const DevShortcutView& candidate, const ShortcutChord& chord,
+	bool focused_input, bool focused_element) noexcept {
+	return scopeEligible(candidate.scope, focused_input, focused_element) &&
+		packChord(candidate.chord.key, modsMaskFromChord(candidate.chord), candidate.chord.trigger) ==
+		packChord(chord.key, modsMaskFromChord(chord), chord.trigger);
+}
+bool ShortcutManager::devPrecedes(const DevShortcutView& left, const DevShortcutView& right) noexcept {
+	return precedenceLess(left.scope, left.priority, left.order, right.scope, right.priority, right.order);
+}
+bool ShortcutManager::visitDevShortcuts(void* target, DevShortcutVisitor visitor) const {
+	if (!storage_ || !stateHandle_ || !visitor) return false;
+	const auto& current = state();
+	for (const auto& [identity, registration] : current.registrationsById) {
+		if (!registration || registration->tombstoned) continue;
+		const auto packed = registration->packedChord;
+		const auto modifiers = static_cast<uint8_t>((packed >> 10u) & 15u);
+		if (!visitor(target, DevShortcutView{
+			.chord = {.key = unpackKey(packed), .ctrl = bool(modifiers & kModCtrl),
+				.shift = bool(modifiers & kModShift), .alt = bool(modifiers & kModAlt),
+				.super = bool(modifiers & kModSuper),
+				.trigger = static_cast<ShortcutTrigger>((packed >> 14u) & 3u)},
+			.action = registration->action.id, .epoch = current.registrationEpoch,
+			.order = registration->registrationOrder, .id = identity,
+			.priority = registration->priority, .scope = registration->scope,
+			.handling = registration->handling, .callback = bool(registration->callback)})) return false;
+	}
+	return true;
+}
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 void ShortcutManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
 	if (!storage_ || stateHandle_ == 0u) return;
@@ -352,6 +390,7 @@ void ShortcutManager::clear() {
 								current.registeredKeyRefCount.size());
 	current.registeredKeyRefCount.clear();
 	current.focusedElementId = {};
+	++current.registrationEpoch;
 	storage_->noteManagerMutation(window_);
 }
 

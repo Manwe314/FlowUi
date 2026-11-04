@@ -52,11 +52,9 @@ public:
 	void bind_memory_demand(const ::FlowUi::detail::MemoryDemandControl* control) noexcept {
 		capacity_demand_.bind(control);
 	}
-	void beginFrame(
-		WindowId window,
-		uint64_t frameNumber,
-		Clay_Context& clay,
-		DevTimingRecorder* timing) noexcept;
+	void beginFrame(WindowId window, uint64_t frameNumber, Clay_Context& clay,
+					DevTimingRecorder* timing, uint64_t app_tick = 0,
+					uint64_t ui_runtime_frame = 0) noexcept;
 	[[nodiscard]] Token beginFlow(const FlowBegin& begin) noexcept;
 	void endFlow(Token token, bool autoClosed = false) noexcept;
 #if FLOW_UI_DEV_CAPTURE_CLAY

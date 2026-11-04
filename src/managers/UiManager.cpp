@@ -264,6 +264,8 @@ namespace FlowUi
 	}
 
 	manager_storage::UiManagerState::~UiManagerState() noexcept {
+		if (Clay_GetCurrentContext() == clayContext)
+			Clay_SetCurrentContext(nullptr);
 		if (storage && clayMemory) storage->releasePersistent(clayMemory);
 	}
 
@@ -514,6 +516,9 @@ namespace FlowUi
 
 		const float clampedScreenWidth = std::max(1.0f, screenWidth);
 		const float clampedScreenHeight = std::max(1.0f, screenHeight);
+#if FLOW_UI_AGENTIC_WORKFLOW
+		state_->agentic_layout_dimensions = {clampedScreenWidth, clampedScreenHeight};
+#endif
 		Clay_SetLayoutDimensions(Clay_Dimensions{clampedScreenWidth, clampedScreenHeight});
 		Clay_SetPointerState(
 			Clay_Vector2{frameInput.mouseX, frameInput.mouseY},
@@ -596,8 +601,12 @@ namespace FlowUi
 		}
 #if FLOW_UI_DEV_MODE
 		devInternalScopeDepth_ = 0;
-		state_->devTreeCapture.beginFrame(
-			window_, state_->devRuntime.frameCounter(), *state_->clayContext, devTimingRecorder_);
+		if (dev_tree_collection_)
+			state_->devTreeCapture.beginFrame(
+				window_,
+				dev_evidence_frame_ ? dev_evidence_frame_ : state_->devRuntime.frameCounter(),
+				*state_->clayContext, devTimingRecorder_, dev_evidence_tick_,
+				state_->devRuntime.frameCounter());
 		if (devOverrideEngine_) {
 			devOverrideEngine_->beginWindowFrame(
 				window_, state_->devRuntime.frameCounter());
@@ -643,8 +652,10 @@ namespace FlowUi
 			renderCommands = Clay_EndLayout(static_cast<float>(state_->frameInputForCurrentLayout.dt));
 		}
 #if FLOW_UI_DEV_MODE
-		state_->devTreeCapture.finishAfterLayout();
-		reportDevTreeDiagnostics(state_->devTreeCapture);
+		if (dev_tree_collection_) {
+			state_->devTreeCapture.finishAfterLayout();
+			reportDevTreeDiagnostics(state_->devTreeCapture);
+		}
 		if (devOverrideEngine_) {
 			if (state_->devTreeCapture.lastFinishFailed()) {
 				devOverrideEngine_->cancelWindowFrame(window_);
@@ -714,6 +725,10 @@ namespace FlowUi
 #endif
 			popupManager_.endFrame();
 		}
+#if FLOW_UI_AGENTIC_WORKFLOW
+		state_->agentic_completed_window_frame = dev_evidence_frame_;
+		state_->agentic_completed_app_tick = dev_evidence_tick_;
+#endif
 		return renderCommands;
 	}
 	
@@ -839,6 +854,20 @@ namespace FlowUi
 	const InteractionSnapshot& UiManager::getPreviousFramesInteraction() const {
 		return state_->previousInteractionSnapshot;
 	}
+#if FLOW_UI_AGENTIC_WORKFLOW
+	const InteractionSnapshot& UiManager::dev_completed_interaction() const noexcept {
+		return state_->currentInteractionSnapshot;
+	}
+	Clay_Dimensions UiManager::dev_layout_dimensions() const noexcept {
+		return state_->agentic_layout_dimensions;
+	}
+	std::uint64_t UiManager::dev_completed_window_frame() const noexcept {
+		return state_->agentic_completed_window_frame;
+	}
+	std::uint64_t UiManager::dev_completed_app_tick() const noexcept {
+		return state_->agentic_completed_app_tick;
+	}
+#endif
 
 	const FrameInput& UiManager::getCurrentFrameInput() const {
 		return state_->frameInputForCurrentLayout;

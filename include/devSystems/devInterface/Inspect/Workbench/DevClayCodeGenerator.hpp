@@ -39,7 +39,9 @@ struct DevClayCodeGenerator {
 	static constexpr bool isDevInternal = true;
 	static constexpr ElementStatePolicy statePolicy = ElementStatePolicy::windowLifetime();
 
+#if FLOW_UI_DEV_CAPTURE_CLAY
 	static void onPressed(InteractionContext& context);
+#endif
 	static void buildElement(BuildContext& context);
 };
 

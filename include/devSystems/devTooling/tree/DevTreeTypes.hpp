@@ -219,6 +219,7 @@ struct DevTreeCaptureStats {
 struct DevTreeSnapshot {
 	WindowId window = InvalidWindowId;
 	uint64_t frameNumber = 0;
+	uint64_t app_tick = 0, ui_runtime_frame = 0;
 	uint64_t generation = 0;
 #if FLOW_UI_DEV_CAPTURE_CLAY
 	uint32_t authoredClayElementCount = 0;

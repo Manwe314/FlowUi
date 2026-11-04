@@ -64,6 +64,7 @@ struct IconManager {
 		TextureHandle texture{};
 		float uv0x = 0.0f, uv0y = 0.0f, uv1x = 1.0f, uv1y = 1.0f;
 		std::uint32_t atlasPage = 0;
+		bool newlyRasterized = false;
 	};
 	struct DevAtlasView {
 		TextureHandle texture{};
@@ -80,6 +81,11 @@ struct IconManager {
 	[[nodiscard]] std::size_t devAtlasCount() const noexcept;
 	bool visitDevIcons(void* userData, DevIconVisitor visitor) const;
 	bool visitDevAtlases(void* userData, DevAtlasVisitor visitor) const;
+	/** Materialize one exact raster at an explicit development-tool request. */
+	[[nodiscard]] Result<DevIconView> devRasterize(std::string_view key, uint32_t width,
+												uint32_t height) noexcept;
+	/** Retire only the exact cached texture generation; the SVG registration remains. */
+	[[nodiscard]] Result<bool> devRemoveRaster(TextureHandle texture) noexcept;
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
@@ -277,7 +283,8 @@ private:
 	VariantEntry& ensureVariantForRequest(
 		std::string_view nameKey,
 		uint32_t requestedWidth,
-		uint32_t requestedHeight);
+		uint32_t requestedHeight,
+		bool exactSize = false);
 	const std::string* findRequestedKeyByTextureHandle(TextureHandle texture) const;
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	IconGenerationFailurePolicy generationPolicy_ = IconGenerationFailurePolicy::UseFallbackTexture;
@@ -316,6 +323,7 @@ struct IconManager {
 		TextureHandle texture{};
 		float uv0x = 0.0f, uv0y = 0.0f, uv1x = 1.0f, uv1y = 1.0f;
 		std::uint32_t atlasPage = 0;
+		bool newlyRasterized = false;
 	};
 	struct DevAtlasView {
 		TextureHandle texture{};
@@ -332,6 +340,14 @@ struct IconManager {
 	[[nodiscard]] std::size_t devAtlasCount() const noexcept { return 0; }
 	bool visitDevIcons(void*, DevIconVisitor) const { return true; }
 	bool visitDevAtlases(void*, DevAtlasVisitor) const { return true; }
+	/** Report unavailable icon support for an explicit development raster request. */
+	[[nodiscard]] Result<DevIconView> devRasterize(std::string_view, uint32_t, uint32_t) noexcept {
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRasterize));
+	}
+	/** Report unavailable icon support for an explicit development raster removal. */
+	[[nodiscard]] Result<bool> devRemoveRaster(TextureHandle) noexcept {
+		return unexpectedError(makeError(ErrorCode::UnsupportedBuildFeature, ErrorSite::IconRemove));
+	}
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink&) const noexcept {}

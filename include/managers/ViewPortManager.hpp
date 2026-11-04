@@ -285,6 +285,27 @@ private:
  */
 class ViewPortManager {
 public:
+#if FLOW_UI_DEV_MODE
+	struct DevViewportView {
+		std::string_view key{};
+		TextureHandle capture_texture{};
+		uint64_t generation = 0;
+		uint64_t captured_frame = 0, captured_generation = 0, captured_submission = 0;
+		uint32_t width = 0, height = 0, format = 0;
+		uint32_t captured_width = 0, captured_height = 0, captured_format = 0;
+		bool has_callback = false, clear_every_frame = true;
+		bool capture_supported = false, capture_pending = false, capture_failed = false;
+	};
+	using DevViewportVisitor = bool (*)(void*, const DevViewportView&);
+	/** Inspect registrations without referencing textures or scheduling render callbacks. */
+	void visitDevViewports(void* target, DevViewportVisitor visitor) const;
+	/** Opt in to one immutable copy when this viewport naturally renders again. */
+	[[nodiscard]] Status request_dev_capture(std::string_view key) noexcept;
+	/** Release the observation cache without affecting the viewport or its renderer. */
+	void release_dev_capture(std::string_view key) noexcept;
+	/** Clone a completed observation's binding without copying or overwriting its image. */
+	[[nodiscard]] Result<TextureHandle> retain_dev_capture(std::string_view key, TextureHandle expected_capture) noexcept;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif
@@ -441,11 +462,22 @@ private:
 		uint32_t framesInFlight,
 		MissingVisualPolicy missingPolicy);
 	void onFrameStart(VulkanContext& vk, uint32_t frameIndex);
+#if FLOW_UI_DEV_MODE
+	void prepare_dev_captures(const detail::storage::FrameToken& frame) noexcept;
+	void mark_dev_captures_submitted(uint64_t serial) noexcept;
+	void collect_dev_captures() noexcept;
+#endif
 	void prepareFrameTargets(
 		Clay_RenderCommandArray& renderCommands,
 		float uiToFramebufferScaleX,
 		float uiToFramebufferScaleY);
 	void remapRenderCommandsForFrame(Clay_RenderCommandArray& renderCommands, uint32_t frameIndex);
+#if FLOW_UI_AGENTIC_WORKFLOW
+	/** Supply the authoritative consumer frame before recording any viewport passes. */
+	void set_agentic_frame_context(uint64_t app_tick, uint64_t window_frame) noexcept;
+	/** Commit content identities only after their owning command buffer was submitted. */
+	void mark_agentic_submitted(uint64_t submission_serial) noexcept;
+#endif
 	void recordFramePasses(
 		VulkanContext& vk,
 		VkCommandBuffer primaryCommandBuffer,
@@ -466,6 +498,10 @@ private:
 	WindowId windowId_ = InvalidWindowId;
 	uint64_t controllerHandle_ = 0;
 	detail::manager_storage::ViewportStorageController* controller_ = nullptr;
+#if FLOW_UI_AGENTIC_WORKFLOW
+	uint64_t agentic_app_tick_ = 0;
+	uint64_t agentic_window_frame_ = 0;
+#endif
 };
 
 /** @} */

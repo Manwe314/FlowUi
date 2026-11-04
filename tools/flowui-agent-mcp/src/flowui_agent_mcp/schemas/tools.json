@@ -1,0 +1,4590 @@
+{
+  "flowui_capabilities": {
+    "description": "Discover offline or selected-run capabilities and status.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "capabilities",
+            "instances",
+            "status"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_context": {
+    "description": "Retrieve bounded library contracts and source selectors.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "context.find",
+            "context.read"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "intent": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "topic": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "selector": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_capture": {
+    "description": "Plan, start or stop a bounded evidence job.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "capture.plan",
+            "capture.start",
+            "capture.stop"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "profile": {
+              "enum": [
+                "performance_diagnose",
+                "performance_verify",
+                "diagnostics_reproduce",
+                "visual_inspect",
+                "memory_diagnose",
+                "startup_diagnose"
+              ]
+            },
+            "mode": {
+              "enum": [
+                "windowed",
+                "cpu_scenario",
+                "layout_scenario",
+                "offscreen_vulkan"
+              ]
+            },
+            "window_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$"
+              },
+              "maxItems": 32
+            },
+            "scenario_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "scenario": {
+              "type": "object"
+            },
+            "duration_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "measurement_ticks": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "warmup_ticks": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "measurement": {
+              "type": "object"
+            },
+            "warmup": {
+              "type": "object"
+            },
+            "sections": {
+              "type": "object"
+            },
+            "limits": {
+              "type": "object"
+            },
+            "objective": {
+              "type": [
+                "object",
+                "string"
+              ]
+            },
+            "idempotency_key": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "allow_degraded": {
+              "type": "boolean"
+            },
+            "seed": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "fixture_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "maximum_expected_tick_cadence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "include_tree_text": {
+                  "type": "boolean"
+                },
+                "include_native_messages": {
+                  "type": "boolean"
+                },
+                "include_stacks": {
+                  "type": "boolean"
+                },
+                "include_source_paths": {
+                  "type": "boolean"
+                },
+                "include_interaction_labels": {
+                  "type": "boolean"
+                },
+                "include_interaction_outcomes": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "visual_sources": {
+              "type": "object",
+              "properties": {
+                "window": {
+                  "type": "boolean"
+                },
+                "viewports": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "job_id": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_job": {
+    "description": "Recover job progress or request bounded cancellation.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "job.status",
+            "job.cancel"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "job_id": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_scenario": {
+    "description": "List or execute application-registered workloads in their declared mode.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "scenario.list",
+            "scenario.run"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "profile": {
+              "enum": [
+                "performance_diagnose",
+                "performance_verify",
+                "diagnostics_reproduce",
+                "visual_inspect",
+                "memory_diagnose",
+                "startup_diagnose"
+              ]
+            },
+            "mode": {
+              "enum": [
+                "windowed",
+                "cpu_scenario",
+                "layout_scenario",
+                "offscreen_vulkan"
+              ]
+            },
+            "window_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$"
+              },
+              "maxItems": 32
+            },
+            "scenario_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "scenario": {
+              "type": "object"
+            },
+            "duration_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "measurement_ticks": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "warmup_ticks": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "measurement": {
+              "type": "object"
+            },
+            "warmup": {
+              "type": "object"
+            },
+            "sections": {
+              "type": "object"
+            },
+            "limits": {
+              "type": "object"
+            },
+            "objective": {
+              "type": [
+                "object",
+                "string"
+              ]
+            },
+            "idempotency_key": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "allow_degraded": {
+              "type": "boolean"
+            },
+            "seed": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "fixture_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "maximum_expected_tick_cadence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "include_tree_text": {
+                  "type": "boolean"
+                },
+                "include_native_messages": {
+                  "type": "boolean"
+                },
+                "include_stacks": {
+                  "type": "boolean"
+                },
+                "include_source_paths": {
+                  "type": "boolean"
+                },
+                "include_interaction_labels": {
+                  "type": "boolean"
+                },
+                "include_interaction_outcomes": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "visual_sources": {
+              "type": "object",
+              "properties": {
+                "window": {
+                  "type": "boolean"
+                },
+                "viewports": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_query": {
+    "description": "Query retained performance, diagnostics, memory or visual evidence.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "query.performance",
+            "query.diagnostics",
+            "query.memory",
+            "query.visual"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "window": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "window_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "app_tick": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "window_frame": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "artifact": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "domain": {
+              "enum": [
+                "runtime",
+                "build"
+              ]
+            },
+            "kind": {
+              "enum": [
+                "frames",
+                "trees",
+                "themes",
+                "catalogue",
+                "samples",
+                "events",
+                "subtree"
+              ]
+            },
+            "severity": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "source_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "entity_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "filter": {
+              "type": "object"
+            },
+            "top": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "tree": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "flow_node": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "node_index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4294967295
+                    }
+                  },
+                  "required": [
+                    "node_index"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "instance_id": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    }
+                  },
+                  "required": [
+                    "instance_id"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "debug_name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    }
+                  },
+                  "required": [
+                    "debug_name"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_artifact": {
+    "description": "Read inventoried metadata/text or a bounded PNG image.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "artifact.list",
+            "artifact.read",
+            "artifact.image"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "artifact": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "image": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "format": {
+              "const": "png"
+            },
+            "include_image": {
+              "type": "boolean"
+            },
+            "crop": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 16384
+                },
+                "y": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 16384
+                },
+                "width": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 16384
+                },
+                "height": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 16384
+                }
+              },
+              "required": [
+                "x",
+                "y",
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "crop_flow_node": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "node_index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4294967295
+                    }
+                  },
+                  "required": [
+                    "node_index"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "instance_id": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    }
+                  },
+                  "required": [
+                    "instance_id"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "debug_name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    }
+                  },
+                  "required": [
+                    "debug_name"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "not": {
+            "required": [
+              "crop",
+              "crop_flow_node"
+            ]
+          }
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_compare": {
+    "description": "Evaluate comparability and explicit pass/fail/inconclusive objectives.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "compare",
+            "objective.check",
+            "visual.compare"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "baseline": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "candidate": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "objective": {
+              "type": [
+                "object",
+                "string"
+              ]
+            },
+            "passes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "maxItems": 100
+            },
+            "minimum_passes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "minimum_valid_intervals": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "minimum_duration_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "require_pass": {
+              "type": "boolean"
+            },
+            "image": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "candidate_image": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "tolerance": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_changes_preview": {
+    "description": "Review typed tooling changes with exact expected revisions.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "changes.preview"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "decisions": {
+              "type": "array",
+              "maxItems": 1024,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "decision": {
+                    "enum": [
+                      "include",
+                      "omit",
+                      "retain_disk",
+                      "remove"
+                    ]
+                  },
+                  "disk_revision": {
+                    "type": "string",
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "key",
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_changes_apply": {
+    "description": "Commit an explicitly selected revision-checked tooling transaction.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "changes.apply"
+          ]
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "capture": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "manifest": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 1048576
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "review_id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "schema_generation": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "proposal_revision": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "theme_revision": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            },
+            "disk_revision": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "operation_id": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "instance",
+            "review_id",
+            "schema_generation",
+            "proposal_revision",
+            "theme_revision",
+            "disk_revision",
+            "operation_id"
+          ]
+        }
+      },
+      "required": [
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_interaction": {
+    "description": "Discover, compile, execute or record finite frame-bound input plans. Start and recording operations acquire runtime control; planning and queries only read data.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "interaction.capabilities",
+            "interaction.targets",
+            "interaction.plan",
+            "interaction.start",
+            "interaction.record.start",
+            "interaction.record.stop",
+            "interaction.query"
+          ]
+        },
+        "arguments": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.capabilities"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.targets"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000
+                },
+                "window_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "target": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "window_id": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "point": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "number",
+                              "minimum": -3.4028234663852886e+38,
+                              "maximum": 3.4028234663852886e+38
+                            },
+                            "y": {
+                              "type": "number",
+                              "minimum": -3.4028234663852886e+38,
+                              "maximum": 3.4028234663852886e+38
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "clay_id": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                          "not": {
+                            "const": "0"
+                          }
+                        },
+                        "clay_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024
+                        },
+                        "flow_instance_id": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                          "not": {
+                            "const": "0"
+                          }
+                        },
+                        "flow_debug_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024
+                        },
+                        "custom_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024
+                        },
+                        "tree_generation": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "layout_revision": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "custom_revision": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "anchor": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "y": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false,
+                      "oneOf": [
+                        {
+                          "required": [
+                            "point"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "clay_id"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "clay_name"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "flow_instance_id"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "flow_debug_name"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "custom_id"
+                          ]
+                        }
+                      ]
+                    },
+                    {}
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance",
+                "window_id"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.plan"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "plan": {
+                  "type": "object",
+                  "properties": {
+                    "schema": {
+                      "const": "FlowUi.Agentic.InteractionPlan"
+                    },
+                    "schema_version": {
+                      "const": "1.0"
+                    },
+                    "mode": {
+                      "enum": [
+                        "raw_frames",
+                        "common_controls"
+                      ]
+                    },
+                    "window_id": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                      "not": {
+                        "const": "0"
+                      }
+                    },
+                    "clock": {
+                      "enum": [
+                        "window_input_frames",
+                        "exact_window_frames"
+                      ]
+                    },
+                    "coordinates": {
+                      "const": "window_logical"
+                    },
+                    "baseline": {
+                      "enum": [
+                        "neutral_before_start",
+                        "require_neutral"
+                      ]
+                    },
+                    "run_id": {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "fixture_id": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "fixture_digest": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "first_window_frame": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                    },
+                    "seed": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                    },
+                    "deadline_ns": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                    },
+                    "limits": {
+                      "type": "object",
+                      "properties": {
+                        "maximum_frames": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_spans": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_steps": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_target_candidates": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_text_codepoints": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_observations": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_artifact_bytes": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_duration_ns": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    },
+                    "frames": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "offset": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "window_frame": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "pointer": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "scroll": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "buttons_down": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4
+                            },
+                            "maxItems": 5,
+                            "uniqueItems": true
+                          },
+                          "keys_down": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "enum": [
+                                32,
+                                39,
+                                44,
+                                45,
+                                46,
+                                47,
+                                48,
+                                49,
+                                50,
+                                51,
+                                52,
+                                53,
+                                54,
+                                55,
+                                56,
+                                57,
+                                59,
+                                61,
+                                65,
+                                66,
+                                67,
+                                68,
+                                69,
+                                70,
+                                71,
+                                72,
+                                73,
+                                74,
+                                75,
+                                76,
+                                77,
+                                78,
+                                79,
+                                80,
+                                81,
+                                82,
+                                83,
+                                84,
+                                85,
+                                86,
+                                87,
+                                88,
+                                89,
+                                90,
+                                91,
+                                92,
+                                93,
+                                96,
+                                161,
+                                162,
+                                256,
+                                257,
+                                258,
+                                259,
+                                260,
+                                261,
+                                262,
+                                263,
+                                264,
+                                265,
+                                266,
+                                267,
+                                268,
+                                269,
+                                280,
+                                281,
+                                282,
+                                283,
+                                284,
+                                290,
+                                291,
+                                292,
+                                293,
+                                294,
+                                295,
+                                296,
+                                297,
+                                298,
+                                299,
+                                300,
+                                301,
+                                302,
+                                303,
+                                304,
+                                305,
+                                306,
+                                307,
+                                308,
+                                309,
+                                310,
+                                311,
+                                312,
+                                313,
+                                314,
+                                320,
+                                321,
+                                322,
+                                323,
+                                324,
+                                325,
+                                326,
+                                327,
+                                328,
+                                329,
+                                330,
+                                331,
+                                332,
+                                333,
+                                334,
+                                335,
+                                336,
+                                340,
+                                341,
+                                342,
+                                343,
+                                344,
+                                345,
+                                346,
+                                347,
+                                348
+                              ]
+                            },
+                            "maxItems": 512,
+                            "uniqueItems": true
+                          },
+                          "text": {
+                            "type": "string",
+                            "maxLength": 4194304
+                          },
+                          "pointer_inside": {
+                            "type": "boolean"
+                          },
+                          "window_focused": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [],
+                        "additionalProperties": false,
+                        "oneOf": [
+                          {
+                            "required": [
+                              "offset"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "window_frame"
+                            ]
+                          }
+                        ]
+                      },
+                      "maxItems": 65536
+                    },
+                    "spans": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "offset": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "count": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "input": {
+                            "type": "object",
+                            "properties": {
+                              "pointer": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "scroll": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "buttons_down": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 4
+                                },
+                                "maxItems": 5,
+                                "uniqueItems": true
+                              },
+                              "keys_down": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "enum": [
+                                    32,
+                                    39,
+                                    44,
+                                    45,
+                                    46,
+                                    47,
+                                    48,
+                                    49,
+                                    50,
+                                    51,
+                                    52,
+                                    53,
+                                    54,
+                                    55,
+                                    56,
+                                    57,
+                                    59,
+                                    61,
+                                    65,
+                                    66,
+                                    67,
+                                    68,
+                                    69,
+                                    70,
+                                    71,
+                                    72,
+                                    73,
+                                    74,
+                                    75,
+                                    76,
+                                    77,
+                                    78,
+                                    79,
+                                    80,
+                                    81,
+                                    82,
+                                    83,
+                                    84,
+                                    85,
+                                    86,
+                                    87,
+                                    88,
+                                    89,
+                                    90,
+                                    91,
+                                    92,
+                                    93,
+                                    96,
+                                    161,
+                                    162,
+                                    256,
+                                    257,
+                                    258,
+                                    259,
+                                    260,
+                                    261,
+                                    262,
+                                    263,
+                                    264,
+                                    265,
+                                    266,
+                                    267,
+                                    268,
+                                    269,
+                                    280,
+                                    281,
+                                    282,
+                                    283,
+                                    284,
+                                    290,
+                                    291,
+                                    292,
+                                    293,
+                                    294,
+                                    295,
+                                    296,
+                                    297,
+                                    298,
+                                    299,
+                                    300,
+                                    301,
+                                    302,
+                                    303,
+                                    304,
+                                    305,
+                                    306,
+                                    307,
+                                    308,
+                                    309,
+                                    310,
+                                    311,
+                                    312,
+                                    313,
+                                    314,
+                                    320,
+                                    321,
+                                    322,
+                                    323,
+                                    324,
+                                    325,
+                                    326,
+                                    327,
+                                    328,
+                                    329,
+                                    330,
+                                    331,
+                                    332,
+                                    333,
+                                    334,
+                                    335,
+                                    336,
+                                    340,
+                                    341,
+                                    342,
+                                    343,
+                                    344,
+                                    345,
+                                    346,
+                                    347,
+                                    348
+                                  ]
+                                },
+                                "maxItems": 512,
+                                "uniqueItems": true
+                              },
+                              "text": {
+                                "type": "string",
+                                "maxLength": 4194304
+                              },
+                              "pointer_inside": {
+                                "type": "boolean"
+                              },
+                              "window_focused": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "offset",
+                          "count",
+                          "input"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 65536
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "operation": {
+                            "enum": [
+                              "pointer.move",
+                              "hover",
+                              "pointer.down",
+                              "pointer.up",
+                              "pointer.hold",
+                              "click",
+                              "drag",
+                              "scroll",
+                              "key.down",
+                              "key.up",
+                              "key.chord",
+                              "text.enter",
+                              "wait",
+                              "assert"
+                            ]
+                          },
+                          "step_id": {
+                            "type": "string",
+                            "maxLength": 128
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "window_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "point": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "clay_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "clay_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "flow_instance_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "flow_debug_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "custom_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "tree_generation": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "layout_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "custom_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "anchor": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false,
+                            "oneOf": [
+                              {
+                                "required": [
+                                  "point"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_instance_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_debug_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "custom_id"
+                                ]
+                              }
+                            ]
+                          },
+                          "destination": {
+                            "type": "object",
+                            "properties": {
+                              "window_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "point": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "clay_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "clay_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "flow_instance_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "flow_debug_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "custom_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "tree_generation": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "layout_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "custom_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "anchor": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false,
+                            "oneOf": [
+                              {
+                                "required": [
+                                  "point"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_instance_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_debug_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "custom_id"
+                                ]
+                              }
+                            ]
+                          },
+                          "path": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "number",
+                                  "minimum": -3.4028234663852886e+38,
+                                  "maximum": 3.4028234663852886e+38
+                                },
+                                "y": {
+                                  "type": "number",
+                                  "minimum": -3.4028234663852886e+38,
+                                  "maximum": 3.4028234663852886e+38
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 4096
+                          },
+                          "keys": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "enum": [
+                                32,
+                                39,
+                                44,
+                                45,
+                                46,
+                                47,
+                                48,
+                                49,
+                                50,
+                                51,
+                                52,
+                                53,
+                                54,
+                                55,
+                                56,
+                                57,
+                                59,
+                                61,
+                                65,
+                                66,
+                                67,
+                                68,
+                                69,
+                                70,
+                                71,
+                                72,
+                                73,
+                                74,
+                                75,
+                                76,
+                                77,
+                                78,
+                                79,
+                                80,
+                                81,
+                                82,
+                                83,
+                                84,
+                                85,
+                                86,
+                                87,
+                                88,
+                                89,
+                                90,
+                                91,
+                                92,
+                                93,
+                                96,
+                                161,
+                                162,
+                                256,
+                                257,
+                                258,
+                                259,
+                                260,
+                                261,
+                                262,
+                                263,
+                                264,
+                                265,
+                                266,
+                                267,
+                                268,
+                                269,
+                                280,
+                                281,
+                                282,
+                                283,
+                                284,
+                                290,
+                                291,
+                                292,
+                                293,
+                                294,
+                                295,
+                                296,
+                                297,
+                                298,
+                                299,
+                                300,
+                                301,
+                                302,
+                                303,
+                                304,
+                                305,
+                                306,
+                                307,
+                                308,
+                                309,
+                                310,
+                                311,
+                                312,
+                                313,
+                                314,
+                                320,
+                                321,
+                                322,
+                                323,
+                                324,
+                                325,
+                                326,
+                                327,
+                                328,
+                                329,
+                                330,
+                                331,
+                                332,
+                                333,
+                                334,
+                                335,
+                                336,
+                                340,
+                                341,
+                                342,
+                                343,
+                                344,
+                                345,
+                                346,
+                                347,
+                                348
+                              ]
+                            },
+                            "maxItems": 512,
+                            "uniqueItems": true
+                          },
+                          "text": {
+                            "type": "string",
+                            "maxLength": 4194304
+                          },
+                          "recipe": {
+                            "type": "object",
+                            "properties": {
+                              "prepare_up_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "down_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "hold_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "up_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "repeat": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "inter_click_gap_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "button": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false
+                          },
+                          "frames": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "minimum_duration_ns": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "deadline_ns": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "scroll": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "expect": {
+                            "type": "array",
+                            "items": {
+                              "enum": [
+                                "target_hovered",
+                                "target_pressed",
+                                "target_held",
+                                "target_released",
+                                "layout_completed",
+                                "frame_presented",
+                                "window_focused",
+                                "text_focused"
+                              ]
+                            },
+                            "maxItems": 8,
+                            "uniqueItems": true
+                          },
+                          "button": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4
+                          },
+                          "require_hover_before_down": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "operation"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 4096
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "persistence": {
+                          "enum": [
+                            "redact_text",
+                            "retain_text",
+                            "volatile"
+                          ]
+                        },
+                        "include_native_input": {
+                          "type": "boolean"
+                        },
+                        "record_observations": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "schema",
+                    "schema_version",
+                    "mode",
+                    "window_id"
+                  ],
+                  "additionalProperties": false,
+                  "allOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "properties": {
+                            "mode": {
+                              "const": "raw_frames"
+                            }
+                          },
+                          "oneOf": [
+                            {
+                              "required": [
+                                "frames"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "spans"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "properties": {
+                            "mode": {
+                              "const": "common_controls"
+                            }
+                          },
+                          "required": [
+                            "steps"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "plan"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.start"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "plan": {
+                  "type": "object",
+                  "properties": {
+                    "schema": {
+                      "const": "FlowUi.Agentic.InteractionPlan"
+                    },
+                    "schema_version": {
+                      "const": "1.0"
+                    },
+                    "mode": {
+                      "enum": [
+                        "raw_frames",
+                        "common_controls"
+                      ]
+                    },
+                    "window_id": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                      "not": {
+                        "const": "0"
+                      }
+                    },
+                    "clock": {
+                      "enum": [
+                        "window_input_frames",
+                        "exact_window_frames"
+                      ]
+                    },
+                    "coordinates": {
+                      "const": "window_logical"
+                    },
+                    "baseline": {
+                      "enum": [
+                        "neutral_before_start",
+                        "require_neutral"
+                      ]
+                    },
+                    "run_id": {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "fixture_id": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "fixture_digest": {
+                      "type": "string",
+                      "maxLength": 1024
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "first_window_frame": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                    },
+                    "seed": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                    },
+                    "deadline_ns": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$",
+                      "maxLength": 20,
+                      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                    },
+                    "limits": {
+                      "type": "object",
+                      "properties": {
+                        "maximum_frames": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_spans": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_steps": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_target_candidates": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_text_codepoints": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_observations": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_artifact_bytes": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        },
+                        "maximum_duration_ns": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,19})$",
+                          "maxLength": 20,
+                          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    },
+                    "frames": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "offset": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "window_frame": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "pointer": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "scroll": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "buttons_down": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4
+                            },
+                            "maxItems": 5,
+                            "uniqueItems": true
+                          },
+                          "keys_down": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "enum": [
+                                32,
+                                39,
+                                44,
+                                45,
+                                46,
+                                47,
+                                48,
+                                49,
+                                50,
+                                51,
+                                52,
+                                53,
+                                54,
+                                55,
+                                56,
+                                57,
+                                59,
+                                61,
+                                65,
+                                66,
+                                67,
+                                68,
+                                69,
+                                70,
+                                71,
+                                72,
+                                73,
+                                74,
+                                75,
+                                76,
+                                77,
+                                78,
+                                79,
+                                80,
+                                81,
+                                82,
+                                83,
+                                84,
+                                85,
+                                86,
+                                87,
+                                88,
+                                89,
+                                90,
+                                91,
+                                92,
+                                93,
+                                96,
+                                161,
+                                162,
+                                256,
+                                257,
+                                258,
+                                259,
+                                260,
+                                261,
+                                262,
+                                263,
+                                264,
+                                265,
+                                266,
+                                267,
+                                268,
+                                269,
+                                280,
+                                281,
+                                282,
+                                283,
+                                284,
+                                290,
+                                291,
+                                292,
+                                293,
+                                294,
+                                295,
+                                296,
+                                297,
+                                298,
+                                299,
+                                300,
+                                301,
+                                302,
+                                303,
+                                304,
+                                305,
+                                306,
+                                307,
+                                308,
+                                309,
+                                310,
+                                311,
+                                312,
+                                313,
+                                314,
+                                320,
+                                321,
+                                322,
+                                323,
+                                324,
+                                325,
+                                326,
+                                327,
+                                328,
+                                329,
+                                330,
+                                331,
+                                332,
+                                333,
+                                334,
+                                335,
+                                336,
+                                340,
+                                341,
+                                342,
+                                343,
+                                344,
+                                345,
+                                346,
+                                347,
+                                348
+                              ]
+                            },
+                            "maxItems": 512,
+                            "uniqueItems": true
+                          },
+                          "text": {
+                            "type": "string",
+                            "maxLength": 4194304
+                          },
+                          "pointer_inside": {
+                            "type": "boolean"
+                          },
+                          "window_focused": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [],
+                        "additionalProperties": false,
+                        "oneOf": [
+                          {
+                            "required": [
+                              "offset"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "window_frame"
+                            ]
+                          }
+                        ]
+                      },
+                      "maxItems": 65536
+                    },
+                    "spans": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "offset": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "count": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "input": {
+                            "type": "object",
+                            "properties": {
+                              "pointer": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "scroll": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "buttons_down": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 4
+                                },
+                                "maxItems": 5,
+                                "uniqueItems": true
+                              },
+                              "keys_down": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "enum": [
+                                    32,
+                                    39,
+                                    44,
+                                    45,
+                                    46,
+                                    47,
+                                    48,
+                                    49,
+                                    50,
+                                    51,
+                                    52,
+                                    53,
+                                    54,
+                                    55,
+                                    56,
+                                    57,
+                                    59,
+                                    61,
+                                    65,
+                                    66,
+                                    67,
+                                    68,
+                                    69,
+                                    70,
+                                    71,
+                                    72,
+                                    73,
+                                    74,
+                                    75,
+                                    76,
+                                    77,
+                                    78,
+                                    79,
+                                    80,
+                                    81,
+                                    82,
+                                    83,
+                                    84,
+                                    85,
+                                    86,
+                                    87,
+                                    88,
+                                    89,
+                                    90,
+                                    91,
+                                    92,
+                                    93,
+                                    96,
+                                    161,
+                                    162,
+                                    256,
+                                    257,
+                                    258,
+                                    259,
+                                    260,
+                                    261,
+                                    262,
+                                    263,
+                                    264,
+                                    265,
+                                    266,
+                                    267,
+                                    268,
+                                    269,
+                                    280,
+                                    281,
+                                    282,
+                                    283,
+                                    284,
+                                    290,
+                                    291,
+                                    292,
+                                    293,
+                                    294,
+                                    295,
+                                    296,
+                                    297,
+                                    298,
+                                    299,
+                                    300,
+                                    301,
+                                    302,
+                                    303,
+                                    304,
+                                    305,
+                                    306,
+                                    307,
+                                    308,
+                                    309,
+                                    310,
+                                    311,
+                                    312,
+                                    313,
+                                    314,
+                                    320,
+                                    321,
+                                    322,
+                                    323,
+                                    324,
+                                    325,
+                                    326,
+                                    327,
+                                    328,
+                                    329,
+                                    330,
+                                    331,
+                                    332,
+                                    333,
+                                    334,
+                                    335,
+                                    336,
+                                    340,
+                                    341,
+                                    342,
+                                    343,
+                                    344,
+                                    345,
+                                    346,
+                                    347,
+                                    348
+                                  ]
+                                },
+                                "maxItems": 512,
+                                "uniqueItems": true
+                              },
+                              "text": {
+                                "type": "string",
+                                "maxLength": 4194304
+                              },
+                              "pointer_inside": {
+                                "type": "boolean"
+                              },
+                              "window_focused": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "offset",
+                          "count",
+                          "input"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 65536
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "operation": {
+                            "enum": [
+                              "pointer.move",
+                              "hover",
+                              "pointer.down",
+                              "pointer.up",
+                              "pointer.hold",
+                              "click",
+                              "drag",
+                              "scroll",
+                              "key.down",
+                              "key.up",
+                              "key.chord",
+                              "text.enter",
+                              "wait",
+                              "assert"
+                            ]
+                          },
+                          "step_id": {
+                            "type": "string",
+                            "maxLength": 128
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "window_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "point": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "clay_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "clay_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "flow_instance_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "flow_debug_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "custom_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "tree_generation": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "layout_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "custom_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "anchor": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false,
+                            "oneOf": [
+                              {
+                                "required": [
+                                  "point"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_instance_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_debug_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "custom_id"
+                                ]
+                              }
+                            ]
+                          },
+                          "destination": {
+                            "type": "object",
+                            "properties": {
+                              "window_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "point": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": -3.4028234663852886e+38,
+                                    "maximum": 3.4028234663852886e+38
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "clay_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "clay_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "flow_instance_id": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                                "not": {
+                                  "const": "0"
+                                }
+                              },
+                              "flow_debug_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "custom_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "tree_generation": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "layout_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "custom_revision": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "anchor": {
+                                "type": "object",
+                                "properties": {
+                                  "x": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "y": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  }
+                                },
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false,
+                            "oneOf": [
+                              {
+                                "required": [
+                                  "point"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "clay_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_instance_id"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "flow_debug_name"
+                                ]
+                              },
+                              {
+                                "required": [
+                                  "custom_id"
+                                ]
+                              }
+                            ]
+                          },
+                          "path": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "number",
+                                  "minimum": -3.4028234663852886e+38,
+                                  "maximum": 3.4028234663852886e+38
+                                },
+                                "y": {
+                                  "type": "number",
+                                  "minimum": -3.4028234663852886e+38,
+                                  "maximum": 3.4028234663852886e+38
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 4096
+                          },
+                          "keys": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "enum": [
+                                32,
+                                39,
+                                44,
+                                45,
+                                46,
+                                47,
+                                48,
+                                49,
+                                50,
+                                51,
+                                52,
+                                53,
+                                54,
+                                55,
+                                56,
+                                57,
+                                59,
+                                61,
+                                65,
+                                66,
+                                67,
+                                68,
+                                69,
+                                70,
+                                71,
+                                72,
+                                73,
+                                74,
+                                75,
+                                76,
+                                77,
+                                78,
+                                79,
+                                80,
+                                81,
+                                82,
+                                83,
+                                84,
+                                85,
+                                86,
+                                87,
+                                88,
+                                89,
+                                90,
+                                91,
+                                92,
+                                93,
+                                96,
+                                161,
+                                162,
+                                256,
+                                257,
+                                258,
+                                259,
+                                260,
+                                261,
+                                262,
+                                263,
+                                264,
+                                265,
+                                266,
+                                267,
+                                268,
+                                269,
+                                280,
+                                281,
+                                282,
+                                283,
+                                284,
+                                290,
+                                291,
+                                292,
+                                293,
+                                294,
+                                295,
+                                296,
+                                297,
+                                298,
+                                299,
+                                300,
+                                301,
+                                302,
+                                303,
+                                304,
+                                305,
+                                306,
+                                307,
+                                308,
+                                309,
+                                310,
+                                311,
+                                312,
+                                313,
+                                314,
+                                320,
+                                321,
+                                322,
+                                323,
+                                324,
+                                325,
+                                326,
+                                327,
+                                328,
+                                329,
+                                330,
+                                331,
+                                332,
+                                333,
+                                334,
+                                335,
+                                336,
+                                340,
+                                341,
+                                342,
+                                343,
+                                344,
+                                345,
+                                346,
+                                347,
+                                348
+                              ]
+                            },
+                            "maxItems": 512,
+                            "uniqueItems": true
+                          },
+                          "text": {
+                            "type": "string",
+                            "maxLength": 4194304
+                          },
+                          "recipe": {
+                            "type": "object",
+                            "properties": {
+                              "prepare_up_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "down_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "hold_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "up_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "repeat": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "inter_click_gap_frames": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                                "maxLength": 20,
+                                "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                              },
+                              "button": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4
+                              }
+                            },
+                            "required": [],
+                            "additionalProperties": false
+                          },
+                          "frames": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "minimum_duration_ns": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "deadline_ns": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,19})$",
+                            "maxLength": 20,
+                            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                          },
+                          "scroll": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": -3.4028234663852886e+38,
+                                "maximum": 3.4028234663852886e+38
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "expect": {
+                            "type": "array",
+                            "items": {
+                              "enum": [
+                                "target_hovered",
+                                "target_pressed",
+                                "target_held",
+                                "target_released",
+                                "layout_completed",
+                                "frame_presented",
+                                "window_focused",
+                                "text_focused"
+                              ]
+                            },
+                            "maxItems": 8,
+                            "uniqueItems": true
+                          },
+                          "button": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4
+                          },
+                          "require_hover_before_down": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "operation"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 4096
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "persistence": {
+                          "enum": [
+                            "redact_text",
+                            "retain_text",
+                            "volatile"
+                          ]
+                        },
+                        "include_native_input": {
+                          "type": "boolean"
+                        },
+                        "record_observations": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "schema",
+                    "schema_version",
+                    "mode",
+                    "window_id"
+                  ],
+                  "additionalProperties": false,
+                  "allOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "properties": {
+                            "mode": {
+                              "const": "raw_frames"
+                            }
+                          },
+                          "oneOf": [
+                            {
+                              "required": [
+                                "frames"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "spans"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "properties": {
+                            "mode": {
+                              "const": "common_controls"
+                            }
+                          },
+                          "required": [
+                            "steps"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "plan_artifact": {
+                  "type": "object",
+                  "properties": {
+                    "capture": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "artifact": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "capture",
+                    "artifact",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "capture": {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "enum": [
+                        "performance_diagnose",
+                        "performance_verify",
+                        "diagnostics_reproduce",
+                        "visual_inspect",
+                        "memory_diagnose",
+                        "startup_diagnose"
+                      ]
+                    },
+                    "mode": {
+                      "enum": [
+                        "windowed",
+                        "cpu_scenario",
+                        "layout_scenario",
+                        "offscreen_vulkan"
+                      ]
+                    },
+                    "window_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,19})$"
+                      },
+                      "maxItems": 32
+                    },
+                    "scenario_id": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "scenario": {
+                      "type": "object"
+                    },
+                    "duration_ns": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "measurement_ticks": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "warmup_ticks": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "measurement": {
+                      "type": "object"
+                    },
+                    "warmup": {
+                      "type": "object"
+                    },
+                    "sections": {
+                      "type": "object"
+                    },
+                    "limits": {
+                      "type": "object"
+                    },
+                    "objective": {
+                      "type": [
+                        "object",
+                        "string"
+                      ]
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "allow_degraded": {
+                      "type": "boolean"
+                    },
+                    "seed": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "fixture_id": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "maximum_expected_tick_cadence": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000000
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "include_tree_text": {
+                          "type": "boolean"
+                        },
+                        "include_native_messages": {
+                          "type": "boolean"
+                        },
+                        "include_stacks": {
+                          "type": "boolean"
+                        },
+                        "include_source_paths": {
+                          "type": "boolean"
+                        },
+                        "include_interaction_labels": {
+                          "type": "boolean"
+                        },
+                        "include_interaction_outcomes": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "visual_sources": {
+                      "type": "object",
+                      "properties": {
+                        "window": {
+                          "type": "boolean"
+                        },
+                        "viewports": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "idempotency_key": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "rebind_run": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance",
+                "idempotency_key"
+              ],
+              "oneOf": [
+                {
+                  "required": [
+                    "plan"
+                  ]
+                },
+                {
+                  "required": [
+                    "plan_artifact"
+                  ]
+                }
+              ],
+              "not": {
+                "properties": {
+                  "rebind_run": {
+                    "const": true
+                  },
+                  "plan": {
+                    "properties": {
+                      "clock": {
+                        "const": "exact_window_frames"
+                      }
+                    },
+                    "required": [
+                      "clock"
+                    ]
+                  }
+                },
+                "required": [
+                  "rebind_run",
+                  "plan"
+                ]
+              }
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.record.start"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "window_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "max_frames": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "deadline_ns": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "include_text": {
+                  "type": "boolean"
+                },
+                "capture": {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "enum": [
+                        "performance_diagnose",
+                        "performance_verify",
+                        "diagnostics_reproduce",
+                        "visual_inspect",
+                        "memory_diagnose",
+                        "startup_diagnose"
+                      ]
+                    },
+                    "mode": {
+                      "enum": [
+                        "windowed",
+                        "cpu_scenario",
+                        "layout_scenario",
+                        "offscreen_vulkan"
+                      ]
+                    },
+                    "window_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,19})$"
+                      },
+                      "maxItems": 32
+                    },
+                    "scenario_id": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "scenario": {
+                      "type": "object"
+                    },
+                    "duration_ns": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "measurement_ticks": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "warmup_ticks": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "measurement": {
+                      "type": "object"
+                    },
+                    "warmup": {
+                      "type": "object"
+                    },
+                    "sections": {
+                      "type": "object"
+                    },
+                    "limits": {
+                      "type": "object"
+                    },
+                    "objective": {
+                      "type": [
+                        "object",
+                        "string"
+                      ]
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "allow_degraded": {
+                      "type": "boolean"
+                    },
+                    "seed": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "fixture_id": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "maximum_expected_tick_cadence": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000000
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "include_tree_text": {
+                          "type": "boolean"
+                        },
+                        "include_native_messages": {
+                          "type": "boolean"
+                        },
+                        "include_stacks": {
+                          "type": "boolean"
+                        },
+                        "include_source_paths": {
+                          "type": "boolean"
+                        },
+                        "include_interaction_labels": {
+                          "type": "boolean"
+                        },
+                        "include_interaction_outcomes": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "visual_sources": {
+                      "type": "object",
+                      "properties": {
+                        "window": {
+                          "type": "boolean"
+                        },
+                        "viewports": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "idempotency_key": {
+                  "type": "string",
+                  "maxLength": 4096
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance",
+                "window_id",
+                "max_frames",
+                "deadline_ns",
+                "idempotency_key"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.record.stop"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "job_id": {
+                  "type": "string",
+                  "maxLength": 4096
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance",
+                "job_id"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "interaction.query"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000
+                },
+                "cursor": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "job_id": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "capture": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "manifest": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "kind": {
+                  "enum": [
+                    "plan",
+                    "inputs",
+                    "observations",
+                    "results"
+                  ]
+                },
+                "window_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "app_tick": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "window_frame": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "sequence": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "offset": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "plan_digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "additionalProperties": false,
+              "anyOf": [
+                {
+                  "required": [
+                    "instance",
+                    "job_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "capture"
+                  ]
+                },
+                {
+                  "required": [
+                    "manifest"
+                  ]
+                }
+              ],
+              "oneOf": [
+                {
+                  "required": [
+                    "job_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "capture"
+                  ]
+                },
+                {
+                  "required": [
+                    "manifest"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "flowui_action": {
+    "description": "Discover explicitly exported application actions or invoke a revision-checked action as a mutating evidence job.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "enum": [
+            "action.list",
+            "action.invoke"
+          ]
+        },
+        "arguments": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "action.list"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000
+                },
+                "cursor": {
+                  "type": "string",
+                  "maxLength": 4096
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "const": "action.invoke"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 1024,
+                  "maximum": 1048576
+                },
+                "instance": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "action_id": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "revision": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "arguments": {
+                  "type": "object"
+                },
+                "capture": {
+                  "type": "object",
+                  "properties": {
+                    "profile": {
+                      "enum": [
+                        "performance_diagnose",
+                        "performance_verify",
+                        "diagnostics_reproduce",
+                        "visual_inspect",
+                        "memory_diagnose",
+                        "startup_diagnose"
+                      ]
+                    },
+                    "mode": {
+                      "enum": [
+                        "windowed",
+                        "cpu_scenario",
+                        "layout_scenario",
+                        "offscreen_vulkan"
+                      ]
+                    },
+                    "window_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,19})$"
+                      },
+                      "maxItems": 32
+                    },
+                    "scenario_id": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "scenario": {
+                      "type": "object"
+                    },
+                    "duration_ns": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "measurement_ticks": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "warmup_ticks": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "measurement": {
+                      "type": "object"
+                    },
+                    "warmup": {
+                      "type": "object"
+                    },
+                    "sections": {
+                      "type": "object"
+                    },
+                    "limits": {
+                      "type": "object"
+                    },
+                    "objective": {
+                      "type": [
+                        "object",
+                        "string"
+                      ]
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "allow_degraded": {
+                      "type": "boolean"
+                    },
+                    "seed": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,19})$"
+                    },
+                    "fixture_id": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "maximum_expected_tick_cadence": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000000
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "include_tree_text": {
+                          "type": "boolean"
+                        },
+                        "include_native_messages": {
+                          "type": "boolean"
+                        },
+                        "include_stacks": {
+                          "type": "boolean"
+                        },
+                        "include_source_paths": {
+                          "type": "boolean"
+                        },
+                        "include_interaction_labels": {
+                          "type": "boolean"
+                        },
+                        "include_interaction_outcomes": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "visual_sources": {
+                      "type": "object",
+                      "properties": {
+                        "window": {
+                          "type": "boolean"
+                        },
+                        "viewports": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "window_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                },
+                "idempotency_key": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "deadline_ns": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "instance",
+                "action_id",
+                "revision",
+                "idempotency_key"
+              ]
+            }
+          },
+          "required": [
+            "operation",
+            "arguments"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

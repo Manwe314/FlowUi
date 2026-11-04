@@ -30,9 +30,12 @@ struct PerformanceCaptureSettings {
 	uint64_t duration_ns = 5'000'000'000;
 	uint64_t budget_ns = 16'600'000;
 	uint64_t post_event_ns = 500'000'000;
+	uint64_t finalization_timeout_ns = 2'000'000'000;
+	uint64_t warmup_ticks = 0;
 	WindowId budget_window = InvalidWindowId;
 	PerformanceCaptureStartMode start_mode = PerformanceCaptureStartMode::Immediate;
 	PerformanceCaptureEndMode end_mode = PerformanceCaptureEndMode::Duration;
+	bool reopen_interface = true;
 };
 /** Application-owned capture progress and immutable result identity. */
 struct PerformanceCaptureStatus {

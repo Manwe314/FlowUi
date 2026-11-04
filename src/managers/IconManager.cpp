@@ -90,6 +90,52 @@ bool IconManager::visitDevAtlases(void* userData, DevAtlasVisitor visitor) const
 	}
 	return true;
 }
+
+Result<IconManager::DevIconView> IconManager::devRasterize(
+	std::string_view key, uint32_t width, uint32_t height) noexcept {
+	if (!controller_ || !storage_)
+		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconPublishAtlas));
+	if (key.empty() || !width || !height || width > 512 || height > 512)
+		return unexpectedError(makeError(ErrorCode::IconRasterInvalid, ErrorSite::IconPublishAtlas));
+	try {
+		if (!contains(key)) return unexpectedError(makeError(ErrorCode::IconNotFound, ErrorSite::IconPublishAtlas));
+		const bool existing = controller_->variantsByKeyAndSize.contains(makeVariantKey(key, width, height));
+		const auto& variant = ensureVariantForRequest(key, width, height, true);
+		return DevIconView{.key = variant.key.nameKey,
+			.targetWidth = variant.key.requestedWidth,
+			.targetHeight = variant.key.requestedHeight,
+			.texture = variant.texture,
+			.uv0x = variant.uv0x, .uv0y = variant.uv0y,
+			.uv1x = variant.uv1x, .uv1y = variant.uv1y,
+			.atlasPage = variant.pageIndex, .newlyRasterized = !existing};
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::IconPublishAtlas));
+	}
+}
+
+Result<bool> IconManager::devRemoveRaster(TextureHandle texture) noexcept {
+	if (!controller_ || !storage_)
+		return unexpectedError(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::IconPublishAtlas));
+	try {
+		const auto found = std::ranges::find_if(controller_->variantsByKeyAndSize,
+			[texture](const auto& item) { return item.second.texture == texture; });
+		if (found == controller_->variantsByKeyAndSize.end()) return false;
+		const auto& variant = found->second;
+		controller_->retiredRegions.reserve(controller_->retiredRegions.size() + 1);
+		storage_->releaseAnonymousTexture(variant.texture);
+		controller_->retiredRegions.emplace_back(
+			detail::manager_storage::IconRetiredRegion{variant.texture, variant.pageIndex, variant.paddedRect});
+		controller_->variantsByKeyAndSize.erase(found);
+		storage_->noteManagerMutation(InvalidWindowId);
+		return true;
+	} catch (const FlowUiException& exception) {
+		return unexpectedError(exception.error());
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::IconPublishAtlas));
+	}
+}
 #endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 void IconManager::appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept {
@@ -687,10 +733,15 @@ IconManager::VariantEntry* IconManager::findBestCachedVariant(
 IconManager::VariantEntry& IconManager::ensureVariantForRequest(
 	std::string_view nameKey,
 	uint32_t requestedWidth,
-	uint32_t requestedHeight) {
+	uint32_t requestedHeight,
+	bool exactSize) {
 	const VariantKey requestKey = makeVariantKey(nameKey, requestedWidth, requestedHeight);
-	if (VariantEntry* cached = findBestCachedVariant(nameKey, requestKey.requestedWidth, requestKey.requestedHeight)) {
-		return *cached;
+	if (exactSize) {
+		const auto cached = controller_->variantsByKeyAndSize.find(requestKey);
+		if (cached != controller_->variantsByKeyAndSize.end()) return cached->second;
+	} else {
+		if (VariantEntry* cached = findBestCachedVariant(nameKey, requestKey.requestedWidth, requestKey.requestedHeight))
+			return *cached;
 	}
 
 	TransientRasterResult raster = rasterizeForAtlas(nameKey, requestKey.requestedWidth, requestKey.requestedHeight);

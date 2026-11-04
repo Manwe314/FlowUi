@@ -35,6 +35,27 @@ namespace devSystems { class MemorySampleSink; }
  */
 class ShortcutManager {
 public:
+#if FLOW_UI_DEV_MODE
+	/** Callable-free development observation, preserving window registration identity. */
+	struct DevShortcutView {
+		ShortcutChord chord{};
+		AppActionID action{};
+		uint64_t epoch = 0, order = 0;
+		ShortcutId id = 0;
+		int32_t priority = 0;
+		ShortcutScope scope = ShortcutScope::Global;
+		ShortcutHandling handling = ShortcutHandling::Consume;
+		bool callback = false;
+	};
+	using DevShortcutVisitor = bool (*)(void*, const DevShortcutView&);
+	/** Visit published registrations without retaining or invoking callbacks. */
+	[[nodiscard]] bool visitDevShortcuts(void* target, DevShortcutVisitor visitor) const;
+	/** Pure dispatcher chord/scope matching, without input injection or callback execution. */
+	[[nodiscard]] static bool devMatches(const DevShortcutView& candidate, const ShortcutChord& chord,
+		bool focused_input, bool focused_element) noexcept;
+	/** Pure dispatcher precedence over copied registration metadata. */
+	[[nodiscard]] static bool devPrecedes(const DevShortcutView& left, const DevShortcutView& right) noexcept;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif

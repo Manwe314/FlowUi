@@ -26,10 +26,29 @@
 #include "internal/TypeOperations.hpp"
 #include "managers/structs/FlowUiElementConcepts.hpp"
 
+namespace FlowUi {
+class UiManager;
+}
 namespace FlowUi::devMode {
 
 class DevSchemaRegistry {
 public:
+	/** Typed, explicitly admitted passive defaults, independent of reflection coverage. */
+	struct ElementPreview {
+		std::string set_name{};
+		FlowDefinitionID definition{};
+		void (*draw)(UiManager&, uint64_t, bool) = nullptr;
+		bool admitted = false, has_draw = false, has_construct = false;
+	};
+	/** Discover an adapter without admitting arbitrary application code for execution. */
+	template <FlowElement Element>
+	void registerElementPreview(std::string_view set_name = {}, bool admitted = false);
+	/** Read registered adapters; mutations are restricted to the UI thread. */
+	[[nodiscard]] std::span<const ElementPreview> elementPreviews() const noexcept {
+		return element_previews_;
+	}
+	/** Adapter admission and named memberships have their own refresh generation. */
+	[[nodiscard]] uint64_t previewRevision() const noexcept { return preview_revision_; }
 	explicit DevSchemaRegistry(DevSchemaLimits limits = {});
 	~DevSchemaRegistry();
 
@@ -80,6 +99,8 @@ public:
 	[[nodiscard]] DevSchemaLimits limits() const noexcept { return limits_; }
 
 private:
+	std::vector<ElementPreview> element_previews_{};
+	uint64_t preview_revision_ = 0;
 	enum class DevRootKind : std::uint8_t { Struct, Element, Theme };
 	enum class ResolutionState : std::uint8_t { Visiting, Complete, Failed };
 

@@ -4,6 +4,16 @@
 #define FLOW_UI_DEV_MODE @FLOW_UI_DEV_MODE_VALUE@
 #endif
 
+#if defined(FLOW_UI_AGENTIC_WORKFLOW) && FLOW_UI_AGENTIC_WORKFLOW != @FLOW_UI_AGENTIC_WORKFLOW_VALUE@
+#error "FLOW_UI_AGENTIC_WORKFLOW must match the installed FlowUi library configuration."
+#endif
+#ifndef FLOW_UI_AGENTIC_WORKFLOW
+#define FLOW_UI_AGENTIC_WORKFLOW @FLOW_UI_AGENTIC_WORKFLOW_VALUE@
+#endif
+#if FLOW_UI_AGENTIC_WORKFLOW && !FLOW_UI_DEV_MODE
+#error "FlowUi agentic workflow requires development mode."
+#endif
+
 #ifndef FLOW_UI_DEV_CAPTURE_CLAY
 #define FLOW_UI_DEV_CAPTURE_CLAY @FLOW_UI_DEV_CAPTURE_CLAY_VALUE@
 #endif

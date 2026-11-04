@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/CommandResult.schema.json",
+  "title": "FlowUi.Agentic.CommandResult",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "request_id",
+    "operation",
+    "operation_status"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.CommandResult"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation_status": {
+      "enum": [
+        "accepted",
+        "completed",
+        "failed",
+        "canceled",
+        "unavailable"
+      ]
+    },
+    "result": {},
+    "run_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next": {
+      "type": "object"
+    },
+    "error": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

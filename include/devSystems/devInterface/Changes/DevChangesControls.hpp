@@ -4,7 +4,7 @@
 #include "devSystems/devInterface/Changes/DevChangesContentParameters.hpp"
 #include "managers/FlowUiElementBuilder.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Compact review disclosure followed by a whole-plan Bake action. */
+/** Open whole-plan Output review and commit the reviewed manifest with the sole Bake action. */
 struct DevChangesControls {
 	using Parameters = DevChangesContentParameters;
 	using BuildContext = ElementBuildContext<DevChangesControls>;

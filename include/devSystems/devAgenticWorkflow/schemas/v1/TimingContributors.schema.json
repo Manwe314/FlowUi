@@ -1,0 +1,750 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/TimingContributors.schema.json",
+  "title": "FlowUi.Agentic.TimingContributors",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.TimingContributors"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "algorithm_version": {
+      "const": "native_observed_exclusive_1"
+    },
+    "capture_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifact_id": {
+      "const": "performance_timing"
+    },
+    "ranking": {
+      "const": "observed_exclusive_total_ns_descending_per_cpu_or_gpu_domain"
+    },
+    "cpu": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "properties": {
+          "zone_type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "shared_application",
+              "selected_window"
+            ]
+          },
+          "window_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "role": {
+            "enum": [
+              "work",
+              "wait",
+              "gap",
+              "gpu_work",
+              "developer_tool_work",
+              "unknown"
+            ]
+          },
+          "category": {
+            "enum": [
+              "lifecycle",
+              "frame",
+              "input",
+              "element",
+              "layout",
+              "prepare",
+              "renderer_cpu",
+              "gpu",
+              "wait",
+              "user",
+              "developer_tool",
+              "unknown"
+            ]
+          },
+          "count": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "observed_count": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "excluded_count": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "inclusive_total_ns": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "observed_exclusive_total_ns": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "detail_truncated_samples": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "exclusive_complete": {
+            "type": "boolean"
+          },
+          "minimum_inclusive_ns": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maximum_inclusive_ns": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_app_tick": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_app_tick": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mean_inclusive_ns": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "mean_observed_exclusive_ns": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "artifact_id": {
+                "const": "performance_timing"
+              },
+              "record_kind": {
+                "enum": [
+                  "cpu_sample",
+                  "gpu_sample"
+                ]
+              },
+              "app_tick": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "window_id": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "window_frame": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "record_index": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "capture_generation": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "zone_type_id": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "invocation_id": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "submission_serial": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "device_identity": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "queue_identity": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "zone_index": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              }
+            },
+            "required": [
+              "artifact_id",
+              "record_kind"
+            ],
+            "additionalProperties": false
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "repository_id": {
+                "type": "string"
+              },
+              "file": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$"
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "line": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "maxLength": 20
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "column": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "maxLength": 20
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "locator_available": {
+                "type": "boolean"
+              },
+              "source_available": {
+                "type": "boolean"
+              },
+              "matching_checkout_verified": {
+                "type": "boolean"
+              },
+              "limitation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_available",
+              "limitation"
+            ],
+            "additionalProperties": false
+          },
+          "track": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "zone_type_id",
+          "name",
+          "scope",
+          "window_id",
+          "role",
+          "category",
+          "count",
+          "observed_count",
+          "excluded_count",
+          "inclusive_total_ns",
+          "observed_exclusive_total_ns",
+          "detail_truncated_samples",
+          "exclusive_complete",
+          "minimum_inclusive_ns",
+          "maximum_inclusive_ns",
+          "first_app_tick",
+          "last_app_tick",
+          "mean_inclusive_ns",
+          "mean_observed_exclusive_ns",
+          "evidence",
+          "track"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "gpu": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "properties": {
+          "zone_type_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "shared_application",
+              "selected_window"
+            ]
+          },
+          "window_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "role": {
+            "enum": [
+              "work",
+              "wait",
+              "gap",
+              "gpu_work",
+              "developer_tool_work",
+              "unknown"
+            ]
+          },
+          "category": {
+            "enum": [
+              "lifecycle",
+              "frame",
+              "input",
+              "element",
+              "layout",
+              "prepare",
+              "renderer_cpu",
+              "gpu",
+              "wait",
+              "user",
+              "developer_tool",
+              "unknown"
+            ]
+          },
+          "count": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "observed_count": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "excluded_count": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "inclusive_total_ns": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "observed_exclusive_total_ns": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "detail_truncated_samples": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "exclusive_complete": {
+            "type": "boolean"
+          },
+          "minimum_inclusive_ns": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maximum_inclusive_ns": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_app_tick": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_app_tick": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mean_inclusive_ns": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "mean_observed_exclusive_ns": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "artifact_id": {
+                "const": "performance_timing"
+              },
+              "record_kind": {
+                "enum": [
+                  "cpu_sample",
+                  "gpu_sample"
+                ]
+              },
+              "app_tick": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "window_id": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "window_frame": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "record_index": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "capture_generation": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "zone_type_id": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "invocation_id": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "submission_serial": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "device_identity": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "queue_identity": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              },
+              "zone_index": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,19})$",
+                "maxLength": 20
+              }
+            },
+            "required": [
+              "artifact_id",
+              "record_kind"
+            ],
+            "additionalProperties": false
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "repository_id": {
+                "type": "string"
+              },
+              "file": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]*$"
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "line": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "maxLength": 20
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "column": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "maxLength": 20
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "locator_available": {
+                "type": "boolean"
+              },
+              "source_available": {
+                "type": "boolean"
+              },
+              "matching_checkout_verified": {
+                "type": "boolean"
+              },
+              "limitation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_available",
+              "limitation"
+            ],
+            "additionalProperties": false
+          },
+          "device_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "queue_id": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          },
+          "uncalibrated_samples": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "zone_type_id",
+          "name",
+          "scope",
+          "window_id",
+          "role",
+          "category",
+          "count",
+          "observed_count",
+          "excluded_count",
+          "inclusive_total_ns",
+          "observed_exclusive_total_ns",
+          "detail_truncated_samples",
+          "exclusive_complete",
+          "minimum_inclusive_ns",
+          "maximum_inclusive_ns",
+          "first_app_tick",
+          "last_app_tick",
+          "mean_inclusive_ns",
+          "mean_observed_exclusive_ns",
+          "evidence",
+          "device_id",
+          "queue_id",
+          "uncalibrated_samples"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "cpu_group_count": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20
+    },
+    "gpu_group_count": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20
+    },
+    "cpu_observed_exclusive_total_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20
+    },
+    "excluded_cpu_samples": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20
+    },
+    "excluded_gpu_samples": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20
+    },
+    "gpu_observed_exclusive_total_ns": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gpu_exclusive_complete": {
+      "type": "boolean"
+    },
+    "cpu_roles_exclusive_ns": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]{0,19})$",
+        "maxLength": 20
+      }
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "algorithm_version",
+    "capture_id",
+    "manifest_sha256",
+    "artifact_id",
+    "ranking",
+    "cpu",
+    "gpu",
+    "cpu_group_count",
+    "gpu_group_count",
+    "cpu_observed_exclusive_total_ns",
+    "excluded_cpu_samples",
+    "excluded_gpu_samples",
+    "gpu_observed_exclusive_total_ns",
+    "gpu_exclusive_complete",
+    "cpu_roles_exclusive_ns",
+    "truncated",
+    "limitations"
+  ],
+  "additionalProperties": false
+}

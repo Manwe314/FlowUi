@@ -431,6 +431,23 @@ void PopupManager::destroy() noexcept {
 	capacityPolicy_ = PopupCapacityPolicy::ClampLayer;
 }
 
+#if FLOW_UI_DEV_MODE
+bool PopupManager::has_open_popups() const noexcept {
+	if (!storage_)
+		return false;
+	try {
+		const auto& records = state();
+		return std::ranges::any_of(records.committedStack, [&](uint64_t key) {
+			const auto found = records.committedRecords.find(key);
+			return found != records.committedRecords.end() && found->second.visibleLastCommitted &&
+				   !found->second.dismissed;
+		});
+	} catch (...) {
+		return false;
+	}
+}
+#endif
+
 PopupManagerState& PopupManager::state() {
 	auto* result = manager_storage::state<PopupManagerState>(
 		storage_, storage::ManagerRecordHandle::fromPacked(stateHandle_),

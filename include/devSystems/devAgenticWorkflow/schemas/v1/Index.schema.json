@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/Index.schema.json",
+  "title": "FlowUi.Agentic.Index",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "captures"
+  ],
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.Index"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "captures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+            "not": {
+              "enum": [
+                ".",
+                ".."
+              ]
+            }
+          },
+          "capture_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+            "not": {
+              "enum": [
+                ".",
+                ".."
+              ]
+            }
+          },
+          "manifest_path": {
+            "type": "string",
+            "pattern": "^(?!/|[A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "status": {
+            "enum": [
+              "sealed",
+              "partial"
+            ]
+          }
+        },
+        "required": [
+          "run_id",
+          "capture_id",
+          "manifest_path",
+          "sha256",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

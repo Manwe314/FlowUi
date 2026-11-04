@@ -19,6 +19,10 @@ namespace devSystems { class MemorySampleSink; }
 
 class PopupManager {
 public:
+#if FLOW_UI_DEV_MODE
+	/** Whether a visible popup owns keyboard navigation in the preceding committed frame. */
+	[[nodiscard]] bool has_open_popups() const noexcept;
+#endif
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 	void appendDevMemorySamples(devSystems::MemorySampleSink& sink) const noexcept;
 #endif

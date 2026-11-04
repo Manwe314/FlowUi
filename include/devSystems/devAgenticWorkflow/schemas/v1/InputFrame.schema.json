@@ -1,0 +1,628 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/InputFrame.schema.json",
+  "title": "FlowUi.Agentic.InputFrame",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.InputFrame"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "plan_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "sequence": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+    },
+    "offset": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+    },
+    "selected_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+    },
+    "step_index": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "selected": {
+      "type": "boolean"
+    },
+    "missed": {
+      "type": "boolean"
+    },
+    "cleanup": {
+      "type": "boolean"
+    },
+    "baseline": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 4096
+    },
+    "effective_input": {
+      "$ref": "#/$defs/input"
+    },
+    "dt_policy": {
+      "const": "application_clock"
+    },
+    "synthetic_focus": {
+      "type": "boolean"
+    },
+    "text_replayable": {
+      "type": "boolean"
+    },
+    "frame": {
+      "$ref": "#/$defs/frame_key"
+    },
+    "native_input": {
+      "$ref": "#/$defs/input"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "plan_digest",
+    "job_id",
+    "run_id",
+    "sequence",
+    "offset",
+    "selected_ns",
+    "step_index",
+    "selected",
+    "missed",
+    "cleanup",
+    "baseline",
+    "reason",
+    "effective_input",
+    "dt_policy",
+    "synthetic_focus",
+    "text_replayable"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "point": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": -3.4028234663852886e+38,
+          "maximum": 3.4028234663852886e+38
+        },
+        "y": {
+          "type": "number",
+          "minimum": -3.4028234663852886e+38,
+          "maximum": 3.4028234663852886e+38
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    },
+    "region": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": -3.4028234663852886e+38,
+          "maximum": 3.4028234663852886e+38
+        },
+        "y": {
+          "type": "number",
+          "minimum": -3.4028234663852886e+38,
+          "maximum": 3.4028234663852886e+38
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3.4028234663852886e+38
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3.4028234663852886e+38
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "pointer": {
+          "$ref": "#/$defs/point"
+        },
+        "scroll": {
+          "$ref": "#/$defs/point"
+        },
+        "buttons_down": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "maxItems": 5,
+          "uniqueItems": true
+        },
+        "keys_down": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "enum": [
+              32,
+              39,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              59,
+              61,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72,
+              73,
+              74,
+              75,
+              76,
+              77,
+              78,
+              79,
+              80,
+              81,
+              82,
+              83,
+              84,
+              85,
+              86,
+              87,
+              88,
+              89,
+              90,
+              91,
+              92,
+              93,
+              96,
+              161,
+              162,
+              256,
+              257,
+              258,
+              259,
+              260,
+              261,
+              262,
+              263,
+              264,
+              265,
+              266,
+              267,
+              268,
+              269,
+              280,
+              281,
+              282,
+              283,
+              284,
+              290,
+              291,
+              292,
+              293,
+              294,
+              295,
+              296,
+              297,
+              298,
+              299,
+              300,
+              301,
+              302,
+              303,
+              304,
+              305,
+              306,
+              307,
+              308,
+              309,
+              310,
+              311,
+              312,
+              313,
+              314,
+              320,
+              321,
+              322,
+              323,
+              324,
+              325,
+              326,
+              327,
+              328,
+              329,
+              330,
+              331,
+              332,
+              333,
+              334,
+              335,
+              336,
+              340,
+              341,
+              342,
+              343,
+              344,
+              345,
+              346,
+              347,
+              348
+            ]
+          },
+          "maxItems": 512,
+          "uniqueItems": true
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4194304
+        },
+        "pointer_inside": {
+          "type": "boolean"
+        },
+        "window_focused": {
+          "type": "boolean"
+        },
+        "text_redacted": {
+          "type": "boolean"
+        },
+        "text_codepoints": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "point": {
+          "$ref": "#/$defs/point"
+        },
+        "clay_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+          "not": {
+            "const": "0"
+          }
+        },
+        "clay_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "flow_instance_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+          "not": {
+            "const": "0"
+          }
+        },
+        "flow_debug_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "custom_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "tree_generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "layout_revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "custom_revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "anchor": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "point"
+          ]
+        },
+        {
+          "required": [
+            "clay_id"
+          ]
+        },
+        {
+          "required": [
+            "clay_name"
+          ]
+        },
+        {
+          "required": [
+            "flow_instance_id"
+          ]
+        },
+        {
+          "required": [
+            "flow_debug_name"
+          ]
+        },
+        {
+          "required": [
+            "custom_id"
+          ]
+        }
+      ]
+    },
+    "frame_key": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+          "not": {
+            "enum": [
+              ".",
+              ".."
+            ]
+          }
+        },
+        "app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [
+        "run_id",
+        "app_tick",
+        "window_id",
+        "window_frame"
+      ],
+      "additionalProperties": false
+    },
+    "resolved_target": {
+      "type": "object",
+      "properties": {
+        "selector": {
+          "$ref": "#/$defs/target"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "bounds": {
+          "$ref": "#/$defs/region"
+        },
+        "visible_region": {
+          "$ref": "#/$defs/region"
+        },
+        "layout_point": {
+          "$ref": "#/$defs/point"
+        },
+        "window_point": {
+          "$ref": "#/$defs/point"
+        },
+        "matching_clay_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,19})$",
+            "maxLength": 20,
+            "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+          },
+          "maxItems": 4096
+        },
+        "tree_generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "layout_revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "clay_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "app_tick": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "flow_instance_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "custom_revision": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "paint_order": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "z_index": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "floating": {
+          "type": "boolean"
+        },
+        "layout_to_window_x": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "layout_to_window_y": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "hit_test_supported": {
+          "type": "boolean"
+        },
+        "hit_test_verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "selector",
+        "label",
+        "bounds",
+        "visible_region",
+        "layout_point",
+        "window_point",
+        "matching_clay_ids",
+        "tree_generation",
+        "layout_revision",
+        "clay_id",
+        "app_tick",
+        "window_frame",
+        "flow_instance_id",
+        "custom_revision",
+        "paint_order",
+        "z_index",
+        "floating",
+        "layout_to_window_x",
+        "layout_to_window_y",
+        "hit_test_supported",
+        "hit_test_verified"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

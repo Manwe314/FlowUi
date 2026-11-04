@@ -158,6 +158,12 @@ if(FLOW_UI_DEV_MODE)
 	)
 	target_link_libraries(flowui_dev_catalogues_tests PRIVATE FlowUi::FlowUi)
 	add_test(NAME flowui.dev.catalogues COMMAND flowui_dev_catalogues_tests)
+	add_executable(flowui_dev_catalogue_preview_tests DevSystemsTests/DevCataloguePreviewTests.cpp)
+	target_compile_features(flowui_dev_catalogue_preview_tests PRIVATE cxx_std_23)
+	target_link_libraries(flowui_dev_catalogue_preview_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.dev.catalogue_previews COMMAND flowui_dev_catalogue_preview_tests)
+	add_test(NAME flowui.dev.catalogue_preview_scopes COMMAND flowui_dev_catalogue_preview_tests --scopes)
+	set_tests_properties(flowui.dev.catalogue_preview_scopes PROPERTIES LABELS "flowui;dev;catalogue;integration" TIMEOUT 30)
 	set_tests_properties(flowui.dev.catalogues PROPERTIES
 		LABELS "flowui;dev;catalogue;unit"
 		TIMEOUT 30
@@ -669,6 +675,13 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 	flowui_package_resources(flowui_fsel_demo)
 	target_compile_features(flowui_fsel_demo PRIVATE cxx_std_23)
 	target_link_libraries(flowui_fsel_demo PRIVATE FlowUi::FlowUi)
+	if(AGENTIC_WORKFLOW)
+		target_compile_definitions(flowui_fsel_demo PRIVATE
+			FLOWUI_AGENTIC_APP_COMPILER="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
+			FLOWUI_AGENTIC_APP_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+			FLOWUI_AGENTIC_APP_BUILD_FLAGS="${FLOWUI_AGENTIC_FLAGS}"
+			FLOWUI_AGENTIC_APP_REVISION="${FLOWUI_AGENTIC_REVISION}")
+	endif()
 endif()
 
 # Compile the typed builder's dev-only attachment points without pulling in the
@@ -914,18 +927,22 @@ set_tests_properties(flowui.phase4.two_window PROPERTIES
 	TIMEOUT 60
 )
 
-if(AgenticDebug)
+if(AGENTIC_WORKFLOW)
+    add_executable(flowui_agentic_command_tests AgenticWorkflowTests/AgenticCommandTests.cpp)
+    target_link_libraries(flowui_agentic_command_tests PRIVATE flowui_agentic_format)
+    add_test(NAME flowui.agentic.commands COMMAND flowui_agentic_command_tests)
+    add_executable(flowui_agentic_schema_tests AgenticWorkflowTests/AgenticSchemaTests.cpp)
+    target_link_libraries(flowui_agentic_schema_tests PRIVATE flowui_agentic_format)
+    add_test(NAME flowui.agentic.schema_contracts COMMAND flowui_agentic_schema_tests)
 	add_executable(flowui_agentic_capture_tests
 		RendererTests/AgenticFrameCaptureTests.cpp
 		HeadlessVulkanFixture.cpp
 	)
 	target_compile_features(flowui_agentic_capture_tests PRIVATE cxx_std_23)
-	target_compile_definitions(flowui_agentic_capture_tests PRIVATE AgenticDebug=1)
 	target_include_directories(flowui_agentic_capture_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(flowui_agentic_capture_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
 	add_test(NAME flowui.agentic.capture COMMAND flowui_agentic_capture_tests)
 	set_tests_properties(flowui.agentic.capture PROPERTIES
-		ENVIRONMENT "FLOWUI_AGENTIC_DEBUG_DIR=${CMAKE_CURRENT_BINARY_DIR}/agentic-captures;FLOWUI_AGENTIC_DEBUG_START_FRAME=0;FLOWUI_AGENTIC_DEBUG_FRAME_COUNT=8"
 		LABELS "flowui;agentic;integration;vulkan"
 		SKIP_RETURN_CODE 77
 		TIMEOUT 60
@@ -972,6 +989,18 @@ set_tests_properties(flowui.storage.system PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+    add_executable(flowui_dev_catalogue_model_tests DevSystemsTests/DevCatalogueModelTests.cpp)
+    target_compile_features(flowui_dev_catalogue_model_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_catalogue_model_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.dev.catalogue_model COMMAND flowui_dev_catalogue_model_tests)
+    set_tests_properties(flowui.dev.catalogue_model PROPERTIES TIMEOUT 30 LABELS "flowui;dev;catalogue;unit")
+    if(FLOWUI_PUBLIC_VULKAN_INTEROP)
+        add_executable(flowui_dev_catalogue_viewport_tests DevSystemsTests/DevCatalogueViewportTests.cpp)
+        target_compile_features(flowui_dev_catalogue_viewport_tests PRIVATE cxx_std_23)
+        target_link_libraries(flowui_dev_catalogue_viewport_tests PRIVATE FlowUi::FlowUi)
+        add_test(NAME flowui.dev.catalogue_viewport_capture COMMAND flowui_dev_catalogue_viewport_tests)
+        set_tests_properties(flowui.dev.catalogue_viewport_capture PROPERTIES TIMEOUT 60 LABELS "flowui;dev;catalogue;integration;vulkan")
+    endif()
     add_executable(flowui_dev_changes_model_tests DevSystemsTests/DevChangesModelTests.cpp)
     target_compile_features(flowui_dev_changes_model_tests PRIVATE cxx_std_23)
     target_link_libraries(flowui_dev_changes_model_tests PRIVATE FlowUi::FlowUi)
@@ -1254,4 +1283,65 @@ if(FLOW_UI_DEV_MODE AND FLOWUI_DEV_MEMORY_LEVEL GREATER_EQUAL 2)
     add_test(NAME flowui.dev.memory_capacity_storage COMMAND flowui_dev_memory_capacity_storage_tests)
     set_tests_properties(flowui.dev.memory_capacity_storage PROPERTIES SKIP_RETURN_CODE 77)
 
+endif()
+
+if(AGENTIC_WORKFLOW)
+    add_executable(flowui_agentic_format_tests AgenticWorkflowTests/AgenticFormatTests.cpp)
+    target_link_libraries(flowui_agentic_format_tests PRIVATE flowui_agentic_format)
+    add_test(NAME flowui.agentic.format COMMAND flowui_agentic_format_tests)
+    add_executable(flowui_agentic_interaction_tests AgenticWorkflowTests/AgenticInteractionTests.cpp)
+    target_link_libraries(flowui_agentic_interaction_tests PRIVATE flowui_agentic_format)
+    add_test(NAME flowui.agentic.interaction_contracts COMMAND flowui_agentic_interaction_tests)
+    add_executable(flowui_agentic_interaction_runtime_tests AgenticWorkflowTests/AgenticInteractionRuntimeTests.cpp)
+    target_include_directories(flowui_agentic_interaction_runtime_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_agentic_interaction_runtime_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.agentic.interaction_runtime COMMAND flowui_agentic_interaction_runtime_tests)
+    set_tests_properties(flowui.agentic.interaction_runtime PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 90 LABELS "flowui;agentic;window;vulkan")
+    add_executable(flowui_agentic_target_action_tests AgenticWorkflowTests/AgenticTargetActionTests.cpp)
+    target_include_directories(flowui_agentic_target_action_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_agentic_target_action_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.agentic.interaction_targets COMMAND flowui_agentic_target_action_tests)
+    add_test(NAME flowui.agentic.exported_actions COMMAND flowui_agentic_target_action_tests native)
+    set_tests_properties(flowui.agentic.exported_actions PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 90 LABELS "flowui;agentic;window;vulkan")
+    add_executable(flowui_agentic_image_tests AgenticWorkflowTests/AgenticImageTests.cpp)
+    target_include_directories(flowui_agentic_image_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_agentic_image_tests PRIVATE flowui_agentic_format)
+    add_test(NAME flowui.agentic.image COMMAND flowui_agentic_image_tests)
+    add_executable(flowui_agentic_service_tests AgenticWorkflowTests/AgenticServiceTests.cpp)
+    target_include_directories(flowui_agentic_service_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_agentic_service_tests PRIVATE FlowUi::FlowUi)
+    add_test(NAME flowui.agentic.service COMMAND flowui_agentic_service_tests capture)
+    add_test(NAME flowui.agentic.dormant COMMAND flowui_agentic_service_tests dormant)
+    add_test(NAME flowui.agentic.ipc COMMAND flowui_agentic_service_tests ipc)
+    set_tests_properties(flowui.agentic.service flowui.agentic.dormant flowui.agentic.ipc PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 90 LABELS "flowui;agentic;window;vulkan")
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(Python3_Interpreter_FOUND)
+        if(TARGET flowui_fsel_demo)
+            add_test(NAME flowui.agentic.live_cli COMMAND ${Python3_EXECUTABLE}
+                ${PROJECT_SOURCE_DIR}/tests/AgenticWorkflowTests/AgenticLiveCliTests.py
+                $<TARGET_FILE:flowui-agent> $<TARGET_FILE:flowui_fsel_demo>
+                ${PROJECT_SOURCE_DIR}/tests/demo/agentic-click.json)
+            set_tests_properties(flowui.agentic.live_cli PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 90 LABELS "flowui;agentic;window;vulkan;cli")
+            option(FLOWUI_AGENTIC_MCP_LIVE_TESTS "Enable real MCP SDK/App integration tests (requires the optional pinned MCP dependencies)." OFF)
+            if(FLOWUI_AGENTIC_MCP_LIVE_TESTS)
+                add_test(NAME flowui.agentic.live_mcp COMMAND ${Python3_EXECUTABLE}
+                    ${PROJECT_SOURCE_DIR}/tests/AgenticWorkflowTests/AgenticLiveMcpTests.py
+                    --cli $<TARGET_FILE:flowui-agent> --demo $<TARGET_FILE:flowui_fsel_demo>
+                    --workspace ${PROJECT_SOURCE_DIR}
+                    --output-directory ${CMAKE_BINARY_DIR}/mcp-live-verification)
+                set_tests_properties(flowui.agentic.live_mcp PROPERTIES TIMEOUT 300 LABELS "flowui;agentic;window;vulkan;mcp;integration")
+            endif()
+        endif()
+        add_test(NAME flowui.agentic.mcp_schemas COMMAND ${Python3_EXECUTABLE}
+            ${PROJECT_SOURCE_DIR}/tools/flowui-agent-mcp/update_schemas.py --check)
+        set_tests_properties(flowui.agentic.mcp_schemas PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+        add_test(NAME flowui.agentic.cli COMMAND ${Python3_EXECUTABLE}
+            ${PROJECT_SOURCE_DIR}/tests/AgenticWorkflowTests/AgenticCliTests.py $<TARGET_FILE:flowui-agent>)
+        add_test(NAME flowui.agentic.schemas COMMAND ${Python3_EXECUTABLE}
+            ${PROJECT_SOURCE_DIR}/tools/flowui-agent/check_schemas.py --check)
+        set_tests_properties(flowui.agentic.schemas PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+        add_test(NAME flowui.agentic.knowledge COMMAND ${Python3_EXECUTABLE}
+            ${PROJECT_SOURCE_DIR}/tools/flowui-agent/update_knowledge.py --check)
+        set_tests_properties(flowui.agentic.knowledge PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+    endif()
 endif()

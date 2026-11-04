@@ -12,10 +12,23 @@
 #include "devSystems/devInterface/Permanents/Elements/DevInterface.hpp"
 #include "managers/ShortcutManager.hpp"
 #include "managers/UiManager.hpp"
+#include "internal/StorageSystem/IStorageSystem.hpp"
 
 namespace FlowUi::devSystems {
 DevInterface::DevInterface() noexcept = default;
 DevInterface::~DevInterface() = default;
+void DevInterface::release_inspection_resources(::FlowUi::detail::storage::IStorageSystem* storage) noexcept {
+	if (session_) {
+		if (storage) for (const auto& request : session_->catalogue.viewport_requests)
+			for (const auto texture : {request.observation.texture, request.retiring_texture})
+				try { if (texture) storage->releaseAnonymousTexture(texture); } catch (...) {}
+		session_->catalogue.viewport_requests.clear();
+		session_->catalogue.frozen_viewport = {};
+		session_->catalogue.frozen_viewport_identity = 0;
+		session_->catalogue.lease = {};
+		session_->catalogue.visible_textures.clear();
+	}
+}
 Status DevInterface::initialize(UiManager& mainUi, const DevToolsConfig& config) {
 	session_ = std::make_unique<DevInterfaceState>();
 	enabled_ = config.enabled;
@@ -53,6 +66,8 @@ Status DevInterface::synchronize(App& app) {
 							session_->activeTab ==
 								static_cast<uint64_t>(DevInterfaceTab::Diagnostics));
 	service_changes(app, *session_, windowId_ != InvalidWindowId && !suspended_);
+	service_catalogue(app, *session_, windowId_ != InvalidWindowId && !suspended_ &&
+		session_->activeTab == static_cast<uint64_t>(DevInterfaceTab::Catalogue));
 	auto& capture = app.devMonitoring().performance_capture();
 	const auto& progress = capture.status();
 	if (progress.generation && progress.generation != session_->capture_metadata_generation) {

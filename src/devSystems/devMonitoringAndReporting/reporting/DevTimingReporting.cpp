@@ -563,7 +563,17 @@ TimingCaptureSnapshot DevTimingReporting::capture_snapshot() const {
 	TimingCaptureSnapshot result;
 	std::shared_lock lock(impl_->mutex);
 	result.mutation_sequence = impl_->mutationSequence;
+	result.generation = impl_->capture_generation;
+	result.first_app_tick = impl_->capture_first_tick;
+	result.end_app_tick_exclusive = impl_->capture_end_tick;
+	result.sealed = impl_->capture_sealed;
 	result.descriptors = impl_->descriptors;
+	result.descriptor_text.reserve(result.descriptors.size());
+	for (const auto& descriptor : result.descriptors)
+		result.descriptor_text.emplace_back(std::array<std::string, 3>{
+			std::string(descriptor.name), std::string(descriptor.source.file),
+			std::string(descriptor.source.function)});
+	result.bind_descriptor_text();
 	result.reports.reserve(impl_->retainedTickCount);
 	if (impl_->hasTicks)
 		for (auto tick = impl_->oldestTick; tick <= impl_->newestTick; ++tick) {
@@ -576,6 +586,70 @@ TimingCaptureSnapshot DevTimingReporting::capture_snapshot() const {
 				break;
 		}
 	return result;
+}
+
+Result<TimingCaptureSnapshot>
+DevTimingReporting::owned_capture_snapshot(uint64_t expected_generation,
+										   uint64_t maximum_bytes) const noexcept {
+	try {
+		std::shared_lock lock(impl_->mutex);
+		if (!impl_->capture_sealed || expected_generation != impl_->capture_generation)
+			return unexpectedError(
+				makeError(ErrorCode::AgenticStaleGeneration, ErrorSite::AgenticSnapshot));
+		TimingCaptureSnapshot result;
+		uint64_t required_bytes = sizeof(result);
+		const auto account = [&](uint64_t bytes) {
+			if (bytes > maximum_bytes - std::min(required_bytes, maximum_bytes))
+				return false;
+			required_bytes += bytes;
+			return true;
+		};
+		for (const auto& descriptor : impl_->descriptors)
+			if (!account(sizeof(TimingZoneDescriptor) + sizeof(std::array<std::string, 3>) +
+						 descriptor.name.size() + descriptor.source.file.size() +
+						 descriptor.source.function.size()))
+				return unexpectedError(
+					makeError(ErrorCode::AgenticBudgetExhausted, ErrorSite::AgenticSnapshot));
+		for (uint64_t offset = 0; offset < impl_->retainedTickCount; ++offset) {
+			const auto& report = impl_->ring[(impl_->head + offset) % impl_->ring.size()];
+			if (!account(sizeof(TimingAppTickReport) +
+						 report.applicationCpuZones.size() * sizeof(CpuTimingRecord)))
+				return unexpectedError(
+					makeError(ErrorCode::AgenticBudgetExhausted, ErrorSite::AgenticSnapshot));
+			for (const auto& window : report.windows) {
+				if (!account(sizeof(TimingWindowReport)))
+					return unexpectedError(
+						makeError(ErrorCode::AgenticBudgetExhausted, ErrorSite::AgenticSnapshot));
+				for (const auto& frame : window.frames)
+					if (!account(sizeof(TimingFrameReport) +
+								 frame.cpuZones.size() * sizeof(CpuTimingRecord) +
+								 frame.gpuZones.size() * sizeof(GpuTimingRecord) +
+								 frame.elementDefinitions.size() *
+									 sizeof(ElementDefinitionTimingAggregate)))
+						return unexpectedError(makeError(ErrorCode::AgenticBudgetExhausted,
+														 ErrorSite::AgenticSnapshot));
+			}
+		}
+		result.generation = impl_->capture_generation;
+		result.first_app_tick = impl_->capture_first_tick;
+		result.end_app_tick_exclusive = impl_->capture_end_tick;
+		result.sealed = true;
+		result.mutation_sequence = impl_->mutationSequence;
+		result.descriptors = impl_->descriptors;
+		result.descriptor_text.reserve(result.descriptors.size());
+		for (const auto& descriptor : result.descriptors)
+			result.descriptor_text.emplace_back(std::array<std::string, 3>{
+				std::string(descriptor.name), std::string(descriptor.source.file),
+				std::string(descriptor.source.function)});
+		result.bind_descriptor_text();
+		result.reports.reserve(impl_->retainedTickCount);
+		for (uint64_t offset = 0; offset < impl_->retainedTickCount; ++offset)
+			result.reports.emplace_back(
+				publicSnapshot(impl_->ring[(impl_->head + offset) % impl_->ring.size()]));
+		return result;
+	} catch (...) {
+		return unexpectedError(makeError(ErrorCode::AllocationFailed, ErrorSite::AgenticSnapshot));
+	}
 }
 
 TimingReportingStatus DevTimingReporting::status() const noexcept {

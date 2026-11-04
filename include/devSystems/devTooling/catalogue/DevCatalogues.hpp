@@ -58,8 +58,14 @@ public:
 	[[nodiscard]] std::uint64_t imageRevision() const noexcept { return imageRevision_; }
 	[[nodiscard]] std::uint64_t iconRevision() const noexcept { return iconRevision_; }
 	[[nodiscard]] std::uint64_t actionRevision() const noexcept { return actionRevision_; }
+	/** Distinguish a failed observation from a successfully observed empty collection. */
+	[[nodiscard]] bool queryFailed(DevCatalogueQuery query) const noexcept {
+		return (failedQueries_ & (uint32_t{1} << static_cast<uint8_t>(query))) != 0;
+	}
 
 	[[nodiscard]] DevCatalogLease acquireInspectionLease() noexcept;
+	/** Retain only the exact visible or focused texture set supplied by the interface. */
+	[[nodiscard]] DevCatalogLease acquireInspectionLease(std::span<const TextureHandle> textures) noexcept;
 	void invalidateAllCaches() noexcept;
 	[[nodiscard]] std::size_t memoryFootprintBytes() const noexcept;
 
@@ -86,6 +92,7 @@ private:
 	std::uint64_t atlasRevision_ = UINT64_MAX;
 	std::uint64_t actionRevision_ = UINT64_MAX;
 	std::uint64_t themeRevision_ = UINT64_MAX;
+	uint32_t failedQueries_ = 0;
 	const devSystems::tooling::DevTreeSnapshot* cachedElementTree_ = nullptr;
 	std::vector<DevImageCatalogEntry> cachedImages_{};
 	std::vector<DevIconCatalogEntry> cachedIcons_{};

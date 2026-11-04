@@ -1,0 +1,110 @@
+{
+  "schema": "FlowUi.Agentic.SourceMap",
+  "schema_version": "1.0",
+  "selectors": [
+    {
+      "selector_id": "runtime.frame_lifecycle.primary",
+      "topic_id": "runtime.frame_lifecycle",
+      "repository_id": "flowui",
+      "file": "include/FlowUi/App.hpp",
+      "symbol": "FlowUi::App",
+      "sha256": "6c8dd639fe9bd150e0a5ee22d88806b8cc3b2a70f7d08c2bc7339fa1dc8b1a19"
+    },
+    {
+      "selector_id": "elements.identity_and_state.primary",
+      "topic_id": "elements.identity_and_state",
+      "repository_id": "flowui",
+      "file": "include/FlowUi/ElementID.hpp",
+      "symbol": "FlowUi::FlowElementID",
+      "sha256": "c351c501d4df2d8b2afadb033fc9ec22b8562b1281286659c00f49e6cd9888db"
+    },
+    {
+      "selector_id": "layout.flow_and_clay.primary",
+      "topic_id": "layout.flow_and_clay",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devTooling/tree/DevTreeTypes.hpp",
+      "symbol": "FlowUi::devSystems::tooling::DevTreeSnapshot",
+      "sha256": "70b0a97c44545813afbabe35fc89d0de61424a52de01c6f637062e1e3ad21898"
+    },
+    {
+      "selector_id": "timing.interpretation.primary",
+      "topic_id": "timing.interpretation",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devMonitoringAndReporting/timing/DevTimingTypes.hpp",
+      "symbol": "FlowUi::devSystems::TimingCategory",
+      "sha256": "ea19f293dc2054473096fa8efc35a05eaf7607c2de0972a9696a551abe0cbef4"
+    },
+    {
+      "selector_id": "errors.causal_evidence.primary",
+      "topic_id": "errors.causal_evidence",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devMonitoringAndReporting/errors/DevErrorTypes.hpp",
+      "symbol": "FlowUi::devSystems::DevErrorContext",
+      "sha256": "9699bd205f3a0a7ceb448a3f8c374caff49f7077827b1ab34c96786f401b94ff"
+    },
+    {
+      "selector_id": "memory.capacity_and_lifetime.primary",
+      "topic_id": "memory.capacity_and_lifetime",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp",
+      "symbol": "FlowUi::devSystems::DevMemoryReporting",
+      "sha256": "79410a98d29158c0aaa4e216b14b8158d87c8938ac2d446f325d66239492145c"
+    },
+    {
+      "selector_id": "themes.variants_and_overrides.primary",
+      "topic_id": "themes.variants_and_overrides",
+      "repository_id": "flowui",
+      "file": "include/managers/ThemeManager.hpp",
+      "symbol": "FlowUi::ThemeManager",
+      "sha256": "8b3b3fe1d3d43b7d13c0b69c67c8af398e967d173f984fe7e4f60d9274f8382c"
+    },
+    {
+      "selector_id": "resources.textures_fonts_icons.primary",
+      "topic_id": "resources.textures_fonts_icons",
+      "repository_id": "flowui",
+      "file": "include/FlowUi/Resources.hpp",
+      "symbol": "FlowUi::ResourceConfig",
+      "sha256": "ea915672f8d1cb91d9bdc787afd12a7af2d1cbcee8e690d58e9f529134bba349"
+    },
+    {
+      "selector_id": "input.actions_and_popups.primary",
+      "topic_id": "input.actions_and_popups",
+      "repository_id": "flowui",
+      "file": "include/managers/ActionManager.hpp",
+      "symbol": "FlowUi::ActionManager",
+      "sha256": "6ed982f387ab454b93269143c01439d82bda70301b94e19d15f890f0ebcf6129"
+    },
+    {
+      "selector_id": "viewports.rendering_and_capture.primary",
+      "topic_id": "viewports.rendering_and_capture",
+      "repository_id": "flowui",
+      "file": "include/managers/ViewPortManager.hpp",
+      "symbol": "FlowUi::ViewPortManager",
+      "sha256": "893161d04e6c2605b37c04311e4c0d6511e183bab170617f5be132c6b71e4f9f"
+    },
+    {
+      "selector_id": "changes.review_and_baking.primary",
+      "topic_id": "changes.review_and_baking",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devTooling/bake/DevBakePipeline.hpp",
+      "symbol": "FlowUi::devSystems::tooling::DevBakePipeline",
+      "sha256": "cdbe6441ed71922c65712976c7f3f284548edc0412f943838dedc32fd1ee255a"
+    },
+    {
+      "selector_id": "agentic.evidence_contract.primary",
+      "topic_id": "agentic.evidence_contract",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devAgenticWorkflow/AgenticService.hpp",
+      "symbol": "FlowUi::devSystems::agentic::AgenticWorkflowService",
+      "sha256": "881ae251cd75a2556f6997e1c413e10dcf8d9cf7c6898ae95bd229c8369739aa"
+    },
+    {
+      "selector_id": "interaction.execution.primary",
+      "topic_id": "interaction.execution",
+      "repository_id": "flowui",
+      "file": "include/devSystems/devAgenticWorkflow/AgenticInteraction.hpp",
+      "symbol": "FlowUi::devSystems::agentic::AgenticInteractionPlan",
+      "sha256": "403d358bc57d3285c61ab3baeff1ee499232ac67cf4f327e842d2a2a674828df"
+    }
+  ]
+}

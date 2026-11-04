@@ -440,6 +440,19 @@ DevErrorThreadAttachment DevErrorMonitoring::attachCurrentThread(std::string_vie
 	return DevErrorThreadAttachment(*pointer);
 }
 
+DevErrorProducerScope DevErrorMonitoring::producer_scope() const noexcept {
+	try {
+		std::scoped_lock lock(impl_->mutex);
+		return DevErrorProducerScope{
+			.fallback_events = impl_->fallback->qualitySnapshot().recordedEvents,
+			.recorder_count = static_cast<uint32_t>(impl_->recorders.size()),
+			.current_thread_only =
+				impl_->recorders.size() == 1 && currentRecorder == impl_->recorders.front().get()};
+	} catch (...) {
+		return {};
+	}
+}
+
 void DevErrorMonitoring::detach(DevErrorRecorder& recorder) noexcept {
 	if (currentRecorder == &recorder) currentRecorder = nullptr;
 }
