@@ -521,6 +521,36 @@ void run() {
 		FLOWUI_CHECK(scenario_sealed && scenario_child.empty());
 	}
 	verify_handoff_across_jobs(application, fixture);
+	AgenticInteractionPlan history_plan;
+	history_plan.window_id = application.mainWindowId();
+	history_plan.limits.maximum_observations = 16;
+	history_plan.spans.emplace_back();
+	history_plan.spans.back().count = 1;
+	std::uint64_t warm_owned_bytes = 0;
+	for (std::size_t repetition = 0; repetition < 75; ++repetition) {
+		const auto identity =
+			start(service, history_plan, "history-soak-" + std::to_string(repetition));
+		const auto result = finish(application, fixture, identity);
+		FLOWUI_CHECK(result.find("execution_succeeded")->bool_or());
+		if (repetition == 40)
+			warm_owned_bytes = (*service.interaction_runtime())->owned_memory_bytes();
+	}
+	FLOWUI_CHECK((*service.interaction_runtime())->owned_memory_bytes() <=
+				 warm_owned_bytes + 128u * 1024u);
+	const auto expired_retry = service.submit_command(
+		AgenticCommandRequest{Json::make_object({{"plan", to_json(history_plan, true)},
+												 {"idempotency_key", "history-soak-0"}}),
+							  "history-expired-retry", "interaction.start"});
+	FLOWUI_CHECK(expired_retry && expired_retry->find("exit_code")->uint64_or() == 3);
+	FLOWUI_CHECK(expired_retry->find("error")->find("code")->string_or() == "result_expired");
+	history_plan.spans.back().input.pointer_inside = true;
+	const auto conflicting_retry = service.submit_command(
+		AgenticCommandRequest{Json::make_object({{"plan", to_json(history_plan, true)},
+												 {"idempotency_key", "history-soak-0"}}),
+							  "history-conflicting-retry", "interaction.start"});
+	FLOWUI_CHECK(conflicting_retry && conflicting_retry->find("exit_code")->uint64_or() == 2);
+	FLOWUI_CHECK(conflicting_retry->find("error")->find("code")->string_or() ==
+				 "idempotency_conflict");
 }
 } // namespace
 int main() {

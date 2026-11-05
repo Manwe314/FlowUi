@@ -8,7 +8,7 @@
       "repository_id": "flowui",
       "file": "include/FlowUi/App.hpp",
       "symbol": "FlowUi::App",
-      "sha256": "6c8dd639fe9bd150e0a5ee22d88806b8cc3b2a70f7d08c2bc7339fa1dc8b1a19"
+      "sha256": "d378c4c417e04ba53bc33d3555285818ad67b82c1fd47b7bd3bb699d3dd9cf4e"
     },
     {
       "selector_id": "elements.identity_and_state.primary",
@@ -56,7 +56,7 @@
       "repository_id": "flowui",
       "file": "include/managers/ThemeManager.hpp",
       "symbol": "FlowUi::ThemeManager",
-      "sha256": "8b3b3fe1d3d43b7d13c0b69c67c8af398e967d173f984fe7e4f60d9274f8382c"
+      "sha256": "420570af041e2fa13a4a0f9ba55e00451a86f97b55c8a2e2b167394e454b6b57"
     },
     {
       "selector_id": "resources.textures_fonts_icons.primary",
@@ -80,7 +80,7 @@
       "repository_id": "flowui",
       "file": "include/managers/ViewPortManager.hpp",
       "symbol": "FlowUi::ViewPortManager",
-      "sha256": "893161d04e6c2605b37c04311e4c0d6511e183bab170617f5be132c6b71e4f9f"
+      "sha256": "2251a621954d4da89694b478ef130aec0abf0516193c423ea58d57f394f0c601"
     },
     {
       "selector_id": "changes.review_and_baking.primary",
@@ -96,7 +96,7 @@
       "repository_id": "flowui",
       "file": "include/devSystems/devAgenticWorkflow/AgenticService.hpp",
       "symbol": "FlowUi::devSystems::agentic::AgenticWorkflowService",
-      "sha256": "881ae251cd75a2556f6997e1c413e10dcf8d9cf7c6898ae95bd229c8369739aa"
+      "sha256": "4f58b6e38f7300bd36999b7b2a745c95f821f3c113f4fad3dc660bc9c0c50117"
     },
     {
       "selector_id": "interaction.execution.primary",

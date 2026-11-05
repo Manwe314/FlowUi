@@ -1,5 +1,8 @@
 # Agentic Workflow frame evidence
 
+For batched test cases, click sequences, assertions, and selected screenshots, start
+with [verification suites](agentic-verification.md).
+
 Build with `FLOW_UI_DEV_MODE=ON` and `AGENTIC_WORKFLOW=ON`. The generated public
 `FLOW_UI_AGENTIC_WORKFLOW` value controls the API, renderer hooks, and installed
 package. Runtime collection requires explicit application configuration; building

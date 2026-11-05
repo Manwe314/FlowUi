@@ -458,6 +458,23 @@ struct StoreLock {
 	const auto* member = value.find(key);
 	return member ? std::string(member->string_or()) : std::string{};
 }
+[[nodiscard]] bool collect_verification_capture_ids(const Json& value,
+													std::set<std::string>& protected_ids) {
+	if (value.kind == Json::Kind::object) {
+		for (const auto& [field, member] : value.object) {
+			if (field == "capture_id" || field == "capture") {
+				if (member.kind != Json::Kind::string || !valid_identifier(member.string_or()))
+					return false;
+				protected_ids.emplace(member.string_or());
+			} else if (!collect_verification_capture_ids(member, protected_ids))
+				return false;
+		}
+	} else if (value.kind == Json::Kind::array)
+		for (const auto& member : value.array)
+			if (!collect_verification_capture_ids(member, protected_ids))
+				return false;
+	return true;
+}
 [[nodiscard]] Result<std::filesystem::path> find_run(const std::filesystem::path& root,
 													 std::string_view run_id) {
 	const auto runs = root / "runs";
@@ -523,6 +540,75 @@ struct StoreLock {
 		if (!((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f')))
 			return false;
 	return true;
+}
+/** A false result requests authoritative repair; an error leaves this advisory cache deferred. */
+[[nodiscard]] Result<bool> update_capture_index(const std::filesystem::path& root,
+												const AgenticManifest& manifest) noexcept {
+	try {
+		constexpr std::uint64_t maximum_index_bytes = 16u * 1024u * 1024u;
+		StoreLock lock(root);
+		if (!lock.acquired)
+			return unexpectedError(agentic_error(AgenticError::busy));
+		const auto index_path = root / "index.json";
+		if (!confined(root, "index.json"))
+			return unexpectedError(agentic_error(AgenticError::invalid_scope));
+		std::error_code error;
+		if (!std::filesystem::exists(index_path, error))
+			return false;
+		if (error || !std::filesystem::is_regular_file(index_path, error))
+			return unexpectedError(agentic_error(AgenticError::integrity_failed));
+		auto contents = read_text(index_path, maximum_index_bytes);
+		if (!contents)
+			return unexpectedError(contents.error());
+		auto index = parse_json(*contents, maximum_index_bytes);
+		if (!index)
+			return false;
+		auto* captures = index->find("captures");
+		if (!captures || captures->kind != Json::Kind::array)
+			return false;
+		std::string_view previous_identity;
+		for (const auto& capture : captures->array) {
+			const auto* identity = capture.find("capture_id");
+			if (!identity || !valid_identifier(identity->string_or()) ||
+				!valid_identifier(member_string(capture, "run_id")) ||
+				!safe_relative(member_string(capture, "manifest_path")) ||
+				!valid_digest(member_string(capture, "sha256")))
+				return false;
+			const auto current_identity = identity->string_or();
+			if (current_identity == manifest.capture_id)
+				return unexpectedError(agentic_error(AgenticError::invalid_scope));
+			if (!previous_identity.empty() && previous_identity >= current_identity)
+				return false;
+			previous_identity = current_identity;
+		}
+		if (!validate_agentic_document(*index, "FlowUi.Agentic.Index"))
+			return false;
+		const auto relative_manifest =
+			manifest.manifest_path.lexically_relative(std::filesystem::absolute(root));
+		if (!safe_relative(relative_manifest.generic_string()))
+			return unexpectedError(agentic_error(AgenticError::invalid_scope));
+		captures->array.reserve(captures->array.size() + 1);
+		const auto position =
+			std::lower_bound(captures->array.begin(), captures->array.end(), manifest.capture_id,
+							 [](const Json& capture, std::string_view identity) {
+								 return capture.find("capture_id")->string_or() < identity;
+							 });
+		captures->array.emplace(
+			position, Json::make_object({{"run_id", manifest.run_id},
+										 {"capture_id", manifest.capture_id},
+										 {"manifest_path", relative_manifest.generic_string()},
+										 {"sha256", manifest.digest},
+										 {"status", manifest.partial ? "partial" : "sealed"}}));
+		const auto encoded = write_json(*index);
+		if (encoded.size() > maximum_index_bytes)
+			return unexpectedError(agentic_error(AgenticError::budget_exhausted));
+		auto written = atomic_text(index_path, encoded);
+		if (!written)
+			return unexpectedError(written.error());
+		return true;
+	} catch (...) {
+		return unexpectedError(agentic_error(AgenticError::publication_failed));
+	}
 }
 [[nodiscard]] bool inventory_has(const Json& document, std::string_view artifact_id,
 								 std::string_view artifact_path = {}) {
@@ -950,6 +1036,15 @@ Result<std::filesystem::path> AgenticStore::reserve_run(std::string_view run_id,
 		return unexpectedError(agentic_error(AgenticError::publication_failed));
 	}
 }
+Result<std::filesystem::path> AgenticStore::resolve_run(std::string_view run_id) const noexcept {
+	try {
+		if (!valid_identifier(run_id))
+			return unexpectedError(agentic_error(AgenticError::invalid_request));
+		return find_run(root_, run_id);
+	} catch (...) {
+		return unexpectedError(agentic_error(AgenticError::unavailable));
+	}
+}
 Status validate_agentic_document(const Json& document, std::string_view expected_schema) noexcept {
 	try {
 		if (!registered_schema_matches(document, expected_schema))
@@ -1221,6 +1316,7 @@ Result<AgenticManifest> AgenticStore::publish(AgenticCaptureSnapshot snapshot) n
 			total_bytes += artifact.bytes.size();
 		}
 		if (total_bytes > snapshot.request.limits.maximum_snapshot_bytes ||
+			total_bytes > snapshot.request.limits.maximum_disk_bytes ||
 			total_bytes > limits_.maximum_disk_bytes)
 			return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 		std::error_code disk_error;
@@ -1329,8 +1425,8 @@ Result<AgenticManifest> AgenticStore::publish(AgenticCaptureSnapshot snapshot) n
 			read_manifest(final / "manifest.json", false, limits_.maximum_artifact_bytes);
 		if (!published)
 			return unexpectedError(published.error());
-		const auto indexed = repair_index();
-		if (!indexed)
+		const auto indexed = update_capture_index(root_, *published);
+		if (!indexed || (!*indexed && !repair_index()))
 			published->document.set("index_update", "deferred_repair_required");
 		return published;
 	} catch (const std::filesystem::filesystem_error& failure) {
@@ -1402,6 +1498,34 @@ Result<Json> AgenticStore::prune(std::uint64_t older_than_seconds, bool dry_run)
 		for (const auto& run : std::filesystem::directory_iterator(root_ / "runs")) {
 			if (!run.is_directory() || run.is_symlink())
 				continue;
+			const auto reports = run.path() / "verification";
+			if (std::filesystem::is_directory(reports)) {
+				if (std::filesystem::is_symlink(reports))
+					return unexpectedError(agentic_error(AgenticError::integrity_failed));
+				for (const auto& entry : std::filesystem::directory_iterator(reports)) {
+					if (entry.path().filename().string().starts_with('.') ||
+						entry.path().extension() != ".json")
+						continue;
+					if (entry.is_symlink() || !entry.is_regular_file())
+						return unexpectedError(agentic_error(AgenticError::integrity_failed));
+					auto text = read_text(entry.path(), 1024u * 1024u);
+					if (!text)
+						return unexpectedError(agentic_error(AgenticError::integrity_failed));
+					auto report = parse_json(*text, 1024u * 1024u);
+					auto run_text = read_text(run.path() / "run.json", 4u * 1024u * 1024u);
+					if (!run_text)
+						return unexpectedError(agentic_error(AgenticError::integrity_failed));
+					auto run_document = parse_json(*run_text);
+					if (!report ||
+						!validate_agentic_document(*report, "FlowUi.Agentic.VerificationReport") ||
+						member_string(*report, "job_id") != entry.path().stem().string() ||
+						!run_document ||
+						(report->find("run_id") && member_string(*report, "run_id") !=
+													   member_string(*run_document, "run_id")) ||
+						!collect_verification_capture_ids(*report, protected_ids))
+						return unexpectedError(agentic_error(AgenticError::integrity_failed));
+				}
+			}
 			const auto comparisons = run.path() / "comparisons";
 			if (!std::filesystem::is_directory(comparisons))
 				continue;
@@ -1429,7 +1553,9 @@ Result<Json> AgenticStore::prune(std::uint64_t older_than_seconds, bool dry_run)
 			if (!manifest)
 				continue;
 			const auto* pinned = manifest->document.find("pinned");
-			if (protected_ids.contains(id) || (pinned && pinned->bool_or()))
+			const auto* verification_owner =
+				nested(manifest->document, "provenance", "verification_job_id");
+			if (protected_ids.contains(id) || (pinned && pinned->bool_or()) || verification_owner)
 				continue;
 			const auto age = std::chrono::duration_cast<std::chrono::seconds>(
 								 now - std::filesystem::last_write_time(path))
@@ -1720,7 +1846,8 @@ Result<AgenticPage> query_artifact(const AgenticManifest& manifest, std::string_
 		if (found == manifest.artifacts.end())
 			return unexpectedError(agentic_error(AgenticError::unavailable));
 		const auto projection = found->schema == "FlowUi.Agentic.Themes" ? "themes_fields_v1" : "";
-		const auto hash = sha256(std::string(artifact_id) + write_json(filter) + "1.0" + projection);
+		const auto hash =
+			sha256(std::string(artifact_id) + write_json(filter) + "1.0" + projection);
 		const auto prefix = manifest.digest + ":" + hash + ":";
 		std::uint64_t offset = 0;
 		if (!cursor.empty()) {

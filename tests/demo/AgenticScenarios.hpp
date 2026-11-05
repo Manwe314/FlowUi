@@ -169,12 +169,37 @@ run_demo_scenario_step(Function&& function) noexcept {
 		return run_demo_scenario_step([&]() -> Result<agentic::AgenticScenarioProgress> {
 			const auto* state =
 				context.application ? scenario_demo_state(*context.application, harness) : nullptr;
-			if (!state ||
-				harness.measured_steps < (fixture == DemoAgenticFixture::theme_matrix ? 4u : 1u) ||
-				(fixture == DemoAgenticFixture::gallery && state->page != DemoPage::Gallery) ||
-				(fixture == DemoAgenticFixture::writing &&
-				 (state->page != DemoPage::WritingStudio ||
-				  std::count(state->document.begin(), state->document.end(), '\n') != 128)))
+			const auto record_assertion = [&](std::string_view identity, agentic::Json expected,
+											  agentic::Json observed, bool passed) {
+				agentic::AgenticScenarioAction assertion;
+				assertion.name = identity;
+				assertion.target = "DemoState";
+				assertion.assertion = true;
+				assertion.passed = passed;
+				assertion.arguments = agentic::Json::make_object(
+					{{"expected", std::move(expected)}, {"observed", std::move(observed)}});
+				if (context.application) {
+					const auto& tree = context.application->ui().devTreeSnapshot();
+					assertion.state_revision = tree.generation;
+				}
+				requireStatus(context.record_action(assertion));
+			};
+			const auto minimum_steps = fixture == DemoAgenticFixture::theme_matrix ? 4u : 1u;
+			const bool retained = state && harness.previous_state.has_value();
+			const bool valid_fixture =
+				state &&
+				(fixture != DemoAgenticFixture::gallery || state->page == DemoPage::Gallery) &&
+				(fixture != DemoAgenticFixture::writing ||
+				 (state->page == DemoPage::WritingStudio &&
+				  std::count(state->document.begin(), state->document.end(), '\n') == 128));
+			record_assertion("fixture_seed", "17", agentic::decimal(context.seed),
+							 context.seed == 17u);
+			record_assertion("state_retained", true, retained && valid_fixture,
+							 retained && valid_fixture);
+			record_assertion("minimum_state_steps", agentic::Json::number(minimum_steps),
+							 agentic::Json::number(harness.measured_steps),
+							 harness.measured_steps >= minimum_steps);
+			if (!retained || !valid_fixture || harness.measured_steps < minimum_steps)
 				return unexpectedError(
 					makeError(ErrorCode::AgenticIncompleteCapture, ErrorSite::AgenticScenario));
 			return agentic::AgenticScenarioProgress::complete;

@@ -4,6 +4,7 @@
 #include "devSystems/devAgenticWorkflow/AgenticImage.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteraction.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticKnowledge.hpp"
+#include "devSystems/devAgenticWorkflow/AgenticVerification.hpp"
 
 #include <algorithm>
 #include <array>
@@ -64,6 +65,24 @@ constexpr std::array registry{
 	AgenticCommandDescriptor{"scenario.run",
 							 "Run a registered scenario through normal application safe points.",
 							 "scenarios", 65536, 2000, Access::collect, true},
+	AgenticCommandDescriptor{"verification.plan",
+							 "Validate and resolve one finite verification suite without control.",
+							 "verification", 65536, 2000, Access::read, true},
+	AgenticCommandDescriptor{
+		"verification.run", "Admit one sequential verification suite and await its bounded report.",
+		"verification", 65536, 25000, Access::mutate, true},
+	AgenticCommandDescriptor{
+		"verification.status",
+		"Wait for bounded verification progress changes without evidence payloads.", "verification",
+		65536, 25000, Access::read, true},
+	AgenticCommandDescriptor{
+		"verification.report",
+		"Read a sealed verification report with digest-bound detail pagination.", "verification",
+		65536, 2000, Access::read, false},
+	AgenticCommandDescriptor{
+		"verification.cancel",
+		"Cancel new suite steps and request bounded input release and cleanup.", "verification",
+		65536, 2000, Access::mutate, true},
 	AgenticCommandDescriptor{
 		"interaction.capabilities",
 		"Discover input control, observations, recording and exported actions.", "interaction",
@@ -195,6 +214,102 @@ constexpr std::array registry{
 	if (!stream || static_cast<std::uint64_t>(stream.gcount()) != bytes)
 		return command_error(ErrorCode::AgenticUnavailable);
 	return contents;
+}
+[[nodiscard]] Status
+validate_verification_arguments(const AgenticCommandRequest& request) noexcept {
+	try {
+		if (!request.operation.starts_with("verification."))
+			return {};
+		const auto& arguments = request.arguments;
+		const auto operation = std::string_view(request.operation);
+		const bool suite_request =
+			operation == "verification.plan" || operation == "verification.run";
+		for (const auto& [field, value] : arguments.object) {
+			const bool permitted =
+				field == "instance" || field == "max_bytes" ||
+				(suite_request && field == "request") || (!suite_request && field == "job_id") ||
+				((operation == "verification.run" || operation == "verification.report") &&
+				 field == "require_pass") ||
+				(operation == "verification.status" &&
+				 (field == "after_sequence" || field == "wait_timeout_ms")) ||
+				(operation == "verification.report" && (field == "cursor" || field == "limit"));
+			if (!permitted)
+				return command_error(ErrorCode::AgenticInvalidRequest);
+			if (field == "request") {
+				if (!normalize_verification_request(value))
+					return command_error(ErrorCode::AgenticInvalidRequest);
+			} else if (field == "instance" || field == "job_id") {
+				if (value.kind != Json::Kind::string || !valid_identifier(value.text))
+					return command_error(ErrorCode::AgenticInvalidRequest);
+			} else if (field == "max_bytes" || field == "limit" || field == "wait_timeout_ms") {
+				const auto lower_bound = field == "max_bytes"
+											 ? (operation == "verification.report" ? 4096u : 1024u)
+										 : field == "limit" ? 1u
+															: 0u;
+				const auto upper_bound = field == "max_bytes" ? 1024u * 1024u
+										 : field == "limit"	  ? 64u
+															  : 20000u;
+				if (value.kind != Json::Kind::number || value.uint64_or(UINT64_MAX) < lower_bound ||
+					value.uint64_or(UINT64_MAX) > upper_bound)
+					return command_error(ErrorCode::AgenticInvalidRequest);
+			} else if (field == "after_sequence") {
+				if (!parse_decimal(value))
+					return command_error(ErrorCode::AgenticInvalidRequest);
+			} else if (field == "require_pass") {
+				if (value.kind != Json::Kind::boolean)
+					return command_error(ErrorCode::AgenticInvalidRequest);
+			} else if (field == "cursor" &&
+					   (value.kind != Json::Kind::string || value.text.size() > 4096))
+				return command_error(ErrorCode::AgenticInvalidRequest);
+		}
+		if (suite_request) {
+			const auto* document = arguments.find("request");
+			if (!document)
+				return command_error(ErrorCode::AgenticInvalidRequest);
+			const auto selected_instance = text_argument(arguments, "instance");
+			const auto nested_instance = text_argument(*document, "instance");
+			if (!selected_instance.empty() && !nested_instance.empty() &&
+				selected_instance != nested_instance)
+				return command_error(ErrorCode::AgenticInvalidRequest);
+			if (operation == "verification.run" &&
+				text_argument(*document, "idempotency_key").empty())
+				return command_error(ErrorCode::AgenticInvalidRequest);
+		} else if (!arguments.find("instance") || !arguments.find("job_id"))
+			return command_error(ErrorCode::AgenticInvalidRequest);
+		return {};
+	} catch (...) {
+		return command_error(ErrorCode::AgenticInvalidRequest);
+	}
+}
+[[nodiscard]] Result<Json> read_verification_report(const AgenticCommandContext& context,
+													const Json& arguments) {
+	const auto instance = text_argument(arguments, "instance");
+	const auto job_id = text_argument(arguments, "job_id");
+	if (!valid_identifier(instance) || !valid_identifier(job_id))
+		return command_error(ErrorCode::AgenticInvalidRequest);
+	std::error_code error;
+	const auto root = std::filesystem::weakly_canonical(context.store_root, error);
+	if (error)
+		return command_error(ErrorCode::AgenticUnavailable);
+	const auto run = AgenticStore(root).resolve_run(instance);
+	if (!run)
+		return unexpectedError(run.error());
+	const auto path =
+		std::filesystem::canonical(*run / "verification" / (std::string(job_id) + ".json"), error);
+	if (error || !std::filesystem::is_regular_file(path, error))
+		return command_error(ErrorCode::AgenticUnavailable);
+	const auto relative = path.lexically_relative(root);
+	if (relative.empty() || relative.is_absolute() || *relative.begin() == "..")
+		return command_error(ErrorCode::AgenticIntegrityFailed);
+	auto contents = read_text_file(path, 1024u * 1024u);
+	if (!contents)
+		return unexpectedError(contents.error());
+	auto report = parse_json(*contents, 1024u * 1024u);
+	if (!report || !validate_agentic_document(*report, "FlowUi.Agentic.VerificationReport") ||
+		text_argument(*report, "job_id") != job_id ||
+		(report->find("run_id") && text_argument(*report, "run_id") != instance))
+		return command_error(ErrorCode::AgenticIntegrityFailed);
+	return verification_report_page(*report, arguments);
 }
 [[nodiscard]] Status write_output(const std::filesystem::path& path,
 								  std::span<const std::uint8_t> bytes) {
@@ -1151,6 +1266,8 @@ private:
 											   "offline_analysis_does_not_execute_application"})}});
 	if (operation == "instances")
 		return list_instances(context.store_root, maximum_bytes);
+	if (operation == "verification.report")
+		return read_verification_report(context, arguments);
 	if (operation == "setup")
 		return setup_configuration(context, arguments);
 	if (operation == "launch")
@@ -1949,6 +2066,9 @@ Result<AgenticCommandRequest> decode_command_request(const Json& value) noexcept
 			maximum_bytes &&
 			(maximum_bytes->uint64_or() < 1024 || maximum_bytes->uint64_or() > 1024u * 1024u))
 			return command_error(ErrorCode::AgenticInvalidRequest);
+		if (auto verification_arguments = validate_verification_arguments(request);
+			!verification_arguments)
+			return unexpectedError(verification_arguments.error());
 		return request;
 	} catch (...) {
 		return command_error(ErrorCode::AgenticBudgetExhausted);
@@ -1999,7 +2119,8 @@ AgenticCommandResponse execute_agentic_command(const AgenticCommandContext& cont
 			});
 		const bool use_live =
 			descriptor->requires_live_app ||
-			((request.operation == "capabilities" || request.operation == "interaction.query") &&
+			((request.operation == "capabilities" || request.operation == "interaction.query" ||
+			  request.operation == "verification.report") &&
 			 context.live_handler);
 		auto resolved_request = request;
 		if (request.operation == "interaction.start" && request.arguments.find("plan_artifact")) {
@@ -2038,6 +2159,12 @@ AgenticCommandResponse execute_agentic_command(const AgenticCommandContext& cont
 							? context.live_handler(resolved_request)
 							: Result<Json>(command_error(ErrorCode::AgenticUnavailable)))
 					 : offline_command(context, request);
+		if (!result && request.operation == "verification.report" && use_live &&
+			result.error().code == ErrorCode::AgenticUnavailable)
+			result = offline_command(context, request);
+		if (result && request.operation == "verification.report" && use_live &&
+			text_argument(argument(*result, "error"), "code") == "result_expired")
+			result = offline_command(context, request);
 		if (!result) {
 			const auto exit_code = error_exit_code(result.error().code);
 			return {command_failure(request, exit_code, "command_failed", result.error().message()),
@@ -2057,6 +2184,19 @@ AgenticCommandResponse execute_agentic_command(const AgenticCommandContext& cont
 		int exit_code = static_cast<int>(unsigned_argument(envelope, "exit_code", 0));
 		if (request.operation == "objective.check" &&
 			argument(request.arguments, "require_pass").bool_or(false)) {
+			const auto verdict = text_argument(argument(envelope, "result"), "verdict");
+			if (verdict == "fail")
+				exit_code = 7;
+			else if (verdict != "pass")
+				exit_code = 6;
+			envelope.set("exit_code", Json::number(static_cast<std::uint64_t>(exit_code)));
+		}
+		if ((request.operation == "verification.run" ||
+			 request.operation == "verification.report") &&
+			argument(request.arguments, "require_pass").bool_or(false) &&
+			text_argument(envelope, "operation_status") == "completed" &&
+			text_argument(argument(envelope, "result"), "schema") ==
+				"FlowUi.Agentic.VerificationReport") {
 			const auto verdict = text_argument(argument(envelope, "result"), "verdict");
 			if (verdict == "fail")
 				exit_code = 7;

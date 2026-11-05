@@ -1188,9 +1188,9 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 				height = std::max(180.0f, parent.found ? parent.boundingBox.height - 145 : 400);
 	auto root = ui::column(8);
 	root.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	root.layout.sizing.height = CLAY_SIZING_GROW(0);
+	root.layout.sizing.height = CLAY_SIZING_PERCENT(1);
 	root.layout.padding = {12, 12, 10, 10};
-	root.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+	root.clip = {.horizontal = true, .scrollInputDisabled = true};
 	CLAY(context.clayID(), root) {
 		auto title = ui::row(32);
 		title.clip = {.horizontal = true, .scrollInputDisabled = true};

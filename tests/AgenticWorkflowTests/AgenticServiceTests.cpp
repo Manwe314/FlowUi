@@ -94,6 +94,60 @@ void test_dormancy(const std::filesystem::path& store) {
 	FLOWUI_CHECK(!std::filesystem::exists(store));
 }
 
+void test_capture_retention(const std::filesystem::path& store) {
+	auto application = makeApplication(configuration(store, true));
+	auto& service = application.agentic_workflow();
+	AgenticCaptureRequest original;
+	original.limits = service.capabilities()->limits;
+	original.performance = original.runtime_diagnostics = original.memory = original.visual =
+		SectionRequirement::omit;
+	original.window_ids = {application.mainWindowId()};
+	original.measurement_ticks = 1;
+	original.duration_ns = 5'000'000'000ull;
+	original.maximum_expected_tick_cadence = 1;
+	original.idempotency_key = "capture-retained-original";
+	std::string original_job;
+	std::filesystem::path original_manifest;
+	for (std::size_t repetition = 0; repetition < 45; ++repetition) {
+		auto request = original;
+		if (repetition != 0)
+			request.idempotency_key = "capture-retention-" + std::to_string(repetition);
+		const auto admitted = service.request_capture(request);
+		FLOWUI_CHECK(admitted);
+		const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+		bool sealed = false;
+		while (std::chrono::steady_clock::now() < deadline) {
+			frame(application);
+			const auto status = service.query_job(*admitted);
+			FLOWUI_CHECK(status && status->phase != JobPhase::failed &&
+						 status->phase != JobPhase::canceled);
+			if (status->phase == JobPhase::sealed) {
+				sealed = true;
+				if (repetition == 0) {
+					original_job = *admitted;
+					original_manifest = status->manifest_path;
+				}
+				break;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+		FLOWUI_CHECK(sealed);
+	}
+	const auto status = service.query_job(original_job);
+	FLOWUI_CHECK(status && status->phase == JobPhase::sealed &&
+				 status->manifest_path == original_manifest && status->measured_ticks == 1);
+	const auto retried = service.request_capture(original);
+	FLOWUI_CHECK(retried && *retried == original_job);
+	auto changed = original;
+	changed.seed = 1;
+	const auto conflict = service.request_capture(changed);
+	FLOWUI_CHECK(!conflict && conflict.error().code == ErrorCode::AgenticInvalidRequest);
+	frame(application);
+	const auto captures = AgenticStore(store).list_captures();
+	FLOWUI_CHECK(captures && captures->array.size() == 45);
+	FLOWUI_CHECK(read_manifest(original_manifest));
+}
+
 void test_live_capture(const std::filesystem::path& store) {
 	std::uint64_t setup_calls = 0;
 	std::uint64_t step_calls = 0;
@@ -574,6 +628,9 @@ int main(int argument_count, char** arguments) {
 	else if (selected == "capture")
 		runner.run("live capture, scenario cleanup and correlated evidence",
 				   [&] { test_live_capture(directory.root / "enabled"); });
+	else if (selected == "capture_retention")
+		runner.run("capture retry identity and terminal status survive heavy history eviction",
+				   [&] { test_capture_retention(directory.root / "retention"); });
 	else if (selected == "ipc")
 		runner.run("authenticated safe-point IPC and idempotent reconnect",
 				   [&] { test_local_endpoint(directory.root / "local"); });

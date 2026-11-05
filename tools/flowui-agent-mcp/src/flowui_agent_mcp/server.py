@@ -20,6 +20,15 @@ from .contracts import RESULT_SCHEMA, TOOLS
 MAXIMUM_RESPONSE_BYTES = 1024 * 1024
 MAXIMUM_IMAGE_BYTES = 4 * 1024 * 1024
 MAXIMUM_ARGUMENT_BYTES = 64 * 1024
+MAXIMUM_VERIFICATION_WAIT_MS = 20_000
+VERIFICATION_TRANSPORT_MARGIN_SECONDS = 5.0
+MUTATING_TOOLS = {
+    "flowui_capture", "flowui_job", "flowui_scenario", "flowui_changes_apply",
+    "flowui_interaction", "flowui_action", "flowui_verification_run", "flowui_verification_cancel",
+}
+DESTRUCTIVE_TOOLS = {
+    "flowui_changes_apply", "flowui_interaction", "flowui_action", "flowui_verification_run",
+}
 
 
 def error_envelope(operation: str, code: str, message: str, exit_code: int = 4) -> dict[str, Any]:
@@ -36,6 +45,14 @@ class Adapter:
         self.cli = cli
         self.timeout = timeout
 
+    def command_timeout(self, operation: str, arguments: dict[str, Any]) -> float:
+        """Allow bounded server waits to finish before the subprocess transport expires."""
+        if operation not in {"verification.run", "verification.status"}:
+            return self.timeout
+        request = arguments.get("request", {}) if operation == "verification.run" else arguments
+        wait_ms = arguments.get("wait_timeout_ms", request.get("wait_timeout_ms", MAXIMUM_VERIFICATION_WAIT_MS))
+        return max(self.timeout, min(wait_ms, MAXIMUM_VERIFICATION_WAIT_MS) / 1000 + VERIFICATION_TRANSPORT_MARGIN_SECONDS)
+
     async def invoke(self, operation: str, arguments: dict[str, Any], *, cancel_on_interrupt: bool = True) -> tuple[dict[str, Any], bytes | None]:
         """Use structured argv; subprocess stdout/stderr and PNG output are bounded separately."""
         encoded = json.dumps(arguments, ensure_ascii=False, separators=(",", ":"))
@@ -50,6 +67,7 @@ class Adapter:
         argv = [self.cli, *operation.split("."), "--workspace", str(self.workspace), "--json", "--arguments-json",
                 json.dumps(request_arguments, ensure_ascii=False, separators=(",", ":"))]
         process = None
+        response_task = None
         try:
             process = await asyncio.create_subprocess_exec(*argv, cwd=self.workspace,
                 stdin=asyncio.subprocess.DEVNULL, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -64,13 +82,18 @@ class Adapter:
                     if len(collected) > limit:
                         raise ValueError("CLI response exceeded its byte budget")
 
-            stdout, stderr, return_code = await asyncio.wait_for(asyncio.gather(
+            response_task = asyncio.gather(
                 read_bounded(process.stdout, MAXIMUM_RESPONSE_BYTES),
-                read_bounded(process.stderr, 16384), process.wait()), self.timeout)
+                read_bounded(process.stderr, 16384), process.wait())
+            stdout, stderr, return_code = await asyncio.wait_for(response_task, self.command_timeout(operation, arguments))
             if stderr:
                 logging.getLogger(__name__).debug("flowui-agent stderr: %s", stderr.decode("utf-8", errors="replace"))
             envelope = json.loads(stdout.decode("utf-8"))
             Draft202012Validator(RESULT_SCHEMA).validate(envelope)
+            if (return_code == 2 and envelope["operation"] == "invalid"
+                    and envelope.get("operation_status") == "failed"
+                    and envelope.get("error", {}).get("code") == "invalid_arguments"):
+                envelope["operation"] = operation
             if envelope["operation"] != operation:
                 raise ValueError("CLI response operation did not match the request")
             if return_code not in range(8) or envelope.get("exit_code", return_code) != return_code:
@@ -99,7 +122,7 @@ class Adapter:
         except asyncio.CancelledError:
             # A CLI call ending does not free submitted GPU buffers. A known job can
             # be canceled through the same safe-point command and recovered by ID.
-            if cancel_on_interrupt and arguments.get("instance") and arguments.get("job_id"):
+            if cancel_on_interrupt and not operation.startswith("verification.") and arguments.get("instance") and arguments.get("job_id"):
                 try:
                     await asyncio.shield(asyncio.wait_for(self.invoke("job.cancel", {
                         "instance": arguments["instance"], "job_id": arguments["job_id"]}, cancel_on_interrupt=False),
@@ -118,6 +141,10 @@ class Adapter:
                 except ProcessLookupError:
                     logging.getLogger(__name__).debug("CLI already exited during cancellation")
                 await process.wait()
+            if response_task is not None:
+                if not response_task.done():
+                    response_task.cancel()
+                await asyncio.gather(response_task, return_exceptions=True)
             temporary_directory.cleanup()
 
     async def call(self, name: str, arguments: dict[str, Any]) -> tuple[dict[str, Any], bytes | None]:
@@ -137,9 +164,8 @@ def create_server(adapter: Adapter):
 
     async def list_tools(context, parameters):
         return ListToolsResult(tools=[Tool(name=name, description=description, input_schema=schema,
-            output_schema=RESULT_SCHEMA, annotations=ToolAnnotations(read_only_hint=name not in {
-                "flowui_capture", "flowui_job", "flowui_scenario", "flowui_changes_apply", "flowui_interaction", "flowui_action"},
-                destructive_hint=name in {"flowui_changes_apply", "flowui_interaction", "flowui_action"}, open_world_hint=False))
+            output_schema=RESULT_SCHEMA, annotations=ToolAnnotations(read_only_hint=name not in MUTATING_TOOLS,
+                destructive_hint=name in DESTRUCTIVE_TOOLS, open_world_hint=False))
             for name, (description, schema) in TOOLS.items()])
 
     async def call_tool(context, parameters):

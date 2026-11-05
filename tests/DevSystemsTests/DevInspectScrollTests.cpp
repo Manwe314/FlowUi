@@ -452,9 +452,64 @@ void check_nested_floating_clip(float control_offset) {
 	Clay_SetCurrentContext(nullptr);
 }
 
+void check_scroll_priority_after_tab_change() {
+	std::vector<std::byte> memory(Clay_MinMemorySize());
+	Clay_Initialize(Clay_CreateArenaWithCapacityAndMemory(memory.size(), memory.data()), {320, 300},
+					{});
+	const auto build = [](bool previous_tab_visible) {
+		Clay_BeginLayout();
+		if (previous_tab_visible) {
+			Clay_ElementDeclaration previous_tab{};
+			previous_tab.layout.sizing = {CLAY_SIZING_FIXED(1), CLAY_SIZING_FIXED(1)};
+			previous_tab.clip = {.horizontal = true, .scrollInputDisabled = true};
+			CLAY(CLAY_ID("previous-tab"), previous_tab);
+		}
+		Clay_ElementDeclaration shell{};
+		shell.layout.sizing = {CLAY_SIZING_FIXED(300), CLAY_SIZING_FIXED(300)};
+		shell.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+		shell.clip = {.horizontal = true, .vertical = true};
+		CLAY(CLAY_ID("tab-shell"), shell) {
+			Clay_ElementDeclaration viewport{};
+			viewport.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(200)};
+			const auto scroll = Clay_GetScrollContainerData(CLAY_ID("tab-viewport"));
+			viewport.clip = {.vertical = true,
+							 .childOffset = scroll.found ? *scroll.scrollPosition : Clay_Vector2{}};
+			CLAY(CLAY_ID("tab-viewport"), viewport) {
+				Clay_ElementDeclaration content{};
+				content.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(900)};
+				CLAY(CLAY_ID("tab-content"), content);
+			}
+			Clay_ElementDeclaration extra_content{};
+			extra_content.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(400)};
+			CLAY(CLAY_ID("shell-extra-content"), extra_content);
+		}
+		Clay_EndLayout(0.016f);
+	};
+	build(true);
+	Clay_SetPointerState({100, 50}, false);
+	Clay_UpdateScrollContainers(false, {}, 0.016f);
+	build(false);
+	Clay_UpdateScrollContainers(false, {}, 0.016f);
+	build(false);
+	const auto viewport_before = Clay_GetElementData(CLAY_ID("tab-content")).boundingBox.y;
+	Clay_SetPointerState({100, 50}, false);
+	Clay_UpdateScrollContainers(false, {0, -3}, 0.016f);
+	const auto viewport_scroll = Clay_GetScrollContainerData(CLAY_ID("tab-viewport"));
+	const auto shell_scroll = Clay_GetScrollContainerData(CLAY_ID("tab-shell"));
+	require(viewport_scroll.found && viewport_scroll.scrollPosition->y < 0,
+			"Wheel must reach the deepest viewport after obsolete tab clips are removed");
+	require(shell_scroll.found && shell_scroll.scrollPosition->y == 0,
+			"The outer shell must not consume a nested viewport's wheel event");
+	build(false);
+	require(Clay_GetElementData(CLAY_ID("tab-content")).boundingBox.y < viewport_before,
+			"Wheel must visibly move viewport content after changing tabs");
+	Clay_SetCurrentContext(nullptr);
+}
+
 } // namespace
 
 int main(int argument_count, char**) {
+	check_scroll_priority_after_tab_change();
 	for (const float control_offset : {0.f, 80.f, 350.f})
 		check_nested_floating_clip(control_offset);
 	for (const float header_height : {126.0f, 150.0f}) {

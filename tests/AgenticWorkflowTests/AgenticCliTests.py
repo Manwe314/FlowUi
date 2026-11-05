@@ -76,6 +76,23 @@ def main() -> int:
         command("interaction", "targets", "--window-id", "1", "--cursor", "2", expected=2)
         command("interaction", "record", "start", "--arguments-json", '{"include_text":"false"}', expected=2)
         command("action", "invoke", "--arguments-json", '{"action_id":"app.save","revision":1}', expected=2)
+        verification = {"schema": "FlowUi.Agentic.VerificationRequest", "schema_version": "1.0",
+            "suite_id": "cli.smoke", "idempotency_key": "cli_smoke_1", "cases": [{"case_id": "gallery",
+                "workload": {"kind": "registered_scenario", "scenario_id": "demo.gallery.steady",
+                    "revision": "1", "fixture_id": "gallery-default-v1"}}]}
+        verification_path = workspace / "suite.json"
+        verification_path.write_text(json.dumps(verification))
+        command("verification", "plan", "--request-file", str(verification_path), expected=3)
+        command("verification", "run", "--request", json.dumps(verification), expected=3)
+        command("verification", "run", "--request", json.dumps({**verification, "idempotency_key": ""}), expected=2)
+        command("verification", "plan", "--request", json.dumps({**verification, "script": "arbitrary callback"}), expected=2)
+        command("verification", "plan", "--request", json.dumps({**verification, "instance": "run_one"}), "--instance", "run_two", expected=2)
+        command("verification", "run", "--request-file", str(workspace / "missing-suite.json"), expected=2)
+        command("verification", "status", "--instance", "run_cli", "--job", "job_cli", "--after-sequence", "01", expected=2)
+        command("verification", "status", "--instance", "run_cli", "--job", "job_cli", "--wait-timeout-ms", "20001", expected=2)
+        command("verification", "status", "--instance", "run_cli", "--job", "job_cli", "--wait-timeout-ms", "1.5", expected=2)
+        command("verification", "report", "--instance", "run_cli", "--job", "job_cli", "--max-bytes", "2048", expected=2)
+        command("verification", "cancel", "--instance", "run_cli", expected=2)
         command("query", "performance", "--capture", "../outside", expected=3)
         for selector in ["users_root", "node:4", "instance:18446744073709551615", '{"node_index":4}', '{"instance_id":"18446744073709551615"}']:
             command("query", "visual", "--capture", "cap_missing", "--kind", "subtree", "--tree", "tree_missing", "--flow-node", selector, expected=3)
@@ -96,6 +113,43 @@ def main() -> int:
         result = command("ingest", "build", "--log", str(build_log), "--producer", "gcc")
         assert "diagnostics" in result["result"]
         assert not (workspace / ".flowui").exists()
+
+        report_store = workspace / "report-store"
+        report_path = report_store / "runs/run_cli/verification/job_cli.json"
+        report_path.parent.mkdir(parents=True)
+        (report_path.parent.parent / "run.json").write_text(json.dumps({"run_id": "run_cli"}))
+        report = {"schema": "FlowUi.Agentic.VerificationReport", "schema_version": "1.0",
+            "job_id": "job_cli", "suite_id": "cli.smoke", "suite_revision": "1", "request_digest": "a" * 64,
+            "execution_status": "completed", "verdict": "pass", "coverage": {"required": "2",
+                "evaluated": "2", "passed": "2", "failed": "0", "skipped": "0", "unavailable": "0"},
+            "cases": [{"case_id": "first", "verdict": "pass"}, {"case_id": "second", "verdict": "pass"}],
+            "timings": {}, "resources": {}, "evidence": [], "cleanup": {"complete": True}, "limitations": []}
+        report_path.write_text(json.dumps(report))
+        report_options = ("verification", "report", "--store", str(report_store), "--instance", "run_cli", "--job", "job_cli")
+        first_page = command(*report_options, "--limit", "1")["result"]
+        assert first_page["verdict"] == "pass" and first_page["truncated"] and first_page["cursor"]
+        second_page = command(*report_options, "--limit", "1", "--cursor", first_page["cursor"])["result"]
+        assert second_page["coverage"] == report["coverage"] and not second_page["truncated"]
+        assert second_page["cases"][0]["case_id"] == "second"
+        report["verdict"] = "fail"
+        report_path.write_text(json.dumps(report))
+        command(*report_options, "--cursor", first_page["cursor"], expected=6)
+        failing = command(*report_options, "--require-pass", expected=7)
+        assert failing["operation_status"] == "completed" and failing["result"]["verdict"] == "fail"
+        report["verdict"] = "inconclusive"
+        report_path.write_text(json.dumps(report))
+        command(*report_options, "--require-pass", expected=6)
+        report["unregistered_field"] = True
+        report_path.write_text(json.dumps(report))
+        command(*report_options, expected=4)
+        report.pop("unregistered_field")
+        if os.name == "posix":
+            outside_report = workspace / "outside-report.json"
+            outside_report.write_text(json.dumps(report))
+            report_path.unlink()
+            report_path.symlink_to(outside_report)
+            command(*report_options, expected=4)
+            report_path.unlink()
 
         if os.name == "posix":
             child = workspace / "fixture app"

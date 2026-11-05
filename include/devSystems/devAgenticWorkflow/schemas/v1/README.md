@@ -21,6 +21,8 @@ The source dictionary is a JSON array and the scenario declaration is a bare typ
 - [Performance summary](Performance.schema.json) and [timing contributors](TimingContributors.schema.json): continuous cadence segments, distributions and ranked exclusive scoped costs.
 - [Comparison result](Comparison.schema.json) and [immutable comparison manifest](ComparisonManifest.schema.json): comparability, referenced captures and final-byte inventory.
 - [Command request](CommandRequest.schema.json): common typed command envelope.
+- [Verification request](VerificationRequest.schema.json): sequential scenario or interaction workloads, exact revisions, bounded deadlines and checkpoint budgets; unknown fields and unsupported versions are rejected.
+- [Verification report](VerificationReport.schema.json): execution status, independent assertion verdict and coverage, cleanup, resource availability and durable evidence selectors.
 - [Interaction plan](InteractionPlan.schema.json): finite source frames/spans or mechanical steps, coordinate/baseline/content policies, and optional deterministic compiler estimates.
 - [Selected input receipt](InputFrame.schema.json): complete effective input, optional native assessment, actual consumed frame and explicit text-redaction/replayability facts.
 - [Interaction observation](InteractionObservation.schema.json): genuine completed consumer facts, revisioned resolved geometry and optional application-owned target evidence.

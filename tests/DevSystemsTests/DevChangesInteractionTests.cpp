@@ -4,6 +4,9 @@
 #include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "FSEL/TextInput.hpp"
 #include "FlowUi/Flow.hpp"
+#include "devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp"
+#include "devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp"
+#include "devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp"
 #include "devSystems/devInterface/Changes/DevChangesControls.hpp"
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
 #include "devSystems/devInterface/Changes/Inspector/DevChangesInspector.hpp"
@@ -520,6 +523,164 @@ void preview_selector_references(App& app, DevInterfaceState& session) {
 	}
 	std::cout << "Changes preview=selector-comparison" << std::endl;
 	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+}
+
+void verify_catalogue_panel_scrolling(App& app) {
+	constexpr auto catalogue_selector = Global<kDevCatalogueSelector>("catalogue.scroll.selector");
+	constexpr auto catalogue_workbench =
+		Global<kDevCatalogueWorkbench>("catalogue.scroll.workbench");
+	constexpr auto catalogue_inspector =
+		Global<kDevCatalogueInspector>("catalogue.scroll.inspector");
+	DevInterfaceState session;
+	session.activeTab = static_cast<uint64_t>(DevInterfaceTab::Catalogue);
+	auto& catalogue = session.catalogue;
+	catalogue.domain = static_cast<uint64_t>(DevCatalogueDomain::Actions);
+	catalogue.assets.reserve(60);
+	for (uint64_t asset_index = 0; asset_index < 60; ++asset_index) {
+		catalogue.assets.emplace_back(
+			DevCatalogueAsset{.name = "Scroll action " + std::to_string(asset_index),
+							  .group = "Application actions",
+							  .status = "Registered",
+							  .identity = asset_index + 1,
+							  .domain = DevCatalogueDomain::Actions});
+	}
+	for (int paragraph_index = 0; paragraph_index < 40; ++paragraph_index)
+		catalogue.domain_status[catalogue.domain] += "Observed application action inventory. ";
+	rebuild_catalogue_filter(catalogue);
+	const auto draw = [&](bool visible = true, FlowElementID control = {}, int event = 0) {
+		assert(app.beginFrame());
+		auto& interaction =
+			const_cast<InteractionSnapshot&>(app.ui().getPreviousFramesInteraction());
+		interaction = {};
+		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
+		input.windowFocused = true;
+		input.mouseDown[0] = event == 1;
+		input.keyDown = {};
+		if (control.value) {
+			const auto identity = app.ui().toClayEID(control).id;
+			interaction.hoveredElementIds.emplace_back(identity);
+			if (event == 1)
+				interaction.pressedElementIds.emplace_back(identity);
+			if (event == 2)
+				interaction.releasedElementIds.emplace_back(identity);
+		}
+		auto root = changes_ui::row(360);
+		root.layout.sizing.width = CLAY_SIZING_FIXED(1400);
+		root.layout.childGap = 0;
+		CLAY(CLAY_ID("catalogue-scroll-test"), root) {
+			const auto panel = [&](const auto& element, const auto& identity, uint32_t panel_index,
+								   float width) {
+				auto declaration = changes_ui::column(0);
+				declaration.layout.sizing = {CLAY_SIZING_FIXED(width), CLAY_SIZING_FIXED(360)};
+				declaration.clip = {.horizontal = true, .vertical = true};
+				CLAY(CLAY_IDI("catalogue-scroll-panel", panel_index), declaration) {
+					if (visible)
+						app.ui()
+							.createElement(element, identity)
+							.setParameters({&app, &session})
+							.draw();
+				}
+			};
+			panel(kDevCatalogueSelector, catalogue_selector, 0, 280);
+			panel(kDevCatalogueWorkbench, catalogue_workbench, 1, 760);
+			panel(kDevCatalogueInspector, catalogue_inspector, 2, 360);
+		}
+		assert(app.endFrame());
+		assert(app.drawFrame());
+	};
+	const auto scroll_identity = [&](const auto& owner, FlowDefinitionID definition,
+									 const auto& identity) {
+		return app.ui().toClayEID(local(FlowElementID{owner.value}, definition, identity));
+	};
+	const std::array viewports{
+		scroll_identity(catalogue_selector, DevCatalogueSelector::definitionId,
+						LocalElementName{"domains"}),
+		scroll_identity(catalogue_selector, DevCatalogueSelector::definitionId,
+						Keyed("browser", catalogue.domain)),
+		scroll_identity(catalogue_workbench, DevCatalogueWorkbench::definitionId,
+						LocalElementName{"gallery-scroll"}),
+		scroll_identity(catalogue_inspector, DevCatalogueInspector::definitionId,
+						LocalElementName{"scroll-body"})};
+	draw();
+	draw();
+	draw(false);
+	draw(false);
+	draw();
+	draw();
+	draw();
+	if (std::getenv("FLOWUI_CHANGES_PREVIEW")) {
+		std::cout << "Changes preview=catalogue-overview" << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(700));
+	}
+	auto* window = static_cast<GLFWwindow*>(app.nativeWindowHandle());
+	glfwFocusWindow(window);
+	for (const auto identity : viewports) {
+		const auto bounds = Clay_GetElementData(identity);
+		const auto scroll = Clay_GetScrollContainerData(identity);
+		assert(bounds.found && scroll.found && scroll.scrollPosition);
+		if (scroll.contentDimensions.height <= scroll.scrollContainerDimensions.height + 1)
+			std::cerr << "Catalogue scroll region " << identity.id
+					  << " content height=" << scroll.contentDimensions.height
+					  << " viewport height=" << scroll.scrollContainerDimensions.height << '\n';
+		assert(scroll.contentDimensions.height > scroll.scrollContainerDimensions.height + 1);
+		glfwSetCursorPos(window, bounds.boundingBox.x + bounds.boundingBox.width / 2,
+						 bounds.boundingBox.y + bounds.boundingBox.height / 2);
+		draw();
+		draw();
+		std::array<float, viewports.size()> before{};
+		for (std::size_t viewport_index = 0; viewport_index < viewports.size(); ++viewport_index)
+			before[viewport_index] =
+				Clay_GetScrollContainerData(viewports[viewport_index]).scrollPosition->y;
+		const auto callback = glfwSetScrollCallback(window, nullptr);
+		assert(callback);
+		glfwSetScrollCallback(window, callback);
+		callback(window, 0, -1);
+		draw();
+		for (std::size_t viewport_index = 0; viewport_index < viewports.size(); ++viewport_index) {
+			const auto after = Clay_GetScrollContainerData(viewports[viewport_index]);
+			if (viewports[viewport_index].id == identity.id)
+				assert(after.scrollPosition->y < before[viewport_index] - 1);
+			else
+				assert(after.scrollPosition->y == before[viewport_index]);
+		}
+	}
+	const auto click = [&](FlowElementID control) {
+		draw(true, control, 1);
+		draw(true, control, 2);
+		draw();
+	};
+	const auto overview_header =
+		local(FlowElementID{catalogue_inspector.value}, diagnostics_ui::Control::definitionId,
+			  Keyed("section-header", LocalElementName{"overview-section"}.token));
+	Clay_GetScrollContainerData(viewports.back()).scrollPosition->y = 0;
+	draw();
+	const auto expanded_height =
+		Clay_GetScrollContainerData(viewports.back()).contentDimensions.height;
+	click(overview_header);
+	const auto collapsed_height =
+		Clay_GetScrollContainerData(viewports.back()).contentDimensions.height;
+	assert(collapsed_height < expanded_height);
+	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(overview_header).id);
+	click(overview_header);
+	assert(Clay_GetScrollContainerData(viewports.back()).contentDimensions.height >
+		   collapsed_height);
+	select_catalogue_asset(catalogue, catalogue.assets.front().identity);
+	draw();
+	assert(catalogue.selected_identity != 0);
+	if (std::getenv("FLOWUI_CHANGES_PREVIEW")) {
+		std::cout << "Changes preview=catalogue-selection" << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(700));
+	}
+	const auto domain_choice = [&](DevCatalogueDomain domain) {
+		return local(FlowElementID{catalogue_selector.value}, FSEL::RadioChoice::definitionId,
+					 Keyed("domain", static_cast<uint64_t>(domain)));
+	};
+	click(domain_choice(DevCatalogueDomain::Images));
+	assert(catalogue.domain == static_cast<uint64_t>(DevCatalogueDomain::Images));
+	assert(catalogue.selected_identity == 0 && catalogue.visible_assets.empty());
+	click(domain_choice(DevCatalogueDomain::Actions));
+	assert(catalogue.domain == static_cast<uint64_t>(DevCatalogueDomain::Actions));
+	assert(catalogue.selected_identity == 0 && catalogue.visible_assets.size() == 60);
 }
 } // namespace
 
@@ -1479,6 +1640,7 @@ int main() {
 	check_bounds(app, FlowElementID{inspector_id.value});
 	preview("large-list");
 	verify_safe_point_service(app);
+	verify_catalogue_panel_scrolling(app);
 	std::cout << "Changes persistent review, exact output, Context, independent scrolling and "
 				 "responsive workflows verified\n";
 }

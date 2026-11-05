@@ -1,5 +1,6 @@
 #include "devSystems/devAgenticWorkflow/AgenticService.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteractionRuntime.hpp"
+#include "devSystems/devAgenticWorkflow/AgenticVerification.hpp"
 #include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "FlowUi/App.hpp"
@@ -49,6 +50,15 @@ namespace {
 [[nodiscard]] std::uint64_t argument_integer(const Json& arguments, std::string_view key) noexcept {
 	const auto* value = arguments.find(key);
 	return value ? value->uint64_or() : 0;
+}
+[[nodiscard]] std::uint64_t retained_json_bytes(const Json& value) noexcept {
+	std::uint64_t bytes = value.text.capacity() + value.array.capacity() * sizeof(Json) +
+						  value.object.capacity() * sizeof(std::pair<std::string, Json>);
+	for (const auto& member : value.array)
+		bytes += retained_json_bytes(member);
+	for (const auto& [key, member] : value.object)
+		bytes += key.capacity() + retained_json_bytes(member);
+	return bytes;
 }
 [[nodiscard]] Status atomic_json(const std::filesystem::path& destination,
 								 const Json& value) noexcept {
@@ -115,6 +125,10 @@ struct AgenticWorkflowService::Impl {
 		bool controller_requested = false, scenario_setup = false, scenario_verified = false,
 			 provenance_prepared = false;
 		bool scenario_cleanup = false, stop_requested = false;
+		bool verification_owned = false, checkpoint_active = false;
+		bool checkpoint_image = false, checkpoint_tree = false, checkpoint_admitted = false,
+			 checkpoint_tree_recorded = false;
+		std::uint64_t checkpoint_window = 0;
 		DevTimingConfig previous_timing_config{};
 		bool previous_value_collection = true;
 		std::vector<std::pair<std::uint64_t, bool>> previous_tree_collection;
@@ -122,6 +136,41 @@ struct AgenticWorkflowService::Impl {
 	struct PendingCommand {
 		AgenticCommandRequest request;
 		std::promise<Result<Json>> result;
+	};
+	struct CaptureReceipt {
+		AgenticJobStatus status;
+		std::string key;
+		std::string digest;
+		std::uint64_t admitted_ns = 0;
+	};
+	static constexpr std::size_t maximum_capture_receipts = 4096;
+	static constexpr std::uint64_t capture_receipt_retention_ns = 86'400'000'000'000ull;
+	struct Verification {
+		Json request, cases = Json::make_array(), current, report;
+		std::string job_id, digest, key, phase = "preparing", child_job, interaction_job;
+		std::string execution_status = "completed";
+		std::string report_detail = "failures";
+		std::string termination_reason;
+		std::uint64_t admitted_ns = 0, case_started_ns = 0, phase_started_ns = 0;
+		std::uint64_t sequence = 1, peak_owned_bytes = 0, readback_bytes = 0, disk_bytes = 0;
+		std::uint64_t image_count = 0, checkpoint_tick = 0;
+		std::uint64_t admission_ns = 0, setup_ns = 0, execution_ns = 0, assertion_ns = 0;
+		std::uint64_t publication_ns = 0, queue_ns = 0;
+		std::size_t case_index = 0, scenario_index = SIZE_MAX, checkpoint_index = 0;
+		std::size_t checkpoint_image_begin = 0, checkpoint_tree_begin = 0;
+		std::size_t harvested_actions = 0;
+		bool canceled = false, dirty = false, case_failed = false, case_incomplete = false;
+		bool terminal = false, publishing = false, report_published = false;
+		bool cleanup_started = false;
+	};
+	struct VerificationReceipt {
+		std::string key, digest, job_id;
+		std::uint64_t admitted_ns = 0;
+	};
+	struct VerificationPublication {
+		Json report;
+		std::filesystem::path path;
+		std::string job_id;
 	};
 	struct Review {
 		std::string identity;
@@ -140,6 +189,10 @@ struct AgenticWorkflowService::Impl {
 	AgenticLocalEndpoint endpoint;
 	AgenticLocalServer server;
 	std::vector<std::unique_ptr<Job>> jobs;
+	std::vector<CaptureReceipt> capture_receipts;
+	std::vector<std::unique_ptr<Verification>> verifications;
+	std::vector<VerificationReceipt> verification_receipts;
+	std::optional<VerificationPublication> verification_publication;
 	std::vector<AgenticScenario> scenarios;
 	std::vector<PendingCommand> commands, command_batch;
 	std::vector<Review> reviews;
@@ -157,6 +210,8 @@ struct AgenticWorkflowService::Impl {
 	std::size_t active_job = SIZE_MAX;
 	bool admission = false, stop_writer = false, configured = false, manual_busy = false;
 	bool optional_collection = true;
+	bool verification_admission = false, verification_dirty = false;
+	AgenticWorkflowService* owner_service = nullptr;
 
 	explicit Impl(AgenticDependencies supplied) : dependencies(supplied) {}
 	[[nodiscard]] Job* find_job(std::string_view identity) noexcept {
@@ -165,8 +220,48 @@ struct AgenticWorkflowService::Impl {
 				return job.get();
 		return nullptr;
 	}
+	[[nodiscard]] CaptureReceipt* find_capture_receipt(std::string_view identity) noexcept {
+		for (auto& receipt : capture_receipts)
+			if (receipt.status.job_id == identity)
+				return &receipt;
+		return nullptr;
+	}
 	[[nodiscard]] Job* active() noexcept {
 		return active_job < jobs.size() ? jobs[active_job].get() : nullptr;
+	}
+	[[nodiscard]] Verification* active_verification() noexcept {
+		for (auto& verification : verifications)
+			if (!verification->terminal)
+				return verification.get();
+		return nullptr;
+	}
+	[[nodiscard]] Verification* find_verification(std::string_view identity) noexcept {
+		for (auto& verification : verifications)
+			if (verification->job_id == identity)
+				return verification.get();
+		return nullptr;
+	}
+	[[nodiscard]] Json verification_plan(const AgenticCommandRequest& request);
+	[[nodiscard]] Json verification_command(const AgenticCommandRequest& request);
+	[[nodiscard]] Json verification_response(const AgenticCommandRequest& request,
+											 const Verification& verification);
+	void advance_verification();
+	void seal_verification(Verification& verification);
+	void evict_terminal_jobs() {
+		if (active())
+			return;
+		while (jobs.size() >= 32) {
+			const auto selected = std::find_if(jobs.begin(), jobs.end(), [&](const auto& job) {
+				const auto* verification = active_verification();
+				return terminal(job->status.phase) &&
+					   (!verification || verification->child_job != job->status.job_id);
+			});
+			if (selected == jobs.end())
+				break;
+			if (auto* receipt = find_capture_receipt((*selected)->status.job_id))
+				receipt->status = (*selected)->status;
+			jobs.erase(selected);
+		}
 	}
 	[[nodiscard]] Json failure(const AgenticCommandRequest& request, FlowUiError error) {
 		int exit_code = 4;
@@ -186,27 +281,87 @@ struct AgenticWorkflowService::Impl {
 	}
 	void writer_loop(std::stop_token stop_token) noexcept {
 		for (;;) {
+			std::string verification_output_identity;
 			try {
 				std::optional<AgenticCaptureSnapshot> owned;
+				std::optional<VerificationPublication> verification_output;
 				std::string_view job_id;
 				{
 					std::unique_lock lock(mutex);
-					condition.wait(lock, stop_token,
-								   [&] { return stop_writer || publication.has_value(); });
-					if (!publication && (stop_writer || stop_token.stop_requested()))
+					condition.wait(lock, stop_token, [&] {
+						return stop_writer || publication.has_value() ||
+							   verification_publication.has_value();
+					});
+					if (!publication && !verification_publication &&
+						(stop_writer || stop_token.stop_requested()))
 						return;
-					const auto bytes = snapshot_owned_bytes(*publication);
-					writer_owned_bytes.store(bytes ? *bytes : 0, std::memory_order_relaxed);
-					owned.emplace(std::move(*publication));
-					publication.reset();
-					job_id = publishing_job;
+					if (verification_publication) {
+						verification_output_identity = verification_publication->job_id;
+						writer_owned_bytes.store(
+							retained_json_bytes(verification_publication->report),
+							std::memory_order_relaxed);
+						verification_output.emplace(std::move(*verification_publication));
+						verification_publication.reset();
+					} else {
+						const auto bytes = snapshot_owned_bytes(*publication);
+						writer_owned_bytes.store(bytes ? *bytes : 0, std::memory_order_relaxed);
+						owned.emplace(std::move(*publication));
+						publication.reset();
+						job_id = publishing_job;
+					}
 				}
+				if (verification_output) {
+					std::error_code directory_error;
+					std::filesystem::create_directories(verification_output->path.parent_path(),
+														directory_error);
+					const auto report_valid = validate_agentic_document(
+						verification_output->report, "FlowUi.Agentic.VerificationReport");
+					const auto written =
+						(directory_error || !report_valid)
+							? Status(
+								  unexpectedError(agentic_error(AgenticError::publication_failed)))
+							: atomic_json(verification_output->path, verification_output->report);
+					{
+						std::lock_guard lock(mutex);
+						if (auto* verification = find_verification(verification_output->job_id)) {
+							verification->report = std::move(verification_output->report);
+							verification->report_published = written.has_value();
+							verification->publishing = false;
+							verification->terminal = true;
+							verification->phase = written ? "terminal" : "publication_failed";
+							if (!written) {
+								verification->report.set("execution_status", "failed");
+								if (argument_string(verification->report, "verdict") != "fail")
+									verification->report.set("verdict", "inconclusive");
+								verification->report.find("limitations")
+									->array.emplace_back("report_publication_failed");
+							}
+							verification->request = Json{};
+							verification->cases = Json{};
+							verification->current = Json{};
+							++verification->sequence;
+						}
+						writer_owned_bytes.store(0, std::memory_order_relaxed);
+					}
+					condition.notify_all();
+					continue;
+				}
+				const auto publication_started_ns = monotonic_nanoseconds();
 				auto published = store->publish(std::move(*owned));
 				{
 					std::lock_guard lock(mutex);
 					if (auto* job = find_job(job_id)) {
 						job->status.phase = published ? JobPhase::sealed : JobPhase::failed;
 						if (published) {
+							if (auto* verification = active_verification();
+								verification && verification->child_job == job->status.job_id) {
+								verification->publication_ns +=
+									monotonic_nanoseconds() - publication_started_ns;
+								std::uint64_t bytes = 0;
+								for (const auto& artifact : published->artifacts)
+									bytes += artifact.bytes;
+								verification->disk_bytes += bytes;
+							}
 							job->status.manifest_path = std::move(published->manifest_path);
 							if (published->partial)
 								job->status.reason = "partial_evidence";
@@ -220,6 +375,22 @@ struct AgenticWorkflowService::Impl {
 			} catch (...) {
 				// Job reason buffers are reserved at admission, before measurement.
 				std::lock_guard lock(mutex);
+				if (auto* verification = find_verification(verification_output_identity)) {
+					verification->publishing = false;
+					verification->terminal = true;
+					verification->phase = "publication_failed";
+					verification->request = Json{};
+					verification->cases = Json{};
+					verification->current = Json{};
+					++verification->sequence;
+					try {
+						verification->report.set("execution_status", "failed");
+						if (argument_string(verification->report, "verdict") != "fail")
+							verification->report.set("verdict", "inconclusive");
+						verification->report.find("limitations")
+							->array.emplace_back("report_publication_failed");
+					} catch (...) {}
+				}
 				if (auto* job = find_job(publishing_job)) {
 					job->status.phase = JobPhase::failed;
 					job->status.reason = "writer_allocation_failure";
@@ -510,7 +681,8 @@ struct AgenticWorkflowService::Impl {
 			for (const auto window_id : job->snapshot.request.window_ids)
 				if (window_id > UINT32_MAX ||
 					!dependencies.application->hasWindow(static_cast<WindowId>(window_id)) ||
-					(dependencies.interface && window_id == dependencies.interface->windowId())) {
+					(dependencies.interface && window_id == dependencies.interface->windowId() &&
+					 !job->verification_owned)) {
 					fail_job(*job, "invalid_target_window");
 					return;
 				}
@@ -697,8 +869,12 @@ struct AgenticWorkflowService::Impl {
 	}
 };
 
+#include "AgenticVerificationService.inl"
+
 AgenticWorkflowService::AgenticWorkflowService(const AgenticDependencies& dependencies)
-	: impl_(std::make_unique<Impl>(dependencies)) {}
+	: impl_(std::make_unique<Impl>(dependencies)) {
+	impl_->owner_service = this;
+}
 AgenticWorkflowService::~AgenticWorkflowService() {
 	const auto result = shutdown();
 	if (!result)
@@ -829,6 +1005,31 @@ Status AgenticWorkflowService::configure(const AgenticWorkflowConfig& configurat
 			return unexpectedError(reserved.error());
 		impl_->run_path = *reserved;
 		impl_->jobs.reserve(256);
+		impl_->capture_receipts.reserve(Impl::maximum_capture_receipts);
+		impl_->capabilities.details.set(
+			"capture_history",
+			Json::make_object(
+				{{"terminal_history", Json::number(32)},
+				 {"idempotency_capacity", Json::number(Impl::maximum_capture_receipts)},
+				 {"idempotency_retention_ns", decimal(Impl::capture_receipt_retention_ns)},
+				 {"retains_terminal_status", true}}));
+		impl_->verifications.reserve(32);
+		impl_->verification_receipts.reserve(4096);
+		impl_->capabilities.details.set(
+			"verification",
+			Json::make_object(
+				{{"schema_version", "1.0"},
+				 {"workload_kinds", Json::make_array({"registered_scenario", "interaction_plan"})},
+				 {"checkpoint_triggers", Json::make_array({"case_verified", "case_failed"})},
+				 {"evidence_policies",
+				  Json::make_array({"assertions_only", "checkpoints_and_failure"})},
+				 {"maximum_wait_timeout_ms", Json::number(20000)},
+				 {"transport_margin_ms", Json::number(5000)},
+				 {"terminal_history", Json::number(32)},
+				 {"idempotency_capacity", Json::number(4096)},
+				 {"idempotency_retention_ns", decimal(86'400'000'000'000ull)},
+				 {"automatic_retention", false},
+				 {"contact_sheets", false}}));
 		impl_->scenarios.reserve(32);
 		impl_->commands.reserve(config.limits.maximum_queued_jobs);
 		impl_->command_batch.reserve(config.limits.maximum_queued_jobs);
@@ -908,16 +1109,32 @@ AgenticWorkflowService::request_capture(const AgenticCaptureRequest& request) no
 		std::lock_guard lock(impl_->mutex);
 		if (!impl_->admission || !impl_->config.enabled.value_or(false))
 			return unexpectedError(agentic_error(AgenticError::unavailable));
-		if (impl_->interaction && impl_->interaction->active() &&
-			!impl_->interaction->admits_capture())
-			return unexpectedError(agentic_error(AgenticError::busy));
 		const auto digest = sha256(write_json(to_json(request)));
+		const auto now = monotonic_nanoseconds();
+		std::erase_if(impl_->capture_receipts, [now](const auto& receipt) {
+			return now - receipt.admitted_ns > Impl::capture_receipt_retention_ns;
+		});
+		if (!request.idempotency_key.empty())
+			for (const auto& receipt : impl_->capture_receipts)
+				if (receipt.key == request.idempotency_key)
+					return receipt.digest == digest
+							   ? Result<AgenticJobId>(receipt.status.job_id)
+							   : unexpectedError(agentic_error(AgenticError::invalid_request));
 		if (!request.idempotency_key.empty())
 			for (const auto& job : impl_->jobs)
 				if (job->idempotency_key == request.idempotency_key)
 					return job->request_digest == digest
 							   ? Result<AgenticJobId>(job->status.job_id)
 							   : unexpectedError(agentic_error(AgenticError::invalid_request));
+		if (impl_->active_verification() && !impl_->verification_admission)
+			return unexpectedError(agentic_error(AgenticError::busy));
+		impl_->evict_terminal_jobs();
+		if (impl_->interaction && impl_->interaction->active() &&
+			!impl_->interaction->admits_capture())
+			return unexpectedError(agentic_error(AgenticError::busy));
+		if (!request.idempotency_key.empty() &&
+			impl_->capture_receipts.size() >= Impl::maximum_capture_receipts)
+			return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 		auto plan = plan_capture(request, impl_->capabilities);
 		if (!plan)
 			return unexpectedError(plan.error());
@@ -966,6 +1183,9 @@ AgenticWorkflowService::request_capture(const AgenticCaptureRequest& request) no
 			job->snapshot.request.fixture_id = descriptor.fixture_id;
 			job->snapshot.request.seed = request.seed ? request.seed : descriptor.seed;
 		}
+		if (!request.idempotency_key.empty())
+			impl_->capture_receipts.emplace_back(
+				Impl::CaptureReceipt{job->status, request.idempotency_key, digest, now});
 		impl_->jobs.emplace_back(std::move(job));
 		return std::move(*job_id);
 	} catch (...) {
@@ -977,10 +1197,21 @@ Result<AgenticJobStatus> AgenticWorkflowService::query_job(std::string_view job_
 		std::lock_guard lock(impl_->mutex);
 		if (const auto* job = impl_->find_job(job_id))
 			return job->status;
+		if (const auto* receipt = impl_->find_capture_receipt(job_id);
+			receipt &&
+			monotonic_nanoseconds() - receipt->admitted_ns <= Impl::capture_receipt_retention_ns)
+			return receipt->status;
 		if (impl_->interaction) {
 			const auto owner_id = impl_->interaction->capture_job_id(job_id);
 			if (const auto* owner = impl_->find_job(owner_id)) {
 				auto status = owner->status;
+				status.job_id = job_id;
+				return status;
+			}
+			if (const auto* receipt = impl_->find_capture_receipt(owner_id);
+				receipt && monotonic_nanoseconds() - receipt->admitted_ns <=
+							   Impl::capture_receipt_retention_ns) {
+				auto status = receipt->status;
 				status.job_id = job_id;
 				return status;
 			}
@@ -1070,6 +1301,8 @@ void AgenticWorkflowService::advance_safe_point(const AgenticSafePoint& safe_poi
 		impl_->advance_job();
 		if (impl_->interaction)
 			impl_->interaction->advance(safe_point.app_tick, safe_point.monotonic_ns);
+		impl_->advance_verification();
+		impl_->condition.notify_all();
 		if (!impl_->active() && impl_->publishing_job.empty() &&
 			safe_point.monotonic_ns - impl_->last_session_ns >= 1'000'000'000ull) {
 			impl_->last_session_ns = safe_point.monotonic_ns;
@@ -1114,18 +1347,44 @@ AgenticWorkflowService::start_interaction(const Json& plan,
 	if (std::this_thread::get_id() != impl_->platform_thread || !impl_->interaction)
 		return unexpectedError(agentic_error(AgenticError::unavailable));
 	const auto* capture = impl_->active();
-	const std::string_view owner = capture && capture->scenario_index != SIZE_MAX
-									   ? std::string_view(capture->status.job_id)
-									   : std::string_view{};
+	const std::string_view owner =
+		capture && (capture->scenario_index != SIZE_MAX || capture->verification_owned)
+			? std::string_view(capture->status.job_id)
+			: std::string_view{};
 	return impl_->interaction->start_plan(plan, idempotency_key, owner);
+}
+Status
+AgenticWorkflowService::track_owned_interaction(std::string_view owner_job_id,
+												std::string_view interaction_job_id) noexcept {
+	try {
+		std::lock_guard lock(impl_->mutex);
+		if (auto* verification = impl_->active_verification()) {
+			if (verification->child_job != owner_job_id)
+				return unexpectedError(agentic_error(AgenticError::invalid_scope));
+			verification->interaction_job = interaction_job_id;
+		}
+		return {};
+	} catch (...) {
+		return unexpectedError(agentic_error(AgenticError::budget_exhausted));
+	}
 }
 Result<AgenticContentPolicy>
 AgenticWorkflowService::interaction_content_policy(std::string_view owner) const noexcept {
 	std::lock_guard lock(impl_->mutex);
 	const auto* capture = impl_->active();
-	if (!capture || capture->status.job_id != owner || capture->scenario_index == SIZE_MAX)
+	if (!capture || capture->status.job_id != owner ||
+		(capture->scenario_index == SIZE_MAX && !capture->verification_owned))
 		return unexpectedError(agentic_error(AgenticError::invalid_scope));
 	return capture->snapshot.request.content;
+}
+Result<std::uint64_t>
+AgenticWorkflowService::interaction_snapshot_budget(std::string_view owner) const noexcept {
+	std::lock_guard lock(impl_->mutex);
+	const auto* capture = impl_->active();
+	if (!capture || capture->status.job_id != owner ||
+		(capture->scenario_index == SIZE_MAX && !capture->verification_owned))
+		return unexpectedError(agentic_error(AgenticError::invalid_scope));
+	return capture->snapshot.request.limits.maximum_snapshot_bytes;
 }
 Status AgenticWorkflowService::select_frame_input(const EvidenceFrameKey& key, FrameInput& input,
 												  float ui_scale) noexcept {
@@ -1210,9 +1469,13 @@ AgenticWorkflowService::image_request(const AgenticFrameRecord& frame) noexcept 
 		frame_capture::AgenticFrameCaptureRequest result;
 		auto* job = impl_->active();
 		if (!job || job->status.phase != JobPhase::recording ||
+			(job->verification_owned &&
+			 (!job->checkpoint_active || !job->checkpoint_image ||
+			  (job->checkpoint_window && job->checkpoint_window != frame.key.window_id))) ||
 			!impl_->config.visual_capture_enabled ||
 			job->snapshot.request.visual == SectionRequirement::omit ||
 			job->admitted_images >= job->snapshot.request.limits.maximum_images ||
+			(job->verification_owned && job->checkpoint_admitted) ||
 			std::find(job->snapshot.request.window_ids.begin(),
 					  job->snapshot.request.window_ids.end(),
 					  frame.key.window_id) == job->snapshot.request.window_ids.end())
@@ -1255,6 +1518,8 @@ AgenticWorkflowService::image_request(const AgenticFrameRecord& frame) noexcept 
 		result.capture_window = job->snapshot.request.capture_window;
 		result.capture_viewports = job->snapshot.request.capture_viewports;
 		++job->admitted_images;
+		if (job->verification_owned)
+			job->checkpoint_admitted = true;
 		return result;
 	} catch (...) {
 		return {};
@@ -1276,6 +1541,12 @@ Status AgenticWorkflowService::accept_completed_image(AgenticCompletedImage imag
 			return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 		}
 		job->image_bytes += image.rgb.size();
+		if (auto* verification = impl_->active_verification();
+			verification && verification->child_job == job->status.job_id) {
+			++verification->image_count;
+			verification->readback_bytes =
+				std::max<std::uint64_t>(verification->readback_bytes, image.rgb.size());
+		}
 		job->snapshot.images.emplace_back(std::move(image));
 		return {};
 	} catch (...) {
@@ -1287,6 +1558,10 @@ void AgenticWorkflowService::observe_tree(std::uint64_t window_id) noexcept {
 		std::lock_guard lock(impl_->mutex);
 		auto* job = impl_->active();
 		if (!job || job->status.phase != JobPhase::recording ||
+			(job->verification_owned &&
+			 (!job->checkpoint_active || !job->checkpoint_tree ||
+			  (job->checkpoint_window && job->checkpoint_window != window_id))) ||
+			(job->verification_owned && job->checkpoint_tree_recorded) ||
 			job->snapshot.request.visual == SectionRequirement::omit ||
 			static_cast<std::uint64_t>(std::count_if(
 				job->snapshot.artifacts.begin(), job->snapshot.artifacts.end(),
@@ -1315,6 +1590,8 @@ void AgenticWorkflowService::observe_tree(std::uint64_t window_id) noexcept {
 							  "application/json", "FlowUi.Agentic.Tree", write_json(*owned));
 		if (!copied)
 			job->snapshot.partial = true;
+		else if (job->verification_owned)
+			job->checkpoint_tree_recorded = true;
 	} catch (...) {
 		std::lock_guard lock(impl_->mutex);
 		if (auto* job = impl_->active())
@@ -1323,7 +1600,7 @@ void AgenticWorkflowService::observe_tree(std::uint64_t window_id) noexcept {
 }
 bool AgenticWorkflowService::capture_lease_active() const noexcept {
 	std::lock_guard lock(impl_->mutex);
-	return impl_->active() || !impl_->publishing_job.empty() ||
+	return impl_->active_verification() || impl_->active() || !impl_->publishing_job.empty() ||
 		   std::any_of(impl_->jobs.begin(), impl_->jobs.end(),
 					   [](const auto& job) { return !terminal(job->status.phase); });
 }
@@ -1370,12 +1647,37 @@ std::uint64_t AgenticWorkflowService::owned_memory_bytes() const noexcept {
 			const auto owned = snapshot_owned_bytes(job->snapshot);
 			bytes += owned ? *owned : 0;
 		}
+		bytes += impl_->capture_receipts.capacity() * sizeof(Impl::CaptureReceipt);
+		for (const auto& receipt : impl_->capture_receipts)
+			bytes += receipt.key.capacity() + receipt.digest.capacity() +
+					 receipt.status.job_id.capacity() + receipt.status.capture_id.capacity() +
+					 receipt.status.reason.capacity() +
+					 receipt.status.manifest_path.native().capacity() *
+						 sizeof(std::filesystem::path::value_type);
+		bytes += impl_->verifications.capacity() * sizeof(std::unique_ptr<Impl::Verification>) +
+				 impl_->verification_receipts.capacity() * sizeof(Impl::VerificationReceipt);
+		for (const auto& verification : impl_->verifications) {
+			bytes += sizeof(Impl::Verification) + retained_json_bytes(verification->request) +
+					 retained_json_bytes(verification->cases) +
+					 retained_json_bytes(verification->current) +
+					 retained_json_bytes(verification->report);
+			bytes += verification->job_id.capacity() + verification->digest.capacity() +
+					 verification->key.capacity() + verification->phase.capacity() +
+					 verification->child_job.capacity() + verification->interaction_job.capacity() +
+					 verification->execution_status.capacity() +
+					 verification->report_detail.capacity() +
+					 verification->termination_reason.capacity();
+		}
+		for (const auto& receipt : impl_->verification_receipts)
+			bytes += receipt.key.capacity() + receipt.digest.capacity() + receipt.job_id.capacity();
 		if (impl_->interaction)
 			bytes += impl_->interaction->owned_memory_bytes();
 		if (impl_->publication) {
 			const auto owned = snapshot_owned_bytes(*impl_->publication);
 			bytes += owned ? *owned : 0;
 		}
+		if (impl_->verification_publication)
+			bytes += retained_json_bytes(impl_->verification_publication->report);
 		return bytes;
 	} catch (...) {
 		return 0;
@@ -1390,6 +1692,23 @@ void AgenticWorkflowService::rebind_application(App& application) noexcept {
 
 Result<Json> AgenticWorkflowService::submit_command(const AgenticCommandRequest& request) noexcept {
 	try {
+		if (request.operation.starts_with("verification.") &&
+			(request.operation != "verification.run" && request.operation != "verification.plan")) {
+			std::unique_lock lock(impl_->mutex);
+			if (request.operation == "verification.status" &&
+				std::this_thread::get_id() != impl_->platform_thread) {
+				const auto identity = argument_string(request.arguments, "job_id");
+				const auto after_sequence = argument_integer(request.arguments, "after_sequence");
+				const auto wait_ms = std::min<std::uint64_t>(
+					20000, argument_integer(request.arguments, "wait_timeout_ms"));
+				impl_->condition.wait_for(lock, std::chrono::milliseconds(wait_ms), [&] {
+					const auto* verification = impl_->find_verification(identity);
+					return !impl_->admission || !verification || verification->terminal ||
+						   verification->sequence > after_sequence;
+				});
+			}
+			return impl_->verification_command(request);
+		}
 		if (std::this_thread::get_id() != impl_->platform_thread) {
 			std::future<Result<Json>> response;
 			{
@@ -1406,9 +1725,43 @@ Result<Json> AgenticWorkflowService::submit_command(const AgenticCommandRequest&
 			if (response.wait_for(std::chrono::milliseconds(1500)) != std::future_status::ready)
 				return unexpectedError(
 					makeError(ErrorCode::AgenticTimeout, ErrorSite::AgenticCommand));
-			return response.get();
+			auto result = response.get();
+			if (result && request.operation == "verification.run" &&
+				argument_integer(*result, "exit_code") == 0) {
+				const auto* supplied = request.arguments.find("request");
+				const auto wait_ms =
+					supplied && supplied->find("wait_timeout_ms")
+						? std::min<std::uint64_t>(20000,
+												  argument_integer(*supplied, "wait_timeout_ms"))
+						: 20000;
+				const auto identity = argument_string(*result, "job_id");
+				std::unique_lock lock(impl_->mutex);
+				impl_->condition.wait_for(lock, std::chrono::milliseconds(wait_ms), [&] {
+					const auto* verification = impl_->find_verification(identity);
+					return !impl_->admission || !verification || verification->terminal;
+				});
+				if (const auto* verification = impl_->find_verification(identity))
+					return impl_->verification_response(request, *verification);
+			}
+			return result;
 		}
 		const auto& operation = request.operation;
+		if (operation.starts_with("verification.")) {
+			std::lock_guard lock(impl_->mutex);
+			return impl_->verification_command(request);
+		}
+		{
+			std::lock_guard lock(impl_->mutex);
+			if (impl_->active_verification()) {
+				const auto descriptors = agentic_command_registry();
+				const auto descriptor =
+					std::find_if(descriptors.begin(), descriptors.end(),
+								 [&](const auto& value) { return value.operation == operation; });
+				if (descriptor != descriptors.end() &&
+					descriptor->access != AgenticCommandAccess::read)
+					return impl_->failure(request, agentic_error(AgenticError::busy));
+			}
+		}
 		if (operation.starts_with("interaction.") || operation.starts_with("action.") ||
 			((operation == "job.cancel" || operation == "job.status") && impl_->interaction &&
 			 impl_->interaction->owns_job(argument_string(request.arguments, "job_id")))) {
@@ -1597,6 +1950,7 @@ void AgenticWorkflowService::stop_admission() noexcept {
 	{
 		std::lock_guard lock(impl_->mutex);
 		impl_->admission = false;
+		impl_->condition.notify_all();
 		for (auto& command : impl_->commands) {
 			try {
 				command.result.set_value(unexpectedError(agentic_error(AgenticError::canceled)));
@@ -1629,6 +1983,13 @@ Status AgenticWorkflowService::shutdown(const AgenticShutdownPolicy& policy) noe
 					impl_->materialize(*job);
 				else
 					impl_->fail_job(*job, "application_shutdown", true);
+			}
+			if (auto* verification = impl_->active_verification();
+				verification && !verification->publishing) {
+				verification->execution_status = "canceled";
+				verification->dirty = true;
+				impl_->verification_dirty = true;
+				impl_->seal_verification(*verification);
 			}
 			impl_->stop_writer = true;
 		}

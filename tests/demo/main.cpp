@@ -1569,6 +1569,7 @@ FLOWUI_DEV_SCHEMA(
 
 #include "AgenticScenarios.hpp"
 #include "AgenticInteractions.hpp"
+#include "AgenticVerificationScenarios.hpp"
 
 } // namespace
 
@@ -1588,6 +1589,8 @@ int main(int argument_count, char** arguments) {
 #if FLOW_UI_AGENTIC_WORKFLOW
 		DemoAgenticHarness agentic_harness;
 		DemoAgenticInteractionHarness interaction_harness;
+		DemoAgenticVerificationHarness verification_harness;
+		bool agentic_dev_interface = false;
 		std::filesystem::path agentic_changes_path;
 		config.agentic_workflow.application_id = "flowui.fsel.demo";
 		config.agentic_workflow.application_revision = FLOWUI_AGENTIC_APP_REVISION;
@@ -1601,10 +1604,16 @@ int main(int argument_count, char** arguments) {
 			const std::string_view argument(arguments[argument_index]);
 			if (argument == "--help") {
 				std::cout << "flowui_fsel_demo [--agentic-store PATH] [--agentic-visual] "
-							 "[--agentic-input] [--agentic-actions] [--agentic-changes PATH]\n";
+							 "[--agentic-input] [--agentic-actions] [--agentic-dev-interface] "
+							 "[--agentic-changes PATH]\n";
 				return 0;
 			}
 #if FLOW_UI_AGENTIC_WORKFLOW
+			if (argument == "--agentic-dev-interface") {
+				agentic_dev_interface = true;
+				config.dev.excludeInternalDevElementsFromCapture = false;
+				continue;
+			}
 			if (argument == "--agentic-input") {
 				config.agentic_workflow.input_control_enabled = true;
 				continue;
@@ -1668,6 +1677,9 @@ int main(int argument_count, char** arguments) {
 				register_demo_agentic_interactions(app, agentic_harness, interaction_harness,
 												   config.agentic_workflow.input_control_enabled,
 												   config.agentic_workflow.action_control_enabled));
+			if (agentic_dev_interface && config.agentic_workflow.input_control_enabled)
+				requireStatus(
+					register_demo_agentic_verification_scenario(app, verification_harness));
 		}
 #endif
 

@@ -15,6 +15,8 @@
 
 namespace FlowUi::devSystems::agentic {
 namespace {
+constexpr std::size_t maximum_terminal_history = 32;
+constexpr std::size_t maximum_idempotency_receipts = 1024;
 [[nodiscard]] bool terminal(AgenticInteractionPhase phase) noexcept {
 	return phase == AgenticInteractionPhase::completed ||
 		   phase == AgenticInteractionPhase::failed || phase == AgenticInteractionPhase::canceled;
@@ -113,6 +115,14 @@ struct AgenticInteractionRuntime::Impl {
 		std::array<bool, FrameInput::kMouseButtonCount> buttons{};
 		std::uint64_t window_id = 0;
 	};
+	struct IdempotencyReceipt {
+		std::string job_id;
+		std::string idempotency_key;
+		std::string request_digest;
+		std::string capture_job_id;
+		std::string capture_id;
+		bool owns_capture = true;
+	};
 	AgenticWorkflowService* service;
 	App* application;
 	AgenticWorkflowConfig configuration;
@@ -120,6 +130,7 @@ struct AgenticInteractionRuntime::Impl {
 	AgenticInteractionTargetRegistry target_registry;
 	AgenticActionRegistry action_registry;
 	std::vector<std::unique_ptr<Execution>> executions;
+	std::vector<IdempotencyReceipt> idempotency_receipts;
 	std::vector<Handoff> handoffs;
 	std::vector<std::pair<std::uint64_t, float>> scales;
 	std::thread::id platform_thread = std::this_thread::get_id();
@@ -129,6 +140,7 @@ struct AgenticInteractionRuntime::Impl {
 	Impl(AgenticWorkflowService& supplied, App& app, const AgenticWorkflowConfig& config)
 		: service(&supplied), application(&app), configuration(config) {
 		executions.reserve(64);
+		idempotency_receipts.reserve(maximum_idempotency_receipts);
 		handoffs.reserve(64);
 		scales.reserve(64);
 		capabilities.geometry_targets = FLOW_UI_DEV_CAPTURE_CLAY != 0;
@@ -147,6 +159,46 @@ struct AgenticInteractionRuntime::Impl {
 			if (execution->result.job_id == job_id)
 				return execution.get();
 		return nullptr;
+	}
+	void collect_terminal_history() {
+		for (auto& prior : executions)
+			if (prior->materialized && !prior->payload_evicted) {
+				std::vector<AgenticInteractionReceipt>().swap(prior->inputs);
+				std::vector<AgenticInteractionObservation>().swap(prior->observations);
+				std::vector<AgenticInteractionSpan>().swap(prior->compiled.spans);
+				std::vector<AgenticInteractionSpan>().swap(prior->compiled.plan.spans);
+				std::vector<AgenticInteractionStep>().swap(prior->compiled.plan.steps);
+				std::vector<std::uint64_t>().swap(prior->step_started);
+				std::vector<std::optional<AgenticResolvedInteractionTarget>>().swap(
+					prior->resolved);
+				std::vector<std::optional<AgenticResolvedInteractionTarget>>().swap(
+					prior->destinations);
+				prior->previous = {};
+				prior->replay_source = {};
+				prior->payload_evicted = true;
+				prior->compiled.estimated_bytes = 0;
+			}
+		auto terminal_count = static_cast<std::size_t>(
+			std::count_if(executions.begin(), executions.end(), [](const auto& execution) {
+				return execution->materialized && terminal(execution->result.phase);
+			}));
+		for (auto position = executions.begin();
+			 position != executions.end() && terminal_count > maximum_terminal_history;) {
+			const auto& execution = **position;
+			if (!execution.materialized || !terminal(execution.result.phase)) {
+				++position;
+				continue;
+			}
+			if (!execution.idempotency_key.empty()) {
+				if (idempotency_receipts.size() == maximum_idempotency_receipts)
+					idempotency_receipts.erase(idempotency_receipts.begin());
+				idempotency_receipts.emplace_back(IdempotencyReceipt{
+					execution.result.job_id, execution.idempotency_key, execution.request_digest,
+					execution.capture_job_id, execution.capture_id, execution.owns_capture});
+			}
+			position = executions.erase(position);
+			--terminal_count;
+		}
 	}
 	[[nodiscard]] float scale(std::uint64_t window_id) const noexcept {
 		for (const auto& entry : scales)
@@ -193,22 +245,11 @@ struct AgenticInteractionRuntime::Impl {
 	}
 	[[nodiscard]] Result<AgenticJobId> admit(std::unique_ptr<Execution> execution,
 											 const Json* capture, std::string_view owner = {}) {
-		if (active() || stopping || executions.size() >= 64 || (!owner.empty() && capture))
+		if (active() || stopping || (!owner.empty() && capture))
 			return unexpectedError(agentic_error(AgenticError::busy));
-		for (auto& prior : executions)
-			if (prior->materialized && !prior->payload_evicted) {
-				std::vector<AgenticInteractionReceipt>().swap(prior->inputs);
-				std::vector<AgenticInteractionObservation>().swap(prior->observations);
-				std::vector<AgenticInteractionSpan>().swap(prior->compiled.spans);
-				std::vector<AgenticInteractionSpan>().swap(prior->compiled.plan.spans);
-				std::vector<AgenticInteractionStep>().swap(prior->compiled.plan.steps);
-				std::vector<std::optional<AgenticResolvedInteractionTarget>>().swap(
-					prior->resolved);
-				std::vector<std::optional<AgenticResolvedInteractionTarget>>().swap(
-					prior->destinations);
-				prior->payload_evicted = true;
-				prior->compiled.estimated_bytes = 0;
-			}
+		collect_terminal_history();
+		if (executions.size() >= 64)
+			return unexpectedError(agentic_error(AgenticError::busy));
 		const auto reservation =
 			execution->compiled.plan.limits.maximum_observations *
 				(sizeof(AgenticInteractionReceipt) + sizeof(AgenticInteractionObservation)) +
@@ -219,7 +260,13 @@ struct AgenticInteractionRuntime::Impl {
 				prior->inputs.capacity() * sizeof(AgenticInteractionReceipt) +
 				prior->observations.capacity() * sizeof(AgenticInteractionObservation) +
 				prior->compiled.estimated_bytes;
-		const auto reservation_budget = configuration.limits.maximum_snapshot_bytes / 2;
+		auto reservation_budget = configuration.limits.maximum_snapshot_bytes / 2;
+		if (!owner.empty()) {
+			const auto owner_budget = service->interaction_snapshot_budget(owner);
+			if (!owner_budget)
+				return unexpectedError(owner_budget.error());
+			reservation_budget = std::min(reservation_budget, *owner_budget / 2);
+		}
 		if (reservation > reservation_budget - std::min(reservation_budget, retained_reservation))
 			return unexpectedError(agentic_error(AgenticError::budget_exhausted));
 		const auto window_id = execution->compiled.plan.window_id;
@@ -297,6 +344,11 @@ struct AgenticInteractionRuntime::Impl {
 			return unexpectedError(status.error());
 		execution->capture_id = status->capture_id;
 		execution->owner_phase = status->phase;
+		if (!owner.empty()) {
+			const auto tracked = service->track_owned_interaction(owner, *identity);
+			if (!tracked)
+				return unexpectedError(tracked.error());
+		}
 		executions.emplace_back(std::move(execution));
 		active_index = executions.size() - 1;
 		return std::move(*identity);
@@ -532,6 +584,14 @@ Result<AgenticJobId> AgenticInteractionRuntime::start_plan(const Json& source, s
 					return prior->request_digest == digest
 							   ? Result<AgenticJobId>(prior->result.job_id)
 							   : unexpectedError(agentic_error(AgenticError::invalid_request));
+		if (!idempotency.empty())
+			for (const auto& prior : impl_->idempotency_receipts)
+				if (prior.idempotency_key == idempotency &&
+					(owner.empty() ? prior.owns_capture
+								   : !prior.owns_capture && prior.capture_job_id == owner))
+					return unexpectedError(agentic_error(prior.request_digest == digest
+															 ? AgenticError::unavailable
+															 : AgenticError::invalid_request));
 		auto execution = std::make_unique<Impl::Execution>();
 		execution->idempotency_key = idempotency;
 		execution->request_digest = digest;
@@ -563,6 +623,9 @@ Result<Json> AgenticInteractionRuntime::command(const AgenticCommandRequest& req
 			value.set("action_control_enabled", impl_->configuration.action_control_enabled);
 			value.set("physical_cancel_chord", "Ctrl+Alt+Escape");
 			value.set("one_app_per_process", true);
+			value.set("maximum_terminal_history", decimal(maximum_terminal_history));
+			value.set("maximum_idempotency_receipts", decimal(maximum_idempotency_receipts));
+			value.set("idempotency_retention", "last_1024_evicted_keyed_executions");
 			return bounded_success(request, std::move(value));
 		}
 		if (operation == "action.list") {
@@ -614,6 +677,24 @@ Result<Json> AgenticInteractionRuntime::command(const AgenticCommandRequest& req
 								   ? bounded_success(request, impl_->accepted(*prior), "accepted")
 								   : impl_->fail(request,
 												 agentic_error(AgenticError::invalid_request));
+			if (!key.empty())
+				for (const auto& prior : impl_->idempotency_receipts)
+					if (prior.owns_capture && prior.idempotency_key == key) {
+						auto response = command_failure(
+							request, prior.request_digest == digest ? 3 : 2,
+							prior.request_digest == digest ? "result_expired"
+														   : "idempotency_conflict",
+							prior.request_digest == digest
+								? "Runtime history expired; retrieve sealed evidence using its "
+								  "capture identity."
+								: "The retained idempotency key identifies a different request.");
+						response.set("job_id", prior.job_id);
+						response.find("error")->set(
+							"details",
+							Json::make_object({{"capture_id", prior.capture_id},
+											   {"capture_job_id", prior.capture_job_id}}));
+						return response;
+					}
 			auto execution = std::make_unique<Impl::Execution>();
 			execution->idempotency_key = key;
 			execution->request_digest = digest;
@@ -1642,6 +1723,11 @@ void AgenticInteractionRuntime::shutdown() noexcept {
 }
 std::uint64_t AgenticInteractionRuntime::owned_memory_bytes() const noexcept {
 	std::uint64_t total = sizeof(Impl);
+	total += impl_->idempotency_receipts.capacity() * sizeof(Impl::IdempotencyReceipt);
+	for (const auto& receipt : impl_->idempotency_receipts)
+		total += receipt.job_id.capacity() + receipt.idempotency_key.capacity() +
+				 receipt.request_digest.capacity() + receipt.capture_job_id.capacity() +
+				 receipt.capture_id.capacity();
 	for (const auto& execution : impl_->executions) {
 		total += sizeof(Impl::Execution) + execution->compiled.estimated_bytes +
 				 execution->inputs.capacity() * sizeof(AgenticInteractionReceipt) +

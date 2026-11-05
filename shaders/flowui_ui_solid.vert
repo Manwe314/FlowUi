@@ -72,7 +72,9 @@ void main() {
 	UiInstance instance = instanceBuffer.instances[instanceIndex];
 
 	vec2 size = vec2(instance.w, instance.h);
-	vec2 pixelPosition = vec2(instance.x, instance.y) + inPos * size;
+	float aa_padding = all(greaterThan(size, vec2(0.0))) ? 1.0 : 0.0;
+	vec2 aa_offset = (inPos * 2.0 - vec2(1.0)) * aa_padding;
+	vec2 pixelPosition = vec2(instance.x, instance.y) + inPos * size + aa_offset;
 
 	float invViewportW = (pushData.viewportW > 0.0) ? (1.0 / pushData.viewportW) : 0.0;
 	float invViewportH = (pushData.viewportH > 0.0) ? (1.0 / pushData.viewportH) : 0.0;
@@ -82,7 +84,7 @@ void main() {
 	);
 	gl_Position = vec4(clipPosition, 0.0, 1.0);
 
-	vLocal = (inPos - vec2(0.5)) * size;
+	vLocal = (inPos - vec2(0.5)) * size + aa_offset;
 	vHalf = size * 0.5;
 	vColor = unpackColor(instance.colorRGBA);
 	vRadius = vec4(instance.r0, instance.r1, instance.r2, instance.r3);

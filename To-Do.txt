@@ -143,7 +143,7 @@ things i want to do:
 	- Add Pre Rasterized Icon Atlas Export For immediate recompile and re use.
 	- AA Pass
 		- Configurations for Primitives AA
-		- correct SDF AA qued edge boundry collision
+		[Done] - correct SDF AA qued edge boundry collision
 	- DevInterface visual
 		- Combo Box Icon Overflow
 		- Permanent Header Button Visual hardening.

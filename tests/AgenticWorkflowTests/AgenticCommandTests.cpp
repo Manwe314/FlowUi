@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 
 using namespace FlowUi::devSystems::agentic;
@@ -316,6 +317,48 @@ int main() {
 	request.arguments =
 		Json::make_object({{"capture", "cap_source"}, {"kind", "trees"}, {"cursor", cursor}});
 	require(execute_agentic_command(context, request).exit_code != 0);
+	const auto report_directory = store.reserve_run("run_receipt", Json::make_object());
+	require(bool(report_directory));
+	std::filesystem::create_directories(*report_directory / "verification");
+	const auto verification_report = Json::make_object(
+		{{"schema", "FlowUi.Agentic.VerificationReport"},
+		 {"schema_version", "1.0"},
+		 {"job_id", "verification_evicted"},
+		 {"run_id", "run_receipt"},
+		 {"suite_id", "recovery"},
+		 {"suite_revision", "1"},
+		 {"request_digest", std::string(64, 'a')},
+		 {"execution_status", "completed"},
+		 {"verdict", "pass"},
+		 {"coverage", Json::make_object({{"required", "1"},
+										 {"evaluated", "1"},
+										 {"passed", "1"},
+										 {"failed", "0"},
+										 {"skipped", "0"},
+										 {"unavailable", "0"}})},
+		 {"cases", Json::make_array({Json::make_object({{"case_id", "recovered"}})})},
+		 {"timings", Json::make_object()},
+		 {"resources", Json::make_object()},
+		 {"evidence", Json::make_array()},
+		 {"cleanup", Json::make_object({{"completed", true}})},
+		 {"limitations", Json::make_array()}});
+	{
+		std::ofstream report_file(*report_directory / "verification/verification_evicted.json");
+		report_file << write_json(verification_report);
+		report_file.close();
+		require(!report_file.fail());
+	}
+	bool consulted_runtime = false;
+	context.live_handler = [&](const AgenticCommandRequest& live_request) -> FlowUi::Result<Json> {
+		consulted_runtime = true;
+		return command_failure(live_request, 6, "result_expired", "Runtime history was evicted.");
+	};
+	request.operation = "verification.report";
+	request.arguments = Json::make_object(
+		{{"instance", "run_receipt"}, {"job_id", "verification_evicted"}, {"require_pass", true}});
+	response = execute_agentic_command(context, request);
+	require(consulted_runtime && response.exit_code == 0 &&
+			response.envelope.find("result")->find("verdict")->string_or() == "pass");
 	std::error_code cleanup_error;
 	std::filesystem::remove_all(directory, cleanup_error);
 	require(!cleanup_error);

@@ -12,6 +12,7 @@ add_library(flowui_agentic_format STATIC
     ${PROJECT_SOURCE_DIR}/src/devSystems/devAgenticWorkflow/AgenticImage.cpp
     ${PROJECT_SOURCE_DIR}/src/devSystems/devAgenticWorkflow/AgenticScenario.cpp
     ${PROJECT_SOURCE_DIR}/src/devSystems/devAgenticWorkflow/AgenticInteraction.cpp
+    ${PROJECT_SOURCE_DIR}/src/devSystems/devAgenticWorkflow/AgenticVerification.cpp
     ${PROJECT_SOURCE_DIR}/src/devSystems/devAgenticWorkflow/transport/AgenticLocalTransport.cpp)
 add_library(FlowUi::AgenticFormat ALIAS flowui_agentic_format)
 set_target_properties(flowui_agentic_format PROPERTIES EXPORT_NAME AgenticFormat POSITION_INDEPENDENT_CODE ON)
@@ -42,6 +43,7 @@ if(NOT FLOWUI_AGENTIC_REVISION)
 endif()
 file(GLOB_RECURSE FLOWUI_AGENTIC_SOURCE_INPUTS CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/include/*.hpp" "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/include/*.inl" "${PROJECT_SOURCE_DIR}/src/*.inl"
     "${PROJECT_SOURCE_DIR}/shaders/*" "${PROJECT_SOURCE_DIR}/cmake/*.cmake"
     "${PROJECT_SOURCE_DIR}/cmake/*.in")
 list(SORT FLOWUI_AGENTIC_SOURCE_INPUTS)

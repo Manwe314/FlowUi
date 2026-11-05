@@ -283,21 +283,19 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 	root.layout.sizing.height = CLAY_SIZING_PERCENT(1);
 	root.backgroundColor = interface_theme::kDepth1Panel;
 	CLAY(context.clayID(), root) {
-		auto title = section(34, interface_theme::kDepth2Ink);
+		auto title = section(36, interface_theme::kDepth2Ink);
 		title.layout.padding = {12, 12, 0, 0};
 		CLAY(context.clayID("title"), title)
 		label(context, "Changes", interface_theme::kTextCanvas, 14);
-		CLAY(context.clayID("domain-section"), section(44)) {
-			CLAY(context.clayID("domains"), selector_choice_track()) {
-				static constexpr std::array<std::string_view, 4> labels{"All", "Elements", "Themes",
-																		"Memory"};
-				static constexpr std::array<std::string_view, 4> compact_labels{"All", "Elem.",
-																				"Theme", "Mem."};
-				for (uint64_t domain = 0; domain < labels.size(); ++domain)
-					ui::choice(context, Keyed("domain", domain),
-							   panel_width < 250 ? compact_labels[domain] : labels[domain], domain,
-							   state.domain, panel_width < 250 ? 4 : 6);
-			}
+		auto domains = ui::column(0);
+		domains.backgroundColor = interface_theme::kDepth0Keel;
+		domains.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
+		CLAY(context.clayID("domain-section"), domains) {
+			static constexpr std::array<std::string_view, 4> labels{"All", "Elements", "Themes",
+																	"Memory"};
+			for (uint64_t domain = 0; domain < labels.size(); ++domain)
+				ui::bar_choice(context, Keyed("domain", domain), labels[domain], domain,
+							   state.domain);
 		}
 		summary(context, state, panel_width);
 		CLAY(context.clayID("filters"), section(44)) {

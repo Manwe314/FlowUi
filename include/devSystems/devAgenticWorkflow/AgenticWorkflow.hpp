@@ -9,4 +9,5 @@
 #include "devSystems/devAgenticWorkflow/AgenticInteractionRuntime.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteractionTargets.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAction.hpp"
+#include "devSystems/devAgenticWorkflow/AgenticVerification.hpp"
 #endif

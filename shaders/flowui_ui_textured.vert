@@ -44,7 +44,7 @@ layout(location = 1) out vec2 vHalf;
 layout(location = 2) out vec4 vColor;
 layout(location = 3) out vec4 vRadius;
 layout(location = 4) flat out uint vSolidMode;
-layout(location = 5) out vec2 vUv;
+layout(location = 5) flat out vec4 vUvBounds;
 layout(location = 6) flat out uint vTexIndex;
 
 layout(constant_id = 0) const uint kDecodeVertexColorFromSrgb = 0u;
@@ -73,7 +73,9 @@ void main() {
 	UiInstance instance = instanceBuffer.instances[instanceIndex];
 
 	vec2 size = vec2(instance.w, instance.h);
-	vec2 pixelPosition = vec2(instance.x, instance.y) + inPos * size;
+	float aa_padding = all(greaterThan(size, vec2(0.0))) ? 1.0 : 0.0;
+	vec2 aa_offset = (inPos * 2.0 - vec2(1.0)) * aa_padding;
+	vec2 pixelPosition = vec2(instance.x, instance.y) + inPos * size + aa_offset;
 
 	float invViewportW = (pushData.viewportW > 0.0) ? (1.0 / pushData.viewportW) : 0.0;
 	float invViewportH = (pushData.viewportH > 0.0) ? (1.0 / pushData.viewportH) : 0.0;
@@ -86,11 +88,11 @@ void main() {
 	vec2 uvMin = vec2(instance.uv0x, instance.uv0y);
 	vec2 uvMax = vec2(instance.uv1x, instance.uv1y);
 
-	vLocal = (inPos - vec2(0.5)) * size;
+	vLocal = (inPos - vec2(0.5)) * size + aa_offset;
 	vHalf = size * 0.5;
 	vColor = unpackColor(instance.colorRGBA);
 	vRadius = vec4(instance.r0, instance.r1, instance.r2, instance.r3);
 	vSolidMode = instance.solidMode;
-	vUv = mix(uvMin, uvMax, inUv);
+	vUvBounds = vec4(uvMin, uvMax);
 	vTexIndex = instance.texIndex;
 }

@@ -5,6 +5,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstring>
+#include <mutex>
 #include <thread>
 #include <utility>
 
@@ -25,6 +26,7 @@
 namespace FlowUi::devSystems::agentic {
 namespace {
 constexpr std::string_view local_protocol = "FlowUi.Agentic.Local/1";
+constexpr std::size_t local_worker_count = 8;
 constexpr std::string_view handler_failure_wire =
 	"{\"schema\":\"FlowUi.Agentic.CommandResult\",\"schema_version\":\"1.0\","
 	"\"operation_status\":\"failed\",\"exit_code\":4,\"result\":null,"
@@ -241,14 +243,15 @@ void close_socket(int socket_descriptor) noexcept {
 	return true;
 }
 
-[[nodiscard]] Result<std::string> pipe_read(HANDLE pipe, const AgenticLocalEndpoint& endpoint) {
+[[nodiscard]] Result<std::string> pipe_read(HANDLE pipe, const AgenticLocalEndpoint& endpoint,
+											const std::atomic<bool>* active = nullptr) {
 	std::string bytes;
 	bytes.reserve(std::min<std::size_t>(endpoint.maximum_message_bytes, 8192));
 	std::array<char, 4096> buffer{};
 	const auto deadline =
 		std::chrono::steady_clock::now() + std::chrono::milliseconds(endpoint.timeout_ms);
 	while (bytes.size() < endpoint.maximum_message_bytes &&
-		   std::chrono::steady_clock::now() < deadline) {
+		   std::chrono::steady_clock::now() < deadline && (!active || active->load())) {
 		DWORD available = 0;
 		if (!PeekNamedPipe(pipe, nullptr, 0, nullptr, &available, nullptr))
 			return transport_error(ErrorCode::AgenticUnavailable, GetLastError());
@@ -287,20 +290,27 @@ void close_socket(int socket_descriptor) noexcept {
 } // namespace
 
 struct AgenticLocalServer::Impl {
+	struct Worker {
+		std::thread thread;
+#ifdef _WIN32
+		std::atomic<HANDLE> connection{INVALID_HANDLE_VALUE};
+#else
+		std::atomic<int> connection{-1};
+		std::mutex connection_mutex;
+#endif
+	};
 	AgenticLocalEndpoint endpoint{};
 	AgenticLocalHandler handler{};
-	std::thread worker{};
+	std::array<Worker, local_worker_count> workers;
 	std::atomic<bool> active{false};
-#ifdef _WIN32
-	std::atomic<HANDLE> listener{INVALID_HANDLE_VALUE};
-#else
+#ifndef _WIN32
 	int listener = -1;
 #endif
 
-	void run() noexcept {
+	void run(Worker& worker) noexcept {
 #ifdef _WIN32
 		while (active.load()) {
-			const auto pipe = listener.load();
+			const auto pipe = worker.connection.load();
 			if (pipe == INVALID_HANDLE_VALUE)
 				break;
 			if (!pipe_connect(pipe, active)) {
@@ -309,18 +319,20 @@ struct AgenticLocalServer::Impl {
 				continue;
 			}
 			try {
-				auto message = pipe_read(pipe, endpoint);
-				if (message) {
+				auto message = pipe_read(pipe, endpoint, &active);
+				if (message && active.load()) {
 					auto response = write_json(handle_message(*message, endpoint, handler));
 					if (response.size() + 1 > endpoint.maximum_message_bytes)
 						response = write_json(protocol_failure("response_budget_exhausted"));
 					response.push_back('\n');
-					const auto sent = pipe_write(pipe, response, endpoint.timeout_ms);
+					const auto sent =
+						active.load() && pipe_write(pipe, response, endpoint.timeout_ms);
 					if (!sent)
 						DisconnectNamedPipe(pipe);
 				}
 			} catch (...) {
-				const auto sent = pipe_write(pipe, handler_failure_wire, endpoint.timeout_ms);
+				const auto sent =
+					active.load() && pipe_write(pipe, handler_failure_wire, endpoint.timeout_ms);
 				if (!sent)
 					DisconnectNamedPipe(pipe);
 			}
@@ -334,8 +346,17 @@ struct AgenticLocalServer::Impl {
 			const auto connection = ::accept(listener, nullptr, nullptr);
 			if (connection < 0)
 				continue;
+			{
+				std::lock_guard lock(worker.connection_mutex);
+				if (!active.load()) {
+					close_socket(connection);
+					break;
+				}
+				worker.connection.store(connection);
+			}
 			if (!owned_peer(connection)) {
-				close_socket(connection);
+				std::lock_guard lock(worker.connection_mutex);
+				close_socket(worker.connection.exchange(-1));
 				continue;
 			}
 			const auto descriptor_flags = ::fcntl(connection, F_GETFD);
@@ -346,22 +367,26 @@ struct AgenticLocalServer::Impl {
 				::fcntl(connection, F_SETFL, socket_flags | O_NONBLOCK);
 			try {
 				auto message = read_message(connection, endpoint);
-				if (message) {
+				if (message && active.load()) {
 					auto response = write_json(handle_message(*message, endpoint, handler));
 					if (response.size() + 1 > endpoint.maximum_message_bytes)
 						response = write_json(protocol_failure("response_budget_exhausted"));
 					response.push_back('\n');
-					const auto sent = write_message(connection, response, endpoint.timeout_ms);
+					const auto sent =
+						active.load() && write_message(connection, response, endpoint.timeout_ms);
 					if (!sent)
 						::shutdown(connection, SHUT_RDWR);
 				}
 			} catch (...) {
-				const auto sent =
-					write_message(connection, handler_failure_wire, endpoint.timeout_ms);
+				const auto sent = active.load() && write_message(connection, handler_failure_wire,
+																 endpoint.timeout_ms);
 				if (!sent)
 					::shutdown(connection, SHUT_RDWR);
 			}
-			close_socket(connection);
+			{
+				std::lock_guard lock(worker.connection_mutex);
+				close_socket(worker.connection.exchange(-1));
+			}
 		}
 #endif
 	}
@@ -389,17 +414,28 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 				"D:P(A;;GA;;;OW)", SDDL_REVISION_1, &security_descriptor, nullptr))
 			return transport_error(ErrorCode::AgenticUnavailable, GetLastError());
 		SECURITY_ATTRIBUTES security{sizeof(SECURITY_ATTRIBUTES), security_descriptor, FALSE};
-		const auto pipe = CreateNamedPipeA(
-			endpoint.endpoint.c_str(),
-			PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
-			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS, 1,
-			static_cast<DWORD>(endpoint.maximum_message_bytes),
-			static_cast<DWORD>(endpoint.maximum_message_bytes),
-			static_cast<DWORD>(endpoint.timeout_ms), &security);
+		DWORD creation_error = ERROR_SUCCESS;
+		for (std::size_t worker_index = 0; worker_index < impl_->workers.size(); ++worker_index) {
+			const auto pipe = CreateNamedPipeA(
+				endpoint.endpoint.c_str(),
+				PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
+					(worker_index == 0 ? FILE_FLAG_FIRST_PIPE_INSTANCE : 0),
+				PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
+				static_cast<DWORD>(local_worker_count),
+				static_cast<DWORD>(endpoint.maximum_message_bytes),
+				static_cast<DWORD>(endpoint.maximum_message_bytes),
+				static_cast<DWORD>(endpoint.timeout_ms), &security);
+			if (pipe == INVALID_HANDLE_VALUE) {
+				creation_error = GetLastError();
+				break;
+			}
+			impl_->workers[worker_index].connection.store(pipe);
+		}
 		LocalFree(security_descriptor);
-		if (pipe == INVALID_HANDLE_VALUE)
-			return transport_error(ErrorCode::AgenticUnavailable, GetLastError());
-		impl_->listener.store(pipe);
+		if (creation_error != ERROR_SUCCESS) {
+			stop();
+			return transport_error(ErrorCode::AgenticUnavailable, creation_error);
+		}
 #else
 		if (endpoint.endpoint.size() >= sizeof(sockaddr_un{}.sun_path))
 			return transport_error(ErrorCode::AgenticInvalidScope);
@@ -407,6 +443,12 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 		if (listener < 0)
 			return transport_error(ErrorCode::AgenticUnavailable, errno);
 		::fcntl(listener, F_SETFD, FD_CLOEXEC);
+		const auto listener_flags = ::fcntl(listener, F_GETFL);
+		if (listener_flags < 0 || ::fcntl(listener, F_SETFL, listener_flags | O_NONBLOCK) != 0) {
+			const auto native_code = errno;
+			close_socket(listener);
+			return transport_error(ErrorCode::AgenticUnavailable, native_code);
+		}
 		sockaddr_un address{};
 		address.sun_family = AF_UNIX;
 		std::memcpy(address.sun_path, endpoint.endpoint.c_str(), endpoint.endpoint.size() + 1);
@@ -426,7 +468,9 @@ Status AgenticLocalServer::start(const AgenticLocalEndpoint& endpoint,
 #endif
 		impl_->active.store(true);
 		try {
-			impl_->worker = std::thread([implementation = impl_.get()] { implementation->run(); });
+			for (auto& worker : impl_->workers)
+				worker.thread = std::thread(
+					[implementation = impl_.get(), slot = &worker] { implementation->run(*slot); });
 		} catch (...) {
 			stop();
 			return transport_error(ErrorCode::AgenticUnavailable);
@@ -442,20 +486,31 @@ void AgenticLocalServer::stop() noexcept {
 		return;
 	impl_->active.store(false);
 #ifdef _WIN32
-	const auto pipe = impl_->listener.load();
-	if (pipe != INVALID_HANDLE_VALUE)
-		CancelIoEx(pipe, nullptr);
+	for (auto& worker : impl_->workers) {
+		const auto pipe = worker.connection.load();
+		if (pipe != INVALID_HANDLE_VALUE)
+			CancelIoEx(pipe, nullptr);
+	}
 #else
 	if (impl_->listener >= 0)
 		::shutdown(impl_->listener, SHUT_RDWR);
+	for (auto& worker : impl_->workers) {
+		std::lock_guard lock(worker.connection_mutex);
+		const auto connection = worker.connection.load();
+		if (connection >= 0)
+			::shutdown(connection, SHUT_RDWR);
+	}
 #endif
-	if (impl_->worker.joinable())
-		impl_->worker.join();
+	for (auto& worker : impl_->workers)
+		if (worker.thread.joinable())
+			worker.thread.join();
 #ifdef _WIN32
-	const auto stopped_pipe = impl_->listener.exchange(INVALID_HANDLE_VALUE);
-	if (stopped_pipe != INVALID_HANDLE_VALUE) {
-		DisconnectNamedPipe(stopped_pipe);
-		CloseHandle(stopped_pipe);
+	for (auto& worker : impl_->workers) {
+		const auto stopped_pipe = worker.connection.exchange(INVALID_HANDLE_VALUE);
+		if (stopped_pipe != INVALID_HANDLE_VALUE) {
+			DisconnectNamedPipe(stopped_pipe);
+			CloseHandle(stopped_pipe);
+		}
 	}
 #else
 	if (impl_->listener >= 0) {

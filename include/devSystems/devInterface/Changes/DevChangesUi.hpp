@@ -495,20 +495,23 @@ void button(Context& context, const Identity& identity, std::string label, DevCh
 		context.id, diagnostics_ui::Control::definitionId, identity.token);
 	register_focus_target(context, state, context.uiManager.toClayEID(element), enabled);
 }
-/** Shared centered segmented selector; filtering never changes candidate scope. */
+/** Shared segmented or full-width selector; filtering never changes candidate scope. */
 template <class Context>
 void choice(Context& context, IndexedElementName identity, std::string_view label, uint64_t value,
-			uint64_t& selected, uint16_t horizontal_padding = 7) {
+			uint64_t& selected, uint16_t horizontal_padding = 7, bool selection_bar = false) {
 	FSEL::RadioChoiceParameters parameters{};
 	parameters.choiceValue = value;
 	parameters.selectedValue = &selected;
 	parameters.style = selector_choice_style();
 	parameters.style.padding = Clay_Padding{horizontal_padding, horizontal_padding, 0, 0};
+	if (selection_bar)
+		parameters.style = selector_bar_style();
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
 		context.id, FSEL::RadioChoice::definitionId, identity.token);
 	const auto clay_identity = context.uiManager.toClayEID(element);
 	if (context.uiManager.shortcuts().focusedElement().id == clay_identity.id) {
-		parameters.style.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
+		parameters.style.borderWidth =
+			selection_bar ? Clay_BorderWidth{3, 1, 1, 1, 0} : Clay_BorderWidth{1, 1, 1, 1, 0};
 		parameters.style.idleOverrides.borderColor = interface_theme::kAccentCurrent;
 		parameters.style.hoveredOverrides.borderColor = interface_theme::kAccentCurrent;
 		parameters.style.selectedOverrides.borderColor = interface_theme::kAccentCurrent;
@@ -520,11 +523,30 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 	Clay_TextElementConfig config{};
 	config.fontSize = 11;
 	config.textColor =
-		selected == value ? interface_theme::kTextCanvas : interface_theme::kTextSecondary;
+		selected == value ||
+				(selection_bar &&
+				 context.uiManager.getPreviousFramesInteraction().isHovered(clay_identity))
+			? interface_theme::kTextCanvas
+			: interface_theme::kTextSecondary;
 	config.wrapMode = CLAY_TEXT_WRAP_NONE;
-	CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(config));
+	if (selection_bar) {
+		auto caption = column(0);
+		caption.layout.sizing.height = CLAY_SIZING_GROW(0);
+		caption.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
+		caption.clip = {.horizontal = true, .scrollInputDisabled = true};
+		CLAY(context.clayID(Keyed("choice-label", identity.token)), caption)
+		CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(config));
+	} else {
+		CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(config));
+	}
 	context.uiManager.drawConstructed();
 	register_focus_target(context, clay_identity, true, {}, &selected, value);
+}
+/** Full-width radio row using the Performance selector's colors, stripe and alignment. */
+template <class Context>
+void bar_choice(Context& context, IndexedElementName identity, std::string_view label,
+				uint64_t value, uint64_t& selected) {
+	choice(context, identity, label, value, selected, 7, true);
 }
 /** Three independent Clay scroll containers retain their positions across refreshed plans. */
 template <class Context>

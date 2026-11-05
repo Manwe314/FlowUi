@@ -6,7 +6,7 @@ layout(location = 1) in vec2 vHalf;
 layout(location = 2) in vec4 vColor;
 layout(location = 3) in vec4 vRadius;
 layout(location = 4) flat in uint vSolidMode;
-layout(location = 5) in vec2 vUv;
+layout(location = 5) flat in vec4 vUvBounds;
 layout(location = 6) flat in uint vTexIndex;
 
 layout(set = 1, binding = 1) uniform sampler2D uiTextureSamplers[256];
@@ -49,7 +49,9 @@ float aaCoverage(float signedDistance) {
 
 void main() {
 	uint texIndex = min(vTexIndex, 255u);
-	vec4 sampled = texture(uiTextureSamplers[nonuniformEXT(texIndex)], vUv);
+	vec2 image_position = clamp(vLocal / (2.0 * vHalf) + vec2(0.5), vec2(0.0), vec2(1.0));
+	vec2 texture_coordinates = mix(vUvBounds.xy, vUvBounds.zw, image_position);
+	vec4 sampled = texture(uiTextureSamplers[nonuniformEXT(texIndex)], texture_coordinates);
 
 	bool tintEnabled = (vSolidMode & 0x1u) != 0u;
 	if (tintEnabled) {

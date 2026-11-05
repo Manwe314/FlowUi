@@ -30,6 +30,14 @@ Relative input offset `0` is valid after the declared baseline. Startup frames 1
 
 An interrupted tool call with an exact instance/job identity hands cancellation to the same `job.cancel` command under a two-second bound. The service retires submitted work normally. If a capture-start response has not delivered a job ID, the adapter cannot select an unknown job: retry the same idempotency key to recover its identity, then poll or cancel explicitly.
 
+`flowui_verification_plan` validates a versioned `FlowUi.Agentic.VerificationRequest` in `arguments.request`, resolves its registered scenarios or embedded finite interaction plans, and estimates its evidence budget. `flowui_verification_run` admits the sequential suite using a required execution idempotency key. Requests can select `instance` inside the document or in the surrounding arguments; conflicting selections are rejected. The equivalent CLI accepts `verification run --request-file suite.json` or `--request JSON`.
+
+Run waits are bounded to twenty seconds. An unfinished suite returns its accepted job identity so `flowui_verification_query` can wait for progress with `verification.status`, `after_sequence` and `wait_timeout_ms`, or retrieve `verification.report` with bounded pagination. Status carries counters and identity rather than image payloads. Both CLI IPC and adapter waits reserve five extra seconds for transport, even when the adapter's general timeout is shorter. Configure the MCP client's timeout above twenty-five seconds for the maximum wait.
+
+The report separates execution success from verification verdict: a completed command may report `fail` or `inconclusive`. `require_pass: true` maps a terminal `fail` verdict to exit code 7 and `inconclusive` to exit code 6 while retaining the report. Image checkpoints return evidence selectors for the existing artifact tool. Contact sheets are reported as unavailable when the service cannot provide them. Assertions-only requests collect no image readback.
+
+Disconnecting or interrupting a verification call preserves admitted execution. Retry the same suite/key to recover admission; use `flowui_verification_cancel` explicitly to stop new steps, release input and attempt fixture cleanup. Run and cancel are separate mutating tools, while plan and query are read-only. Store pruning remains a CLI administration operation until its generation-checked maintenance contract is implemented.
+
 Run boundary tests without a GPU:
 
 ```sh

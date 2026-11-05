@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from flowui_agent_mcp.server import Adapter, TOOLS, create_server
+from flowui_agent_mcp.server import Adapter, TOOLS, MUTATING_TOOLS, DESTRUCTIVE_TOOLS, create_server
 
 
 class SchemaTests(unittest.TestCase):
@@ -28,6 +28,19 @@ class SchemaTests(unittest.TestCase):
         packaged = Path(__file__).resolve().parents[1] / "src/flowui_agent_mcp/schemas/interaction-plan.schema.json"
         authoritative = repository / "include/devSystems/devAgenticWorkflow/schemas/v1/InteractionPlan.schema.json"
         self.assertEqual(json.loads(packaged.read_text()), json.loads(authoritative.read_text()))
+
+    def test_packaged_verification_request_matches_authoritative_artifact(self):
+        repository = Path(__file__).resolve().parents[3]
+        packaged = Path(__file__).resolve().parents[1] / "src/flowui_agent_mcp/schemas/verification-request.schema.json"
+        authoritative = repository / "include/devSystems/devAgenticWorkflow/schemas/v1/VerificationRequest.schema.json"
+        self.assertEqual(json.loads(packaged.read_text()), json.loads(authoritative.read_text()))
+
+    def test_verification_tools_classify_input_and_cancellation_as_mutations(self):
+        self.assertIn("flowui_verification_run", MUTATING_TOOLS)
+        self.assertIn("flowui_verification_run", DESTRUCTIVE_TOOLS)
+        self.assertIn("flowui_verification_cancel", MUTATING_TOOLS)
+        self.assertNotIn("flowui_verification_query", MUTATING_TOOLS)
+        self.assertNotIn("flowui_verification_plan", MUTATING_TOOLS)
 
 
 class AdapterTests(unittest.IsolatedAsyncioTestCase):
@@ -161,11 +174,76 @@ print(json.dumps({'schema':'FlowUi.Agentic.CommandResult','schema_version':'1.0'
         result, _ = await adapter.call("flowui_action", {"operation": "action.invoke", "arguments": {"instance": "run_test", "action_id": "app.save", "idempotency_key": "save_test"}})
         self.assertEqual(result["error"]["code"], "invalid_arguments")
 
+    async def test_verification_suite_and_recovery_use_finite_typed_contracts(self):
+        adapter = Adapter(self.workspace, "unused")
+        request = {"schema": "FlowUi.Agentic.VerificationRequest", "schema_version": "1.0",
+            "suite_id": "fsel.smoke", "instance": "run_test", "idempotency_key": "smoke_attempt_1",
+            "cases": [{"case_id": "click", "workload": {"kind": "interaction_plan", "plan": {
+                "schema": "FlowUi.Agentic.InteractionPlan", "schema_version": "1.0", "mode": "common_controls",
+                "window_id": "1", "steps": [{"operation": "click", "target": {"clay_name": "button"}}]}}}]}
+        response = {"operation_status": "accepted", "result": {"job_id": "verification_test"}}
+        cases = [
+            ("flowui_verification_plan", "verification.plan", {"request": request}),
+            ("flowui_verification_run", "verification.run", {"request": request, "require_pass": True}),
+            ("flowui_verification_query", "verification.status", {"instance": "run_test", "job_id": "verification_test",
+                "after_sequence": "18446744073709551615", "wait_timeout_ms": 20000}),
+            ("flowui_verification_query", "verification.report", {"instance": "run_test", "job_id": "verification_test",
+                "limit": 3, "cursor": "digest_bound_cursor", "require_pass": True}),
+            ("flowui_verification_cancel", "verification.cancel", {"instance": "run_test", "job_id": "verification_test"}),
+        ]
+        for tool, operation, arguments in cases:
+            with self.subTest(operation=operation), patch.object(adapter, "invoke", new=AsyncMock(return_value=(response, None))) as invoke:
+                result, _ = await adapter.call(tool, {"operation": operation, "arguments": arguments})
+                self.assertEqual(result, response)
+                invoke.assert_awaited_once_with(operation, arguments)
+        invalid_cases = [
+            ("flowui_verification_run", "verification.run", {"request": {**request, "schema_version": "2.0"}}),
+            ("flowui_verification_run", "verification.run", {"request": {**request, "shell": "echo bad"}}),
+            ("flowui_verification_run", "verification.run", {"request": {**request, "cases": []}}),
+            ("flowui_verification_run", "verification.run", {"request": {**request, "execution_timeout_ns": 2000}}),
+            ("flowui_verification_run", "verification.run", {"request": {**request, "wait_timeout_ms": 20001}}),
+            ("flowui_verification_run", "verification.run", {"request": {**request, "cases": [{"case_id": "shell",
+                "workload": {"kind": "shell", "command": "echo bad"}}]}}),
+            ("flowui_verification_query", "verification.status", {"instance": "run_test", "job_id": "verification_test", "after_sequence": 1}),
+            ("flowui_verification_query", "verification.status", {"instance": "run_test", "job_id": "verification_test", "wait_timeout_ms": 20001}),
+            ("flowui_verification_cancel", "verification.cancel", {"instance": "run_test"}),
+        ]
+        for tool, operation, arguments in invalid_cases:
+            with self.subTest(operation=operation), patch.object(adapter, "invoke", new=AsyncMock()) as invoke:
+                result, _ = await adapter.call(tool, {"operation": operation, "arguments": arguments})
+                self.assertEqual(result["error"]["code"], "invalid_arguments")
+                invoke.assert_not_awaited()
+
+    async def test_verification_wait_has_transport_margin_and_fail_is_a_normal_result(self):
+        cli = self.fake_cli('''import json,sys,time
+operation='.'.join(sys.argv[1:sys.argv.index('--workspace')])
+time.sleep(0.08)
+print(json.dumps({'schema':'FlowUi.Agentic.CommandResult','schema_version':'1.0','request_id':'request_test','operation':operation,'operation_status':'completed','exit_code':7,'result':{'verdict':'fail'}}))
+sys.exit(7)
+''')
+        envelope, image = await Adapter(self.workspace, cli, timeout=0.01).call("flowui_verification_query", {
+            "operation": "verification.status", "arguments": {"instance": "run_test", "job_id": "verification_test", "wait_timeout_ms": 0}})
+        self.assertEqual(envelope["operation_status"], "completed")
+        self.assertEqual(envelope["exit_code"], 7)
+        self.assertEqual(envelope["result"]["verdict"], "fail")
+        self.assertIsNone(image)
+
     async def test_rejects_malformed_and_oversized_subprocess_output(self):
         for body in ["print('not-json')\n", "print('x' * 1100000)\n"]:
             envelope, _ = await Adapter(self.workspace, self.fake_cli(body)).call(
                 "flowui_capabilities", {"operation": "capabilities"})
             self.assertEqual(envelope["operation_status"], "failed")
+
+    async def test_cli_semantic_parser_rejection_preserves_invalid_arguments(self):
+        cli = self.fake_cli('''import json,sys
+print(json.dumps({'schema':'FlowUi.Agentic.CommandResult','schema_version':'1.0','request_id':'request_test','operation':'invalid','operation_status':'failed','exit_code':2,'error':{'code':'invalid_arguments','message':'Semantic plan validation rejected the request.'},'result':None}))
+sys.exit(2)
+''')
+        envelope, image = await Adapter(self.workspace, cli).invoke("verification.run", {})
+        self.assertEqual(envelope["operation"], "verification.run")
+        self.assertEqual(envelope["exit_code"], 2)
+        self.assertEqual(envelope["error"]["code"], "invalid_arguments")
+        self.assertIsNone(image)
 
     async def test_timeout_does_not_hang_protocol_call(self):
         cli = self.fake_cli("import time\ntime.sleep(10)\n")
@@ -277,8 +355,44 @@ print(json.dumps({'schema':'FlowUi.Agentic.CommandResult','schema_version':'1.0'
                 await pending
         self.assertEqual([operation for operation, arguments in calls], ["capture.start"])
 
+        for operation in ["verification.run", "verification.status", "verification.report"]:
+            started.clear()
+            calls.clear()
+            with patch("flowui_agent_mcp.server.asyncio.create_subprocess_exec", new=execute):
+                pending = asyncio.create_task(adapter.invoke(operation, {
+                    "instance": "run_test", "job_id": "verification_test"}))
+                await started.wait()
+                pending.cancel()
+                with self.assertRaises(asyncio.CancelledError):
+                    await pending
+            self.assertEqual([recorded for recorded, arguments in calls], [operation])
+
 
 class SdkTests(unittest.IsolatedAsyncioTestCase):
+    async def test_verification_sdk_annotations_and_nonpass_verdict(self):
+        try:
+            from mcp import Client
+        except ImportError:
+            self.skipTest("Official SDK is an optional separately installed package")
+        adapter = Adapter(Path.cwd(), "unused")
+        envelope = {"schema": "FlowUi.Agentic.CommandResult", "schema_version": "1.0",
+            "request_id": "request_verification", "operation": "verification.report",
+            "operation_status": "completed", "exit_code": 7, "result": {"verdict": "fail"}}
+        with patch.object(adapter, "call", new=AsyncMock(return_value=(envelope, None))):
+            async with Client(create_server(adapter)) as client:
+                tools = await client.list_tools()
+                discovered = tools.tools if hasattr(tools, "tools") else tools
+                annotations = {tool.name: tool.annotations for tool in discovered}
+                self.assertFalse(annotations["flowui_verification_run"].read_only_hint)
+                self.assertTrue(annotations["flowui_verification_run"].destructive_hint)
+                self.assertFalse(annotations["flowui_verification_cancel"].read_only_hint)
+                self.assertTrue(annotations["flowui_verification_query"].read_only_hint)
+                self.assertTrue(annotations["flowui_verification_plan"].read_only_hint)
+                result = await client.call_tool("flowui_verification_query", {"operation": "verification.report",
+                    "arguments": {"instance": "run_test", "job_id": "verification_test", "require_pass": True}})
+                self.assertEqual(result.structured_content["result"]["verdict"], "fail")
+                self.assertFalse(result.is_error)
+
     async def test_sdk_discovery_and_structured_tool_result(self):
         try:
             from mcp import Client
@@ -314,9 +428,11 @@ class SdkTests(unittest.IsolatedAsyncioTestCase):
             names = {tool.name for tool in discovered}
             self.assertEqual(names, set(TOOLS))
             for tool in discovered:
-                if tool.name in {"flowui_interaction", "flowui_action"}:
+                if tool.name in {"flowui_interaction", "flowui_action", "flowui_verification_run"}:
                     self.assertFalse(tool.annotations.read_only_hint)
                     self.assertTrue(tool.annotations.destructive_hint)
+                if tool.name == "flowui_verification_cancel":
+                    self.assertFalse(tool.annotations.read_only_hint)
             result = await client.call_tool("flowui_capabilities", {"operation": "capabilities"})
             self.assertEqual(result.structured_content["result"]["mode"], "offline")
             self.assertFalse(result.is_error)

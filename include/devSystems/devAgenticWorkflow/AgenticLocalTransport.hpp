@@ -21,7 +21,7 @@ struct AgenticLocalEndpoint {
 	std::size_t maximum_message_bytes = 1024u * 1024u;
 };
 
-/** A transport handler only enqueues work; application mutations run at a safe point. */
+/** Handlers may wait concurrently on eight transport workers; mutations run at a safe point. */
 using AgenticLocalHandler = std::function<Json(const Json&)>;
 
 /** Bounded owner-private local command server, independent of MCP and application stdout. */
@@ -32,10 +32,12 @@ public:
 	AgenticLocalServer(const AgenticLocalServer&) = delete;
 	AgenticLocalServer& operator=(const AgenticLocalServer&) = delete;
 
-	/** Start one local socket or named pipe. Existing endpoints are never replaced. */
+	/** Start one local socket or eight named-pipe instances. Existing endpoints are never replaced.
+	 */
 	[[nodiscard]] Status start(const AgenticLocalEndpoint& endpoint,
 							   AgenticLocalHandler handler) noexcept;
-	/** Stop admission and join the transport worker before releasing its handler. */
+	/** Stop admission, interrupt pending input and join every worker before releasing its handler.
+	 */
 	void stop() noexcept;
 	/** Return whether this server is accepting connections. */
 	[[nodiscard]] bool running() const noexcept;

@@ -124,6 +124,9 @@ namespace {
 								 "maximum_expected_tick_cadence",
 								 "window_id",
 								 "plan",
+								 "request",
+								 "wait_timeout_ms",
+								 "after_sequence",
 								 "plan_artifact",
 								 "target",
 								 "max_frames",
@@ -145,7 +148,7 @@ namespace {
 [[nodiscard]] Result<Json> parse_option_value(std::string_view option, std::string_view value) {
 	if (option == "crop" || option == "argv" || option == "decisions" || option == "plan" ||
 		option == "plan_artifact" || option == "target" || option == "arguments" ||
-		(option == "capture" && value.starts_with("{")))
+		option == "request" || (option == "capture" && value.starts_with("{")))
 		return parse_json(value, 65536);
 	if ((option == "crop_flow_node" || option == "flow_node") && value.starts_with("{")) {
 		auto selector = parse_json(value, 4096);
@@ -154,7 +157,7 @@ namespace {
 		return selector;
 	}
 	if (option == "maximum_expected_tick_cadence" || option == "limit" || option == "top" ||
-		option == "max_bytes") {
+		option == "max_bytes" || option == "wait_timeout_ms") {
 		auto decoded = parse_json(value, 32);
 		if (!decoded || decoded->kind != Json::Kind::number ||
 			decoded->uint64_or(UINT64_MAX) == UINT64_MAX)
@@ -287,11 +290,12 @@ parse_command_line(std::span<const std::string_view> arguments) noexcept {
 					result.request.arguments.set(std::move(field.first), std::move(field.second));
 				continue;
 			}
-			if (option == "plan_file") {
+			if (option == "plan_file" || option == "request_file") {
 				auto decoded = read_json_file(std::filesystem::path(value), 1024u * 1024u);
 				if (!decoded || decoded->kind != Json::Kind::object)
 					return invalid_arguments();
-				result.request.arguments.set("plan", std::move(*decoded));
+				result.request.arguments.set(option == "plan_file" ? "plan" : "request",
+											 std::move(*decoded));
 				continue;
 			}
 			if (!known_option(option))
@@ -349,6 +353,17 @@ parse_command_line(std::span<const std::string_view> arguments) noexcept {
 		if (result.request.operation.starts_with("capture.") ||
 			result.request.operation == "scenario.run")
 			normalize_capture_arguments(result.request.arguments);
+		if (result.request.operation == "verification.plan" ||
+			result.request.operation == "verification.run") {
+			const auto nested_instance =
+				member(member(result.request.arguments, "request"), "instance").string_or();
+			const auto selected_instance = member(result.request.arguments, "instance").string_or();
+			if (!nested_instance.empty()) {
+				if (!selected_instance.empty() && selected_instance != nested_instance)
+					return invalid_arguments();
+				result.request.arguments.set("instance", nested_instance);
+			}
+		}
 		if (result.request.arguments.find("crop") &&
 			result.request.arguments.find("crop_flow_node"))
 			return invalid_arguments();
@@ -373,6 +388,8 @@ Status select_live_instance(AgenticCommandLine& command_line) noexcept {
 		const auto path = command_line.context.store_root / "runtime/instances" /
 						  (std::string(instance) + ".json");
 		auto descriptor = read_json_file(path, 16384);
+		if (!descriptor && command_line.request.operation == "verification.report")
+			return {};
 		if (!descriptor || member(*descriptor, "schema").string_or() != "FlowUi.Agentic.Instance" ||
 			member(*descriptor, "schema_version").string_or() != "1.0" ||
 			member(*descriptor, "protocol").string_or() != "FlowUi.Agentic.Local/1" ||
@@ -383,6 +400,9 @@ Status select_live_instance(AgenticCommandLine& command_line) noexcept {
 		endpoint.endpoint = member(*descriptor, "endpoint").string_or();
 		endpoint.run_id = instance;
 		endpoint.nonce = member(*descriptor, "nonce").string_or();
+		if (command_line.request.operation == "verification.run" ||
+			command_line.request.operation == "verification.status")
+			endpoint.timeout_ms = 25000;
 		command_line.context.live_handler =
 			[endpoint = std::move(endpoint)](const AgenticCommandRequest& request) {
 				return send_local_command(endpoint, encode_command_request(request));
@@ -404,19 +424,24 @@ Json command_line_help() {
 				   "[--instance RUN_ID] [--json]"},
 		 {"operations", std::move(operations)},
 		 {"structured_arguments", "--arguments-json OBJECT; --plan JSON or --plan-file PATH; "
+								  "--request JSON or --request-file PATH; "
 								  "64-bit wire values are decimal strings"},
 		 {"store_discovery", "explicit --store, workspace .flowui/agentic/config.json store_path, "
 							 "workspace .flowui/agentic/v1"},
 		 {"examples",
-		  Json::make_array({"flowui-agent capabilities --json",
-							"flowui-agent context find --intent performance --json",
-							"flowui-agent capture plan --instance RUN_ID --profile "
-							"performance_verify --window 1 --duration 10s --json",
-							"flowui-agent query performance --capture CAPTURE_ID --json",
-							"flowui-agent interaction plan --plan-file plan.json --json",
-							"flowui-agent interaction start --instance RUN_ID --plan-file "
-							"plan.json --idempotency-key CASE --json",
-							"flowui-agent setup --client codex --print --json"})}});
+		  Json::make_array(
+			  {"flowui-agent capabilities --json",
+			   "flowui-agent context find --intent performance --json",
+			   "flowui-agent capture plan --instance RUN_ID --profile "
+			   "performance_verify --window 1 --duration 10s --json",
+			   "flowui-agent query performance --capture CAPTURE_ID --json",
+			   "flowui-agent interaction plan --plan-file plan.json --json",
+			   "flowui-agent interaction start --instance RUN_ID --plan-file "
+			   "plan.json --idempotency-key CASE --json",
+			   "flowui-agent verification run --request-file suite.json --require-pass --json",
+			   "flowui-agent verification status --instance RUN_ID --job JOB_ID "
+			   "--after-sequence 1 --wait-timeout-ms 20000 --json",
+			   "flowui-agent setup --client codex --print --json"})}});
 }
 
 } // namespace FlowUi::devSystems::agentic

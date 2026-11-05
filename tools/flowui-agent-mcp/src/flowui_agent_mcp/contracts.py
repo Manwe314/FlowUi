@@ -100,6 +100,11 @@ for _definition in ["input", "step", "frame"]:
         _SOURCE_PLAN_DOCUMENT["$defs"][_definition]["properties"].pop(_redacted_field, None)
 _INTERACTION_PLAN = _inline_local_schema(_SOURCE_PLAN_DOCUMENT)
 _INTERACTION_TARGET = _inline_local_schema({"$defs": _PLAN_DOCUMENT["$defs"], "$ref": "#/$defs/target"})
+_VERIFICATION_REQUEST_DOCUMENT = json.loads((Path(__file__).with_name("schemas") / "verification-request.schema.json").read_text())
+_VERIFICATION_REQUEST = _inline_local_schema(_VERIFICATION_REQUEST_DOCUMENT)
+_VERIFICATION_RUN_REQUEST = copy.deepcopy(_VERIFICATION_REQUEST)
+_VERIFICATION_RUN_REQUEST["required"].append("idempotency_key")
+_VERIFICATION_RUN_REQUEST["properties"]["idempotency_key"]["minLength"] = 1
 _PLAN_ARTIFACT = {"type": "object", "properties": {
     "capture": _STRING, "artifact": _STRING,
     "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
@@ -147,6 +152,17 @@ _ACTION_CONTRACTS = {
         "idempotency_key": _STRING, "deadline_ns": _DECIMAL},
         ["instance", "action_id", "revision", "idempotency_key"]),
 }
+_VERIFICATION_JOB = {**_LIVE, "job_id": _STRING}
+_VERIFICATION_WAIT = {"type": "integer", "minimum": 0, "maximum": 20000}
+_VERIFICATION_QUERY_CONTRACTS = {
+    "verification.status": ({**_VERIFICATION_JOB, "after_sequence": _DECIMAL,
+        "wait_timeout_ms": _VERIFICATION_WAIT}, ["instance", "job_id"]),
+    "verification.report": ({**_VERIFICATION_JOB, **_PAGING,
+        "limit": {"type": "integer", "minimum": 1, "maximum": 64},
+        "max_bytes": {"type": "integer", "minimum": 4096, "maximum": 1048576},
+        "require_pass": {"type": "boolean"}},
+        ["instance", "job_id"]),
+}
 
 
 def _tool_schema(operations: list[str], properties: dict[str, Any]) -> dict[str, Any]:
@@ -178,6 +194,13 @@ TOOLS = {
     "flowui_changes_apply": ("Commit an explicitly selected revision-checked tooling transaction.", _tool_schema(["changes.apply"], {"review_id": _STRING, "schema_generation": _DECIMAL, "proposal_revision": _DECIMAL, "theme_revision": _DECIMAL, "disk_revision": _STRING, "operation_id": _STRING})),
     "flowui_interaction": ("Discover, compile, execute or record finite frame-bound input plans. Start and recording operations acquire runtime control; planning and queries only read data.", _operation_tool_schema(_INTERACTION_CONTRACTS)),
     "flowui_action": ("Discover explicitly exported application actions or invoke a revision-checked action as a mutating evidence job.", _operation_tool_schema(_ACTION_CONTRACTS)),
+    "flowui_verification_plan": ("Validate a finite verification suite, resolve workloads and estimate bounded evidence without input or capture.", _operation_tool_schema({
+        "verification.plan": ({**_LIVE, "request": _VERIFICATION_REQUEST}, ["request"])})),
+    "flowui_verification_run": ("Admit one sequential verification suite and wait up to twenty seconds for its bounded report. Retry its execution key to recover admission; disconnect does not cancel execution.", _operation_tool_schema({
+        "verification.run": ({**_LIVE, "request": _VERIFICATION_RUN_REQUEST, "require_pass": {"type": "boolean"}}, ["request"])})),
+    "flowui_verification_query": ("Read bounded verification progress with a change wait, or a durable report with digest-bound detail pagination.", _operation_tool_schema(_VERIFICATION_QUERY_CONTRACTS)),
+    "flowui_verification_cancel": ("Request idempotent suite cancellation, frame-bound input release and bounded fixture cleanup.", _operation_tool_schema({
+        "verification.cancel": (_VERIFICATION_JOB, ["instance", "job_id"])})),
 }
 
 for _branch in TOOLS["flowui_interaction"][1]["oneOf"]:

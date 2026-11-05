@@ -125,7 +125,8 @@ struct Control {
 		uint64_t action = 0, value = 0;
 		Clay_Color marker = interface_theme::kTextMuted;
 		bool enabled = true, selected = false, focused = false, issue_row = false, flexible = false,
-			 histogram_bin = false, keyboard_activation = true, domain_row = false;
+			 histogram_bin = false, keyboard_activation = true, domain_row = false,
+			 section_header = false;
 	};
 	using State = FSEL::detail::selectable_surface::State;
 	using Resources = diagnostics_icons::Resources;
@@ -173,6 +174,20 @@ struct Control {
 		const auto& parameters = context.params;
 		const bool hovered =
 			context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID());
+		if (parameters.section_header) {
+			auto surface = row();
+			surface.layout.sizing.height = CLAY_SIZING_FIT(28);
+			surface.layout.padding = {12, 12, 8, 8};
+			surface.backgroundColor =
+				hovered ? interface_theme::kHoverSurface : interface_theme::kDepth2Ink;
+			const bool focused =
+				parameters.focused ||
+				context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
+			surface.border = {.color = focused ? interface_theme::kAccentCurrent
+											   : interface_theme::kBorderPrimary,
+							  .width = {0, 0, 0, 1, 0}};
+			return surface;
+		}
 		if (parameters.domain_row) {
 			auto surface = row(30);
 			surface.layout.sizing.width = CLAY_SIZING_GROW(0);
@@ -274,7 +289,8 @@ struct Control {
 										  : parameters.icon;
 				icon(context, "action-icon", semantic,
 					 parameters.enabled ? interface_theme::kTextSecondary
-										: interface_theme::kTextMuted);
+										: interface_theme::kTextMuted,
+					 parameters.section_header ? 12 : 14);
 				text(context, parameters.label,
 					 parameters.enabled ? interface_theme::kTextCanvas
 										: interface_theme::kTextMuted,

@@ -31,6 +31,7 @@ EXPECTED_OPERATIONS = {
     "interaction.capabilities", "interaction.targets", "interaction.plan", "interaction.start",
     "interaction.record.start", "interaction.record.stop", "interaction.query", "action.list",
     "action.invoke",
+    "verification.plan", "verification.run", "verification.status", "verification.report", "verification.cancel",
 }
 TERMINAL_PHASES = {"sealed", "failed", "canceled"}
 
@@ -157,9 +158,10 @@ class LiveMcpSuite:
                 self.owners[operation] = tool.name
                 self.operations[operation] = {"tool": tool.name, "calls": 0,
                     "successful_results": 0, "expected_failures": 0, "failed_checks": 0}
-            if tool.name in {"flowui_interaction", "flowui_action", "flowui_changes_apply"}:
+            if tool.name in {"flowui_interaction", "flowui_action", "flowui_changes_apply",
+                    "flowui_verification_run", "flowui_verification_cancel"}:
                 assert not tool.annotations.read_only_hint, tool.name
-        assert len(tools) == 12, f"Unexpected tool count: {len(tools)}"
+        assert len(tools) == 16, f"Unexpected tool count: {len(tools)}"
         assert set(self.owners) == EXPECTED_OPERATIONS, (set(self.owners) ^ EXPECTED_OPERATIONS)
         write_json(self.output / "discovery.json", {"sdk_version": self.sdk_version,
             "tools": {tool.name: {"description": tool.description, "input_schema": tool.input_schema}
@@ -604,6 +606,56 @@ class LiveMcpSuite:
         await self.wait_job(cancel_job["job_id"], canceled=True)
         await self.call("job.status", {"job_id": "job_missing_mcp_live"}, live=True, failure=True)
 
+    async def verification_run_and_report(self) -> None:
+        suite = {"schema": "FlowUi.Agentic.VerificationRequest", "schema_version": "1.0",
+            "suite_id": "mcp.fsel.smoke", "suite_revision": "1", "idempotency_key": "mcp_verification_smoke",
+            "wait_timeout_ms": 20000, "cases": [{"case_id": "gallery", "workload": {
+                "kind": "registered_scenario", "scenario_id": "demo.gallery.steady", "revision": "1",
+                "fixture_id": "gallery-default-v1", "seed": "17"}}]}
+        planned = await self.result("verification.plan", {"request": suite}, live=True)
+        assert planned["feasible"], planned
+
+        async def terminal_report(result: dict) -> dict:
+            if result.get("schema") == "FlowUi.Agentic.VerificationReport":
+                return result
+            identity = result["job_id"]
+            self.jobs.discard(identity)
+            deadline = time.monotonic() + self.timeout
+            while time.monotonic() < deadline:
+                status = await self.result("verification.status", {"job_id": identity,
+                    "wait_timeout_ms": 1000}, live=True)
+                self.jobs.discard(identity)
+                assert "images" not in status and "trees" not in status, status
+                if status.get("report_published") or status.get("terminal"):
+                    return await self.result("verification.report", {"job_id": identity}, live=True)
+            raise AssertionError(f"Verification did not seal: {identity}")
+
+        completed = await self.result("verification.run", {"request": suite, "require_pass": True}, live=True)
+        report = await terminal_report(completed)
+        identity = report["job_id"]
+        self.jobs.discard(identity)
+        assert report["verdict"] == "pass" and int(report["coverage"]["evaluated"]) > 0, report
+        reread = await self.result("verification.report", {"job_id": identity, "require_pass": True}, live=True)
+        assert reread["verdict"] == "pass" and reread["job_id"] == identity, reread
+        await self.result("verification.status", {"job_id": identity, "after_sequence": "0",
+            "wait_timeout_ms": 0}, live=True)
+        long_plan = {"schema": "FlowUi.Agentic.InteractionPlan", "schema_version": "1.0",
+            "mode": "common_controls", "window_id": self.window_id, "deadline_ns": "30000000000",
+            "steps": [{"operation": "wait", "frames": "2048", "minimum_duration_ns": "20000000000",
+                "deadline_ns": "30000000000"}]}
+        cancellation = {**suite, "idempotency_key": "mcp_verification_cancel", "wait_timeout_ms": 0,
+            "cases": [{"case_id": "cancel-long-wait", "workload": {"kind": "interaction_plan", "plan": long_plan}}]}
+        admitted = await self.result("verification.run", {"request": cancellation}, live=True)
+        canceled_identity = admitted["job_id"]
+        self.jobs.discard(canceled_identity)
+        try:
+            await self.result("verification.cancel", {"job_id": canceled_identity}, live=True)
+            canceled_report = await terminal_report(admitted)
+            assert canceled_report["execution_status"] == "canceled", canceled_report
+            assert canceled_report["verdict"] != "pass", canceled_report
+        finally:
+            await self.result("verification.cancel", {"job_id": canceled_identity}, live=True)
+
     async def retire_jobs(self) -> None:
         if self.client is None or self.process is None or self.process.poll() is not None:
             return
@@ -629,7 +681,7 @@ class LiveMcpSuite:
                 for tool in sorted(self.tool_schemas)}, "operations": self.operations,
             "uncovered_operations": uncovered, "failures": self.failures, "captures": self.captures,
             "user_changes_unchanged": user_unchanged,
-            "passed": not self.failures and not uncovered and user_unchanged and len(self.tool_schemas) == 12}
+            "passed": not self.failures and not uncovered and user_unchanged and len(self.tool_schemas) == 16}
         write_json(self.output / "coverage.json", report)
         return report
 
@@ -656,7 +708,8 @@ class LiveMcpSuite:
                         ("artifact_images_and_visual_comparison", self.artifact_images),
                         ("diagnostics_memory_and_quality", self.diagnostics_and_memory),
                         ("scenarios_comparison_objective", self.scenarios_and_analysis),
-                        ("stop_cancel_recovery", self.stopping_and_cancellation)]:
+                        ("stop_cancel_recovery", self.stopping_and_cancellation),
+                        ("verification_run_and_report", self.verification_run_and_report)]:
                         await self.stage(name, stage)
                     await self.retire_jobs()
         except Exception as error:

@@ -32,6 +32,17 @@ namespace FlowUi::devSystems::interface_elements {
 	style.selectedDisabledOverrides.borderColor = interface_theme::kBorderPrimary;
 	return style;
 }
+/** Full-width selection row matching the Performance selector's surface treatment. */
+[[nodiscard]] inline FSEL::SelectableSurfaceStyle selector_bar_style() noexcept {
+	auto style = selector_choice_style();
+	style.sizing.height = CLAY_SIZING_FIXED(25);
+	style.padding = Clay_Padding{8, 4, 3, 3};
+	style.childAlignment = Clay_ChildAlignment{CLAY_ALIGN_X_LEFT, CLAY_ALIGN_Y_CENTER};
+	style.borderWidth = Clay_BorderWidth{3, 0, 0, 0, 0};
+	style.cornerRadius = CLAY_CORNER_RADIUS(0);
+	style.selectedOverrides.backgroundColor = interface_theme::kSelectedRow;
+	return style;
+}
 /** Bordered, inset track around a group of segmented choices. */
 [[nodiscard]] inline Clay_ElementDeclaration selector_choice_track() noexcept {
 	Clay_ElementDeclaration track{};

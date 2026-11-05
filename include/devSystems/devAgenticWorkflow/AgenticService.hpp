@@ -115,6 +115,12 @@ private:
 	/** Copy the active scenario owner's policy before any child observations are retained. */
 	[[nodiscard]] Result<AgenticContentPolicy>
 	interaction_content_policy(std::string_view owner_job_id) const noexcept;
+	/** Bound child-plan reservations to the owning capture's accepted snapshot budget. */
+	[[nodiscard]] Result<std::uint64_t>
+	interaction_snapshot_budget(std::string_view owner_job_id) const noexcept;
+	/** Remember child input ownership so parent cancellation precedes fixture cleanup. */
+	[[nodiscard]] Status track_owned_interaction(std::string_view owner_job_id,
+												 std::string_view interaction_job_id) noexcept;
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 };

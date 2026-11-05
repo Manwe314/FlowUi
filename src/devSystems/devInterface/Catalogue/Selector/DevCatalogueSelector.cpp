@@ -1,11 +1,13 @@
 #include "devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp"
 
 #if FLOW_UI_DEV_MODE
+#include "FSEL/RadioChoice.hpp"
 #include "FSEL/SplitterHandle.hpp"
 #include "FSEL/TextInput.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -91,10 +93,66 @@ void activate(void* target, uint64_t action, uint64_t value) {
 	}
 }
 
+constexpr auto select_domain =
+	UiAction("flowui.catalogue.selector.domain",
+			 [](State& navigation, uint64_t value) { activate(&navigation, Domain, value); });
+
+template <class Identity>
+void domain_choice(Context& context, Identity identity, std::string_view label, uint64_t value,
+				   bool focused, std::string_view badge) {
+	auto style = selector_bar_style();
+	style.layoutDirection = CLAY_LEFT_TO_RIGHT;
+	style.contentGap = 8;
+	if (focused) {
+		style.borderWidth = Clay_BorderWidth{3, 0, 0, 1, 0};
+		style.idleOverrides.borderColor = interface_theme::kAccentCurrent;
+		style.hoveredOverrides.borderColor = interface_theme::kAccentCurrent;
+	}
+	FSEL::RadioChoiceParameters parameters{};
+	parameters.onSelected = ActionCall{
+		context.uiManager.actions().uiActions().make(select_domain, context.state(), value)};
+	parameters.choiceValue = value;
+	parameters.selectedValue = &context.state().catalogue->domain;
+	parameters.style = style;
+	context.uiManager.createElement(FSEL::kRadioChoice, identity)
+		.setParameters(parameters)
+		.setDevInternalCapture(true)
+		.construct();
+	const bool selected = context.state().catalogue->domain == value;
+	const auto element = ::FlowUi::detail::element_id::resolveLocal(
+		context.id, FSEL::RadioChoice::definitionId, identity.token);
+	const bool hovered = context.uiManager.getPreviousFramesInteraction().isHovered(
+		context.uiManager.toClayEID(element));
+	Clay_TextElementConfig configuration{};
+	configuration.fontSize = 11;
+	configuration.textColor =
+		selected || hovered ? interface_theme::kTextCanvas : interface_theme::kTextSecondary;
+	configuration.wrapMode = CLAY_TEXT_WRAP_NONE;
+	auto caption = ui::column(0);
+	caption.layout.sizing.height = CLAY_SIZING_GROW(0);
+	caption.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
+	caption.clip = {.horizontal = true, .scrollInputDisabled = true};
+	CLAY(context.clayID(Keyed("row-caption", identity.token)), caption)
+	CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(configuration));
+	auto count = ui::row(19);
+	count.layout.sizing.width = CLAY_SIZING_FIXED(32);
+	count.layout.childAlignment.x = CLAY_ALIGN_X_RIGHT;
+	CLAY(context.clayID(Keyed("row-count", identity.token)), count) {
+		configuration.textColor = interface_theme::kTextSecondary;
+		configuration.textAlignment = CLAY_TEXT_ALIGN_RIGHT;
+		CLAY_TEXT(context.uiManager.toClayString(badge), CLAY_TEXT_CONFIG(configuration));
+	}
+	context.uiManager.drawConstructed();
+}
+
 template <class Identity>
 void control(Context& context, Identity identity, std::string_view label, uint64_t action,
 			 uint64_t value, bool selected, bool focused, std::string_view badge = {},
 			 std::string_view help = {}) {
+	if (action == Domain) {
+		domain_choice(context, identity, label, value, focused, badge);
+		return;
+	}
 	context.uiManager.createElement(ui::kControl, identity)
 		.setParameters({.label = std::string(label),
 						.activate = activate,
@@ -107,24 +165,6 @@ void control(Context& context, Identity identity, std::string_view label, uint64
 						.domain_row = true})
 		.setDevInternalCapture(true)
 		.construct();
-	if (action == Domain) {
-		auto radio = ui::column(0);
-		radio.layout.sizing = {CLAY_SIZING_FIXED(12), CLAY_SIZING_FIXED(12)};
-		radio.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
-		radio.cornerRadius = CLAY_CORNER_RADIUS(6);
-		radio.border = {.color = selected ? interface_theme::kAccentCurrent
-										  : interface_theme::kTextMuted,
-						.width = {1, 1, 1, 1, 0}};
-		CLAY(context.clayID(Keyed("domain-radio", identity.token)), radio) {
-			if (selected) {
-				Clay_ElementDeclaration dot{};
-				dot.layout.sizing = {CLAY_SIZING_FIXED(6), CLAY_SIZING_FIXED(6)};
-				dot.cornerRadius = CLAY_CORNER_RADIUS(3);
-				dot.backgroundColor = interface_theme::kAccentCurrent;
-				CLAY(context.clayID(Keyed("domain-radio-dot", identity.token)), dot) {}
-			}
-		}
-	}
 	Clay_TextElementConfig text{};
 	text.fontSize = 12;
 	text.textColor = selected ? interface_theme::kAccentCurrent : interface_theme::kTextSecondary;
@@ -200,12 +240,12 @@ void keyboard(Context& context) {
 			pressed(GLFW_KEY_LEFT)) {
 			const auto scroll = Clay_GetScrollContainerData(context.state().domains_id);
 			if (scroll.found && scroll.scrollPosition) {
-				const float top = 24 + static_cast<float>(state.focused_domain) * 30;
+				const float top = 30 + static_cast<float>(state.focused_domain) * 25;
 				if (top < -scroll.scrollPosition->y)
 					scroll.scrollPosition->y = -top;
-				else if (top + 30 >
+				else if (top + 25 >
 						 -scroll.scrollPosition->y + scroll.scrollContainerDimensions.height)
-					scroll.scrollPosition->y = scroll.scrollContainerDimensions.height - top - 30;
+					scroll.scrollPosition->y = scroll.scrollContainerDimensions.height - top - 25;
 			}
 		}
 		return;
@@ -335,9 +375,9 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 	}
 	auto root = ui::column(0);
 	root.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	root.layout.sizing.height = CLAY_SIZING_GROW(0);
+	root.layout.sizing.height = CLAY_SIZING_PERCENT(1);
 	root.clip = {.horizontal = true, .scrollInputDisabled = true};
-	const auto dimensions = Clay_GetElementData(context.clayID());
+	const auto dimensions = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
 	const float height =
 		dimensions.found ? dimensions.boundingBox.height : Clay_GetLayoutDimensions().height - 120;
 	const float maximum = std::max(64.0f, height - 150);
@@ -352,10 +392,12 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 										   ? *domain_scroll_data.scrollPosition
 										   : Clay_Vector2{}};
 		CLAY(context.clayID("domains"), domains) {
-			auto heading = ui::row(24);
-			heading.layout.padding = {12, 8, 0, 0};
+			auto heading = ui::row(30);
+			heading.layout.padding = {12, 12, 0, 0};
+			heading.backgroundColor = interface_theme::kDepth1Panel;
+			heading.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
 			CLAY(context.clayID("heading"), heading)
-			ui::text(context, "CATALOGUE", interface_theme::kTextMuted, 11);
+			ui::text(context, "Catalogue:", interface_theme::kTextCanvas, 12);
 			for (uint64_t domain_index = 0; domain_index < 9; ++domain_index) {
 				const bool selected = state.domain == domain_index;
 				const auto label =

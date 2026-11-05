@@ -159,7 +159,7 @@ void section(Context& context, std::size_t index, std::string_view title, const 
 			 .target = &changes,
 			 .action = ui::Section,
 			 .value = index,
-			 .domain_row = true})
+			 .section_header = true})
 		.setDevInternalCapture(true)
 		.draw();
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
@@ -525,29 +525,11 @@ void DevChangesInspector::buildElement(BuildContext& context) {
 	root.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_PERCENT(1)};
 	root.backgroundColor = interface_theme::kDepth1Panel;
 	CLAY(context.clayID(), root) {
-		auto heading = ui::column(5);
-		heading.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-		heading.layout.padding = {12, 12, 12, 10};
+		auto heading = ui::row(36);
+		heading.layout.padding = {12, 12, 0, 0};
 		heading.backgroundColor = interface_theme::kDepth2Ink;
-		CLAY(context.clayID("heading"), heading) {
-			ui::text(context, "Context", interface_theme::kTextCanvas, 14);
-			if (selected)
-				ui::text(context,
-						 ui::ellipsize(context, row ? row->target_name : selected->label,
-									   width - 24, 12),
-						 interface_theme::kTextCanvas, 12);
-			if (row) {
-				auto operation = ui::row(22);
-				operation.layout.sizing.width = CLAY_SIZING_FIT(0);
-				operation.layout.padding = {6, 6, 0, 0};
-				operation.backgroundColor = interface_theme::kDepth0Keel;
-				CLAY(context.clayID("operation"), operation)
-				inline_text(context,
-							std::string(domain_label(row->domain)) + " · " +
-								std::string(ui::operation_label(row->operation)),
-							ui::operation_color(row->operation), 11);
-			}
-		}
+		CLAY(context.clayID("heading"), heading)
+		ui::text(context, "Inspector", interface_theme::kTextCanvas, 14);
 		auto viewport =
 			ui::viewport(context, "scroll-body", changes.inspector_scroll, &local.scroll_restore);
 		viewport.layout.sizing.width = CLAY_SIZING_PERCENT(1);
@@ -558,6 +540,27 @@ void DevChangesInspector::buildElement(BuildContext& context) {
 			auto content = ui::column(0);
 			content.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 			CLAY(context.clayID("sections"), content) {
+				if (selected) {
+					auto summary = ui::column(5);
+					summary.layout.padding = {12, 12, 10, 12};
+					CLAY(context.clayID("context-summary"), summary) {
+						ui::text(context,
+								 ui::ellipsize(context, row ? row->target_name : selected->label,
+											   width - 24, 12),
+								 interface_theme::kTextCanvas, 12);
+						if (row) {
+							auto operation = ui::row(22);
+							operation.layout.sizing.width = CLAY_SIZING_FIT(0);
+							operation.layout.padding = {6, 6, 0, 0};
+							operation.backgroundColor = interface_theme::kDepth0Keel;
+							CLAY(context.clayID("operation"), operation)
+							inline_text(context,
+										std::string(domain_label(row->domain)) + " · " +
+											std::string(ui::operation_label(row->operation)),
+										ui::operation_color(row->operation), 11);
+						}
+					}
+				}
 				if (!selected) {
 					auto guidance = ui::column();
 					guidance.layout.sizing.width = CLAY_SIZING_PERCENT(1);

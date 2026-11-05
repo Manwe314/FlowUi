@@ -23,9 +23,21 @@ uint64_t identity(Domain domain, std::string_view key) noexcept {
 	return result ? result : 1;
 }
 std::string namespace_group(std::string_view name, std::string_view fallback) {
-	const auto separator = name.find_last_of("/:");
+	auto separator = name.find_last_of("/:");
+	if (separator != std::string_view::npos && separator > 0 && name[separator] == ':' &&
+		name[separator - 1] == ':')
+		--separator;
 	return separator == std::string_view::npos ? std::string(fallback)
 											   : std::string(name.substr(0, separator));
+}
+[[nodiscard]] bool group_contains(std::string_view selected_group,
+								  std::string_view asset_group) noexcept {
+	if (selected_group.empty() || asset_group == selected_group)
+		return true;
+	if (!asset_group.starts_with(selected_group))
+		return false;
+	const auto descendant = asset_group.substr(selected_group.size());
+	return descendant.starts_with('/') || descendant.starts_with("::");
 }
 bool matches(std::string_view text, std::string_view search) noexcept {
 	return std::ranges::search(
@@ -682,7 +694,7 @@ void rebuild_catalogue_filter(DevCatalogueState& state) {
 		const auto& asset = state.assets[index];
 		if (static_cast<uint64_t>(asset.domain) != state.domain)
 			continue;
-		if (!view.group.empty() && asset.group != view.group)
+		if (!group_contains(view.group, asset.group))
 			continue;
 		if (!matches(asset.name, view.search) && !matches(asset.group, view.search))
 			continue;

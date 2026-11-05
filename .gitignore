@@ -9,6 +9,7 @@
 /build/
 /build-*/
 /build-agentic
+/build-interactions
 /build_*
 /build_demo/
 /FlowPlotGUI/build/

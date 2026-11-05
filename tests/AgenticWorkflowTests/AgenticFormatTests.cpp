@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <string>
 #include <thread>
@@ -183,6 +184,21 @@ void planning_contract() {
 }
 void store_contract(const std::filesystem::path& root) {
 	AgenticStore store(root);
+	const auto read_index = [&] {
+		std::ifstream stream(root / "index.json", std::ios::binary);
+		const std::string contents{std::istreambuf_iterator<char>(stream),
+								   std::istreambuf_iterator<char>()};
+		auto index = parse_json(contents);
+		require(index && bool(validate_agentic_document(*index, "FlowUi.Agentic.Index")),
+				"published advisory index is invalid");
+		return std::move(*index);
+	};
+	const auto contains_capture = [](const Json& index, std::string_view capture_id) {
+		const auto& captures = index.find("captures")->array;
+		return std::any_of(captures.begin(), captures.end(), [&](const auto& capture) {
+			return capture.find("capture_id")->string_or() == capture_id;
+		});
+	};
 	require(!std::filesystem::exists(root), "constructor created store");
 	auto reserved =
 		store.reserve_run("run_format", Json::make_object({{"application_id", "test"}}));
@@ -195,6 +211,14 @@ void store_contract(const std::filesystem::path& root) {
 	require(!store.publish(snapshot("run_format", "cap_before")), "immutable capture overwritten");
 	auto second = store.publish(snapshot("run_format", "cap_after"));
 	require(bool(second), "second capture failed");
+	const auto incremental = read_index();
+	require(incremental.find("captures")->array.size() == 2 &&
+				contains_capture(incremental, "cap_before") &&
+				contains_capture(incremental, "cap_after"),
+			"incremental publication lost existing or new index entries");
+	require(incremental.find("captures")->array.front().find("capture_id")->string_or() ==
+				"cap_after",
+			"incremental publication index is not sorted");
 	std::array<AgenticManifest, 5> passes;
 	for (std::size_t index = 0; index < passes.size(); ++index) {
 		auto published = store.publish(snapshot("run_format", "cap_pass_" + std::to_string(index)));
@@ -280,6 +304,31 @@ void store_contract(const std::filesystem::path& root) {
 			"combined frame/text memory budget ignored");
 	write(root / "index.json", "corrupt");
 	require(bool(store.resolve_capture("cap_before")), "stale index invalidated sealed capture");
+	require(bool(store.publish(snapshot("run_format", "cap_corrupt_index_rebuilt"))),
+			"corrupt index blocked fresh capture publication");
+	require(contains_capture(read_index(), "cap_before") &&
+				contains_capture(read_index(), "cap_corrupt_index_rebuilt"),
+			"corrupt index was not rebuilt from authoritative manifests");
+	auto stale_index = read_index();
+	stale_index.set("schema_version", "2.0");
+	write(root / "index.json", write_json(stale_index));
+	require(bool(store.publish(snapshot("run_format", "cap_stale_index_rebuilt"))) &&
+				contains_capture(read_index(), "cap_stale_index_rebuilt"),
+			"stale index schema was not repaired during publication");
+	auto duplicate_index = read_index();
+	auto duplicate_record = duplicate_index.find("captures")->array.front();
+	duplicate_record.set("capture_id", "cap_duplicate_cached_identity");
+	auto& duplicate_records = duplicate_index.find("captures")->array;
+	duplicate_records.emplace_back(std::move(duplicate_record));
+	std::sort(duplicate_records.begin(), duplicate_records.end(),
+			  [](const auto& first_record, const auto& second_record) {
+				  return first_record.find("capture_id")->string_or() <
+						 second_record.find("capture_id")->string_or();
+			  });
+	write(root / "index.json", write_json(duplicate_index));
+	auto duplicate_capture = store.publish(snapshot("run_format", "cap_duplicate_cached_identity"));
+	require(duplicate_capture && duplicate_capture->document.find("index_update"),
+			"duplicate cached capture identity silently replaced another record");
 	require(bool(store.repair_index()), "index repair failed");
 	auto selected = store.prune(0, true);
 	require(bool(selected), "prune selection failed");
@@ -320,7 +369,80 @@ void store_contract(const std::filesystem::path& root) {
 	std::filesystem::remove(summary_path);
 	std::filesystem::create_symlink(root / "store.json", summary_path);
 	require(!read_manifest(symlinked->manifest_path), "symlink escape accepted");
+	const auto external_index = root.parent_path() / "external-index.txt";
+	write(external_index, "external sentinel");
+	std::filesystem::remove(root / "index.json");
+	std::filesystem::create_symlink(external_index, root / "index.json");
+	auto deferred = store.publish(snapshot("run_format", "cap_deferred_index"));
+	require(deferred && deferred->document.find("index_update") &&
+				std::filesystem::is_symlink(root / "index.json") &&
+				std::filesystem::file_size(external_index) ==
+					std::string_view("external sentinel").size(),
+			"symlinked advisory index escaped confinement or failed capture publication");
+	std::filesystem::remove(root / "index.json");
+	require(bool(store.repair_index()), "index repair after symlink deferral failed");
 #endif
+	write(first->manifest_path, "corrupt unrelated manifest");
+	auto after_corruption = store.publish(snapshot("run_format", "cap_after_old_corruption"));
+	require(after_corruption && !after_corruption->document.find("index_update") &&
+				contains_capture(read_index(), "cap_before") &&
+				contains_capture(read_index(), "cap_after_old_corruption"),
+			"publication rescanned or depended on an unrelated old manifest");
+	require(bool(store.repair_index()) && !contains_capture(read_index(), "cap_before") &&
+				contains_capture(read_index(), "cap_after_old_corruption"),
+			"explicit index repair did not rescan authoritative manifests");
+}
+void verification_prune_contract(const std::filesystem::path& root) {
+	AgenticStore store(root);
+	auto reserved = store.reserve_run("run_verification", Json::make_object());
+	require(bool(reserved), "verification prune run reservation failed");
+	auto active_case = snapshot("run_verification", "cap_active_suite");
+	active_case.provenance.set("verification_job_id", "verification_active");
+	require(bool(store.publish(std::move(active_case))), "active suite fixture failed");
+	require(bool(store.publish(snapshot("run_verification", "cap_report_reference"))),
+			"report reference fixture failed");
+	require(bool(store.publish(snapshot("run_verification", "cap_unreferenced"))),
+			"unreferenced fixture failed");
+	const auto report = Json::make_object(
+		{{"schema", "FlowUi.Agentic.VerificationReport"},
+		 {"schema_version", "1.0"},
+		 {"job_id", "verification_report"},
+		 {"run_id", "run_verification"},
+		 {"suite_id", "prune.references"},
+		 {"suite_revision", "1"},
+		 {"request_digest", std::string(64, 'a')},
+		 {"execution_status", "completed"},
+		 {"verdict", "pass"},
+		 {"coverage", Json::make_object({{"required", "1"},
+										 {"evaluated", "1"},
+										 {"passed", "1"},
+										 {"failed", "0"},
+										 {"skipped", "0"},
+										 {"unavailable", "0"}})},
+		 {"cases", Json::make_array({Json::make_object(
+					   {{"case_id", "referenced"}, {"capture_id", "cap_report_reference"}})})},
+		 {"timings", Json::make_object()},
+		 {"resources", Json::make_object()},
+		 {"evidence", Json::make_array()},
+		 {"cleanup", Json::make_object({{"completed", true}})},
+		 {"limitations", Json::make_array()}});
+	const auto report_path = *reserved / "verification/verification_report.json";
+	write(report_path, write_json(report));
+	auto planned = store.prune(0, true);
+	require(planned && planned->find("selected")->array.size() == 1 &&
+				planned->find("selected")->array.front().find("capture_id")->string_or() ==
+					"cap_unreferenced",
+			"prune selected suite-owned or report-referenced evidence");
+	require(bool(store.prune(0, false)), "verification-aware prune failed");
+	require(bool(store.resolve_capture("cap_active_suite")) &&
+				bool(store.resolve_capture("cap_report_reference")) &&
+				!store.resolve_capture("cap_unreferenced"),
+			"prune left a dangling report or failed to remove unreferenced evidence");
+	require(bool(store.publish(snapshot("run_verification", "cap_after_report_corruption"))),
+			"corrupt report protection fixture failed");
+	write(report_path, "{}");
+	require(!store.prune(0, false) && bool(store.resolve_capture("cap_after_report_corruption")),
+			"invalid report allowed destructive pruning");
 }
 void memory_interval_filter_contract(const std::filesystem::path& root) {
 	AgenticStore store(root);
@@ -408,7 +530,8 @@ void memory_interval_filter_contract(const std::filesystem::path& root) {
 void theme_field_query_contract(const std::filesystem::path& root) {
 	AgenticStore store(root);
 	require(bool(store.initialize()), "theme projection store failed");
-	require(bool(store.reserve_run("run_themes", Json::make_object())), "theme projection run failed");
+	require(bool(store.reserve_run("run_themes", Json::make_object())),
+			"theme projection run failed");
 	AgenticCaptureSnapshot capture;
 	capture.run_id = "run_themes";
 	capture.capture_id = "cap_themes";
@@ -803,6 +926,7 @@ int main() {
 	cadence_contract();
 	planning_contract();
 	store_contract(root / "store");
+	verification_prune_contract(root / "verification_prune");
 	memory_interval_filter_contract(root / "memory_filter");
 	theme_field_query_contract(root / "themes");
 	timing_contributor_contract(root / "timing");

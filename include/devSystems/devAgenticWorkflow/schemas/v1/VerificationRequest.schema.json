@@ -1,0 +1,1490 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.VerificationRequest"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "instance": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "suite_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "suite_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "idempotency_key": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "execution_timeout_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+    },
+    "wait_timeout_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20000
+    },
+    "failure_policy": {
+      "enum": [
+        "stop_suite",
+        "stop_case",
+        "continue_cases"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+            "not": {
+              "enum": [
+                ".",
+                ".."
+              ]
+            }
+          },
+          "workload": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "registered_scenario"
+                  },
+                  "scenario_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+                    "not": {
+                      "enum": [
+                        ".",
+                        ".."
+                      ]
+                    }
+                  },
+                  "revision": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "fixture_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "digest": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "seed": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,19})$",
+                    "maxLength": 20,
+                    "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "scenario_id",
+                  "revision",
+                  "fixture_id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "interaction_plan"
+                  },
+                  "plan": {
+                    "$ref": "#/$defs/interaction_plan"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "plan"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "checkpoints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "checkpoint_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+                  "not": {
+                    "enum": [
+                      ".",
+                      ".."
+                    ]
+                  }
+                },
+                "trigger": {
+                  "enum": [
+                    "case_verified",
+                    "case_failed"
+                  ]
+                },
+                "evidence": {
+                  "enum": [
+                    "image_and_tree",
+                    "image",
+                    "tree"
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "window_id": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,19})$",
+                  "maxLength": 20,
+                  "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+                  "not": {
+                    "const": "0"
+                  }
+                }
+              },
+              "required": [
+                "checkpoint_id",
+                "trigger",
+                "evidence"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 64
+          }
+        },
+        "required": [
+          "case_id",
+          "workload"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 64,
+      "minItems": 1
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "enum": [
+            "assertions_only",
+            "checkpoints_and_failure"
+          ]
+        },
+        "include_tree_text": {
+          "type": "boolean"
+        },
+        "include_stacks": {
+          "type": "boolean"
+        },
+        "include_native_messages": {
+          "type": "boolean"
+        },
+        "include_interaction_outcomes": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "maximum_cases": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "maximum_images": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_snapshot_bytes": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_retained_bytes": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "maximum_report_bytes": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "report": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "enum": [
+            "summary",
+            "failures",
+            "all"
+          ]
+        },
+        "include_contact_sheet": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "suite_id",
+    "cases"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/VerificationRequest.schema.json",
+  "title": "FlowUi.Agentic.VerificationRequest",
+  "$defs": {
+    "interaction_plan": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "FlowUi.Agentic.InteractionPlan"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "mode": {
+          "enum": [
+            "raw_frames",
+            "common_controls"
+          ]
+        },
+        "window_id": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+          "not": {
+            "const": "0"
+          }
+        },
+        "clock": {
+          "enum": [
+            "window_input_frames",
+            "exact_window_frames"
+          ]
+        },
+        "coordinates": {
+          "const": "window_logical"
+        },
+        "baseline": {
+          "enum": [
+            "neutral_before_start",
+            "require_neutral"
+          ]
+        },
+        "run_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "fixture_id": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "fixture_digest": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "idempotency_key": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "first_window_frame": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "seed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "deadline_ns": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "limits": {
+          "$ref": "#/$defs/interaction_plan/$defs/limits"
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interaction_plan/$defs/frame"
+          },
+          "maxItems": 65536
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interaction_plan/$defs/span"
+          },
+          "maxItems": 65536
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interaction_plan/$defs/step"
+          },
+          "maxItems": 4096
+        },
+        "content": {
+          "type": "object",
+          "properties": {
+            "persistence": {
+              "enum": [
+                "redact_text",
+                "retain_text",
+                "volatile"
+              ]
+            },
+            "include_native_input": {
+              "type": "boolean"
+            },
+            "record_observations": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "mode",
+        "window_id"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "point": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": -3.4028234663852886e+38,
+              "maximum": 3.4028234663852886e+38
+            },
+            "y": {
+              "type": "number",
+              "minimum": -3.4028234663852886e+38,
+              "maximum": 3.4028234663852886e+38
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        "region": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": -3.4028234663852886e+38,
+              "maximum": 3.4028234663852886e+38
+            },
+            "y": {
+              "type": "number",
+              "minimum": -3.4028234663852886e+38,
+              "maximum": 3.4028234663852886e+38
+            },
+            "width": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3.4028234663852886e+38
+            },
+            "height": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3.4028234663852886e+38
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ],
+          "additionalProperties": false
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "pointer": {
+              "$ref": "#/$defs/interaction_plan/$defs/point"
+            },
+            "scroll": {
+              "$ref": "#/$defs/interaction_plan/$defs/point"
+            },
+            "buttons_down": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "maxItems": 5,
+              "uniqueItems": true
+            },
+            "keys_down": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "enum": [
+                  32,
+                  39,
+                  44,
+                  45,
+                  46,
+                  47,
+                  48,
+                  49,
+                  50,
+                  51,
+                  52,
+                  53,
+                  54,
+                  55,
+                  56,
+                  57,
+                  59,
+                  61,
+                  65,
+                  66,
+                  67,
+                  68,
+                  69,
+                  70,
+                  71,
+                  72,
+                  73,
+                  74,
+                  75,
+                  76,
+                  77,
+                  78,
+                  79,
+                  80,
+                  81,
+                  82,
+                  83,
+                  84,
+                  85,
+                  86,
+                  87,
+                  88,
+                  89,
+                  90,
+                  91,
+                  92,
+                  93,
+                  96,
+                  161,
+                  162,
+                  256,
+                  257,
+                  258,
+                  259,
+                  260,
+                  261,
+                  262,
+                  263,
+                  264,
+                  265,
+                  266,
+                  267,
+                  268,
+                  269,
+                  280,
+                  281,
+                  282,
+                  283,
+                  284,
+                  290,
+                  291,
+                  292,
+                  293,
+                  294,
+                  295,
+                  296,
+                  297,
+                  298,
+                  299,
+                  300,
+                  301,
+                  302,
+                  303,
+                  304,
+                  305,
+                  306,
+                  307,
+                  308,
+                  309,
+                  310,
+                  311,
+                  312,
+                  313,
+                  314,
+                  320,
+                  321,
+                  322,
+                  323,
+                  324,
+                  325,
+                  326,
+                  327,
+                  328,
+                  329,
+                  330,
+                  331,
+                  332,
+                  333,
+                  334,
+                  335,
+                  336,
+                  340,
+                  341,
+                  342,
+                  343,
+                  344,
+                  345,
+                  346,
+                  347,
+                  348
+                ]
+              },
+              "maxItems": 512,
+              "uniqueItems": true
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 4194304
+            },
+            "pointer_inside": {
+              "type": "boolean"
+            },
+            "window_focused": {
+              "type": "boolean"
+            },
+            "text_redacted": {
+              "type": "boolean"
+            },
+            "text_codepoints": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "target": {
+          "type": "object",
+          "properties": {
+            "window_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "point": {
+              "$ref": "#/$defs/interaction_plan/$defs/point"
+            },
+            "clay_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+              "not": {
+                "const": "0"
+              }
+            },
+            "clay_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "flow_instance_id": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615.",
+              "not": {
+                "const": "0"
+              }
+            },
+            "flow_debug_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "custom_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "tree_generation": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "layout_revision": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "custom_revision": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "anchor": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "point"
+              ]
+            },
+            {
+              "required": [
+                "clay_id"
+              ]
+            },
+            {
+              "required": [
+                "clay_name"
+              ]
+            },
+            {
+              "required": [
+                "flow_instance_id"
+              ]
+            },
+            {
+              "required": [
+                "flow_debug_name"
+              ]
+            },
+            {
+              "required": [
+                "custom_id"
+              ]
+            }
+          ]
+        },
+        "recipe": {
+          "type": "object",
+          "properties": {
+            "prepare_up_frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "down_frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "hold_frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "up_frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "repeat": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "inter_click_gap_frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "button": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "step": {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "enum": [
+                "pointer.move",
+                "hover",
+                "pointer.down",
+                "pointer.up",
+                "pointer.hold",
+                "click",
+                "drag",
+                "scroll",
+                "key.down",
+                "key.up",
+                "key.chord",
+                "text.enter",
+                "wait",
+                "assert"
+              ]
+            },
+            "step_id": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "target": {
+              "$ref": "#/$defs/interaction_plan/$defs/target"
+            },
+            "destination": {
+              "$ref": "#/$defs/interaction_plan/$defs/target"
+            },
+            "path": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interaction_plan/$defs/point"
+              },
+              "maxItems": 4096
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "enum": [
+                  32,
+                  39,
+                  44,
+                  45,
+                  46,
+                  47,
+                  48,
+                  49,
+                  50,
+                  51,
+                  52,
+                  53,
+                  54,
+                  55,
+                  56,
+                  57,
+                  59,
+                  61,
+                  65,
+                  66,
+                  67,
+                  68,
+                  69,
+                  70,
+                  71,
+                  72,
+                  73,
+                  74,
+                  75,
+                  76,
+                  77,
+                  78,
+                  79,
+                  80,
+                  81,
+                  82,
+                  83,
+                  84,
+                  85,
+                  86,
+                  87,
+                  88,
+                  89,
+                  90,
+                  91,
+                  92,
+                  93,
+                  96,
+                  161,
+                  162,
+                  256,
+                  257,
+                  258,
+                  259,
+                  260,
+                  261,
+                  262,
+                  263,
+                  264,
+                  265,
+                  266,
+                  267,
+                  268,
+                  269,
+                  280,
+                  281,
+                  282,
+                  283,
+                  284,
+                  290,
+                  291,
+                  292,
+                  293,
+                  294,
+                  295,
+                  296,
+                  297,
+                  298,
+                  299,
+                  300,
+                  301,
+                  302,
+                  303,
+                  304,
+                  305,
+                  306,
+                  307,
+                  308,
+                  309,
+                  310,
+                  311,
+                  312,
+                  313,
+                  314,
+                  320,
+                  321,
+                  322,
+                  323,
+                  324,
+                  325,
+                  326,
+                  327,
+                  328,
+                  329,
+                  330,
+                  331,
+                  332,
+                  333,
+                  334,
+                  335,
+                  336,
+                  340,
+                  341,
+                  342,
+                  343,
+                  344,
+                  345,
+                  346,
+                  347,
+                  348
+                ]
+              },
+              "maxItems": 512,
+              "uniqueItems": true
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 4194304
+            },
+            "text_redacted": {
+              "type": "boolean"
+            },
+            "recipe": {
+              "$ref": "#/$defs/interaction_plan/$defs/recipe"
+            },
+            "frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "minimum_duration_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "deadline_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "scroll": {
+              "$ref": "#/$defs/interaction_plan/$defs/point"
+            },
+            "expect": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "target_hovered",
+                  "target_pressed",
+                  "target_held",
+                  "target_released",
+                  "layout_completed",
+                  "frame_presented",
+                  "window_focused",
+                  "text_focused"
+                ]
+              },
+              "maxItems": 8,
+              "uniqueItems": true
+            },
+            "button": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "require_hover_before_down": {
+              "type": "boolean"
+            },
+            "text_codepoints": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            }
+          },
+          "required": [
+            "operation"
+          ],
+          "additionalProperties": false
+        },
+        "span": {
+          "type": "object",
+          "properties": {
+            "offset": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "count": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "input": {
+              "$ref": "#/$defs/interaction_plan/$defs/input"
+            }
+          },
+          "required": [
+            "offset",
+            "count",
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        "compiled_span": {
+          "type": "object",
+          "properties": {
+            "offset": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "count": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "input": {
+              "$ref": "#/$defs/interaction_plan/$defs/input"
+            },
+            "step_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "minimum_duration_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "pointer_progress": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "target_pointer": {
+              "type": "boolean"
+            },
+            "destination_pointer": {
+              "type": "boolean"
+            },
+            "resolve_before": {
+              "type": "boolean"
+            },
+            "require_hover_before": {
+              "type": "boolean"
+            },
+            "preserve_pointer": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "offset",
+            "count",
+            "input",
+            "step_index",
+            "minimum_duration_ns",
+            "pointer_progress",
+            "target_pointer",
+            "destination_pointer",
+            "resolve_before",
+            "require_hover_before",
+            "preserve_pointer"
+          ],
+          "additionalProperties": false
+        },
+        "frame": {
+          "type": "object",
+          "properties": {
+            "offset": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "window_frame": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "pointer": {
+              "$ref": "#/$defs/interaction_plan/$defs/point"
+            },
+            "scroll": {
+              "$ref": "#/$defs/interaction_plan/$defs/point"
+            },
+            "buttons_down": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "maxItems": 5,
+              "uniqueItems": true
+            },
+            "keys_down": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "enum": [
+                  32,
+                  39,
+                  44,
+                  45,
+                  46,
+                  47,
+                  48,
+                  49,
+                  50,
+                  51,
+                  52,
+                  53,
+                  54,
+                  55,
+                  56,
+                  57,
+                  59,
+                  61,
+                  65,
+                  66,
+                  67,
+                  68,
+                  69,
+                  70,
+                  71,
+                  72,
+                  73,
+                  74,
+                  75,
+                  76,
+                  77,
+                  78,
+                  79,
+                  80,
+                  81,
+                  82,
+                  83,
+                  84,
+                  85,
+                  86,
+                  87,
+                  88,
+                  89,
+                  90,
+                  91,
+                  92,
+                  93,
+                  96,
+                  161,
+                  162,
+                  256,
+                  257,
+                  258,
+                  259,
+                  260,
+                  261,
+                  262,
+                  263,
+                  264,
+                  265,
+                  266,
+                  267,
+                  268,
+                  269,
+                  280,
+                  281,
+                  282,
+                  283,
+                  284,
+                  290,
+                  291,
+                  292,
+                  293,
+                  294,
+                  295,
+                  296,
+                  297,
+                  298,
+                  299,
+                  300,
+                  301,
+                  302,
+                  303,
+                  304,
+                  305,
+                  306,
+                  307,
+                  308,
+                  309,
+                  310,
+                  311,
+                  312,
+                  313,
+                  314,
+                  320,
+                  321,
+                  322,
+                  323,
+                  324,
+                  325,
+                  326,
+                  327,
+                  328,
+                  329,
+                  330,
+                  331,
+                  332,
+                  333,
+                  334,
+                  335,
+                  336,
+                  340,
+                  341,
+                  342,
+                  343,
+                  344,
+                  345,
+                  346,
+                  347,
+                  348
+                ]
+              },
+              "maxItems": 512,
+              "uniqueItems": true
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 4194304
+            },
+            "pointer_inside": {
+              "type": "boolean"
+            },
+            "window_focused": {
+              "type": "boolean"
+            },
+            "text_redacted": {
+              "type": "boolean"
+            },
+            "text_codepoints": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "offset"
+              ]
+            },
+            {
+              "required": [
+                "window_frame"
+              ]
+            }
+          ]
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "maximum_frames": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_spans": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_steps": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_target_candidates": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_text_codepoints": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_observations": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_artifact_bytes": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "maximum_duration_ns": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "compiled": {
+          "type": "object",
+          "properties": {
+            "recipe_version": {
+              "const": "1.0"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "frame_count": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "estimated_bytes": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "text_codepoints": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,19})$",
+              "maxLength": 20,
+              "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+            },
+            "requires_geometry": {
+              "type": "boolean"
+            },
+            "requires_observations": {
+              "type": "boolean"
+            },
+            "cleanup_required": {
+              "type": "boolean"
+            },
+            "replayable_when_retained": {
+              "type": "boolean"
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "maxItems": 256
+            },
+            "spans": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/interaction_plan/$defs/compiled_span"
+              },
+              "maxItems": 65536
+            }
+          },
+          "required": [
+            "recipe_version",
+            "digest",
+            "frame_count",
+            "estimated_bytes",
+            "text_codepoints",
+            "requires_geometry",
+            "requires_observations",
+            "cleanup_required",
+            "replayable_when_retained",
+            "limitations",
+            "spans"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "mode": {
+                  "const": "raw_frames"
+                }
+              },
+              "oneOf": [
+                {
+                  "required": [
+                    "frames"
+                  ]
+                },
+                {
+                  "required": [
+                    "spans"
+                  ]
+                }
+              ]
+            },
+            {
+              "properties": {
+                "mode": {
+                  "const": "common_controls"
+                }
+              },
+              "required": [
+                "steps"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

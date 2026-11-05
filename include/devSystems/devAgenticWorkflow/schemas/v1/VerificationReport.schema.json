@@ -1,0 +1,174 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "FlowUi.Agentic.VerificationReport"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "suite_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$",
+      "not": {
+        "enum": [
+          ".",
+          ".."
+        ]
+      }
+    },
+    "suite_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "request_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "execution_status": {
+      "enum": [
+        "completed",
+        "failed",
+        "canceled",
+        "timeout"
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "inconclusive"
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "evaluated": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "passed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "failed": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "skipped": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        },
+        "unavailable": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,19})$",
+          "maxLength": 20,
+          "description": "Lossless unsigned 64-bit decimal; codec rejects overflow above 18446744073709551615."
+        }
+      },
+      "required": [
+        "required",
+        "evaluated",
+        "passed",
+        "failed",
+        "skipped",
+        "unavailable"
+      ],
+      "additionalProperties": false
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "maxItems": 64
+    },
+    "timings": {
+      "type": "object"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": [
+        "object",
+        "array"
+      ]
+    },
+    "cleanup": {
+      "type": "object"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": [
+          "string",
+          "object"
+        ]
+      },
+      "maxItems": 128
+    },
+    "detail_selector": {
+      "type": "object"
+    },
+    "report_digest": {
+      "type": "string"
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "cursor": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,128}$"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "job_id",
+    "suite_id",
+    "suite_revision",
+    "request_digest",
+    "execution_status",
+    "verdict",
+    "coverage",
+    "cases",
+    "timings",
+    "resources",
+    "evidence",
+    "cleanup",
+    "limitations"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowui.dev/schemas/agentic/v1/VerificationReport.schema.json",
+  "title": "FlowUi.Agentic.VerificationReport"
+}

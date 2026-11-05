@@ -14,14 +14,18 @@ def main() -> int:
     package = Path(__file__).resolve().parent
     repository = package.parents[1]
     schema_directory = package / "src/flowui_agent_mcp/schemas"
-    plan_source = repository / "include/devSystems/devAgenticWorkflow/schemas/v1/InteractionPlan.schema.json"
-    plan_destination = schema_directory / "interaction-plan.schema.json"
-    expected_plan = json.dumps(json.loads(plan_source.read_text()), indent=2) + "\n"
-    if arguments.check:
-        if not plan_destination.is_file() or plan_destination.read_text() != expected_plan:
-            raise SystemExit("Packaged interaction plan schema is stale; run tools/flowui-agent-mcp/update_schemas.py")
-    else:
-        plan_destination.write_text(expected_plan)
+    for source_name, packaged_name in [
+        ("InteractionPlan.schema.json", "interaction-plan.schema.json"),
+        ("VerificationRequest.schema.json", "verification-request.schema.json"),
+    ]:
+        source = repository / "include/devSystems/devAgenticWorkflow/schemas/v1" / source_name
+        destination = schema_directory / packaged_name
+        expected = json.dumps(json.loads(source.read_text()), indent=2) + "\n"
+        if arguments.check:
+            if not destination.is_file() or destination.read_text() != expected:
+                raise SystemExit(f"Packaged {packaged_name} is stale; run tools/flowui-agent-mcp/update_schemas.py")
+        else:
+            destination.write_text(expected)
 
     specification = importlib.util.spec_from_file_location("flowui_mcp_contracts", package / "src/flowui_agent_mcp/contracts.py")
     module = importlib.util.module_from_spec(specification)
@@ -39,7 +43,7 @@ def main() -> int:
                 raise SystemExit(f"Packaged MCP {name} is stale; run tools/flowui-agent-mcp/update_schemas.py")
         else:
             destination.write_text(expected)
-    print(f"Validated {len(module.TOOLS)} MCP tool schemas and the packaged interaction contract")
+    print(f"Validated {len(module.TOOLS)} MCP tool schemas and packaged workflow contracts")
     return 0
 
 

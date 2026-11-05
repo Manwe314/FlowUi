@@ -3,6 +3,7 @@
 #endif
 #include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
 #include <algorithm>
+#include <array>
 #include <cassert>
 
 namespace {
@@ -101,9 +102,48 @@ void verify_pure_shortcut_dispatch_trace() {
 	higher_priority.priority = 1001;
 	assert(ShortcutManager::devPrecedes(higher_priority, global));
 }
+void verify_group_descendant_filter() {
+	DevCatalogueState state;
+	constexpr std::array<std::string_view, 8> groups{
+		"toolbar",		  "toolbar/editor",		   "toolbar/editor/tools",
+		"toolbar::menus", "toolbar::menus::popup", "toolbarish",
+		"toolbar-other",  "toolbar:legacy"};
+	state.assets.reserve(groups.size());
+	for (size_t group_index = 0; group_index < groups.size(); ++group_index)
+		state.assets.emplace_back(DevCatalogueAsset{.name = std::string(groups[group_index]),
+													.group = std::string(groups[group_index]),
+													.identity = group_index + 1,
+													.domain = DevCatalogueDomain::Icons});
+	select_catalogue_domain(state, DevCatalogueDomain::Icons);
+	auto& icons = state.domains[state.domain];
+	icons.group = "toolbar";
+	rebuild_catalogue_filter(state);
+	assert(state.visible_assets.size() == 5);
+	for (size_t visible_index = 0; visible_index < state.visible_assets.size(); ++visible_index)
+		assert(state.assets[state.visible_assets[visible_index]].identity == visible_index + 1);
+	icons.group = "toolbar/editor";
+	rebuild_catalogue_filter(state);
+	assert(state.visible_assets.size() == 2);
+	assert(state.assets[state.visible_assets[0]].identity == 2);
+	assert(state.assets[state.visible_assets[1]].identity == 3);
+	icons.group = "toolbar::menus";
+	rebuild_catalogue_filter(state);
+	assert(state.visible_assets.size() == 2);
+	assert(state.assets[state.visible_assets[0]].identity == 4);
+	assert(state.assets[state.visible_assets[1]].identity == 5);
+	icons.search = "popup";
+	rebuild_catalogue_filter(state);
+	assert(state.visible_assets.size() == 1);
+	assert(state.assets[state.visible_assets.front()].identity == 5);
+	icons.search.clear();
+	icons.group.clear();
+	rebuild_catalogue_filter(state);
+	assert(state.visible_assets.size() == groups.size());
+}
 } // namespace
 int main() {
 	verify_pinned_selection_and_domain_filters();
 	verify_group_filter_and_explicit_raster_ownership();
+	verify_group_descendant_filter();
 	verify_pure_shortcut_dispatch_trace();
 }
