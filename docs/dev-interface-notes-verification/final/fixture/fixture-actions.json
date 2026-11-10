@@ -1,0 +1,112 @@
+{
+  "actions": [
+    {
+      "action_id": "dev_notes.configure",
+      "argument_schema": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "active_tab": {
+            "enum": [
+              "inspect",
+              "performance",
+              "memory",
+              "diagnostics",
+              "changes",
+              "catalogue"
+            ],
+            "type": "string"
+          },
+          "authored_value": {
+            "type": "number"
+          },
+          "button_definition_font_size": {
+            "maximum": 64,
+            "minimum": 0,
+            "not": {
+              "maximum": 7,
+              "minimum": 1
+            },
+            "type": "integer"
+          },
+          "clear_override": {
+            "type": "boolean"
+          },
+          "combo_height": {
+            "enum": [
+              20,
+              24,
+              28
+            ],
+            "type": "number"
+          },
+          "icons_enabled": {
+            "type": "boolean"
+          },
+          "inspector_tab": {
+            "enum": [
+              "parameters",
+              "state",
+              "resources",
+              "changes"
+            ],
+            "type": "string"
+          },
+          "inspector_width": {
+            "maximum": 560,
+            "minimum": 240,
+            "type": "number"
+          },
+          "live_value": {
+            "type": "number"
+          },
+          "optional_present": {
+            "type": "boolean"
+          },
+          "requested_icon_size": {
+            "maximum": 128,
+            "minimum": 0,
+            "type": "number"
+          },
+          "selection": {
+            "enum": [
+              "sample",
+              "combo",
+              "button",
+              "clay",
+              "theme",
+              "none"
+            ],
+            "type": "string"
+          },
+          "theme": {
+            "enum": [
+              "default",
+              "hostile"
+            ],
+            "type": "string"
+          },
+          "window_width": {
+            "maximum": 2000,
+            "minimum": 800,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "bound_action": false,
+      "completion_contract": "application_acknowledgement",
+      "description": "Configure the real developer notes fixture, application values and window sizes; acknowledge three subsequent completed frames.",
+      "enabled": true,
+      "explicitly_exported": true,
+      "mutating": true,
+      "result_schema": {
+        "type": "object"
+      },
+      "revision": "1"
+    }
+  ],
+  "catalogue_actions_are_not_exports": true,
+  "next_cursor": null,
+  "total": "1"
+}

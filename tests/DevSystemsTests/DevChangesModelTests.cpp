@@ -3,7 +3,7 @@
 #endif
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -27,10 +27,10 @@ struct Element {
 FLOWUI_DEV_SCHEMA(Nested, FLOWUI_DEV_FIELD(Nested, opacity))
 FLOWUI_DEV_SCHEMA(Parameters, FLOWUI_DEV_FIELD(Parameters, nested),
 				  FLOWUI_DEV_FIELD(Parameters, amount,
-								   devMode::DevFieldOptions{}.numericRange(0, 10)))
+								   devSystems::tooling::DevFieldOptions{}.numericRange(0, 10)))
 
 void verify_runtime_intents() {
-	devMode::DevSchemaRegistry registry;
+	devSystems::tooling::DevSchemaRegistry registry;
 	DevOverrideEngine engine(registry);
 	ThemeManager themes;
 	registry.ensureElement<Element>();
@@ -45,7 +45,8 @@ void verify_runtime_intents() {
 	DevOverrideCommand set;
 	set.element = {.definition = Element::definitionId, .scope = DevOverrideScope::Definition};
 	set.field = {schema->type(element->parametersType)->id, field->id};
-	assert(engine.copyValue(3.0f, set.value) == devMode::DevValueOperationStatus::Success);
+	assert(engine.copyValue(3.0f, set.value) ==
+		   devSystems::tooling::DevValueOperationStatus::Success);
 	assert(engine.submit({.transaction = 1, .commands = {set}}));
 	engine.commitAtSafePoint(themes);
 	assert(engine.commandResults().front().applied);
@@ -112,7 +113,8 @@ void verify_runtime_intents() {
 		fields, [&](const auto& candidate) { return schema->string(candidate.name) == "nested"; });
 	assert(nested != fields.end());
 	set.field.field = nested->id;
-	assert(engine.copyValue(Nested{}, set.value) == devMode::DevValueOperationStatus::Success);
+	assert(engine.copyValue(Nested{}, set.value) ==
+		   devSystems::tooling::DevValueOperationStatus::Success);
 	assert(engine.submit({.transaction = 7, .commands = {set}}));
 	engine.commitAtSafePoint(themes);
 	saved.fieldId = nested->id;

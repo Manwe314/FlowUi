@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
-#include "Ui/Vk_UiRenderer.hpp"
-#include "internal/Vma.hpp"
+#include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 
 namespace FlowUi::devSystems {
 namespace {

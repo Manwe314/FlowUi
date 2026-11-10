@@ -182,6 +182,8 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				examples.layout.layoutDirection =
 					sandbox.preview_layout == 1 ? CLAY_LEFT_TO_RIGHT : CLAY_TOP_TO_BOTTOM;
 				CLAY(context.clayID("preview-elements"), examples) {
+					UiManager::DevThemeScope preview_theme_scope(context.uiManager,
+																 selected_presentation->source);
 					if (builtin) draw_fsel_theme_specimens(context, *app, sandbox);
 					if (!builtin) {
 						for (std::size_t preview_index = 0; preview_index < previews.size();
@@ -477,9 +479,9 @@ void DevThemeWorkbench::buildElement(BuildContext& context) {
 				const auto omitted_count = sandbox.omitted_count;
 				CLAY(context.clayID("code-actions"), row()) {
 					button(
-						context.uiManager, "copy", "Copy C++",
+						context, "copy", "Copy C++",
 						ActionCall{app->actions().uiActions().make(kCopyThemeCode, *app, sandbox)},
-						!sandbox.code.empty());
+						!sandbox.code.empty(), action_icon(app, interface_icons::kCopyKey));
 					if (!sandbox.copy_feedback.empty())
 						text(context.uiManager, sandbox.copy_feedback, 10);
 				}

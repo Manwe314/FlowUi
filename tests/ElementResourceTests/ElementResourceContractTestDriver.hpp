@@ -5,8 +5,8 @@
 #include <memory>
 #include <string_view>
 
-#include "FlowUi/App.hpp"
-#include "FlowUi/WindowId.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 
 namespace FlowUi::test::element_resource {
 

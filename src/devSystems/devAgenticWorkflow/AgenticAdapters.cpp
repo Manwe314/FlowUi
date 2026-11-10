@@ -2,8 +2,8 @@
 
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/ThemeManager.hpp"
-#include "managers/structs/InputFieldManagerStructs.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
+#include "FlowUi/Public/managerStructs/InputFieldTypes.hpp"
 
 #include <algorithm>
 #include <array>
@@ -56,7 +56,7 @@ namespace {
 							  {"window_id", decimal(key.window)}});
 }
 
-/** This documented built-in remains opaque to generic editing, but its values are portable. */
+/* This documented built-in remains opaque to generic editing, but its values are portable. */
 [[nodiscard]] Json overlay_style_value(const InputFieldOverlayStyle& style) {
 	const std::array<double, 18> components{style.caretThicknessPx,
 											style.caretBlockWidthPx,
@@ -102,8 +102,8 @@ namespace {
 		 {"caretBlinkVisibleSeconds", Json(style.caretBlinkVisibleSeconds)}});
 }
 
-[[nodiscard]] Json reflected_value(const devMode::DevSchemaGeneration& schema,
-								   devMode::DevTypeIndex type_index, const void* value,
+[[nodiscard]] Json reflected_value(const tooling::DevSchemaGeneration& schema,
+								   tooling::DevTypeIndex type_index, const void* value,
 								   std::uint32_t depth = 0) {
 	if (!value)
 		return {};
@@ -116,7 +116,7 @@ namespace {
 								 ? schema.typeOperations[type_index.value]
 								 : nullptr;
 	if (type && operations) {
-		if (type->kind == devMode::DevTypeKind::Text && operations->textView) {
+		if (type->kind == tooling::DevTypeKind::Text && operations->textView) {
 			const auto text = operations->textView(value);
 			if (text.size() > 65536u)
 				return Json::make_object({{"available", false},
@@ -124,19 +124,19 @@ namespace {
 										  {"bytes", decimal(text.size())}});
 			return Json(text);
 		}
-		if (type->kind == devMode::DevTypeKind::Pointer && operations->pointerValue) {
+		if (type->kind == tooling::DevTypeKind::Pointer && operations->pointerValue) {
 			const void* pointer = nullptr;
 			const bool available = operations->pointerValue(value, pointer);
 			return Json::make_object(
 				{{"available", available}, {"pointer_present", pointer != nullptr}});
 		}
-		if (type->kind == devMode::DevTypeKind::Optional && operations->optionalHasValue &&
+		if (type->kind == tooling::DevTypeKind::Optional && operations->optionalHasValue &&
 			operations->optionalValueAddress)
 			return operations->optionalHasValue(value)
 					   ? reflected_value(schema, type->elementType,
 										 operations->optionalValueAddress(value), depth + 1u)
 					   : Json{};
-		if (type->kind == devMode::DevTypeKind::Sequence && operations->sequenceSize &&
+		if (type->kind == tooling::DevTypeKind::Sequence && operations->sequenceSize &&
 			operations->sequenceElementAddress) {
 			const std::size_t count = operations->sequenceSize(value);
 			if (count > 4096u)
@@ -151,7 +151,7 @@ namespace {
 									operations->sequenceElementAddress(value, index), depth + 1u));
 			return values;
 		}
-		if (type->kind == devMode::DevTypeKind::Object) {
+		if (type->kind == tooling::DevTypeKind::Object) {
 			Json values = Json::make_object();
 			for (const auto& field : schema.fieldsOf(type_index)) {
 				const auto* field_operations = field.operations < schema.fieldOperations.size()
@@ -173,14 +173,14 @@ namespace {
 	auto parsed = parse_json(formatted->json);
 	if (!parsed)
 		return Json::make_object({{"available", false}, {"reason", "invalid_native_value"}});
-	if (type && type->kind == devMode::DevTypeKind::UnsignedInteger && type->size == 8u &&
+	if (type && type->kind == tooling::DevTypeKind::UnsignedInteger && type->size == 8u &&
 		parsed->kind == Json::Kind::number)
 		return Json(parsed->text);
 	return std::move(*parsed);
 }
 
-[[nodiscard]] Json constraint(const devMode::DevSchemaGeneration& schema,
-							  const devMode::DevFieldSchema& field) {
+[[nodiscard]] Json constraint(const tooling::DevSchemaGeneration& schema,
+							  const tooling::DevFieldSchema& field) {
 	Json result = Json::make_object();
 	if (field.constraint < schema.constraints.size()) {
 		const auto& limits = schema.constraints[field.constraint];
@@ -196,8 +196,8 @@ namespace {
 	return result;
 }
 
-void append_fields(Json& fields, const devMode::DevSchemaGeneration& schema,
-				   devMode::DevTypeIndex owner_type, const void* effective, const void* authored,
+void append_fields(Json& fields, const tooling::DevSchemaGeneration& schema,
+				   tooling::DevTypeIndex owner_type, const void* effective, const void* authored,
 				   const void* startup, std::string_view parent_path, std::uint32_t depth,
 				   std::uint64_t maximum_fields) {
 	if (depth >= 16u)
@@ -237,7 +237,7 @@ void append_fields(Json& fields, const devMode::DevSchemaGeneration& schema,
 			 {"source",
 			  source_site(schema.string(field.source.file), schema.string(field.source.function),
 						  field.source.line, field.source.column)}});
-		if (type && type->kind == devMode::DevTypeKind::Enumeration) {
+		if (type && type->kind == tooling::DevTypeKind::Enumeration) {
 			Json choices = Json::make_array();
 			const std::uint64_t end = static_cast<std::uint64_t>(type->enumeration.values.first) +
 									  type->enumeration.values.count;
@@ -248,7 +248,7 @@ void append_fields(Json& fields, const devMode::DevSchemaGeneration& schema,
 									   {"bits", decimal(schema.enumValues[index].bits)}}));
 			entry.set("choices", std::move(choices));
 		}
-		if (type && type->kind == devMode::DevTypeKind::Object) {
+		if (type && type->kind == tooling::DevTypeKind::Object) {
 			entry.set("value_kind", "object_fields");
 			fields.array.emplace_back(std::move(entry));
 			append_fields(fields, schema, field.valueType, effective_value, authored_value,
@@ -266,7 +266,7 @@ void append_fields(Json& fields, const devMode::DevSchemaGeneration& schema,
 
 struct ThemeExportContext {
 	Json themes = Json::make_array();
-	const devMode::DevSchemaGeneration* schema = nullptr;
+	const tooling::DevSchemaGeneration* schema = nullptr;
 	std::uint64_t maximum_records = 0;
 	std::uint64_t maximum_bytes = 0;
 	FlowUiError error{};

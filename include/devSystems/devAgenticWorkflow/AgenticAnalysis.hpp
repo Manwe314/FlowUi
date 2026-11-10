@@ -1,5 +1,9 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+
+/** @file
+ * @brief Public AgenticAnalysis declarations for optional development services.
+ */
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 

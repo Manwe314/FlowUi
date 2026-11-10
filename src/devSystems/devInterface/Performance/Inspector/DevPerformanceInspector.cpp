@@ -2,6 +2,7 @@
 #if FLOW_UI_DEV_MODE
 #include "FSEL/Button.hpp"
 #include "FSEL/NumberInput.hpp"
+#include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceCapturePolicy.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
@@ -983,8 +984,17 @@ void DevPerformanceInspectorAction::onReleased(InteractionContext& context) {
 		context.params.app->setClipboardText(context.params.clipboard_text);
 }
 void DevPerformanceInspectorAction::buildElement(BuildContext& context) {
+	const auto icon_key =
+		!context.params.clipboard_text.empty() ? interface_icons::kCopyKey
+		: context.params.expanded_row ? (*context.params.expanded_row == context.params.row_identity
+											 ? interface_icons::kCollapseKey
+											 : interface_icons::kExpandKey)
+		: context.params.command.action == TimelineAction::Center ? interface_icons::kFitKey
+		: context.params.command.action != TimelineAction::None	  ? interface_icons::kInspectKey
+																  : std::string_view{};
+	auto icon = context.resources().texture(icon_key);
 	auto declaration = column(0);
-	declaration.layout.sizing.width = CLAY_SIZING_GROW(0);
+	declaration.layout.sizing.width = icon.handle ? CLAY_SIZING_FIXED(28) : CLAY_SIZING_GROW(0);
 	declaration.layout.sizing.height = CLAY_SIZING_FIT(28);
 	declaration.layout.padding = {6, 6, 5, 5};
 	declaration.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
@@ -995,10 +1005,23 @@ void DevPerformanceInspectorAction::buildElement(BuildContext& context) {
 			? interface_theme::kHoverSurface
 			: interface_theme::kDepth3Elevated;
 	CLAY(context.clayID(), declaration) {
-		text(context, context.params.label,
-			 context.params.enabled ? interface_theme::kTextCanvas
-									: interface_theme::kTextSecondary,
-			 11, CLAY_TEXT_ALIGN_CENTER);
+		if (icon.handle) {
+			icon.tintEnabled = true;
+			Clay_ElementDeclaration image{};
+			image.layout.sizing = {.width = CLAY_SIZING_FIXED(14), .height = CLAY_SIZING_FIXED(14)};
+			image.backgroundColor = context.params.enabled ? interface_theme::kTextCanvas
+														   : interface_theme::kTextSecondary;
+			image.image.imageData = context.uiManager.imageData(icon);
+			CLAY(context.clayID("action-icon"), image) {}
+		} else
+			text(context, context.params.label,
+				 context.params.enabled ? interface_theme::kTextCanvas
+										: interface_theme::kTextSecondary,
+				 11, CLAY_TEXT_ALIGN_CENTER);
+		if (!icon_key.empty() &&
+			context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID()))
+			diagnostics_ui::pointer_tooltip(context, LocalElementName{"action-tooltip"},
+											context.params.label);
 	}
 }
 

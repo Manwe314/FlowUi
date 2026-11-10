@@ -3,7 +3,7 @@
 #include "devSystems/devAgenticWorkflow/AgenticVerification.hpp"
 #include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAdapters.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticLocalTransport.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
@@ -17,8 +17,8 @@
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/ThemeManager.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>

@@ -103,17 +103,18 @@ $(function() {
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">FlowUi::AppConfig Struct Reference<div class="ingroups"><a class="el" href="group__flowui__config.html">Config Structs</a></div></div></div>
+  <div class="headertitle"><div class="title">FlowUi::AppConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Top-level configuration used to initialize a FlowUi app.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="AppConfig_8hpp_source.html">AppConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a1342370b9bee51342d95618c7de9ba8f" id="r_a1342370b9bee51342d95618c7de9ba8f"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1342370b9bee51342d95618c7de9ba8f">resources</a> {}</td></tr>
 <tr class="memitem:a172fe9b539d98ff43a4d23a0b737a000" id="r_a172fe9b539d98ff43a4d23a0b737a000"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1WindowConfig.html">WindowConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a172fe9b539d98ff43a4d23a0b737a000">window</a> {}</td></tr>
 <tr class="memdesc:a172fe9b539d98ff43a4d23a0b737a000"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial native-window configuration for the semantic main window.  <br /></td></tr>
 <tr class="memitem:a06233a2f683016e335a99c76b70faa89" id="r_a06233a2f683016e335a99c76b70faa89"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1VulkanConfig.html">VulkanConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a06233a2f683016e335a99c76b70faa89">vk</a> {}</td></tr>
@@ -122,6 +123,9 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:ab17aaaa138713cfdfc8fa82cd00ba348"><td class="mdescLeft">&#160;</td><td class="mdescRight">Layout, text, and UI resource defaults.  <br /></td></tr>
 <tr class="memitem:a935554fb6a68988987eec05055d799ca" id="r_a935554fb6a68988987eec05055d799ca"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1IconManagerConfig.html">IconManagerConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a935554fb6a68988987eec05055d799ca">iconManager</a> {}</td></tr>
 <tr class="memdesc:a935554fb6a68988987eec05055d799ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">SVG icon rasterization and atlas cache defaults.  <br /></td></tr>
+<tr class="memitem:a8e3fc242b316e58dca0e69f6d4b81bb2" id="r_a8e3fc242b316e58dca0e69f6d4b81bb2"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8e3fc242b316e58dca0e69f6d4b81bb2">memoryCapacityProfile</a> {}</td></tr>
+<tr class="memitem:a55b0f42141a99e671efc4f6512262854" id="r_a55b0f42141a99e671efc4f6512262854"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a55b0f42141a99e671efc4f6512262854">prefer_baked_capacities</a> = true</td></tr>
+<tr class="memitem:aa8736374a34956ee3dca1114e68f6fe4" id="r_aa8736374a34956ee3dca1114e68f6fe4"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1ErrorContract.html">ErrorContract</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa8736374a34956ee3dca1114e68f6fe4">errors</a> {}</td></tr>
 <tr class="memitem:a125d002104cf364c3cb283fd0121e028" id="r_a125d002104cf364c3cb283fd0121e028"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a125d002104cf364c3cb283fd0121e028">dev</a> {}</td></tr>
 <tr class="memdesc:a125d002104cf364c3cb283fd0121e028"><td class="mdescLeft">&#160;</td><td class="mdescRight">Developer tooling and capture defaults.  <br /></td></tr>
 </table>
@@ -146,6 +150,21 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="aa8736374a34956ee3dca1114e68f6fe4" name="aa8736374a34956ee3dca1114e68f6fe4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8736374a34956ee3dca1114e68f6fe4">&#9670;&#160;</a></span>errors</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1ErrorContract.html">ErrorContract</a> FlowUi::AppConfig::errors {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Resolution and centralized reporting choices used for the <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> lifetime. </p>
+
+</div>
+</div>
 <a id="a935554fb6a68988987eec05055d799ca" name="a935554fb6a68988987eec05055d799ca"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a935554fb6a68988987eec05055d799ca">&#9670;&#160;</a></span>iconManager</h2>
 
@@ -160,6 +179,51 @@ Public Attributes</h2></td></tr>
 
 <p>SVG icon rasterization and atlas cache defaults. </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1IconManagerConfig.html" title="Configures SVG icon rasterization, caching, and atlas storage.">FlowUi::IconManagerConfig</a> </dd></dl>
+
+</div>
+</div>
+<a id="a8e3fc242b316e58dca0e69f6d4b81bb2" name="a8e3fc242b316e58dca0e69f6d4b81bb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e3fc242b316e58dca0e69f6d4b81bb2">&#9670;&#160;</a></span>memoryCapacityProfile</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1MemoryCapacityProfile.html">MemoryCapacityProfile</a> FlowUi::AppConfig::memoryCapacityProfile {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional profiled startup capacities; zero fields preserve library defaults. </p>
+
+</div>
+</div>
+<a id="a55b0f42141a99e671efc4f6512262854" name="a55b0f42141a99e671efc4f6512262854"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55b0f42141a99e671efc4f6512262854">&#9670;&#160;</a></span>prefer_baked_capacities</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::AppConfig::prefer_baked_capacities = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Present compiled capacities override caller hints before any owner is created. </p>
+
+</div>
+</div>
+<a id="a1342370b9bee51342d95618c7de9ba8f" name="a1342370b9bee51342d95618c7de9ba8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1342370b9bee51342d95618c7de9ba8f">&#9670;&#160;</a></span>resources</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1ResourceConfig.html">ResourceConfig</a> FlowUi::AppConfig::resources {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Packaged shader/font and application resource lookup policy. </p>
 
 </div>
 </div>
@@ -215,7 +279,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/FlowUi/<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a></li>
+<li>include/FlowUi/Public/configurationStructs/<a class="el" href="AppConfig_8hpp_source.html">AppConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

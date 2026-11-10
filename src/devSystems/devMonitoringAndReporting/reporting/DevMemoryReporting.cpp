@@ -91,7 +91,7 @@ private:
 	uint64_t count_ = 0u, next_ = 1u, overwritten_ = 0u;
 };
 
-/** Intrusive sequence chains share the authoritative event ring; eviction removes only heads. */
+/* Intrusive sequence chains share the authoritative event ring; eviction removes only heads. */
 class MemoryEventIndex {
 	struct Chain {
 		uint64_t first = 0, last = 0, count = 0;

@@ -12,7 +12,7 @@
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -924,13 +924,11 @@ void DevDiagnosticsCopy::buildElement(BuildContext& context) {
 												   : interface_theme::kTextMuted;
 		image.image = {.imageData = context.uiManager.imageData(icon)};
 		CLAY(context.clayID("icon"), image) {}
-		if (!context.params.compact)
-			text(context, context.params.label, interface_theme::kTextSecondary, 10, 0, false);
 #else
 		text(context, context.params.compact ? "Copy" : context.params.label,
 			 interface_theme::kTextSecondary, 10, 0, false);
 #endif
-		if (context.params.compact && hovered) {
+		if (hovered) {
 			auto tooltip = column(0);
 			tooltip.layout.sizing.width = CLAY_SIZING_FIXED(180);
 			tooltip.layout.padding = {8, 8, 6, 6};

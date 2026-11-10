@@ -1,4 +1,4 @@
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "TestHarness.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticLocalTransport.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"

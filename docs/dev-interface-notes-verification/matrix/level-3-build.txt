@@ -1,0 +1,15 @@
+[0/2] Re-checking globbed directories...
+[1/2] Re-running CMake...
+CMake Warning at CMakeLists.txt:169 (message):
+  Vulkan glslc was not found; using glslangValidator to compile FlowUi
+  shaders.
+
+
+-- Configuring done (0.3s)
+-- Generating done (0.3s)
+-- Build files have been written to: /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3
+[0/4] Re-checking globbed directories...
+[1/7] cd /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3 && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -E make_directory /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/share/flowui/shaders /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/share/flowui/fonts && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -E copy_if_different /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/shaders/flowui_ui_solid.vert.spv /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/shaders/flowui_ui_msdf.vert.spv /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/shaders/flowui_ui_textured.vert.spv /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/shaders/flowui_ui_solid.frag.spv /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/shaders/flowui_ui_msdf.frag.spv /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/shaders/flowui_ui_textured.frag.spv /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/share/flowui/shaders && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -E copy_if_different /home/lkukhale/kodi/FlowUi/assets/fonts/Inter.arfont /home/lkukhale/kodi/FlowUi/build-dev-notes-level-3/share/flowui/fonts/Inter.arfont
+[2/7] Building CXX object CMakeFiles/flowui.dir/src/devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.cpp.o
+[3/7] Building CXX object CMakeFiles/flowui.dir/src/FlowUi/Public/App.cpp.o
+[4/7] Linking CXX static library libflowui.a

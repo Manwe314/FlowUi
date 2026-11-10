@@ -246,7 +246,7 @@ evaluate(const FlowUi::detail::InitialCapacityDefinition& definition,
 	draft.export_evidence.complete = draft.complete;
 	return draft;
 }
-/** Fit one shared storage factor across this preview and all previously prepared storage peers. */
+/* Fit one shared storage factor across this preview and all previously prepared storage peers. */
 void reconcile_storage_factor(MemoryAnalysisState& state) {
 	auto& proposals = state.capacity_tool.proposals;
 	bool auto_requested = false;

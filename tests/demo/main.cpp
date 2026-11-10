@@ -10,7 +10,7 @@
 #include <string>
 #include <string_view>
 
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 
 #include "DemoElementSchemas.hpp"
 #if FLOW_UI_DEV_MODE
@@ -1660,12 +1660,15 @@ int main(int argument_count, char** arguments) {
 		}
 		App app = makeApplication(config);
 #if FLOW_UI_DEV_MODE
-		devMode::register_element_catalogue(app.devTooling().schemas(), "FSEL",
+		devSystems::tooling::register_element_catalogue(
+			app.devTooling().schemas(), "FSEL",
 			ElementSet<FSEL::Box, FSEL::Button, FSEL::Checkbox, FSEL::ComboBox,
-				FSEL::DragValue<int>, FSEL::DragValue<unsigned int>, FSEL::DragValue<float>, FSEL::Label,
-				FSEL::NumberInput<int>, FSEL::NumberInput<unsigned int>, FSEL::NumberInput<float>, FSEL::ProgressBar,
-				FSEL::RadioChoice, FSEL::SelectableSurface, FSEL::Slider, FSEL::Spacer,
-				FSEL::SplitterHandle, FSEL::Switch, FSEL::TextArea, FSEL::TextInput>{}, true);
+					   FSEL::DragValue<int>, FSEL::DragValue<unsigned int>, FSEL::DragValue<float>,
+					   FSEL::Label, FSEL::NumberInput<int>, FSEL::NumberInput<unsigned int>,
+					   FSEL::NumberInput<float>, FSEL::ProgressBar, FSEL::RadioChoice,
+					   FSEL::SelectableSurface, FSEL::Slider, FSEL::Spacer, FSEL::SplitterHandle,
+					   FSEL::Switch, FSEL::TextArea, FSEL::TextInput>{},
+			true);
 #endif
 #if FLOW_UI_AGENTIC_WORKFLOW
 		if (!agentic_changes_path.empty())

@@ -1,12 +1,50 @@
+#include "FlowUi/Private/elementSystem/ElementRegistrationSupport.hpp"
 #include "TestHarness.hpp"
 
 #include <concepts>
+#include <cstdint>
 #include <string_view>
 #include <type_traits>
 
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 
 namespace {
+
+static_assert(std::same_as<std::underlying_type_t<FlowUi::PresentMode>, std::uint8_t>);
+static_assert(std::same_as<std::underlying_type_t<FlowUi::ElementDrawOptions>, std::uint8_t>);
+static_assert(static_cast<std::uint8_t>(FlowUi::PresentMode::Fifo) == 0u);
+static_assert(static_cast<std::uint8_t>(FlowUi::PresentMode::Mailbox) == 1u);
+static_assert(static_cast<std::uint8_t>(FlowUi::PresentMode::Immediate) == 2u);
+static_assert(static_cast<std::uint8_t>(FlowUi::ElementDrawOptions::Default) == 0u);
+static_assert(static_cast<std::uint8_t>(FlowUi::ElementDrawOptions::SkipEventCallbacks) == 1u);
+static_assert(static_cast<std::uint8_t>(FlowUi::ElementDrawOptions::SkipLogicCallback) == 2u);
+static_assert(static_cast<std::uint8_t>(FlowUi::ElementDrawOptions::SkipBuildCallback) == 4u);
+
+[[nodiscard]] constexpr bool element_option_masks_preserve_callback_bits() noexcept {
+	using FlowUi::ElementDrawOptions;
+	for (std::uint32_t first_mask = 0; first_mask < 8u; ++first_mask) {
+		for (std::uint32_t second_mask = 0; second_mask < 8u; ++second_mask) {
+			const ElementDrawOptions combined = static_cast<ElementDrawOptions>(first_mask) |
+												static_cast<ElementDrawOptions>(second_mask);
+			if (static_cast<std::uint8_t>(combined) != (first_mask | second_mask))
+				return false;
+			for (std::uint32_t callback_phase = 0; callback_phase < 3u; ++callback_phase) {
+				const std::uint32_t callback_bit = 1u << callback_phase;
+				if (FlowUi::elementDrawOptionsHas(combined,
+												  static_cast<ElementDrawOptions>(callback_bit)) !=
+					(((first_mask | second_mask) & callback_bit) != 0u))
+					return false;
+			}
+		}
+	}
+	return !FlowUi::elementDrawOptionsHas(ElementDrawOptions::Default, ElementDrawOptions::Default);
+}
+
+static_assert(element_option_masks_preserve_callback_bits());
+static_assert(noexcept(FlowUi::ElementDrawOptions::SkipEventCallbacks |
+					   FlowUi::ElementDrawOptions::SkipLogicCallback));
+static_assert(noexcept(FlowUi::elementDrawOptionsHas(
+	FlowUi::ElementDrawOptions::SkipBuildCallback, FlowUi::ElementDrawOptions::SkipBuildCallback)));
 
 struct ExampleParameters {
 	int value = 0;

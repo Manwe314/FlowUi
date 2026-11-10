@@ -6,7 +6,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace FlowUi::devMode {
+namespace FlowUi::devSystems::tooling {
 namespace {
 
 class StringTableBuilder {
@@ -437,6 +437,6 @@ std::shared_ptr<const DevSchemaGeneration> DevSchemaRegistry::buildGeneration() 
 	return generation;
 }
 
-} // namespace FlowUi::devMode
+} // namespace FlowUi::devSystems::tooling
 
 #endif

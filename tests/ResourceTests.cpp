@@ -1,4 +1,4 @@
-#include "FlowUi/Resources.hpp"
+#include "FlowUi/Public/Resources.hpp"
 #include <chrono>
 #include <fstream>
 #include <iostream>

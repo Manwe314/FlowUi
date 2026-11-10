@@ -1,3 +1,4 @@
+#include "FlowUi/Private/elementSystem/ElementRegistrationSupport.hpp"
 #include "HeadlessVulkanFixture.hpp"
 #include "TestHarness.hpp"
 
@@ -10,10 +11,10 @@
 #include <thread>
 #include <type_traits>
 
-#include "internal/ManagerStorage/ElementStorageController.hpp"
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
-#include "managers/ElementManager.hpp"
-#include "managers/structs/ElementManagerStructs.hpp"
+#include "FlowUi/Private/elementSystem/ElementStorageController.hpp"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Public/managers/ElementManager.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementSet.hpp"
 
 namespace {
 

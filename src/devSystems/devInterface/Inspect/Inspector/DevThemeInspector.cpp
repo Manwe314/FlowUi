@@ -45,7 +45,7 @@ constexpr auto kClearGroup =
 			 [](DevInterfaceState& state) { state.inspect_theme_group = 0; });
 constexpr auto kThemeFieldAction = UiAction(
 	"flowui.dev_interface.theme.field-action",
-	[](DevThemeInspector::State& target, devMode::DevFieldIndex index, uint8_t operation) {
+	[](DevThemeInspector::State& target, tooling::DevFieldIndex index, uint8_t operation) {
 		if (!target.app || !target.interface_state)
 			return;
 		App& app = *target.app;
@@ -71,7 +71,7 @@ constexpr auto kThemeFieldAction = UiAction(
 		if (operation != 0 &&
 			tooling::DevOwnedValue::copyFrom(
 				*schema, found->field->valueType, operation == 1 ? found->authored : found->live,
-				command.value) != devMode::DevValueOperationStatus::Success)
+				command.value) != tooling::DevValueOperationStatus::Success)
 			return;
 		DevInterfaceEditTransaction transaction{};
 		transaction.description =
@@ -141,12 +141,12 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 						 std::to_string(selected->revision) + (selected->active ? " · Active" : ""),
 					 10, interface_theme::kTextMuted);
 				CLAY(context.clayID("actions"), row()) {
-					button(context.uiManager, "scope",
+					button(context, "scope",
 						   state->inspect_theme_all_variants ? "Edit this variant"
 															 : "Edit all variants",
 						   ActionCall{app->actions().uiActions().make(kToggleScope, *app, *state)});
 					button(
-						context.uiManager, "activate", "Set Active",
+						context, "activate", "Set Active",
 						ActionCall{app->actions().uiActions().make(kActivateTheme, *app, *state)},
 						!selected->active && !state->inspect_theme_all_variants);
 				}
@@ -162,8 +162,9 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 						.setDevInternalCapture(true)
 						.draw();
 					button(
-						context.uiManager, "clone", "Clone Variant",
-						ActionCall{app->actions().uiActions().make(kCloneTheme, context.state())});
+						context, "clone", "Clone Variant",
+						ActionCall{app->actions().uiActions().make(kCloneTheme, context.state())},
+						true, action_icon(app, interface_icons::kCopyKey));
 				}
 			}
 			auto tabs = section(38, interface_theme::kDepth2Ink);
@@ -206,7 +207,7 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 			}
 			if (state->inspect_theme_group) {
 				CLAY(context.clayID("group-filter"), section()) {
-					button(context.uiManager, "show-all", "Show all token groups",
+					button(context, "show-all", "Show all token groups",
 						   ActionCall{app->actions().uiActions().make(kClearGroup, *state)});
 				}
 			}
@@ -279,17 +280,18 @@ void DevThemeInspector::buildElement(BuildContext& context) {
 								text(context.uiManager, "Live  " + value.live_text, 11,
 									 interface_theme::kAccentSeaGlass);
 								CLAY(context.clayID(RuntimeName(leaf.path + "-actions")), row()) {
-									button(context.uiManager, "revert-" + leaf.path, "Revert Live",
-										   ActionCall{app->actions().uiActions().make(
-											   kThemeFieldAction, context.state(), index,
-											   uint8_t{0})});
 									button(
-										context.uiManager, "authored-" + leaf.path, "Authored",
+										context, "revert-" + leaf.path, "Revert Live",
+										ActionCall{app->actions().uiActions().make(
+											kThemeFieldAction, context.state(), index, uint8_t{0})},
+										true, action_icon(app, interface_icons::kRevertKey));
+									button(
+										context, "authored-" + leaf.path, "Authored",
 										ActionCall{app->actions().uiActions().make(
 											kThemeFieldAction, context.state(), index, uint8_t{1})},
 										!state->inspect_theme_all_variants);
 									button(
-										context.uiManager, "broadcast-" + leaf.path, "All Variants",
+										context, "broadcast-" + leaf.path, "All Variants",
 										ActionCall{app->actions().uiActions().make(
 											kThemeFieldAction, context.state(), index, uint8_t{2})},
 										!state->inspect_theme_all_variants);

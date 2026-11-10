@@ -3,8 +3,8 @@
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
-#include "internal/Text/CurrentTextShaper.hpp"
-#include "managers/FontManager.hpp"
+#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include <algorithm>
 
 namespace FlowUi::devSystems::interface_elements {
@@ -12,7 +12,7 @@ namespace {
 namespace ui = diagnostics_ui;
 using Context = DevCatalogueInspector::BuildContext;
 
-/** Wrap long technical tokens at measured UTF-8 boundaries inside the assigned column. */
+/* Wrap long technical tokens at measured UTF-8 boundaries inside the assigned column. */
 void text(Context& context, std::string_view label,
 		  Clay_Color color = interface_theme::kTextSecondary, uint16_t size = 13) {
 	const auto bounds = Clay_GetElementData(context.clayID());
@@ -171,6 +171,11 @@ void DevCatalogueInspector::buildElement(BuildContext& context) {
 								if (!asset->detail.empty())
 									text(context, asset->detail, interface_theme::kTextSecondary,
 										 12);
+								if (domain == DevCatalogueDomain::Atlases &&
+									asset->atlas.kind == tooling::DevAtlasKind::FontMsdfAtlas) {
+									const uint64_t identity = 3 + asset->facts.size();
+									fact(context, identity, "Display channels", "RGB with opaque alpha");
+								}
 								if (domain == DevCatalogueDomain::Icons) {
 									uint64_t identity = 3 + asset->facts.size();
 									fact(context, identity++, "Cached sizes",

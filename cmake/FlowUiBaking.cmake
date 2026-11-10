@@ -6,8 +6,9 @@ function(flowui_configure_baking target)
 
     set(FLOWUI_MANIFEST_FILE "${CMAKE_SOURCE_DIR}/.flowui/changes/active.flowchanges")
     set(FLOWUI_BAKED_GENERATED_DIR "${CMAKE_BINARY_DIR}/flowui_generated")
-    set(FLOWUI_BAKED_CPP "${FLOWUI_BAKED_GENERATED_DIR}/FlowUiBakedChanges.cpp")
-    set(FLOWUI_BAKED_HPP "${FLOWUI_BAKED_GENERATED_DIR}/FlowUiBakedChanges.hpp")
+    set(FLOWUI_BAKED_INCLUDE_DIR "${FLOWUI_BAKED_GENERATED_DIR}/include")
+    set(FLOWUI_BAKED_CPP "${FLOWUI_BAKED_GENERATED_DIR}/src/FlowUi/Private/BakedChanges.cpp")
+    set(FLOWUI_BAKED_HPP "${FLOWUI_BAKED_INCLUDE_DIR}/FlowUi/Private/BakedChanges.hpp")
 
     if(NOT EXISTS "${FLOWUI_MANIFEST_FILE}")
         file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/.flowui/changes")
@@ -15,7 +16,9 @@ function(flowui_configure_baking target)
             "{\n  \"manifestVersion\": 1,\n  \"schemaFingerprint\": \"0x0000000000000000\",\n  \"buildFingerprint\": \"\",\n  \"createdTimestamp\": \"\",\n  \"bakedChanges\": []\n}\n")
     endif()
 
-    file(MAKE_DIRECTORY "${FLOWUI_BAKED_GENERATED_DIR}")
+    file(MAKE_DIRECTORY
+        "${FLOWUI_BAKED_INCLUDE_DIR}/FlowUi/Private"
+        "${FLOWUI_BAKED_GENERATED_DIR}/src/FlowUi/Private")
 
     if(NOT EXISTS "${FLOWUI_BAKED_HPP}")
         file(WRITE "${FLOWUI_BAKED_HPP}"
@@ -25,9 +28,9 @@ function(flowui_configure_baking target)
 #include <cstdint>
 #include <string_view>
 #include <span>
-#include \"FlowUi/PublicStructs.hpp\"
-#include \"FlowUi/ElementID.hpp\"
-#include \"internal/ElementInstanceKey.hpp\"
+#include \"FlowUi/Public/configurationStructs/MemoryCapacityProfile.hpp\"
+#include \"FlowUi/Public/identificationTypes/ElementID.hpp\"
+#include \"FlowUi/Private/elementSystem/ElementInstanceKey.hpp\"
 
 namespace FlowUi::baked {
 
@@ -66,7 +69,7 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
     if(NOT EXISTS "${FLOWUI_BAKED_CPP}")
         file(WRITE "${FLOWUI_BAKED_CPP}"
 "// Auto-generated default stub by CMake. Overwritten when changes are baked.
-#include \"FlowUiBakedChanges.hpp\"
+#include \"FlowUi/Private/BakedChanges.hpp\"
 
 #include <algorithm>
 #include <array>
@@ -107,9 +110,9 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
             --output-dir "${FLOWUI_BAKED_GENERATED_DIR}"
         COMMAND ${CMAKE_COMMAND} -E touch "${FLOWUI_BAKED_GENERATED_DIR}/generation.stamp"
         DEPENDS "${FLOWUI_MANIFEST_FILE}" flowui-dev-generate
-            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/MemoryCapacityTargets.hpp"
-            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/internal/MemoryCapacityTargets.hpp"
-            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/internal/MemoryCapacityManifest.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/Public/identificationTypes/MemoryCapacityTargets.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/FlowUi/Private/storageSystem/capacity/MemoryCapacityManifest.hpp"
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/devSystems/devTooling/bake/DevBakeValidation.hpp"
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../include/devSystems/devTooling/bake/DevBakedChangesMetadata.hpp"
         COMMENT "Generating FlowUi baked C++ changes"
@@ -125,10 +128,10 @@ void applyBakedThemeErased(std::uint64_t themeType, std::string_view variant,
     )
     add_dependencies(${target} ${FLOWUI_BAKED_CODEGEN_TARGET})
     target_sources(${target} PRIVATE "${FLOWUI_BAKED_CPP}")
-    include_directories("${FLOWUI_BAKED_GENERATED_DIR}")
+    include_directories(BEFORE "${FLOWUI_BAKED_INCLUDE_DIR}")
 
-    target_include_directories(${target} PUBLIC
-        $<BUILD_INTERFACE:${FLOWUI_BAKED_GENERATED_DIR}>
+    target_include_directories(${target} BEFORE PUBLIC
+        $<BUILD_INTERFACE:${FLOWUI_BAKED_INCLUDE_DIR}>
     )
     # Absolute source-header includes handle the common add_subdirectory case;
     # this also supplies project-root includes used by those headers.

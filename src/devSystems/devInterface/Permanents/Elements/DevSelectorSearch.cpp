@@ -2,7 +2,7 @@
 #if FLOW_UI_DEV_MODE
 #include "FSEL/TextInput.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 namespace FlowUi::devSystems::interface_elements {
 void DevSelectorSearch::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration search{};

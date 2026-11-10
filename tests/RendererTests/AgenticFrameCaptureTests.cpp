@@ -1,7 +1,7 @@
 #include "HeadlessVulkanFixture.hpp"
 #include "TestHarness.hpp"
 #include "devSystems/devAgenticWorkflow/frameCapture/AgenticFrameCapture.hpp"
-#include "internal/Vma.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 
 #include <algorithm>
 #include <array>

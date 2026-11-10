@@ -2,18 +2,18 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "FSEL/internal/SelectableSurfaceBehavior.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsContentParameters.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** Owned clipboard payload; display wrapping never changes the copied evidence. */
+/* Owned clipboard payload; display wrapping never changes the copied evidence. */
 struct DevDiagnosticsCopyParameters {
 	std::string value{}, label{"Copy"};
 	TextureRef icon{};
@@ -22,7 +22,7 @@ struct DevDiagnosticsCopyParameters {
 	bool compact = false;
 };
 
-/** Copy control for exact captured properties and raw evidence. */
+/* Copy control for exact captured properties and raw evidence. */
 struct DevDiagnosticsCopy {
 	using Parameters = DevDiagnosticsCopyParameters;
 	using State = FSEL::detail::selectable_surface::State;
@@ -40,7 +40,7 @@ struct DevDiagnosticsCopy {
 };
 inline constexpr DevDiagnosticsCopy kDevDiagnosticsCopy{};
 
-/** Exact occurrence, context, source and bounded captured-evidence inspector. */
+/* Exact occurrence, context, source and bounded captured-evidence inspector. */
 struct DevDiagnosticsInspector {
 	using Resources = diagnostics_icons::Resources;
 	struct Disclosure {

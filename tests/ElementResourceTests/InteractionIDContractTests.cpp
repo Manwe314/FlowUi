@@ -5,8 +5,8 @@
 #include <string_view>
 #include <type_traits>
 
-#include "managers/UiManager.hpp"
-#include "managers/structs/FlowUiElementStructs.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementContexts.hpp"
 
 namespace {
 

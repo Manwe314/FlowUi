@@ -6,44 +6,68 @@
 
 #include "FSEL/Theme.hpp"
 #include "FSEL/internal/BoundedValueMath.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::FSEL {
 
+/** Axis along which progress is displayed. */
 enum class ProgressBarAxis {
+	/** Represent values or resizing along the horizontal axis. */
 	Horizontal,
+	/** Represent values or resizing along the vertical axis. */
 	Vertical,
 };
 
+/**
+ * Per-invocation ProgressBar configuration. Borrowed models and text must remain valid through
+ * the frame; empty visual overrides inherit the active FSELTheme.
+ */
 struct ProgressBarParameters {
+	/** Axis along which the control represents its value or extent. */
 	ProgressBarAxis axis = ProgressBarAxis::Horizontal;
+	/** Reverse the normal direction in which the displayed value increases. */
 	bool inverted = false;
 
 	/** Current read-only value snapshot supplied by the caller for this frame. */
 	double value = 0.0;
+	/** Lower bound of the native value range. */
 	double minimum = 0.0;
+	/** Upper bound of the native value range. */
 	double maximum = 1.0;
 
 	/** Empty uses the theme's fixed length and thickness for the selected axis. */
 	std::optional<Clay_Sizing> sizing = std::nullopt;
 
 	// Optional theme overrides
+	/** Unfilled progress background color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> baseColor = std::nullopt;
+	/** Border color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> borderColor = std::nullopt;
+	/** Filled portion color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> fillColor = std::nullopt;
+	/** Per-edge border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	/** Corner radii in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
 };
 
 /** Stateless, build-only display of a caller-owned bounded value snapshot. */
 struct ProgressBar {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = ProgressBarParameters;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<ProgressBar>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId =
 		DefinitionID("FSEL.progress-bar");
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL ProgressBar";
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const FSELProgressBarTheme& theme =
 			context.uiManager.theme<FSELTheme>().progressBarTheme;
@@ -146,6 +170,10 @@ private:
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr ProgressBar kProgressBar{};
 static_assert(FlowElement<ProgressBar>);
 static_assert(DrawableFlowElement<ProgressBar>);

@@ -1133,7 +1133,7 @@ private:
 		return unexpectedError(restored.error());
 	return image;
 }
-/** List revisioned tree identities without expanding whole retained geometry into a response. */
+/* List revisioned tree identities without expanding whole retained geometry into a response. */
 [[nodiscard]] Result<Json> tree_metadata_page(const AgenticManifest& manifest,
 											  const Json& arguments) {
 	auto filter = argument(arguments, "filter");

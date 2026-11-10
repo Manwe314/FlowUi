@@ -88,22 +88,16 @@ struct ConflictingElement {
 };
 
 FLOWUI_DEV_SCHEMA(
-	SharedStyle,
-	FLOWUI_DEV_FIELD(SharedStyle, color),
-	FLOWUI_DEV_FIELD(
-		SharedStyle,
-		opacity,
-		FlowUi::devMode::DevFieldOptions{}.numericRange(0.0, 1.0)))
+	SharedStyle, FLOWUI_DEV_FIELD(SharedStyle, color),
+	FLOWUI_DEV_FIELD(SharedStyle, opacity,
+					 FlowUi::devSystems::tooling::DevFieldOptions{}.numericRange(0.0, 1.0)))
 
 FLOWUI_DEV_SCHEMA(
-	FirstParams,
-	FLOWUI_DEV_FIELD(FirstParams, sizing),
-	FLOWUI_DEV_FIELD(
-		FirstParams,
-		style,
-		FlowUi::devMode::DevFieldOptions{}
-			.withHint("Shared presentation")
-			.withEditor(FlowUi::devMode::DevEditorKind::Custom)))
+	FirstParams, FLOWUI_DEV_FIELD(FirstParams, sizing),
+	FLOWUI_DEV_FIELD(FirstParams, style,
+					 FlowUi::devSystems::tooling::DevFieldOptions{}
+						 .withHint("Shared presentation")
+						 .withEditor(FlowUi::devSystems::tooling::DevEditorKind::Custom)))
 
 FLOWUI_DEV_SCHEMA(
 	SecondParams,
@@ -134,11 +128,10 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(SemanticValues, action),
 	FLOWUI_DEV_FIELD(SemanticValues, texture))
 
-const FlowUi::devMode::DevFieldSchema* findField(
-	const FlowUi::devMode::DevSchemaGeneration& generation,
-	const FlowUi::devMode::DevTypeSchema& owner,
-	std::string_view name) {
-	const auto ownerIndex = FlowUi::devMode::DevTypeIndex{
+const FlowUi::devSystems::tooling::DevFieldSchema*
+findField(const FlowUi::devSystems::tooling::DevSchemaGeneration& generation,
+		  const FlowUi::devSystems::tooling::DevTypeSchema& owner, std::string_view name) {
+	const auto ownerIndex = FlowUi::devSystems::tooling::DevTypeIndex{
 		static_cast<std::uint32_t>(&owner - generation.types.data())};
 	for (const auto& field : generation.fieldsOf(ownerIndex)) {
 		if (generation.string(field.name) == name) return &field;
@@ -148,7 +141,7 @@ const FlowUi::devMode::DevFieldSchema* findField(
 
 void verifySharedClayTypeAndTypedMemberPaths() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureElement<FirstElement>();
 	registry.ensureElement<FirstElement>();
@@ -219,7 +212,7 @@ void verifySharedClayTypeAndTypedMemberPaths() {
 
 void verifyFullWidthEnumValues() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureStruct<WideSignedEnum>();
 	assert(registry.publishPendingAtSafePoint());
@@ -239,7 +232,7 @@ void verifyFullWidthEnumValues() {
 
 void verifyBuiltInThemeSchema() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureTheme<FlowUiTheme>();
 	assert(registry.publishPendingAtSafePoint());
@@ -254,7 +247,7 @@ void verifyBuiltInThemeSchema() {
 
 void verifyUnsupportedBranchesRemainVisible() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureStruct<RecursiveAndCallable>();
 	assert(registry.publishPendingAtSafePoint());
@@ -273,7 +266,7 @@ void verifyUnsupportedBranchesRemainVisible() {
 
 void verifyGenericShapes() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureStruct<GenericShapes>();
 	assert(registry.publishPendingAtSafePoint());
@@ -312,7 +305,7 @@ void verifyGenericShapes() {
 
 void verifyFlowUiSemanticAdapters() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureStruct<SemanticValues>();
 	assert(registry.publishPendingAtSafePoint());
@@ -327,7 +320,7 @@ void verifyFlowUiSemanticAdapters() {
 }
 
 void verifyOrderIndependentGenerationAndSnapshotLifetime() {
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry left;
 	left.ensureElement<FirstElement>();
 	left.ensureElement<SecondElement>();
@@ -348,7 +341,7 @@ void verifyOrderIndependentGenerationAndSnapshotLifetime() {
 }
 
 void verifyCatalogue() {
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	constexpr auto catalogue = devCatalogue(
 		elements<FirstElement, SecondElement>(),
 		themes<Theme>(),
@@ -362,7 +355,7 @@ void verifyCatalogue() {
 }
 
 void verifyCapacityDiagnosticsRemainPublishable() {
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaLimits limits{};
 	limits.maxTypes = 2;
 	limits.maxFields = 1;
@@ -404,7 +397,7 @@ void verifyCapacityDiagnosticsRemainPublishable() {
 }
 
 void verifyElementIdentityConflictIsDiagnosed() {
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	DevSchemaRegistry registry;
 	registry.ensureElement<FirstElement>();
 	registry.ensureElement<ConflictingElement>();

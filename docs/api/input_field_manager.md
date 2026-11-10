@@ -59,7 +59,7 @@ FlowUi::FieldQueryResult field = context.uiManager.inputFields().requestField(
     {.initialText = "Search", .textElementId = textId, .contentElementId = contentId});
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **requestCaret**
 
@@ -77,7 +77,7 @@ Requests focus or caret changes for an input field. `SetPrimary` is the common o
 context.uiManager.inputFields().requestCaret(context.id, FlowUi::CaretRequestKind::SetPrimary);
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#aad13550088f959cf6d948173d8afa446).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **removeField**
 
@@ -95,7 +95,7 @@ Deletes stored text, config, caret, and selection state for one field. Use this 
 const bool removed = app.ui().inputFields().removeField(nameFieldId);
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a1e0319ffec372a95e5d129a5d8bda14a).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **replaceText**
 
@@ -113,7 +113,7 @@ Replaces stored text for an existing field. By default, active carets and select
 const bool changed = app.ui().inputFields().replaceText(nameFieldId, externalName, false);
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **clear**
 
@@ -131,7 +131,7 @@ Clears all managed input field state. This resets fields, focus, key repeat, poi
 app.ui().inputFields().clear();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a7ac0604f2391bfe2ea5d16b008b68d18).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **hasPrimaryFieldFocus**
 
@@ -149,7 +149,7 @@ Reports whether any input field currently owns primary text focus. This is usefu
 if (!app.ui().inputFields().hasPrimaryFieldFocus()) { runGlobalShortcut(); }
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a4f494c501874c594a05a8e28f8e9954f).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **getSelectedText**
 
@@ -167,7 +167,7 @@ Returns selected text from the primary field, or an empty view when no selection
 std::string selected(app.ui().inputFields().getSelectedText());
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a997c4fea775ebe55ae427e901c38f50c).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).
 
 ### **insertTextAtPrimaryCaret**
 
@@ -185,4 +185,4 @@ Inserts UTF-8 text at the primary caret, replacing active selections. The operat
 const bool pasted = app.ui().inputFields().insertTextAtPrimaryCaret(app.ui().clipboardText());
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1InputFieldManager.html#a109309cb439eaa40a24f8ada6409da8e).
+See: [Owning header](../../include/FlowUi/Public/managers/InputFieldManager.hpp).

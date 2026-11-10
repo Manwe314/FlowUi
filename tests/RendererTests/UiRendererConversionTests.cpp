@@ -1,4 +1,5 @@
 #include "TestHarness.hpp"
+#include "FlowUi/Public/TextureRef.hpp"
 
 #include <array>
 #include <cstdint>
@@ -7,8 +8,8 @@
 #include <limits>
 #include <string>
 
-#include "Ui/Vk_UiRenderer.hpp"
-#include "internal/InputQueue.hpp"
+#include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
+#include "FlowUi/Private/inputService/InputQueue.hpp"
 
 namespace {
 
@@ -222,6 +223,7 @@ void testRendererHasNoVmaOwnership() {
 
 	for (const char* path : {
 		FLOWUI_APP_SOURCE,
+		FLOWUI_APP_FACADE_SOURCE,
 		FLOWUI_IMAGE_MANAGER_SOURCE,
 		FLOWUI_ICON_MANAGER_SOURCE,
 		FLOWUI_VIEWPORT_MANAGER_SOURCE,

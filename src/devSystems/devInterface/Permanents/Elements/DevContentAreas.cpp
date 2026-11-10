@@ -21,7 +21,7 @@
 #include "devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp"
 #include "devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp"
 #include "devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {

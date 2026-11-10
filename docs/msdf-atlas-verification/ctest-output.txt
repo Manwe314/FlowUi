@@ -1,0 +1,36 @@
+Internal ctest changing into directory: build-msdf
+Test project build-msdf
+    Start  2: flowui.storage.types
+1/9 Test  #2: flowui.storage.types ..................   Passed    0.00 sec
+    Start 18: flowui.dev.catalogues
+2/9 Test #18: flowui.dev.catalogues .................   Passed    0.00 sec
+    Start 19: flowui.dev.catalogue_previews
+3/9 Test #19: flowui.dev.catalogue_previews .........   Passed    0.00 sec
+    Start 20: flowui.dev.catalogue_preview_scopes
+4/9 Test #20: flowui.dev.catalogue_preview_scopes ...   Passed    1.20 sec
+    Start 21: flowui.dev.font_atlas_layers
+5/9 Test #21: flowui.dev.font_atlas_layers ..........   Passed    0.04 sec
+    Start 22: flowui.dev.font_atlas_catalogue
+6/9 Test #22: flowui.dev.font_atlas_catalogue .......   Passed    0.20 sec
+    Start 32: flowui.phase5.manager_storage
+7/9 Test #32: flowui.phase5.manager_storage .........   Passed    0.01 sec
+    Start 62: flowui.storage.system
+8/9 Test #62: flowui.storage.system .................   Passed    0.03 sec
+    Start 63: flowui.dev.catalogue_model
+9/9 Test #63: flowui.dev.catalogue_model ............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Label Time Summary:
+catalogue      =   1.43 sec*proc (5 tests)
+dev            =   1.43 sec*proc (5 tests)
+flowui         =   1.48 sec*proc (8 tests)
+integration    =   1.46 sec*proc (4 tests)
+managers       =   0.01 sec*proc (1 test)
+phase5         =   0.01 sec*proc (1 test)
+storage        =   0.05 sec*proc (3 tests)
+unit           =   0.02 sec*proc (4 tests)
+vulkan         =   0.26 sec*proc (3 tests)
+window         =   0.20 sec*proc (1 test)
+
+Total Test time (real) =   1.49 sec

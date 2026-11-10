@@ -1,5 +1,20 @@
 var searchData=
 [
-  ['windowconfig_0',['WindowConfig',['../structFlowUi_1_1WindowConfig.html',1,'FlowUi']]],
-  ['windowinputconfig_1',['WindowInputConfig',['../structFlowUi_1_1WindowInputConfig.html',1,'FlowUi']]]
+  ['parameters_0',['Parameters',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1DevChangesSelectorNode_1_1Parameters.html',1,'FlowUi::devSystems::interface_elements::DevChangesSelectorNode::Parameters'],['../structFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryControl_1_1Parameters.html',1,'FlowUi::devSystems::interface_elements::DevMemoryControl::Parameters'],['../structFlowUi_1_1devSystems_1_1interface__elements_1_1diagnostics__ui_1_1Control_1_1Parameters.html',1,'FlowUi::devSystems::interface_elements::diagnostics_ui::Control::Parameters']]],
+  ['parts_1',['Parts',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1DevColorTypeEditor_1_1Parts.html',1,'FlowUi::devSystems::interface_elements::DevColorTypeEditor::Parts'],['../structFlowUi_1_1devSystems_1_1interface__elements_1_1DevEditorCardHeader_1_1Parts.html',1,'FlowUi::devSystems::interface_elements::DevEditorCardHeader::Parts']]],
+  ['performanceanalysis_2',['PerformanceAnalysis',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1PerformanceAnalysis.html',1,'FlowUi::devSystems::interface_elements']]],
+  ['performanceanalysissample_3',['PerformanceAnalysisSample',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1PerformanceAnalysisSample.html',1,'FlowUi::devSystems::interface_elements']]],
+  ['performanceanalysiszone_4',['PerformanceAnalysisZone',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1PerformanceAnalysisZone.html',1,'FlowUi::devSystems::interface_elements']]],
+  ['performancecapturesettings_5',['PerformanceCaptureSettings',['../structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html',1,'FlowUi::devSystems']]],
+  ['performancecapturestatus_6',['PerformanceCaptureStatus',['../structFlowUi_1_1devSystems_1_1PerformanceCaptureStatus.html',1,'FlowUi::devSystems']]],
+  ['performancerefreshgate_7',['PerformanceRefreshGate',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1PerformanceRefreshGate.html',1,'FlowUi::devSystems::interface_elements']]],
+  ['platformdeverrorstackprovider_8',['PlatformDevErrorStackProvider',['../classFlowUi_1_1devSystems_1_1PlatformDevErrorStackProvider.html',1,'FlowUi::devSystems']]],
+  ['popupanchor_9',['PopupAnchor',['../structFlowUi_1_1PopupAnchor.html',1,'FlowUi']]],
+  ['popupframe_10',['PopupFrame',['../structFlowUi_1_1PopupFrame.html',1,'FlowUi']]],
+  ['popupmanager_11',['PopupManager',['../classFlowUi_1_1PopupManager.html',1,'FlowUi']]],
+  ['popupoverflowpolicy_12',['PopupOverflowPolicy',['../structFlowUi_1_1PopupOverflowPolicy.html',1,'FlowUi']]],
+  ['popupplacement_13',['PopupPlacement',['../structFlowUi_1_1PopupPlacement.html',1,'FlowUi']]],
+  ['popuprequest_14',['PopupRequest',['../structFlowUi_1_1PopupRequest.html',1,'FlowUi']]],
+  ['previewselection_15',['PreviewSelection',['../structFlowUi_1_1devSystems_1_1interface__elements_1_1PreviewSelection.html',1,'FlowUi::devSystems::interface_elements::PreviewSelection'],['../structFlowUi_1_1devSystems_1_1PreviewSelection.html',1,'FlowUi::devSystems::PreviewSelection']]],
+  ['processmemorysnapshot_16',['ProcessMemorySnapshot',['../structFlowUi_1_1devSystems_1_1ProcessMemorySnapshot.html',1,'FlowUi::devSystems']]]
 ];

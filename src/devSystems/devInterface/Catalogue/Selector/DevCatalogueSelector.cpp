@@ -6,6 +6,7 @@
 #include "FSEL/TextInput.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
+#include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
 #include <algorithm>
@@ -18,6 +19,7 @@ namespace ui = diagnostics_ui;
 using Context = DevCatalogueSelector::BuildContext;
 using State = DevCatalogueSelector::State;
 enum Action : uint64_t { Domain = 1, All, Select, Group, Expand, Clear, ExpandIcon, SelectRaster };
+constexpr float browser_row_height = 25;
 
 [[nodiscard]] uint64_t group_identity(std::string_view name) noexcept {
 	uint64_t hash = 1469598103934665603ull;
@@ -104,7 +106,7 @@ void domain_choice(Context& context, Identity identity, std::string_view label, 
 	style.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	style.contentGap = 8;
 	if (focused) {
-		style.borderWidth = Clay_BorderWidth{3, 0, 0, 1, 0};
+		style.borderWidth = Clay_BorderWidth{3, 0, 0, 0, 0};
 		style.idleOverrides.borderColor = interface_theme::kAccentCurrent;
 		style.hoveredOverrides.borderColor = interface_theme::kAccentCurrent;
 	}
@@ -341,7 +343,7 @@ void build_rows(Context& context) {
 				for (size_t index = 0; index < asset.icons.size(); ++index) {
 					const auto& raster = asset.icons[index];
 					rows.emplace_back(DevCatalogueSelector::BrowserRow{
-						.name = "    " + std::to_string(raster.targetWidth) + " x " +
+						.name = std::to_string(raster.targetWidth) + " x " +
 								std::to_string(raster.targetHeight) + " px · Page " +
 								std::to_string(raster.atlasLayer),
 						.identity = group_identity(std::to_string(asset.identity) + "/raster/" +
@@ -377,10 +379,16 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 	root.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 	root.layout.sizing.height = CLAY_SIZING_PERCENT(1);
 	root.clip = {.horizontal = true, .scrollInputDisabled = true};
-	const auto dimensions = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
-	const float height =
-		dimensions.found ? dimensions.boundingBox.height : Clay_GetLayoutDimensions().height - 120;
-	const float maximum = std::max(64.0f, height - 150);
+	const auto previous_dimensions = Clay_GetElementData(context.clayID());
+	const auto parent_dimensions =
+		Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
+	const auto dimensions = previous_dimensions.found && previous_dimensions.boundingBox.height > 0
+								? previous_dimensions
+								: parent_dimensions;
+	const float height = dimensions.found && dimensions.boundingBox.height > 0
+							 ? dimensions.boundingBox.height
+							 : Clay_GetLayoutDimensions().height - 120;
+	const float maximum = std::min(255.0f, std::max(64.0f, height - 150));
 	state.domain_height = std::clamp(state.domain_height, std::min(100.0f, maximum), maximum);
 	CLAY(context.clayID(), root) {
 		auto domains = ui::column(0);
@@ -432,146 +440,177 @@ void DevCatalogueSelector::buildElement(BuildContext& context) {
 		const auto rendered_domain = state.domain;
 		auto& domain = state.domains[rendered_domain];
 		context.state().browser_id = context.clayID(Keyed("browser", rendered_domain));
-		const auto before = domain.search;
-		const auto placeholder =
-			"Filter " +
-			std::string(catalogue_domain_name(static_cast<DevCatalogueDomain>(rendered_domain))) +
-			"...";
-		context.uiManager.createElement(kDevSelectorSearch, Keyed("search", rendered_domain))
-			.setParameters({.query = &domain.search, .placeholder = placeholder})
-			.setDevInternalCapture(true)
-			.draw();
-		const auto search_element = ::FlowUi::detail::element_id::resolveLocal(
-			context.id, DevSelectorSearch::definitionId, Keyed("search", rendered_domain).token);
-		const auto search_input = ::FlowUi::detail::element_id::resolveLocal(
-			search_element, FSEL::TextInput::definitionId, LocalElementName{"search-input"}.token);
-		catalogue_focus::register_target(context, state, context.uiManager.toClayEID(search_input),
-										 search_input);
-		if (before != domain.search) {
-			state.dirty = true;
-			rebuild_catalogue_filter(state);
-			build_rows(context);
-		}
-		control(context, LocalElementName{"all"},
-				"All " + std::string(catalogue_domain_name(
-							 static_cast<DevCatalogueDomain>(rendered_domain))),
-				All, 0, !state.selected_identity && domain.group.empty(), false,
-				std::to_string(context.state().browser_assets.size()));
-		if (state.selected_outside_filter)
-			control(context, LocalElementName{"clear"}, "Selected outside filter · Clear", Clear, 0,
-					false, false);
-		auto browser = ui::column(0);
-		browser.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-		browser.layout.sizing.height = CLAY_SIZING_GROW(0);
-		const auto browser_id = context.clayID(Keyed("browser", rendered_domain));
-		const auto scroll = Clay_GetScrollContainerData(browser_id);
-		if (scroll.found && scroll.scrollPosition) {
-			if (context.state().restore_scroll && rendered_domain == state.domain)
-				scroll.scrollPosition->y = domain.selector_scroll;
-			else
-				domain.selector_scroll = scroll.scrollPosition->y;
-		}
-		if (rendered_domain == state.domain)
-			context.state().restore_scroll = false;
-		if (state.reveal_selection) {
-			const auto identity = state.keyboard_active && !state.domain_focus
-									  ? state.focused_identity
-									  : state.selected_identity;
-			const auto found =
-				std::ranges::find(context.state().rows, identity, &BrowserRow::identity);
-			if (found != context.state().rows.end()) {
-				const float offset = static_cast<float>(found - context.state().rows.begin()) * 30;
-				const float visible_height =
-					scroll.found ? scroll.scrollContainerDimensions.height : 200;
-				if (offset < -domain.selector_scroll)
-					domain.selector_scroll = -offset;
-				else if (offset + 30 > -domain.selector_scroll + visible_height)
-					domain.selector_scroll = visible_height - offset - 30;
-				if (scroll.found && scroll.scrollPosition)
+		auto browser_section = ui::column(0);
+		browser_section.layout.sizing = {.width = CLAY_SIZING_GROW(0),
+										 .height = CLAY_SIZING_GROW(0)};
+		browser_section.clip = {.horizontal = true, .scrollInputDisabled = true};
+		CLAY(context.clayID("browser-section"), browser_section) {
+			control(context, LocalElementName{"all"},
+					"All " + std::string(catalogue_domain_name(
+								 static_cast<DevCatalogueDomain>(rendered_domain))),
+					All, 0, !state.selected_identity && domain.group.empty(), false,
+					std::to_string(context.state().browser_assets.size()));
+			const auto before = domain.search;
+			const auto placeholder = "Filter " +
+									 std::string(catalogue_domain_name(
+										 static_cast<DevCatalogueDomain>(rendered_domain))) +
+									 "...";
+			auto filter_bar = ui::row(36);
+			filter_bar.layout.padding = {8, 8, 4, 4};
+			filter_bar.backgroundColor = interface_theme::kDepth1Panel;
+			filter_bar.border = {.color = interface_theme::kBorderPrimary,
+								 .width = {0, 0, 0, 1, 0}};
+			CLAY(context.clayID("filter-bar"), filter_bar) {
+				context.uiManager
+					.createElement(kDevSelectorSearch, Keyed("search", rendered_domain))
+					.setParameters({.query = &domain.search,
+									.placeholder = placeholder,
+									.inline_control = true})
+					.setDevInternalCapture(true)
+					.draw();
+			}
+			const auto search_element = ::FlowUi::detail::element_id::resolveLocal(
+				context.id, DevSelectorSearch::definitionId,
+				Keyed("search", rendered_domain).token);
+			const auto search_input = ::FlowUi::detail::element_id::resolveLocal(
+				search_element, FSEL::TextInput::definitionId,
+				LocalElementName{"search-input"}.token);
+			catalogue_focus::register_target(
+				context, state, context.uiManager.toClayEID(search_input), search_input);
+			if (before != domain.search) {
+				state.dirty = true;
+				rebuild_catalogue_filter(state);
+				build_rows(context);
+			}
+
+			if (state.selected_outside_filter)
+				control(context, LocalElementName{"clear"}, "Selected outside filter · Clear",
+						Clear, 0, false, false);
+			auto browser = ui::column(0);
+			browser.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+			browser.layout.sizing.height = CLAY_SIZING_GROW(0);
+			const auto browser_id = context.clayID(Keyed("browser", rendered_domain));
+			const auto scroll = Clay_GetScrollContainerData(browser_id);
+			if (scroll.found && scroll.scrollPosition) {
+				if (context.state().restore_scroll && rendered_domain == state.domain)
 					scroll.scrollPosition->y = domain.selector_scroll;
+				else
+					domain.selector_scroll = scroll.scrollPosition->y;
 			}
-			state.reveal_selection = false;
-		}
-		browser.clip = {
-			.horizontal = true, .vertical = true, .childOffset = {0, domain.selector_scroll}};
-		catalogue_focus::register_target(context, state, browser_id);
-		CLAY(browser_id, browser) {
-			const auto& rows = context.state().rows;
-			const auto first =
-				std::min(rows.size(), static_cast<std::size_t>(std::max(
-										  0.0f, std::floor(-domain.selector_scroll / 30) - 2)));
-			const auto visible_height =
-				scroll.found ? scroll.scrollContainerDimensions.height : height;
-			const auto last =
-				std::min(rows.size(),
-						 first + static_cast<std::size_t>(std::max(1.0f, visible_height / 30)) + 5);
-			const auto spacer = [&](std::string_view name, float spacer_height) {
-				auto declaration = ui::column(0);
-				declaration.layout.sizing.height = CLAY_SIZING_FIXED(std::max(0.0f, spacer_height));
-				CLAY(context.clayID(RuntimeName(name)), declaration) {}
-			};
-			spacer("before", static_cast<float>(first) * 30);
-			for (auto position = first; position < last; ++position) {
-				const auto& item = rows[position];
-				if (item.group) {
-					auto row = ui::row(30);
-					row.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-					row.clip = {.horizontal = true, .scrollInputDisabled = true};
-					CLAY(context.clayID(Keyed("group-row", item.identity)), row) {
-						const bool collapsed =
-							std::ranges::find(domain.collapsed_groups, item.name) !=
-							domain.collapsed_groups.end();
-						ui::button_with_identity(context, Keyed("expand", item.identity), "",
-												 &context.state(), activate, Expand, item.identity,
-												 true,
-												 collapsed ? "Expand group" : "Collapse group",
-												 collapsed ? diagnostics_icons::Icon::Collapsed
-														   : diagnostics_icons::Icon::Expanded);
-						control(context, Keyed("group", item.identity), item.name, Group,
-								item.identity,
-								domain.group == item.name && !state.selected_identity,
-								state.keyboard_active && !state.domain_focus &&
-									state.focused_identity == item.identity);
-					}
-				} else {
-					auto row = ui::row(30);
-					row.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-					row.clip = {.horizontal = true, .scrollInputDisabled = true};
-					row.layout.childGap = 0;
-					CLAY(context.clayID(Keyed("asset-row", item.identity)), row) {
-						if (!item.raster &&
-							state.domain == static_cast<uint64_t>(DevCatalogueDomain::Icons)) {
-							const bool expanded =
-								std::ranges::find(domain.expanded_icons, item.identity) !=
-								domain.expanded_icons.end();
-							ui::button_with_identity(
-								context, Keyed("expand-icon", item.identity), "", &context.state(),
-								activate, ExpandIcon, item.identity, true,
-								expanded ? "Hide cached sizes" : "Show cached sizes",
-								expanded ? diagnostics_icons::Icon::Expanded
-										 : diagnostics_icons::Icon::Collapsed);
-						}
-						const auto asset = std::ranges::find(state.assets, item.asset_identity,
-															 &DevCatalogueAsset::identity);
-						const auto full_key = asset != state.assets.end() &&
-													  (asset->domain == DevCatalogueDomain::Icons ||
-													   asset->domain == DevCatalogueDomain::Images)
-												  ? std::string_view(asset->name)
-												  : std::string_view{};
-						control(
-							context, Keyed("asset", item.identity), item.name,
-							item.raster ? SelectRaster : Select, item.identity,
-							state.selected_identity == item.asset_identity &&
-								(!item.raster || domain.raster_identity == item.raster_identity),
-							state.keyboard_active && !state.domain_focus &&
-								state.focused_identity == item.identity,
-							{}, full_key);
-					}
+			if (rendered_domain == state.domain)
+				context.state().restore_scroll = false;
+			if (state.reveal_selection) {
+				const auto identity = state.keyboard_active && !state.domain_focus
+										  ? state.focused_identity
+										  : state.selected_identity;
+				const auto found =
+					std::ranges::find(context.state().rows, identity, &BrowserRow::identity);
+				if (found != context.state().rows.end()) {
+					const float offset = static_cast<float>(found - context.state().rows.begin()) *
+										 browser_row_height;
+					const float visible_height =
+						scroll.found ? scroll.scrollContainerDimensions.height : 200;
+					if (offset < -domain.selector_scroll)
+						domain.selector_scroll = -offset;
+					else if (offset + browser_row_height > -domain.selector_scroll + visible_height)
+						domain.selector_scroll = visible_height - offset - browser_row_height;
+					if (scroll.found && scroll.scrollPosition)
+						scroll.scrollPosition->y = domain.selector_scroll;
 				}
+				state.reveal_selection = false;
 			}
-			spacer("after", static_cast<float>(rows.size() - last) * 30);
-			if (rows.empty())
-				ui::text(context, "No assets match this filter", interface_theme::kTextMuted, 12);
+			browser.clip = {
+				.horizontal = true, .vertical = true, .childOffset = {0, domain.selector_scroll}};
+			catalogue_focus::register_target(context, state, browser_id);
+			CLAY(browser_id, browser) {
+				const auto& rows = context.state().rows;
+				const auto first = std::min(
+					rows.size(),
+					static_cast<std::size_t>(std::max(
+						0.0f, std::floor(-domain.selector_scroll / browser_row_height) - 2)));
+				const auto visible_height =
+					scroll.found ? scroll.scrollContainerDimensions.height : height;
+				const auto last =
+					std::min(rows.size(), first +
+											  static_cast<std::size_t>(std::max(
+												  1.0f, visible_height / browser_row_height)) +
+											  5);
+				const auto spacer = [&](std::string_view name, float spacer_height) {
+					auto declaration = ui::column(0);
+					declaration.layout.sizing.height =
+						CLAY_SIZING_FIXED(std::max(0.0f, spacer_height));
+					CLAY(context.clayID(RuntimeName(name)), declaration) {}
+				};
+				spacer("before", static_cast<float>(first) * browser_row_height);
+				uint64_t selected_browser_key = state.selected_identity;
+				if (!state.selected_identity && !domain.group.empty())
+					selected_browser_key = group_identity(domain.group);
+				else if (state.selected_identity && domain.raster_identity) {
+					const auto selected_raster = std::ranges::find_if(rows, [&](const auto& item) {
+						return item.raster && item.asset_identity == state.selected_identity &&
+							   item.raster_identity == domain.raster_identity;
+					});
+					if (selected_raster != rows.end())
+						selected_browser_key = selected_raster->identity;
+				}
+				context.state().browser_selection = selected_browser_key;
+				for (auto position = first; position < last; ++position) {
+					const auto& item = rows[position];
+					const auto asset = std::ranges::find(state.assets, item.asset_identity,
+														 &DevCatalogueAsset::identity);
+					const bool icon =
+						!item.group && !item.raster &&
+						state.domain == static_cast<uint64_t>(DevCatalogueDomain::Icons);
+					const bool children = item.group || icon;
+					const bool expanded =
+						item.group
+							? std::ranges::find(domain.collapsed_groups, item.name) ==
+								  domain.collapsed_groups.end()
+							: icon && std::ranges::find(domain.expanded_icons, item.identity) !=
+										  domain.expanded_icons.end();
+					context.state().browser_expanded = expanded;
+					const uint32_t depth = item.group	 ? 0
+										   : item.raster ? 2
+										   : asset != state.assets.end() && !asset->group.empty()
+											   ? 1
+											   : 0;
+					context.uiManager.createElement(kDevNode, Keyed("browser-node", item.identity))
+						.setParameters(DevNodeParameters{
+							.debugName = item.name,
+							.forest_scroll_id = browser_id,
+							.selected_key = &context.state().browser_selection,
+							.expanded = children ? &context.state().browser_expanded : nullptr,
+							.selectionKey = item.identity,
+							.depth = depth,
+							.hasChildren = children,
+						})
+						.setDevInternalCapture(true)
+						.draw();
+					if (children && expanded != context.state().browser_expanded)
+						activate(&context.state(), item.group ? Expand : ExpandIcon, item.identity);
+					if (selected_browser_key != context.state().browser_selection) {
+						activate(&context.state(),
+								 context.state().browser_selection ? item.group	   ? Group
+																	 : item.raster ? SelectRaster
+																				   : Select
+																   : All,
+								 item.identity);
+						selected_browser_key = context.state().browser_selection;
+					}
+					const auto node_id = ::FlowUi::detail::element_id::resolveLocal(
+						context.id, DevNode::definitionId,
+						Keyed("browser-node", item.identity).token);
+					if (asset != state.assets.end() &&
+						context.uiManager.getPreviousFramesInteraction().isHovered(
+							context.uiManager.toClayEID(node_id)))
+						ui::pointer_tooltip(context, Keyed("row-full-key", item.identity),
+											asset->name);
+				}
+				spacer("after", static_cast<float>(rows.size() - last) * browser_row_height);
+				if (rows.empty())
+					ui::text(context, "No assets match this filter", interface_theme::kTextMuted,
+							 12);
+			}
 		}
 	}
 }

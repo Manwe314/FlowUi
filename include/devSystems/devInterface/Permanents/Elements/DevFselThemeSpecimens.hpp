@@ -1,5 +1,5 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/Button.hpp"
 #include "FSEL/Checkbox.hpp"
@@ -10,7 +10,7 @@
 #include "FSEL/TextInput.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Owned backing data shared by the theme editor and Catalogue specimen provider. */
+/* Owned backing data shared by the theme editor and Catalogue specimen provider. */
 struct FselThemeSpecimenState {
 	std::string sample_text = "The quick brown fox";
 	uint64_t preview_layout = 0;
@@ -19,13 +19,22 @@ struct FselThemeSpecimenState {
 };
 inline constexpr auto kFselThemeToggleSample =
 	UiAction("flowui.dev_interface.theme.toggle-sample", [](bool& value) { value = !value; });
-/** Reusable built-in FSEL component scene; callers choose passive or interactive scope. */
+/* Reusable built-in FSEL component scene; callers choose passive or interactive scope. */
 template <class Context, class SpecimenState>
 void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbox) {
-	using diagnostics_ui::row;
+	const auto host = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
+	const float available_width = host.found ? std::max(24.0f, host.boundingBox.width - 40) : 260;
+	const auto specimen_row = [&] {
+		auto declaration = diagnostics_ui::row();
+		declaration.layout.sizing.height = CLAY_SIZING_FIT(0);
+		declaration.layout.childGap = 12;
+		if (available_width < 320)
+			declaration.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+		return declaration;
+	};
 
 	if (sandbox.preview_layout < 2 || sandbox.preview_layout == 2 || sandbox.preview_layout == 3)
-		CLAY(context.clayID("buttons"), row()) {
+		CLAY(context.clayID("buttons"), specimen_row()) {
 			for (uint32_t specimen = 0; specimen < 2; ++specimen) {
 				if (sandbox.preview_layout >= 2 && sandbox.preview_layout != specimen + 2)
 					continue;
@@ -44,7 +53,7 @@ void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbo
 			}
 		}
 	if (sandbox.preview_layout < 2 || sandbox.preview_layout == 4 || sandbox.preview_layout == 5)
-		CLAY(context.clayID("toggles"), row()) {
+		CLAY(context.clayID("toggles"), specimen_row()) {
 			if (sandbox.preview_layout < 2 || sandbox.preview_layout == 4) {
 				FSEL::CheckboxParameters checkbox{};
 				checkbox.isChecked = sandbox.sample_checked;
@@ -69,7 +78,7 @@ void draw_fsel_theme_specimens(Context& context, App& app, SpecimenState& sandbo
 	if (sandbox.preview_layout < 2 || sandbox.preview_layout == 6) {
 		FSEL::SliderParameters slider{};
 		slider.value = &sandbox.sample_value;
-		slider.length = 260;
+		slider.length = available_width;
 		context.uiManager.createElement(FSEL::kSlider, "sample-slider")
 			.setParameters(slider)
 			.setDevInternalCapture(true)

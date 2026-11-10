@@ -21,7 +21,7 @@ Low-level window input behavior shared by app creation and runtime input updates
 
 #### `struct TextureRef`
 
-Renderer texture handle and draw options returned by image, icon, and viewport managers. App code can adjust fit, sampling, and tint fields while leaving manager-owned id and UV fields alone.
+Renderer texture handle and draw options returned by image, icon, and viewport managers. App code can adjust fit and tint fields while leaving manager-owned handle and UV fields alone. Filtering comes from the logical texture's sampler.
 
 ## Public API
 
@@ -41,7 +41,7 @@ Creates and initializes a running FlowUi application. Use this instead of manual
 FlowUi::App app = FlowUi::makeApplication(config);
 ```
 
-See: [Full Doxygen reference](group__flowui__app.html#ga8afb464a3691ca644406ac41ff5281d2).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **App** `1/2`
 
@@ -59,7 +59,7 @@ Constructs an empty app handle. Public for move/handle mechanics, but normal app
 FlowUi::App emptyHandle{};
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a9ea3c124f860be1faf8f5645d582943c).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **App** `2/2`
 
@@ -77,7 +77,7 @@ Moves an app handle and its owned runtime implementation. Copying is disabled be
 FlowUi::App emptyHandle{};
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a9ea3c124f860be1faf8f5645d582943c).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **operator=**
 
@@ -95,7 +95,7 @@ Move-assigns an app handle. The target takes ownership of the source runtime res
 runningApp = std::move(replacementApp);
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#afb8878c9292ddcff6382a9e22fedb8bb).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **~App**
 
@@ -113,7 +113,7 @@ Destroys the app runtime and releases owned resources. This includes managers, r
 { FlowUi::App app = FlowUi::makeApplication(config); }
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#aaad78bc0186f550641ae5959d54f2e2c).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **shouldClose**
 
@@ -131,7 +131,7 @@ Reports whether the window backend has requested shutdown. Use this as the condi
 while (!app.shouldClose()) { app.beginFrame(); app.endFrame(); app.drawFrame(); }
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a9d853f690168da16dc71e453c9616913).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **setShouldClose**
 
@@ -149,7 +149,7 @@ Sets or clears the window close flag. With the GLFW backend, `0` clears the GLFW
 app.setShouldClose(1);
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **beginFrame**
 
@@ -167,7 +167,7 @@ Begins one FlowUi frame. It polls input, prepares frame-local UI state, and sets
 app.beginFrame();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a2a1be3d0f458e4fdd5392dcdfe4555f1).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **endFrame**
 
@@ -185,7 +185,7 @@ Ends UI construction for the current frame. It finalizes Clay render commands an
 app.endFrame();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a5c6ee53de89f3dd55d43e4742905414a).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **drawFrame**
 
@@ -203,7 +203,7 @@ Submits and presents the frame produced by `endFrame()`. Call it once after UI c
 app.drawFrame();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#ad256201c79c7e07675e12b5bd0d8c8aa).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **fonts** `1/2`
 
@@ -221,7 +221,7 @@ Returns the mutable font manager owned by the app. Use it to create font familie
 FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a1db6aceb22351a9a0c199e1faeb9405a).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **fonts** `2/2`
 
@@ -239,7 +239,7 @@ Returns the immutable font manager owned by the app. Use this for read-only font
 FlowUi::FontFamilyId body = app.fonts().getFamilyId("Body");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#abd633c521ed80977c1992cf3cccc0310).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **images** `1/2`
 
@@ -254,10 +254,13 @@ Returns the mutable image manager owned by the app. Use it to register image fil
 **Example:**
 
 ```cpp
-app.images().registerImage("logo", "assets/logo.png");
+const auto registered = app.images().registerImage("logo", "assets/logo.png");
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a5cf823f81759a819dc7fce58e75054f9).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **images** `2/2`
 
@@ -272,10 +275,10 @@ Returns the immutable image manager owned by the app. Use this when only checkin
 **Example:**
 
 ```cpp
-app.images().registerImage("logo", "assets/logo.png");
+const bool registered = app.images().contains("logo");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a04135a9974e2ea4aa8563083ebe51d40).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **themes** `1/2`
 
@@ -293,7 +296,7 @@ Returns the mutable theme manager owned by the app. Use it to register theme str
 app.themes().registerTheme<AppTheme>("default", AppTheme{});
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **themes** `2/2`
 
@@ -311,7 +314,7 @@ Returns the immutable theme manager owned by the app. Use this for read-only the
 const auto& currentTheme = app.themes().getActiveTheme<AppTheme>();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **icons** `1/2`
 
@@ -326,10 +329,13 @@ Returns the mutable icon manager when icon support is compiled in. Use it to reg
 **Example:**
 
 ```cpp
-app.icons().registerFromFile("save", "assets/icons/save.svg");
+const auto registered = app.icons().registerFromFile("save", "assets/icons/save.svg");
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a7ef478693b7f8354db690c2ffc2e4cac).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **icons** `2/2`
 
@@ -344,10 +350,10 @@ Returns the immutable icon manager when icon support is compiled in. Use this fo
 **Example:**
 
 ```cpp
-app.icons().registerFromFile("save", "assets/icons/save.svg");
+const bool registered = app.icons().contains("save");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a4aea0f22867850b6c6791ef76a827608).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **viewPorts** `1/2`
 
@@ -362,10 +368,13 @@ Returns the mutable viewport manager when public Vulkan interop is enabled. Use 
 **Example:**
 
 ```cpp
-app.viewPorts().create("scene-preview");
+const auto registered = app.viewPorts().create("scene-preview");
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **viewPorts** `2/2`
 
@@ -380,10 +389,10 @@ Returns the immutable viewport manager when public Vulkan interop is enabled. Us
 **Example:**
 
 ```cpp
-app.viewPorts().create("scene-preview");
+const bool registered = app.viewPorts().contains("scene-preview");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a28bca3bac1b8cba55d79950ad56515b2).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **ui** `1/2`
 
@@ -401,7 +410,7 @@ Returns the mutable UI manager for frame construction. This is the main surface 
 FlowUi::UiManager& ui = app.ui();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a788f5bbe3b0d496a41a71494a5f485bc).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **ui** `2/2`
 
@@ -419,7 +428,7 @@ Returns the immutable UI manager. Use it for read-only access to UI frame state 
 FlowUi::UiManager& ui = app.ui();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a4579cf4d39c726a5d2e625218bcfa059).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **setWindowTitle**
 
@@ -437,7 +446,7 @@ Updates the native window title after app creation. The initial title comes from
 app.setWindowTitle("Project - Saved");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a02f684a2f6f2e3595ea0a674c95f4397).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **windowSize**
 
@@ -455,7 +464,7 @@ Returns the current window size in screen coordinates. This is separate from fra
 auto [windowWidth, windowHeight] = app.windowSize();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **framebufferSize**
 
@@ -473,7 +482,7 @@ Returns the current framebuffer size in pixels. Use this for renderer-facing siz
 auto [fbWidth, fbHeight] = app.framebufferSize();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a304bb3c1528da2273dbb711d83fd6728).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **setWindowInputConfig**
 
@@ -491,7 +500,7 @@ Applies cursor, sticky input, lock modifier, and raw mouse settings to the windo
 app.setWindowInputConfig(FlowUi::WindowInputConfig{.cursorMode = FlowUi::CursorMode::Normal});
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#ac542187ec472fb6b9405fde9470ac098).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **windowInputConfig**
 
@@ -509,7 +518,7 @@ Returns the currently active low-level window input configuration. Use this when
 FlowUi::WindowInputConfig inputConfig = app.windowInputConfig();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **nativeWindowHandle**
 
@@ -527,7 +536,7 @@ Returns the backend native window handle when available. The concrete pointed-to
 void* nativeWindow = app.nativeWindowHandle();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a336d18e6c4db2aee3e904ffed6364ffb).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **supportsRawMouseMotion**
 
@@ -545,7 +554,7 @@ Reports whether the current backend and platform support raw mouse motion. Check
 if (app.supportsRawMouseMotion()) { app.setWindowInputConfig({.rawMouseMotion = true}); }
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#a2717e2f03db8d86a85cc4c420547899b).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **setClipboardText**
 
@@ -563,7 +572,7 @@ Writes clipboard text through the window backend. This is the app-level clipboar
 app.setClipboardText("Copied from FlowUi");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#adf83dcd17ca6a6f93c8059af540035d0).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
 
 ### **clipboardText**
 
@@ -581,4 +590,13 @@ Reads clipboard text through the window backend. Returns the current clipboard t
 std::string pastedText = app.clipboardText();
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1App.html#ab68d7f17584659d9f70a05af9e0f9fee).
+See: [Owning header](../../include/FlowUi/Public/App.hpp).
+
+
+## Modern developer systems
+
+With `FLOW_UI_DEV_MODE`, `devTooling()` returns the app-owned `devSystems::DevTooling` and `devMonitoring()` returns `devSystems::DevMonitoringAndReporting`, with mutable and const overloads. The tooling service exposes `schemas()`, `catalogues()`, `overrides()`, `bakePipeline()`, and overlays; schema/catalogue/override types are in `FlowUi::devSystems::tooling`.
+
+`devWindowSnapshot()` and `devViewportSnapshot(window)` return copied metadata for discovery. The application owns the dedicated developer interface, its toggle, window synchronization, and safe-point publication. Configure runtime activation through `AppConfig::dev.enabled` before creation.
+
+See [Developer Systems](../tutorials/developer_mode.md) and [App.hpp](../../include/FlowUi/Public/App.hpp) for capture, monitoring, and replay overloads. Optional agentic APIs require the separate `FLOW_UI_AGENTIC_WORKFLOW` gate and explicit runtime configuration.

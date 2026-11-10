@@ -1,10 +1,14 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+
+/** @file
+ * @brief Public AgenticInteractionRuntime declarations for optional development services.
+ */
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticCommands.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteraction.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticSnapshot.hpp"
-#include "managers/structs/InputStructs.hpp"
+#include "FlowUi/Public/managerStructs/InputTypes.hpp"
 #include <memory>
 
 namespace FlowUi {
@@ -17,8 +21,16 @@ class AgenticActionRegistry;
 /** Platform-thread executor owned by the App service; workers receive only sealed evidence. */
 class AgenticInteractionRuntime {
 public:
+	/**
+	 * @brief Bind platform-thread execution to borrowed service/application dependencies and
+	 * copied control policy.
+	 */
 	AgenticInteractionRuntime(AgenticWorkflowService& service, App& application,
 							  const AgenticWorkflowConfig& configuration);
+	/**
+	 * @brief Release owned execution state; borrowed application dependencies must still be
+	 * alive.
+	 */
 	~AgenticInteractionRuntime();
 	AgenticInteractionRuntime(const AgenticInteractionRuntime&) = delete;
 	AgenticInteractionRuntime& operator=(const AgenticInteractionRuntime&) = delete;
@@ -51,17 +63,31 @@ public:
 	void shutdown() noexcept;
 	/** Carry the non-owning App dependency across movement of the public App wrapper. */
 	void rebind_application(App& application) noexcept;
+	/**
+	 * @brief Return whether this runtime has admitted execution work that remains active.
+	 */
 	[[nodiscard]] bool active() const noexcept;
+	/** @brief Return whether the execution lease currently controls input for window_id. */
 	[[nodiscard]] bool controls_window(std::uint64_t window_id) const noexcept;
+	/** @brief Return whether execution ownership currently permits capture admission. */
 	[[nodiscard]] bool admits_capture() const noexcept;
+	/** @brief Return whether job_id names execution owned by this runtime. */
 	[[nodiscard]] bool owns_job(std::string_view job_id) const noexcept;
+	/**
+	 * @brief Return estimated currently owned runtime storage in bytes, excluding borrowed
+	 * application resources.
+	 */
 	[[nodiscard]] std::uint64_t owned_memory_bytes() const noexcept;
+	/** @brief Borrow the platform-thread target registry; the runtime owns its lifetime. */
 	[[nodiscard]] AgenticInteractionTargetRegistry& targets() noexcept;
+	/**
+	 * @brief Borrow the platform-thread action export registry; the runtime owns its lifetime.
+	 */
 	[[nodiscard]] AgenticActionRegistry& actions() noexcept;
 
 private:
 	friend class AgenticWorkflowService;
-	/** Owner-synchronized metadata/cancellation never enters application callbacks or JSON
+	/* Owner-synchronized metadata/cancellation never enters application callbacks or JSON
 	 * encoding. */
 	[[nodiscard]] std::string_view capture_job_id(std::string_view job_id) const noexcept;
 	[[nodiscard]] Status request_cancel(std::string_view job_id) noexcept;

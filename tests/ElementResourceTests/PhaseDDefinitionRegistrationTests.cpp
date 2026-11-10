@@ -1,3 +1,4 @@
+#include "FlowUi/Private/elementSystem/ElementRegistrationSupport.hpp"
 #include "TestHarness.hpp"
 
 #include <cstddef>
@@ -6,8 +7,8 @@
 #include <string_view>
 #include <type_traits>
 
-#include "internal/ManagerStorage/ElementStorageController.hpp"
-#include "managers/structs/ElementManagerStructs.hpp"
+#include "FlowUi/Private/elementSystem/ElementStorageController.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementSet.hpp"
 
 namespace {
 

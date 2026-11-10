@@ -4,9 +4,9 @@
 #include <cassert>
 #include <iostream>
 
-#include "internal/MemoryCapacityProfile.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityProfile.hpp"
 #include "HeadlessVulkanFixture.hpp"
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
 
 using namespace FlowUi;
 namespace storage = FlowUi::detail::storage;

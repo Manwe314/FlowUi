@@ -17,4 +17,4 @@ Startup diagnostics retain initialization instead of hiding it behind warmup. Co
 
 Inspect source dictionaries and resource catalogue entries scoped to the affected component. Use the startup failure recipe when no window exists, and the viewport topic for image layouts and readback. Missing provenance is unknown, not inferred from the executable directory.
 
-Source: [FlowUi::ResourceConfig](include/FlowUi/Resources.hpp).
+Source: [FlowUi::ResourceConfig](include/FlowUi/Public/Resources.hpp).

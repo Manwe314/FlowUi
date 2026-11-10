@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 
@@ -11,17 +11,17 @@
 
 #include <vulkan/vulkan.h>
 
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
-#include "managers/structs/ViewPortManagerStructs.hpp"
+#include "FlowUi/Public/interop/vulkan/Viewport.hpp"
 
 namespace FlowUi::devSystems {
 
 using interface_elements::DevPreviewState;
 using interface_elements::PreviewSelection;
 
-/**
- * @brief Offscreen Vulkan subpass renderer for the DevPreview viewport scene.
+/*
+ * Offscreen Vulkan subpass renderer for the DevPreview viewport scene.
  *
  * Handles recording of viewport background, grid lines, captured element geometry,
  * sidecar overlays, and ruler measurement tools directly into the ViewPort

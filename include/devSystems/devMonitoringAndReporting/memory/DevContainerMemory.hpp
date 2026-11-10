@@ -1,10 +1,10 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "internal/MemoryDemandPeaks.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryDemandPeaks.hpp"
 #include <cstdint>
 #include <string>
 #include <type_traits>
@@ -14,14 +14,24 @@
 
 namespace FlowUi::devSystems {
 
+/**
+ * Estimate aggregate container payload and backing without owning or allocating source data. Node-
+ * container estimates omit allocator/node overhead; strings may use inline storage.
+ */
 struct DevContainerMemoryAccumulator {
+	/** Accumulated live element payload bytes. */
 	uint64_t liveBytes = 0u;
+	/** Accumulated estimated backing capacity bytes. */
 	uint64_t capacityBytes = 0u;
+	/** Accumulated live element or character count. */
 	uint64_t objectCount = 0u;
+	/** Accumulated reserved element/character capacity, including estimated hash buckets. */
 	uint64_t capacityCount = 0u;
+	/** Qualifiers applied to samples produced by this accumulator. */
 	MemorySampleFlag flags = MemorySampleFlag::Estimate;
 
 	template<class T, class Allocator>
+	/** Accumulate vector size/capacity multiplied by sizeof(T); nested payloads are excluded. */
 	void add(const std::vector<T, Allocator>& value) noexcept {
 		liveBytes += static_cast<uint64_t>(value.size()) * sizeof(T);
 		capacityBytes += static_cast<uint64_t>(value.capacity()) * sizeof(T);
@@ -30,6 +40,7 @@ struct DevContainerMemoryAccumulator {
 	}
 
 	template<class Char, class Traits, class Allocator>
+	/** Accumulate string character size/capacity; no claim is made about heap versus inline storage. */
 	void add(const std::basic_string<Char, Traits, Allocator>& value) noexcept {
 		liveBytes += static_cast<uint64_t>(value.size()) * sizeof(Char);
 		capacityBytes += static_cast<uint64_t>(value.capacity()) * sizeof(Char);
@@ -38,6 +49,10 @@ struct DevContainerMemoryAccumulator {
 	}
 
 	template<class Container>
+	/**
+	 * Estimate node-container value payload and pointer-sized hash buckets; allocator/node metadata is
+	 * excluded.
+	 */
 	void addNodeContainer(const Container& value) noexcept {
 		liveBytes += static_cast<uint64_t>(value.size()) * sizeof(typename Container::value_type);
 		capacityBytes += static_cast<uint64_t>(value.size()) * sizeof(typename Container::value_type);
@@ -49,6 +64,7 @@ struct DevContainerMemoryAccumulator {
 		}
 	}
 
+	/** Return aggregate values attributed to source and window; zero window indicates app-wide data. */
 	[[nodiscard]] MemoryValueSample sample(
 		MemorySourceId source,
 		WindowId window = InvalidWindowId) const noexcept {
@@ -93,6 +109,10 @@ void append_capacity_demand(MemorySampleSink& sink, FlowUi::detail::InitialCapac
 	(void)sink.append(sample);
 }
 
+/**
+ * Append an estimated manager-container sample synchronously; the sink may reject it without changing
+ * the accumulator.
+ */
 inline void appendManagerSample(
 	MemorySampleSink& sink,
 	MemorySourceId source,

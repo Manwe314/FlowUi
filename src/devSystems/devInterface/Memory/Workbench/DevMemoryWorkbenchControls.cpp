@@ -1,10 +1,82 @@
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.hpp"
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 namespace FlowUi::devSystems::interface_elements {
 namespace interaction = FSEL::detail::selectable_surface;
+DevMemoryControlResources::DevMemoryControlResources([[maybe_unused]] App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	auto& icons = app.icons();
+	interface_icons::registerDevInterfaceIcons(icons);
+	for (size_t key_index = 0; key_index < keys.size(); ++key_index)
+		textures[key_index] = icons.textureRef(keys[key_index]);
+#endif
+}
 namespace {
+[[nodiscard]] std::string_view
+action_icon(const DevMemoryControl::Parameters& parameters) noexcept {
+	using namespace interface_icons;
+	switch (parameters.action) {
+	case 2:
+		return kFollowKey;
+	case 3:
+		return kFitKey;
+	case 100:
+		return parameters.state && parameters.state->analysis.recording ? kStopKey : kRecordKey;
+	case 101:
+		return kCaptureKey;
+	case 102:
+		return kSaveKey;
+	case 103:
+		return kRemoveKey;
+	case 105:
+		return kCloseKey;
+	case 106:
+	case 204:
+		return kSettingsKey;
+	case 107:
+	case 407:
+	case 410:
+		return kEditKey;
+	case 134:
+		return kMoveUpKey;
+	case 137:
+	case 415:
+		return kCopyKey;
+	case 205:
+		return kAddKey;
+	case 206:
+		return kCheckKey;
+	case 401:
+		return kUndoKey;
+	case 403:
+		return parameters.state && parameters.state->analysis.capacity_tool.show_targets
+				   ? kCollapseKey
+				   : kExpandKey;
+	case 404:
+		return kSettingsKey;
+	case 405:
+		return parameters.state && parameters.state->analysis.capacity_tool.show_ledger
+				   ? kCollapseKey
+				   : kExpandKey;
+	case 406:
+		return kPreviousKey;
+	case 408:
+		if (parameters.state) {
+			const auto& tool = parameters.state->analysis.capacity_tool;
+			for (const auto& rule : tool.rules)
+				if ((rule.target ? rule.target : rule.scope + 1) == tool.selected_rule)
+					return rule.locked ? kUnlockKey : kLockKey;
+		}
+		return kLockKey;
+	case 409:
+		return kRevertKey;
+	default:
+		return parameters.action >= 210 && parameters.action < 213 ? kRemoveKey
+																   : std::string_view{};
+	}
+}
 [[nodiscard]] bool track_can_select(DevMemoryControl::InteractionContext& context) {
 	if (!context.params.enabled)
 		return false;
@@ -65,6 +137,8 @@ Clay_ElementDeclaration DevMemoryControl::constructElement(BuildContext& context
 	return root;
 }
 void DevMemoryControl::buildElement(BuildContext& context) {
+	const auto icon_key = action_icon(context.params);
+	auto icon = context.resources().texture(icon_key);
 	const auto root = constructElement(context);
 	Clay_TextElementConfig text{};
 	text.fontSize = 11;
@@ -73,7 +147,19 @@ void DevMemoryControl::buildElement(BuildContext& context) {
 	text.wrapMode = CLAY_TEXT_WRAP_WORDS;
 	text.textAlignment = CLAY_TEXT_ALIGN_CENTER;
 	CLAY(context.clayID(), root) {
-		CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(text));
+		if (icon.handle) {
+			icon.tintEnabled = true;
+			Clay_ElementDeclaration image{};
+			image.layout.sizing = {.width = CLAY_SIZING_FIXED(14), .height = CLAY_SIZING_FIXED(14)};
+			image.backgroundColor = text.textColor;
+			image.image.imageData = context.uiManager.imageData(icon);
+			CLAY(context.clayID("action-icon"), image) {}
+		} else
+			CLAY_TEXT(context.uiManager.toClayString(context.params.label), CLAY_TEXT_CONFIG(text));
+		if (!icon_key.empty() &&
+			context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID()))
+			diagnostics_ui::pointer_tooltip(context, LocalElementName{"action-tooltip"},
+											context.params.label);
 	}
 }
 } // namespace FlowUi::devSystems::interface_elements

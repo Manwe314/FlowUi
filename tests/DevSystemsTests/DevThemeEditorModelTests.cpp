@@ -27,13 +27,14 @@ FLOWUI_DEV_SCHEMA(ComparisonValues, FLOWUI_DEV_FIELD(ComparisonValues, labels),
 				  FLOWUI_DEV_FIELD(ComparisonValues, amount),
 				  FLOWUI_DEV_FIELD(ComparisonValues, unsupported))
 void test_semantic_comparisons() {
-	devMode::DevSchemaRegistry registry;
+	devSystems::tooling::DevSchemaRegistry registry;
 	registry.ensureStruct<ComparisonValues>();
 	FLOWUI_CHECK(registry.publishPendingAtSafePoint());
 	const auto schema = registry.view();
 	const auto* type = schema->findType(detail::typeHash<ComparisonValues>());
 	FLOWUI_CHECK(type);
-	const auto owner = devMode::DevTypeIndex{static_cast<uint32_t>(type - schema->types.data())};
+	const auto owner =
+		devSystems::tooling::DevTypeIndex{static_cast<uint32_t>(type - schema->types.data())};
 	ComparisonValues left{}, right{};
 	const auto compare_field = [&](std::string_view name) {
 		for (const auto& field : schema->fieldsOf(owner))
@@ -72,7 +73,7 @@ void test_semantic_comparisons() {
 	FLOWUI_CHECK(compare_field("unsupported") == ValueComparison::Unavailable);
 }
 void test_fsel_compound_comparison() {
-	devMode::DevSchemaRegistry registry;
+	devSystems::tooling::DevSchemaRegistry registry;
 	registry.ensureTheme<FSEL::FSELTheme>();
 	FLOWUI_CHECK(registry.publishPendingAtSafePoint());
 	const auto schema = registry.view();

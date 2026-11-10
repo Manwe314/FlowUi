@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flow UI: include/managers/UiManager.hpp Source File</title>
+<title>Flow UI: include/FlowUi/Public/managers/UiManager.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
@@ -108,262 +108,698 @@ $(function() {
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;clay.h&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;cstddef&gt;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;cstring&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;clay.h&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;cstring&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;source_location&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;string_view&gt;</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &quot;FlowUi/BuildConfig.hpp&quot;</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &quot;FlowUi/PublicStructs.hpp&quot;</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#include &quot;FlowUi/ResourceKey.hpp&quot;</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &quot;internal/FlowUiElementBridge.hpp&quot;</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &quot;managers/InputFieldManager.hpp&quot;</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &quot;managers/ShortcutManager.hpp&quot;</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;managers/ThemeManager.hpp&quot;</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;managers/structs/FlowUiElementStructs.hpp&quot;</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &quot;managers/FlowUiElementBuilder.hpp&quot;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;managers/structs/InputStructs.hpp&quot;</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;devMode/devRuntime.hpp&quot;</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;devMode/performanceDiagnostics.hpp&quot;</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span>FlowUi {</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">struct </span>AppWindow;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1App.html">App</a>;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a>;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1FontManager.html">FontManager</a>;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="keyword">namespace </span>detail::storage { <span class="keyword">class </span>IStorageSystem; <span class="keyword">struct </span>FrameToken; }</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">namespace </span>detail::manager_storage { <span class="keyword">struct </span>UiManagerState; <span class="keyword">struct </span>FontFrameView; }</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span></div>
-<div class="foldopen" id="foldopen00071" data-start="{" data-end="};">
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html">   71</a></span><span class="keyword">class </span>UiManager {</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">   94</a></span>    Clay_String <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(std::string_view s);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    Clay_String <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span></div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">  117</a></span>    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a>* <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">imageData</a>(<a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a> textureRef);</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    [[deprecated(<span class="stringliteral">&quot;Use imageData(TextureRef); this copies Clay payload bytes, not texture ownership.&quot;</span>)]]</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a>* storeTexture(<span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&amp; textureRef);</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span></div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">  146</a></span>    Clay_ElementDeclaration <a class="code hl_function" href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">inputContentElement</a>(<span class="keyword">const</span> Clay_TextElementConfig&amp; textConfig) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &quot;FlowUi/Public/BuildConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &quot;FlowUi/Public/FlowUiTheme.hpp&quot;</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#include &quot;FlowUi/Public/TextureRef.hpp&quot;</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &quot;FlowUi/Public/configurationStructs/AppConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &quot;FlowUi/Public/configurationStructs/DevToolsConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &quot;FlowUi/Public/configurationStructs/UiConfig.hpp&quot;</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/ErrorCodeTypes.hpp&quot;</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/ErrorSites.hpp&quot;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/ErrorValue.hpp&quot;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;FlowUi/Public/errorManagement/Exception.hpp&quot;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &quot;FlowUi/Public/identificationTypes/ElementID.hpp&quot;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;FlowUi/Public/identificationTypes/WindowId.hpp&quot;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;FlowUi/Public/managerStructs/FontTypes.hpp&quot;</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;FlowUi/Public/identificationTypes/ResourceKey.hpp&quot;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;FlowUi/Private/elementSystem/ElementInstanceKey.hpp&quot;</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;devSystems/devTooling/override/DevOverrideEngine.hpp&quot;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;devSystems/devTooling/tree/DevTreeCapture.hpp&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;devSystems/devTooling/schema/DevSchemaRegistry.hpp&quot;</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &quot;FlowUi/Public/managers/InputFieldManager.hpp&quot;</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &quot;FlowUi/Public/managers/PopupManager.hpp&quot;</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#include &quot;FlowUi/Public/managers/ShortcutManager.hpp&quot;</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#include &quot;FlowUi/Public/managers/ThemeManager.hpp&quot;</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &quot;FlowUi/Public/managerStructs/ActionTypes.hpp&quot;</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;FlowUi/Public/elementAuthoring/ElementContexts.hpp&quot;</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;FlowUi/Public/managerStructs/InputTypes.hpp&quot;</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#include &quot;FlowUi/Private/elementSystem/FlowUiElementBridge.hpp&quot;</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">namespace </span>FlowUi {</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">namespace </span>devSystems { <span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">MemorySampleSink</a>; }</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keyword">namespace </span>devSystems {</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">DevTimingRecorder</a>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="keyword">namespace </span>interface_elements {</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController.html">DevTimelineController</a>;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController.html">DevMemoryHistoryController</a>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>}</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>} <span class="comment">// namespace devSystems</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="keyword">struct </span>AppWindow;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1App.html">App</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ElementManager.html">ElementManager</a>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ActionManager.html">ActionManager</a>;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ImageManager.html">ImageManager</a>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="keyword">class </span><a class="code hl_struct" href="structFlowUi_1_1IconManager.html">IconManager</a>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a>;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a>;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1FontManager.html">FontManager</a>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="keyword">namespace </span>detail::storage { <span class="keyword">class </span>IStorageSystem; <span class="keyword">struct </span>FrameToken; }</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="keyword">namespace </span>detail::manager_storage { <span class="keyword">struct </span>UiManagerState; <span class="keyword">struct </span>FontFrameView; }</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span></div>
+<div class="foldopen" id="foldopen00104" data-start="{" data-end="};">
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html">  104</a></span><span class="keyword">class </span>UiManager {</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="keywordtype">void</span> appendDevMemorySamples(<a class="code hl_class" href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">devSystems::MemorySampleSink</a>&amp; sink) <span class="keyword">const</span> <span class="keyword">noexcept</span>;</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">devSystems::tooling::DevSchemaRegistry</a>* devSchemaRegistry() <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        <span class="keywordflow">return</span> devSchemaRegistry_;</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    }</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">devSystems::tooling::DevSchemaRegistry</a>* devSchemaRegistry() <span class="keyword">const</span> <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        <span class="keywordflow">return</span> devSchemaRegistry_;</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    }</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#aaf370541b52cec49a2c93c0685bcafaf">  115</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">devSystems::tooling::DevTreeSnapshot</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#aaf370541b52cec49a2c93c0685bcafaf">devTreeSnapshot</a>() const noexcept;</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    [[nodiscard]] devSystems::tooling::DevTreeCapture&amp; devTreeCapture() noexcept;</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    [[nodiscard]] const devSystems::tooling::DevTreeCapture&amp; devTreeCapture() const noexcept;</div>
+<div class="foldopen" id="foldopen00119" data-start="{" data-end="}">
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ab7b91f9ba66b646c7f1f82727a428f2e">  119</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab7b91f9ba66b646c7f1f82727a428f2e">set_dev_evidence_context</a>(uint64_t app_tick, uint64_t window_frame) noexcept {</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        dev_evidence_tick_ = app_tick;</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>        dev_evidence_frame_ = window_frame;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    }</div>
+</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span></div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#abf27aa6e0c9b04a1988d0a86cb47afe9">  124</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#abf27aa6e0c9b04a1988d0a86cb47afe9">set_dev_tree_collection</a>(<span class="keywordtype">bool</span> enabled) <span class="keyword">noexcept</span> { dev_tree_collection_ = enabled; }</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    [[nodiscard]] <span class="keywordtype">bool</span> dev_tree_collection() const noexcept { <span class="keywordflow">return</span> dev_tree_collection_; }</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    [[nodiscard]] devSystems::tooling::DevOverrideEngine* devOverrideEngine() noexcept {</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>        <span class="keywordflow">return</span> devOverrideEngine_;</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    }</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>    [[nodiscard]] <span class="keyword">const</span> devSystems::tooling::DevOverrideEngine* devOverrideEngine() const noexcept {</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>        <span class="keywordflow">return</span> devOverrideEngine_;</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>    }</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span></div>
+<div class="foldopen" id="foldopen00139" data-start="{" data-end="}">
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a1f9b39ce02a04579871c5b2e2e0f316a">  139</a></span>    [[nodiscard]] <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1f9b39ce02a04579871c5b2e2e0f316a">isDevInternalScope</a>() const noexcept {</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>        <span class="keywordflow">return</span> devInternalScopeDepth_ &gt; 0;</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>    }</div>
+</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span></div>
+<div class="foldopen" id="foldopen00144" data-start="{" data-end="}">
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a655c6ae2644762e2a45690c7cf0ab717">  144</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a655c6ae2644762e2a45690c7cf0ab717">enterDevInternalScope</a>() noexcept {</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>        ++devInternalScopeDepth_;</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>    }</div>
+</div>
 <div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span></div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">  165</a></span>    Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a>(std::string_view s);</div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span></div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">  186</a></span>    Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">toClayEID</a>(std::string_view s);</div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>    Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">toClayEID</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span></div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Parameters, <span class="keyword">typename</span> State, <span class="keyword">typename</span> Resources, u<span class="keywordtype">int</span>64_t DefinitionId, <span class="keywordtype">bool</span> IsDevInternal&gt;</div>
-<div class="foldopen" id="foldopen00220" data-start="{" data-end="}">
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">  220</a></span>    ElementBuilder&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(</div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ElementDefinition.html">ElementDefinition&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;</a>&amp; elementDefinition,</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>        std::string_view elementID</div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>        , devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()</div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>#endif</div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>        )</div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    {</div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;(</div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>            *<span class="keyword">this</span>,</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>            &amp;elementDefinition,</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>            std::string(elementID)</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>            , sourceLocation</div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>#endif</div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>        );</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    }</div>
+<div class="foldopen" id="foldopen00149" data-start="{" data-end="}">
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a966f80c7a46c2fd57f669b7518ea8336">  149</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a966f80c7a46c2fd57f669b7518ea8336">leaveDevInternalScope</a>() noexcept {</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>        <span class="keywordflow">if</span> (devInternalScopeDepth_ &gt; 0) {</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>            --devInternalScopeDepth_;</div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>        }</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>    }</div>
 </div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span> </div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Parameters, <span class="keyword">typename</span> State, <span class="keyword">typename</span> Resources, u<span class="keywordtype">int</span>64_t DefinitionId, <span class="keywordtype">bool</span> IsDevInternal&gt;</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    <a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;</a> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1ElementDefinition.html">ElementDefinition&lt;Parameters, State, Resources, DefinitionId, IsDevInternal&gt;</a>&amp; elementDefinition,</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>        <a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> elementKey</div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>        , devMode::elementCapture::SourceLocation sourceLocation = devMode::elementCapture::SourceLocation::current()</div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>#endif</div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>        ) {</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">createElement</a>(</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>            elementDefinition,</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>            normalizeUiResourceName(elementKey)</div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>            , sourceLocation</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>#endif</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>        );</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>    }</div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span></div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">  271</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">drawConstructed</a>();</div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span></div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">  287</a></span>    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">getPreviousFramesInteraction</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span></div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">  301</a></span>    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FrameInput</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">getCurrentFrameInput</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span></div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">  317</a></span>    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FrameInput</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">getPreviousFrameInput</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span></div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">  330</a></span>    <a class="code hl_class" href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">inputFields</a>() { <span class="keywordflow">return</span> inputFieldManager_; }</div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span></div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ad9373da210911028ada7f4559cc760b3">  337</a></span>    <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ad9373da210911028ada7f4559cc760b3">inputFields</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> inputFieldManager_; }</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span></div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">  352</a></span>    <a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">shortcuts</a>() { <span class="keywordflow">return</span> shortcutManager_; }</div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span></div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc">  359</a></span>    <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc">shortcuts</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> shortcutManager_; }</div>
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">  366</a></span>    devMode::DevRuntime&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">devRuntime</a>();</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span></div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab7ea3c678a7deb">  373</a></span>    <span class="keyword">const</span> devMode::DevRuntime&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab7ea3c678a7deb">devRuntime</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span></div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">  380</a></span>    <a class="code hl_struct" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">devToolsConfig</a>();</div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span></div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">  387</a></span>    <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">devToolsConfig</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span></div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a097915823f3984e1cf02099e4cee13b9">  394</a></span>    devMode::PerformanceDiagnostics&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a097915823f3984e1cf02099e4cee13b9">performanceDiagnostics</a>();</div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span></div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a8a98cec28d2655fc466ad88576c171ed">  401</a></span>    <span class="keyword">const</span> devMode::PerformanceDiagnostics&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8a98cec28d2655fc466ad88576c171ed">performanceDiagnostics</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span></div>
-<div class="line"><a id="l00417" name="l00417"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a">  417</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a">setClipboardText</a>(std::string_view text) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span></div>
-<div class="line"><a id="l00430" name="l00430"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e">  430</a></span>    std::string <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e">clipboardText</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span></div>
-<div class="line"><a id="l00444" name="l00444"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f">  444</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f">hasClipboardAccess</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00445" name="l00445"></a><span class="lineno">  445</span></div>
-<div class="line"><a id="l00460" name="l00460"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498">  460</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498">requestCursor</a>(<a class="code hl_enumeration" href="group__flowui__config.html#ga8363459dc99cb2c2add5540efe09c80a">CursorType</a> cursorType, uint8_t priority = 0);</div>
-<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span></div>
-<div class="line"><a id="l00479" name="l00479"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">  479</a></span>    <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FontId</a> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">resolveFont</a>(<a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FontFamilyId</a> familyId, uint32_t weight = 400, <a class="code hl_enumeration" href="group__flowui__font__manager.html#gaf7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style = FontStyle::Normal) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span></div>
-<div class="line"><a id="l00500" name="l00500"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b">  500</a></span>    <a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FontId</a> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b">resolveFont</a>(std::string_view familyName, uint32_t weight = 400, <a class="code hl_enumeration" href="group__flowui__font__manager.html#gaf7e7d0763efe0b722c07ea3892e9a52e">FontStyle</a> style = FontStyle::Normal) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span></div>
-<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="foldopen" id="foldopen00510" data-start="{" data-end="}">
-<div class="line"><a id="l00510" name="l00510"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">  510</a></span>    [[nodiscard]] <span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">theme</a>()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>        <span class="keywordflow">return</span> appThemes().template getActiveTheme&lt;T&gt;();</div>
-<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>    }</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span><span class="preprocessor">#endif</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">  176</a></span>    [[nodiscard]] Clay_String <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(std::string_view s);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    [[nodiscard]] Clay_String <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">toClayString</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span></div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">  199</a></span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a>* <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">imageData</a>(<a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">TextureRef</a> textureRef);</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span></div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    [[nodiscard]] Clay_ElementDeclaration</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">  226</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">inputContentElement</a>(<span class="keyword">const</span> Clay_TextElementConfig&amp; textConfig) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span></div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">  245</a></span>    [[nodiscard]] Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a>(std::string_view s);</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    [[nodiscard]] Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">toClaySID</a>(<a class="code hl_struct" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key);</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span></div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">  259</a></span>    [[nodiscard]] Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a>(<a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>    [[nodiscard]] Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a>(<a class="code hl_struct" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>    [[nodiscard]] Clay_ElementId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">toClayEID</a>(<a class="code hl_struct" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span></div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>    [[nodiscard]] ElementBuilder&lt;Element&gt;</div>
+<div class="foldopen" id="foldopen00289" data-start="{" data-end="}">
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">  289</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>                  ,</div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>#endif</div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>    ) {</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> parentId = currentFlowScope();</div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Element&gt;(</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>            parentId,</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>            resolveLocalElementID(parentId, Element::definitionId, localName)</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>            , sourceLocation</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>#endif</div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>        );</div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>    }</div>
 </div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span></div>
-<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="foldopen" id="foldopen00523" data-start="{" data-end="}">
-<div class="line"><a id="l00523" name="l00523"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a6873d408b6c4e703fc90ce70f9a53f61">  523</a></span>    [[nodiscard]] <span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a6873d408b6c4e703fc90ce70f9a53f61">theme</a>(std::string_view variantName)<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>        <span class="keywordflow">return</span> appThemes().template getTheme&lt;T&gt;(variantName);</div>
-<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>    }</div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span> </div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a></div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> localName</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>                  ,</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>#endif</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>    ) {</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> parentId = currentFlowScope();</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a>(</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>            parentId,</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>            resolveLocalElementID(parentId, Element::definitionId, localName)</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>            , sourceLocation</div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>#endif</div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>        );</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>    }</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span></div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>    [[nodiscard]] ElementBuilder&lt;Element&gt;</div>
+<div class="foldopen" id="foldopen00332" data-start="{" data-end="}">
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a51885147c9c179c658e3c4a56eff4758">  332</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a51885147c9c179c658e3c4a56eff4758">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> indexedName</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>                  ,</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>#endif</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>    ) {</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> parentId = currentFlowScope();</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Element&gt;(</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>            parentId,</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>            resolveIndexedElementID(parentId, Element::definitionId, indexedName)</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>            , sourceLocation</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>#endif</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>        );</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>    }</div>
 </div>
-<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span></div>
-<div class="line"><a id="l00532" name="l00532"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a9ce889342ed4460cfef00c05e0b5abf0">  532</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a9ce889342ed4460cfef00c05e0b5abf0">flowTheme</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span> </div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>    <span class="keyword">friend</span> <span class="keyword">class </span>App;</div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>    <span class="keyword">friend</span> <span class="keyword">struct </span>AppWindow;</div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Parameters, <span class="keyword">typename</span> State, <span class="keyword">typename</span> Resources, u<span class="keywordtype">int</span>64_t DefinitionId, <span class="keywordtype">bool</span> IsDevInternal&gt;</div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>    <span class="keyword">friend</span> <span class="keyword">class </span>ElementBuilder;</div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>    <span class="keyword">friend</span> <span class="keywordtype">void</span> detail::pushConstructedElement(UiManager&amp; uiManager, Clay_ElementId elementId);</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span> </div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>    UiManager() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>    <span class="keywordtype">void</span> initStorage(detail::storage::IStorageSystem&amp; storage, WindowId window, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">AppConfig</a>&amp; config);</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>    <span class="keywordtype">void</span> destroyStorage() noexcept;</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>    <span class="keywordtype">void</span> setThemeManager(const <a class="code hl_class" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a>* themeManager) noexcept { themeManager_ = themeManager; }</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>    <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a>&amp; appThemes() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span> </div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    <span class="keywordtype">void</span> beginFrame(</div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>        <span class="keyword">const</span> detail::storage::FrameToken&amp; frame,</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FrameInput</a>&amp; frameInput,</div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>        <span class="keyword">const</span> detail::manager_storage::FontFrameView&amp; fontView,</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>        <span class="keywordtype">float</span> screenWidth,</div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>        <span class="keywordtype">float</span> screenHeight);</div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>    Clay_RenderCommandArray endFrame();</div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>    <span class="keyword">const</span> detail::InputFieldFrameOverrides&amp; inputFieldFrameOverrides()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> inputFieldManager_.frameOverrides(); }</div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>    <span class="keywordtype">void</span> setCursorAccessor(std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_enumeration" href="group__flowui__config.html#ga8363459dc99cb2c2add5540efe09c80a">CursorType</a>)&gt; setCursorTypeAccessor);</div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>    <span class="keywordtype">void</span> setClipboardAccessors(</div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>        std::function&lt;<span class="keywordtype">void</span>(std::string_view)&gt; setClipboardTextAccessor,</div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>        std::function&lt;std::string()&gt; getClipboardTextAccessor);</div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>    <span class="keywordtype">void</span> advanceFrameInteractionSnapshots();</div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>    Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>    <span class="keywordtype">void</span> pushConstructedElement(Clay_ElementId elementId);</div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span> </div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="keywordtype">char</span>* allocBytes(<span class="keywordtype">size_t</span> nBytes, <span class="keywordtype">size_t</span> align = <span class="keyword">alignof</span>(std::max_align_t));</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>    std::string_view normalizeUiResourceName(ResourceKey key) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span> </div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>    </div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>    InputFieldManager inputFieldManager_{};</div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>    ShortcutManager shortcutManager_{};</div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>    std::function&lt;void(std::string_view)&gt; setClipboardTextAccessor_{};</div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>    std::function&lt;std::string()&gt; getClipboardTextAccessor_{};</div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    std::function&lt;void(<a class="code hl_enumeration" href="group__flowui__config.html#ga8363459dc99cb2c2add5540efe09c80a">CursorType</a>)&gt; setCursorTypeAccessor_{};</div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    detail::storage::IStorageSystem* storage_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>    <span class="keyword">const</span> ThemeManager* themeManager_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>    WindowId window_ = InvalidWindowId;</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>    uint64_t stateHandle_ = 0;</div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>    detail::manager_storage::UiManagerState* state_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span> </div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>};</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span></div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a></div>
+<div class="foldopen" id="foldopen00359" data-start="{" data-end="}">
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#aa457fe979bd7351de0c6dea2a787c2d6">  359</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#aa457fe979bd7351de0c6dea2a787c2d6">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1AutoElementName.html">AutoElementName</a> automaticName = AutoID()</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>                                      ,</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>#endif</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>    ) {</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>        <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> parentId = currentFlowScope();</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Element&gt;(</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>            parentId,</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>            resolveAutomaticElementID(parentId, Element::definitionId, automaticName)</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>            , sourceLocation, <span class="keyword">true</span></div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>#endif</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>        );</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    }</div>
 </div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span></div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span> </div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>} <span class="comment">//namespace FlowUi</span></div>
-<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:191</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ElementBuilder_html"><div class="ttname"><a href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a></div><div class="ttdoc">builder returned by UiManager::createElement().</div><div class="ttdef"><b>Definition</b> FlowUiElementBuilder.hpp:53</div></div>
-<div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html">FlowUi::InputFieldManager</a></div><div class="ttdoc">Manages text input fields, focus, caret state, and edit operations.</div><div class="ttdef"><b>Definition</b> InputFieldManager.hpp:102</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:32</div></div>
-<div class="ttc" id="aclassFlowUi_1_1ThemeManager_html"><div class="ttname"><a href="classFlowUi_1_1ThemeManager.html">FlowUi::ThemeManager</a></div><div class="ttdoc">Manages registrable themes, named theme variants, and active theme dispatch.</div><div class="ttdef"><b>Definition</b> ThemeManager.hpp:32</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a097915823f3984e1cf02099e4cee13b9"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a097915823f3984e1cf02099e4cee13b9">FlowUi::UiManager::performanceDiagnostics</a></div><div class="ttdeci">devMode::PerformanceDiagnostics &amp; performanceDiagnostics()</div><div class="ttdoc">Access developer-mode performance diagnostics.</div></div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span></div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a></div>
+<div class="foldopen" id="foldopen00381" data-start="{" data-end="}">
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ab4f49d95db3b7f8f58cbb41e601302c0">  381</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab4f49d95db3b7f8f58cbb41e601302c0">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1GlobalFlowID.html">GlobalFlowID</a> globalId</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>                  ,</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>#endif</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    ) {</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        <span class="keywordflow">if</span> (!globalId) {</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>            <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));</div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>        }</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Element&gt;(</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>            currentFlowScope(),</div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>            normalizeGlobalElementID(globalId)</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>            , sourceLocation</div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>#endif</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>        );</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>    }</div>
+</div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span> </div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder&lt;Element&gt;</a></div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> resolvedId</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>                  ,</div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>#endif</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>    ) {</div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>        <span class="keywordflow">if</span> (!resolvedId) {</div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>            <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));</div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>        }</div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Element&gt;(</div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>            currentFlowScope(),</div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>            resolvedId</div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>            , sourceLocation</div>
+<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>#endif</div>
+<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>        );</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>    }</div>
+<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span></div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>    [[nodiscard]] ElementBuilder&lt;Element&gt;</div>
+<div class="foldopen" id="foldopen00428" data-start="{" data-end="}">
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ade984ed76c3e6ebe3098aae2d0d3b6ef">  428</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ade984ed76c3e6ebe3098aae2d0d3b6ef">createElement</a>(<span class="keyword">const</span> Element&amp;, <a class="code hl_struct" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a> partId</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>                  ,</div>
+<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>                  std::source_location sourceLocation = std::source_location::current()</div>
+<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>#endif</div>
+<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span>    ) {</div>
+<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span>        <span class="keywordflow">if</span> (!partId) {</div>
+<div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span>            <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUiException</a>(makeError(ErrorCode::InvalidElementId, ErrorSite::UiManagerDefineElement));</div>
+<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>        }</div>
+<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>        <span class="keywordflow">return</span> ElementBuilder&lt;Element&gt;(</div>
+<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span>            *<span class="keyword">this</span>,</div>
+<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>(),</div>
+<div class="line"><a id="l00440" name="l00440"></a><span class="lineno">  440</span>            <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>(),</div>
+<div class="line"><a id="l00441" name="l00441"></a><span class="lineno">  441</span>            currentFlowScope(),</div>
+<div class="line"><a id="l00442" name="l00442"></a><span class="lineno">  442</span>            normalizePartElementID(partId)</div>
+<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span>#<span class="keywordflow">if</span> FLOW_UI_DEV_MODE</div>
+<div class="line"><a id="l00444" name="l00444"></a><span class="lineno">  444</span>            , sourceLocation</div>
+<div class="line"><a id="l00445" name="l00445"></a><span class="lineno">  445</span>#endif</div>
+<div class="line"><a id="l00446" name="l00446"></a><span class="lineno">  446</span>        );</div>
+<div class="line"><a id="l00447" name="l00447"></a><span class="lineno">  447</span>    }</div>
+</div>
+<div class="line"><a id="l00448" name="l00448"></a><span class="lineno">  448</span></div>
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">  465</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">drawConstructed</a>();</div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span></div>
+<div class="line"><a id="l00481" name="l00481"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">  481</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">getPreviousFramesInteraction</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span><span class="preprocessor">#if FLOW_UI_AGENTIC_WORKFLOW</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a>&amp; dev_completed_interaction() const noexcept;</div>
+<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>    [[nodiscard]] Clay_Dimensions dev_layout_dimensions() const noexcept;</div>
+<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>    [[nodiscard]] std::uint64_t dev_completed_window_frame() const noexcept;</div>
+<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>    [[nodiscard]] std::uint64_t dev_completed_app_tick() const noexcept;</div>
+<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span></div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">  504</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FrameInput</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">getCurrentFrameInput</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span></div>
+<div class="line"><a id="l00520" name="l00520"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">  520</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FrameInput.html">FrameInput</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">getPreviousFrameInput</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span></div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a206f83532a07edc4dc706ab8fb4a8be0">  533</a></span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a206f83532a07edc4dc706ab8fb4a8be0">inputFields</a>() noexcept { <span class="keywordflow">return</span> inputFieldManager_; }</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span></div>
+<div class="foldopen" id="foldopen00540" data-start="{" data-end="}">
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a872b6e0553d3fe8a24c1d66d7a2fa508">  540</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1InputFieldManager.html">InputFieldManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a872b6e0553d3fe8a24c1d66d7a2fa508">inputFields</a>() const noexcept {</div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>        <span class="keywordflow">return</span> inputFieldManager_;</div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>    }</div>
+</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span></div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ad3fecb217eafbe9424502df6ad1ab678">  557</a></span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ad3fecb217eafbe9424502df6ad1ab678">shortcuts</a>() noexcept { <span class="keywordflow">return</span> shortcutManager_; }</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span></div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#abcbd8a4a112ae261dd426634be2a7eb0">  564</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1ShortcutManager.html">ShortcutManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#abcbd8a4a112ae261dd426634be2a7eb0">shortcuts</a>() const noexcept { <span class="keywordflow">return</span> shortcutManager_; }</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span></div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ae4ee7ab158203c5fd05638a36ebe2582">  567</a></span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1PopupManager.html">PopupManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ae4ee7ab158203c5fd05638a36ebe2582">popups</a>() noexcept { <span class="keywordflow">return</span> popupManager_; }</div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a2c16677c401408f760450da7a379941b">  569</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_class" href="classFlowUi_1_1PopupManager.html">PopupManager</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a2c16677c401408f760450da7a379941b">popups</a>() const noexcept { <span class="keywordflow">return</span> popupManager_; }</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span></div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a24bd77317966a4c812ecbf8d17ec7427">  572</a></span>    [[nodiscard]] ActionManager&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a24bd77317966a4c812ecbf8d17ec7427">actions</a>();</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a9a3fd25f67778090523069fde51031b4">  574</a></span>    [[nodiscard]] <span class="keyword">const</span> ActionManager&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a9a3fd25f67778090523069fde51031b4">actions</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ab9cc1d97b3ab0764ad700650679fccc8">  576</a></span>    [[nodiscard]] ActionInvocationStatus <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ab9cc1d97b3ab0764ad700650679fccc8">invoke</a>(<a class="code hl_class" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call);</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">  583</a></span>    [[nodiscard]] <a class="code hl_struct" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">devToolsConfig</a>();</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span></div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">  590</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1DevToolsConfig.html">DevToolsConfig</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">devToolsConfig</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span></div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a">  606</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a">setClipboardText</a>(std::string_view text) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span></div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e">  619</a></span>    [[nodiscard]] std::string <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e">clipboardText</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span></div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f">  633</a></span>    [[nodiscard]] <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f">hasClipboardAccess</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span></div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498">  649</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498">requestCursor</a>(CursorType cursorType, uint8_t priority = 0);</div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span></div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">  668</a></span>    [[nodiscard]] FontId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">resolveFont</a>(FontFamilyId familyId, uint32_t weight = 400,</div>
+<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>                                     FontStyle style = FontStyle::Normal) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span></div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b">  690</a></span>    [[nodiscard]] FontId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b">resolveFont</a>(std::string_view familyName, uint32_t weight = 400,</div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>                                     FontStyle style = FontStyle::Normal) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span></div>
+<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="foldopen" id="foldopen00701" data-start="{" data-end="}">
+<div class="line"><a id="l00701" name="l00701"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">  701</a></span>    [[nodiscard]] <span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">theme</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>        <span class="keywordflow">for</span> (<span class="keyword">auto</span>* scope = dev_theme_scope_; scope; scope = scope-&gt;previous_)</div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>            <span class="keywordflow">if</span> (scope-&gt;payload_.type == detail::typeHash&lt;T&gt;() &amp;&amp;</div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>                scope-&gt;payload_.payloadSize == <span class="keyword">sizeof</span>(T))</div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>                <span class="keywordflow">return</span> *<span class="keyword">static_cast&lt;</span><span class="keyword">const </span>T*<span class="keyword">&gt;</span>(scope-&gt;payload_.payload);</div>
+<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span>        <span class="keywordflow">return</span> appThemes().template getActiveTheme&lt;T&gt;();</div>
+<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span>    }</div>
+</div>
+<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span> </div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span><span class="preprocessor"></span></div>
+<div class="foldopen" id="foldopen00714" data-start="{" data-end="};">
+<div class="line"><a id="l00714" name="l00714"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager_1_1DevThemeScope.html">  714</a></span>    <span class="keyword">class </span>DevThemeScope {</div>
+<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>        DevThemeScope(UiManager&amp; ui, <a class="code hl_struct" href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">ThemeManager::DevThemePayloadView</a> payload) noexcept</div>
+<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span>            : ui_(ui), payload_(payload), previous_(ui.dev_theme_scope_) {</div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>            <span class="keywordflow">if</span> (payload_.payload)</div>
+<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>                ui_.dev_theme_scope_ = <span class="keyword">this</span>;</div>
+<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>        }</div>
+<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>        ~DevThemeScope() { ui_.dev_theme_scope_ = previous_; }</div>
+<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>        DevThemeScope(<span class="keyword">const</span> DevThemeScope&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>        DevThemeScope&amp; operator=(<span class="keyword">const</span> DevThemeScope&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span> </div>
+<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span>    <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>        <span class="keyword">friend</span> <span class="keyword">class </span>UiManager;</div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>        UiManager&amp; ui_;</div>
+<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>        <a class="code hl_struct" href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">ThemeManager::DevThemePayloadView</a> payload_{};</div>
+<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>        DevThemeScope* previous_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>    };</div>
+</div>
+<div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span></div>
+<div class="foldopen" id="foldopen00732" data-start="{" data-end="};">
+<div class="line"><a id="l00732" name="l00732"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager_1_1DevPassivePreviewScope.html">  732</a></span>    <span class="keyword">class </span>DevPassivePreviewScope {</div>
+<div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        <span class="keyword">explicit</span> DevPassivePreviewScope(UiManager&amp; ui) noexcept : ui_(ui) {</div>
+<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>            ++ui_.dev_passive_preview_depth_;</div>
+<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>            ui_.enterDevInternalScope();</div>
+<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>        }</div>
+<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span>        ~DevPassivePreviewScope() {</div>
+<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>            ui_.leaveDevInternalScope();</div>
+<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>            --ui_.dev_passive_preview_depth_;</div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        }</div>
+<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>        DevPassivePreviewScope(<span class="keyword">const</span> DevPassivePreviewScope&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>        DevPassivePreviewScope&amp; operator=(<span class="keyword">const</span> DevPassivePreviewScope&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span> </div>
+<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>    <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>        UiManager&amp; ui_;</div>
+<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>    };</div>
+</div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span></div>
+<div class="foldopen" id="foldopen00749" data-start="{" data-end="}">
+<div class="line"><a id="l00749" name="l00749"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#afa3989bc0b3e492f1e5f9a11ef116bc0">  749</a></span>    [[nodiscard]] <span class="keywordtype">bool</span> <a class="code hl_function" href="classFlowUi_1_1UiManager.html#afa3989bc0b3e492f1e5f9a11ef116bc0">isDevPassivePreview</a>() const noexcept {</div>
+<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>        <span class="keywordflow">return</span> dev_passive_preview_depth_ != 0;</div>
+<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>    }</div>
+</div>
+<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span></div>
+<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="foldopen" id="foldopen00763" data-start="{" data-end="}">
+<div class="line"><a id="l00763" name="l00763"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a6873d408b6c4e703fc90ce70f9a53f61">  763</a></span>    [[nodiscard]] <span class="keyword">const</span> T&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a6873d408b6c4e703fc90ce70f9a53f61">theme</a>(std::string_view variantName)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span>        <span class="keywordflow">return</span> appThemes().template getTheme&lt;T&gt;(variantName);</div>
+<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>    }</div>
+</div>
+<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span></div>
+<div class="line"><a id="l00772" name="l00772"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a9ce889342ed4460cfef00c05e0b5abf0">  772</a></span>    [[nodiscard]] <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1FlowUiTheme.html">FlowUiTheme</a>&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a9ce889342ed4460cfef00c05e0b5abf0">flowTheme</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span></div>
+<div class="line"><a id="l00775" name="l00775"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">  775</a></span>    [[nodiscard]] ElementManager&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">elements</a>();</div>
+<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span></div>
+<div class="line"><a id="l00778" name="l00778"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#afe707a42b7d57091c84ea9ac325c5c99">  778</a></span>    [[nodiscard]] <span class="keyword">const</span> ElementManager&amp; <a class="code hl_function" href="classFlowUi_1_1UiManager.html#afe707a42b7d57091c84ea9ac325c5c99">elements</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span></div>
+<div class="line"><a id="l00781" name="l00781"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">  781</a></span>    [[nodiscard]] WindowId <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">windowId</a>() const noexcept { <span class="keywordflow">return</span> window_; }</div>
+<div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span> </div>
+<div class="line"><a id="l00783" name="l00783"></a><span class="lineno">  783</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00785" name="l00785"></a><span class="lineno">  785</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController.html">devSystems::interface_elements::DevMemoryHistoryController</a>*</div>
+<div class="foldopen" id="foldopen00786" data-start="{" data-end="}">
+<div class="line"><a id="l00786" name="l00786"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a935e548cf5618a5d99dd430bfdc342bd">  786</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a935e548cf5618a5d99dd430bfdc342bd">memory_history_controller</a>() const noexcept {</div>
+<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span>        <span class="keywordflow">return</span> memory_history_controller_;</div>
+<div class="line"><a id="l00788" name="l00788"></a><span class="lineno">  788</span>    }</div>
+</div>
+<div class="line"><a id="l00789" name="l00789"></a><span class="lineno">  789</span></div>
+<div class="line"><a id="l00790" name="l00790"></a><span class="lineno">  790</span>    [[nodiscard]] <a class="code hl_class" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController.html">devSystems::interface_elements::DevTimelineController</a>*</div>
+<div class="foldopen" id="foldopen00791" data-start="{" data-end="}">
+<div class="line"><a id="l00791" name="l00791"></a><span class="lineno"><a class="line" href="classFlowUi_1_1UiManager.html#a6aecd1a6f796581ec3cfdf519078b999">  791</a></span>    <a class="code hl_function" href="classFlowUi_1_1UiManager.html#a6aecd1a6f796581ec3cfdf519078b999">timeline_controller</a>() const noexcept {</div>
+<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span>        <span class="keywordflow">return</span> timeline_controller_;</div>
+<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span>    }</div>
+</div>
+<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00797" name="l00797"></a><span class="lineno">  797</span>    <a class="code hl_class" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController.html">devSystems::interface_elements::DevTimelineController</a>* timeline_controller_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00798" name="l00798"></a><span class="lineno">  798</span>    <a class="code hl_class" href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController.html">devSystems::interface_elements::DevMemoryHistoryController</a>* memory_history_controller_ =</div>
+<div class="line"><a id="l00799" name="l00799"></a><span class="lineno">  799</span>        <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00800" name="l00800"></a><span class="lineno">  800</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span>    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1App.html">App</a>;</div>
+<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span>    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ElementManager.html">ElementManager</a>;</div>
+<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span>    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ActionManager.html">ActionManager</a>;</div>
+<div class="line"><a id="l00804" name="l00804"></a><span class="lineno">  804</span>    <span class="keyword">friend</span> <span class="keyword">struct </span>AppWindow;</div>
+<div class="line"><a id="l00805" name="l00805"></a><span class="lineno">  805</span>    <span class="keyword">template</span> &lt;FlowElement Element&gt;</div>
+<div class="line"><a id="l00806" name="l00806"></a><span class="lineno">  806</span>    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code hl_class" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a>;</div>
+<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Element&gt;</div>
+<div class="line"><a id="l00808" name="l00808"></a><span class="lineno">  808</span>    <span class="keyword">friend</span> <span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ElementBuildContext.html">ElementBuildContext</a>;</div>
+<div class="line"><a id="l00809" name="l00809"></a><span class="lineno">  809</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Element&gt;</div>
+<div class="line"><a id="l00810" name="l00810"></a><span class="lineno">  810</span>    <span class="keyword">friend</span> <span class="keyword">struct </span><a class="code hl_struct" href="structFlowUi_1_1ElementInteractionContext.html">ElementInteractionContext</a>;</div>
+<div class="line"><a id="l00811" name="l00811"></a><span class="lineno">  811</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00812" name="l00812"></a><span class="lineno">  812</span>    <span class="comment">// Internal builder bridge records frame-local identity diagnostics.</span></div>
+<div class="line"><a id="l00813" name="l00813"></a><span class="lineno">  813</span>    <span class="keyword">friend</span> <span class="keywordtype">void</span> detail::claimFlowRootForDev(</div>
+<div class="line"><a id="l00814" name="l00814"></a><span class="lineno">  814</span>        <a class="code hl_class" href="classFlowUi_1_1UiManager.html">UiManager</a>&amp; uiManager,</div>
+<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span>        <a class="code hl_struct" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> elementId,</div>
+<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span>        <a class="code hl_struct" href="structFlowUi_1_1FlowDefinitionID.html">FlowDefinitionID</a> definitionId,</div>
+<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span>        std::string_view fileName,</div>
+<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>        uint32_t line,</div>
+<div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span>        uint32_t column,</div>
+<div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span>        std::string_view functionName,</div>
+<div class="line"><a id="l00821" name="l00821"></a><span class="lineno">  821</span>        <span class="keywordtype">bool</span> automaticIdentity);</div>
+<div class="line"><a id="l00822" name="l00822"></a><span class="lineno">  822</span>    <span class="keywordtype">void</span> claimClayBridgeForDev(</div>
+<div class="line"><a id="l00823" name="l00823"></a><span class="lineno">  823</span>        detail::element::ElementInstanceKey instanceId,</div>
+<div class="line"><a id="l00824" name="l00824"></a><span class="lineno">  824</span>        std::string_view debugName);</div>
+<div class="line"><a id="l00825" name="l00825"></a><span class="lineno">  825</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span> </div>
+<div class="line"><a id="l00827" name="l00827"></a><span class="lineno">  827</span>    <a class="code hl_class" href="classFlowUi_1_1UiManager.html">UiManager</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00828" name="l00828"></a><span class="lineno">  828</span>    <span class="keywordtype">void</span> initStorage(detail::storage::IStorageSystem&amp; storage, WindowId window, <span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1AppConfig.html">AppConfig</a>&amp; config);</div>
+<div class="line"><a id="l00829" name="l00829"></a><span class="lineno">  829</span>    <span class="keywordtype">void</span> destroyStorage() noexcept;</div>
+<div class="line"><a id="l00830" name="l00830"></a><span class="lineno">  830</span>    <span class="keywordtype">void</span> setThemeManager(const <a class="code hl_class" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a>* themeManager) noexcept { themeManager_ = themeManager; }</div>
+<div class="line"><a id="l00831" name="l00831"></a><span class="lineno">  831</span>    <span class="keywordtype">void</span> setElementManager(ElementManager* elementManager) <span class="keyword">noexcept</span> { elementManager_ = elementManager; }</div>
+<div class="line"><a id="l00832" name="l00832"></a><span class="lineno">  832</span>    <span class="keywordtype">void</span> setActionManager(ActionManager* actionManager) <span class="keyword">noexcept</span> { actionManager_ = actionManager; }</div>
+<div class="line"><a id="l00833" name="l00833"></a><span class="lineno">  833</span>    <span class="keywordtype">void</span> setImageManager(ImageManager* imageManager) <span class="keyword">noexcept</span> { imageManager_ = imageManager; }</div>
+<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>    <span class="keywordtype">void</span> setIconManager(IconManager* iconManager) <span class="keyword">noexcept</span> { iconManager_ = iconManager; }</div>
+<div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00836" name="l00836"></a><span class="lineno">  836</span>    <span class="keywordtype">void</span> setDevTimingRecorder(devSystems::DevTimingRecorder* recorder) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00837" name="l00837"></a><span class="lineno">  837</span>        devTimingRecorder_ = recorder;</div>
+<div class="line"><a id="l00838" name="l00838"></a><span class="lineno">  838</span>    }</div>
+<div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>    <span class="keywordtype">void</span> setDevSchemaRegistry(devSystems::tooling::DevSchemaRegistry* registry) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00840" name="l00840"></a><span class="lineno">  840</span>        devSchemaRegistry_ = registry;</div>
+<div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>    }</div>
+<div class="line"><a id="l00842" name="l00842"></a><span class="lineno">  842</span>    <span class="keywordtype">void</span> setDevOverrideEngine(</div>
+<div class="line"><a id="l00843" name="l00843"></a><span class="lineno">  843</span>        devSystems::tooling::DevOverrideEngine* engine) <span class="keyword">noexcept</span> {</div>
+<div class="line"><a id="l00844" name="l00844"></a><span class="lineno">  844</span>        devOverrideEngine_ = engine;</div>
+<div class="line"><a id="l00845" name="l00845"></a><span class="lineno">  845</span>    }</div>
+<div class="line"><a id="l00846" name="l00846"></a><span class="lineno">  846</span>    [[nodiscard]] devSystems::DevTimingRecorder* devTimingRecorder() const noexcept {</div>
+<div class="line"><a id="l00847" name="l00847"></a><span class="lineno">  847</span>        <span class="keywordflow">return</span> devTimingRecorder_;</div>
+<div class="line"><a id="l00848" name="l00848"></a><span class="lineno">  848</span>    }</div>
+<div class="line"><a id="l00849" name="l00849"></a><span class="lineno">  849</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>    <span class="keyword">const</span> ThemeManager&amp; appThemes() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00851" name="l00851"></a><span class="lineno">  851</span> </div>
+<div class="line"><a id="l00852" name="l00852"></a><span class="lineno">  852</span>    <span class="keywordtype">void</span> beginFrame(</div>
+<div class="line"><a id="l00853" name="l00853"></a><span class="lineno">  853</span>        <span class="keyword">const</span> detail::storage::FrameToken&amp; frame,</div>
+<div class="line"><a id="l00854" name="l00854"></a><span class="lineno">  854</span>        <span class="keyword">const</span> FrameInput&amp; frameInput,</div>
+<div class="line"><a id="l00855" name="l00855"></a><span class="lineno">  855</span>        <span class="keyword">const</span> detail::manager_storage::FontFrameView&amp; fontView,</div>
+<div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span>        <span class="keywordtype">float</span> screenWidth,</div>
+<div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span>        <span class="keywordtype">float</span> screenHeight);</div>
+<div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span>    Clay_RenderCommandArray endFrame();</div>
+<div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span>    <span class="keyword">const</span> detail::InputFieldFrameOverrides&amp; inputFieldFrameOverrides()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> inputFieldManager_.frameOverrides(); }</div>
+<div class="line"><a id="l00860" name="l00860"></a><span class="lineno">  860</span>    <span class="keywordtype">void</span> setCursorAccessor(std::function&lt;<span class="keywordtype">void</span>(CursorType)&gt; setCursorTypeAccessor);</div>
+<div class="line"><a id="l00861" name="l00861"></a><span class="lineno">  861</span>    <span class="keywordtype">void</span> setClipboardAccessors(</div>
+<div class="line"><a id="l00862" name="l00862"></a><span class="lineno">  862</span>        std::function&lt;<span class="keywordtype">void</span>(std::string_view)&gt; setClipboardTextAccessor,</div>
+<div class="line"><a id="l00863" name="l00863"></a><span class="lineno">  863</span>        std::function&lt;std::string()&gt; getClipboardTextAccessor);</div>
+<div class="line"><a id="l00864" name="l00864"></a><span class="lineno">  864</span>    <span class="keywordtype">void</span> advanceFrameInteractionSnapshots();</div>
+<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span>    <span class="keywordtype">void</span> cancelFrameState() noexcept;</div>
+<div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span>    Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;</div>
+<div class="line"><a id="l00867" name="l00867"></a><span class="lineno">  867</span>    [[nodiscard]] FlowElementID currentFlowScope() const noexcept;</div>
+<div class="line"><a id="l00868" name="l00868"></a><span class="lineno">  868</span>    [[nodiscard]] FlowElementID resolveLocalElementID(</div>
+<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span>        FlowElementID parent,</div>
+<div class="line"><a id="l00870" name="l00870"></a><span class="lineno">  870</span>        FlowDefinitionID definition,</div>
+<div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span>        LocalElementName name);</div>
+<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>    [[nodiscard]] FlowElementID resolveLocalElementID(</div>
+<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>        FlowElementID parent,</div>
+<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span>        FlowDefinitionID definition,</div>
+<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>        RuntimeElementName name);</div>
+<div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span>    [[nodiscard]] FlowElementID resolveIndexedElementID(</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>        FlowElementID parent,</div>
+<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span>        FlowDefinitionID definition,</div>
+<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>        IndexedElementName name);</div>
+<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>    [[nodiscard]] FlowElementID resolveAutomaticElementID(</div>
+<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>        FlowElementID parent,</div>
+<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span>        FlowDefinitionID definition,</div>
+<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>        AutoElementName name);</div>
+<div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span>    [[nodiscard]] FlowElementID normalizeGlobalElementID(GlobalFlowID <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00885" name="l00885"></a><span class="lineno">  885</span>    [[nodiscard]] FlowElementID normalizePartElementID(FlowElementPartID <span class="keywordtype">id</span>) const noexcept;</div>
+<div class="line"><a id="l00886" name="l00886"></a><span class="lineno">  886</span>    [[nodiscard]] FlowElementPartID resolveElementPartID(</div>
+<div class="line"><a id="l00887" name="l00887"></a><span class="lineno">  887</span>        FlowDefinitionID ownerDefinition,</div>
+<div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span>        FlowElementID owner,</div>
+<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>        FlowElementPart part);</div>
+<div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span>    [[nodiscard]] <span class="keywordtype">size_t</span> pushFlowScope(FlowElementID <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span>    <span class="keywordtype">void</span> restoreFlowScope(<span class="keywordtype">size_t</span> depth) noexcept;</div>
+<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>    [[nodiscard]] <span class="keywordtype">size_t</span> constructedElementDepth() const noexcept;</div>
+<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>    <span class="keywordtype">void</span> closeConstructedToDepth(</div>
+<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>        <span class="keywordtype">size_t</span> depth, <span class="keywordtype">bool</span> warn, <span class="keywordtype">bool</span> autoClosedAtFrameEnd = false) noexcept;</div>
+<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>    <span class="keywordtype">void</span> retainConstructedElement(</div>
+<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span>        Clay_ElementId clayId,</div>
+<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>        FlowElementID flowId,</div>
+<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>        <span class="keywordtype">size_t</span> priorFlowScopeDepth</div>
+<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span>        , devSystems::tooling::DevTreeCapture::Token treeToken</div>
+<div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span>        , <span class="keywordtype">bool</span> isDevInternal = <span class="keyword">false</span></div>
+<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span><span class="preprocessor">#if FLOW_UI_DEV_MODE &amp;&amp; FLOWUI_DEV_TIMING_LEVEL &gt;= 2</span></div>
+<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>        , FlowDefinitionID definitionId = {}</div>
+<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00906" name="l00906"></a><span class="lineno">  906</span>        );</div>
+<div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>    [[nodiscard]] std::string_view joinFlowDebugPath(</div>
+<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span>        std::string_view parent,</div>
+<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span>        std::string_view child);</div>
+<div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>    [[nodiscard]] std::string_view indexedFlowDebugName(IndexedElementName name);</div>
+<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span>    [[nodiscard]] std::string_view automaticFlowDebugName(AutoElementName name);</div>
+<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span>    [[nodiscard]] std::string_view globalFlowDebugName(GlobalFlowID <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00914" name="l00914"></a><span class="lineno">  914</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span> </div>
+<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>    <span class="keywordtype">char</span>* allocBytes(<span class="keywordtype">size_t</span> nBytes, <span class="keywordtype">size_t</span> align = <span class="keyword">alignof</span>(std::max_align_t));</div>
+<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span>    std::string_view normalizeUiResourceName(ResourceKey key) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span> </div>
+<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>    </div>
+<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span>    InputFieldManager inputFieldManager_{};</div>
+<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span>    PopupManager popupManager_{};</div>
+<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span>    ShortcutManager shortcutManager_{};</div>
+<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span>    std::function&lt;void(std::string_view)&gt; setClipboardTextAccessor_{};</div>
+<div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span>    std::function&lt;std::string()&gt; getClipboardTextAccessor_{};</div>
+<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>    std::function&lt;void(CursorType)&gt; setCursorTypeAccessor_{};</div>
+<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>    detail::storage::IStorageSystem* storage_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>    <span class="keyword">const</span> ThemeManager* themeManager_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>    ElementManager* elementManager_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>    ActionManager* actionManager_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span>    ImageManager* imageManager_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>    IconManager* iconManager_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>    devSystems::DevTimingRecorder* devTimingRecorder_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>    devSystems::tooling::DevSchemaRegistry* devSchemaRegistry_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>    devSystems::tooling::DevOverrideEngine* devOverrideEngine_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span>    uint32_t devInternalScopeDepth_ = 0;</div>
+<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>    uint32_t dev_passive_preview_depth_ = 0;</div>
+<div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span>    <a class="code hl_class" href="classFlowUi_1_1UiManager_1_1DevThemeScope.html">DevThemeScope</a>* dev_theme_scope_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00940" name="l00940"></a><span class="lineno">  940</span>    uint64_t dev_evidence_tick_ = 0, dev_evidence_frame_ = 0;</div>
+<div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span>    <span class="keywordtype">bool</span> dev_tree_collection_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span>    WindowId window_ = InvalidWindowId;</div>
+<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span>    uint64_t stateHandle_ = 0;</div>
+<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span>    detail::manager_storage::UiManagerState* state_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span> </div>
+<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>};</div>
+</div>
+<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span></div>
+<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span> </div>
+<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>} <span class="comment">//namespace FlowUi</span></div>
+<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span> </div>
+<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span><span class="preprocessor">#include &quot;FlowUi/Public/elementAuthoring/ElementBuilder.hpp&quot;</span></div>
+<div class="ttc" id="aclassFlowUi_1_1ActionCall_html"><div class="ttname"><a href="classFlowUi_1_1ActionCall.html">FlowUi::ActionCall</a></div><div class="ttdef"><b>Definition</b> ActionTypes.hpp:86</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ActionManager_html"><div class="ttname"><a href="classFlowUi_1_1ActionManager.html">FlowUi::ActionManager</a></div><div class="ttdef"><b>Definition</b> ActionManager.hpp:91</div></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:61</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ElementBuilder_html"><div class="ttname"><a href="classFlowUi_1_1ElementBuilder.html">FlowUi::ElementBuilder</a></div><div class="ttdoc">Builder returned by UiManager::createElement().</div><div class="ttdef"><b>Definition</b> ElementBuilder.hpp:160</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ElementManager_html"><div class="ttname"><a href="classFlowUi_1_1ElementManager.html">FlowUi::ElementManager</a></div><div class="ttdoc">App-wide owner and public access point for Flow element runtime data.</div><div class="ttdef"><b>Definition</b> ElementManager.hpp:47</div></div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ImageManager_html"><div class="ttname"><a href="classFlowUi_1_1ImageManager.html">FlowUi::ImageManager</a></div><div class="ttdoc">Loads image files and exposes them as FlowUi texture references.</div><div class="ttdef"><b>Definition</b> ImageManager.hpp:54</div></div>
+<div class="ttc" id="aclassFlowUi_1_1InputFieldManager_html"><div class="ttname"><a href="classFlowUi_1_1InputFieldManager.html">FlowUi::InputFieldManager</a></div><div class="ttdoc">Manages text input fields, focus, caret state, and edit operations.</div><div class="ttdef"><b>Definition</b> InputFieldManager.hpp:118</div></div>
+<div class="ttc" id="aclassFlowUi_1_1PopupManager_html"><div class="ttname"><a href="classFlowUi_1_1PopupManager.html">FlowUi::PopupManager</a></div><div class="ttdef"><b>Definition</b> PopupManager.hpp:22</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ShortcutManager_html"><div class="ttname"><a href="classFlowUi_1_1ShortcutManager.html">FlowUi::ShortcutManager</a></div><div class="ttdoc">Registers and dispatches keyboard shortcuts.</div><div class="ttdef"><b>Definition</b> ShortcutManager.hpp:38</div></div>
+<div class="ttc" id="aclassFlowUi_1_1ThemeManager_html"><div class="ttname"><a href="classFlowUi_1_1ThemeManager.html">FlowUi::ThemeManager</a></div><div class="ttdoc">Manages registrable themes, named theme variants, and active theme dispatch.</div><div class="ttdef"><b>Definition</b> ThemeManager.hpp:48</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_1_1DevThemeScope_html"><div class="ttname"><a href="classFlowUi_1_1UiManager_1_1DevThemeScope.html">FlowUi::UiManager::DevThemeScope</a></div><div class="ttdef"><b>Definition</b> UiManager.hpp:714</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:104</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a0caf0ecce99a1beb956ce76179b2f06a"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a0caf0ecce99a1beb956ce76179b2f06a">FlowUi::UiManager::getCurrentFrameInput</a></div><div class="ttdeci">const FrameInput &amp; getCurrentFrameInput() const</div><div class="ttdoc">Return input for the current layout frame.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a0e207879dfd35c910841bc23509c0abc"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a0e207879dfd35c910841bc23509c0abc">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">const ShortcutManager &amp; shortcuts() const</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:359</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a12cb4ceeafcca80fea278337586ae2ac"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a12cb4ceeafcca80fea278337586ae2ac">FlowUi::UiManager::getPreviousFrameInput</a></div><div class="ttdeci">const FrameInput &amp; getPreviousFrameInput() const</div><div class="ttdoc">Return input for the previous layout frame.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a15f634a57bdcc1cc0838007554144c5d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a15f634a57bdcc1cc0838007554144c5d">FlowUi::UiManager::devToolsConfig</a></div><div class="ttdeci">DevToolsConfig &amp; devToolsConfig()</div><div class="ttdoc">Access developer tooling config.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a1a718742e52372ebd62f57980ef501ba"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a1a718742e52372ebd62f57980ef501ba">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">InputFieldManager &amp; inputFields()</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:330</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a27ecba8061cf9a454320450d533c2b0c"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a27ecba8061cf9a454320450d533c2b0c">FlowUi::UiManager::devRuntime</a></div><div class="ttdeci">devMode::DevRuntime &amp; devRuntime()</div><div class="ttdoc">Access the developer runtime.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2a9c6c1f0719e6dd203ad4de09007ee4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2a9c6c1f0719e6dd203ad4de09007ee4">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; createElement(const ElementDefinition&lt; Parameters, State, Resources, DefinitionId, IsDevInternal &gt; &amp;elementDefinition, std::string_view elementID, devMode::elementCapture::SourceLocation sourceLocation=devMode::elementCapture::SourceLocation::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:220</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a1f9b39ce02a04579871c5b2e2e0f316a"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a1f9b39ce02a04579871c5b2e2e0f316a">FlowUi::UiManager::isDevInternalScope</a></div><div class="ttdeci">bool isDevInternalScope() const noexcept</div><div class="ttdoc">Check whether UI construction is currently inside an active dev-internal element scope.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:139</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a206f83532a07edc4dc706ab8fb4a8be0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a206f83532a07edc4dc706ab8fb4a8be0">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">InputFieldManager &amp; inputFields() noexcept</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:533</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a24bd77317966a4c812ecbf8d17ec7427"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a24bd77317966a4c812ecbf8d17ec7427">FlowUi::UiManager::actions</a></div><div class="ttdeci">ActionManager &amp; actions()</div><div class="ttdoc">Access the app-wide ActionManager attached to this UI.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a2c16677c401408f760450da7a379941b"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a2c16677c401408f760450da7a379941b">FlowUi::UiManager::popups</a></div><div class="ttdeci">const PopupManager &amp; popups() const noexcept</div><div class="ttdoc">Access this window&#39;s immutable popup placement and dismissal service.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:569</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a35409fc9aafc767ac636443f14d53f3c"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a35409fc9aafc767ac636443f14d53f3c">FlowUi::UiManager::elements</a></div><div class="ttdeci">ElementManager &amp; elements()</div><div class="ttdoc">Access the app-owned element state/resource manager.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a3d1d0dcbcbdc6c177a80ed4bdd3ef1b9">FlowUi::UiManager::devToolsConfig</a></div><div class="ttdeci">const DevToolsConfig &amp; devToolsConfig() const</div><div class="ttdoc">Access developer tooling config.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a3ef6d75f9ad2e76294c104c4b3e25803"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a3ef6d75f9ad2e76294c104c4b3e25803">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, LocalElementName localName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdoc">Create a builder for a typed FlowUi element instance.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:289</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a428e81a65fec2e616b90be54b58744c4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a428e81a65fec2e616b90be54b58744c4">FlowUi::UiManager::getPreviousFramesInteraction</a></div><div class="ttdeci">const InteractionSnapshot &amp; getPreviousFramesInteraction() const</div><div class="ttdoc">Return the previous completed frame&#39;s interaction snapshot.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a43b32fe49c09bc873a6691764164ba6b"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a43b32fe49c09bc873a6691764164ba6b">FlowUi::UiManager::resolveFont</a></div><div class="ttdeci">FontId resolveFont(std::string_view familyName, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</div><div class="ttdoc">Resolve a concrete Clay font id for a named family/style request.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a4b3ec28e336b11fc18d35639a360544e"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a4b3ec28e336b11fc18d35639a360544e">FlowUi::UiManager::clipboardText</a></div><div class="ttdeci">std::string clipboardText() const</div><div class="ttdoc">Read clipboard text through the configured clipboard accessor.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a61893809f24d2017db5642a3a780065f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a61893809f24d2017db5642a3a780065f">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">ShortcutManager &amp; shortcuts()</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:352</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a51885147c9c179c658e3c4a56eff4758"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a51885147c9c179c658e3c4a56eff4758">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, IndexedElementName indexedName, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdef"><b>Definition</b> UiManager.hpp:332</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a64bfd45ccd65d7eb70792e13a4559a8f"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f">FlowUi::UiManager::hasClipboardAccess</a></div><div class="ttdeci">bool hasClipboardAccess() const</div><div class="ttdoc">Return whether clipboard accessors are installed.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a67ed60b989b4c54ca6aae7aad7bed4d0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a67ed60b989b4c54ca6aae7aad7bed4d0">FlowUi::UiManager::toClayEID</a></div><div class="ttdeci">Clay_ElementId toClayEID(std::string_view s)</div><div class="ttdoc">Convert an element id string to a Clay element id.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a6873d408b6c4e703fc90ce70f9a53f61"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a6873d408b6c4e703fc90ce70f9a53f61">FlowUi::UiManager::theme</a></div><div class="ttdeci">const T &amp; theme(std::string_view variantName) const</div><div class="ttdoc">Access a specific named variant for theme type T.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:523</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a655c6ae2644762e2a45690c7cf0ab717"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a655c6ae2644762e2a45690c7cf0ab717">FlowUi::UiManager::enterDevInternalScope</a></div><div class="ttdeci">void enterDevInternalScope() noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:144</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a6873d408b6c4e703fc90ce70f9a53f61"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a6873d408b6c4e703fc90ce70f9a53f61">FlowUi::UiManager::theme</a></div><div class="ttdeci">const T &amp; theme(std::string_view variantName) const</div><div class="ttdoc">Access a specific named variant for theme type T.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:763</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a6aecd1a6f796581ec3cfdf519078b999"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a6aecd1a6f796581ec3cfdf519078b999">FlowUi::UiManager::timeline_controller</a></div><div class="ttdeci">devSystems::interface_elements::DevTimelineController * timeline_controller() const noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:791</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a73558c0199600f70651c54dba7211498"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a73558c0199600f70651c54dba7211498">FlowUi::UiManager::requestCursor</a></div><div class="ttdeci">void requestCursor(CursorType cursorType, uint8_t priority=0)</div><div class="ttdoc">Request a cursor shape for the current frame.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a8444d3c1aa6671658b33cdc3da3afe49"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a8444d3c1aa6671658b33cdc3da3afe49">FlowUi::UiManager::toClayEID</a></div><div class="ttdeci">Clay_ElementId toClayEID(FlowElementID id)</div><div class="ttdoc">Deterministically bridge a strong 64-bit Flow identity to Clay.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a84ca159240dc3f702a72698da0cdda83"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a84ca159240dc3f702a72698da0cdda83">FlowUi::UiManager::imageData</a></div><div class="ttdeci">TextureRef * imageData(TextureRef textureRef)</div><div class="ttdoc">Store a texture reference for use by Clay image render data.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a857a971efa5a8e904806b9398e0e4883"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a857a971efa5a8e904806b9398e0e4883">FlowUi::UiManager::drawConstructed</a></div><div class="ttdeci">void drawConstructed()</div><div class="ttdoc">Close the current element opened by ElementBuilder::construct().</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a8a98cec28d2655fc466ad88576c171ed"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a8a98cec28d2655fc466ad88576c171ed">FlowUi::UiManager::performanceDiagnostics</a></div><div class="ttdeci">const devMode::PerformanceDiagnostics &amp; performanceDiagnostics() const</div><div class="ttdoc">Access developer-mode performance diagnostics.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a872b6e0553d3fe8a24c1d66d7a2fa508"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a872b6e0553d3fe8a24c1d66d7a2fa508">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">const InputFieldManager &amp; inputFields() const noexcept</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:540</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a8b358e6e96602f764b75782489aee371"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371">FlowUi::UiManager::windowId</a></div><div class="ttdeci">WindowId windowId() const noexcept</div><div class="ttdoc">Return the window whose frame this UI manager builds.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:781</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a935e548cf5618a5d99dd430bfdc342bd"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a935e548cf5618a5d99dd430bfdc342bd">FlowUi::UiManager::memory_history_controller</a></div><div class="ttdeci">devSystems::interface_elements::DevMemoryHistoryController * memory_history_controller() const noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:786</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a966f80c7a46c2fd57f669b7518ea8336"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a966f80c7a46c2fd57f669b7518ea8336">FlowUi::UiManager::leaveDevInternalScope</a></div><div class="ttdeci">void leaveDevInternalScope() noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:149</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_a9a3fd25f67778090523069fde51031b4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a9a3fd25f67778090523069fde51031b4">FlowUi::UiManager::actions</a></div><div class="ttdeci">const ActionManager &amp; actions() const</div><div class="ttdoc">Access the immutable app-wide ActionManager attached to this UI.</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_a9ce889342ed4460cfef00c05e0b5abf0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#a9ce889342ed4460cfef00c05e0b5abf0">FlowUi::UiManager::flowTheme</a></div><div class="ttdeci">const FlowUiTheme &amp; flowTheme() const</div><div class="ttdoc">Convenience shortcut for active built-in FlowUiTheme.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_aa457fe979bd7351de0c6dea2a787c2d6"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#aa457fe979bd7351de0c6dea2a787c2d6">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, AutoElementName automaticName=AutoID(), std::source_location sourceLocation=std::source_location::current())</div><div class="ttdef"><b>Definition</b> UiManager.hpp:359</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_aacd40f0f6f42bc6e2678ffc7eefa207e"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#aacd40f0f6f42bc6e2678ffc7eefa207e">FlowUi::UiManager::inputContentElement</a></div><div class="ttdeci">Clay_ElementDeclaration inputContentElement(const Clay_TextElementConfig &amp;textConfig) const</div><div class="ttdoc">Create a stable inner input-field content element declaration.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_aaf370541b52cec49a2c93c0685bcafaf"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#aaf370541b52cec49a2c93c0685bcafaf">FlowUi::UiManager::devTreeSnapshot</a></div><div class="ttdeci">const devSystems::tooling::DevTreeSnapshot &amp; devTreeSnapshot() const noexcept</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ab4f49d95db3b7f8f58cbb41e601302c0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ab4f49d95db3b7f8f58cbb41e601302c0">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, GlobalFlowID globalId, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdef"><b>Definition</b> UiManager.hpp:381</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_ab5a7131ff83f731ff6f99006f4563d29"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ab5a7131ff83f731ff6f99006f4563d29">FlowUi::UiManager::toClaySID</a></div><div class="ttdeci">Clay_ElementId toClaySID(std::string_view s)</div><div class="ttdoc">Convert a string id to a Clay string id.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ab7b91f9ba66b646c7f1f82727a428f2e"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ab7b91f9ba66b646c7f1f82727a428f2e">FlowUi::UiManager::set_dev_evidence_context</a></div><div class="ttdeci">void set_dev_evidence_context(uint64_t app_tick, uint64_t window_frame) noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:119</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ab9cc1d97b3ab0764ad700650679fccc8"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ab9cc1d97b3ab0764ad700650679fccc8">FlowUi::UiManager::invoke</a></div><div class="ttdeci">ActionInvocationStatus invoke(ActionCall call)</div><div class="ttdoc">Invoke an action from this window&#39;s UI context.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_abcbd8a4a112ae261dd426634be2a7eb0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#abcbd8a4a112ae261dd426634be2a7eb0">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">const ShortcutManager &amp; shortcuts() const noexcept</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:564</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_abf27aa6e0c9b04a1988d0a86cb47afe9"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#abf27aa6e0c9b04a1988d0a86cb47afe9">FlowUi::UiManager::set_dev_tree_collection</a></div><div class="ttdeci">void set_dev_tree_collection(bool enabled) noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:124</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_ac1694a665b71269470ff22a2adc00437"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ac1694a665b71269470ff22a2adc00437">FlowUi::UiManager::toClayString</a></div><div class="ttdeci">Clay_String toClayString(std::string_view s)</div><div class="ttdoc">Store a string in the current frame arena and return a Clay string.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ad20b526851ef6b7948612512c11d09b4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">FlowUi::UiManager::theme</a></div><div class="ttdeci">const T &amp; theme() const</div><div class="ttdoc">Access the active variant for theme type T.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:510</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ad9373da210911028ada7f4559cc760b3"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ad9373da210911028ada7f4559cc760b3">FlowUi::UiManager::inputFields</a></div><div class="ttdeci">const InputFieldManager &amp; inputFields() const</div><div class="ttdoc">Access the input field manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:337</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ad20b526851ef6b7948612512c11d09b4"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ad20b526851ef6b7948612512c11d09b4">FlowUi::UiManager::theme</a></div><div class="ttdeci">const T &amp; theme() const</div><div class="ttdoc">Access the active variant for theme type T.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:701</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ad3fecb217eafbe9424502df6ad1ab678"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ad3fecb217eafbe9424502df6ad1ab678">FlowUi::UiManager::shortcuts</a></div><div class="ttdeci">ShortcutManager &amp; shortcuts() noexcept</div><div class="ttdoc">Access the shortcut manager.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:557</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_adbbbc7d049cee3b9e97242fc44585c2d"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#adbbbc7d049cee3b9e97242fc44585c2d">FlowUi::UiManager::resolveFont</a></div><div class="ttdeci">FontId resolveFont(FontFamilyId familyId, uint32_t weight=400, FontStyle style=FontStyle::Normal) const</div><div class="ttdoc">Resolve a concrete Clay font id for a family/style request.</div></div>
-<div class="ttc" id="aclassFlowUi_1_1UiManager_html_af44b4564bc6f0af50ab7ea3c678a7deb"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#af44b4564bc6f0af50ab7ea3c678a7deb">FlowUi::UiManager::devRuntime</a></div><div class="ttdeci">const devMode::DevRuntime &amp; devRuntime() const</div><div class="ttdoc">Access the developer runtime.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ade984ed76c3e6ebe3098aae2d0d3b6ef"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ade984ed76c3e6ebe3098aae2d0d3b6ef">FlowUi::UiManager::createElement</a></div><div class="ttdeci">ElementBuilder&lt; Element &gt; createElement(const Element &amp;, FlowElementPartID partId, std::source_location sourceLocation=std::source_location::current())</div><div class="ttdef"><b>Definition</b> UiManager.hpp:428</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_ae4ee7ab158203c5fd05638a36ebe2582"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#ae4ee7ab158203c5fd05638a36ebe2582">FlowUi::UiManager::popups</a></div><div class="ttdeci">PopupManager &amp; popups() noexcept</div><div class="ttdoc">Access this window&#39;s mutable popup placement and dismissal service.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:567</div></div>
 <div class="ttc" id="aclassFlowUi_1_1UiManager_html_af951ad4db8a17064009ed8ff9ac9f79a"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#af951ad4db8a17064009ed8ff9ac9f79a">FlowUi::UiManager::setClipboardText</a></div><div class="ttdeci">void setClipboardText(std::string_view text) const</div><div class="ttdoc">Set clipboard text through the configured clipboard accessor.</div></div>
-<div class="ttc" id="agroup__flowui__config_html_ga8363459dc99cb2c2add5540efe09c80a"><div class="ttname"><a href="group__flowui__config.html#ga8363459dc99cb2c2add5540efe09c80a">FlowUi::CursorType</a></div><div class="ttdeci">CursorType</div><div class="ttdoc">Cursor shape requested by FlowUi UI code.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:31</div></div>
-<div class="ttc" id="agroup__flowui__font__manager_html_ga45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdoc">Stable concrete font id consumed by Clay text configuration.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:15</div></div>
-<div class="ttc" id="agroup__flowui__font__manager_html_ga95598f991c84086ade49a9b22410496a"><div class="ttname"><a href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a></div><div class="ttdeci">uint32_t FontFamilyId</div><div class="ttdoc">Stable logical font family id returned by FlowUi::FontManager.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:18</div></div>
-<div class="ttc" id="agroup__flowui__font__manager_html_gaf7e7d0763efe0b722c07ea3892e9a52e"><div class="ttname"><a href="group__flowui__font__manager.html#gaf7e7d0763efe0b722c07ea3892e9a52e">FlowUi::FontStyle</a></div><div class="ttdeci">FontStyle</div><div class="ttdoc">Font style requested when resolving a family face.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:21</div></div>
-<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:408</div></div>
-<div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html">FlowUi::DevToolsConfig</a></div><div class="ttdoc">Configures FlowUi developer tooling and capture behavior.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:357</div></div>
-<div class="ttc" id="astructFlowUi_1_1ElementDefinition_html"><div class="ttname"><a href="structFlowUi_1_1ElementDefinition.html">FlowUi::ElementDefinition</a></div><div class="ttdoc">Typed definition for a FlowUi element.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:306</div></div>
-<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a></div><div class="ttdoc">Standard design system tokens for FlowUi built-in elements.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:521</div></div>
-<div class="ttc" id="astructFlowUi_1_1FontManager_html"><div class="ttname"><a href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a></div><div class="ttdoc">Loads font faces and owns the atlas used by FlowUi text rendering.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:58</div></div>
-<div class="ttc" id="astructFlowUi_1_1FrameInput_html"><div class="ttname"><a href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a></div><div class="ttdoc">Per-frame input snapshot consumed by FlowUi managers and elements.</div><div class="ttdef"><b>Definition</b> InputStructs.hpp:25</div></div>
-<div class="ttc" id="astructFlowUi_1_1InteractionSnapshot_html"><div class="ttname"><a href="structFlowUi_1_1InteractionSnapshot.html">FlowUi::InteractionSnapshot</a></div><div class="ttdoc">Snapshot of per-element interaction state for one completed frame.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:34</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_afa3989bc0b3e492f1e5f9a11ef116bc0"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#afa3989bc0b3e492f1e5f9a11ef116bc0">FlowUi::UiManager::isDevPassivePreview</a></div><div class="ttdeci">bool isDevPassivePreview() const noexcept</div><div class="ttdef"><b>Definition</b> UiManager.hpp:749</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html_afe707a42b7d57091c84ea9ac325c5c99"><div class="ttname"><a href="classFlowUi_1_1UiManager.html#afe707a42b7d57091c84ea9ac325c5c99">FlowUi::UiManager::elements</a></div><div class="ttdeci">const ElementManager &amp; elements() const</div><div class="ttdoc">Access the app-owned element state/resource manager.</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1DevTimingRecorder_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1DevTimingRecorder.html">FlowUi::devSystems::DevTimingRecorder</a></div><div class="ttdef"><b>Definition</b> DevTiming.hpp:21</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1MemorySampleSink_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1MemorySampleSink.html">FlowUi::devSystems::MemorySampleSink</a></div><div class="ttdef"><b>Definition</b> DevMemoryProbe.hpp:13</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevMemoryHistoryController.html">FlowUi::devSystems::interface_elements::DevMemoryHistoryController</a></div><div class="ttdef"><b>Definition</b> DevMemoryHistoryViewport.hpp:14</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1interface__elements_1_1DevTimelineController.html">FlowUi::devSystems::interface_elements::DevTimelineController</a></div><div class="ttdef"><b>Definition</b> DevTimelineViewport.hpp:19</div></div>
+<div class="ttc" id="aclassFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry_html"><div class="ttname"><a href="classFlowUi_1_1devSystems_1_1tooling_1_1DevSchemaRegistry.html">FlowUi::devSystems::tooling::DevSchemaRegistry</a></div><div class="ttdef"><b>Definition</b> DevSchemaRegistry.hpp:35</div></div>
+<div class="ttc" id="astructFlowUi_1_1AppConfig_html"><div class="ttname"><a href="structFlowUi_1_1AppConfig.html">FlowUi::AppConfig</a></div><div class="ttdoc">Top-level configuration used to initialize a FlowUi app.</div><div class="ttdef"><b>Definition</b> AppConfig.hpp:24</div></div>
+<div class="ttc" id="astructFlowUi_1_1AutoElementName_html"><div class="ttname"><a href="structFlowUi_1_1AutoElementName.html">FlowUi::AutoElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:108</div></div>
+<div class="ttc" id="astructFlowUi_1_1DevToolsConfig_html"><div class="ttname"><a href="structFlowUi_1_1DevToolsConfig.html">FlowUi::DevToolsConfig</a></div><div class="ttdoc">Configures FlowUi developer tooling and capture behavior.</div><div class="ttdef"><b>Definition</b> DevToolsConfig.hpp:45</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementBuildContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementBuildContext.html">FlowUi::ElementBuildContext</a></div><div class="ttdoc">Context passed to constructElement and buildElement callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:53</div></div>
+<div class="ttc" id="astructFlowUi_1_1ElementInteractionContext_html"><div class="ttname"><a href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a></div><div class="ttdoc">Context passed to event and logic callbacks.</div><div class="ttdef"><b>Definition</b> ElementContexts.hpp:157</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowDefinitionID_html"><div class="ttname"><a href="structFlowUi_1_1FlowDefinitionID.html">FlowUi::FlowDefinitionID</a></div><div class="ttdef"><b>Definition</b> ElementIDTypes.hpp:11</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowElementID_html"><div class="ttname"><a href="structFlowUi_1_1FlowElementID.html">FlowUi::FlowElementID</a></div><div class="ttdef"><b>Definition</b> ElementIDTypes.hpp:23</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowElementPartID_html"><div class="ttname"><a href="structFlowUi_1_1FlowElementPartID.html">FlowUi::FlowElementPartID</a></div><div class="ttdef"><b>Definition</b> ElementIDTypes.hpp:72</div></div>
+<div class="ttc" id="astructFlowUi_1_1FlowUiTheme_html"><div class="ttname"><a href="structFlowUi_1_1FlowUiTheme.html">FlowUi::FlowUiTheme</a></div><div class="ttdoc">Standard design system tokens for FlowUi built-in elements.</div><div class="ttdef"><b>Definition</b> FlowUiTheme.hpp:11</div></div>
+<div class="ttc" id="astructFlowUi_1_1FontManager_html"><div class="ttname"><a href="structFlowUi_1_1FontManager.html">FlowUi::FontManager</a></div><div class="ttdoc">Loads font faces and owns the atlas used by FlowUi text rendering.</div><div class="ttdef"><b>Definition</b> FontManager.hpp:77</div></div>
+<div class="ttc" id="astructFlowUi_1_1FrameInput_html"><div class="ttname"><a href="structFlowUi_1_1FrameInput.html">FlowUi::FrameInput</a></div><div class="ttdoc">Per-frame input snapshot consumed by FlowUi managers and elements.</div><div class="ttdef"><b>Definition</b> InputTypes.hpp:49</div></div>
+<div class="ttc" id="astructFlowUi_1_1GlobalFlowID_html"><div class="ttname"><a href="structFlowUi_1_1GlobalFlowID.html">FlowUi::GlobalFlowID</a></div><div class="ttdef"><b>Definition</b> ElementIDTypes.hpp:39</div></div>
+<div class="ttc" id="astructFlowUi_1_1IconManager_html"><div class="ttname"><a href="structFlowUi_1_1IconManager.html">FlowUi::IconManager</a></div><div class="ttdoc">Registers SVG icons and resolves them to atlas-backed texture references.</div><div class="ttdef"><b>Definition</b> IconManager.hpp:64</div></div>
+<div class="ttc" id="astructFlowUi_1_1IndexedElementName_html"><div class="ttname"><a href="structFlowUi_1_1IndexedElementName.html">FlowUi::IndexedElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:70</div></div>
+<div class="ttc" id="astructFlowUi_1_1InteractionSnapshot_html"><div class="ttname"><a href="structFlowUi_1_1InteractionSnapshot.html">FlowUi::InteractionSnapshot</a></div><div class="ttdoc">Snapshot of per-element interaction state for one completed frame.</div><div class="ttdef"><b>Definition</b> UiTypes.hpp:23</div></div>
+<div class="ttc" id="astructFlowUi_1_1LocalElementName_html"><div class="ttname"><a href="structFlowUi_1_1LocalElementName.html">FlowUi::LocalElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:33</div></div>
 <div class="ttc" id="astructFlowUi_1_1ResourceKey_html"><div class="ttname"><a href="structFlowUi_1_1ResourceKey.html">FlowUi::ResourceKey</a></div><div class="ttdoc">Human-readable logical identity accepted by FlowUi managers.</div><div class="ttdef"><b>Definition</b> ResourceKey.hpp:31</div></div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:473</div></div>
+<div class="ttc" id="astructFlowUi_1_1RuntimeElementName_html"><div class="ttname"><a href="structFlowUi_1_1RuntimeElementName.html">FlowUi::RuntimeElementName</a></div><div class="ttdef"><b>Definition</b> ElementID.hpp:58</div></div>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:30</div></div>
+<div class="ttc" id="astructFlowUi_1_1ThemeManager_1_1DevThemePayloadView_html"><div class="ttname"><a href="structFlowUi_1_1ThemeManager_1_1DevThemePayloadView.html">FlowUi::ThemeManager::DevThemePayloadView</a></div><div class="ttdef"><b>Definition</b> ThemeManager.hpp:95</div></div>
+<div class="ttc" id="astructFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot_html"><div class="ttname"><a href="structFlowUi_1_1devSystems_1_1tooling_1_1DevTreeSnapshot.html">FlowUi::devSystems::tooling::DevTreeSnapshot</a></div><div class="ttdef"><b>Definition</b> DevTreeTypes.hpp:219</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>include</b></li><li class="navelem"><b>managers</b></li><li class="navelem"><b>UiManager.hpp</b></li>
+    <li class="navelem"><b>include</b></li><li class="navelem"><b>FlowUi</b></li><li class="navelem"><b>Public</b></li><li class="navelem"><b>managers</b></li><li class="navelem"><b>UiManager.hpp</b></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>

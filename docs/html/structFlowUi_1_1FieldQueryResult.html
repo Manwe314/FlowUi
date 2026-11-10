@@ -107,22 +107,40 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Result returned from an input field request.  
+<p><a class="el" href="classFlowUi_1_1Result.html">Result</a> returned from an input field request.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="InputFieldManagerStructs_8hpp_source.html">InputFieldManagerStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a4f806c61052a963d166a482ff44a849c" id="r_a4f806c61052a963d166a482ff44a849c"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a4f806c61052a963d166a482ff44a849c">text</a> {}</td></tr>
-<tr class="memdesc:a4f806c61052a963d166a482ff44a849c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current text for the field.  <br /></td></tr>
+<tr class="memitem:a2749ad8fd5d40f201cfd8cca579246e9" id="r_a2749ad8fd5d40f201cfd8cca579246e9"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1FieldTextView.html">FieldTextView</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2749ad8fd5d40f201cfd8cca579246e9">text</a> {}</td></tr>
+<tr class="memdesc:a2749ad8fd5d40f201cfd8cca579246e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current text for the field.  <br /></td></tr>
+<tr class="memitem:a9a7a6d4258ffda8b569dcf4cdd47e56a" id="r_a9a7a6d4258ffda8b569dcf4cdd47e56a"><td class="memItemLeft"><a id="a9a7a6d4258ffda8b569dcf4cdd47e56a" name="a9a7a6d4258ffda8b569dcf4cdd47e56a"></a>
+<a class="el" href="structFlowUi_1_1FieldHandle.html">FieldHandle</a>&#160;</td><td class="memItemRight"><b>field</b> {}</td></tr>
+<tr class="memdesc:a9a7a6d4258ffda8b569dcf4cdd47e56a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frame-scoped token for submitTextSpan(). <br /></td></tr>
+<tr class="memitem:a8752a21f11bbccbb7c4fa505d5508fed" id="r_a8752a21f11bbccbb7c4fa505d5508fed"><td class="memItemLeft">std::span&lt; const <a class="el" href="structFlowUi_1_1VisibleTextLine.html">VisibleTextLine</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8752a21f11bbccbb7c4fa505d5508fed">visibleLines</a> {}</td></tr>
+<tr class="memitem:ac5994c8bf0bdcb772934753c104b104f" id="r_ac5994c8bf0bdcb772934753c104b104f"><td class="memItemLeft"><a id="ac5994c8bf0bdcb772934753c104b104f" name="ac5994c8bf0bdcb772934753c104b104f"></a>
+std::span&lt; const <a class="el" href="structFlowUi_1_1FieldEditTransaction.html">FieldEditTransaction</a> &gt;&#160;</td><td class="memItemRight"><b>transactions</b> {}</td></tr>
+<tr class="memdesc:ac5994c8bf0bdcb772934753c104b104f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Successful edits published for this field during the current frame. <br /></td></tr>
+<tr class="memitem:ae59139de63e12eca30e27fd930fa1ca2" id="r_ae59139de63e12eca30e27fd930fa1ca2"><td class="memItemLeft"><a id="ae59139de63e12eca30e27fd930fa1ca2" name="ae59139de63e12eca30e27fd930fa1ca2"></a>
+std::span&lt; const FieldCommandRequest &gt;&#160;</td><td class="memItemRight"><b>commandRequests</b> {}</td></tr>
+<tr class="memdesc:ae59139de63e12eca30e27fd930fa1ca2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo, redo, submit, or cancel requests from this frame. <br /></td></tr>
+<tr class="memitem:a0e70fc2a4a60ae1d4bf5b859422e2867" id="r_a0e70fc2a4a60ae1d4bf5b859422e2867"><td class="memItemLeft"><a id="a0e70fc2a4a60ae1d4bf5b859422e2867" name="a0e70fc2a4a60ae1d4bf5b859422e2867"></a>
+uint64_t&#160;</td><td class="memItemRight"><b>revision</b> = 0</td></tr>
+<tr class="memdesc:a0e70fc2a4a60ae1d4bf5b859422e2867"><td class="mdescLeft">&#160;</td><td class="mdescRight">Monotonic revision incremented once per successful atomic edit. <br /></td></tr>
+<tr class="memitem:a9f0e2e70d52065594bc06c541fbf3013" id="r_a9f0e2e70d52065594bc06c541fbf3013"><td class="memItemLeft">Clay_Vector2&#160;</td><td class="memItemRight"><a class="el" href="#a9f0e2e70d52065594bc06c541fbf3013">scrollOffset</a> {}</td></tr>
+<tr class="memitem:a8968ed059aa59f2e5902807117d9b680" id="r_a8968ed059aa59f2e5902807117d9b680"><td class="memItemLeft"><a id="a8968ed059aa59f2e5902807117d9b680" name="a8968ed059aa59f2e5902807117d9b680"></a>
+TextFieldMode&#160;</td><td class="memItemRight"><b>mode</b> = TextFieldMode::SingleLine</td></tr>
+<tr class="memdesc:a8968ed059aa59f2e5902807117d9b680"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actual retained mode after applying the requested mode migration. <br /></td></tr>
+<tr class="memitem:a709ed7b6c876afef22153d4057b39817" id="r_a709ed7b6c876afef22153d4057b39817"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a709ed7b6c876afef22153d4057b39817">modeChangeRejected</a> = false</td></tr>
 <tr class="memitem:adc1df1e3983f22b4afd71ecadbf6d945" id="r_adc1df1e3983f22b4afd71ecadbf6d945"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adc1df1e3983f22b4afd71ecadbf6d945">hasPrimaryCaret</a> = false</td></tr>
 <tr class="memdesc:adc1df1e3983f22b4afd71ecadbf6d945"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this field owns the primary caret.  <br /></td></tr>
 <tr class="memitem:a9d76f82f0b1744a8140a681e49f7e957" id="r_a9d76f82f0b1744a8140a681e49f7e957"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9d76f82f0b1744a8140a681e49f7e957">hasSelection</a> = false</td></tr>
 <tr class="memdesc:a9d76f82f0b1744a8140a681e49f7e957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this field has an active selection.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Result returned from an input field request. </p>
+<div class="textblock"><p><a class="el" href="classFlowUi_1_1Result.html">Result</a> returned from an input field request. </p>
 <p><a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a> describes the current manager-owned state for the field that was just requested. Element code typically renders text and runs change detection from this result. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="adc1df1e3983f22b4afd71ecadbf6d945" name="adc1df1e3983f22b4afd71ecadbf6d945"></a>
@@ -159,25 +177,70 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a4f806c61052a963d166a482ff44a849c" name="a4f806c61052a963d166a482ff44a849c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f806c61052a963d166a482ff44a849c">&#9670;&#160;</a></span>text</h2>
+<a id="a709ed7b6c876afef22153d4057b39817" name="a709ed7b6c876afef22153d4057b39817"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a709ed7b6c876afef22153d4057b39817">&#9670;&#160;</a></span>modeChangeRejected</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string_view FlowUi::FieldQueryResult::text {}</td>
+          <td class="memname">bool FlowUi::FieldQueryResult::modeChangeRejected = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>True when a multiline-to-single-line request was rejected due to newlines. </p>
+
+</div>
+</div>
+<a id="a9f0e2e70d52065594bc06c541fbf3013" name="a9f0e2e70d52065594bc06c541fbf3013"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f0e2e70d52065594bc06c541fbf3013">&#9670;&#160;</a></span>scrollOffset</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Clay_Vector2 FlowUi::FieldQueryResult::scrollOffset {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current manager-owned scroll position in layout pixels. </p>
+
+</div>
+</div>
+<a id="a2749ad8fd5d40f201cfd8cca579246e9" name="a2749ad8fd5d40f201cfd8cca579246e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2749ad8fd5d40f201cfd8cca579246e9">&#9670;&#160;</a></span>text</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1FieldTextView.html">FieldTextView</a> FlowUi::FieldQueryResult::text {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Current text for the field. </p>
-<p>The view points into manager-owned storage and is valid until that field state changes or is removed. </p>
+<p>The view points into manager-owned storage and is valid until that field state changes or is removed. Use contiguous() for compact fields and copy()/forEachChunk() for multiline documents. </p>
+
+</div>
+</div>
+<a id="a8752a21f11bbccbb7c4fa505d5508fed" name="a8752a21f11bbccbb7c4fa505d5508fed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8752a21f11bbccbb7c4fa505d5508fed">&#9670;&#160;</a></span>visibleLines</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::span&lt;const <a class="el" href="structFlowUi_1_1VisibleTextLine.html">VisibleTextLine</a>&gt; FlowUi::FieldQueryResult::visibleLines {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Visible single-line or multiline slices for this viewport. </p>
 
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/managers/structs/<a class="el" href="InputFieldManagerStructs_8hpp_source.html">InputFieldManagerStructs.hpp</a></li>
+<li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

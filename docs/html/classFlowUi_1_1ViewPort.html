@@ -120,14 +120,14 @@ using&#160;</td><td class="memItemRight"><b>RenderCallback</b> = std::function&l
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac2b642087b0c4fdf18ab3d41cd36c582" id="r_ac2b642087b0c4fdf18ab3d41cd36c582"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#ac2b642087b0c4fdf18ab3d41cd36c582">getKey</a> () const</td></tr>
-<tr class="memdesc:ac2b642087b0c4fdf18ab3d41cd36c582"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return this viewport's key.  <br /></td></tr>
-<tr class="memitem:af9f3839dfa6d587a58dc0ec31e54d0aa" id="r_af9f3839dfa6d587a58dc0ec31e54d0aa"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af9f3839dfa6d587a58dc0ec31e54d0aa">hasValidSize</a> () const</td></tr>
-<tr class="memdesc:af9f3839dfa6d587a58dc0ec31e54d0aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the viewport has a non-zero render size.  <br /></td></tr>
-<tr class="memitem:af26b8ce43556bdf7af7718dbd33a31d4" id="r_af26b8ce43556bdf7af7718dbd33a31d4"><td class="memItemLeft">VkExtent2D&#160;</td><td class="memItemRight"><a class="el" href="#af26b8ce43556bdf7af7718dbd33a31d4">getSize</a> () const</td></tr>
-<tr class="memdesc:af26b8ce43556bdf7af7718dbd33a31d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current render target size.  <br /></td></tr>
-<tr class="memitem:a16a189477b7c50b6d0415441f3dd72f1" id="r_a16a189477b7c50b6d0415441f3dd72f1"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a16a189477b7c50b6d0415441f3dd72f1">textureRef</a> () const</td></tr>
-<tr class="memdesc:a16a189477b7c50b6d0415441f3dd72f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a texture reference for this viewport.  <br /></td></tr>
+<tr class="memitem:a15370700951136db591e68a2da5a8f72" id="r_a15370700951136db591e68a2da5a8f72"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a15370700951136db591e68a2da5a8f72">getKey</a> () const noexcept</td></tr>
+<tr class="memdesc:a15370700951136db591e68a2da5a8f72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return this viewport's key.  <br /></td></tr>
+<tr class="memitem:a5f2cac10eb5a33309f1900921530e5dc" id="r_a5f2cac10eb5a33309f1900921530e5dc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a5f2cac10eb5a33309f1900921530e5dc">hasValidSize</a> () const noexcept</td></tr>
+<tr class="memdesc:a5f2cac10eb5a33309f1900921530e5dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the viewport has a non-zero render size.  <br /></td></tr>
+<tr class="memitem:aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8" id="r_aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"><td class="memItemLeft">VkExtent2D&#160;</td><td class="memItemRight"><a class="el" href="#aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8">getSize</a> () const noexcept</td></tr>
+<tr class="memdesc:aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current render target size.  <br /></td></tr>
+<tr class="memitem:a10f7c5d9f22a074f95691c59fc7dce0d" id="r_a10f7c5d9f22a074f95691c59fc7dce0d"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a>&#160;</td><td class="memItemRight"><a class="el" href="#a10f7c5d9f22a074f95691c59fc7dce0d">textureRef</a> () const noexcept</td></tr>
+<tr class="memdesc:a10f7c5d9f22a074f95691c59fc7dce0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a texture reference for this viewport.  <br /></td></tr>
 <tr class="memitem:a392c8372c68fd6562c4bc5f7ac4fc41f" id="r_a392c8372c68fd6562c4bc5f7ac4fc41f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a392c8372c68fd6562c4bc5f7ac4fc41f">setRenderCallback</a> (<a class="el" href="#ad0d76433e868559926ec681a1b608864">RenderCallback</a> callback)</td></tr>
 <tr class="memdesc:a392c8372c68fd6562c4bc5f7ac4fc41f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the viewport render callback.  <br /></td></tr>
 <tr class="memitem:a8ac28ba477958a85dff2a9af682d1431" id="r_a8ac28ba477958a85dff2a9af682d1431"><td class="memTemplParams" colspan="2">template&lt;typename T, typename Fn&gt; </td></tr>
@@ -135,16 +135,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a8ac28ba477958a85dff2a9af682d1431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the viewport render callback while retaining typed user data.  <br /></td></tr>
 <tr class="memitem:a41cbb5a21265263d5cb7bfab078b9b99" id="r_a41cbb5a21265263d5cb7bfab078b9b99"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a41cbb5a21265263d5cb7bfab078b9b99">clearRenderCallback</a> ()</td></tr>
 <tr class="memdesc:a41cbb5a21265263d5cb7bfab078b9b99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the viewport render callback.  <br /></td></tr>
-<tr class="memitem:a0b98f73f56b90fefe2cac173f49aff0e" id="r_a0b98f73f56b90fefe2cac173f49aff0e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a0b98f73f56b90fefe2cac173f49aff0e">hasRenderCallback</a> () const</td></tr>
-<tr class="memdesc:a0b98f73f56b90fefe2cac173f49aff0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether a render callback is set.  <br /></td></tr>
+<tr class="memitem:a3c831bc9ef15c303e504f22569d7aca6" id="r_a3c831bc9ef15c303e504f22569d7aca6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3c831bc9ef15c303e504f22569d7aca6">hasRenderCallback</a> () const noexcept</td></tr>
+<tr class="memdesc:a3c831bc9ef15c303e504f22569d7aca6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether a render callback is set.  <br /></td></tr>
 <tr class="memitem:a5041209fac6a58554ebe927bc70d194d" id="r_a5041209fac6a58554ebe927bc70d194d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5041209fac6a58554ebe927bc70d194d">setClearColor</a> (float r, float g, float b, float a)</td></tr>
 <tr class="memdesc:a5041209fac6a58554ebe927bc70d194d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set viewport clear color.  <br /></td></tr>
-<tr class="memitem:a36354a3627449b1c250cb31d63f26175" id="r_a36354a3627449b1c250cb31d63f26175"><td class="memItemLeft">std::array&lt; float, 4 &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a36354a3627449b1c250cb31d63f26175">clearColor</a> () const</td></tr>
-<tr class="memdesc:a36354a3627449b1c250cb31d63f26175"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return viewport clear color.  <br /></td></tr>
+<tr class="memitem:aa05840783a71a827fcaf9168f9b9195c" id="r_aa05840783a71a827fcaf9168f9b9195c"><td class="memItemLeft">std::array&lt; float, 4 &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa05840783a71a827fcaf9168f9b9195c">clearColor</a> () const noexcept</td></tr>
+<tr class="memdesc:aa05840783a71a827fcaf9168f9b9195c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return viewport clear color.  <br /></td></tr>
 <tr class="memitem:a39b1ba8923020766f15ee701575aa0ca" id="r_a39b1ba8923020766f15ee701575aa0ca"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a39b1ba8923020766f15ee701575aa0ca">setClearEveryFrame</a> (bool enabled)</td></tr>
 <tr class="memdesc:a39b1ba8923020766f15ee701575aa0ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether the viewport clears every frame.  <br /></td></tr>
-<tr class="memitem:aa397c0dfbcd5ebcf8b6b5290adcff367" id="r_aa397c0dfbcd5ebcf8b6b5290adcff367"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa397c0dfbcd5ebcf8b6b5290adcff367">clearEveryFrame</a> () const</td></tr>
-<tr class="memdesc:aa397c0dfbcd5ebcf8b6b5290adcff367"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the viewport clears every frame.  <br /></td></tr>
+<tr class="memitem:a1e3f7471d119305a5f7b3ae32f0c63ad" id="r_a1e3f7471d119305a5f7b3ae32f0c63ad"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1e3f7471d119305a5f7b3ae32f0c63ad">clearEveryFrame</a> () const noexcept</td></tr>
+<tr class="memdesc:a1e3f7471d119305a5f7b3ae32f0c63ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether the viewport clears every frame.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -153,15 +153,18 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Offscreen render target that can be sampled by the FlowUi renderer. </p>
-<p><a class="el" href="classFlowUi_1_1ViewPort.html" title="Offscreen render target that can be sampled by the FlowUi renderer.">ViewPort</a> represents one application-defined render target managed by <a class="el" href="classFlowUi_1_1ViewPortManager.html" title="Creates, tracks, renders, and exposes offscreen viewports.">ViewPortManager</a>. The viewport owns no public Vulkan resources directly; FlowUi allocates per-frame images, command buffers, image views, and texture slots internally. UI code displays the viewport by using <a class="el" href="#a16a189477b7c50b6d0415441f3dd72f1" title="Return a texture reference for this viewport.">textureRef()</a> or, more commonly, <a class="el" href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921" title="Return the texture reference for a viewport key.">ViewPortManager::getTexture()</a> as Clay image data.</p>
+<p><a class="el" href="classFlowUi_1_1ViewPort.html" title="Offscreen render target that can be sampled by the FlowUi renderer.">ViewPort</a> represents one application-defined render target managed by <a class="el" href="classFlowUi_1_1ViewPortManager.html" title="Creates, tracks, renders, and exposes offscreen viewports.">ViewPortManager</a>. The viewport owns no public Vulkan resources directly; FlowUi allocates per-frame images, command buffers, image views, and texture slots internally. UI code displays the viewport by using <a class="el" href="#a10f7c5d9f22a074f95691c59fc7dce0d" title="Return a texture reference for this viewport.">textureRef()</a> or, more commonly, <a class="el" href="classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921" title="Return the texture reference for a viewport key.">ViewPortManager::getTexture()</a> as Clay image data.</p>
 <p>A viewport render callback is invoked only for frames where the viewport texture is referenced by the UI. FlowUi begins and ends the secondary command buffer for the callback, creates the dynamic rendering pass around that secondary command buffer, handles image layout transitions, and makes the result available to the UI renderer as a sampled texture.</p>
 <dl class="section warning"><dt>Warning</dt><dd>Vulkan handles exposed through <a class="el" href="structFlowUi_1_1ViewPortRenderContext.html" title="Per-frame context passed to a viewport render callback.">ViewPortRenderContext</a> and <a class="el" href="structFlowUi_1_1ViewPortVulkanInterop.html" title="Vulkan handles exposed to viewport render callbacks.">ViewPortVulkanInterop</a> are owned by <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a>. Callback code may use them to record commands or create compatible resources, but must not destroy or take ownership of App-managed objects. </dd></dl>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a36354a3627449b1c250cb31d63f26175" name="a36354a3627449b1c250cb31d63f26175"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a36354a3627449b1c250cb31d63f26175">&#9670;&#160;</a></span>clearColor()</h2>
+<a id="aa05840783a71a827fcaf9168f9b9195c" name="aa05840783a71a827fcaf9168f9b9195c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa05840783a71a827fcaf9168f9b9195c">&#9670;&#160;</a></span>clearColor()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">std::array&lt; float, 4 &gt; FlowUi::ViewPort::clearColor </td>
@@ -170,6 +173,11 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return viewport clear color. </p>
@@ -177,11 +185,14 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 
 </div>
 </div>
-<a id="aa397c0dfbcd5ebcf8b6b5290adcff367" name="aa397c0dfbcd5ebcf8b6b5290adcff367"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa397c0dfbcd5ebcf8b6b5290adcff367">&#9670;&#160;</a></span>clearEveryFrame()</h2>
+<a id="a1e3f7471d119305a5f7b3ae32f0c63ad" name="a1e3f7471d119305a5f7b3ae32f0c63ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e3f7471d119305a5f7b3ae32f0c63ad">&#9670;&#160;</a></span>clearEveryFrame()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::ViewPort::clearEveryFrame </td>
@@ -190,6 +201,11 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return whether the viewport clears every frame. </p>
@@ -223,11 +239,14 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
-<a id="ac2b642087b0c4fdf18ab3d41cd36c582" name="ac2b642087b0c4fdf18ab3d41cd36c582"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2b642087b0c4fdf18ab3d41cd36c582">&#9670;&#160;</a></span>getKey()</h2>
+<a id="a15370700951136db591e68a2da5a8f72" name="a15370700951136db591e68a2da5a8f72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15370700951136db591e68a2da5a8f72">&#9670;&#160;</a></span>getKey()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">std::string_view FlowUi::ViewPort::getKey </td>
@@ -236,6 +255,11 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return this viewport's key. </p>
@@ -243,11 +267,14 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
-<a id="af26b8ce43556bdf7af7718dbd33a31d4" name="af26b8ce43556bdf7af7718dbd33a31d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af26b8ce43556bdf7af7718dbd33a31d4">&#9670;&#160;</a></span>getSize()</h2>
+<a id="aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8" name="aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8">&#9670;&#160;</a></span>getSize()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">VkExtent2D FlowUi::ViewPort::getSize </td>
@@ -256,6 +283,11 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the current render target size. </p>
@@ -264,11 +296,14 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
-<a id="a0b98f73f56b90fefe2cac173f49aff0e" name="a0b98f73f56b90fefe2cac173f49aff0e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0b98f73f56b90fefe2cac173f49aff0e">&#9670;&#160;</a></span>hasRenderCallback()</h2>
+<a id="a3c831bc9ef15c303e504f22569d7aca6" name="a3c831bc9ef15c303e504f22569d7aca6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c831bc9ef15c303e504f22569d7aca6">&#9670;&#160;</a></span>hasRenderCallback()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::ViewPort::hasRenderCallback </td>
@@ -277,6 +312,11 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return whether a render callback is set. </p>
@@ -290,11 +330,14 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
 
 </div>
 </div>
-<a id="af9f3839dfa6d587a58dc0ec31e54d0aa" name="af9f3839dfa6d587a58dc0ec31e54d0aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af9f3839dfa6d587a58dc0ec31e54d0aa">&#9670;&#160;</a></span>hasValidSize()</h2>
+<a id="a5f2cac10eb5a33309f1900921530e5dc" name="a5f2cac10eb5a33309f1900921530e5dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f2cac10eb5a33309f1900921530e5dc">&#9670;&#160;</a></span>hasValidSize()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::ViewPort::hasValidSize </td>
@@ -303,6 +346,11 @@ class&#160;</td><td class="memItemRight"><b>ViewPortManager</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return whether the viewport has a non-zero render size. </p>
@@ -465,11 +513,14 @@ template&lt;typename T, typename Fn&gt; </div>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
-<a id="a16a189477b7c50b6d0415441f3dd72f1" name="a16a189477b7c50b6d0415441f3dd72f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16a189477b7c50b6d0415441f3dd72f1">&#9670;&#160;</a></span>textureRef()</h2>
+<a id="a10f7c5d9f22a074f95691c59fc7dce0d" name="a10f7c5d9f22a074f95691c59fc7dce0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10f7c5d9f22a074f95691c59fc7dce0d">&#9670;&#160;</a></span>textureRef()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> FlowUi::ViewPort::textureRef </td>
@@ -478,6 +529,11 @@ template&lt;typename T, typename Fn&gt; </div>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return a texture reference for this viewport. </p>
@@ -487,7 +543,7 @@ template&lt;typename T, typename Fn&gt; </div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/managers/<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a></li>
+<li>include/FlowUi/Public/managers/<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

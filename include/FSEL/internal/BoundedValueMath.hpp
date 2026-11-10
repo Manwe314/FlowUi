@@ -45,7 +45,7 @@ struct Bounds {
 		std::clamp(ratio, 0.0, 1.0) * (bounds.upper - bounds.lower);
 }
 
-/** Snap to an interval anchored at the lower bound. Empty/non-positive means continuous. */
+/* Snap to an interval anchored at the lower bound. Empty/non-positive means continuous. */
 [[nodiscard]] inline double snapValue(
 	double value,
 	Bounds bounds,

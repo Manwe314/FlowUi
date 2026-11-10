@@ -14,7 +14,7 @@
 #include "devSystems/devTooling/bake/DevBakeValidation.hpp"
 #include "devSystems/devTooling/bake/DevBakedChanges.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
-#include "managers/structs/ActionManagerStructs.hpp"
+#include "FlowUi/Public/managerStructs/ActionTypes.hpp"
 
 namespace FlowUi::devSystems::tooling {
 
@@ -28,7 +28,7 @@ namespace {
 	return bake_detail::entry_values_equal(left, right);
 }
 
-/** Policy comparisons use the same lossless float spelling as the manifest codec. */
+/* Policy comparisons use the same lossless float spelling as the manifest codec. */
 [[nodiscard]] std::string growth_factor_text(float factor) {
 	char characters[64]{};
 	const auto written = std::to_chars(characters, characters + sizeof(characters), factor);
@@ -94,10 +94,11 @@ void reconcile_external_entries(DevChangesReviewPlan& plan) {
 			row.validity = DevChangesValidity::Conflict;
 			row.reason =
 				"This destination changed on disk since review, including a possible deletion. " +
-				std::string(removal_intent
-								? "Confirm removal against this disk head, or keep the saved value."
-								: "Explicitly include the proposal against this disk head, or keep "
-								  "the saved value.");
+				std::string(
+					removal_intent
+						? "Confirm removal against this disk head, or keep the already baked value."
+						: "Explicitly include the proposal against this disk head, or keep "
+						  "the already baked value.");
 		}
 	}
 }
@@ -122,7 +123,7 @@ void reconcile_external_entries(DevChangesReviewPlan& plan) {
 }
 
 void describe_entry(DevChangesReviewRow& row, const DevBakeEntry& entry,
-					const devMode::DevSchemaGeneration* schema) {
+					const tooling::DevSchemaGeneration* schema) {
 	row.field_path = entry.fieldPath;
 	row.target_name = entry.ownerCppType;
 	if (schema && entry.targetKind == DevBakeTargetKind::Element) {
@@ -145,34 +146,44 @@ void describe_entry(DevChangesReviewRow& row, const DevBakeEntry& entry,
 		   extension == ".inl";
 }
 
-/** Resolve the legacy path and leaf identity together; names alone never imply a migration. */
-[[nodiscard]] const devMode::DevFieldSchema*
-resolve_saved_field(const devMode::DevSchemaGeneration& schema, DevBakeEntry& entry,
+[[nodiscard]] std::string identity_text(uint64_t identity) {
+	std::ostringstream formatted;
+	formatted << "0x" << std::hex << identity;
+	return formatted.str();
+}
+
+/* Resolve the saved path and leaf identity together; names alone never imply a migration. */
+[[nodiscard]] const tooling::DevFieldSchema*
+resolve_saved_field(const tooling::DevSchemaGeneration& schema, DevBakeEntry& entry,
 					std::string& reason) {
-	devMode::DevTypeIndex owner_index{};
+	tooling::DevTypeIndex owner_index{};
 	if (entry.targetKind == DevBakeTargetKind::Element) {
 		const auto* element = schema.findElement(entry.definition);
 		if (!element) {
-			reason = "Saved element is not registered in this schema; retain it for repair or "
-					 "explicitly remove it.";
+			reason = "Already baked element " + identity_text(entry.definition.value) +
+					 " for field '" + entry.fieldPath +
+					 "' is not registered in the current schema. Retain it for repair or "
+					 "explicitly remove the assignment.";
 			return nullptr;
 		}
 		owner_index = element->parametersType;
 	} else {
 		const auto* theme = schema.findTheme(entry.themeType);
 		if (!theme) {
-			reason = "Saved theme is not registered in this schema; retain it for repair or "
-					 "explicitly remove it.";
+			reason = "Already baked theme " + identity_text(entry.themeType) + " for field '" +
+					 entry.fieldPath +
+					 "' is not registered in the current schema. Retain it for repair or "
+					 "explicitly remove the assignment.";
 			return nullptr;
 		}
 		owner_index = theme->themeType;
 	}
 	const auto* root_type = schema.type(owner_index);
 	if (!root_type) {
-		reason = "Saved target has no parameter schema.";
+		reason = "Already baked field '" + entry.fieldPath + "' has no parameter schema.";
 		return nullptr;
 	}
-	const devMode::DevFieldSchema* leaf = nullptr;
+	const tooling::DevFieldSchema* leaf = nullptr;
 	std::size_t path_start = 0;
 	std::string source_header;
 	while (path_start < entry.fieldPath.size()) {
@@ -189,8 +200,14 @@ resolve_saved_field(const devMode::DevSchemaGeneration& schema, DevBakeEntry& en
 			}
 		}
 		if (!leaf) {
-			reason =
-				"Saved field path no longer resolves; choose an explicit replacement or removal.";
+			const auto* owner_type = schema.type(owner_index);
+			const auto owner_name =
+				owner_type ? schema.string(owner_type->cppTypeName) : std::string_view{};
+			reason = "Already baked field '" + entry.fieldPath + "' no longer resolves: '" +
+					 std::string(component) + "' is missing from " +
+					 (owner_name.empty() ? "the current parameter schema"
+										 : "type '" + std::string(owner_name) + "'") +
+					 ". Choose an explicit replacement or remove the assignment.";
 			return nullptr;
 		}
 		if (source_header.empty())
@@ -201,22 +218,42 @@ resolve_saved_field(const devMode::DevSchemaGeneration& schema, DevBakeEntry& en
 		path_start = path_end + 1;
 	}
 	const auto* value_type = leaf ? schema.type(leaf->valueType) : nullptr;
-	if (!leaf || leaf->id != entry.fieldId) {
-		reason = "Saved nested field identity changed; no rename was inferred.";
+	if (!leaf) {
+		reason = "Already baked field path is empty; choose an explicit replacement or remove "
+				 "the assignment.";
+		return nullptr;
+	}
+	if (leaf->id != entry.fieldId) {
+		reason = "Already baked field '" + entry.fieldPath + "' has ID " +
+				 identity_text(entry.fieldId) + ", but the current field has ID " +
+				 identity_text(leaf->id) +
+				 ". The path resolves, but the identities differ, so this assignment cannot be "
+				 "generated. Recreate the assignment in Inspect, then explicitly remove this stale "
+				 "baked assignment; or remove it to discard it.";
 		return nullptr;
 	}
 	if (!value_type || value_type->id != entry.valueType) {
-		reason = "Saved field type differs from the current schema.";
+		reason = "Already baked field '" + entry.fieldPath + "' expects type " +
+				 (entry.valueTypeName.empty()
+					  ? identity_text(entry.valueType)
+					  : "'" + entry.valueTypeName + "' (" + identity_text(entry.valueType) + ")") +
+				 ", but the current schema " +
+				 (value_type ? "declares '" + std::string(schema.string(value_type->cppTypeName)) +
+								   "' (" + identity_text(value_type->id) + ")"
+							 : "has no registered value type") +
+				 ". Create a replacement proposal in Inspect using the current field type, or "
+				 "explicitly remove this assignment to discard it.";
 		return nullptr;
 	}
 	const bool stable_action_field =
 		value_type->id == ::FlowUi::detail::typeHash<ActionCall>() &&
-		leaf->editor == devMode::DevEditorKind::ActionChoice &&
-		leaf->effectiveEdit == devMode::DevEditCapability::SemanticCommand;
-	if (leaf->effectiveEdit != devMode::DevEditCapability::Editable &&
-		leaf->effectiveEdit != devMode::DevEditCapability::PartiallyEditable &&
+		leaf->editor == tooling::DevEditorKind::ActionChoice &&
+		leaf->effectiveEdit == tooling::DevEditCapability::SemanticCommand;
+	if (leaf->effectiveEdit != tooling::DevEditCapability::Editable &&
+		leaf->effectiveEdit != tooling::DevEditCapability::PartiallyEditable &&
 		!stable_action_field) {
-		reason = "Saved field is no longer writable in the current schema.";
+		reason = "Already baked field '" + entry.fieldPath +
+				 "' is no longer writable in the current schema.";
 		return nullptr;
 	}
 	entry.ownerCppType = schema.string(root_type->cppTypeName);
@@ -247,8 +284,8 @@ resolve_saved_field(const devMode::DevSchemaGeneration& schema, DevBakeEntry& en
 	return true;
 }
 
-[[nodiscard]] std::string field_path_for(const devMode::DevSchemaGeneration* schema,
-										 devMode::DevTypeIndex owner_index,
+[[nodiscard]] std::string field_path_for(const tooling::DevSchemaGeneration* schema,
+										 tooling::DevTypeIndex owner_index,
 										 const DevOverrideFieldKey& key) {
 	std::string path;
 	const auto unresolved = [&] {
@@ -258,7 +295,7 @@ resolve_saved_field(const devMode::DevSchemaGeneration& schema, DevBakeEntry& en
 		return identity + "." + std::to_string(key.field);
 	};
 	if (schema) {
-		const auto append = [&](devMode::DevFieldId field_id) {
+		const auto append = [&](tooling::DevFieldId field_id) {
 			for (const auto& field : schema->fieldsOf(owner_index)) {
 				if (field.id != field_id)
 					continue;
@@ -280,7 +317,7 @@ resolve_saved_field(const devMode::DevSchemaGeneration& schema, DevBakeEntry& en
 }
 
 void add_proposal(DevChangesReviewPlan& plan, DevBakeEntry entry, bool removes,
-				  const devMode::DevSchemaGeneration* schema, std::string reason,
+				  const tooling::DevSchemaGeneration* schema, std::string reason,
 				  std::string origin) {
 	auto& row = find_or_add_row(plan, changes_entry_key(entry), entry_domain(entry));
 	describe_entry(row, entry, schema);
@@ -289,7 +326,7 @@ void add_proposal(DevChangesReviewPlan& plan, DevBakeEntry entry, bool removes,
 			(!removes && row.proposed_entry && !equal_entry_values(*row.proposed_entry, entry))) {
 			row.validity = DevChangesValidity::Conflict;
 			row.reason = "Different live values resolve to the same persisted destination. Choose "
-						 "the saved value, omit them, or edit the sources to agree.";
+						 "the already baked value, omit them, or edit the sources to agree.";
 			row.proposal += " | " + (removes ? std::string("Remove assignment") : entry.valueJson);
 		}
 		if (row.origin.find(origin) == std::string::npos)
@@ -358,7 +395,7 @@ void count_row(DevChangesReviewPlan& plan, const DevChangesReviewRow& row) {
 		++plan.counts.warnings;
 }
 
-/** Revalidation compares values and metadata without the proposal's review-time timestamp. */
+/* Revalidation compares values and metadata without the proposal's review-time timestamp. */
 [[nodiscard]] std::string candidate_signature(DevBakeManifest candidate) {
 	for (auto& entry : candidate.entries)
 		entry.provenance.timestamp.clear();
@@ -397,7 +434,7 @@ std::string changes_memory_key(std::string_view key) noexcept {
 std::string_view changes_operation_name(DevChangesOperation operation) noexcept {
 	switch (operation) {
 	case DevChangesOperation::Keep:
-		return "Saved";
+		return "Already Baked";
 	case DevChangesOperation::Add:
 		return "Add";
 	case DevChangesOperation::Update:
@@ -473,7 +510,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 			row.has_disk = true;
 			row.disk_entry = entry;
 			row.on_disk = entry.valueJson;
-			row.origin = "Saved manifest";
+			row.origin = "Already baked manifest";
 			describe_entry(row, entry, schema);
 		}
 		std::string proposal_identity;
@@ -486,7 +523,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 			auto entry =
 				schema ? bake_detail::element_proposal(*schema, record, diagnostic) : std::nullopt;
 			if (!entry) {
-				devMode::DevTypeIndex root_index{};
+				tooling::DevTypeIndex root_index{};
 				if (schema)
 					if (const auto* element = schema->findElement(record.target.definition))
 						root_index = element->parametersType;
@@ -525,7 +562,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 			auto entry =
 				schema ? bake_detail::theme_proposal(*schema, record, diagnostic) : std::nullopt;
 			if (!entry) {
-				devMode::DevTypeIndex root_index{};
+				tooling::DevTypeIndex root_index{};
 				if (schema)
 					if (const auto* theme = schema->findTheme(record.target.themeType))
 						root_index = theme->themeType;
@@ -552,7 +589,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 				if (type) {
 					const auto serialized =
 						serialize_dev_value(*schema,
-											devMode::DevTypeIndex{static_cast<std::uint32_t>(
+											tooling::DevTypeIndex{static_cast<std::uint32_t>(
 												type - schema->types.data())},
 											record.authored.data());
 					if (serialized)
@@ -565,6 +602,25 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 			add_theme_record(record, false);
 		for (const auto& record : overrides_.themeBakeTombstones())
 			add_theme_record(record, true);
+		if (schema)
+			for (auto& row : plan.rows) {
+				if (row.domain != DevChangesDomain::Elements)
+					continue;
+				const auto* entry = row.proposed_entry ? &*row.proposed_entry
+					: row.disk_entry ? &*row.disk_entry : nullptr;
+				if (!entry)
+					continue;
+				DevOwnedValue authored;
+				if (query_authored_element_value(overrides_, *schema, *entry, InvalidWindowId, authored) !=
+					DevValueCaptureStatus::Available)
+					continue;
+				const auto* type = schema->findType(authored.type());
+				const auto serialized = type ? serialize_dev_value(*schema,
+					tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
+					authored.data()) : std::nullopt;
+				if (serialized)
+					row.authored_value = serialized->json;
+			}
 		plan.proposal_revision = manifest_content_digest(proposal_identity);
 		for (const auto& compiled : FlowUi::baked::compiled_change_entries()) {
 			const auto entry = compiled_entry(compiled);
@@ -596,10 +652,9 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 					schema ? resolve_saved_field(*schema, *next, reason) : nullptr;
 				if (!resolved) {
 					row.validity = DevChangesValidity::Unresolved;
-					row.reason =
-						reason.empty()
-							? "Developer schema is not available to validate this saved assignment."
-							: std::move(reason);
+					row.reason = reason.empty() ? "Developer schema is not available to validate "
+												  "this already baked assignment."
+												: std::move(reason);
 					row.blocking = true;
 				} else if (!generator_ready(*next, reason) ||
 						   !bake_detail::entry_value_valid(*schema, *resolved, *next, reason)) {
@@ -616,7 +671,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 					row.validity = DevChangesValidity::Ready;
 					if (row.decision == DevChangesDecision::RetainDisk ||
 						row.decision == DevChangesDecision::OmitProposal)
-						row.reason = "Saved value retained; live behavior is unchanged.";
+						row.reason = "Already baked value retained; live behavior is unchanged.";
 				}
 				row.next_value = next->valueJson;
 				const bool metadata_changed =
@@ -650,7 +705,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 					row.blocking = true;
 				else {
 					row.validity = DevChangesValidity::Ready;
-					row.reason = "Remove the saved assignment from the next build; current "
+					row.reason = "Remove the already baked assignment from the next build; current "
 								 "compiled behavior is unchanged.";
 					row.blocking = false;
 				}
@@ -666,7 +721,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 				find_or_add_row(plan, changes_memory_key(target.key), DevChangesDomain::Memory);
 			row.field_path = target.key;
 			row.target_name = target.key;
-			row.origin = proposal ? "Prepared memory snapshot" : "Saved manifest";
+			row.origin = proposal ? "Prepared memory snapshot" : "Already baked manifest";
 			if (proposal) {
 				if (row.has_proposal && row.proposed_memory) {
 					if (memory_selection_json(*row.proposed_memory) !=
@@ -702,7 +757,7 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 			auto& row = find_or_add_row(plan, changes_memory_key(key), DevChangesDomain::Memory);
 			row.target_name = "Shared policy";
 			row.field_path = name;
-			row.origin = proposed || clear ? "Prepared memory policy" : "Saved manifest";
+			row.origin = proposed || clear ? "Prepared memory policy" : "Already baked manifest";
 			row.has_disk = saved.has_value();
 			row.on_disk = saved.value_or("");
 			row.has_proposal = proposed.has_value() || clear;
@@ -839,9 +894,10 @@ DevBakePipeline::query_review(const DevChangesReviewRequest& request) const noex
 						"This memory destination changed on disk since review. " +
 						std::string(
 							remove
-								? "Confirm removal against the new head, or keep the saved value."
+								? "Confirm removal against the new head, or keep the already baked "
+								  "value."
 								: "Explicitly include this prepared result against the new head, "
-								  "or keep the saved value.");
+								  "or keep the already baked value.");
 				}
 			}
 			const bool use_proposal =

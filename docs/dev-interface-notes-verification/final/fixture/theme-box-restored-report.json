@@ -1,0 +1,202 @@
+{
+  "cases": [
+    {
+      "assertion_count": "4",
+      "assertion_details": "all",
+      "assertions": [
+        {
+          "assertion_id": "step_0",
+          "available": true,
+          "expected": 16,
+          "observed": 113,
+          "passed": true,
+          "reason": "",
+          "required": true
+        },
+        {
+          "assertion_id": "step_1",
+          "available": true,
+          "expected": 16,
+          "observed": 112,
+          "passed": true,
+          "reason": "",
+          "required": true
+        },
+        {
+          "assertion_id": "step_2",
+          "available": true,
+          "expected": 27,
+          "observed": 123,
+          "passed": true,
+          "reason": "",
+          "required": true
+        },
+        {
+          "assertion_id": "step_3",
+          "available": true,
+          "expected": 16,
+          "observed": 112,
+          "passed": true,
+          "reason": "",
+          "required": true
+        }
+      ],
+      "capture_id": "cap_c14ec24ebd766c3959717e7391f08009",
+      "case_id": "theme-box-restored",
+      "checkpoints": [
+        {
+          "available": true,
+          "capture_id": "cap_c14ec24ebd766c3959717e7391f08009",
+          "checkpoint_id": "theme-box-restored",
+          "image": {
+            "alpha": "discarded",
+            "app_tick": "7290",
+            "capture_id": "cap_c14ec24ebd766c3959717e7391f08009",
+            "completed_monotonic_ns": "19116549930249",
+            "copy_duration_ns": "39372059",
+            "crop": {
+              "logical_to_physical_scale_x": 1,
+              "logical_to_physical_scale_y": 1,
+              "original_height": 820,
+              "original_width": 1420,
+              "x": 0,
+              "y": 0
+            },
+            "encoding": "native-rgb8",
+            "frame_slot": 1,
+            "height": 820,
+            "image_id": "image_21",
+            "origin": "top-left",
+            "path": "visual/images/image_21.png",
+            "producer_frame": {
+              "app_tick": "7290",
+              "device_id": "1",
+              "queue_id": "1",
+              "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+              "source_image_revision": "7290",
+              "submission_serial": "21868",
+              "window_frame": "7290",
+              "window_id": "3"
+            },
+            "recorded_monotonic_ns": "19116504606396",
+            "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+            "schema": "FlowUi.Agentic.Image",
+            "schema_generation": "8",
+            "schema_version": "1.0",
+            "source": "window",
+            "source_color_space": "unknown",
+            "source_image_revision": "7290",
+            "source_ppm_artifact_id": "image_21_ppm",
+            "source_vk_format": 50,
+            "submission": {
+              "device_id": "1",
+              "queue_id": "1",
+              "serial": "21868"
+            },
+            "theme": {
+              "artifact_id": "theme_121_8",
+              "revision": "121",
+              "schema_generation": "8"
+            },
+            "theme_revision": "121",
+            "tree": {
+              "artifact_id": "tree_3_7290",
+              "generation": "7290"
+            },
+            "viewport_key": null,
+            "width": 1420,
+            "window_frame": "7290",
+            "window_id": "3"
+          },
+          "passed": true,
+          "required": true,
+          "temporal_relation": "after_required_observation",
+          "tree_artifact": "tree_3_7290",
+          "trigger": "case_verified"
+        }
+      ],
+      "cleanup": {
+        "completed": true,
+        "fixture_usable": true
+      },
+      "coverage": {
+        "evaluated": "5",
+        "failed": "0",
+        "passed": "5",
+        "required": "5",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "duration_ns": "1270092012",
+      "fixture_id": "",
+      "manifest": "/tmp/flowui-dev-notes-full-verified/run_335e46a6c30d/workspace/.flowui/agentic/v1/runs/20261110T161853362548Z_run_34faf546fe88dfc40a0f2d14be94ef9d/captures/cap_c14ec24ebd766c3959717e7391f08009/manifest.json",
+      "verdict": "pass",
+      "workload": {
+        "kind": "interaction_plan",
+        "plan_digest": "c3052f726c294778055bfa7f069b5b0fae2ed79ca1b5c50a1b69af75f2f06d8f",
+        "seed": "0"
+      }
+    }
+  ],
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "fixture_usable": true
+  },
+  "coverage": {
+    "evaluated": "5",
+    "failed": "0",
+    "passed": "5",
+    "required": "5",
+    "skipped": "0",
+    "unavailable": "0"
+  },
+  "cursor": "",
+  "detail_selector": {
+    "report_digest": "e239cad28cb67da74b0f77785a6c70af7ba21ff743c5f8ef5e328fe9d87a0ff4"
+  },
+  "evidence": {
+    "contact_sheet": null,
+    "image_count": "1",
+    "selector": {
+      "instance": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+      "job_id": "verification_89c7e7e1195565e1f9dff04f78cdb9d5"
+    }
+  },
+  "execution_status": "completed",
+  "job_id": "verification_89c7e7e1195565e1f9dff04f78cdb9d5",
+  "limitations": [
+    "unavailable_pipeline_spans_are_null",
+    "rss_gpu_and_encoder_workspace_unavailable",
+    "automatic_disk_retention_not_enabled",
+    "historical_failure_pixels_unavailable"
+  ],
+  "report_digest": "e239cad28cb67da74b0f77785a6c70af7ba21ff743c5f8ef5e328fe9d87a0ff4",
+  "request_digest": "3fa66c5581b06517d8a95e96eeb01d544c3c3ab2a04e8d46a34b172c48301fe8",
+  "resources": {
+    "completed_rgb_bytes_peak": "3493200",
+    "disk_bytes": "10457367",
+    "encoded_bytes": null,
+    "measurement_availability": "owned_snapshot_and_inventory_only",
+    "peak_owned_evidence_bytes": "6247988",
+    "readback_reserved_bytes": null
+  },
+  "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+  "schema": "FlowUi.Agentic.VerificationReport",
+  "schema_version": "1.0",
+  "suite_id": "catalogue.layout.interactions",
+  "suite_revision": "1",
+  "timings": {
+    "admission_ns": "3667001",
+    "assertion_ns": "0",
+    "execution_ns": "0",
+    "publication_ns": "3177500073",
+    "queue_ns": "641626984",
+    "readback_ns": null,
+    "report_ns": null,
+    "setup_ns": "0",
+    "total_elapsed_ns": "5032082738"
+  },
+  "truncated": false,
+  "verdict": "pass"
+}

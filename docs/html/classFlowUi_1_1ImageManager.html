@@ -112,16 +112,33 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="ImageManager_8hpp_source.html">ImageManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:DevImageView" id="r_DevImageView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ImageManager_1_1DevImageView.html">DevImageView</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aeb4281a61ab0f4df0fd175f3a3b3c100" id="r_aeb4281a61ab0f4df0fd175f3a3b3c100"><td class="memItemLeft"><a id="aeb4281a61ab0f4df0fd175f3a3b3c100" name="aeb4281a61ab0f4df0fd175f3a3b3c100"></a>
+using&#160;</td><td class="memItemRight"><b>DevImageVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1ImageManager_1_1DevImageView.html">DevImageView</a>&amp;)</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac28bde695aee3b52c21596ef5ee45ba6" id="r_ac28bde695aee3b52c21596ef5ee45ba6"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac28bde695aee3b52c21596ef5ee45ba6">registerImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath)</td></tr>
-<tr class="memdesc:ac28bde695aee3b52c21596ef5ee45ba6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and register an image from disk under a caller-provided key.  <br /></td></tr>
-<tr class="memitem:a87c55cc08f33bb3fd8f83108aa15ea23" id="r_a87c55cc08f33bb3fd8f83108aa15ea23"><td class="memItemLeft"><a id="a87c55cc08f33bb3fd8f83108aa15ea23" name="a87c55cc08f33bb3fd8f83108aa15ea23"></a>
-bool&#160;</td><td class="memItemRight"><b>registerImage</b> (std::string_view key, std::string_view filePath)</td></tr>
-<tr class="memitem:a5ba0d445fd5bc2cb47aa59dbebb0f47a" id="r_a5ba0d445fd5bc2cb47aa59dbebb0f47a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a5ba0d445fd5bc2cb47aa59dbebb0f47a">removeImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
-<tr class="memdesc:a5ba0d445fd5bc2cb47aa59dbebb0f47a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a registered image by key.  <br /></td></tr>
-<tr class="memitem:ab1bb3be63b631b3947dc8d8a1950b7b5" id="r_ab1bb3be63b631b3947dc8d8a1950b7b5"><td class="memItemLeft"><a id="ab1bb3be63b631b3947dc8d8a1950b7b5" name="ab1bb3be63b631b3947dc8d8a1950b7b5"></a>
-bool&#160;</td><td class="memItemRight"><b>removeImage</b> (std::string_view key)</td></tr>
+<tr class="memitem:a61a3c6b0f9abef4dad4af59fbd57b4ce" id="r_a61a3c6b0f9abef4dad4af59fbd57b4ce"><td class="memItemLeft"><a id="a61a3c6b0f9abef4dad4af59fbd57b4ce" name="a61a3c6b0f9abef4dad4af59fbd57b4ce"></a>
+std::uint64_t&#160;</td><td class="memItemRight"><b>devRevision</b> () const noexcept</td></tr>
+<tr class="memitem:a66d920c0351c4c800770e6b4bb7ac0f7" id="r_a66d920c0351c4c800770e6b4bb7ac0f7"><td class="memItemLeft"><a id="a66d920c0351c4c800770e6b4bb7ac0f7" name="a66d920c0351c4c800770e6b4bb7ac0f7"></a>
+std::size_t&#160;</td><td class="memItemRight"><b>devImageCount</b> () const noexcept</td></tr>
+<tr class="memitem:a99108de0293e7ee9df436fa0c34541a4" id="r_a99108de0293e7ee9df436fa0c34541a4"><td class="memItemLeft"><a id="a99108de0293e7ee9df436fa0c34541a4" name="a99108de0293e7ee9df436fa0c34541a4"></a>
+bool&#160;</td><td class="memItemRight"><b>visitDevImages</b> (void *userData, DevImageVisitor visitor) const</td></tr>
+<tr class="memitem:ad99d701c881cf0597ffcb47a9aeab096" id="r_ad99d701c881cf0597ffcb47a9aeab096"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad99d701c881cf0597ffcb47a9aeab096">registerImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, std::string_view filePath)</td></tr>
+<tr class="memdesc:ad99d701c881cf0597ffcb47a9aeab096"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and register an image from disk under a caller-provided key.  <br /></td></tr>
+<tr class="memitem:a068d69dac1c9b27d6efea185e46c2c43" id="r_a068d69dac1c9b27d6efea185e46c2c43"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a068d69dac1c9b27d6efea185e46c2c43">register_image_file</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const std::filesystem::path &amp;file_path)</td></tr>
+<tr class="memitem:aa934a185f414935e18b306f650542e3d" id="r_aa934a185f414935e18b306f650542e3d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa934a185f414935e18b306f650542e3d">register_image_file</a> (std::string_view key, const std::filesystem::path &amp;file_path)</td></tr>
+<tr class="memitem:a00429ed0b20298e922ac4b0df45ea1f3" id="r_a00429ed0b20298e922ac4b0df45ea1f3"><td class="memItemLeft"><a id="a00429ed0b20298e922ac4b0df45ea1f3" name="a00429ed0b20298e922ac4b0df45ea1f3"></a>
+<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>registerImage</b> (std::string_view key, std::string_view filePath)</td></tr>
+<tr class="memitem:a0efdbfcfb4cf1fcd39eaef2bad9f51b5" id="r_a0efdbfcfb4cf1fcd39eaef2bad9f51b5"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0efdbfcfb4cf1fcd39eaef2bad9f51b5">removeImage</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memdesc:a0efdbfcfb4cf1fcd39eaef2bad9f51b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a registered image by key.  <br /></td></tr>
+<tr class="memitem:a66f2f5903fadfe96a5092955b42528ee" id="r_a66f2f5903fadfe96a5092955b42528ee"><td class="memItemLeft"><a id="a66f2f5903fadfe96a5092955b42528ee" name="a66f2f5903fadfe96a5092955b42528ee"></a>
+<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>removeImage</b> (std::string_view key)</td></tr>
 <tr class="memitem:a731b0c64abbc33fd69821dcd6c6220e5" id="r_a731b0c64abbc33fd69821dcd6c6220e5"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a731b0c64abbc33fd69821dcd6c6220e5">contains</a> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key) const</td></tr>
 <tr class="memdesc:a731b0c64abbc33fd69821dcd6c6220e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether an image key is registered.  <br /></td></tr>
 <tr class="memitem:a3ce30605daebf796adc6e757a93848c1" id="r_a3ce30605daebf796adc6e757a93848c1"><td class="memItemLeft"><a id="a3ce30605daebf796adc6e757a93848c1" name="a3ce30605daebf796adc6e757a93848c1"></a>
@@ -148,6 +165,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::ImageManager::contains </td>
@@ -156,10 +176,15 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return whether an image key is registered. </p>
-<p>This is a non-throwing lookup in the currently registered image table. It does not perform file IO or GPU work.</p>
+<p>This lookup does not perform file IO or GPU work. Resource-key normalization may allocate or report an invalid key.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td>string image key to test. </td></tr>
@@ -181,6 +206,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> FlowUi::ImageManager::getTexture </td>
@@ -189,10 +217,15 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the texture reference for a registered image key. </p>
-<p>The returned <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> contains a generation-checked logical handle and source image dimensions. If key is missing, this function returns the an invalid handle and logs one warning for that key.</p>
+<p>The returned <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> contains a generation-checked logical handle and source image dimensions. If key is missing, this function returns an invalid handle and reports the missing key once. The result and its source key borrow manager-owned metadata; removal invalidates the handle.</p>
 <p>Application code may adjust <a class="el" href="structFlowUi_1_1TextureRef.html" title="Renderer texture reference returned by image, icon, and viewport managers.">TextureRef</a> fields such as fitMode and tintEnabled before passing it to image drawing code. Manager-owned handle and UV fields should be left unchanged.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -205,14 +238,77 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 </div>
 </div>
-<a id="ac28bde695aee3b52c21596ef5ee45ba6" name="ac28bde695aee3b52c21596ef5ee45ba6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac28bde695aee3b52c21596ef5ee45ba6">&#9670;&#160;</a></span>registerImage()</h2>
+<a id="a068d69dac1c9b27d6efea185e46c2c43" name="a068d69dac1c9b27d6efea185e46c2c43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a068d69dac1c9b27d6efea185e46c2c43">&#9670;&#160;</a></span>register_image_file() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::ImageManager::registerImage </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::register_image_file </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>file_path</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Load an image through a native filesystem path. </p>
+
+</div>
+</div>
+<a id="aa934a185f414935e18b306f650542e3d" name="aa934a185f414935e18b306f650542e3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa934a185f414935e18b306f650542e3d">&#9670;&#160;</a></span>register_image_file() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::register_image_file </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>file_path</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Load an image through a native filesystem path under a string key. </p>
+
+</div>
+</div>
+<a id="ad99d701c881cf0597ffcb47a9aeab096" name="ad99d701c881cf0597ffcb47a9aeab096"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad99d701c881cf0597ffcb47a9aeab096">&#9670;&#160;</a></span>registerImage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::registerImage </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
         </tr>
@@ -222,6 +318,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>filePath</em></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Load and register an image from disk under a caller-provided key. </p>
@@ -234,35 +335,37 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>The key was newly registered. </td></tr>
-    <tr><td class="paramname">false</td><td>key already existed and the previous image was replaced.</td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section return"><dt>Returns</dt><dd>A result whose value is true for a newly registered key or false when an existing image was replaced. Initialization, key, file, decode, and upload failures are returned as structured errors. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if <a class="el" href="classFlowUi_1_1ImageManager.html" title="Loads image files and exposes them as FlowUi texture references.">ImageManager</a> is not initialized, the texture registry is not installed, key is empty, filePath does not refer to a regular file, the image cannot be decoded, or GPU upload fails.</td></tr>
+    <tr><td class="paramname">std::bad_alloc</td><td>if allocating path or registration metadata fails.</td></tr>
   </table>
   </dd>
 </dl>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
-<a id="a5ba0d445fd5bc2cb47aa59dbebb0f47a" name="a5ba0d445fd5bc2cb47aa59dbebb0f47a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ba0d445fd5bc2cb47aa59dbebb0f47a">&#9670;&#160;</a></span>removeImage()</h2>
+<a id="a0efdbfcfb4cf1fcd39eaef2bad9f51b5" name="a0efdbfcfb4cf1fcd39eaef2bad9f51b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0efdbfcfb4cf1fcd39eaef2bad9f51b5">&#9670;&#160;</a></span>removeImage()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::ImageManager::removeImage </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ImageManager::removeImage </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Remove a registered image by key. </p>
@@ -273,24 +376,12 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>A registered image existed and was removed. </td></tr>
-    <tr><td class="paramname">false</td><td>No image was registered for key.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if <a class="el" href="classFlowUi_1_1ImageManager.html" title="Loads image files and exposes them as FlowUi texture references.">ImageManager</a> is not initialized or the texture registry is not installed.</td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section return"><dt>Returns</dt><dd>A result whose value is true when an image was removed or false when the key was absent. Initialization and storage failures are returned as structured errors.</dd></dl>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/managers/<a class="el" href="ImageManager_8hpp_source.html">ImageManager.hpp</a></li>
+<li>include/FlowUi/Public/managers/<a class="el" href="ImageManager_8hpp_source.html">ImageManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

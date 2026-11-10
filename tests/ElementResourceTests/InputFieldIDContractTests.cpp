@@ -1,4 +1,5 @@
 #include "TestHarness.hpp"
+#include "FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp"
 
 #include <concepts>
 #include <cstdint>
@@ -7,8 +8,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/InputFieldKey.hpp"
-#include "managers/InputFieldManager.hpp"
+#include "FlowUi/Private/inputService/InputFieldKey.hpp"
+#include "FlowUi/Public/managers/InputFieldManager.hpp"
 
 namespace {
 

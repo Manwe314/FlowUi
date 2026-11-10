@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['backend_0',['Window Backend',['../md_docs_2internals_2window__backend.html',1,'flowui_internal_details']]]
+  ['3_20suggested_20data_20to_20display_20at_20targeted_20points_0',['3. Suggested Data to Display at Targeted Points',['../md_docs_2architecture_2inspectorpanel.html',1,'']]]
 ];

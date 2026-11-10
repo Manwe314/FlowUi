@@ -5,9 +5,9 @@
 #include <string>
 #include <utility>
 
-#include "FlowUi/BuildConfig.hpp"
-#include "managers/UiManager.hpp"
-#include "internal/ManagerStorage/UiManagerState.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Private/layoutService/UiManagerState.hpp"
 
 #if !FLOW_UI_DEV_MODE
 #error "DevFlowIdContractTestDriver must only be compiled with FLOW_UI_DEV_MODE=1."

@@ -21,6 +21,48 @@ FlowUi 0.10.0 is organized into distinct layer boundaries:
 +-------------------------------------------------------------------+
 ```
 
+## Repository layout
+
+Core headers and source files use the following layout:
+
+```text
+include/
+├── FlowUi.hpp                         # Application umbrella
+├── FlowUi/
+│   ├── Public/
+│   │   ├── configurationStructs/
+│   │   ├── elementAuthoring/
+│   │   ├── elements/
+│   │   ├── errorManagement/
+│   │   ├── identificationTypes/
+│   │   ├── interop/vulkan/
+│   │   ├── managerStructs/
+│   │   ├── managers/
+│   │   └── App.hpp, Flow.hpp, Color.hpp, Resources.hpp, ...
+│   └── Private/
+│       ├── actionService/
+│       ├── elementSystem/
+│       ├── inputService/
+│       ├── layoutService/
+│       ├── renderer/vulkan/
+│       ├── resourceService/
+│       ├── storageSystem/
+│       ├── textLayoutService/
+│       ├── windowService/
+│       └── AppRuntime.hpp, shared support headers
+├── FSEL/                              # Standard element library
+└── devSystems/                        # Developer services and interface
+src/
+├── FlowUi/
+│   ├── Public/                        # App, shared values, manager facades
+│   └── Private/                       # Runtime and service implementations
+└── devSystems/                        # Developer implementations
+```
+
+[Public headers](../../include/FlowUi/Public/) define the supported application API. [Private headers](../../include/FlowUi/Private/) hold runtime state, controllers, backends, and template support; the subset required by public templates is installed with the library. `Private` identifies implementation ownership, including headers that consumers need to compile supported APIs.
+
+[Public sources](../../src/FlowUi/Public/) implement the application and manager facades. [Private sources](../../src/FlowUi/Private/) implement the runtime and services in their owning domains. Source directories exist where out-of-line implementations are needed; header-only concepts, values, and templates do not require matching `.cpp` files. FSEL stays under [include/FSEL](../../include/FSEL/), while developer headers and sources stay under [include/devSystems](../../include/devSystems/) and [src/devSystems](../../src/devSystems/).
+
 ## Subsystems
 
 1. **Application Lifecycle & Window Backend**

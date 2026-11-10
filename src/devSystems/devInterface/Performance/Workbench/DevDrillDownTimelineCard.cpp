@@ -48,12 +48,15 @@ void DevDrillDownTimelineCard::buildElement(BuildContext& context) {
 											   ? "Recorded hierarchy"
 											   : "Depth " + std::to_string(card.active_depth));
 				timeline_ui::button(context, 1, "Expand all",
-									{{}, TimelineAction::Depth, context.params.card_index, 255});
+									{{}, TimelineAction::Depth, context.params.card_index, 255},
+									interface_icons::kExpandKey);
 				timeline_ui::button(context, 2, "Collapse",
-									{{}, TimelineAction::Depth, context.params.card_index, -255});
+									{{}, TimelineAction::Depth, context.params.card_index, -255},
+									interface_icons::kCollapseKey);
 			}
 			timeline_ui::button(context, 3, "Back",
-								{{}, TimelineAction::Close, context.params.card_index});
+								{{}, TimelineAction::Close, context.params.card_index},
+								interface_icons::kPreviousKey);
 		}
 		const auto breadcrumbs = timeline_ui::row(26);
 		CLAY(context.clayID("breadcrumbs"), breadcrumbs) {

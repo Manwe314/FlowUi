@@ -2,16 +2,16 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Memory/DevMemoryContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** Persistent presentation state for the Memory inspector sections. */
+/* Persistent presentation state for the Memory inspector sections. */
 struct DevMemoryInspectorState {
 	bool capacity_tuning_expanded = true, capacity_scope_settings_expanded = true;
 };

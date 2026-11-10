@@ -1,5 +1,5 @@
 #pragma once
-#include "internal/MemoryCapacityManifest.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityManifest.hpp"
 #include <optional>
 
 #include <cstdint>
@@ -41,15 +41,15 @@ struct Manifest {
 	std::vector<Entry> entries{};
 };
 
-/** Decode a supported manifest and validate every saved generator assignment without dropping
+/* Decode a supported manifest and validate every saved generator assignment without dropping
  * entries. */
 [[nodiscard]] bool parseManifest(const std::filesystem::path& path, Manifest& output,
 								 std::string& error);
 
-/** Inspect raw saved identities without requiring compilable generator metadata. */
+/* Inspect raw saved identities without requiring compilable generator metadata. */
 [[nodiscard]] bool inspect_manifest(const std::filesystem::path& path, std::string& output,
 									std::string& error);
-/** Remove one indexed saved entry, preserving all other JSON and checking the source revision. */
+/* Remove one indexed saved entry, preserving all other JSON and checking the source revision. */
 [[nodiscard]] bool remove_manifest_entry(const std::filesystem::path& path, std::size_t entry_index,
 										 std::string& error);
 

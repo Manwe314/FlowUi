@@ -1,10 +1,12 @@
 var searchData=
 [
-  ['name_0',['name',['../structFlowUi_1_1Font_1_1FontVariantData.html#a3234765d19a16d7ee4e843d8aa9a7821',1,'FlowUi::Font::FontVariantData::name'],['../structFlowUi_1_1Font_1_1FontFaceData.html#a1737a141817cdf464a423b494ef12759',1,'FlowUi::Font::FontFaceData::name'],['../structFlowUi_1_1FontFaceCreateInfo.html#a6abf248d60c7222a0fe456a87456c019',1,'FlowUi::FontFaceCreateInfo::name'],['../structFlowUi_1_1FontFamilyCreateInfo.html#a979e043a307b07b831fd831f7dca6000',1,'FlowUi::FontFamilyCreateInfo::name']]],
-  ['nativewindowhandle_1',['nativeWindowHandle',['../classFlowUi_1_1App.html#a336d18e6c4db2aee3e904ffed6364ffb',1,'FlowUi::App::nativeWindowHandle() const'],['../classFlowUi_1_1App.html#a42b0e1506c5d488676ffa1c5aff425f2',1,'FlowUi::App::nativeWindowHandle(WindowId id) const']]],
-  ['nearest_2',['Nearest',['../group__flowui__config.html#gga45632b801edaf6ba2ce69d7892e23ec9a60494f02d440f316319dd0fad40ad007',1,'FlowUi']]],
-  ['noelementparameters_3',['NoElementParameters',['../structFlowUi_1_1NoElementParameters.html',1,'FlowUi']]],
-  ['noelementresources_4',['NoElementResources',['../structFlowUi_1_1NoElementResources.html',1,'FlowUi']]],
-  ['noelementstate_5',['NoElementState',['../structFlowUi_1_1NoElementState.html',1,'FlowUi']]],
-  ['none_6',['None',['../group__flowui__config.html#ggaf2bd0da1549931d06a4ae124e15a54cca6adf97f83acf6453d4a6a4b1070f3754',1,'FlowUi']]]
+  ['katlaslayergrowthstep_0',['kAtlasLayerGrowthStep',['../structFlowUi_1_1FontManager.html#ad90022b983223e1fcdfe28c94ff0c711',1,'FlowUi::FontManager']]],
+  ['kerningadvance_1',['kerningAdvance',['../structFlowUi_1_1Font_1_1FontVariantData.html#a4464d6512f5c1f1845fe8803c95a34e6',1,'FlowUi::Font::FontVariantData']]],
+  ['kerningkey_2',['kerningKey',['../structFlowUi_1_1Font_1_1FontVariantData.html#a1bd3d5a33200280271ef25d523b78b2b',1,'FlowUi::Font::FontVariantData']]],
+  ['kerningpairs_3',['kerningPairs',['../structFlowUi_1_1Font_1_1FontVariantData.html#a5046981925feba2c524c69a715c5e2f9',1,'FlowUi::Font::FontVariantData']]],
+  ['key_4',['key',['../structFlowUi_1_1DevShortcutChord.html#a5140eb9264fe69028381b5bdc2e2b2c3',1,'FlowUi::DevShortcutChord::key'],['../structFlowUi_1_1ViewPortRenderContext.html#ac8d4e1502a46b7204c7e6dc27dadeb44',1,'FlowUi::ViewPortRenderContext::key'],['../structFlowUi_1_1ShortcutChord.html#a060e000d2fe2c8802bcba8c372fd984d',1,'FlowUi::ShortcutChord::key']]],
+  ['keydown_5',['keyDown',['../structFlowUi_1_1FrameInput.html#a63a5af5eacf8ced50d59f4973acf9c59',1,'FlowUi::FrameInput']]],
+  ['kinitialatlaslayercapacity_6',['kInitialAtlasLayerCapacity',['../structFlowUi_1_1FontManager.html#a084d2dcef0e054934ec89cc9e1ef3cbf',1,'FlowUi::FontManager']]],
+  ['kkeyboardkeycount_7',['kKeyboardKeyCount',['../structFlowUi_1_1FrameInput.html#a729984290f7d7b3d597cd8352f842e9f',1,'FlowUi::FrameInput']]],
+  ['kmousebuttoncount_8',['kMouseButtonCount',['../structFlowUi_1_1FrameInput.html#ac10ce8d3397c4042dec7d0e4a1a6d02a',1,'FlowUi::FrameInput']]]
 ];

@@ -8,15 +8,19 @@
 
 #include "FSEL/Theme.hpp"
 #include "FSEL/internal/SliderMath.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::FSEL {
 
+/** Axis along which the slider value changes. */
 enum class SliderAxis {
+	/** Represent values or resizing along the horizontal axis. */
 	Horizontal,
+	/** Represent values or resizing along the vertical axis. */
 	Vertical,
 };
 
+/** How an enabled pointer press starts a slider drag. */
 enum class SliderPressBehavior {
 	/** Pressing anywhere moves the thumb to the pointer before dragging. */
 	JumpToPointer,
@@ -24,14 +28,21 @@ enum class SliderPressBehavior {
 	DragFromCurrent,
 };
 
+/** Bitmask of independently visible slider parts; combine values with operator|. */
 enum class SliderVisualParts : uint8_t {
+	/** Hide track, fill and thumb. */
 	None = 0,
+	/** Draw the background track. */
 	Track = 1u << 0u,
+	/** Draw the filled range. */
 	Fill = 1u << 1u,
+	/** Draw the draggable thumb. */
 	Thumb = 1u << 2u,
+	/** Draw track, fill and thumb. */
 	All = Track | Fill | Thumb,
 };
 
+/** Combine visible slider parts into a single mask. */
 [[nodiscard]] constexpr SliderVisualParts operator|(
 	SliderVisualParts left,
 	SliderVisualParts right) noexcept {
@@ -39,6 +50,7 @@ enum class SliderVisualParts : uint8_t {
 		static_cast<uint8_t>(left) | static_cast<uint8_t>(right));
 }
 
+/** Return the visible slider parts shared by both masks. */
 [[nodiscard]] constexpr SliderVisualParts operator&(
 	SliderVisualParts left,
 	SliderVisualParts right) noexcept {
@@ -46,81 +58,141 @@ enum class SliderVisualParts : uint8_t {
 		static_cast<uint8_t>(left) & static_cast<uint8_t>(right));
 }
 
+/** Return whether parts contains any bit selected by part; None always returns false. */
 [[nodiscard]] constexpr bool hasSliderVisualPart(
 	SliderVisualParts parts,
 	SliderVisualParts part) noexcept {
 	return (parts & part) != SliderVisualParts::None;
 }
 
+/** Optional appearance overrides for one interaction state; empty values inherit the active theme. */
 struct SliderStateOverrides {
+	/** Track background color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> trackColor = std::nullopt;
+	/** Track border color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> trackBorderColor = std::nullopt;
+	/** Filled portion color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> fillColor = std::nullopt;
+	/** Filled portion border color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> fillBorderColor = std::nullopt;
+	/** Slider thumb color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> thumbColor = std::nullopt;
+	/** Slider thumb border color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> thumbBorderColor = std::nullopt;
 };
 
+/**
+ * Per-invocation Slider configuration. Borrowed models and text must remain valid through the
+ * frame; empty visual overrides inherit the active FSELTheme.
+ */
 struct SliderParameters {
+	/** Optional notification when an edit or drag transaction begins. */
 	ActionCall onBegin{};
+	/** Optional notification after the bound value changes. */
 	ActionCall onChanged{};
+	/** Optional notification when the edit or drag transaction commits. */
 	ActionCall onCommit{};
 	/** Optional snapping interval. For example, 0.01 produces hundredths. */
 	std::optional<double> roundingStep = std::nullopt;
 
 	/** Borrowed authoritative value. Null disables interaction. */
 	double* value = nullptr;
+	/** Lower bound of the native value range. */
 	double minimum = 0.0;
+	/** Upper bound of the native value range. */
 	double maximum = 1.0;
+	/** Appearance when enabled and idle. Empty colors inherit the theme. */
 	SliderStateOverrides idleOverrides{};
+	/** Appearance while hovered. Empty colors inherit the theme. */
 	SliderStateOverrides hoveredOverrides{};
+	/** Appearance while dragging. Empty colors inherit the theme. */
 	SliderStateOverrides draggingOverrides{};
+	/** Appearance when interaction is disabled. Empty colors inherit the theme. */
 	SliderStateOverrides disabledOverrides{};
 
 	// Optional theme overrides
+	/** Control length along its main axis, in layout pixels. Empty inherits the active theme. */
 	std::optional<float> length = std::nullopt;
+	/**
+	 * Interactive thickness perpendicular to the main axis, in layout pixels. Empty inherits the
+	 * active theme.
+	 */
 	std::optional<float> hitThickness = std::nullopt;
+	/** Visible track thickness in layout pixels. Empty inherits the active theme. */
 	std::optional<float> trackThickness = std::nullopt;
+	/** Thumb length along the value axis, in layout pixels. Empty inherits the active theme. */
 	std::optional<float> thumbLength = std::nullopt;
+	/** Thumb size perpendicular to the value axis, in layout pixels. Empty inherits the active theme. */
 	std::optional<float> thumbThickness = std::nullopt;
+	/** Track roundness factor; 0 is square and 1 is fully rounded. Empty inherits the active theme. */
 	std::optional<float> trackRoundness = std::nullopt;
+	/** Thumb roundness factor; 0 is square and 1 is fully rounded. Empty inherits the active theme. */
 	std::optional<float> thumbRoundness = std::nullopt;
+	/** Axis along which the control represents its value or extent. */
 	SliderAxis axis = SliderAxis::Horizontal;
+	/** How the first pointer press establishes the slider drag value. */
 	SliderPressBehavior pressBehavior = SliderPressBehavior::JumpToPointer;
 
+	/** Visible slider parts; hiding parts preserves the interaction surface. */
 	SliderVisualParts visualParts = SliderVisualParts::All;
+	/** Per-edge track border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> trackBorderWidth = std::nullopt;
+	/** Per-edge fill border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> fillBorderWidth = std::nullopt;
+	/** Per-edge thumb border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> thumbBorderWidth = std::nullopt;
+	/** Cursor requested while this enabled control is hovered. Empty inherits the active theme. */
 	std::optional<CursorType> cursor = std::nullopt;
+	/** Cursor requested while dragging the slider. Empty inherits the active theme. */
 	std::optional<CursorType> draggingCursor = std::nullopt;
+	/** Priority used to arbitrate this control's cursor request. Empty inherits the active theme. */
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	/** Reverse the normal increase direction: rightward horizontally and upward vertically. */
 	bool inverted = false;
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
 };
 
+/** Per-instance interaction state maintained by the element and retained by ElementManager. */
 struct SliderState {
+	/** Whether a pointer drag is currently active. */
 	bool isDragging = false;
+	/** Pointer position along the active axis at press, in layout pixels. */
 	float pointerAtPress = 0.0f;
+	/** Native value captured when the current pointer gesture began. */
 	double valueAtPress = 0.0;
 };
 
 /** Build-only controlled slider with independently optional track, fill, and thumb. */
 struct Slider {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = SliderParameters;
+	/** Per-instance state owned and retained by ElementManager. */
 	using State = SliderState;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<Slider>;
+	/** Frame-scoped context supplied to pointer and logic hooks. */
 	using InteractionContext = ElementInteractionContext<Slider>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId = DefinitionID("FSEL.slider");
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL Slider";
 
+	/**
+	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onHovered(InteractionContext& context) {
 		if (isEnabled(context.params)) {
 			requestCursor(context, false);
 		}
 	}
 
+	/**
+	 * ElementBuilder press hook; begins the enabled control interaction. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onPressed(InteractionContext& context) {
 		auto& state = context.state();
 		if (!isEnabled(context.params)) {
@@ -143,6 +215,10 @@ struct Slider {
 		}
 	}
 
+	/**
+	 * ElementBuilder logic hook; reconciles retained interaction state with the current input.
+	 * @param context Borrowed context valid for this callback only.
+	 */
 	static void runLogic(InteractionContext& context) {
 		auto& state = context.state();
 		if (!state.isDragging) {
@@ -164,6 +240,10 @@ struct Slider {
 		updateFromPointer(context, resolveBounds(context.params));
 	}
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const auto& theme = context.uiManager.theme<FSELTheme>().sliderTheme;
 		const Geometry geometry = resolveGeometry(context.params, theme);
@@ -543,6 +623,10 @@ private:
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr Slider kSlider{};
 static_assert(FlowElement<Slider>);
 static_assert(DrawableFlowElement<Slider>);

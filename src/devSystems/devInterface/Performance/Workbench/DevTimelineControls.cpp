@@ -1,8 +1,17 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #if FLOW_UI_DEV_MODE
+#include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include <algorithm>
 namespace FlowUi::devSystems::interface_elements {
 namespace interaction = FSEL::detail::selectable_surface;
+DevTimelineButtonResources::DevTimelineButtonResources([[maybe_unused]] App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	auto& icons = app.icons();
+	interface_icons::registerDevInterfaceIcons(icons);
+	for (size_t key_index = 0; key_index < keys.size(); ++key_index)
+		textures[key_index] = icons.textureRef(keys[key_index]);
+#endif
+}
 void DevTimelineButton::onPressed(InteractionContext& context) {
 	interaction::onPressed(context, true);
 }
@@ -17,9 +26,11 @@ void DevTimelineButton::onHovered(InteractionContext& context) {
 	context.uiManager.requestCursor(CursorType::PointingHand, 4);
 }
 void DevTimelineButton::buildElement(BuildContext& context) {
+	auto icon = context.resources().texture(context.params.icon_key);
 	auto root = timeline_ui::row(24);
 	root.layout.sizing.width = CLAY_SIZING_FIT(0);
 	root.layout.padding = {4, 4, 0, 0};
+	root.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
 	root.backgroundColor = interface_theme::kDepth3Elevated;
 	root.clip.horizontal = true;
 	root.clip.scrollInputDisabled = true;
@@ -27,7 +38,19 @@ void DevTimelineButton::buildElement(BuildContext& context) {
 		root.border = {.color = interface_theme::kAccentSeaGlass,
 					   .width = Clay_BorderWidth{1, 1, 1, 1, 0}};
 	CLAY(context.clayID(), root) {
-		timeline_ui::text(context, context.params.label, interface_theme::kTextCanvas);
+		if (icon.handle) {
+			icon.tintEnabled = true;
+			Clay_ElementDeclaration image{};
+			image.layout.sizing = {.width = CLAY_SIZING_FIXED(14), .height = CLAY_SIZING_FIXED(14)};
+			image.backgroundColor = interface_theme::kTextCanvas;
+			image.image.imageData = context.uiManager.imageData(icon);
+			CLAY(context.clayID("action-icon"), image) {}
+		} else
+			timeline_ui::text(context, context.params.label, interface_theme::kTextCanvas);
+		if (!context.params.icon_key.empty() &&
+			context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID()))
+			diagnostics_ui::pointer_tooltip(context, LocalElementName{"action-tooltip"},
+											context.params.label);
 	}
 }
 namespace timeline_ui {

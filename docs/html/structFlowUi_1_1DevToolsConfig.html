@@ -103,56 +103,50 @@ $(function() {
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">FlowUi::DevToolsConfig Struct Reference<div class="ingroups"><a class="el" href="group__flowui__config.html">Config Structs</a></div></div></div>
+  <div class="headertitle"><div class="title">FlowUi::DevToolsConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Configures FlowUi developer tooling and capture behavior.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="DevToolsConfig_8hpp_source.html">DevToolsConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a4d9140a7ffe8bbe274e3ed779654bd1f" id="r_a4d9140a7ffe8bbe274e3ed779654bd1f"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevMonitoringConfig.html">devSystems::DevMonitoringConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4d9140a7ffe8bbe274e3ed779654bd1f">monitoring</a> {}</td></tr>
+<tr class="memitem:a1742778bbac8a06506df9b94e143765f" id="r_a1742778bbac8a06506df9b94e143765f"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevToolingConfig.html">devSystems::DevToolingConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1742778bbac8a06506df9b94e143765f">tooling</a> {}</td></tr>
+<tr class="memitem:adfea4290f3b16a381cfdabe48bd43984" id="r_adfea4290f3b16a381cfdabe48bd43984"><td class="memItemLeft"><a id="adfea4290f3b16a381cfdabe48bd43984" name="adfea4290f3b16a381cfdabe48bd43984"></a>
+<a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a>&#160;</td><td class="memItemRight"><b>panelToggleChord</b> {}</td></tr>
+<tr class="memdesc:adfea4290f3b16a381cfdabe48bd43984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keyboard chord used to toggle the developer-interface window. <br /></td></tr>
 <tr class="memitem:a1f8cc8ccd021852cf71ab170e65dbbe6" id="r_a1f8cc8ccd021852cf71ab170e65dbbe6"><td class="memItemLeft"><a id="a1f8cc8ccd021852cf71ab170e65dbbe6" name="a1f8cc8ccd021852cf71ab170e65dbbe6"></a>
 bool&#160;</td><td class="memItemRight"><b>enabled</b> = false</td></tr>
 <tr class="memdesc:a1f8cc8ccd021852cf71ab170e65dbbe6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable developer tooling at runtime. <br /></td></tr>
-<tr class="memitem:a623cac59825e97831d348b5eaa30c7e1" id="r_a623cac59825e97831d348b5eaa30c7e1"><td class="memItemLeft"><a id="a623cac59825e97831d348b5eaa30c7e1" name="a623cac59825e97831d348b5eaa30c7e1"></a>
-bool&#160;</td><td class="memItemRight"><b>panelOpenByDefault</b> = false</td></tr>
-<tr class="memdesc:a623cac59825e97831d348b5eaa30c7e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open the developer panel during UI manager initialization. <br /></td></tr>
-<tr class="memitem:a9f7ce91f7cf4587034618f505ae58ae1" id="r_a9f7ce91f7cf4587034618f505ae58ae1"><td class="memItemLeft"><a id="a9f7ce91f7cf4587034618f505ae58ae1" name="a9f7ce91f7cf4587034618f505ae58ae1"></a>
-float&#160;</td><td class="memItemRight"><b>panelWidthPx</b> = 420.0f</td></tr>
-<tr class="memdesc:a9f7ce91f7cf4587034618f505ae58ae1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial developer panel width in pixels. <br /></td></tr>
+<tr class="memitem:a66e26371a25c939103f8b30c648193b7" id="r_a66e26371a25c939103f8b30c648193b7"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a66e26371a25c939103f8b30c648193b7">capture_timing_on_startup</a> = false</td></tr>
+<tr class="memdesc:a66e26371a25c939103f8b30c648193b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Capture timing from the first application tick until the timing ring is full or the developer interface is opened. Requires enabled developer tooling.  <br /></td></tr>
 <tr class="memitem:a4b2b91f85e95aebce82c5aab188067b9" id="r_a4b2b91f85e95aebce82c5aab188067b9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4b2b91f85e95aebce82c5aab188067b9">useShortcutManagerForPanelToggle</a> = true</td></tr>
-<tr class="memdesc:a4b2b91f85e95aebce82c5aab188067b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register the panel toggle chord with FlowUi's <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>.  <br /></td></tr>
-<tr class="memitem:adfea4290f3b16a381cfdabe48bd43984" id="r_adfea4290f3b16a381cfdabe48bd43984"><td class="memItemLeft"><a id="adfea4290f3b16a381cfdabe48bd43984" name="adfea4290f3b16a381cfdabe48bd43984"></a>
-<a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a>&#160;</td><td class="memItemRight"><b>panelToggleChord</b> {}</td></tr>
-<tr class="memdesc:adfea4290f3b16a381cfdabe48bd43984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keyboard chord used to toggle the developer panel. <br /></td></tr>
+<tr class="memdesc:a4b2b91f85e95aebce82c5aab188067b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register the developer-interface toggle chord with <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>.  <br /></td></tr>
 <tr class="memitem:abf5116e3fd086822934666c430a56274" id="r_abf5116e3fd086822934666c430a56274"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#abf5116e3fd086822934666c430a56274">excludeInternalDevElementsFromCapture</a> = true</td></tr>
 <tr class="memdesc:abf5116e3fd086822934666c430a56274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hide FlowUi's internal developer elements from captured UI data.  <br /></td></tr>
-<tr class="memitem:a6beaa59bdf1eaab9d7118f0e6b777310" id="r_a6beaa59bdf1eaab9d7118f0e6b777310"><td class="memItemLeft">std::filesystem::path&#160;</td><td class="memItemRight"><a class="el" href="#a6beaa59bdf1eaab9d7118f0e6b777310">overridesPath</a> = &quot;.flowui/overrides.v1.json&quot;</td></tr>
-<tr class="memdesc:a6beaa59bdf1eaab9d7118f0e6b777310"><td class="mdescLeft">&#160;</td><td class="mdescRight">File path used when exporting developer override data.  <br /></td></tr>
-<tr class="memitem:a4ffe4423d41d23be62d6a009969182ec" id="r_a4ffe4423d41d23be62d6a009969182ec"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4ffe4423d41d23be62d6a009969182ec">autoSave</a> = true</td></tr>
-<tr class="memdesc:a4ffe4423d41d23be62d6a009969182ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request automatic saving of developer changes.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Configures FlowUi developer tooling and capture behavior. </p>
 <p>These options are only used when developer mode support is compiled in. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
-<a id="a4ffe4423d41d23be62d6a009969182ec" name="a4ffe4423d41d23be62d6a009969182ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ffe4423d41d23be62d6a009969182ec">&#9670;&#160;</a></span>autoSave</h2>
+<a id="a66e26371a25c939103f8b30c648193b7" name="a66e26371a25c939103f8b30c648193b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66e26371a25c939103f8b30c648193b7">&#9670;&#160;</a></span>capture_timing_on_startup</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::DevToolsConfig::autoSave = true</td>
+          <td class="memname">bool FlowUi::DevToolsConfig::capture_timing_on_startup = false</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Request automatic saving of developer changes. </p>
-<dl class="section note"><dt>Note</dt><dd>Reserved. Developer data is currently written only by explicit export paths, so this value has no effect. </dd></dl>
+<p>Capture timing from the first application tick until the timing ring is full or the developer interface is opened. Requires enabled developer tooling. </p>
+<p>The completed startup snapshot is preserved for the first investigation; filling the ring does not automatically open the developer interface. Defaults to off. </p>
 
 </div>
 </div>
@@ -173,20 +167,33 @@ float&#160;</td><td class="memItemRight"><b>panelWidthPx</b> = 420.0f</td></tr>
 
 </div>
 </div>
-<a id="a6beaa59bdf1eaab9d7118f0e6b777310" name="a6beaa59bdf1eaab9d7118f0e6b777310"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6beaa59bdf1eaab9d7118f0e6b777310">&#9670;&#160;</a></span>overridesPath</h2>
+<a id="a4d9140a7ffe8bbe274e3ed779654bd1f" name="a4d9140a7ffe8bbe274e3ed779654bd1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d9140a7ffe8bbe274e3ed779654bd1f">&#9670;&#160;</a></span>monitoring</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::filesystem::path FlowUi::DevToolsConfig::overridesPath = &quot;.flowui/overrides.v1.json&quot;</td>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevMonitoringConfig.html">devSystems::DevMonitoringConfig</a> FlowUi::DevToolsConfig::monitoring {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Capture, retention, and sampling controls for developer monitoring. </p>
 
-<p>File path used when exporting developer override data. </p>
-<p>Explicit developer exports write to this path. </p>
+</div>
+</div>
+<a id="a1742778bbac8a06506df9b94e143765f" name="a1742778bbac8a06506df9b94e143765f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1742778bbac8a06506df9b94e143765f">&#9670;&#160;</a></span>tooling</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevToolingConfig.html">devSystems::DevToolingConfig</a> FlowUi::DevToolsConfig::tooling {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Schema, override, and per-window tree-capture capacity controls. </p>
 
 </div>
 </div>
@@ -202,13 +209,13 @@ float&#160;</td><td class="memItemRight"><b>panelWidthPx</b> = 420.0f</td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Register the panel toggle chord with FlowUi's <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>. </p>
+<p>Register the developer-interface toggle chord with <a class="el" href="classFlowUi_1_1ShortcutManager.html" title="Registers and dispatches keyboard shortcuts.">ShortcutManager</a>. </p>
 <p>Disable this when the application wants to own panel toggling itself. </p>
 
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/FlowUi/<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a></li>
+<li>include/FlowUi/Public/configurationStructs/<a class="el" href="DevToolsConfig_8hpp_source.html">DevToolsConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

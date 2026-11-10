@@ -13,7 +13,7 @@
 #include "devSystems/devInterface/Permanents/Elements/DevInterfaceFooter.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInterfaceHeader.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
@@ -56,7 +56,9 @@ void build_catalogue_content(Context& context, DevInterfaceState& state) {
 			if (hide_selector)
 				ui::button(context, "catalogue-browse",
 						   state.catalogue.selector_drawer ? "Close browser" : "Browse assets",
-						   &state.catalogue, toggle_catalogue_drawer, 0);
+						   &state.catalogue, toggle_catalogue_drawer, 0, 0, true, {},
+						   state.catalogue.selector_drawer ? diagnostics_icons::Icon::Close
+														   : diagnostics_icons::Icon::None);
 			if (hide_selector)
 				catalogue_focus::register_element(context, state.catalogue,
 												  ui::Control::definitionId,
@@ -64,7 +66,9 @@ void build_catalogue_content(Context& context, DevInterfaceState& state) {
 			if (hide_inspector)
 				ui::button(context, "catalogue-facts",
 						   state.catalogue.inspector_drawer ? "Close facts" : "Asset facts",
-						   &state.catalogue, toggle_catalogue_drawer, 1);
+						   &state.catalogue, toggle_catalogue_drawer, 1, 0, true, {},
+						   state.catalogue.inspector_drawer ? diagnostics_icons::Icon::Close
+															: diagnostics_icons::Icon::None);
 			if (hide_inspector)
 				catalogue_focus::register_element(context, state.catalogue,
 												  ui::Control::definitionId,
@@ -89,6 +93,10 @@ void build_catalogue_content(Context& context, DevInterfaceState& state) {
 		parameters.thickness = 1;
 		parameters.hitThickness = 10;
 		parameters.backgroundColor = interface_theme::kBorderPrimary;
+		parameters.leadingSurfaceColor = inspector ? interface_theme::kDepth0Keel : interface_theme::kDepth1Panel;
+		parameters.trailingSurfaceColor = inspector ? interface_theme::kDepth1Panel : interface_theme::kDepth0Keel;
+		parameters.hoverColor = interface_theme::kAccentCurrent;
+		parameters.draggingColor = interface_theme::kAccentSeaGlass;
 		context.uiManager
 			.createElement(FSEL::kSplitterHandle,
 						   inspector ? kInspectorSplitter : kSelectorSplitter)
@@ -151,10 +159,17 @@ void DevInterface::buildElement(BuildContext& context) {
 	if (!context.params.interface_state)
 		return;
 	DevInterfaceState& state = *context.params.interface_state;
-	if (context.params.app) synchronize_inspect_selection(*context.params.app, state);
-	if (state.selectedWindowId == InvalidWindowId) {
-		state.selectedWindowId = context.params.mainWindowId;
+	if (context.params.app) {
+		synchronize_inspect_selection(*context.params.app, state);
+		synchronize_inspect_window(*context.params.app, state, context.params.interfaceWindowId);
 	}
+	// Developer controls have their own appearance. Theme specimens install an
+	// explicit nested application-theme scope around their example content.
+	static const FSEL::FSELTheme chrome_theme{};
+	UiManager::DevThemeScope chrome_scope(context.uiManager, {
+		.type = ::FlowUi::detail::typeHash<FSEL::FSELTheme>(),
+		.typeName = "FSEL developer chrome", .variant = "developer-interface",
+		.payload = &chrome_theme, .payloadSize = sizeof(chrome_theme)});
 
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
@@ -195,10 +210,16 @@ void DevInterface::buildContentHeader(BuildContext& context) {
 
 void DevInterface::buildContent(BuildContext& context) {
 	DevInterfaceState& state = *context.params.interface_state;
+	const float available_width = Clay_GetLayoutDimensions().width;
+	const float side_budget = std::max(kSelectorMinimumWidth + kInspectorMinimumWidth,
+		available_width - 380.0f);
 	state.selectorWidth = std::clamp(
 		state.selectorWidth, kSelectorMinimumWidth, kSelectorMaximumWidth);
 	state.inspectorWidth = std::clamp(
-		state.inspectorWidth, kInspectorMinimumWidth, kInspectorMaximumWidth);
+		state.inspectorWidth, kInspectorMinimumWidth,
+		std::min(kInspectorMaximumWidth, side_budget - kSelectorMinimumWidth));
+	state.selectorWidth = std::min(state.selectorWidth,
+		std::max(kSelectorMinimumWidth, side_budget - state.inspectorWidth));
 	if (state.activeTab == static_cast<uint64_t>(DevInterfaceTab::Catalogue)) {
 		build_catalogue_content(context, state);
 		return;
@@ -224,8 +245,10 @@ void DevInterface::buildContent(BuildContext& context) {
 		selectorSplitter.thickness = 1.0f;
 		selectorSplitter.hitThickness = 10.0f;
 		selectorSplitter.backgroundColor = interface_theme::kBorderPrimary;
+		selectorSplitter.leadingSurfaceColor = interface_theme::kDepth1Panel;
+		selectorSplitter.trailingSurfaceColor = interface_theme::kDepth0Keel;
 		selectorSplitter.hoverColor = interface_theme::kAccentCurrent;
-		selectorSplitter.draggingColor = interface_theme::kSelectedRow;
+		selectorSplitter.draggingColor = interface_theme::kAccentSeaGlass;
 		context.uiManager.createElement(FSEL::kSplitterHandle, kSelectorSplitter)
 			.setParameters(std::move(selectorSplitter))
 			.setDevInternalCapture(true)
@@ -248,8 +271,10 @@ void DevInterface::buildContent(BuildContext& context) {
 		inspectorSplitter.thickness = 1.0f;
 		inspectorSplitter.hitThickness = 10.0f;
 		inspectorSplitter.backgroundColor = interface_theme::kBorderPrimary;
+		inspectorSplitter.leadingSurfaceColor = interface_theme::kDepth0Keel;
+		inspectorSplitter.trailingSurfaceColor = interface_theme::kDepth1Panel;
 		inspectorSplitter.hoverColor = interface_theme::kAccentCurrent;
-		inspectorSplitter.draggingColor = interface_theme::kSelectedRow;
+		inspectorSplitter.draggingColor = interface_theme::kAccentSeaGlass;
 		context.uiManager.createElement(FSEL::kSplitterHandle, kInspectorSplitter)
 			.setParameters(std::move(inspectorSplitter))
 			.setDevInternalCapture(true)

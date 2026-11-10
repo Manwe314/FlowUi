@@ -3,7 +3,7 @@
 #endif
 #include "FSEL/ComboBox.hpp"
 #include "FSEL/RadioChoice.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbench.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"

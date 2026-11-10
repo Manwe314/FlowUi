@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <iostream>
 
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.hpp"
 
 namespace {

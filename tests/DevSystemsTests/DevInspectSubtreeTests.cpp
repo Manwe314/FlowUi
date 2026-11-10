@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
 
 namespace {

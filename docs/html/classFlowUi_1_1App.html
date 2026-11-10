@@ -131,30 +131,47 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:aaad78bc0186f550641ae5959d54f2e2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the app and owned runtime resources. <br /></td></tr>
 <tr class="memitem:a89287d9cf2b4318dcc3b444143fee67f" id="r_a89287d9cf2b4318dcc3b444143fee67f"><td class="memItemLeft">WindowId&#160;</td><td class="memItemRight"><a class="el" href="#a89287d9cf2b4318dcc3b444143fee67f">mainWindowId</a> () const noexcept</td></tr>
 <tr class="memdesc:a89287d9cf2b4318dcc3b444143fee67f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the stable identity of the semantic main window.  <br /></td></tr>
-<tr class="memitem:ae4dab6c84e999e24611ecdbc2e5f3ef2" id="r_ae4dab6c84e999e24611ecdbc2e5f3ef2"><td class="memItemLeft">WindowId&#160;</td><td class="memItemRight"><a class="el" href="#ae4dab6c84e999e24611ecdbc2e5f3ef2">createWindow</a> (const <a class="el" href="structFlowUi_1_1WindowConfig.html">WindowConfig</a> &amp;config)</td></tr>
-<tr class="memdesc:ae4dab6c84e999e24611ecdbc2e5f3ef2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and fully initialize a secondary window.  <br /></td></tr>
-<tr class="memitem:a3f50503a918f699b46a8f15ea1481d86" id="r_a3f50503a918f699b46a8f15ea1481d86"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3f50503a918f699b46a8f15ea1481d86">destroyWindow</a> (WindowId id)</td></tr>
-<tr class="memdesc:a3f50503a918f699b46a8f15ea1481d86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy a secondary window after draining its outstanding work.  <br /></td></tr>
+<tr class="memitem:a951abc21d144c989343d3f41c1c9d31b" id="r_a951abc21d144c989343d3f41c1c9d31b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a951abc21d144c989343d3f41c1c9d31b">reportError</a> (<a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a> error) const noexcept</td></tr>
+<tr class="memitem:a889cc3d99ebed212c56d563b3f1299a3" id="r_a889cc3d99ebed212c56d563b3f1299a3"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a889cc3d99ebed212c56d563b3f1299a3">createWindow</a> (const <a class="el" href="structFlowUi_1_1WindowConfig.html">WindowConfig</a> &amp;config)</td></tr>
+<tr class="memdesc:a889cc3d99ebed212c56d563b3f1299a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and fully initialize a secondary window.  <br /></td></tr>
+<tr class="memitem:a739aa81d2f2a5427dc85bfb75fd03a72" id="r_a739aa81d2f2a5427dc85bfb75fd03a72"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a739aa81d2f2a5427dc85bfb75fd03a72">createWindowLikeMain</a> ()</td></tr>
+<tr class="memitem:a4205f743c491101717e3911c72f3504a" id="r_a4205f743c491101717e3911c72f3504a"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a4205f743c491101717e3911c72f3504a">createWindow</a> (const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;overrides)</td></tr>
+<tr class="memitem:a7f7a88852477cbf69f73686cf16f506b" id="r_a7f7a88852477cbf69f73686cf16f506b"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7f7a88852477cbf69f73686cf16f506b">createWindow</a> (std::string_view title, int width=0, int height=0)</td></tr>
+<tr class="memitem:a1b635383316a758d02b1fcd58706d16d" id="r_a1b635383316a758d02b1fcd58706d16d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1b635383316a758d02b1fcd58706d16d">createWindow</a> (const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;overrides, UiBuildCallback buildUi, <a class="el" href="structFlowUi_1_1ManagedWindowFlags.html">ManagedWindowFlags</a> flags={})</td></tr>
+<tr class="memitem:a17b1d0258094811d9ae2067cebad6fc2" id="r_a17b1d0258094811d9ae2067cebad6fc2"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a17b1d0258094811d9ae2067cebad6fc2">setWindowUiCallback</a> (WindowId id, UiBuildCallback buildUi, <a class="el" href="structFlowUi_1_1ManagedWindowFlags.html">ManagedWindowFlags</a> flags={})</td></tr>
+<tr class="memitem:af0ee72e80a806c216622a9bc9705eadc" id="r_af0ee72e80a806c216622a9bc9705eadc"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af0ee72e80a806c216622a9bc9705eadc">removeWindowUiCallback</a> (WindowId id)</td></tr>
+<tr class="memitem:adba20f7e2151c2215b4930f0bc871faa" id="r_adba20f7e2151c2215b4930f0bc871faa"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#adba20f7e2151c2215b4930f0bc871faa">dispatchManagedWindows</a> ()</td></tr>
+<tr class="memitem:ad9a4939d5082e0f971609d3d3c0dac12" id="r_ad9a4939d5082e0f971609d3d3c0dac12"><td class="memTemplParams" colspan="2"><a id="ad9a4939d5082e0f971609d3d3c0dac12" name="ad9a4939d5082e0f971609d3d3c0dac12"></a>
+template&lt;FlowElement Element&gt; </td></tr>
+<tr class="memitem:ad9a4939d5082e0f971609d3d3c0dac12 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><b>createWindow</b> (const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;overrides, const Element &amp;element, ParametersOf&lt; Element &gt; params={}, <a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName=<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a>{&quot;window/root-element&quot;})</td></tr>
+<tr class="memitem:ad6a518f8893e8973645357971e93660d" id="r_ad6a518f8893e8973645357971e93660d"><td class="memTemplParams" colspan="2"><a id="ad6a518f8893e8973645357971e93660d" name="ad6a518f8893e8973645357971e93660d"></a>
+template&lt;FlowElement Element&gt; </td></tr>
+<tr class="memitem:ad6a518f8893e8973645357971e93660d template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><b>createWindow</b> (const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;overrides, const Element &amp;element, std::function&lt; void(<a class="el" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a>&lt; Element &gt; &amp;, WindowId)&gt; configurator, <a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName=<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a>{&quot;window/root-element&quot;})</td></tr>
+<tr class="memitem:a87b5a215b6a5935ecc1128886012c032" id="r_a87b5a215b6a5935ecc1128886012c032"><td class="memTemplParams" colspan="2"><a id="a87b5a215b6a5935ecc1128886012c032" name="a87b5a215b6a5935ecc1128886012c032"></a>
+template&lt;FlowElement Element&gt; </td></tr>
+<tr class="memitem:a87b5a215b6a5935ecc1128886012c032 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt;&#160;</td><td class="memItemRight"><b>createWindowWithState</b> (const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;overrides, const Element &amp;element, std::shared_ptr&lt; ParametersOf&lt; Element &gt; &gt; sharedParams, <a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> localName=<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a>{&quot;window/root-element&quot;})</td></tr>
+<tr class="memitem:a5865b3b8367511d0599545d1d40f730d" id="r_a5865b3b8367511d0599545d1d40f730d"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a5865b3b8367511d0599545d1d40f730d">destroyWindow</a> (WindowId id)</td></tr>
+<tr class="memdesc:a5865b3b8367511d0599545d1d40f730d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy a secondary window after draining its outstanding work.  <br /></td></tr>
 <tr class="memitem:a936d6288d15558fe4a130bf2a05df796" id="r_a936d6288d15558fe4a130bf2a05df796"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a936d6288d15558fe4a130bf2a05df796">hasWindow</a> (WindowId id) const noexcept</td></tr>
 <tr class="memdesc:a936d6288d15558fe4a130bf2a05df796"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether an identity currently names a registered window.  <br /></td></tr>
-<tr class="memitem:aba8d4f1447282e9e8a9fe1f8b8acdac0" id="r_aba8d4f1447282e9e8a9fe1f8b8acdac0"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aba8d4f1447282e9e8a9fe1f8b8acdac0">pollEvents</a> ()</td></tr>
-<tr class="memdesc:aba8d4f1447282e9e8a9fe1f8b8acdac0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll global platform events and advance app-shared maintenance.  <br /></td></tr>
+<tr class="memitem:a161b7acca81351f5b151bc16532db051" id="r_a161b7acca81351f5b151bc16532db051"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a161b7acca81351f5b151bc16532db051">pollEvents</a> ()</td></tr>
+<tr class="memdesc:a161b7acca81351f5b151bc16532db051"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll global platform events and advance app-shared maintenance.  <br /></td></tr>
 <tr class="memitem:a9d853f690168da16dc71e453c9616913" id="r_a9d853f690168da16dc71e453c9616913"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9d853f690168da16dc71e453c9616913">shouldClose</a> () const</td></tr>
 <tr class="memdesc:a9d853f690168da16dc71e453c9616913"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether the window backend requested shutdown.  <br /></td></tr>
 <tr class="memitem:a428faf1ab71c31b792fc69a0c28507bc" id="r_a428faf1ab71c31b792fc69a0c28507bc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a428faf1ab71c31b792fc69a0c28507bc">shouldClose</a> (WindowId id) const</td></tr>
 <tr class="memdesc:a428faf1ab71c31b792fc69a0c28507bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether a specific window requested shutdown.  <br /></td></tr>
-<tr class="memitem:a2a1be3d0f458e4fdd5392dcdfe4555f1" id="r_a2a1be3d0f458e4fdd5392dcdfe4555f1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2a1be3d0f458e4fdd5392dcdfe4555f1">beginFrame</a> ()</td></tr>
-<tr class="memdesc:a2a1be3d0f458e4fdd5392dcdfe4555f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether the window backend should request shutdown.  <br /></td></tr>
-<tr class="memitem:a198742db76e6294d719a53d9a0c7453f" id="r_a198742db76e6294d719a53d9a0c7453f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a198742db76e6294d719a53d9a0c7453f">beginFrame</a> (WindowId id)</td></tr>
-<tr class="memdesc:a198742db76e6294d719a53d9a0c7453f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin one explicit window frame without polling global events.  <br /></td></tr>
-<tr class="memitem:a5c6ee53de89f3dd55d43e4742905414a" id="r_a5c6ee53de89f3dd55d43e4742905414a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5c6ee53de89f3dd55d43e4742905414a">endFrame</a> ()</td></tr>
-<tr class="memdesc:a5c6ee53de89f3dd55d43e4742905414a"><td class="mdescLeft">&#160;</td><td class="mdescRight">End UI construction and produce render commands.  <br /></td></tr>
-<tr class="memitem:a6148d4d5efc9c365b58720ea00482ed6" id="r_a6148d4d5efc9c365b58720ea00482ed6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6148d4d5efc9c365b58720ea00482ed6">endFrame</a> (WindowId id)</td></tr>
-<tr class="memdesc:a6148d4d5efc9c365b58720ea00482ed6"><td class="mdescLeft">&#160;</td><td class="mdescRight">End UI construction for a specific active window frame.  <br /></td></tr>
-<tr class="memitem:ad256201c79c7e07675e12b5bd0d8c8aa" id="r_ad256201c79c7e07675e12b5bd0d8c8aa"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad256201c79c7e07675e12b5bd0d8c8aa">drawFrame</a> ()</td></tr>
-<tr class="memdesc:ad256201c79c7e07675e12b5bd0d8c8aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit the current frame for rendering and presentation.  <br /></td></tr>
-<tr class="memitem:abf2e2a69b3ef47e2542a9beaa4a8f8d0" id="r_abf2e2a69b3ef47e2542a9beaa4a8f8d0"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abf2e2a69b3ef47e2542a9beaa4a8f8d0">drawFrame</a> (WindowId id)</td></tr>
-<tr class="memdesc:abf2e2a69b3ef47e2542a9beaa4a8f8d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit and present a specific prepared window frame.  <br /></td></tr>
+<tr class="memitem:a1d86e3d448b77e5a32e4ee2f97b02974" id="r_a1d86e3d448b77e5a32e4ee2f97b02974"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a1d86e3d448b77e5a32e4ee2f97b02974">beginFrame</a> ()</td></tr>
+<tr class="memdesc:a1d86e3d448b77e5a32e4ee2f97b02974"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether the window backend should request shutdown.  <br /></td></tr>
+<tr class="memitem:a6b463300e9c6b89f6ddd5abad0771cbc" id="r_a6b463300e9c6b89f6ddd5abad0771cbc"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a6b463300e9c6b89f6ddd5abad0771cbc">beginFrame</a> (WindowId id)</td></tr>
+<tr class="memdesc:a6b463300e9c6b89f6ddd5abad0771cbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin one explicit window frame without polling global events.  <br /></td></tr>
+<tr class="memitem:a16773d85519758713e645694ffe55cca" id="r_a16773d85519758713e645694ffe55cca"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a16773d85519758713e645694ffe55cca">endFrame</a> ()</td></tr>
+<tr class="memdesc:a16773d85519758713e645694ffe55cca"><td class="mdescLeft">&#160;</td><td class="mdescRight">End UI construction and produce render commands.  <br /></td></tr>
+<tr class="memitem:a4404701b1b713a08fc1499ec4ccbc952" id="r_a4404701b1b713a08fc1499ec4ccbc952"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a4404701b1b713a08fc1499ec4ccbc952">endFrame</a> (WindowId id)</td></tr>
+<tr class="memdesc:a4404701b1b713a08fc1499ec4ccbc952"><td class="mdescLeft">&#160;</td><td class="mdescRight">End UI construction for a specific active window frame.  <br /></td></tr>
+<tr class="memitem:a1d3a7a09c095e489d4165fa25ac35c43" id="r_a1d3a7a09c095e489d4165fa25ac35c43"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a1d3a7a09c095e489d4165fa25ac35c43">drawFrame</a> ()</td></tr>
+<tr class="memdesc:a1d3a7a09c095e489d4165fa25ac35c43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit the current frame for rendering and presentation.  <br /></td></tr>
+<tr class="memitem:a1e810abd96c7fd724bad5b26163ccf4a" id="r_a1e810abd96c7fd724bad5b26163ccf4a"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a1e810abd96c7fd724bad5b26163ccf4a">drawFrame</a> (WindowId id)</td></tr>
+<tr class="memdesc:a1e810abd96c7fd724bad5b26163ccf4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit and present a specific prepared window frame.  <br /></td></tr>
 <tr class="memitem:a1db6aceb22351a9a0c199e1faeb9405a" id="r_a1db6aceb22351a9a0c199e1faeb9405a"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FontManager.html">FontManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a1db6aceb22351a9a0c199e1faeb9405a">fonts</a> ()</td></tr>
 <tr class="memdesc:a1db6aceb22351a9a0c199e1faeb9405a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the font manager.  <br /></td></tr>
 <tr class="memitem:abd633c521ed80977c1992cf3cccc0310" id="r_abd633c521ed80977c1992cf3cccc0310"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1FontManager.html">FontManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#abd633c521ed80977c1992cf3cccc0310">fonts</a> () const</td></tr>
@@ -167,6 +184,35 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a00db43401d213994be87716679cd8f91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the theme manager.  <br /></td></tr>
 <tr class="memitem:a6351917f62d84a075ec49b977ff61817" id="r_a6351917f62d84a075ec49b977ff61817"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6351917f62d84a075ec49b977ff61817">themes</a> () const</td></tr>
 <tr class="memdesc:a6351917f62d84a075ec49b977ff61817"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the theme manager.  <br /></td></tr>
+<tr class="memitem:ab742bbb1823750f2751cd834a6b961d8" id="r_ab742bbb1823750f2751cd834a6b961d8"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ElementManager.html">ElementManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ab742bbb1823750f2751cd834a6b961d8">elements</a> ()</td></tr>
+<tr class="memdesc:ab742bbb1823750f2751cd834a6b961d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the app-wide Flow element state/resource manager.  <br /></td></tr>
+<tr class="memitem:a37c64fc1c8d49e5ec203d4ab41401ff7" id="r_a37c64fc1c8d49e5ec203d4ab41401ff7"><td class="memItemLeft">const <a class="el" href="classFlowUi_1_1ElementManager.html">ElementManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a37c64fc1c8d49e5ec203d4ab41401ff7">elements</a> () const</td></tr>
+<tr class="memdesc:a37c64fc1c8d49e5ec203d4ab41401ff7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the app-wide Flow element state/resource manager.  <br /></td></tr>
+<tr class="memitem:ab97f9700578a0375b3199704f045bc7a" id="r_ab97f9700578a0375b3199704f045bc7a"><td class="memItemLeft"><a id="ab97f9700578a0375b3199704f045bc7a" name="ab97f9700578a0375b3199704f045bc7a"></a>
+<a class="el" href="classFlowUi_1_1ActionManager.html">ActionManager</a> &amp;&#160;</td><td class="memItemRight"><b>actions</b> ()</td></tr>
+<tr class="memdesc:ab97f9700578a0375b3199704f045bc7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the app-wide action manager. <br /></td></tr>
+<tr class="memitem:a870ad0e5583c563e38877571afca3f7e" id="r_a870ad0e5583c563e38877571afca3f7e"><td class="memItemLeft"><a id="a870ad0e5583c563e38877571afca3f7e" name="a870ad0e5583c563e38877571afca3f7e"></a>
+const <a class="el" href="classFlowUi_1_1ActionManager.html">ActionManager</a> &amp;&#160;</td><td class="memItemRight"><b>actions</b> () const</td></tr>
+<tr class="memdesc:a870ad0e5583c563e38877571afca3f7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the immutable app-wide action manager. <br /></td></tr>
+<tr class="memitem:aee408110a43ccd68d273160d0f8729ed" id="r_aee408110a43ccd68d273160d0f8729ed"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aee408110a43ccd68d273160d0f8729ed">request_dev_interface_toggle</a> () noexcept</td></tr>
+<tr class="memitem:ac128a9bdd9c5d4efc26cd2ebca1d6ff7" id="r_ac128a9bdd9c5d4efc26cd2ebca1d6ff7"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#ac128a9bdd9c5d4efc26cd2ebca1d6ff7">request_dev_performance_capture</a> (const <a class="el" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">devSystems::PerformanceCaptureSettings</a> &amp;settings) noexcept</td></tr>
+<tr class="memitem:a45428029687379534e3f059297f383c8" id="r_a45428029687379534e3f059297f383c8"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a45428029687379534e3f059297f383c8">set_dev_window_suspended</a> (WindowId window, bool suspended)</td></tr>
+<tr class="memitem:aa6a06f9ef7cb51ef094720bbbd901da5" id="r_aa6a06f9ef7cb51ef094720bbbd901da5"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aa6a06f9ef7cb51ef094720bbbd901da5">dev_shortcut_down</a> (const <a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a> &amp;chord) const noexcept</td></tr>
+<tr class="memitem:affb181d06678bf179686d925e24cc488" id="r_affb181d06678bf179686d925e24cc488"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#affb181d06678bf179686d925e24cc488">dev_shortcut_pressed</a> (const <a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a> &amp;chord) const noexcept</td></tr>
+<tr class="memitem:ada85b235c4bcb5d083f728e0f22ec1e9" id="r_ada85b235c4bcb5d083f728e0f22ec1e9"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">devSystems::DevMonitoringAndReporting</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ada85b235c4bcb5d083f728e0f22ec1e9">devMonitoring</a> ()</td></tr>
+<tr class="memitem:af460893e92b54bd1b0cb0a6903721e5b" id="r_af460893e92b54bd1b0cb0a6903721e5b"><td class="memItemLeft"><a id="af460893e92b54bd1b0cb0a6903721e5b" name="af460893e92b54bd1b0cb0a6903721e5b"></a>
+const <a class="el" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">devSystems::DevMonitoringAndReporting</a> &amp;&#160;</td><td class="memItemRight"><b>devMonitoring</b> () const</td></tr>
+<tr class="memitem:a6bd48b2c8761a53c8cd1e9ec3f4eacb3" id="r_a6bd48b2c8761a53c8cd1e9ec3f4eacb3"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTooling.html">devSystems::DevTooling</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6bd48b2c8761a53c8cd1e9ec3f4eacb3">devTooling</a> ()</td></tr>
+<tr class="memitem:a087202cbfd2bf61af272704259ff35c4" id="r_a087202cbfd2bf61af272704259ff35c4"><td class="memItemLeft"><a id="a087202cbfd2bf61af272704259ff35c4" name="a087202cbfd2bf61af272704259ff35c4"></a>
+const <a class="el" href="classFlowUi_1_1devSystems_1_1DevTooling.html">devSystems::DevTooling</a> &amp;&#160;</td><td class="memItemRight"><b>devTooling</b> () const</td></tr>
+<tr class="memitem:a9dd59a3575a9bf13236060674362100b" id="r_a9dd59a3575a9bf13236060674362100b"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1DevWindowInfo.html">DevWindowInfo</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a9dd59a3575a9bf13236060674362100b">devWindowSnapshot</a> () const</td></tr>
+<tr class="memitem:a475e4a8689690c0d7469962f2c12ad00" id="r_a475e4a8689690c0d7469962f2c12ad00"><td class="memItemLeft">std::vector&lt; <a class="el" href="structFlowUi_1_1DevViewportInfo.html">DevViewportInfo</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a475e4a8689690c0d7469962f2c12ad00">devViewportSnapshot</a> (WindowId window) const</td></tr>
+<tr class="memitem:af64e334663f5aebdd022b8b970f2f386" id="r_af64e334663f5aebdd022b8b970f2f386"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#af64e334663f5aebdd022b8b970f2f386">request_dev_viewport_capture</a> (WindowId window, std::string_view key) noexcept</td></tr>
+<tr class="memitem:aa9f09a5614ee7cf794435426af6ba09f" id="r_aa9f09a5614ee7cf794435426af6ba09f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa9f09a5614ee7cf794435426af6ba09f">release_dev_viewport_capture</a> (WindowId window, std::string_view key) noexcept</td></tr>
+<tr class="memitem:a744246940f715bd4e8f39e0185098cc4" id="r_a744246940f715bd4e8f39e0185098cc4"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a744246940f715bd4e8f39e0185098cc4">retain_dev_viewport_capture</a> (WindowId window, std::string_view key, <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> expected_capture) noexcept</td></tr>
+<tr class="memitem:a7c1cbe7364b0c4f06c11ebfec699cdbe" id="r_a7c1cbe7364b0c4f06c11ebfec699cdbe"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a7c1cbe7364b0c4f06c11ebfec699cdbe">release_dev_viewport_capture_texture</a> (<a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> texture) noexcept</td></tr>
+<tr class="memitem:ac0e39f0346792e39e0c039416121a598" id="r_ac0e39f0346792e39e0c039416121a598"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">devSystems::DevUiReplaySource</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac0e39f0346792e39e0c039416121a598">devUiReplaySource</a> (WindowId id) noexcept</td></tr>
+<tr class="memitem:aefbe3983d3dad4d34760be15f4150713" id="r_aefbe3983d3dad4d34760be15f4150713"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aefbe3983d3dad4d34760be15f4150713">requestDevUiReplay</a> (WindowId id, uint64_t requestKey, std::span&lt; const uint32_t &gt; clayCommandIds, Clay_BoundingBox sourceRootBounds)</td></tr>
 <tr class="memitem:a7ef478693b7f8354db690c2ffc2e4cac" id="r_a7ef478693b7f8354db690c2ffc2e4cac"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1IconManager.html">IconManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a7ef478693b7f8354db690c2ffc2e4cac">icons</a> ()</td></tr>
 <tr class="memdesc:a7ef478693b7f8354db690c2ffc2e4cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the icon manager.  <br /></td></tr>
 <tr class="memitem:a4aea0f22867850b6c6791ef76a827608" id="r_a4aea0f22867850b6c6791ef76a827608"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1IconManager.html">IconManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a4aea0f22867850b6c6791ef76a827608">icons</a> () const</td></tr>
@@ -260,19 +306,27 @@ Friends</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a2a1be3d0f458e4fdd5392dcdfe4555f1" name="a2a1be3d0f458e4fdd5392dcdfe4555f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a1be3d0f458e4fdd5392dcdfe4555f1">&#9670;&#160;</a></span>beginFrame() <span class="overload">[1/2]</span></h2>
+<a id="a1d86e3d448b77e5a32e4ee2f97b02974" name="a1d86e3d448b77e5a32e4ee2f97b02974"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d86e3d448b77e5a32e4ee2f97b02974">&#9670;&#160;</a></span>beginFrame() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::beginFrame </td>
+          <td class="memname">Status FlowUi::App::beginFrame </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Set whether the window backend should request shutdown. </p>
@@ -288,31 +342,39 @@ Friends</h2></td></tr>
 <div class="line"></div>
 </div><!-- fragment --><dl class="section pre"><dt>Precondition</dt><dd>The <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a> instance is initialized and its window/UI systems are valid. </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>The current frame is active and input/UI state is ready for frame logic/building. </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Do not also call <a class="el" href="#aba8d4f1447282e9e8a9fe1f8b8acdac0" title="Poll global platform events and advance app-shared maintenance.">pollEvents()</a> in the same loop iteration unless a second global event-pump pass is intentional. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Do not also call <a class="el" href="#a161b7acca81351f5b151bc16532db051" title="Poll global platform events and advance app-shared maintenance.">pollEvents()</a> in the same loop iteration unless a second global event-pump pass is intentional. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="md_docs_2concepts_2frame__lifecycle.html" title="Frame Lifecycle">Frame Lifecycle</a> </dd>
 <dd>
 <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start</a> </dd></dl>
 
 </div>
 </div>
-<a id="a198742db76e6294d719a53d9a0c7453f" name="a198742db76e6294d719a53d9a0c7453f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a198742db76e6294d719a53d9a0c7453f">&#9670;&#160;</a></span>beginFrame() <span class="overload">[2/2]</span></h2>
+<a id="a6b463300e9c6b89f6ddd5abad0771cbc" name="a6b463300e9c6b89f6ddd5abad0771cbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b463300e9c6b89f6ddd5abad0771cbc">&#9670;&#160;</a></span>beginFrame() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::beginFrame </td>
+          <td class="memname">Status FlowUi::App::beginFrame </td>
           <td>(</td>
           <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Begin one explicit window frame without polling global events. </p>
-<p>Use this overload after one <a class="el" href="#aba8d4f1447282e9e8a9fe1f8b8acdac0" title="Poll global platform events and advance app-shared maintenance.">pollEvents()</a> call when driving multiple windows; <span class="tt">id</span> must identify a registered window. A window's beginFrame(id), endFrame(id), and drawFrame(id) triplet must finish before another window frame is begun.</p>
-<dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="#aba8d4f1447282e9e8a9fe1f8b8acdac0" title="Poll global platform events and advance app-shared maintenance.">pollEvents()</a> was called at the cadence required by the application. </dd></dl>
+<p>Use this overload after one <a class="el" href="#a161b7acca81351f5b151bc16532db051" title="Poll global platform events and advance app-shared maintenance.">pollEvents()</a> call when driving multiple windows; <span class="tt">id</span> must identify a registered window. A window's beginFrame(id), endFrame(id), and drawFrame(id) triplet must finish before another window frame is begun.</p>
+<dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="#a161b7acca81351f5b151bc16532db051" title="Poll global platform events and advance app-shared maintenance.">pollEvents()</a> was called at the cadence required by the application. </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>The selected window's UI manager is ready for frame construction. </dd></dl>
 
 </div>
@@ -322,6 +384,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">std::string FlowUi::App::clipboardText </td>
@@ -330,6 +395,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Read clipboard text through the window backend. </p>
@@ -371,8 +441,8 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="ae4dab6c84e999e24611ecdbc2e5f3ef2" name="ae4dab6c84e999e24611ecdbc2e5f3ef2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4dab6c84e999e24611ecdbc2e5f3ef2">&#9670;&#160;</a></span>createWindow()</h2>
+<a id="a889cc3d99ebed212c56d563b3f1299a3" name="a889cc3d99ebed212c56d563b3f1299a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a889cc3d99ebed212c56d563b3f1299a3">&#9670;&#160;</a></span>createWindow() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -381,7 +451,7 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">WindowId FlowUi::App::createWindow </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt; FlowUi::App::createWindow </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structFlowUi_1_1WindowConfig.html">WindowConfig</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>config</em></span></td><td>)</td>
           <td></td>
@@ -413,26 +483,156 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="a3f50503a918f699b46a8f15ea1481d86" name="a3f50503a918f699b46a8f15ea1481d86"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3f50503a918f699b46a8f15ea1481d86">&#9670;&#160;</a></span>destroyWindow()</h2>
+<a id="a4205f743c491101717e3911c72f3504a" name="a4205f743c491101717e3911c72f3504a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4205f743c491101717e3911c72f3504a">&#9670;&#160;</a></span>createWindow() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::destroyWindow </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt; FlowUi::App::createWindow </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>overrides</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a secondary window by applying partial overrides to the main config. </p>
+
+</div>
+</div>
+<a id="a1b635383316a758d02b1fcd58706d16d" name="a1b635383316a758d02b1fcd58706d16d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b635383316a758d02b1fcd58706d16d">&#9670;&#160;</a></span>createWindow() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt; FlowUi::App::createWindow </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1WindowConfigOverrides.html">WindowConfigOverrides</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>overrides</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UiBuildCallback</td>          <td class="paramname"><span class="paramname"><em>buildUi</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ManagedWindowFlags.html">ManagedWindowFlags</a></td>          <td class="paramname"><span class="paramname"><em>flags</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create and register a synchronously managed secondary window. </p>
+
+</div>
+</div>
+<a id="a7f7a88852477cbf69f73686cf16f506b" name="a7f7a88852477cbf69f73686cf16f506b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f7a88852477cbf69f73686cf16f506b">&#9670;&#160;</a></span>createWindow() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt; FlowUi::App::createWindow </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>title</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>width</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>height</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a secondary window with a concise title and optional dimensions. </p>
+
+</div>
+</div>
+<a id="a739aa81d2f2a5427dc85bfb75fd03a72" name="a739aa81d2f2a5427dc85bfb75fd03a72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a739aa81d2f2a5427dc85bfb75fd03a72">&#9670;&#160;</a></span>createWindowLikeMain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; WindowId &gt; FlowUi::App::createWindowLikeMain </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a secondary window by cloning the main window configuration. </p>
+
+</div>
+</div>
+<a id="a5865b3b8367511d0599545d1d40f730d" name="a5865b3b8367511d0599545d1d40f730d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5865b3b8367511d0599545d1d40f730d">&#9670;&#160;</a></span>destroyWindow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::destroyWindow </td>
           <td>(</td>
           <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Destroy a secondary window after draining its outstanding work. </p>
 <p>The semantic main window cannot be explicitly destroyed.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">id</td><td>Secondary-window identity returned by <a class="el" href="#ae4dab6c84e999e24611ecdbc2e5f3ef2" title="Create and fully initialize a secondary window.">createWindow()</a>. </td></tr>
+    <tr><td class="paramname">id</td><td>Secondary-window identity returned by <a class="el" href="#a889cc3d99ebed212c56d563b3f1299a3" title="Create and fully initialize a secondary window.">createWindow()</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -446,42 +646,269 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="ad256201c79c7e07675e12b5bd0d8c8aa" name="ad256201c79c7e07675e12b5bd0d8c8aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad256201c79c7e07675e12b5bd0d8c8aa">&#9670;&#160;</a></span>drawFrame() <span class="overload">[1/2]</span></h2>
+<a id="aa6a06f9ef7cb51ef094720bbbd901da5" name="aa6a06f9ef7cb51ef094720bbbd901da5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6a06f9ef7cb51ef094720bbbd901da5">&#9670;&#160;</a></span>dev_shortcut_down()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::drawFrame </td>
+          <td class="memname">bool FlowUi::App::dev_shortcut_down </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>chord</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Poll a configured chord on focused native application windows before UI work. </p>
+
+</div>
+</div>
+<a id="affb181d06678bf179686d925e24cc488" name="affb181d06678bf179686d925e24cc488"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affb181d06678bf179686d925e24cc488">&#9670;&#160;</a></span>dev_shortcut_pressed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::App::dev_shortcut_pressed </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1DevShortcutChord.html">DevShortcutChord</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>chord</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Read a native press edge before UI dispatch; repeat events are excluded. </p>
+
+</div>
+</div>
+<a id="ada85b235c4bcb5d083f728e0f22ec1e9" name="ada85b235c4bcb5d083f728e0f22ec1e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada85b235c4bcb5d083f728e0f22ec1e9">&#9670;&#160;</a></span>devMonitoring()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1devSystems_1_1DevMonitoringAndReporting.html">devSystems::DevMonitoringAndReporting</a> &amp; FlowUi::App::devMonitoring </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-
-<p>Submit the current frame for rendering and presentation. </p>
-<p>Takes the render commands output by <a class="el" href="#a5c6ee53de89f3dd55d43e4742905414a" title="End UI construction and produce render commands.">endFrame()</a>, builds GPU draw runs, renders them, and passes the output to the swapchain for presentation.</p>
-<p>Example: </p><div class="fragment"></div><!-- fragment --><dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="#a5c6ee53de89f3dd55d43e4742905414a" title="End UI construction and produce render commands.">FlowUi::App::endFrame()</a> was called successfully. </dd></dl>
-<dl class="section post"><dt>Postcondition</dt><dd>This frame is rendered and presented. </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>This function should be called exactly once per frame. </dd></dl>
+<p>Development-only access to timing monitoring and retained reports. </p>
 
 </div>
 </div>
-<a id="abf2e2a69b3ef47e2542a9beaa4a8f8d0" name="abf2e2a69b3ef47e2542a9beaa4a8f8d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf2e2a69b3ef47e2542a9beaa4a8f8d0">&#9670;&#160;</a></span>drawFrame() <span class="overload">[2/2]</span></h2>
+<a id="a6bd48b2c8761a53c8cd1e9ec3f4eacb3" name="a6bd48b2c8761a53c8cd1e9ec3f4eacb3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bd48b2c8761a53c8cd1e9ec3f4eacb3">&#9670;&#160;</a></span>devTooling()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::drawFrame </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1devSystems_1_1DevTooling.html">devSystems::DevTooling</a> &amp; FlowUi::App::devTooling </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Development-only schema catalogue, discovery, and publication service. </p>
+
+</div>
+</div>
+<a id="ac0e39f0346792e39e0c039416121a598" name="ac0e39f0346792e39e0c039416121a598"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0e39f0346792e39e0c039416121a598">&#9670;&#160;</a></span>devUiReplaySource()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structFlowUi_1_1devSystems_1_1DevUiReplaySource.html">devSystems::DevUiReplaySource</a> FlowUi::App::devUiReplaySource </td>
           <td>(</td>
           <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the latest owned raw-command packet captured for development replay. </p>
+
+</div>
+</div>
+<a id="a475e4a8689690c0d7469962f2c12ad00" name="a475e4a8689690c0d7469962f2c12ad00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a475e4a8689690c0d7469962f2c12ad00">&#9670;&#160;</a></span>devViewportSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1DevViewportInfo.html">DevViewportInfo</a> &gt; FlowUi::App::devViewportSnapshot </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Observe window-local viewport metadata independently of public Vulkan interop. </p>
+
+</div>
+</div>
+<a id="a9dd59a3575a9bf13236060674362100b" name="a9dd59a3575a9bf13236060674362100b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9dd59a3575a9bf13236060674362100b">&#9670;&#160;</a></span>devWindowSnapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structFlowUi_1_1DevWindowInfo.html">DevWindowInfo</a> &gt; FlowUi::App::devWindowSnapshot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Snapshot registered windows in stable identity order for development UI. </p>
+
+</div>
+</div>
+<a id="adba20f7e2151c2215b4930f0bc871faa" name="adba20f7e2151c2215b4930f0bc871faa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adba20f7e2151c2215b4930f0bc871faa">&#9670;&#160;</a></span>dispatchManagedWindows()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::dispatchManagedWindows </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Execute all managed secondary-window frame triads in registration order.</p>
+<p>Dispatch is synchronous on the platform thread. Closed windows with autoDestroyOnClose enabled are drained and destroyed before returning. </p>
+
+</div>
+</div>
+<a id="a1d3a7a09c095e489d4165fa25ac35c43" name="a1d3a7a09c095e489d4165fa25ac35c43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d3a7a09c095e489d4165fa25ac35c43">&#9670;&#160;</a></span>drawFrame() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::drawFrame </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Submit the current frame for rendering and presentation. </p>
+<p>Takes the render commands output by <a class="el" href="#a16773d85519758713e645694ffe55cca" title="End UI construction and produce render commands.">endFrame()</a>, builds GPU draw runs, renders them, and passes the output to the swapchain for presentation.</p>
+<p>Example: </p><div class="fragment"></div><!-- fragment --><dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="#a16773d85519758713e645694ffe55cca" title="End UI construction and produce render commands.">FlowUi::App::endFrame()</a> was called successfully. </dd></dl>
+<dl class="section post"><dt>Postcondition</dt><dd>This frame is rendered and presented. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function should be called exactly once per frame. </dd>
+<dd>
+After presenting the main window, this overload synchronously calls <a class="el" href="#adba20f7e2151c2215b4930f0bc871faa">dispatchManagedWindows()</a>. The WindowId overload never dispatches managed windows implicitly. </dd></dl>
+
+</div>
+</div>
+<a id="a1e810abd96c7fd724bad5b26163ccf4a" name="a1e810abd96c7fd724bad5b26163ccf4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e810abd96c7fd724bad5b26163ccf4a">&#9670;&#160;</a></span>drawFrame() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::drawFrame </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Submit and present a specific prepared window frame. </p>
@@ -494,42 +921,116 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="a5c6ee53de89f3dd55d43e4742905414a" name="a5c6ee53de89f3dd55d43e4742905414a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5c6ee53de89f3dd55d43e4742905414a">&#9670;&#160;</a></span>endFrame() <span class="overload">[1/2]</span></h2>
+<a id="ab742bbb1823750f2751cd834a6b961d8" name="ab742bbb1823750f2751cd834a6b961d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab742bbb1823750f2751cd834a6b961d8">&#9670;&#160;</a></span>elements() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::endFrame </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1ElementManager.html">ElementManager</a> &amp; FlowUi::App::elements </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access the app-wide Flow element state/resource manager. </p>
+<dl class="section return"><dt>Returns</dt><dd>Reference to the <a class="el" href="classFlowUi_1_1ElementManager.html" title="App-wide owner and public access point for Flow element runtime data.">FlowUi::ElementManager</a> owned by this app. </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__flowui__element__system.html" title="Element System">Element System</a> </dd></dl>
+
+</div>
+</div>
+<a id="a37c64fc1c8d49e5ec203d4ab41401ff7" name="a37c64fc1c8d49e5ec203d4ab41401ff7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37c64fc1c8d49e5ec203d4ab41401ff7">&#9670;&#160;</a></span>elements() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classFlowUi_1_1ElementManager.html">ElementManager</a> &amp; FlowUi::App::elements </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Access the app-wide Flow element state/resource manager. </p>
+<dl class="section return"><dt>Returns</dt><dd>Const reference to the <a class="el" href="classFlowUi_1_1ElementManager.html" title="App-wide owner and public access point for Flow element runtime data.">FlowUi::ElementManager</a> owned by this app. </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__flowui__element__system.html" title="Element System">Element System</a> </dd></dl>
+
+</div>
+</div>
+<a id="a16773d85519758713e645694ffe55cca" name="a16773d85519758713e645694ffe55cca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16773d85519758713e645694ffe55cca">&#9670;&#160;</a></span>endFrame() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::endFrame </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>End UI construction and produce render commands. </p>
 <p>Completes UI construction, produces render commands for this frame, and prepares viewport and icon manager resources.</p>
-<p>Example: </p><div class="fragment"></div><!-- fragment --><dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="#a2a1be3d0f458e4fdd5392dcdfe4555f1" title="Set whether the window backend should request shutdown.">FlowUi::App::beginFrame()</a> was called and UI was built afterward. </dd></dl>
+<p>Example: </p><div class="fragment"></div><!-- fragment --><dl class="section pre"><dt>Precondition</dt><dd><a class="el" href="#a1d86e3d448b77e5a32e4ee2f97b02974" title="Set whether the window backend should request shutdown.">FlowUi::App::beginFrame()</a> was called and UI was built afterward. </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>Render commands for this frame are ready and viewport handles are sized. </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This function should be called exactly once per frame. </dd></dl>
 
 </div>
 </div>
-<a id="a6148d4d5efc9c365b58720ea00482ed6" name="a6148d4d5efc9c365b58720ea00482ed6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6148d4d5efc9c365b58720ea00482ed6">&#9670;&#160;</a></span>endFrame() <span class="overload">[2/2]</span></h2>
+<a id="a4404701b1b713a08fc1499ec4ccbc952" name="a4404701b1b713a08fc1499ec4ccbc952"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4404701b1b713a08fc1499ec4ccbc952">&#9670;&#160;</a></span>endFrame() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::endFrame </td>
+          <td class="memname">Status FlowUi::App::endFrame </td>
           <td>(</td>
           <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>End UI construction for a specific active window frame. </p>
@@ -547,6 +1048,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1FontManager.html">FontManager</a> &amp; FlowUi::App::fonts </td>
@@ -555,6 +1059,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the font manager. </p>
@@ -568,6 +1077,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="structFlowUi_1_1FontManager.html">FontManager</a> &amp; FlowUi::App::fonts </td>
@@ -576,6 +1088,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the font manager. </p>
@@ -589,6 +1106,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">std::pair&lt; int, int &gt; FlowUi::App::framebufferSize </td>
@@ -597,6 +1117,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the framebuffer size in pixels. </p>
@@ -683,6 +1208,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1IconManager.html">IconManager</a> &amp; FlowUi::App::icons </td>
@@ -691,6 +1219,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the icon manager. </p>
@@ -705,6 +1238,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="structFlowUi_1_1IconManager.html">IconManager</a> &amp; FlowUi::App::icons </td>
@@ -713,6 +1249,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the icon manager. </p>
@@ -727,6 +1268,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1ImageManager.html">ImageManager</a> &amp; FlowUi::App::images </td>
@@ -735,6 +1279,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the image manager. </p>
@@ -748,6 +1297,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1ImageManager.html">ImageManager</a> &amp; FlowUi::App::images </td>
@@ -756,6 +1308,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the image manager. </p>
@@ -798,6 +1355,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void * FlowUi::App::nativeWindowHandle </td>
@@ -806,6 +1366,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the backend native window handle. </p>
@@ -848,30 +1413,317 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="aba8d4f1447282e9e8a9fe1f8b8acdac0" name="aba8d4f1447282e9e8a9fe1f8b8acdac0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba8d4f1447282e9e8a9fe1f8b8acdac0">&#9670;&#160;</a></span>pollEvents()</h2>
+<a id="a161b7acca81351f5b151bc16532db051" name="a161b7acca81351f5b151bc16532db051"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a161b7acca81351f5b151bc16532db051">&#9670;&#160;</a></span>pollEvents()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FlowUi::App::pollEvents </td>
+          <td class="memname">Status FlowUi::App::pollEvents </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Poll global platform events and advance app-shared maintenance. </p>
 <p>Multi-window applications should call this once per outer application-loop iteration before beginning explicit window frames. The function is global, not associated with one WindowId, and cannot run while a window frame triplet is active.</p>
-<p>Single-main-window applications normally do not call this directly because the no-argument <a class="el" href="#a2a1be3d0f458e4fdd5392dcdfe4555f1" title="Set whether the window backend should request shutdown.">beginFrame()</a> overload performs the same polling first.</p>
+<p>Single-main-window applications normally do not call this directly because the no-argument <a class="el" href="#a1d86e3d448b77e5a32e4ee2f97b02974" title="Set whether the window backend should request shutdown.">beginFrame()</a> overload performs the same polling first.</p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::logic_error</td><td>if a window frame triplet is active or the call is made from outside the app's platform thread. </td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aa9f09a5614ee7cf794435426af6ba09f" name="aa9f09a5614ee7cf794435426af6ba09f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9f09a5614ee7cf794435426af6ba09f">&#9670;&#160;</a></span>release_dev_viewport_capture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::App::release_dev_viewport_capture </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Retire this tool's backend capture cache; submitted consumers retain their own leases. </p>
+
+</div>
+</div>
+<a id="a7c1cbe7364b0c4f06c11ebfec699cdbe" name="a7c1cbe7364b0c4f06c11ebfec699cdbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c1cbe7364b0c4f06c11ebfec699cdbe">&#9670;&#160;</a></span>release_dev_viewport_capture_texture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::release_dev_viewport_capture_texture </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a></td>          <td class="paramname"><span class="paramname"><em>texture</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Release a binding returned by <a class="el" href="#a744246940f715bd4e8f39e0185098cc4">retain_dev_viewport_capture()</a>. </p>
+
+</div>
+</div>
+<a id="af0ee72e80a806c216622a9bc9705eadc" name="af0ee72e80a806c216622a9bc9705eadc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0ee72e80a806c216622a9bc9705eadc">&#9670;&#160;</a></span>removeWindowUiCallback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::App::removeWindowUiCallback </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return a managed window to explicit/manual frame control. </p>
+
+</div>
+</div>
+<a id="a951abc21d144c989343d3f41c1c9d31b" name="a951abc21d144c989343d3f41c1c9d31b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a951abc21d144c989343d3f41c1c9d31b">&#9670;&#160;</a></span>reportError()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::App::reportError </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1FlowUiError.html">FlowUiError</a></td>          <td class="paramname"><span class="paramname"><em>error</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Route a caller-owned FlowUi error through this <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a>'s configured reporting sink and/or compact default writer. Reporting does not resolve the error or alter application control flow. </p>
+
+</div>
+</div>
+<a id="aee408110a43ccd68d273160d0f8729ed" name="aee408110a43ccd68d273160d0f8729ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee408110a43ccd68d273160d0f8729ed">&#9670;&#160;</a></span>request_dev_interface_toggle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::App::request_dev_interface_toggle </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Queue a manual developer-interface toggle, equivalent to its panel shortcut. </p>
+
+</div>
+</div>
+<a id="ac128a9bdd9c5d4efc26cd2ebca1d6ff7" name="ac128a9bdd9c5d4efc26cd2ebca1d6ff7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac128a9bdd9c5d4efc26cd2ebca1d6ff7">&#9670;&#160;</a></span>request_dev_performance_capture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::request_dev_performance_capture </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFlowUi_1_1devSystems_1_1PerformanceCaptureSettings.html">devSystems::PerformanceCaptureSettings</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>settings</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Validate capture intent against this application's panel shortcut. </p>
+
+</div>
+</div>
+<a id="af64e334663f5aebdd022b8b970f2f386" name="af64e334663f5aebdd022b8b970f2f386"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af64e334663f5aebdd022b8b970f2f386">&#9670;&#160;</a></span>request_dev_viewport_capture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::request_dev_viewport_capture </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Request one immutable GPU copy at the viewport's next natural source render. </p>
+
+</div>
+</div>
+<a id="aefbe3983d3dad4d34760be15f4150713" name="aefbe3983d3dad4d34760be15f4150713"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefbe3983d3dad4d34760be15f4150713">&#9670;&#160;</a></span>requestDevUiReplay()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::App::requestDevUiReplay </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>requestKey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::span&lt; const uint32_t &gt;</td>          <td class="paramname"><span class="paramname"><em>clayCommandIds</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Clay_BoundingBox</td>          <td class="paramname"><span class="paramname"><em>sourceRootBounds</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Request capture of raw Clay commands owned by the supplied subtree IDs. </p>
+
+</div>
+</div>
+<a id="a744246940f715bd4e8f39e0185098cc4" name="a744246940f715bd4e8f39e0185098cc4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a744246940f715bd4e8f39e0185098cc4">&#9670;&#160;</a></span>retain_dev_viewport_capture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> &gt; FlowUi::App::retain_dev_viewport_capture </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a></td>          <td class="paramname"><span class="paramname"><em>expected_capture</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Own an independent binding of a completed immutable copy; survives source removal. </p>
+
+</div>
+</div>
+<a id="a45428029687379534e3f059297f383c8" name="a45428029687379534e3f059297f383c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45428029687379534e3f059297f383c8">&#9670;&#160;</a></span>set_dev_window_suspended()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::set_dev_window_suspended </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>window</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>suspended</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Suspend developer-window dispatch and visibility while preserving its session. </p>
 
 </div>
 </div>
@@ -1050,11 +1902,50 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="a17b1d0258094811d9ae2067cebad6fc2" name="a17b1d0258094811d9ae2067cebad6fc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17b1d0258094811d9ae2067cebad6fc2">&#9670;&#160;</a></span>setWindowUiCallback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::App::setWindowUiCallback </td>
+          <td>(</td>
+          <td class="paramtype">WindowId</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UiBuildCallback</td>          <td class="paramname"><span class="paramname"><em>buildUi</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1ManagedWindowFlags.html">ManagedWindowFlags</a></td>          <td class="paramname"><span class="paramname"><em>flags</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Attach or replace the managed UI callback for a secondary window.</p>
+<p>The semantic main window is not eligible because its frame remains under the no-argument frame API's control. </p>
+
+</div>
+</div>
 <a id="a9d853f690168da16dc71e453c9616913" name="a9d853f690168da16dc71e453c9616913"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9d853f690168da16dc71e453c9616913">&#9670;&#160;</a></span>shouldClose() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::App::shouldClose </td>
@@ -1063,6 +1954,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Query whether the window backend requested shutdown. </p>
@@ -1122,6 +2018,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::App::supportsRawMouseMotion </td>
@@ -1130,6 +2029,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return whether the window backend supports raw mouse motion. </p>
@@ -1181,6 +2085,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> &amp; FlowUi::App::themes </td>
@@ -1189,6 +2096,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the theme manager. </p>
@@ -1201,6 +2113,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1ThemeManager.html">ThemeManager</a> &amp; FlowUi::App::themes </td>
@@ -1209,6 +2124,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the theme manager. </p>
@@ -1221,6 +2141,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp; FlowUi::App::ui </td>
@@ -1229,6 +2152,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the UI manager. </p>
@@ -1242,6 +2170,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp; FlowUi::App::ui </td>
@@ -1250,6 +2181,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the UI manager. </p>
@@ -1263,6 +2199,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp; FlowUi::App::ui </td>
@@ -1271,6 +2210,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the UI manager owned by a specific window. </p>
@@ -1289,6 +2233,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp; FlowUi::App::ui </td>
@@ -1297,6 +2244,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the immutable UI manager owned by a specific window. </p>
@@ -1315,6 +2267,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1ViewPortManager.html">ViewPortManager</a> &amp; FlowUi::App::viewPorts </td>
@@ -1323,6 +2278,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the viewport manager. </p>
@@ -1337,6 +2297,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1ViewPortManager.html">ViewPortManager</a> &amp; FlowUi::App::viewPorts </td>
@@ -1345,6 +2308,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the viewport manager. </p>
@@ -1359,6 +2327,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1ViewPortManager.html">ViewPortManager</a> &amp; FlowUi::App::viewPorts </td>
@@ -1367,6 +2338,11 @@ Friends</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the viewport manager owned by a specific window. </p>
@@ -1385,6 +2361,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1ViewPortManager.html">ViewPortManager</a> &amp; FlowUi::App::viewPorts </td>
@@ -1393,6 +2372,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Access the immutable viewport manager owned by a specific window. </p>
@@ -1411,6 +2395,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1WindowInputConfig.html">WindowInputConfig</a> FlowUi::App::windowInputConfig </td>
@@ -1419,6 +2406,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the current window input configuration. </p>
@@ -1468,6 +2460,9 @@ Friends</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">std::pair&lt; int, int &gt; FlowUi::App::windowSize </td>
@@ -1476,6 +2471,11 @@ Friends</h2></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the window size in screen coordinates. </p>
@@ -1553,8 +2553,9 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/FlowUi/<a class="el" href="App_8hpp_source.html">App.hpp</a></li>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>include/FlowUi/Public/<a class="el" href="App_8hpp_source.html">App.hpp</a></li>
+<li>include/FlowUi/Public/<a class="el" href="AppElementWindows_8hpp_source.html">AppElementWindows.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

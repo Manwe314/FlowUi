@@ -4,7 +4,7 @@
 
 #include "FSEL/RadioChoice.hpp"
 #include "FSEL/TextInput.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"

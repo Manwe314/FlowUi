@@ -17,10 +17,14 @@ struct Document {
 constexpr auto Save = FlowUi::AppAction("editor.save");
 
 Document document;
-FlowUi::AppActionCall save = app.actions().appActions().bind(
+const auto save_binding = app.actions().appActions().bind(
     {.id = Save, .debugName = "Save document"},
     [](Document* value) { value->save(); },
     &document);
+if (!save_binding) {
+    throw FlowUi::FlowUiException(save_binding.error());
+}
+const FlowUi::AppActionCall save = *save_binding;
 ```
 
 Use `select(Save)` at distant call sites. Selection stores only the semantic ID; it does not expose the storage record. Duplicate `bind` is rejected, `rebind` explicitly replaces an existing implementation, and `unbind` retires the binding safely even during its own invocation.
@@ -65,11 +69,11 @@ The standard `kButton` has one `ActionCall onActivate` property, with no action-
 
 ```cpp
 ui.createElement(FlowUi::kButton, "save")
-  .setParameters({.label = "Save", .onActivate = save})
+  .setParameters({.onActivate = save, .label = "Save"})
   .draw();
 
 ui.createElement(FlowUi::kButton, "menu")
-  .setParameters({.label = "Menu", .onActivate = openMenu})
+  .setParameters({.onActivate = openMenu, .label = "Menu"})
   .draw();
 ```
 
@@ -78,12 +82,15 @@ The Button is stateless. A Dropdown owns its genuine `open` state and gives its 
 Shortcuts intentionally retain only `AppActionCall`:
 
 ```cpp
-app.ui().shortcuts().registerShortcut(
+const auto save_shortcut = app.ui().shortcuts().registerShortcut(
     {.key = GLFW_KEY_S, .ctrl = true},
     FlowUi::ShortcutScope::Global,
     100,
     save,
     FlowUi::ShortcutHandling::Consume);
+if (!save_shortcut) {
+    throw FlowUi::FlowUiException(save_shortcut.error());
+}
 ```
 
 `Consume` stops lower-priority matches only after a successful invocation. Disabled and unbound actions fall through. Shortcut ownership remains window-scoped in this release.

@@ -3,7 +3,7 @@
 #if FLOW_UI_DEV_MODE
 #include <cmath>
 namespace FlowUi::devSystems::interface_elements {
-/** Shared UI validation before converting floating capture values to nanoseconds. */
+/* Shared UI validation before converting floating capture values to nanoseconds. */
 [[nodiscard]] inline std::string_view
 performance_capture_policy_error(const DevInterfaceState& state, const App* app) noexcept {
 	if (state.capture_start_mode > 1 || state.capture_end_mode > 2)

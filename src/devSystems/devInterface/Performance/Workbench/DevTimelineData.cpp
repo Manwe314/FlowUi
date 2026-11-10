@@ -54,6 +54,9 @@ TimelineSnapshot& TimelineSnapshot::operator=(const TimelineSnapshot& other) {
 	end_ns = other.end_ns;
 	percentile_ns = other.percentile_ns;
 	uncalibrated_gpu_count = other.uncalibrated_gpu_count;
+	minimum_recorded_cpu_level = other.minimum_recorded_cpu_level;
+	maximum_recorded_cpu_level = other.maximum_recorded_cpu_level;
+	has_recording_policy = other.has_recording_policy;
 	window_milestones = other.window_milestones;
 	tick_cadence = other.tick_cadence;
 	for (auto* sequence : {&blocks, &frames, &ticks})
@@ -100,6 +103,13 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 	size_t record_count = 0;
 	for (const auto& report : reports) {
 		record_count += report.applicationCpuZones.size();
+		if (report.occupied) {
+			result.minimum_recorded_cpu_level =
+				std::min(result.minimum_recorded_cpu_level, report.captureConfig.cpuLevel);
+			result.maximum_recorded_cpu_level =
+				std::max(result.maximum_recorded_cpu_level, report.captureConfig.cpuLevel);
+			result.has_recording_policy = true;
+		}
 		for (const auto& window : report.windows)
 			if (window.occupied)
 				for (const auto& frame : window.frames)

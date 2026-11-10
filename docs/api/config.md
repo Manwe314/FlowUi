@@ -1,20 +1,15 @@
 # Configuration API
 
+Configuration headers live under [FlowUi/Public/configurationStructs](../../include/FlowUi/Public/configurationStructs/). Include [AppConfig.hpp](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp) for startup configuration, or the focused owner header for a leaf type. Cursor/frame-input values live in [InputTypes.hpp](../../include/FlowUi/Public/managerStructs/InputTypes.hpp); texture references and shared styling live in [TextureRef.hpp](../../include/FlowUi/Public/TextureRef.hpp) and [FlowUiTheme.hpp](../../include/FlowUi/Public/FlowUiTheme.hpp). The former broad configuration/value header is retired.
+
 ## Enums
 
 ### **PresentMode**
 
 
-#### `enum class PresentMode`
+#### `enum class PresentMode : std::uint8_t`
 
 Requested Vulkan swapchain presentation mode. Use it to choose FIFO, mailbox, or immediate presentation behavior.
-
-### **MSAA**
-
-
-#### `enum class MSAA`
-
-Requested multisample anti-aliasing sample count. The value is retained for renderer configuration even where current support is limited.
 
 ### **CursorMode**
 
@@ -44,13 +39,6 @@ Trigger mode used by the developer panel shortcut. It describes whether the chor
 
 Texture layout mode inside a target rectangle. It controls stretch, contain, cover, or source-size drawing behavior.
 
-### **TextureSamplingMode**
-
-
-#### `enum class TextureSamplingMode : uint8_t`
-
-Texture filtering preference stored on TextureRef. It distinguishes smooth linear sampling from nearest-neighbor sampling.
-
 ## Public Structs
 
 ### **WindowInputConfig**
@@ -72,7 +60,7 @@ Describes the native window created for the app. It owns initial size, title, re
 
 #### `struct VulkanConfig`
 
-Configures Vulkan device, swapchain, validation, and frame scheduling defaults. These values are consumed during renderer initialization.
+Configures Vulkan device, swapchain, validation, and frame scheduling defaults. These values are consumed during renderer initialization. Rendering uses a fixed sample count of one (x1); MSAA is not configurable.
 
 ### **InputManagerConfig**
 
@@ -107,7 +95,7 @@ Keyboard chord used by developer tooling. The default chord is intended to toggl
 
 #### `struct DevToolsConfig`
 
-Configures developer tooling, capture behavior, panel defaults, and export paths. These settings are used only when developer mode support is compiled in.
+Configures modern developer monitoring, schema/override/tree capacities, runtime activation, and the dedicated developer-window shortcut. These settings are used only when `FLOW_UI_DEV_MODE` is compiled in. Durable developer changes use `.flowui/changes/active.flowchanges` through the modern bake pipeline.
 
 ### **AppConfig**
 
@@ -121,7 +109,7 @@ Top-level app configuration. It groups all subsystem-specific configuration bloc
 
 #### `struct TextureRef`
 
-Texture handle and render options returned by resource managers. Manager-owned fields identify the texture, while app code may tune fit, sampling, and tint options.
+Texture handle and render options returned by resource managers. Manager-owned fields identify the texture, while app code may tune fit and tint options. Filtering comes from the logical texture's sampler.
 
 ### **FrameInput**
 
@@ -149,4 +137,4 @@ Clay_Color panelColor = FlowUi::Flow_Color("#20242cff");
 Clay_Color opaquePanelColor = FlowUi::Flow_Color("#20242c");
 ```
 
-See: [Full Doxygen reference](group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919).
+See: [Owning header](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp).

@@ -1,0 +1,107 @@
+{
+  "schema": "FlowUi.DevInterfaceNotes.PortableEvidence",
+  "run_id": "run_7df8ace3f6b98a6e6f8785ace46e0729",
+  "source_run": "run_fa57b51a0a67",
+  "passed": true,
+  "cases": 2,
+  "required_checks": 3,
+  "layout_checks": 3,
+  "mcp_calls": 5,
+  "user_changes_unchanged": true,
+  "export": "MCP PNGs, joined trees, reports, calls and sealed manifest inventories. Raw RGB capture stores are omitted. PNG containers are losslessly recompressed; original MCP byte hashes and identical decoded-pixel hashes are retained.",
+  "files": [
+    {
+      "path": "evidence.json",
+      "bytes": 2147,
+      "sha256": "9d615b4ed872e178147c964c92e8a6a0a049a9d7394ecaaf333cd27af2945d38"
+    },
+    {
+      "path": "inspect-flow-identities.json",
+      "bytes": 99572,
+      "sha256": "19796c752dda73fb3a33a8e44a680ee0240484d3e319f62b26c8a6d496d120fe"
+    },
+    {
+      "path": "inspect-reference-report.json",
+      "bytes": 5551,
+      "sha256": "78deaa6aa4f2a4fa8559f04c1cb02b54a9b0634c4b299f5e8a2df909f77417d7"
+    },
+    {
+      "path": "inspect-reference-tree.json",
+      "bytes": 696598,
+      "sha256": "668c2378b53777ba2f17f816325f9b7e1e87281fb7b79f47d67e69213d161c8c"
+    },
+    {
+      "path": "inspect-reference.png",
+      "bytes": 102001,
+      "sha256": "917c5fee31d919a762a4e46db19fd065eee09eea078e70fc452dd7cf20e619e6"
+    },
+    {
+      "path": "inspector-overflow-diagnostic-tree.json",
+      "bytes": 768454,
+      "sha256": "0a2402f67be93e16955857fdb17a7886ef09528695f23d38cf8f0a4aabfce1d1"
+    },
+    {
+      "path": "inspector-overflow-diagnostic.json",
+      "bytes": 277,
+      "sha256": "2ca95c2a1950708f95223643cbf6a245d9ccad6ec77d2547d266cce4d1bda603"
+    },
+    {
+      "path": "inspector-overflow-diagnostic.png",
+      "bytes": 175601,
+      "sha256": "d87e0e963021c9a5cd4e378b9a1cc65ef4594bec9717b13d72a038098ce2744c"
+    },
+    {
+      "path": "manifests/cap_47e313d62b23255f0c303cb22eb1180a.json",
+      "bytes": 13004,
+      "sha256": "0c3bb201c6e54178e3b1f3f716487ad90c45af6841d69d92a4a48f11d7dc9729"
+    },
+    {
+      "path": "manifests/cap_c58f125e1863530ce8e272085278241b.json",
+      "bytes": 11032,
+      "sha256": "f34122b399ec5e299b775dce0e0e36e2a703b1f7daf98a708a8783fc17df3b9a"
+    },
+    {
+      "path": "mcp-calls.jsonl",
+      "bytes": 19312,
+      "sha256": "7ab1bda6df09a8865b39ba3ad7978399f7db4a44cf730f53bb76b11c1307b6f6"
+    },
+    {
+      "path": "mcp-discovery.json",
+      "bytes": 1561,
+      "sha256": "1a6f3036c3ed31d1b58c8e7eea64cf3828cabd748419cec173712b819332f170"
+    },
+    {
+      "path": "open-developer-interface-report.json",
+      "bytes": 3091,
+      "sha256": "e70512ed0e9324f2273327da562ed8ada39e9489b1a1d1a13621a8cd4d9c393e"
+    }
+  ],
+  "image_exports": [
+    {
+      "path": "inspect-reference.png",
+      "source_png_sha256": "020d42696038896b982bd0e0d542b43a0d3ea06f40d71726cc89cb874b6f6c56",
+      "source_bytes": 2376968,
+      "exported_bytes": 102001,
+      "decoded_pixels_sha256": "460a4e87dab95ec9230897bff4ca5da07c4307490c943c98c50e191d2ab5bc68",
+      "mode": "RGB",
+      "size": [
+        1100,
+        720
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "inspector-overflow-diagnostic.png",
+      "source_png_sha256": "5111b37d2509817792c8ab8e55dfa8c19c0b88930f7227c7f32c633c2fe6d2ab",
+      "source_bytes": 2707093,
+      "exported_bytes": 175601,
+      "decoded_pixels_sha256": "93d319173b07bd35546dd532feca1fe6f3c589ff13288d12e2cf913fe224a073",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    }
+  ]
+}

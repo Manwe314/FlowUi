@@ -7,7 +7,7 @@
 
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {

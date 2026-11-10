@@ -110,22 +110,28 @@ $(function() {
 <p>Behavior configuration for a requested input field.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="InputFieldManagerStructs_8hpp_source.html">InputFieldManagerStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a58e48e6172c02b7c03adfea1208f5779" id="r_a58e48e6172c02b7c03adfea1208f5779"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a58e48e6172c02b7c03adfea1208f5779">readOnly</a> = false</td></tr>
-<tr class="memdesc:a58e48e6172c02b7c03adfea1208f5779"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the field rejects text edits.  <br /></td></tr>
-<tr class="memitem:aba2da5019695d57caa116c5476f6f4a2" id="r_aba2da5019695d57caa116c5476f6f4a2"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aba2da5019695d57caa116c5476f6f4a2">allowNewline</a> = false</td></tr>
-<tr class="memdesc:aba2da5019695d57caa116c5476f6f4a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether newline characters may be inserted.  <br /></td></tr>
-<tr class="memitem:af6dd69f0d79bd9fce50e542a76606e3e" id="r_af6dd69f0d79bd9fce50e542a76606e3e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af6dd69f0d79bd9fce50e542a76606e3e">allowArrowNavigation</a> = true</td></tr>
-<tr class="memdesc:af6dd69f0d79bd9fce50e542a76606e3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether arrow keys move the caret within the field.  <br /></td></tr>
 <tr class="memitem:abe7381874b2dd1222a019466249ff434" id="r_abe7381874b2dd1222a019466249ff434"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#abe7381874b2dd1222a019466249ff434">maxBytes</a> = std::numeric_limits&lt;size_t&gt;::max()</td></tr>
 <tr class="memdesc:abe7381874b2dd1222a019466249ff434"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum stored UTF-8 byte count.  <br /></td></tr>
+<tr class="memitem:aed8532f1cb1a18425910d96e59149411" id="r_aed8532f1cb1a18425910d96e59149411"><td class="memItemLeft">TextFieldMode&#160;</td><td class="memItemRight"><a class="el" href="#aed8532f1cb1a18425910d96e59149411">mode</a> = TextFieldMode::SingleLine</td></tr>
+<tr class="memdesc:aed8532f1cb1a18425910d96e59149411"><td class="mdescLeft">&#160;</td><td class="mdescRight">Selects compact single-line or chunked multiline behavior.  <br /></td></tr>
+<tr class="memitem:a51b860d4ff8d0609040c57f4b6c0f7e6" id="r_a51b860d4ff8d0609040c57f4b6c0f7e6"><td class="memItemLeft"><a id="a51b860d4ff8d0609040c57f4b6c0f7e6" name="a51b860d4ff8d0609040c57f4b6c0f7e6"></a>
+TransactionReportDetail&#160;</td><td class="memItemRight"><b>transactionDetail</b> = TransactionReportDetail::Summary</td></tr>
+<tr class="memdesc:a51b860d4ff8d0609040c57f4b6c0f7e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Amount of byte content retained in frame-scoped edit reports. <br /></td></tr>
+<tr class="memitem:a58e48e6172c02b7c03adfea1208f5779" id="r_a58e48e6172c02b7c03adfea1208f5779"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a58e48e6172c02b7c03adfea1208f5779">readOnly</a> = false</td></tr>
+<tr class="memdesc:a58e48e6172c02b7c03adfea1208f5779"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the field rejects text edits.  <br /></td></tr>
+<tr class="memitem:abc5c3be1673eaa0a5847226b7fe04284" id="r_abc5c3be1673eaa0a5847226b7fe04284"><td class="memItemLeft"><a id="abc5c3be1673eaa0a5847226b7fe04284" name="abc5c3be1673eaa0a5847226b7fe04284"></a>
+bool&#160;</td><td class="memItemRight"><b>softWrap</b> = false</td></tr>
+<tr class="memdesc:abc5c3be1673eaa0a5847226b7fe04284"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrap multiline hard lines into manager-owned visual slices. <br /></td></tr>
+<tr class="memitem:af6dd69f0d79bd9fce50e542a76606e3e" id="r_af6dd69f0d79bd9fce50e542a76606e3e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af6dd69f0d79bd9fce50e542a76606e3e">allowArrowNavigation</a> = true</td></tr>
+<tr class="memdesc:af6dd69f0d79bd9fce50e542a76606e3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether arrow keys move the caret within the field.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Behavior configuration for a requested input field. </p>
-<p><a class="el" href="structFlowUi_1_1FieldConfig.html" title="Behavior configuration for a requested input field.">FieldConfig</a> is submitted with <a class="el" href="structFlowUi_1_1FieldRequest.html" title="Input field request submitted by UI code.">FieldRequest</a> every frame the field is present. The values control editing behavior only; visual styling is provided by the element that draws the Clay nodes and by <a class="el" href="structFlowUi_1_1InputManagerConfig.html" title="Configures input field editing visuals.">InputManagerConfig</a> for caret and selection colors. </p>
+<p><a class="el" href="structFlowUi_1_1FieldConfig.html" title="Behavior configuration for a requested input field.">FieldConfig</a> is submitted with <a class="el" href="structFlowUi_1_1FieldRequest.html" title="Input field request submitted by UI code.">FieldRequest</a> every frame the field is present. The values control editing behavior only; visual styling is provided by the element that draws the Clay nodes and by <a class="el" href="structFlowUi_1_1FieldRequest.html#a71d151fe193f7289fd35d7ef2a919fe4">FieldRequest::overlayStyle</a> (falling back to <a class="el" href="structFlowUi_1_1InputManagerConfig.html" title="Configures input field editing visuals.">InputManagerConfig</a>) for caret and selection presentation. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="af6dd69f0d79bd9fce50e542a76606e3e" name="af6dd69f0d79bd9fce50e542a76606e3e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af6dd69f0d79bd9fce50e542a76606e3e">&#9670;&#160;</a></span>allowArrowNavigation</h2>
@@ -144,24 +150,6 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="aba2da5019695d57caa116c5476f6f4a2" name="aba2da5019695d57caa116c5476f6f4a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba2da5019695d57caa116c5476f6f4a2">&#9670;&#160;</a></span>allowNewline</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool FlowUi::FieldConfig::allowNewline = false</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Whether newline characters may be inserted. </p>
-<p>When true, carriage return and newline input are normalized to '<br  />
-' and inserted. When false, newline input is discarded, making the field behave like a single-line editor. </p>
-
-</div>
-</div>
 <a id="abe7381874b2dd1222a019466249ff434" name="abe7381874b2dd1222a019466249ff434"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abe7381874b2dd1222a019466249ff434">&#9670;&#160;</a></span>maxBytes</h2>
 
@@ -176,6 +164,23 @@ Public Attributes</h2></td></tr>
 
 <p>Maximum stored UTF-8 byte count. </p>
 <p>Insertions that would make the field text exceed this byte limit are ignored. The limit is measured in bytes, not Unicode codepoints or visible glyphs. </p>
+
+</div>
+</div>
+<a id="aed8532f1cb1a18425910d96e59149411" name="aed8532f1cb1a18425910d96e59149411"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed8532f1cb1a18425910d96e59149411">&#9670;&#160;</a></span>mode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TextFieldMode FlowUi::FieldConfig::mode = TextFieldMode::SingleLine</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Selects compact single-line or chunked multiline behavior. </p>
+<p>Multiline mode normalizes inserted line endings to newline characters. Single-line mode rejects edits containing line endings. </p>
 
 </div>
 </div>
@@ -197,7 +202,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/managers/structs/<a class="el" href="InputFieldManagerStructs_8hpp_source.html">InputFieldManagerStructs.hpp</a></li>
+<li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

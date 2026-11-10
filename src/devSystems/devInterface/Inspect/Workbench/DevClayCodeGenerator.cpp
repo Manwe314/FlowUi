@@ -1,5 +1,19 @@
 #include "devSystems/devInterface/Inspect/Workbench/DevClayCodeGenerator.hpp"
 
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
+namespace FlowUi::devSystems::interface_elements {
+DevClayCodeGeneratorResources::DevClayCodeGeneratorResources([[maybe_unused]] App& app) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	auto& icons = app.icons();
+	interface_icons::registerDevInterfaceIcons(icons);
+	if (icons.contains(interface_icons::kCopyKey))
+		copy_icon = icons.textureRef(interface_icons::kCopyKey);
+#endif
+}
+} // namespace FlowUi::devSystems::interface_elements
+#endif
+
 #if FLOW_UI_DEV_MODE && FLOW_UI_DEV_CAPTURE_CLAY
 
 #include <cstdio>
@@ -8,8 +22,9 @@
 
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevActionButton.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -302,10 +317,22 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 			CLAY(context.clayID("copy-btn"), copyBtn) {
 				const Clay_Color btnTextColor = copiedRecently ? interface_theme::kStatusGreen
 																: interface_theme::kTextCanvas;
-				CLAY_TEXT(
-					context.uiManager.toClayString(copiedRecently ? "Copied!" : "Copy"),
-					CLAY_TEXT_CONFIG(codeTextStyle(btnTextColor, 9)));
+				if (context.resources().copy_icon.handle) {
+					auto icon = context.resources().copy_icon;
+					icon.tintEnabled = true;
+					Clay_ElementDeclaration image{};
+					image.layout.sizing = {CLAY_SIZING_FIXED(12), CLAY_SIZING_FIXED(12)};
+					image.backgroundColor = btnTextColor;
+					image.image.imageData = context.uiManager.imageData(icon);
+					CLAY(context.clayID("copy-icon"), image) {}
+				} else {
+					CLAY_TEXT(context.uiManager.toClayString(copiedRecently ? "Copied!" : "Copy"),
+							  CLAY_TEXT_CONFIG(codeTextStyle(btnTextColor, 9)));
+				}
 			}
+			if (isHovered)
+				diagnostics_ui::pointer_tooltip(context, LocalElementName{"copy-tooltip"},
+												copiedRecently ? "Copied C++" : "Copy C++");
 		}
 
 		if (!selectedClayNode) {
@@ -366,7 +393,7 @@ void DevClayCodeGenerator::buildElement(BuildContext& context) {
 #elif FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 

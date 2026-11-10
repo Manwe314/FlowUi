@@ -2,7 +2,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #if FLOW_UI_DEV_MODE
 namespace FlowUi::devSystems::interface_elements {
-/** Pinned transport, history scrubber and breadcrumb path. */
+/* Pinned transport, history scrubber and breadcrumb path. */
 struct DevWorkbenchHeader {
 	using Parameters = DevTimelineParameters;
 	using BuildContext = ElementBuildContext<DevWorkbenchHeader>;

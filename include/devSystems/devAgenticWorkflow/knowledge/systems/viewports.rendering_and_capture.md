@@ -17,4 +17,4 @@ PPM preserves simple RGB source bytes. PNG is a portable derivative. Alpha disca
 
 Frame slots are reusable resources, not image identity. Prior viewport-image revisions sampled by a window need an explicit producer-to-consumer relation. `artifact image` exports an inventoried image/crop; visual comparison supplies pixel evidence without replacing product review.
 
-Source: [FlowUi::ViewPortManager](include/managers/ViewPortManager.hpp).
+Source: [FlowUi::ViewPortManager](include/FlowUi/Public/managers/ViewPortManager.hpp).

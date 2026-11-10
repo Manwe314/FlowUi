@@ -1,459 +1,160 @@
-# Developer Mode
+# Developer Systems
 
-This tutorial shows how to make FlowUi elements visible to developer mode, edit their registered fields at runtime, export those changes as JSON, and use the updater tool to fold those exported values back into source.
+FlowUi's developer support lives in `devSystems`. It combines a dedicated developer-interface window with schema-driven inspection, typed overrides, resource catalogues, monitoring, and manifest-driven baking. The obsolete developer subsystem has been removed; current APIs do not provide compatibility aliases.
 
-## Contents
+## Enable the systems
 
-- [Chapter 1: What We Are Building](#chapter-1-what-we-are-building)
-  - [The Target](#the-target)
-  - [The Runtime Flow](#the-runtime-flow)
-- [Chapter 2: Enable Developer Mode](#chapter-2-enable-developer-mode)
-  - [App Config](#app-config)
-  - [Panel Toggle](#panel-toggle)
-- [Chapter 3: Register Editable Types](#chapter-3-register-editable-types)
-  - [Register Enums](#register-enums)
-  - [Register Parameter Structs](#register-parameter-structs)
-  - [Register State and Resource Structs](#register-state-and-resource-structs)
-- [Chapter 4: Register Elements](#chapter-4-register-elements)
-  - [Element Shape](#element-shape)
-  - [Registration](#registration)
-  - [What the Registry Stores](#what-the-registry-stores)
-- [Chapter 5: Edit Instances and Definitions](#chapter-5-edit-instances-and-definitions)
-  - [Instance Overrides](#instance-overrides)
-  - [Definition Overrides](#definition-overrides)
-  - [Why Source Location Matters](#why-source-location-matters)
-- [Chapter 6: Export JSON](#chapter-6-export-json)
-  - [Export Path](#export-path)
-  - [Manual Export](#manual-export)
-  - [What the JSON Means](#what-the-json-means)
-- [Chapter 7: Apply Exported Changes](#chapter-7-apply-exported-changes)
-  - [Build the Updater](#build-the-updater)
-  - [Run the Updater](#run-the-updater)
-  - [Review the Result](#review-the-result)
-- [Final Shape](#final-shape)
+Compile the feature before adding FlowUi to your CMake project:
 
-## Chapter 1: What We Are Building
+```cmake
+set(FLOW_UI_DEV_MODE ON CACHE BOOL "" FORCE)
+add_subdirectory(external/FlowUi)
+```
 
-### The Target
-
-Assume the app has reusable dashboard cards. A card has a tone enum, a title, a root Clay declaration, and a few resource defaults. During development, we want to open the dev panel, select a card instance, tweak colors, padding, and text, then export those changes.
+Activate it before creating the application:
 
 ```cpp
-enum class CardTone : uint8_t {
-    Neutral,
-    Warning,
-    Success,
-};
+FlowUi::AppConfig configuration{};
+configuration.dev.enabled = true;
+configuration.dev.excludeInternalDevElementsFromCapture = true;
+configuration.dev.useShortcutManagerForPanelToggle = true;
+configuration.dev.panelToggleChord.ctrl = true;
+configuration.dev.panelToggleChord.shift = true;
+configuration.dev.panelToggleChord.key = 68; // D in the GLFW backend
 
-struct DashboardCardParams {
-    std::string title = "Untitled";
+auto application = FlowUi::makeApplication(configuration);
+```
+
+The default toggle is Ctrl+Shift+D. `App` owns the modern `DevInterface`, its dedicated window, and synchronization at the platform safe point. Application code uses the regular frame loop; the interface is not an element drawn into the application's window. Creating the interface window requires the same presentation capabilities as other secondary windows.
+
+`configuration.dev.monitoring` controls monitoring collection and retention. `configuration.dev.tooling` controls schema, override, and tree-capture capacities. `capture_timing_on_startup` optionally retains the first timing capture for later investigation. Compile-time feature support and runtime activation are separate choices.
+
+## Describe editable values
+
+Schema descriptors live in [DevSchemaDescriptor.hpp](../../include/devSystems/devTooling/schema/DevSchemaDescriptor.hpp), in `FlowUi::devSystems::tooling`. Put schema declarations in the same namespace as their C++ types so argument-dependent lookup can find them.
+
+```cpp
+#include <FlowUi/Public/Flow.hpp>
+#include <devSystems/devTooling/schema/DevSchemaDescriptor.hpp>
+
+#include <cstdint>
+
+namespace dashboard {
+
+enum class CardTone : std::uint8_t { Neutral, Warning, Success };
+
+struct CardParameters {
+    Clay_Sizing sizing{
+        .width = CLAY_SIZING_FIXED(240.0f),
+        .height = CLAY_SIZING_FIXED(100.0f),
+    };
     CardTone tone = CardTone::Neutral;
-    Clay_ElementDeclaration root{};
-    Clay_TextElementConfig titleText{};
+    float corner_radius = 8.0f;
 };
 
-struct DashboardCardState {
-    bool expanded = true;
-};
-
-struct DashboardCardResources {
-    Clay_Color warningColor = FlowUi::Flow_Color("#f2b84bff");
-    Clay_Color successColor = FlowUi::Flow_Color("#43b883ff");
-};
-```
-
-This is intentionally close to normal element code. Developer mode does not replace your element system; it adds reflection metadata around the same parameter, state, resource, enum, and definition types you already use.
-
-### The Runtime Flow
-
-Developer mode works in a few stages:
-
-1. Registration macros describe structs, fields, enums, and element definitions.
-2. `ElementBuilder` captures Flow element instances while the UI is built.
-3. The dedicated developer-interface window uses captured tooling data.
-4. Runtime edits become overrides stored in `DevRuntime`.
-5. Export writes those overrides to `.flowui/overrides.v1.json` or another configured path.
-6. The updater tool reads that JSON and patches source defaults where it can resolve a source location.
-
-## Chapter 2: Enable Developer Mode
-
-### App Config
-
-Developer tooling is configured through `FlowUi::DevToolsConfig` inside `AppConfig`.
-
-```cpp
-FlowUi::AppConfig config{};
-config.dev.enabled = true;
-config.dev.overridesPath = ".flowui/dashboard-card-overrides.json";
-
-FlowUi::App app = FlowUi::makeApplication(config);
-```
-
-The runtime capture config is still available from `UiManager`.
-
-```cpp
-app.ui().devToolsConfig().excludeInternalDevElementsFromCapture = true;
-```
-
-Most applications should keep `excludeInternalDevElementsFromCapture` enabled. The developer interface itself is made from Flow elements, and hiding those internal nodes keeps the hierarchy focused on user-authored UI.
-
-`autoSave` is present on the config, but in the current V1 workflow exports are explicit. Treat the export button or `exportOverridesAsJson()` call as the point where runtime edits become a file on disk.
-
-### Panel Toggle
-
-By default, developer mode registers its dedicated-window toggle with `ShortcutManager`.
-
-```cpp
-config.dev.useShortcutManagerForPanelToggle = true;
-config.dev.panelToggleChord.ctrl = true;
-config.dev.panelToggleChord.shift = true;
-config.dev.panelToggleChord.key = GLFW_KEY_D;
-```
-
-If the application owns all global shortcuts, disable this registration.
-
-```cpp
-config.dev.useShortcutManagerForPanelToggle = false;
-```
-
-## Chapter 3: Register Editable Types
-
-### Register Enums
-
-Enums must be registered when you want symbolic values in the editor and exported JSON. In the current registry, enum registration expects a `uint8_t` backed enum.
-
-```cpp
-#include "devMode/devApi.hpp"
-
-FLOWUI_DEV_REGISTER_ENUM(
+FLOWUI_DEV_ENUM_SCHEMA(
     CardTone,
-    FLOWUI_DEV_ENUM_VALUE(CardTone::Neutral),
-    FLOWUI_DEV_ENUM_VALUE(CardTone::Warning),
-    FLOWUI_DEV_ENUM_VALUE(CardTone::Success));
-```
+    FLOWUI_DEV_ENUM_VALUE(CardTone, CardTone::Neutral),
+    FLOWUI_DEV_ENUM_VALUE(CardTone, CardTone::Warning),
+    FLOWUI_DEV_ENUM_VALUE(CardTone, CardTone::Success))
 
-The enum value names are used by the panel and by JSON export. This matters when the updater tries to patch source because symbolic enum names are much safer than only numeric values.
+FLOWUI_DEV_SCHEMA(
+    CardParameters,
+    FLOWUI_DEV_FIELD(CardParameters, sizing),
+    FLOWUI_DEV_FIELD(CardParameters, tone),
+    FLOWUI_DEV_FIELD(
+        CardParameters, corner_radius,
+        FlowUi::devSystems::tooling::DevFieldOptions{}.numericRange(0.0, 32.0)))
 
-### Register Parameter Structs
+struct Card {
+    using Parameters = CardParameters;
+    using BuildContext = FlowUi::ElementBuildContext<Card>;
 
-Register the params struct and list every field you want developer mode to capture and edit.
+    static constexpr auto definitionId = FlowUi::DefinitionID("dashboard.card");
+    static constexpr std::string_view debugName = "Dashboard Card";
 
-```cpp
-FLOWUI_DEV_REGISTER_STRUCT(
-    DashboardCardParams,
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, title),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, tone),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, root),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, titleText));
-```
-
-Each reflected field stores its name, type hash, owner type, member pointer, and capture/apply functions. At runtime, `ElementBuilder` can capture the current value and apply a matching override back into the params object before the element builds.
-
-Use this for fields that are genuinely useful to tune. Registering every member of every struct is possible, but it makes the dev panel noisier and exported JSON harder to review.
-
-### Register State and Resource Structs
-
-State and resources can also be registered.
-
-```cpp
-FLOWUI_DEV_REGISTER_STRUCT(
-    DashboardCardState,
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardState, expanded));
-
-FLOWUI_DEV_REGISTER_STRUCT(
-    DashboardCardResources,
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardResources, warningColor),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardResources, successColor));
-```
-
-Params are the main export path today. Registering state and resources is still useful because the dev panel can display richer element metadata and because the runtime has separate override/snapshot storage for definition params, instance params, state, and resources.
-
-When `FLOW_UI_DEV_MODE` is disabled, these macros compile away. That lets you leave registration beside the element code without adding release-mode work.
-
-## Chapter 4: Register Elements
-
-### Element Shape
-
-The element definition uses the same shape covered in the custom elements tutorial.
-
-```cpp
-using DashboardCardDefinition = FlowUi::ElementDefinition<
-    DashboardCardParams,
-    DashboardCardState,
-    DashboardCardResources,
-    FLOW_DEF_ID("tutorial_dashboard_card")>;
-
-inline const DashboardCardDefinition kDashboardCard = {
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    +[](DashboardCardDefinition::BuildContext& context) {
-        Clay_ElementDeclaration root = context.params.root;
-        root.id = context.uiManager.toClayEID(context.elementID);
-
-        CLAY(root) {
-            CLAY_TEXT(
-                context.uiManager.toClayString(context.params.title),
-                &context.params.titleText);
+    static void buildElement(BuildContext& context) {
+        Clay_ElementDeclaration root{};
+        root.layout.sizing = context.params.sizing;
+        root.cornerRadius = CLAY_CORNER_RADIUS(context.params.corner_radius);
+        switch (context.params.tone) {
+        case CardTone::Neutral: root.backgroundColor = FlowUi::Flow_Color("#354052ff"); break;
+        case CardTone::Warning: root.backgroundColor = FlowUi::Flow_Color("#b87b20ff"); break;
+        case CardTone::Success: root.backgroundColor = FlowUi::Flow_Color("#287c51ff"); break;
         }
-    },
+        CLAY(context.clayID(), root) {}
+    }
 };
+
+inline constexpr Card kCard{};
+static_assert(FlowUi::FlowElement<Card>);
+
+} // namespace dashboard
 ```
 
-The key part is that the element consumes its params normally. Developer overrides are applied before the build callback, so the callback can stay ordinary element code.
+These are descriptor macros, not global mutable registration. With the feature disabled they expand away. `FLOWUI_DEV_FIELD` records source metadata; the underlying `devField`, `devFieldAt`, `devStruct`, and `devEnum` factories support explicit descriptors. A type can instead expose `static consteval auto devSchema()`, or a third-party type can use a `DevTypeAdapter`/`DevEnumAdapter`. Use one descriptor route per type.
 
-### Registration
+Field options can mark a value read-only or hidden and supply numeric, text, choice, and editor constraints. Unsupported values retain explicit capability reasons instead of being presented as editable scalar data. Clay and FlowUi adapters are provided by [DevClayTypeAdapters.hpp](../../include/devSystems/devTooling/schema/DevClayTypeAdapters.hpp) and [DevFlowUiTypeAdapters.hpp](../../include/devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp).
 
-Register the definition type, not the `inline const` object.
+## Publish schema and catalogue entries
+
+Normal element invocation discovers its element schema; theme registration discovers theme schemas. Explicitly ingest a catalogue when types should be available before their first invocation, including offline definitions:
 
 ```cpp
-FLOWUI_DEV_REGISTER_ELEMENT(DashboardCardDefinition, "Dashboard Card");
+#if FLOW_UI_DEV_MODE
+namespace tooling = FlowUi::devSystems::tooling;
+constexpr auto catalogue = tooling::devCatalogue(
+    tooling::elements<dashboard::Card>(),
+    tooling::themes<>(),
+    tooling::structs<dashboard::CardParameters>());
+application.devTooling().schemas().ingest(catalogue);
+#endif
 ```
 
-The display name is optional.
+[DevSchemaRegistry](../../include/devSystems/devTooling/schema/DevSchemaRegistry.hpp) queues roots and publishes immutable schema generations at the application safe point. `schemas().view()` returns a generation-owning view; snapshots retain their corresponding schema rather than borrowing a mutable global registry.
+
+`application.devTooling().catalogues()` exposes current element, theme, action, image, icon, font, and atlas metadata. Reflection discovery does not authorize arbitrary application element execution in the catalogue. A passive preview must be explicitly admitted with `registerElementPreview<Element>(set_name, true)` and must be safe to draw with default parameters.
+
+## Inspect and edit
+
+Build the application UI normally:
 
 ```cpp
-FLOWUI_DEV_REGISTER_ELEMENT(DashboardCardDefinition);
-```
-
-The registry records the definition type hash, definition id, params struct type, state struct type, and resources struct type. That is how the dev panel connects a captured instance back to the structs you registered.
-
-### What the Registry Stores
-
-The registration layer is deliberately metadata-only. It does not own your element, and it does not create element instances. It only describes enough about known types for runtime capture and editing:
-
-- structs: field names, type hashes, member pointers, capture functions, apply functions
-- enums: numeric values and symbolic names
-- elements: definition id and the params/state/resources type hashes
-
-Because this is static registration, put the macros in a translation unit or header that is actually linked into the app.
-
-## Chapter 5: Edit Instances and Definitions
-
-### Instance Overrides
-
-An instance override targets one call site and one element id.
-
-```cpp
-app.ui()
-    .createElement(kDashboardCard, "dashboard/cards/primary")
-    .setParameters(DashboardCardParams{
-        .title = "Revenue",
-        .tone = CardTone::Success,
-        .root = makeCardRoot(),
-        .titleText = makeCardTitleText(app.fonts()),
-    })
+application.ui().createElement(dashboard::kCard, "dashboard/summary")
+    .setParameters({.tone = dashboard::CardTone::Warning})
     .draw();
 ```
 
-If you select this exact instance and change `titleText.textColor`, the override is keyed by definition id, Flow id, element id, and field hash. Other `DashboardCardDefinition` instances keep their own values.
+The modern pipeline is:
 
-### Definition Overrides
+1. The builder resolves a strong element identity, applies baked and live parameter overrides, invokes callbacks, and records the effective reflected values.
+2. Each window publishes a `DevTreeSnapshot` with Flow/Clay structure and identity correlation. Internal developer elements are excluded by default.
+3. The developer interface reads those snapshots, schema generations, catalogues, and monitoring data through modern services.
+4. Edits enter `DevOverrideEngine` as typed `DevChangeSet` transactions. They are validated and committed at a safe point, with result statuses for unavailable schemas, invalid targets, read-only fields, type mismatches, and rejected constraints.
 
-A definition override targets the element definition rather than one instance. This is useful when every card should get the same default padding, border, or text style.
+Definition overrides affect every matching element definition. Exact-instance overrides include window and stable instance identity. Explicit local, keyed, global, or semantic-part identities support durable targeting. Automatic callsite identities are useful for immediate UI but must not be assumed bakeable in every context.
 
-The runtime applies definition params first, then instance params. That means an instance-specific edit can still specialize one element after a broader definition edit.
+Custom tooling can access `application.devTooling().overrides()`, `schemas()`, `catalogues()`, and `bakePipeline()`. A window's `UiManager` exposes `devTreeSnapshot()`, `devSchemaRegistry()`, and `devOverrideEngine()`. Use these modern services rather than maintaining a second capture or override runtime.
 
-For source patching, definition exports currently map back to the registered params struct and update that struct's default member initializers. In this example, a definition-level edit to `title` would patch `DashboardCardParams::title = "Untitled"` rather than a specific `.createElement(...)` call.
+## Review, bake, and rebuild
 
-### Why Source Location Matters
+The Changes interface reviews live edits and durable settings before saving. The canonical durable artifact is `.flowui/changes/active.flowchanges`, separate from agentic capture evidence. It contains typed element/theme entries, source/header provenance, generated C++ values, and supported capacity selections.
 
-`UiManager::createElement()` captures source location in dev mode. The exported JSON includes that location for instance overrides, and struct registration includes source metadata for definition-level defaults.
-
-Keep element creation calls direct and stable while doing visual iteration. The V1 updater expects to find `.createElement` on the captured source line, then it searches the chained call for `.setParameters(...)`, `.setParams(...)`, or `mergeParams(...)`.
-
-```cpp
-app.ui()
-    .createElement(kDashboardCard, "dashboard/cards/primary")
-    .setParameters(DashboardCardParams{.title = "Revenue"})
-    .draw();
-```
-
-Heavily generated element ids or deeply hidden factory functions can still work at runtime, but they may make exported source patches harder to apply automatically.
-
-The updater also expects source paths in the export to be absolute. If your compiler expands `__FILE__` to relative paths, runtime editing still works, but automatic patching may report unresolved entries until the build is configured to emit absolute file paths or the changes are applied manually.
-
-## Chapter 6: Export JSON
-
-### Export Path
-
-Exports write to `DevToolsConfig::overridesPath`.
+For a programmatic bake of current bakeable live edits:
 
 ```cpp
-config.dev.overridesPath = ".flowui/overrides.v1.json";
-```
-
-The default path is `.flowui/overrides.v1.json`.
-
-### Manual Export
-
-The dev panel exposes export through its header. App code can also call the same function directly.
-
-```cpp
-#include "devMode/devJson.hpp"
-
-const bool exported = FlowUi::devMode::exportOverridesAsJson(app.ui());
-```
-
-The function returns `false` if developer mode is not compiled in, the path is empty, the directory cannot be created, or the file cannot be written.
-
-### What the JSON Means
-
-The JSON has two main target lists: `definitions` and `instances`.
-
-```json
-{
-  "schema": "flowui.dev.export.v1",
-  "kind": "params",
-  "definitions": [
-    {
-      "definitionId": 11003379752432211637,
-      "definitionName": "Dashboard Card",
-      "paramsStructName": "DashboardCardParams",
-      "hasSourceMetadata": true,
-      "sourceFile": "D:/FlowUi/examples/dashboard/DashboardCard.hpp",
-      "sourceLine": 42,
-      "changes": [
-        {
-          "fieldName": "root",
-          "value": {
-            "kind": "composite_struct",
-            "value": {
-              "type": "Clay_ElementDeclaration",
-              "declaration": {
-                "backgroundColor": { "r": 22, "g": 25, "b": 33, "a": 255 }
-              }
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "instances": [
-    {
-      "definitionName": "Dashboard Card",
-      "elementId": "dashboard/cards/primary",
-      "authoredInstanceKey": "dashboard/cards/primary",
-      "sourceFile": "D:/FlowUi/examples/dashboard/main.cpp",
-      "sourceLine": 118,
-      "changes": [
-        {
-          "fieldName": "title",
-          "value": { "kind": "string", "value": "Monthly Revenue" }
-        }
-      ]
-    }
-  ]
+#if FLOW_UI_DEV_MODE
+const auto result = application.devTooling().bakeActiveEdits();
+if (!result.applied) {
+    // Display or record result.status in the application's own tool UI.
 }
+#endif
 ```
 
-Definition targets are meant for changing reusable defaults. Instance targets are meant for changing one specific call site. Every change also carries hashes and type data in the real file, so tooling can verify that the exported value still matches the reflected field.
+For revision-checked review, use `bakePipeline().query_review()` and `commit_review()` with the reviewed plan. The interface uses this path to keep staged changes and revision checks consistent. Query `queryBakeStatus()` and `queryBakeDiff()` to inspect diagnostics and authored/live/baked values.
 
-## Chapter 7: Apply Exported Changes
+`FLOW_UI_ENABLE_BAKED_CHANGES` enables the [CMake baking integration](../../cmake/FlowUiBaking.cmake). Its generator reads the active manifest, validates entries, and produces `FlowUiBakedChanges.hpp`/`.cpp` in the build tree. Rebuild to compile durable changes into the application, including production builds. This workflow generates a typed overlay; it does not apply the removed JSON-to-source updater workflow or silently rewrite application source.
 
-### Build the Updater
+Use `imageData(TextureRef)` for frame-owned Clay image payloads, configure input line behavior with `TextFieldMode`, and traverse `FieldTextView` explicitly with `contiguous()`, `copy()`, or `forEachChunk()`. Current schemas and generated values use these same supported runtime contracts.
 
-The source patching tool lives here:
-
-```text
-tools/flowui_devChange_updater/flowui_devChange_updater.cpp
-```
-
-If your build system does not already compile it, build it as a standalone C++ tool with your normal compiler. It only depends on the C++ standard library.
-
-On Windows with MSVC:
-
-```powershell
-cl /std:c++20 /EHsc tools\flowui_devChange_updater\flowui_devChange_updater.cpp /Fe:flowui_devChange_updater.exe
-```
-
-On Linux with GCC or Clang:
-
-```bash
-c++ -std=c++20 tools/flowui_devChange_updater/flowui_devChange_updater.cpp -o flowui_devChange_updater
-```
-
-### Run the Updater
-
-Run the tool with the exported JSON path. The optional second argument is a report path.
-
-On Windows:
-
-```powershell
-.\flowui_devChange_updater.exe .flowui\overrides.v1.json .flowui\apply-report.json
-```
-
-On Linux:
-
-```bash
-./flowui_devChange_updater .flowui/overrides.v1.json .flowui/apply-report.json
-```
-
-The updater reads the JSON, groups targets by source file, patches the referenced files in place, and writes a report JSON. The console output summarizes how many definition targets, instance targets, and files were patched.
-
-### Review the Result
-
-Always review the patch before committing it.
-
-```bash
-git diff
-```
-
-Some entries can be unresolved. Common reasons are missing source metadata, relative source paths, source files that moved, values the V1 patcher cannot express, or source code that changed enough that the tool cannot safely find the initializer/call site.
-
-The report file keeps unresolved entries with a reason. Treat that as a to-do list: either apply those values by hand or adjust the source shape so future exports can patch it.
-
-## Final Shape
-
-The complete workflow looks like this:
-
-```cpp
-FLOWUI_DEV_REGISTER_ENUM(
-    CardTone,
-    FLOWUI_DEV_ENUM_VALUE(CardTone::Neutral),
-    FLOWUI_DEV_ENUM_VALUE(CardTone::Warning),
-    FLOWUI_DEV_ENUM_VALUE(CardTone::Success));
-
-FLOWUI_DEV_REGISTER_STRUCT(
-    DashboardCardParams,
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, title),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, tone),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, root),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardParams, titleText));
-
-FLOWUI_DEV_REGISTER_STRUCT(
-    DashboardCardState,
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardState, expanded));
-
-FLOWUI_DEV_REGISTER_STRUCT(
-    DashboardCardResources,
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardResources, warningColor),
-    FLOWUI_DEV_REFLECT_FIELD(DashboardCardResources, successColor));
-
-FLOWUI_DEV_REGISTER_ELEMENT(DashboardCardDefinition, "Dashboard Card");
-```
-
-```cpp
-FlowUi::AppConfig config{};
-config.dev.enabled = true;
-config.dev.overridesPath = ".flowui/overrides.v1.json";
-
-FlowUi::App app = FlowUi::makeApplication(config);
-```
-
-```cpp
-app.ui()
-    .createElement(kDashboardCard, "dashboard/cards/primary")
-    .setParameters(DashboardCardParams{
-        .title = "Revenue",
-        .tone = CardTone::Success,
-        .root = makeCardRoot(),
-        .titleText = makeCardTitleText(app.fonts()),
-    })
-    .draw();
-```
-
-Developer mode is most useful when element params are data-shaped and stable. Register the fields you want to tune, make changes visually, export the override JSON, run the updater, and review the resulting source edits like any other code change.
+See [Developer Systems internals](../internals/dev_runtime.md), [agentic workflow](../agentic-workflow.md), and [revision-checked review and baking](../../include/devSystems/devAgenticWorkflow/knowledge/systems/changes.review_and_baking.md) for the corresponding service boundaries.

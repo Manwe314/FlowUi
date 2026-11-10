@@ -103,14 +103,14 @@ $(function() {
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">FlowUi::UiConfig Struct Reference<div class="ingroups"><a class="el" href="group__flowui__config.html">Config Structs</a></div></div></div>
+  <div class="headertitle"><div class="title">FlowUi::UiConfig Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Configures FlowUi layout, text, and UI resource defaults.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="UiConfig_8hpp_source.html">UiConfig.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -128,10 +128,11 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:ac6c148d1a2a3937d92c121aff6de3ea3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default font family loaded during app startup.  <br /></td></tr>
 <tr class="memitem:a19b1e622e654aa327337dd27489020b9" id="r_a19b1e622e654aa327337dd27489020b9"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a19b1e622e654aa327337dd27489020b9">fontAtlasSize</a> = 2048</td></tr>
 <tr class="memdesc:a19b1e622e654aa327337dd27489020b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Width and height in pixels of each font atlas page.  <br /></td></tr>
-<tr class="memitem:aadd34450a9f418b00b05c9fb3e089f18" id="r_aadd34450a9f418b00b05c9fb3e089f18"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#aadd34450a9f418b00b05c9fb3e089f18">iconAtlasSize</a> = 1024</td></tr>
-<tr class="memdesc:aadd34450a9f418b00b05c9fb3e089f18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved legacy icon atlas size setting.  <br /></td></tr>
 <tr class="memitem:afa2bf6bb115420c70a9e3137ec570507" id="r_afa2bf6bb115420c70a9e3137ec570507"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1InputManagerConfig.html">InputManagerConfig</a>&#160;</td><td class="memItemRight"><a class="el" href="#afa2bf6bb115420c70a9e3137ec570507">inputManager</a> {}</td></tr>
 <tr class="memdesc:afa2bf6bb115420c70a9e3137ec570507"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input field caret and selection rendering configuration.  <br /></td></tr>
+<tr class="memitem:a69c52e4620fe9e704a2fd95e5f4a2372" id="r_a69c52e4620fe9e704a2fd95e5f4a2372"><td class="memItemLeft"><a id="a69c52e4620fe9e704a2fd95e5f4a2372" name="a69c52e4620fe9e704a2fd95e5f4a2372"></a>
+<a class="el" href="structFlowUi_1_1ShortcutManagerConfig.html">ShortcutManagerConfig</a>&#160;</td><td class="memItemRight"><b>shortcuts</b> {}</td></tr>
+<tr class="memdesc:a69c52e4620fe9e704a2fd95e5f4a2372"><td class="mdescLeft">&#160;</td><td class="mdescRight">Built-in shortcut registrations installed for this UI manager. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Configures FlowUi layout, text, and UI resource defaults. </p>
@@ -168,7 +169,7 @@ Public Attributes</h2></td></tr>
 
 <p>Default font family loaded during app startup. </p>
 <p>This family is registered first, so family id 0 is the fallback family used by default text rendering. If loading fails, FlowUi attempts built-in fallback font candidates.</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1FontFamilyCreateInfo.html" title="Describes a logical font family and its initially available faces.">FlowUi::FontFamilyCreateInfo</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1FontFamilyCreateInfo.html">FlowUi::FontFamilyCreateInfo</a> </dd></dl>
 
 </div>
 </div>
@@ -224,24 +225,6 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="aadd34450a9f418b00b05c9fb3e089f18" name="aadd34450a9f418b00b05c9fb3e089f18"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aadd34450a9f418b00b05c9fb3e089f18">&#9670;&#160;</a></span>iconAtlasSize</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t FlowUi::UiConfig::iconAtlasSize = 1024</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Reserved legacy icon atlas size setting. </p>
-<dl class="section note"><dt>Note</dt><dd>This value is currently unused. Configure icon atlas sizing through <a class="el" href="structFlowUi_1_1AppConfig.html#a935554fb6a68988987eec05055d799ca" title="SVG icon rasterization and atlas cache defaults.">AppConfig::iconManager</a> instead.</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1IconManagerConfig.html" title="Configures SVG icon rasterization, caching, and atlas storage.">FlowUi::IconManagerConfig</a> </dd></dl>
-
-</div>
-</div>
 <a id="afa2bf6bb115420c70a9e3137ec570507" name="afa2bf6bb115420c70a9e3137ec570507"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa2bf6bb115420c70a9e3137ec570507">&#9670;&#160;</a></span>inputManager</h2>
 
@@ -274,7 +257,7 @@ Public Attributes</h2></td></tr>
 <p>Byte capacity of each transient UI arena. </p>
 <p>FlowUi creates one arena per frame in flight and resets the active arena at the beginning of each UI frame. These arenas store temporary Clay strings, element ids, and texture references created during UI construction.</p>
 <dl class="section note"><dt>Note</dt><dd>The Size set here is for ONE arena. Total Size used will be stringArenaSize * framesInFlight</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structFlowUi_1_1VulkanConfig.html#a57b35b5f53ac26dc0120bffeb1f74995" title="Number of frames the renderer may keep in flight.">FlowUi::VulkanConfig::framesInFlight</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__flowui__config.html#ga57b35b5f53ac26dc0120bffeb1f74995" title="Number of frames the renderer may keep in flight.">FlowUi::VulkanConfig::framesInFlight</a> </dd></dl>
 
 </div>
 </div>
@@ -296,7 +279,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/FlowUi/<a class="el" href="PublicStructs_8hpp_source.html">PublicStructs.hpp</a></li>
+<li>include/FlowUi/Public/configurationStructs/<a class="el" href="UiConfig_8hpp_source.html">UiConfig.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

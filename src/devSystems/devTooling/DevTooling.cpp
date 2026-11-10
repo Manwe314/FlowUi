@@ -6,7 +6,7 @@
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #endif
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 
 namespace FlowUi::devSystems {
 

@@ -580,7 +580,7 @@ EXTRACT_STATIC         = NO
 # for Java sources.
 # The default value is: YES.
 
-EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_CLASSES  = NO
 
 # This flag is only useful for Objective-C code. If set to YES, local methods,
 # which are defined in the implementation section but not in the interface are
@@ -636,7 +636,7 @@ HIDE_UNDOC_NAMESPACES  = YES
 # documentation.
 # The default value is: NO.
 
-HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_FRIEND_COMPOUNDS  = YES
 
 # If the HIDE_IN_BODY_DOCS tag is set to YES, Doxygen will hide any
 # documentation blocks found inside the body of a function. If set to NO, these
@@ -960,7 +960,7 @@ WARN_NO_PARAMDOC       = NO
 # will automatically be disabled.
 # The default value is: NO.
 
-WARN_IF_UNDOC_ENUM_VAL = NO
+WARN_IF_UNDOC_ENUM_VAL = YES
 
 # If WARN_LAYOUT_FILE option is set to YES, Doxygen will warn about issues found
 # while parsing the user defined layout file, such as missing or wrong elements.
@@ -1028,8 +1028,10 @@ WARN_LOGFILE           =
 
 INPUT                  = docs \
                          include/FlowUi.hpp \
-                         include/FlowUi \
-                         include/managers
+                         include/FlowUi/Public \
+                         include/FSEL.hpp \
+                         include/FSEL \
+                         include/devSystems
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1133,7 +1135,9 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which Doxygen is
 # run.
 
-EXCLUDE                =
+EXCLUDE                = include/FlowUi/Private \
+                         include/devSystems/devInterface \
+                         include/devSystems/devAgenticWorkflow/schemas
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1157,7 +1161,26 @@ EXCLUDE_PATTERNS       =
 # wildcard * is used, a substring. Examples: ANamespace, AClass,
 # ANamespace::AClass, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = FlowUi::detail \
+                         FlowUi::detail::* \
+                         *::detail \
+                         *::detail::* \
+                         *::schema_detail \
+                         *::schema_detail::* \
+                         *::bake_detail \
+                         *::bake_detail::* \
+                         FlowUi::devSystems::tooling::MemberPointerTraits \
+                         FlowUi::devSystems::tooling::DevMemberOps \
+                         FlowUi::devSystems::tooling::DevSchemaRegistry::MutableType \
+                         FlowUi::devSystems::tooling::DevSchemaRegistry::MutableType::* \
+                         FlowUi::baked \
+                         FlowUi::baked::* \
+                         FLOWUI_ERROR_SITE_CASE \
+                         FLOWUI_STORAGE_CLASS_SOURCE \
+                         FLOWUI_DEV_TIMING_JOIN_IMPL \
+                         FLOWUI_DEV_TIMING_JOIN \
+                         FLOWUI_DEV_TIMING_ZONE_LEVEL_IMPL \
+                         FLOWUI_DEV_TIMING_ZONE_POINTER_LEVEL_IMPL
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -2543,7 +2566,7 @@ ENABLE_PREPROCESSING   = YES
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES then
 # the macro expansion is limited to the macros specified with the PREDEFINED and
@@ -2551,7 +2574,7 @@ MACRO_EXPANSION        = NO
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_ONLY_PREDEF     = NO
+EXPAND_ONLY_PREDEF     = YES
 
 # If the SEARCH_INCLUDES tag is set to YES, the include files in the
 # INCLUDE_PATH will be searched if a #include is found.
@@ -2585,6 +2608,13 @@ INCLUDE_FILE_PATTERNS  =
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             = FLOW_UI_DEV_MODE=1 \
+                         FLOW_UI_AGENTIC_WORKFLOW=1 \
+                         FLOW_UI_DEV_CAPTURE_CLAY=1 \
+                         FLOWUI_DEV_TIMING_LEVEL=3 \
+                         FLOWUI_DEV_MEMORY_LEVEL=4 \
+                         FLOWUI_DEV_ERROR_LEVEL=4 \
+                         "FLOWUI_DEV_SCHEMA(...)=" \
+                         "FLOWUI_DEV_FIELD(...)=" \
                          FLOWUI_PUBLIC_VULKAN_INTEROP=1 \
                          FLOWUI_INCLUDE_ICON_MANAGER=1 \
                          FLOWUI_RUNTIME_FONT_BAKING=1 \

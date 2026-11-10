@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -17,8 +17,8 @@ struct DevClayDataDumpParameters {
 	uint64_t selectionKey = 0;
 };
 
-/**
- * @brief Full scrollable struct dump for a selected Clay layout element.
+/*
+ * Full scrollable struct dump for a selected Clay layout element.
  *
  * Displays all fields in Clay_ElementDeclaration, computed layout metrics,
  * and text configurations with explicit indication of defaults vs set values.

@@ -3,9 +3,9 @@
 #endif
 #include "HeadlessVulkanFixture.hpp"
 #include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
-#include "managers/ActionManager.hpp"
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -29,10 +29,10 @@ FLOWUI_DEV_SCHEMA(TexturePair, FLOWUI_DEV_FIELD(TexturePair, first),
 
 struct Fixture {
 	detail::storage::FlowStorageSystem storage;
-	devMode::DevSchemaRegistry registry{};
+	devSystems::tooling::DevSchemaRegistry registry{};
 	DevOverrideEngine engine{registry};
 	ThemeManager themes{};
-	devMode::DevSchemaView schema{};
+	devSystems::tooling::DevSchemaView schema{};
 	std::uint64_t transaction = 0;
 
 	explicit Fixture(VulkanContext& context) : storage(context) {
@@ -160,14 +160,15 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 		assert(
 			!fixture.prepare(fixture.row("action", malformed), DevChangesRuntimeAction::ApplySaved)
 				 .available);
-	const auto legacy_texture =
+	const auto incomplete_texture =
 		fixture.prepare(fixture.row("texture", "{\"domain\":2,\"key\":\"saved.key\"}"),
 						DevChangesRuntimeAction::ApplySaved);
-	assert(!legacy_texture.available &&
-		   legacy_texture.error.find("legacy resource metadata") != std::string::npos);
+	assert(!incomplete_texture.available &&
+		   incomplete_texture.error.find("must contain domain, key, fitMode and tintEnabled") !=
+			   std::string::npos);
 	const std::string texture_json =
 		"{\"domain\":" + std::to_string(static_cast<unsigned>(ResourceDomain::Icon)) +
-		",\"key\":\"saved.owned.\\\"key\",\"fitMode\":2,\"samplingMode\":1,\"tintEnabled\":true}";
+		",\"key\":\"saved.owned.\\\"key\",\"fitMode\":2,\"tintEnabled\":true}";
 	auto texture_row = fixture.row("texture", texture_json);
 	auto texture_edit = fixture.prepare(texture_row, DevChangesRuntimeAction::ApplySaved);
 	assert(texture_edit.available);
@@ -176,25 +177,45 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 	fixture.commit(copied_edit.forward);
 	const auto applied_texture = fixture.themes.getTheme<Theme>("dark").texture;
 	assert(applied_texture.sourceKey == "saved.owned.\"key" &&
-		   applied_texture.fitMode == TextureFitMode::Cover &&
-		   applied_texture.samplingMode == TextureSamplingMode::Nearest &&
-		   applied_texture.tintEnabled);
+		   applied_texture.fitMode == TextureFitMode::Cover && applied_texture.tintEnabled);
 	fixture.commit(copied_edit.inverse);
 	fixture.commit(copied_edit.forward);
 	for (const auto malformed :
-		 {"{\"domain\":0,\"key\":\"x\",\"fitMode\":2,\"samplingMode\":1,\"tintEnabled\":true}",
-		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":4,\"samplingMode\":1,\"tintEnabled\":true}",
-		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":2,\"samplingMode\":2,\"tintEnabled\":true}"})
+		 {"{\"domain\":0,\"key\":\"x\",\"fitMode\":2,\"tintEnabled\":true}",
+		  "{\"domain\":02,\"key\":\"x\",\"fitMode\":2,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":02,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":00,\"tintEnabled\":true}",
+		  "{\"domain\":2.0,\"key\":\"x\",\"fitMode\":2,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":2.0,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":4,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"x\",\"fitMode\":2}",
+		  "{\"domain\":2,\"key\":\"x\",\"tintEnabled\":true}"})
 		assert(
 			!fixture.prepare(fixture.row("texture", malformed), DevChangesRuntimeAction::ApplySaved)
 				 .available);
+	for (const std::string_view obsolete_sampling :
+		 {"0", "1", "-1", "1.5", "true", "\"1\"", "null", "18446744073709551616"}) {
+		std::string malformed_json = texture_json;
+		malformed_json.insert(malformed_json.size() - 1u,
+							  ",\"samplingMode\":" + std::string(obsolete_sampling));
+		assert(!fixture
+					.prepare(fixture.row("texture", malformed_json),
+							 DevChangesRuntimeAction::ApplySaved)
+					.available);
+	}
+	std::string duplicate_property = texture_json;
+	duplicate_property.insert(duplicate_property.size() - 1u, ",\"fitMode\":1");
+	assert(!fixture
+				.prepare(fixture.row("texture", duplicate_property),
+						 DevChangesRuntimeAction::ApplySaved)
+				.available);
 	DevOverrideCommand retained_texture;
 	retained_texture.kind = DevOverrideCommandKind::SetThemeField;
 	retained_texture.theme = {.themeType = detail::typeHash<Theme>(), .variant = "dark"};
 	retained_texture.field = {detail::typeHash<Theme>(), texture_row.disk_entry->fieldId};
 	const auto stable_texture = TextureRef::fromStable(ResourceDomain::Icon, "live.fixture");
 	assert(fixture.engine.copyValue(stable_texture, retained_texture.value) ==
-		   devMode::DevValueOperationStatus::Success);
+		   devSystems::tooling::DevValueOperationStatus::Success);
 	fixture.commit({retained_texture});
 	texture_row.proposed_entry = texture_row.disk_entry;
 	texture_row.has_proposal = true;
@@ -202,20 +223,18 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 	assert(retained_edit.available);
 	fixture.commit(retained_edit.forward);
 	assert(fixture.themes.getTheme<Theme>("dark").texture.sourceKey == "live.fixture");
-	for (const auto invalid_fit : {true, false}) {
-		auto invalid_texture = stable_texture;
-		if (invalid_fit)
-			invalid_texture.fitMode = static_cast<TextureFitMode>(99);
-		else
-			invalid_texture.samplingMode = static_cast<TextureSamplingMode>(99);
-		assert(fixture.engine.copyValue(invalid_texture, retained_texture.value) ==
-			   devMode::DevValueOperationStatus::Success);
-		fixture.reject(retained_texture, DevCommandStatus::ConstraintRejected);
-	}
+	auto invalid_texture = stable_texture;
+	invalid_texture.fitMode = static_cast<TextureFitMode>(99);
+	assert(fixture.engine.copyValue(invalid_texture, retained_texture.value) ==
+		   devSystems::tooling::DevValueOperationStatus::Success);
+	fixture.reject(retained_texture, DevCommandStatus::ConstraintRejected);
 	const auto* texture_type = fixture.schema->findType(detail::typeHash<TextureRef>());
 	assert(texture_type);
-	const auto texture_fields = fixture.schema->fieldsOf(devMode::DevTypeIndex{
+	const auto texture_fields = fixture.schema->fieldsOf(devSystems::tooling::DevTypeIndex{
 		static_cast<std::uint32_t>(texture_type - fixture.schema->types.data())});
+	assert(std::ranges::none_of(texture_fields, [&](const auto& field) {
+		return fixture.schema->string(field.name) == "samplingMode";
+	}));
 	const auto handle = std::ranges::find_if(texture_fields, [&](const auto& field) {
 		return fixture.schema->string(field.name) == "handle";
 	});
@@ -223,7 +242,7 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 	retained_texture.field.nestedPath = {texture_row.disk_entry->fieldId};
 	retained_texture.field.field = handle->id;
 	assert(fixture.engine.copyValue(TextureHandle{}, retained_texture.value) ==
-		   devMode::DevValueOperationStatus::Success);
+		   devSystems::tooling::DevValueOperationStatus::Success);
 	fixture.reject(retained_texture, DevCommandStatus::FieldReadOnly);
 	ActionManager actions;
 	bool bound_target = false;
@@ -237,7 +256,7 @@ void verify_stable_actions_and_resource_diagnostics(Fixture& fixture) {
 	unstable_action.field = {detail::typeHash<Theme>(),
 							 fixture.row("action", "").disk_entry->fieldId};
 	assert(fixture.engine.copyValue(bound_action, unstable_action.value) ==
-		   devMode::DevValueOperationStatus::Success);
+		   devSystems::tooling::DevValueOperationStatus::Success);
 	fixture.reject(unstable_action, DevCommandStatus::ConstraintRejected);
 }
 
@@ -249,7 +268,7 @@ void verify_owned_resource_copies(Fixture& fixture) {
 		TexturePair pair{TextureRef::fromStable(ResourceDomain::Image, first_key),
 						 TextureRef::fromStable(ResourceDomain::Icon, second_key)};
 		assert(fixture.engine.copyValue(pair, original) ==
-			   devMode::DevValueOperationStatus::Success);
+			   devSystems::tooling::DevValueOperationStatus::Success);
 	}
 	auto copied = original;
 	DevOwnedValue moved = std::move(original);
@@ -257,11 +276,11 @@ void verify_owned_resource_copies(Fixture& fixture) {
 	DevOwnedValue captured;
 	const auto* type = fixture.schema->findType(detail::typeHash<TexturePair>());
 	assert(type);
-	assert(
-		DevOwnedValue::copyFrom(
-			*fixture.schema,
-			devMode::DevTypeIndex{static_cast<std::uint32_t>(type - fixture.schema->types.data())},
-			moved.data(), captured) == devMode::DevValueOperationStatus::Success);
+	assert(DevOwnedValue::copyFrom(*fixture.schema,
+								   devSystems::tooling::DevTypeIndex{static_cast<std::uint32_t>(
+									   type - fixture.schema->types.data())},
+								   moved.data(), captured) ==
+		   devSystems::tooling::DevValueOperationStatus::Success);
 	moved.reset();
 	for (const auto* value : {&copied, &captured}) {
 		const auto& pair = *static_cast<const TexturePair*>(value->data());
@@ -286,8 +305,7 @@ void verify_resource_baseline_lifetimes(Fixture& fixture) {
 		fixture.prepare(fixture.row("texture", ""), DevChangesRuntimeAction::DiscardLive).forward);
 	const auto texture_json = [](std::string_view key) {
 		return "{\"domain\":" + std::to_string(static_cast<unsigned>(ResourceDomain::Icon)) +
-			   ",\"key\":\"" + std::string(key) +
-			   "\",\"fitMode\":1,\"samplingMode\":0,\"tintEnabled\":false}";
+			   ",\"key\":\"" + std::string(key) + "\",\"fitMode\":1,\"tintEnabled\":false}";
 	};
 	const std::string broad_key = "broad.saved.resource.key.with.owned.heap.storage";
 	const auto broad = fixture.row("texture", texture_json(broad_key), "*");
@@ -324,7 +342,7 @@ void verify_resource_budget_failure_acknowledgement(Fixture& fixture) {
 		"texture", "{\"domain\":" + std::to_string(static_cast<unsigned>(ResourceDomain::Icon)) +
 					   ",\"key\":\"" + unavailable_key +
 					   "\","
-					   "\"fitMode\":1,\"samplingMode\":0,\"tintEnabled\":false}");
+					   "\"fitMode\":1,\"tintEnabled\":false}");
 	const auto draft = fixture.prepare(row, DevChangesRuntimeAction::ApplySaved);
 	assert(draft.available);
 	for (const auto kind :

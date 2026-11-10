@@ -6,11 +6,11 @@
 
 #include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** Local trigger identities and owned option labels for the contextual popovers. */
+/* Local trigger identities and owned option labels for the contextual popovers. */
 struct DevDiagnosticsControlsState {
 	std::vector<std::string> code_labels{}, site_labels{};
 	std::vector<FSEL::ComboBoxOption> code_options{}, site_options{};
@@ -18,7 +18,7 @@ struct DevDiagnosticsControlsState {
 	bool compact_open = false;
 };
 
-/** Contextual capture, future-trigger, owned-freeze and diagnostics-export controls. */
+/* Contextual capture, future-trigger, owned-freeze and diagnostics-export controls. */
 struct DevDiagnosticsControls {
 	using State = DevDiagnosticsControlsState;
 	using Resources = diagnostics_icons::Resources;

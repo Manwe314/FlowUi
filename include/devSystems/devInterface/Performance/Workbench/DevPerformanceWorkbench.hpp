@@ -2,13 +2,13 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Performance/DevPerformanceContentParameters.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 

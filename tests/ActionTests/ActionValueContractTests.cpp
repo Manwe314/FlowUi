@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 
 namespace {
 
@@ -73,13 +73,13 @@ void testOneButtonPropertyCoversBothActionKinds() {
 	bool dropdownOpen = false;
 	const auto toggle = manager.uiActions().make(kToggleBool, dropdownOpen);
 	const FlowUi::ButtonParameters localButton{
-		.label = "Open menu",
 		.onActivate = FlowUi::ActionCall{toggle},
+		.label = "Open menu",
 	};
 	const FlowUi::ButtonParameters appButton{
-		.label = "Save",
 		.onActivate = FlowUi::ActionCall{
 			FlowUi::AppActionCall{FlowUi::AppAction("tests.actions.save")}},
+		.label = "Save",
 	};
 	FLOWUI_CHECK(localButton.onActivate.kind() == FlowUi::ActionCallKind::Ui);
 	FLOWUI_CHECK(appButton.onActivate.kind() == FlowUi::ActionCallKind::App);

@@ -1,6 +1,10 @@
 var searchData=
 [
-  ['windowinputconfig_0',['windowInputConfig',['../classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757',1,'FlowUi::App::windowInputConfig() const'],['../classFlowUi_1_1App.html#aa3f1b5d7cf1e701d7bbea5ca58b7a504',1,'FlowUi::App::windowInputConfig(WindowId id) const']]],
-  ['windowsize_1',['windowSize',['../classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228',1,'FlowUi::App::windowSize() const'],['../classFlowUi_1_1App.html#af82f5edfbcd85cbdfdb10b442f9e1080',1,'FlowUi::App::windowSize(WindowId id) const']]],
-  ['withelementid_2',['withElementID',['../classFlowUi_1_1ElementBuilder.html#addcbec2dd601b254be83f4114cb679f7',1,'FlowUi::ElementBuilder']]]
+  ['viewports_0',['viewPorts',['../classFlowUi_1_1App.html#a704db5cbbabc33705f691362bfb275b8',1,'FlowUi::App::viewPorts()'],['../classFlowUi_1_1App.html#a71fea5f85307eaaca6013e19e214faf9',1,'FlowUi::App::viewPorts(WindowId id)'],['../classFlowUi_1_1App.html#a28bca3bac1b8cba55d79950ad56515b2',1,'FlowUi::App::viewPorts() const'],['../classFlowUi_1_1App.html#a6adb2d461e1a1989a774658bec4b29d5',1,'FlowUi::App::viewPorts(WindowId id) const']]],
+  ['visit_5fhistory_1',['visit_history',['../classFlowUi_1_1devSystems_1_1DevMemoryReporting.html#a9f064dac87cc18db38c54a014d1ed36a',1,'FlowUi::devSystems::DevMemoryReporting']]],
+  ['visit_5fhistory_5fchunks_2',['visit_history_chunks',['../classFlowUi_1_1devSystems_1_1DevMemoryReporting.html#af818c7fa487bc52a690d9b3446f2febf',1,'FlowUi::devSystems::DevMemoryReporting']]],
+  ['visitdevpreviews_3',['visitDevPreviews',['../classFlowUi_1_1ThemeManager.html#a0d4ccc40ede5caf00d9d059ff3920fb0',1,'FlowUi::ThemeManager']]],
+  ['visitdevshortcuts_4',['visitDevShortcuts',['../classFlowUi_1_1ShortcutManager.html#a36fec101cdc166336fedc06d6ddc12e5',1,'FlowUi::ShortcutManager']]],
+  ['visitdevviewports_5',['visitDevViewports',['../classFlowUi_1_1ViewPortManager.html#a5df6fbcbd30dd5cd9f52dffd2a9a304e',1,'FlowUi::ViewPortManager']]],
+  ['visitelementsnapshots_6',['visitElementSnapshots',['../classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideCapture.html#aed988ff11a4cee884be0b6f0863730be',1,'FlowUi::devSystems::tooling::DevOverrideCapture::visitElementSnapshots()'],['../classFlowUi_1_1devSystems_1_1tooling_1_1DevOverrideEngine.html#a902c320736f9b6e024105bf7c86054e2',1,'FlowUi::devSystems::tooling::DevOverrideEngine::visitElementSnapshots()']]]
 ];

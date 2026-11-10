@@ -1,0 +1,1820 @@
+{
+  "schema": "FlowUi.DevInterfaceNotes.Verification",
+  "run_id": "run_f39b4b670d18a875534e59a585d908fd",
+  "mcp_calls": 41,
+  "cases": [
+    {
+      "case_id": "probe-warmup",
+      "verdict": "pass",
+      "job_id": "verification_5803f2fe257fb60b7f77eacbaeba9225",
+      "coverage": {
+        "evaluated": "1",
+        "failed": "0",
+        "passed": "1",
+        "required": "1",
+        "skipped": "0",
+        "unavailable": "0"
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "verdict": "pass",
+      "job_id": "verification_179b689ae91b16be32f8bce73b44a279",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_6a9b7d741ae7817535710f9e72bda39a",
+      "image_id": "image_0",
+      "window_frame": "69",
+      "image": "probe-ceiling-2.png"
+    },
+    {
+      "case_id": "probe-options-2",
+      "verdict": "pass",
+      "job_id": "verification_f13eac476747cf251d1bc9e683bb43a9",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_3b686cfa9be78824701056b3262539d2",
+      "image_id": "image_1",
+      "window_frame": "493",
+      "image": "probe-options-2.png"
+    },
+    {
+      "case_id": "probe-select-2",
+      "verdict": "pass",
+      "job_id": "verification_a13e48e3e437aa9ca8be7025f0a67b7e",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_841f292ab438d376c67742d98e101492",
+      "image_id": "image_2",
+      "window_frame": "917",
+      "image": "probe-select-2.png"
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "verdict": "pass",
+      "job_id": "verification_462f2ccb95ba5c733d566e86095fbe7d",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_32deae74546b1f6b9764a71b90da428c",
+      "image_id": "image_3",
+      "window_frame": "1402",
+      "image": "probe-recorded-policy-2.png"
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "verdict": "pass",
+      "job_id": "verification_539e8bdc3426967b3759e5474353db39",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_6a7527017416972c4016d370027e3953",
+      "image_id": "image_4",
+      "window_frame": "1820",
+      "image": "probe-recording-open-zero.png"
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "verdict": "pass",
+      "job_id": "verification_fc1f8048fce22d7888073ebf1edf8762",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_e199c6fca6ccb365506503cc22dc732e",
+      "image_id": "image_5",
+      "window_frame": "2250",
+      "image": "probe-recording-zero.png"
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "verdict": "pass",
+      "job_id": "verification_c6d5a4afc4b7e90391389f68708cec35",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_12d4e703ed65e04181ab8b3e4b683815",
+      "image_id": "image_6",
+      "window_frame": "2701",
+      "image": "probe-historical-policy-2.png"
+    }
+  ],
+  "required_checks": 19,
+  "failures": [],
+  "layout_checks": [
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Balanced",
+      "observed": {
+        "height": 19.359375,
+        "width": 136.8125,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 757.03125
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-2",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Balanced",
+      "observed": {
+        "height": 19.359375,
+        "width": 136.8125,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 757.03125
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-2",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Balanced",
+      "observed": {
+        "height": 19.359375,
+        "width": 136.8125,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 757.03125
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-2",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Balanced",
+      "observed": {
+        "height": 19.359375,
+        "width": 136.8125,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-2",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Balanced",
+      "observed": {
+        "height": 19.359375,
+        "width": 136.8125,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Frame Only",
+      "observed": {
+        "height": 19.359375,
+        "width": 157.0390625,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Frame Only",
+      "observed": {
+        "height": 19.359375,
+        "width": 157.0390625,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-2",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-policy-contract",
+      "check": "recorded-policy-and-selector-independent",
+      "passed": true,
+      "compiled_ceiling": 2,
+      "recorded_policy": "Balanced",
+      "current_recording_level": 0
+    }
+  ],
+  "user_changes_unchanged": true,
+  "bootstrap": "Configurable native three-window fixture; all setup and input use MCP",
+  "passed": true
+}

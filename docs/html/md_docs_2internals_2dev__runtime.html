@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flow UI: Developer Runtime</title>
+<title>Flow UI: Developer Systems</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
@@ -103,10 +103,19 @@ $(function() {
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Developer Runtime </div></div>
+  <div class="headertitle"><div class="title">Developer Systems </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Currently under construction. Coming in future versions. </p>
+<div class="textblock"><p>All developer support is implemented under <a href="../../include/devSystems/">include/devSystems</a> and <a href="../../src/devSystems/">src/devSystems</a>. <span class="tt">FLOW_UI_DEV_MODE</span> is the build switch for these modern systems. The obsolete developer runtime, registry, JSON exporter, debug view, and legacy widget tree have been removed completely.</p>
+<h1>Ownership and data flow</h1>
+<p><span class="tt">App</span> owns <a href="../../include/devSystems/devTooling/DevTooling.hpp">DevTooling</a>, <a href="../../include/devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp">DevMonitoringAndReporting</a>, and the dedicated-window <a href="../../include/devSystems/devInterface/Permanents/Backend/DevInterface.hpp">DevInterface</a>. Window UI managers borrow the schema/override services and retain their own tree-capture state. Shared changes publish at the application safe point, outside active layout construction.</p>
+<p>The <span class="tt">FlowUi::devSystems::tooling</span> namespace contains the schema descriptors and registry, catalogues, tree snapshots, typed override engine, and baking pipeline. Descriptors discover types through ADL, intrusive <span class="tt">devSchema()</span>, or explicit adapters. The registry queues roots and publishes immutable generation-owning schema views. Effective parameter and theme captures retain their schema generation; they are not untyped field maps.</p>
+<p>During a builder invocation, baked and live overrides modify the parameter draft before callbacks run. The effective value capture and Flow/Clay tree correlation then feed Inspect and Catalogue. <span class="tt">DevOverrideEngine</span> accepts typed transactions, validates targets/fields/constraints against the schema, and commits at a safe point. The interface reads these services and submits changes through the same command path.</p>
+<p>Monitoring has separate timing, memory, and error services under <a href="../../include/devSystems/devMonitoringAndReporting/">devMonitoringAndReporting</a>. The Performance interface reads bounded timing captures and immutable analysis snapshots. There is no parallel rolling-telemetry runtime.</p>
+<h1>Durable changes and optional evidence</h1>
+<p><a href="../../include/devSystems/devTooling/bake/DevBakePipeline.hpp">DevBakePipeline</a> reviews and writes <span class="tt">.flowui/changes/active.flowchanges</span>. <a href="../../cmake/FlowUiBaking.cmake">CMake baking</a> generates typed overlays compiled into the next build, including builds without developer support. Schema, target, source, and revision diagnostics remain explicit.</p>
+<p><a class="el" href="md_docs_2agentic-workflow.html" title="Agentic Workflow frame evidence">Agentic workflow</a> is an additional compile-time and runtime opt-in. Its immutable observations and frame images live in a separate evidence store. Captures are not change manifests and do not authorize source mutation.</p>
+<p>See the <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Systems tutorial</a> for configuration, schemas, catalogue ingestion, and current authoring examples. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

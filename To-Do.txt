@@ -35,6 +35,7 @@ Possible Big Upgrades:
 	- Point and click selection from User UI for Dev tools with Debug Highlighting
 	- Animation Manager With Newer version of Clay 
 	- Networking Manager
+	- Consider per-viewport MSAA in ViewPortManager later; keep current rendering fixed at x1.
 	- Total Memory allocation upfront with custom memeory management
 	- As much Retained mode support as **logical**
 	- Revisit how FlowUi can support DATA -> UI and DATA <- UI flows. 
@@ -69,7 +70,7 @@ Upgrades to 1.0
 
 steps: 
 	- decide the fate of deprecated storeTexture(),
-	  reserved msaa, autoSave, and per-reference sampling fields; normalize [[nodiscard]],
+	  autoSave, and per-reference sampling fields; normalize [[nodiscard]],
 	  naming, const overloads, and exception behavior. --- still stuff left
 	- Design Ui Themes and Named Slots for recursive construction < --
 	- adding windows from UI  building code and API for creating windows with just a single flow element.
@@ -90,15 +91,15 @@ things i want to do:
 		[Done]- complete overhaul of Dev Tools
 		[Done]- Upgrade Dev tool's ability to modify code
 	- Clean things UP:
-		- Remove StoreTexture() and other Legacy functions
-		- Wire in MSAA and Potentially upgrade some configuration about it.
-		- Constrain Integer bit counts. use minimal
-		- add Decorations [[]] to older code.
-		- Move all Non FlowUi namespcae things out of /include/managers
-		- Clean UP /include/FlowUi move internals and maybe move files / add folders
-		[Done]- change For(;;) into While(True)
-		- Remove Doxy comments on internals and update doxy comments on new API
-		[Done]- Clean up legacy error functions that (void) strings and literals
+		[Done] - Remove StoreTexture() and other Legacy functions
+		[Done] - Remove the unused MSAA configuration; keep rendering fixed at x1.
+		[Done] - Constrain Integer bit counts. use minimal
+		[Done] - add Decorations [[]] to older code.
+		[Done] - Move all Non FlowUi namespcae things out of /include/managers
+		[Done] - Clean UP /include/FlowUi move internals and maybe move files / add folders
+		[Done] - change For(;;) into While(True)
+		[Done] - Remove Doxy comments on internals and update doxy comments on new API
+		[Done] - Clean up legacy error functions that (void) strings and literals
 	- Lock in Configuration Structs
 		- Move internal Config Structs to Public config Structs
 		- Give concrete shape and single AppConfig umbrela
@@ -169,9 +170,31 @@ things i want to do:
 		- double check probe level selection and compilation.
 	- DevMonitoring and DevTooling
 		[Done] - move Memory capacity targets and json orchestration from FlowUi namespace to internal or detail
-		
+	- Asset Loader Concept manager?
+	- Introduction of dedicated Input Manager
 
 
+
+Updated Tree Structure:
+	include or src/
+		DevSystems/
+			as is
+		FlowUi/
+			Public/
+				configurationStructs/
+				managerStructs/
+				managers/
+				errorManagement/ 
+				+ some shared Base .Xpp files
+			Private/
+				storageSystem/
+				textLayoutService/
+				inputService/
+				renderer/
+				windowService/
+				+ some shared Base .Xpp files
+		FSEL/
+			as is
 ~~~~ Legacy ~~~~
 
 Font Manager Api surface Possible Update:

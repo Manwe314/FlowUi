@@ -20,30 +20,36 @@ var group__flowui__viewport__manager =
     [ "FlowUi::ViewPortCreateInfo", "structFlowUi_1_1ViewPortCreateInfo.html", [
       [ "clearColor", "structFlowUi_1_1ViewPortCreateInfo.html#ad0daaa2cf2671b4457df07ea41680373", null ],
       [ "clearEveryFrame", "structFlowUi_1_1ViewPortCreateInfo.html#a8ad9f824c3440d44d2e1d5557dab352f", null ],
-      [ "colorFormat", "structFlowUi_1_1ViewPortCreateInfo.html#a2d83d2d84f100385da1172f0c73341e1", null ]
+      [ "colorFormat", "structFlowUi_1_1ViewPortCreateInfo.html#a2d83d2d84f100385da1172f0c73341e1", null ],
+      [ "resizeHysteresisPixels", "structFlowUi_1_1ViewPortCreateInfo.html#a741d7d917e03c6df71cb816b90846550", null ]
     ] ],
     [ "FlowUi::ViewPort", "classFlowUi_1_1ViewPort.html", [
       [ "RenderCallback", "classFlowUi_1_1ViewPort.html#ad0d76433e868559926ec681a1b608864", null ],
-      [ "clearColor", "classFlowUi_1_1ViewPort.html#a36354a3627449b1c250cb31d63f26175", null ],
-      [ "clearEveryFrame", "classFlowUi_1_1ViewPort.html#aa397c0dfbcd5ebcf8b6b5290adcff367", null ],
+      [ "clearColor", "classFlowUi_1_1ViewPort.html#aa05840783a71a827fcaf9168f9b9195c", null ],
+      [ "clearEveryFrame", "classFlowUi_1_1ViewPort.html#a1e3f7471d119305a5f7b3ae32f0c63ad", null ],
       [ "clearRenderCallback", "classFlowUi_1_1ViewPort.html#a41cbb5a21265263d5cb7bfab078b9b99", null ],
-      [ "getKey", "classFlowUi_1_1ViewPort.html#ac2b642087b0c4fdf18ab3d41cd36c582", null ],
-      [ "getSize", "classFlowUi_1_1ViewPort.html#af26b8ce43556bdf7af7718dbd33a31d4", null ],
-      [ "hasRenderCallback", "classFlowUi_1_1ViewPort.html#a0b98f73f56b90fefe2cac173f49aff0e", null ],
-      [ "hasValidSize", "classFlowUi_1_1ViewPort.html#af9f3839dfa6d587a58dc0ec31e54d0aa", null ],
+      [ "getKey", "classFlowUi_1_1ViewPort.html#a15370700951136db591e68a2da5a8f72", null ],
+      [ "getSize", "classFlowUi_1_1ViewPort.html#aa8a7d2c8e5f8b0c1f3a3e7cba0bc5ca8", null ],
+      [ "hasRenderCallback", "classFlowUi_1_1ViewPort.html#a3c831bc9ef15c303e504f22569d7aca6", null ],
+      [ "hasValidSize", "classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc", null ],
       [ "setClearColor", "classFlowUi_1_1ViewPort.html#a5041209fac6a58554ebe927bc70d194d", null ],
       [ "setClearEveryFrame", "classFlowUi_1_1ViewPort.html#a39b1ba8923020766f15ee701575aa0ca", null ],
       [ "setRenderCallback", "classFlowUi_1_1ViewPort.html#a392c8372c68fd6562c4bc5f7ac4fc41f", null ],
       [ "setRenderCallback", "classFlowUi_1_1ViewPort.html#a8ac28ba477958a85dff2a9af682d1431", null ],
-      [ "textureRef", "classFlowUi_1_1ViewPort.html#a16a189477b7c50b6d0415441f3dd72f1", null ]
+      [ "textureRef", "classFlowUi_1_1ViewPort.html#a10f7c5d9f22a074f95691c59fc7dce0d", null ]
     ] ],
     [ "FlowUi::ViewPortManager", "classFlowUi_1_1ViewPortManager.html", [
+      [ "DevViewportView", "structFlowUi_1_1ViewPortManager_1_1DevViewportView.html", null ],
       [ "contains", "classFlowUi_1_1ViewPortManager.html#a6ae77f78ebf36af55bf61ff75bef31ec", null ],
-      [ "create", "classFlowUi_1_1ViewPortManager.html#af6f5b9b1adf89a9ea58bec5fbf3ba86c", null ],
+      [ "create", "classFlowUi_1_1ViewPortManager.html#a821179f12d30b198fb71fd5ea230dd84", null ],
       [ "getTexture", "classFlowUi_1_1ViewPortManager.html#aa24f7ce00d8a59ecd9a1bc4a4a92c921", null ],
       [ "getViewPort", "classFlowUi_1_1ViewPortManager.html#af6d427e4ed40d83a5485ab81ede41beb", null ],
       [ "getViewPort", "classFlowUi_1_1ViewPortManager.html#a0d6ce77f3c9c25cd6e1a8e99be0b031a", null ],
       [ "getVulkanInterop", "classFlowUi_1_1ViewPortManager.html#ae7c0bc4fd533b02c7aee388d8ee272ec", null ],
-      [ "remove", "classFlowUi_1_1ViewPortManager.html#a393b43dacaeb66f2ebd66be2d15329c0", null ]
+      [ "release_dev_capture", "classFlowUi_1_1ViewPortManager.html#af63bfa3e78dd789677e9cce903f2df97", null ],
+      [ "remove", "classFlowUi_1_1ViewPortManager.html#a30e8a1b555b572966efcea707dca470c", null ],
+      [ "request_dev_capture", "classFlowUi_1_1ViewPortManager.html#a378b887178e3f75c3f16d3dc9d322ec1", null ],
+      [ "retain_dev_capture", "classFlowUi_1_1ViewPortManager.html#a8f9d09988546b1ce4e886e0a4c7e8d8d", null ],
+      [ "visitDevViewports", "classFlowUi_1_1ViewPortManager.html#a5df6fbcbd30dd5cd9f52dffd2a9a304e", null ]
     ] ]
 ];

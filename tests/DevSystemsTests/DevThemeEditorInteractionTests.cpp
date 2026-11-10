@@ -3,7 +3,7 @@
 #endif
 #include "FSEL/Slider.hpp"
 #include "FSEL/Theme.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/DevInspectInspector.hpp"
 #include "devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp"
@@ -182,7 +182,8 @@ int main() {
 	const auto theme_type = ::FlowUi::detail::typeHash<BrandTheme>();
 	const auto* brand = schema->findTheme(theme_type);
 	assert(brand);
-	const auto key = [&](devMode::DevTypeId type, std::initializer_list<std::string_view> names) {
+	const auto key = [&](devSystems::tooling::DevTypeId type,
+						 std::initializer_list<std::string_view> names) {
 		const auto* theme = schema->findTheme(type);
 		assert(theme);
 		auto owner = theme->themeType;
@@ -202,7 +203,7 @@ int main() {
 		return result;
 	};
 	const auto radius = key(theme_type, {"radius"});
-	const auto cached_token = [&](devMode::DevTypeId type, std::string_view variant,
+	const auto cached_token = [&](devSystems::tooling::DevTypeId type, std::string_view variant,
 								  std::string_view path) -> const theme_editor::ThemeTokenValue& {
 		for (const auto& view : session.theme_editor_model.catalogue())
 			if (view.type == type && view.variant == variant) {
@@ -226,7 +227,7 @@ int main() {
 		if (kind != tooling::DevOverrideCommandKind::ClearThemeField &&
 			kind != tooling::DevOverrideCommandKind::ResetThemeField)
 			assert(app.devTooling().overrides().copyValue(value, command.value) ==
-				   devMode::DevValueOperationStatus::Success);
+				   devSystems::tooling::DevValueOperationStatus::Success);
 		if (preview_clear)
 			command.layer = tooling::DevOverrideLayer::EphemeralPreview;
 		tooling::DevChangeSet changes{};
@@ -486,7 +487,7 @@ int main() {
 			command.field = key(fsel_type, {"buttonTheme", appearance, "backgroundColor", channel});
 			const float value = 72.f;
 			assert(app.devTooling().overrides().copyValue(value, command.value) ==
-				   devMode::DevValueOperationStatus::Success);
+				   devSystems::tooling::DevValueOperationStatus::Success);
 			additional_changes.commands.emplace_back(std::move(command));
 		}
 	assert(app.devTooling().overrides().submit(std::move(additional_changes)));

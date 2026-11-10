@@ -6,10 +6,11 @@
 #include <stdexcept>
 #include <string>
 
-#include "FlowUi/PublicStructs.hpp"
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
-#include "managers/ThemeManager.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/FlowUiTheme.hpp"
+#include "clay.h"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/DevTooling.hpp"
 #endif
@@ -52,7 +53,7 @@ void testThemeRegistrationAndAccess(FlowUi::test::HeadlessVulkanFixture& vulkan)
 		.spacing = 8
 	};
 
-	themes.registerTheme<TestAppTheme>("default", defaultTheme, true);
+	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>("default", defaultTheme, true));
 
 	const TestAppTheme& active = themes.getActiveTheme<TestAppTheme>();
 	FLOWUI_CHECK(active.cornerRadius == 4.0f);
@@ -74,8 +75,8 @@ void testMultipleVariantsAndSwitching(FlowUi::test::HeadlessVulkanFixture& vulka
 	TestAppTheme darkVariant{ .cornerRadius = 6.0f, .spacing = 10 };
 	TestAppTheme lightVariant{ .cornerRadius = 14.0f, .spacing = 20 };
 
-	themes.registerTheme<TestAppTheme>("dark", darkVariant, true);
-	themes.registerTheme<TestAppTheme>("light", lightVariant, false);
+	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>("dark", darkVariant, true));
+	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>("light", lightVariant, false));
 
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 6.0f);
 	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("light").cornerRadius == 14.0f);
@@ -98,22 +99,17 @@ void testDifferentThemeTypesCanShareVariantNames(FlowUi::test::HeadlessVulkanFix
 	FlowUi::ThemeManager themes;
 	themes.init(storage);
 
-	themes.registerTheme<TestAppTheme>(
-		"default",
-		TestAppTheme{.cornerRadius = 9.0f, .spacing = 18},
-		true);
-	themes.registerTheme<TestEditorTheme>(
-		"default",
-		TestEditorTheme{.rowHeight = 32},
-		true);
+	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>(
+		"default", TestAppTheme{.cornerRadius = 9.0f, .spacing = 18}, true));
+	FLOWUI_CHECK(
+		themes.registerTheme<TestEditorTheme>("default", TestEditorTheme{.rowHeight = 32}, true));
 
 	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("default").cornerRadius == 9.0f);
 	FLOWUI_CHECK(themes.getTheme<TestAppTheme>("default").spacing == 18);
 	FLOWUI_CHECK(themes.getTheme<TestEditorTheme>("default").rowHeight == 32);
 
-	themes.updateTheme<TestEditorTheme>("default", [](TestEditorTheme& theme) {
-		theme.rowHeight = 40;
-	});
+	FLOWUI_CHECK(themes.updateTheme<TestEditorTheme>(
+		"default", [](TestEditorTheme& theme) { theme.rowHeight = 40; }));
 	themes.applyStagedMutations();
 
 	FLOWUI_CHECK(themes.getTheme<TestEditorTheme>("default").rowHeight == 40);
@@ -127,8 +123,8 @@ void testOverAlignedThemePayload(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 
 	FlowUi::ThemeManager themes;
 	themes.init(storage);
-	themes.registerTheme<TestOverAlignedTheme>(
-		"default", TestOverAlignedTheme{.marker = 73}, true);
+	FLOWUI_CHECK(themes.registerTheme<TestOverAlignedTheme>(
+		"default", TestOverAlignedTheme{.marker = 73}, true));
 
 	const TestOverAlignedTheme& theme = themes.getActiveTheme<TestOverAlignedTheme>();
 	FLOWUI_CHECK(theme.marker == 73);
@@ -144,12 +140,12 @@ void testStagedMutations(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 	themes.init(storage);
 
 	TestAppTheme initialTheme{ .cornerRadius = 5.0f, .spacing = 10 };
-	themes.registerTheme<TestAppTheme>("default", initialTheme, true);
+	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>("default", initialTheme, true));
 
-	themes.updateActiveTheme<TestAppTheme>([](TestAppTheme& t) {
+	FLOWUI_CHECK(themes.updateActiveTheme<TestAppTheme>([](TestAppTheme& t) {
 		t.cornerRadius = 15.0f;
 		t.spacing = 30;
-	});
+	}));
 
 	FLOWUI_CHECK(themes.getActiveTheme<TestAppTheme>().cornerRadius == 5.0f);
 
@@ -175,8 +171,10 @@ void testFlowUiThemeDefaultRegistration(FlowUi::test::HeadlessVulkanFixture& vul
 	FlowUi::ThemeManager themes;
 	themes.init(storage);
 
-	themes.registerTheme<FlowUi::FlowUiTheme>("default", FlowUi::FlowUiTheme::dark(), true);
-	themes.registerTheme<FlowUi::FlowUiTheme>("light", FlowUi::FlowUiTheme::light(), false);
+	FLOWUI_CHECK(
+		themes.registerTheme<FlowUi::FlowUiTheme>("default", FlowUi::FlowUiTheme::dark(), true));
+	FLOWUI_CHECK(
+		themes.registerTheme<FlowUi::FlowUiTheme>("light", FlowUi::FlowUiTheme::light(), false));
 
 	const auto& darkTheme = themes.getActiveTheme<FlowUi::FlowUiTheme>();
 	FLOWUI_CHECK(darkTheme.fontSizeMedium == 14.0f);
@@ -236,26 +234,27 @@ void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan)
 
 	ThemeManager themes;
 	themes.init(storage);
-	themes.registerTheme<TestAppTheme>(
-		"default", TestAppTheme{.cornerRadius = 5.0f, .spacing = 12}, true);
+	FLOWUI_CHECK(themes.registerTheme<TestAppTheme>(
+		"default", TestAppTheme{.cornerRadius = 5.0f, .spacing = 12}, true));
 
 	devSystems::DevTooling tooling;
 	tooling.schemas().ensureTheme<TestAppTheme>();
 	FLOWUI_CHECK(tooling.schemas().publishPendingAtSafePoint());
-	const devMode::DevSchemaView schema = tooling.schemas().view();
-	const devMode::DevTypeId type = detail::typeHash<TestAppTheme>();
-	const devMode::DevThemeSchema* themeSchema = schema->findTheme(type);
+	const devSystems::tooling::DevSchemaView schema = tooling.schemas().view();
+	const devSystems::tooling::DevTypeId type = detail::typeHash<TestAppTheme>();
+	const devSystems::tooling::DevThemeSchema* themeSchema = schema->findTheme(type);
 	FLOWUI_CHECK(themeSchema != nullptr);
-	const devMode::DevTypeSchema* themeType = schema->type(themeSchema->themeType);
+	const devSystems::tooling::DevTypeSchema* themeType = schema->type(themeSchema->themeType);
 	FLOWUI_CHECK(themeType != nullptr);
 	DevOverrideFieldKey spacingField{};
 	DevOverrideFieldKey redField{};
-	for (const devMode::DevFieldSchema& field : schema->fieldsOf(themeSchema->themeType)) {
+	for (const devSystems::tooling::DevFieldSchema& field :
+		 schema->fieldsOf(themeSchema->themeType)) {
 		if (schema->string(field.name) == "spacing") {
 			spacingField = {themeType->id, field.id};
 		} else if (schema->string(field.name) == "brandColor") {
-			for (const devMode::DevFieldSchema& colorField :
-				schema->fieldsOf(field.valueType)) {
+			for (const devSystems::tooling::DevFieldSchema& colorField :
+				 schema->fieldsOf(field.valueType)) {
 				if (schema->string(colorField.name) == "r") {
 					redField = {themeType->id, colorField.id, {field.id}};
 					break;
@@ -269,7 +268,7 @@ void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan)
 	DevOwnedValue overrideValue;
 	const int replacement = 27;
 	FLOWUI_CHECK(tooling.overrides().copyValue(replacement, overrideValue) ==
-		devMode::DevValueOperationStatus::Success);
+				 devSystems::tooling::DevValueOperationStatus::Success);
 	DevChangeSet set{.transaction = 700};
 	set.commands.push_back(DevOverrideCommand{
 		.kind = DevOverrideCommandKind::SetThemeField,
@@ -280,7 +279,7 @@ void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan)
 	DevOwnedValue redValue;
 	const float red = 0.9f;
 	FLOWUI_CHECK(tooling.overrides().copyValue(red, redValue) ==
-		devMode::DevValueOperationStatus::Success);
+				 devSystems::tooling::DevValueOperationStatus::Success);
 	set.commands.push_back(DevOverrideCommand{
 		.kind = DevOverrideCommandKind::SetThemeField,
 		.theme = {.themeType = type, .variant = "default"},
@@ -296,7 +295,7 @@ void testDevThemeOverrideAndCapture(FlowUi::test::HeadlessVulkanFixture& vulkan)
 	FLOWUI_CHECK(snapshot.variant(snapshot.themes.front()) == "default");
 	bool capturedSpacing = false;
 	for (const DevCapturedField& field : snapshot.fields) {
-		const devMode::DevFieldSchema& fieldSchema =
+		const devSystems::tooling::DevFieldSchema& fieldSchema =
 			snapshot.schema->fields[field.field.value - 1u];
 		if (snapshot.schema->string(fieldSchema.name) != "spacing") continue;
 		capturedSpacing = true;

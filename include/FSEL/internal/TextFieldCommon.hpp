@@ -8,44 +8,72 @@
 #include <string_view>
 
 #include "FSEL/Theme.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
-#include "managers/InputFieldManager.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
+#include "FlowUi/Public/managers/InputFieldManager.hpp"
 
 namespace FlowUi::FSEL {
 
+/** How a text editor synchronizes its buffer with the borrowed application string. */
 enum class TextFieldSyncPolicy : uint8_t {
+	/** Publish text edits to the application string during editing. */
 	Live = 0,
+	/** Publish text edits only when the edit session commits. */
 	OnCommit,
+	/** Synchronize from the application string without editing it. */
 	ReadOnly,
 };
 
+/** Optional action notifications emitted after text field processing. */
 struct TextFieldActions {
+	/** Optional notification after the bound value changes. */
 	ActionCall onChanged{};
+	/** Optional notification when the edit or drag transaction commits. */
 	ActionCall onCommit{};
+	/** Optional notification when the editor receives a submit request. */
 	ActionCall onSubmit{};
+	/** Optional notification when the editor gains focus. */
 	ActionCall onFocus{};
+	/** Optional notification when the editor loses focus. */
 	ActionCall onBlur{};
+	/** Optional notification that the editor requested application undo. */
 	ActionCall onUndoRequested{};
+	/** Optional notification that the editor requested application redo. */
 	ActionCall onRedoRequested{};
 };
 
+/** Optional colors for one text field state; empty values inherit the active theme. */
 struct TextFieldStateOverrides {
+	/** Surface background color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> backgroundColor = std::nullopt;
+	/** Text color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> textColor = std::nullopt;
+	/** Empty-field placeholder color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> placeholderColor = std::nullopt;
+	/** Border color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> borderColor = std::nullopt;
 };
 
+/** Optional caret and selection appearance overrides; empty values inherit InputFieldOverlayStyle. */
 struct TextFieldCaretOverrides {
+	/** Caret shape override. Empty inherits the active theme. */
 	std::optional<InputCaretShape> shape = std::nullopt;
+	/** Caret stroke thickness in pixels. Empty inherits the active theme. */
 	std::optional<float> thicknessPx = std::nullopt;
+	/** Block caret width in pixels. Empty inherits the active theme. */
 	std::optional<float> blockWidthPx = std::nullopt;
+	/** Caret extension above the text line, in pixels. Empty inherits the active theme. */
 	std::optional<float> heightOverflowTopPx = std::nullopt;
+	/** Caret extension below the text line, in pixels. Empty inherits the active theme. */
 	std::optional<float> heightOverflowBottomPx = std::nullopt;
+	/** Caret color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> color = std::nullopt;
+	/** Selection background color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> selectionBoxColor = std::nullopt;
+	/** Selected glyph color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> selectedTextColor = std::nullopt;
+	/** Total caret blink cycle duration in seconds. Empty inherits the active theme. */
 	std::optional<double> blinkPeriodSeconds = std::nullopt;
+	/** Visible part of each caret blink cycle, in seconds. Empty inherits the active theme. */
 	std::optional<double> blinkVisibleSeconds = std::nullopt;
 };
 
@@ -194,7 +222,6 @@ BuildResult requestAndSynchronize(
 			.mode = mode,
 			.transactionDetail = params.transactionDetail,
 			.readOnly = !editable,
-			.allowNewline = mode == TextFieldMode::MultiLine,
 			.softWrap = mode == TextFieldMode::MultiLine && softWrap,
 			.allowArrowNavigation = true,
 		},

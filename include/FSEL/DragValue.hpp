@@ -17,94 +17,176 @@
 
 namespace FlowUi::FSEL {
 
+/** Gesture state retained by a DragValue instance between frames. */
 enum class DragValueInteractionMode : uint8_t {
+	/** No active pointer gesture or text edit. */
 	Idle = 0,
+	/** Press awaiting drag-threshold or short-click classification. */
 	Pending,
+	/** Pointer motion is scrubbing the native value. */
 	Dragging,
+	/** The InputFieldManager text editor is active. */
 	Editing,
 };
 
+/**
+ * Per-invocation DragValue configuration. Borrowed models and text must remain valid through the
+ * frame; empty visual overrides inherit the active FSELTheme.
+ */
 template<NumericValueType T>
 struct DragValueParameters {
+	/** Optional begin, change, commit and cancel notifications for native numeric editing. */
 	NumericEditActions edit{};
+	/** Per-instance caret and text selection overrides. */
 	TextFieldCaretOverrides caret{};
+	/** Optional notification when the editor receives a submit request. */
 	ActionCall onSubmit{};
+	/** Optional notification when the editor gains focus. */
 	ActionCall onFocus{};
+	/** Optional notification when the editor loses focus. */
 	ActionCall onBlur{};
+	/** Optional notification that the editor requested application undo. */
 	ActionCall onUndoRequested{};
+	/** Optional notification that the editor requested application redo. */
 	ActionCall onRedoRequested{};
 	/** Borrowed authoritative native value. Null disables interaction. */
 	T* value = nullptr;
+	/** Maximum UTF-8 byte length accepted by the editor buffer. */
 	size_t maxBytes = 128;
 
+	/** Appearance when enabled and idle. Empty colors inherit the theme. */
 	TextFieldStateOverrides idleOverrides{};
+	/** Appearance while hovered. Empty colors inherit the theme. */
 	TextFieldStateOverrides hoveredOverrides{};
+	/** Appearance while dragging. Empty colors inherit the theme. */
 	TextFieldStateOverrides draggingOverrides{};
+	/** Appearance while the editor is focused. Empty colors inherit the theme. */
 	TextFieldStateOverrides focusedOverrides{};
+	/** Appearance while the editor is read-only. Empty colors inherit the theme. */
 	TextFieldStateOverrides readOnlyOverrides{};
+	/** Appearance for an invalid value. Empty colors inherit the theme. */
 	TextFieldStateOverrides invalidOverrides{};
+	/** Appearance when interaction is disabled. Empty colors inherit the theme. */
 	TextFieldStateOverrides disabledOverrides{};
 
+	/** Clay width and height sizing rules for the root element. Empty inherits the active theme. */
 	std::optional<Clay_Sizing> sizing = std::nullopt;
+	/** Corner radii in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	/** Locale-independent native value formatting and parsing policy. */
 	NumericFormatOptions format{};
+	/** Lower bound of the native value range. Empty uses the native type limit. */
 	std::optional<T> minimum = std::nullopt;
+	/** Upper bound of the native value range. Empty uses the native type limit. */
 	std::optional<T> maximum = std::nullopt;
+	/** Explicit content viewport width in layout pixels; empty uses measured layout. */
 	std::optional<float> viewportWidth = std::nullopt;
+	/** Explicit content viewport height in layout pixels; empty uses measured layout. */
 	std::optional<float> viewportHeight = std::nullopt;
 
+	/** Registered font family used for field or label text. Empty inherits the active theme. */
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
+	/** Font weight requested for text, such as 400 for normal. Empty inherits the active theme. */
 	std::optional<uint32_t> fontWeight = std::nullopt;
+	/** Native value delta used by a step button or one drag step. */
 	T step = T{1};
+	/** Horizontal pointer travel in pixels for one native value step; must be positive. */
 	float pixelsPerStep = 4.0f;
+	/** Horizontal travel in pixels needed to classify a press as a drag. */
 	float dragThreshold = 4.0f;
+	/** When editor text is published to the borrowed application value. */
 	NumericTextSyncPolicy syncPolicy = NumericTextSyncPolicy::Live;
+	/** Whether out-of-range text remains visible or is clamped immediately. */
 	NumericTextBoundsPolicy boundsPolicy = NumericTextBoundsPolicy::SoftClamp;
+	/** Amount of edit transaction detail requested from InputFieldManager. */
 	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	/** Per-edge border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	/**
+	 * Inset between the root border and its children, in layout pixels. Empty inherits the active
+	 * theme.
+	 */
 	std::optional<Clay_Padding> padding = std::nullopt;
+	/** Text font size in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> fontSize = std::nullopt;
+	/** Additional spacing between glyphs in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> letterSpacing = std::nullopt;
+	/** Font style requested for text. Empty inherits the active theme. */
 	std::optional<FontStyle> fontStyle = std::nullopt;
+	/** Cursor requested while scrubbing the numeric value. Empty inherits the active theme. */
 	std::optional<CursorType> dragCursor = std::nullopt;
+	/** Cursor requested when text entry is available. Empty inherits the active theme. */
 	std::optional<CursorType> editCursor = std::nullopt;
+	/** Priority used to arbitrate this control's cursor request. Empty inherits the active theme. */
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	/** Allow a short click to enter the text editor. */
 	bool allowTextEntry = true;
 
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
+	/** Allow display and text selection while preventing value edits. */
 	bool readOnly = false;
+	/** Application validation result used for invalid styling. */
 	bool valid = true;
+	/** Clear editor focus after submission when true. */
 	bool clearFocusOnSubmit = true;
 };
 
+/** Per-instance interaction state maintained by the element and retained by ElementManager. */
 template<NumericValueType T>
 struct DragValueState {
+	/** Current gesture classification retained for this element instance. */
 	DragValueInteractionMode mode = DragValueInteractionMode::Idle;
+	/** Transaction bookkeeping retained for this element instance. */
 	NumericEditSession<T> editSession{};
+	/** Native value captured when the current pointer gesture began. */
 	T valueAtPress{};
+	/** Horizontal pointer position captured at press, in layout pixels. */
 	float pointerXAtPress = 0.0f;
+	/** Classification of the current numeric editor text. */
 	NumericTextStatus textStatus = NumericTextStatus::Complete;
+	/** Focus observed during the previous invocation. */
 	bool wasFocused = false;
+	/** Request replacement of editor text from the native value on the next build. */
 	bool forceTextSynchronization = false;
 };
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<NumericValueType T>
 struct DefaultDragValueIdentity;
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<>
 struct DefaultDragValueIdentity<int> {
+	/** Stable definition identity assigned to this native type. */
 	static constexpr FlowDefinitionID value =
 		DefinitionID("FSEL.drag-value.int");
 };
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<>
 struct DefaultDragValueIdentity<unsigned int> {
+	/** Stable definition identity assigned to this native type. */
 	static constexpr FlowDefinitionID value =
 		DefinitionID("FSEL.drag-value.uint");
 };
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<>
 struct DefaultDragValueIdentity<float> {
+	/** Stable definition identity assigned to this native type. */
 	static constexpr FlowDefinitionID value =
 		DefinitionID("FSEL.drag-value.float");
 };
@@ -114,19 +196,32 @@ template<
 	NumericValueType T,
 	FlowDefinitionID Definition = DefaultDragValueIdentity<T>::value>
 struct DragValue {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = DragValueParameters<T>;
+	/** Per-instance state owned and retained by ElementManager. */
 	using State = DragValueState<T>;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<DragValue>;
+	/** Frame-scoped context supplied to pointer and logic hooks. */
 	using InteractionContext = ElementInteractionContext<DragValue>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId = Definition;
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL DragValue";
 
+	/** Definition-time semantic parts used to address child surfaces and interaction targets. */
 	struct Parts {
+		/** Semantic identity of the content part relative to its owner instance. */
 		static constexpr FlowElementPart content = Part("content");
+		/** Semantic identity of the text part relative to its owner instance. */
 		static constexpr FlowElementPart text = Part("text");
 	};
 
+	/**
+	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onHovered(InteractionContext& context) {
 		if (!canStartInteraction(context.params)) {
 			return;
@@ -143,6 +238,10 @@ struct DragValue {
 			context.params.cursorPriority.value_or(theme.cursorPriority));
 	}
 
+	/**
+	 * ElementBuilder press hook; begins the enabled control interaction. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onPressed(InteractionContext& context) {
 		auto& state = context.state();
 		if (state.mode == DragValueInteractionMode::Editing) {
@@ -159,6 +258,10 @@ struct DragValue {
 		state.valueAtPress = *context.params.value;
 	}
 
+	/**
+	 * ElementBuilder release hook; completes or cancels the pending interaction. @param context
+	 * Borrowed context valid for this callback only.
+	 */
 	static void onReleased(InteractionContext& context) {
 		auto& state = context.state();
 		if (state.mode != DragValueInteractionMode::Pending) {
@@ -178,6 +281,10 @@ struct DragValue {
 		}
 	}
 
+	/**
+	 * ElementBuilder logic hook; reconciles retained interaction state with the current input.
+	 * @param context Borrowed context valid for this callback only.
+	 */
 	static void runLogic(InteractionContext& context) {
 		auto& state = context.state();
 		if (state.mode == DragValueInteractionMode::Idle ||
@@ -242,6 +349,10 @@ struct DragValue {
 		}
 	}
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const FSELDragValueTheme& dragTheme =
 			context.uiManager.template theme<FSELTheme>().dragValueTheme;
@@ -297,7 +408,6 @@ struct DragValue {
 				.mode = TextFieldMode::SingleLine,
 				.transactionDetail = context.params.transactionDetail,
 				.readOnly = !textEditable,
-				.allowNewline = false,
 				.softWrap = false,
 				.allowArrowNavigation = true,
 			},
@@ -656,8 +766,20 @@ private:
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr DragValue<int> kDragValueInt{};
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr DragValue<unsigned int> kDragValueUInt{};
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr DragValue<float> kDragValueFloat{};
 
 static_assert(FlowElement<DragValue<int>>);

@@ -1,0 +1,1820 @@
+{
+  "schema": "FlowUi.DevInterfaceNotes.Verification",
+  "run_id": "run_195cfc7677d8e841305acc363662ca4a",
+  "mcp_calls": 42,
+  "cases": [
+    {
+      "case_id": "probe-warmup",
+      "verdict": "pass",
+      "job_id": "verification_1351352d3e7a0d9e85f7b023b305c693",
+      "coverage": {
+        "evaluated": "1",
+        "failed": "0",
+        "passed": "1",
+        "required": "1",
+        "skipped": "0",
+        "unavailable": "0"
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "verdict": "pass",
+      "job_id": "verification_9f949a873725ca6fd38a242aa6cfd80a",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_593d2aeb253a28e80d53c50a065650ca",
+      "image_id": "image_0",
+      "window_frame": "65",
+      "image": "probe-ceiling-3.png"
+    },
+    {
+      "case_id": "probe-options-3",
+      "verdict": "pass",
+      "job_id": "verification_5e15cd03a351814dfcc1652a84ecf90b",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_d51bfdc6293f2052ce37c3e1faff3bad",
+      "image_id": "image_1",
+      "window_frame": "419",
+      "image": "probe-options-3.png"
+    },
+    {
+      "case_id": "probe-select-3",
+      "verdict": "pass",
+      "job_id": "verification_2f2535ef599a760be5c2a144697fb89d",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_2ee6fe737fa2272c7c4e46414d78c81f",
+      "image_id": "image_2",
+      "window_frame": "775",
+      "image": "probe-select-3.png"
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "verdict": "pass",
+      "job_id": "verification_1ebac0096ff1ea4e4e40d11caa55f418",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_5a8ee2db7c662322b8b38f521d5a8342",
+      "image_id": "image_3",
+      "window_frame": "1179",
+      "image": "probe-recorded-policy-3.png"
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "verdict": "pass",
+      "job_id": "verification_f1481e068dcf858b77a80688eb30aa59",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_4563477af39a2ef5c06929f962eb6128",
+      "image_id": "image_4",
+      "window_frame": "1539",
+      "image": "probe-recording-open-zero.png"
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "verdict": "pass",
+      "job_id": "verification_97ae6502e28b3c25dc9a8a201efebb68",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_29798af55515333e9ba6a0356b070ab0",
+      "image_id": "image_5",
+      "window_frame": "1899",
+      "image": "probe-recording-zero.png"
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "verdict": "pass",
+      "job_id": "verification_6695c80d820684dfb58f2124b0a26da8",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_e2d1763efb467ebd37fec7fa82689534",
+      "image_id": "image_6",
+      "window_frame": "2266",
+      "image": "probe-historical-policy-3.png"
+    }
+  ],
+  "required_checks": 19,
+  "failures": [],
+  "layout_checks": [
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Deep",
+      "observed": {
+        "height": 19.359375,
+        "width": 107.02082824707031,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 757.03125
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-ceiling-3",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Deep",
+      "observed": {
+        "height": 19.359375,
+        "width": 107.02082824707031,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 757.03125
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-options-3",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Deep",
+      "observed": {
+        "height": 19.359375,
+        "width": 107.02082824707031,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 757.03125
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-select-3",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Deep",
+      "observed": {
+        "height": 19.359375,
+        "width": 107.02082824707031,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recorded-policy-3",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Deep",
+      "observed": {
+        "height": 19.359375,
+        "width": 107.02082824707031,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-open-zero",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Frame Only",
+      "observed": {
+        "height": 19.359375,
+        "width": 157.0390625,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-recording-zero",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Frame Only",
+      "observed": {
+        "height": 19.359375,
+        "width": 157.0390625,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 820.2213745117188,
+        "y": 54.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 810.2213745117188,
+        "y": 50
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 280,
+        "x": 0,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 800,
+        "x": 290,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 704,
+        "width": 320,
+        "x": 1100,
+        "y": 84
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 1100,
+        "y": 2440.49609375
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 280,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1090,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-historical-policy-3",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 704,
+        "width": 4.5,
+        "x": 1095.5,
+        "y": 84
+      }
+    },
+    {
+      "case_id": "probe-policy-contract",
+      "check": "recorded-policy-and-selector-independent",
+      "passed": true,
+      "compiled_ceiling": 3,
+      "recorded_policy": "Deep",
+      "current_recording_level": 0
+    }
+  ],
+  "user_changes_unchanged": true,
+  "bootstrap": "Configurable native three-window fixture; all setup and input use MCP",
+  "passed": true
+}

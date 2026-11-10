@@ -6,6 +6,8 @@ FlowUi is a C++23 Vulkan-first UI runtime built around:
 - A custom Vulkan renderer
 - A typed element system for reusable UI components
 
+For source navigation, supported core headers are grouped under [include/FlowUi/Public](../include/FlowUi/Public/), and identity/handle types under [identificationTypes](../include/FlowUi/Public/identificationTypes/). Private declarations and template/constexpr support live under [include/FlowUi/Private](../include/FlowUi/Private/); required consumer support is intentionally installed. Out-of-line definitions live under [src/FlowUi/Public](../src/FlowUi/Public/) and [src/FlowUi/Private](../src/FlowUi/Private/). See the [repository layout](internals/architecture.md) for the current header and source groups.
+
 ## What is FlowUi?
 
 FlowUi is a runtime library for cross-platform desktop applications. At its core, FlowUi acts as a C++ wrapper around [Clay](https://github.com/nicbarker/clay), paired with a built-in custom [Vulkan](https://www.vulkan.org/) renderer.
@@ -34,7 +36,7 @@ git clone --recursive <flowui-repository-url> external/FlowUi
 Add FlowUi to your root `CMakeLists.txt` and link the app target:
 
 ```cmake
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 
 project(MyApp LANGUAGES CXX)
 
@@ -65,14 +67,14 @@ target_link_libraries(my_app
 Then configure and build:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build --parallel
 ```
 
 Your first source file can include the combined FlowUi header and create the application:
 
 ```cpp
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 
 int main() {
     FlowUi::AppConfig config{};
@@ -83,12 +85,21 @@ int main() {
     FlowUi::App app = FlowUi::makeApplication(config);
 
     while (!app.shouldClose()) {
-        app.beginFrame();
+        if (const auto status = app.beginFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
 
         // Build UI here.
 
-        app.endFrame();
-        app.drawFrame();
+        if (const auto status = app.endFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
+        if (const auto status = app.drawFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
     }
 
     return 0;
@@ -108,7 +119,7 @@ These options are set before `add_subdirectory(external/FlowUi)`.
 | `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Link the runtime TTF-to-MSDF atlas generation dependencies and define `FLOWUI_RUNTIME_FONT_BAKING=1`. |
 | `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Expose viewport Vulkan interop APIs in public headers. |
 | `FLOWUI_INCLUDE_ICON_MANAGER` | `ON` | Build IconManager support and link PlutoSVG. |
-| `FLOW_UI_DEV_MODE` | `OFF` | Compile developer-mode APIs and tooling, including dev registration macros, debug UI, runtime capture, overrides, and JSON export support. |
+| `FLOW_UI_DEV_MODE` | `OFF` | Compile the modern `devSystems` schema, capture, overrides, catalogue, monitoring, and dedicated developer interface. |
 | `FLOWUI_GLFW_PROVIDER` | `auto` | Select the GLFW provider: `auto`, `system`, or `vendored`. |
 
 `FLOWUI_GLFW_PROVIDER=auto` uses the vendored GLFW submodule when it is present, otherwise it falls back to a system `glfw3` package.
@@ -118,7 +129,7 @@ FlowUi requires Vulkan. During configuration it looks for `glslc` first and fall
 ## Minimal App Loop Example
 
 ```cpp
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 #include "backgroundElement.hpp"
 
 int main() {
@@ -126,14 +137,23 @@ int main() {
     FlowUi::App app = FlowUi::makeApplication(config);
 
     while (!app.shouldClose()) {
-        app.beginFrame();
+        if (const auto status = app.beginFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
 
         app.ui().createElement(kBackground, "background")
             .setParameters({.color = FlowUi::Flow_Color("#09f1deff")})
             .draw();
 
-        app.endFrame();
-        app.drawFrame();
+        if (const auto status = app.endFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
+        if (const auto status = app.drawFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
     }
 }
 ```
@@ -145,10 +165,10 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - **Clay owns layout.** FlowUi builds on Clay's immediate-mode layout model and converts Clay output into Vulkan draw work.
 - **`App` owns the runtime.** A `FlowUi::App` is created from `FlowUi::AppConfig` and gives access to the window, UI manager, asset managers, input systems, and render lifecycle.
 - **Frames are explicit.** Application code builds UI between `beginFrame()` and `endFrame()`, then presents with `drawFrame()`.
-- **Elements are typed.** Reusable UI is expressed through `ElementDefinition<Params, State, Resources, Id>`, separating per-frame parameters, persistent per-instance state, and shared per-definition resources.
+- **Elements are typed.** Reusable UI uses empty tag structs satisfying `FlowElement`, with optional `Parameters`, `State`, and `Resources` aliases, a strong `definitionId`, and static callbacks.
 - **Managers own specialized systems.** Fonts, images, icons, input fields, shortcuts, popups, viewports, and UI rendering have dedicated managers instead of one large global API.
 - **Actions wire behavior once.** App actions select semantic app operations, while inline UI actions connect local element state without polling or callback modes.
-- **Developer mode is opt-in.** `FLOW_UI_DEV_MODE` enables the dev registration and capture systems used to inspect and edit Flow elements while building an app.
+- **Developer mode is opt-in.** `FLOW_UI_DEV_MODE` compiles `devSystems`; `AppConfig::dev.enabled` activates its dedicated developer interface and runtime collection.
 - **Vulkan interop is a first-class path.** Viewport APIs can expose Vulkan render context data when `FLOWUI_PUBLIC_VULKAN_INTEROP` is enabled, so apps can integrate custom rendering where needed.
 
 ## Documentation Map
@@ -211,7 +231,7 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - [UI Renderer](internals/ui_renderer.md)
 - [Texture Registry](internals/texture_registry.md)
 - [Text Layout Engine](internals/text_layout_engine.md)
-- [Developer Runtime](internals/dev_runtime.md)
+- [Developer Systems](internals/dev_runtime.md)
 
 ### Troubleshooting
 

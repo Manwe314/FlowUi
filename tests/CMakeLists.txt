@@ -27,7 +27,7 @@ set_tests_properties(flowui.storage.types PROPERTIES
 add_executable(flowui_dev_tree_capture_tests
 	DevSystemsTests/DevTreeCaptureTests.cpp
 	${PROJECT_SOURCE_DIR}/src/devSystems/devTooling/tree/DevTreeCapture.cpp
-	${PROJECT_SOURCE_DIR}/src/clay.cpp
+	${PROJECT_SOURCE_DIR}/src/FlowUi/Private/layoutService/Clay.cpp
 )
 target_compile_features(flowui_dev_tree_capture_tests PRIVATE cxx_std_23)
 target_compile_definitions(flowui_dev_tree_capture_tests PRIVATE
@@ -51,7 +51,7 @@ set_tests_properties(flowui.dev.tree_capture PROPERTIES
 add_executable(flowui_dev_tree_capture_flow_only_tests
 	DevSystemsTests/DevTreeCaptureFlowOnlyTests.cpp
 	${PROJECT_SOURCE_DIR}/src/devSystems/devTooling/tree/DevTreeCapture.cpp
-	${PROJECT_SOURCE_DIR}/src/clay.cpp
+	${PROJECT_SOURCE_DIR}/src/FlowUi/Private/layoutService/Clay.cpp
 )
 target_compile_features(flowui_dev_tree_capture_flow_only_tests PRIVATE cxx_std_23)
 target_compile_definitions(flowui_dev_tree_capture_flow_only_tests PRIVATE
@@ -95,6 +95,44 @@ set_tests_properties(flowui.dev.schema_registry PROPERTIES
 )
 
 if(FLOW_UI_DEV_MODE)
+	find_package(Threads REQUIRED)
+	add_executable(flowui_dev_value_summary_tests DevSystemsTests/DevValueSummaryTests.cpp)
+	target_compile_features(flowui_dev_value_summary_tests PRIVATE cxx_std_23)
+	target_link_libraries(flowui_dev_value_summary_tests PRIVATE FlowUi::FlowUi)
+	add_test(NAME flowui.dev.value_summary COMMAND flowui_dev_value_summary_tests)
+	if(AGENTIC_WORKFLOW AND FLOW_UI_DEV_CAPTURE_CLAY)
+		add_executable(flowui_dev_interface_notes_fixture DevSystemsTests/DevInterfaceNotesFixture.cpp)
+		target_compile_features(flowui_dev_interface_notes_fixture PRIVATE cxx_std_23)
+		target_link_libraries(flowui_dev_interface_notes_fixture PRIVATE FlowUi::FlowUi ${FLOWUI_GLFW_TARGET})
+		flowui_package_resources(flowui_dev_interface_notes_fixture)
+		add_test(NAME flowui.dev.interface_notes_controls COMMAND flowui_dev_interface_notes_fixture --self-test)
+		set_tests_properties(flowui.dev.interface_notes_controls PROPERTIES TIMEOUT 90)
+	endif()
+	if(FLOW_UI_HAS_BAKED_CHANGES_VALUE)
+		add_executable(flowui_dev_baked_internal_isolation_tests
+			DevSystemsTests/DevBakedInternalIsolationTests.cpp)
+		target_compile_features(flowui_dev_baked_internal_isolation_tests PRIVATE cxx_std_23)
+		target_link_libraries(flowui_dev_baked_internal_isolation_tests PRIVATE FlowUi::FlowUi)
+		flowui_package_resources(flowui_dev_baked_internal_isolation_tests)
+		add_test(NAME flowui.dev.baked_internal_isolation COMMAND flowui_dev_baked_internal_isolation_tests)
+		set_tests_properties(flowui.dev.baked_internal_isolation PROPERTIES TIMEOUT 60)
+	endif()
+
+	foreach(timing_level RANGE 0 3)
+		set(timing_test_target flowui_dev_timing_level_${timing_level}_tests)
+		add_executable(${timing_test_target}
+			DevSystemsTests/DevTimingLevelTests.cpp
+			${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevTiming.cpp
+			${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevTimingRecorder.cpp
+			${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/timing/DevTimingZone.cpp)
+		target_compile_features(${timing_test_target} PRIVATE cxx_std_23)
+		target_compile_definitions(${timing_test_target} PRIVATE FLOWUI_DEV_TIMING_LEVEL=${timing_level})
+		target_include_directories(${timing_test_target} PRIVATE
+			${FLOWUI_GENERATED_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/external)
+		target_link_libraries(${timing_test_target} PRIVATE Threads::Threads)
+		add_test(NAME flowui.dev.timing_level_${timing_level} COMMAND ${timing_test_target})
+	endforeach()
+
 	add_executable(flowui_dev_performance_export_interaction_tests DevSystemsTests/DevPerformanceExportInteractionTests.cpp)
 	target_compile_features(flowui_dev_performance_export_interaction_tests PRIVATE cxx_std_23)
 	target_link_libraries(flowui_dev_performance_export_interaction_tests PRIVATE FlowUi::FlowUi)
@@ -164,6 +202,38 @@ if(FLOW_UI_DEV_MODE)
 	add_test(NAME flowui.dev.catalogue_previews COMMAND flowui_dev_catalogue_preview_tests)
 	add_test(NAME flowui.dev.catalogue_preview_scopes COMMAND flowui_dev_catalogue_preview_tests --scopes)
 	set_tests_properties(flowui.dev.catalogue_preview_scopes PROPERTIES LABELS "flowui;dev;catalogue;integration" TIMEOUT 30)
+    add_executable(flowui_dev_font_atlas_layer_tests
+        DevSystemsTests/DevFontAtlasLayerTests.cpp
+        HeadlessVulkanFixture.cpp
+    )
+    target_compile_features(flowui_dev_font_atlas_layer_tests PRIVATE cxx_std_23)
+    target_include_directories(flowui_dev_font_atlas_layer_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(flowui_dev_font_atlas_layer_tests PRIVATE FlowUi::FlowUi Vulkan::Vulkan)
+    flowui_package_resources(flowui_dev_font_atlas_layer_tests)
+    set(FLOWUI_FONT_ATLAS_TEST_SHADER_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/DevSystemsTests/font_atlas_sample.comp")
+    set(FLOWUI_FONT_ATLAS_TEST_SHADER_SPIRV "${CMAKE_CURRENT_BINARY_DIR}/font_atlas_sample.comp.spv")
+    add_custom_command(
+        OUTPUT "${FLOWUI_FONT_ATLAS_TEST_SHADER_SPIRV}"
+        COMMAND "${FLOWUI_SHADER_COMPILER}" ${FLOWUI_SHADER_COMPILE_ARGS}
+            "${FLOWUI_FONT_ATLAS_TEST_SHADER_SOURCE}" -o "${FLOWUI_FONT_ATLAS_TEST_SHADER_SPIRV}"
+        DEPENDS "${FLOWUI_FONT_ATLAS_TEST_SHADER_SOURCE}"
+        COMMENT "Compiling font atlas layer sampling regression shader"
+        VERBATIM
+    )
+    add_custom_target(flowui_font_atlas_test_shader DEPENDS "${FLOWUI_FONT_ATLAS_TEST_SHADER_SPIRV}")
+    add_dependencies(flowui_dev_font_atlas_layer_tests flowui_font_atlas_test_shader)
+    target_compile_definitions(flowui_dev_font_atlas_layer_tests PRIVATE
+        FLOWUI_FONT_ATLAS_TEST_COMPUTE_SPV="${FLOWUI_FONT_ATLAS_TEST_SHADER_SPIRV}"
+        FLOWUI_FONT_ATLAS_TEST_FONT_PATH="${PROJECT_SOURCE_DIR}/assets/fonts/Inter.arfont"
+    )
+    if(FLOWUI_REQUIRE_VULKAN_TEST_DEVICE)
+        target_compile_definitions(flowui_dev_font_atlas_layer_tests PRIVATE FLOWUI_TEST_REQUIRE_VULKAN_DEVICE=1)
+    endif()
+    add_test(NAME flowui.dev.font_atlas_layers COMMAND flowui_dev_font_atlas_layer_tests)
+    add_test(NAME flowui.dev.font_atlas_catalogue COMMAND flowui_dev_font_atlas_layer_tests --catalogue)
+    set_tests_properties(flowui.dev.font_atlas_layers PROPERTIES TIMEOUT 60 SKIP_RETURN_CODE 77 LABELS "flowui;dev;catalogue;integration;vulkan")
+    set_tests_properties(flowui.dev.font_atlas_catalogue PROPERTIES TIMEOUT 60 LABELS "flowui;dev;catalogue;integration;vulkan;window")
+
 	set_tests_properties(flowui.dev.catalogues PROPERTIES
 		LABELS "flowui;dev;catalogue;unit"
 		TIMEOUT 30
@@ -192,9 +262,9 @@ add_executable(flowui_text_layout_service_tests
 target_compile_features(flowui_text_layout_service_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_text_layout_service_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(flowui_text_layout_service_tests PRIVATE
-	FLOWUI_UI_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/UiManager.cpp"
-	FLOWUI_INPUT_FIELD_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/InputFieldManager.cpp"
-	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
+	FLOWUI_UI_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/UiManager.cpp"
+	FLOWUI_INPUT_FIELD_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/InputFieldManager.cpp"
+	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/renderer/Vk_UiRenderer.cpp"
 )
 target_link_libraries(flowui_text_layout_service_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.text.layout_service COMMAND flowui_text_layout_service_tests)
@@ -209,8 +279,8 @@ add_executable(flowui_text_storage_viewport_tests
 target_compile_features(flowui_text_storage_viewport_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_text_storage_viewport_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(flowui_text_storage_viewport_tests PRIVATE
-	FLOWUI_INPUT_FIELD_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/InputFieldManager.cpp"
-	FLOWUI_INPUT_FIELD_STATE_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/ManagerStorage/InputFieldManagerState.hpp"
+	FLOWUI_INPUT_FIELD_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/InputFieldManager.cpp"
+	FLOWUI_INPUT_FIELD_STATE_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/inputService/InputFieldManagerState.hpp"
 )
 target_link_libraries(flowui_text_storage_viewport_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.text.storage_viewport COMMAND flowui_text_storage_viewport_tests)
@@ -250,7 +320,7 @@ set_tests_properties(flowui.actions.app_manager PROPERTIES
 
 add_library(flowui_action_dev_compile_contract OBJECT
 	ActionTests/ActionValueContractTests.cpp
-	${PROJECT_SOURCE_DIR}/src/managers/ActionManager.cpp
+	${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ActionManager.cpp
 )
 target_compile_features(flowui_action_dev_compile_contract PRIVATE cxx_std_23)
 target_compile_definitions(flowui_action_dev_compile_contract PRIVATE FLOW_UI_DEV_MODE=1)
@@ -268,11 +338,12 @@ target_compile_features(flowui_ui_renderer_conversion_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_ui_renderer_conversion_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(flowui_ui_renderer_conversion_tests
 	PRIVATE
-		FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
-		FLOWUI_APP_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi.cpp"
-		FLOWUI_IMAGE_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ImageManager.cpp"
-		FLOWUI_ICON_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/IconManager.cpp"
-		FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ViewPortManager.cpp"
+		FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/renderer/Vk_UiRenderer.cpp"
+		FLOWUI_APP_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/AppRuntime.cpp"
+		FLOWUI_APP_FACADE_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/App.cpp"
+		FLOWUI_IMAGE_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ImageManager.cpp"
+		FLOWUI_ICON_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/IconManager.cpp"
+		FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ViewPortManager.cpp"
 )
 target_link_libraries(flowui_ui_renderer_conversion_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.ui.renderer_conversion COMMAND flowui_ui_renderer_conversion_tests)
@@ -306,10 +377,10 @@ add_executable(flowui_phase4_api_tests ApiTests/Phase4ApiTests.cpp)
 target_compile_features(flowui_phase4_api_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_phase4_api_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(flowui_phase4_api_tests PRIVATE
-	FLOWUI_APP_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi.cpp"
-	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ViewPortManager.cpp"
-	FLOWUI_SWAPCHAIN_SOURCE="${PROJECT_SOURCE_DIR}/src/Vulkan/Vk_Swapchain.cpp"
-	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
+	FLOWUI_APP_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/AppRuntime.cpp"
+	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ViewPortManager.cpp"
+	FLOWUI_SWAPCHAIN_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/renderer/vulkan/Vk_Swapchain.cpp"
+	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/renderer/Vk_UiRenderer.cpp"
 )
 target_link_libraries(flowui_phase4_api_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.phase4.api COMMAND flowui_phase4_api_tests)
@@ -329,13 +400,13 @@ add_executable(flowui_phase5_manager_storage_tests ApiTests/Phase5ManagerStorage
 target_compile_features(flowui_phase5_manager_storage_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_phase5_manager_storage_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(flowui_phase5_manager_storage_tests PRIVATE
-	FLOWUI_IMAGE_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ImageManager.cpp"
-	FLOWUI_ICON_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/IconManager.cpp"
-	FLOWUI_FONT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/FontManager.cpp"
-	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/ViewPortManager.cpp"
-	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/Ui/Vk_UiRenderer.cpp"
-	FLOWUI_STORAGE_INTERFACE_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/StorageSystem/IStorageSystem.hpp"
-	FLOWUI_STORAGE_TYPES_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/StorageSystem/StorageTypes.hpp"
+	FLOWUI_IMAGE_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ImageManager.cpp"
+	FLOWUI_ICON_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/IconManager.cpp"
+	FLOWUI_FONT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/FontManager.cpp"
+	FLOWUI_VIEWPORT_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/ViewPortManager.cpp"
+	FLOWUI_UI_RENDERER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/renderer/Vk_UiRenderer.cpp"
+	FLOWUI_STORAGE_INTERFACE_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/storageSystem/IStorageSystem.hpp"
+	FLOWUI_STORAGE_TYPES_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/storageSystem/StorageTypes.hpp"
 )
 target_link_libraries(flowui_phase5_manager_storage_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.phase5.manager_storage COMMAND flowui_phase5_manager_storage_tests)
@@ -705,8 +776,7 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 	endif()
 endif()
 
-# Compile the typed builder's dev-only attachment points without pulling in the
-# intentionally legacy developer element catalog or linking against a dev ABI.
+# Compile the typed builder's developer attachment points without linking against a development ABI.
 add_library(flowui_element_builder_dev_compile_contract OBJECT
 	ElementResourceTests/ElementConceptContractTests.cpp
 )
@@ -715,17 +785,15 @@ target_compile_definitions(flowui_element_builder_dev_compile_contract PRIVATE F
 target_include_directories(flowui_element_builder_dev_compile_contract PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(flowui_element_builder_dev_compile_contract PRIVATE FlowUi::FlowUi)
 
-# Compile UiManager's internal dev registry/capture/reporting path while the
-# deliberately frozen legacy dev element UI remains excluded.
-add_library(flowui_internal_dev_runtime_compile_contract OBJECT
-	${PROJECT_SOURCE_DIR}/src/managers/UiManager.cpp
+# Compile UiManager's modern tooling and monitoring integration with developer systems enabled.
+add_library(flowui_dev_manager_compile_contract OBJECT
+	${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/UiManager.cpp
 )
-target_compile_features(flowui_internal_dev_runtime_compile_contract PRIVATE cxx_std_23)
-target_compile_definitions(flowui_internal_dev_runtime_compile_contract PRIVATE
+target_compile_features(flowui_dev_manager_compile_contract PRIVATE cxx_std_23)
+target_compile_definitions(flowui_dev_manager_compile_contract PRIVATE
 	FLOW_UI_DEV_MODE=1
-	FLOWUI_SKIP_LEGACY_DEV_ELEMENTS=1
 )
-target_include_directories(flowui_internal_dev_runtime_compile_contract
+target_include_directories(flowui_dev_manager_compile_contract
 	PRIVATE
 		${FLOWUI_GENERATED_INCLUDE_DIR}
 		${PROJECT_SOURCE_DIR}/include
@@ -781,27 +849,6 @@ target_include_directories(flowui_element_id_dev_contract_tests
 )
 add_test(NAME flowui.elements.id_dev_contracts COMMAND flowui_element_id_dev_contract_tests)
 set_tests_properties(flowui.elements.id_dev_contracts PROPERTIES
-	LABELS "flowui;elements;dev;unit"
-	TIMEOUT 30
-)
-
-# Exercise the internal developer registry/runtime and diagnostics without
-# compiling the intentionally legacy dev element catalog or JSON persistence.
-add_executable(flowui_dev_runtime_id_contract_tests
-	ElementResourceTests/DevRuntimeIDContractTests.cpp
-	${PROJECT_SOURCE_DIR}/src/devMode/devRuntime.cpp
-)
-target_compile_features(flowui_dev_runtime_id_contract_tests PRIVATE cxx_std_23)
-target_compile_definitions(flowui_dev_runtime_id_contract_tests PRIVATE FLOW_UI_DEV_MODE=1)
-target_include_directories(flowui_dev_runtime_id_contract_tests
-	PRIVATE
-		${FLOWUI_GENERATED_INCLUDE_DIR}
-		${PROJECT_SOURCE_DIR}/include
-		${PROJECT_SOURCE_DIR}/external
-		${CMAKE_CURRENT_SOURCE_DIR}
-)
-add_test(NAME flowui.elements.dev_runtime_id_contracts COMMAND flowui_dev_runtime_id_contract_tests)
-set_tests_properties(flowui.elements.dev_runtime_id_contracts PROPERTIES
 	LABELS "flowui;elements;dev;unit"
 	TIMEOUT 30
 )
@@ -921,10 +968,11 @@ else()
 	target_compile_features(flowui_element_flow_id_production_isolation_tests PRIVATE cxx_std_23)
 	target_include_directories(flowui_element_flow_id_production_isolation_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_compile_definitions(flowui_element_flow_id_production_isolation_tests PRIVATE
-		FLOWUI_UI_MANAGER_STATE_SOURCE="${PROJECT_SOURCE_DIR}/include/internal/ManagerStorage/UiManagerState.hpp"
-		FLOWUI_UI_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/managers/UiManager.cpp"
-		FLOWUI_ELEMENT_BUILDER_SOURCE="${PROJECT_SOURCE_DIR}/include/managers/FlowUiElementBuilder.hpp"
-		FLOWUI_ELEMENT_BRIDGE_HEADER="${PROJECT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp"
+		FLOWUI_UI_MANAGER_STATE_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/layoutService/UiManagerState.hpp"
+		FLOWUI_UI_MANAGER_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Public/managers/UiManager.cpp"
+		FLOWUI_ELEMENT_BUILDER_SOURCE="${PROJECT_SOURCE_DIR}/include/FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
+		FLOWUI_ELEMENT_BRIDGE_HEADER="${PROJECT_SOURCE_DIR}/include/FlowUi/Private/elementSystem/FlowUiElementBridge.hpp"
+		FLOWUI_ELEMENT_BRIDGE_SOURCE="${PROJECT_SOURCE_DIR}/src/FlowUi/Private/elementSystem/FlowUiElementBridge.cpp"
 	)
 	target_link_libraries(flowui_element_flow_id_production_isolation_tests PRIVATE FlowUi::FlowUi)
 	add_test(
@@ -942,6 +990,12 @@ target_compile_features(flowui_phase4_window_tests PRIVATE cxx_std_23)
 target_include_directories(flowui_phase4_window_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(flowui_phase4_window_tests PRIVATE FlowUi::FlowUi)
 add_test(NAME flowui.phase4.two_window COMMAND flowui_phase4_window_tests)
+add_test(NAME flowui.text.field_modes COMMAND flowui_phase4_window_tests --text-modes)
+set_tests_properties(flowui.text.field_modes PROPERTIES
+	LABELS "flowui;text;integration;vulkan;window"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
 set_tests_properties(flowui.phase4.two_window PROPERTIES
 	LABELS "flowui;phase4;integration;vulkan;window"
 	SKIP_RETURN_CODE 77
@@ -1015,6 +1069,12 @@ if(FLOW_UI_DEV_MODE)
     target_link_libraries(flowui_dev_catalogue_model_tests PRIVATE FlowUi::FlowUi)
     add_test(NAME flowui.dev.catalogue_model COMMAND flowui_dev_catalogue_model_tests)
     set_tests_properties(flowui.dev.catalogue_model PROPERTIES TIMEOUT 30 LABELS "flowui;dev;catalogue;unit")
+    add_executable(flowui_dev_catalogue_selector_interaction_tests DevSystemsTests/DevCatalogueSelectorInteractionTests.cpp)
+    target_compile_features(flowui_dev_catalogue_selector_interaction_tests PRIVATE cxx_std_23)
+    target_link_libraries(flowui_dev_catalogue_selector_interaction_tests PRIVATE FlowUi::FlowUi)
+    flowui_package_resources(flowui_dev_catalogue_selector_interaction_tests)
+    add_test(NAME flowui.dev.catalogue_selector_interaction COMMAND flowui_dev_catalogue_selector_interaction_tests)
+    set_tests_properties(flowui.dev.catalogue_selector_interaction PROPERTIES TIMEOUT 60 LABELS "flowui;dev;catalogue;interaction")
     if(FLOWUI_PUBLIC_VULKAN_INTEROP)
         add_executable(flowui_dev_catalogue_viewport_tests DevSystemsTests/DevCatalogueViewportTests.cpp)
         target_compile_features(flowui_dev_catalogue_viewport_tests PRIVATE cxx_std_23)
@@ -1127,7 +1187,7 @@ if(FLOW_UI_DEV_MODE)
         DevSystemsTests/ErrorReportingStub.cpp
         HeadlessVulkanFixture.cpp
         DevSystemsTests/DevMemoryVulkanSupport.cpp
-        ${PROJECT_SOURCE_DIR}/src/Storagesystem/FlowStorageSystem.cpp
+        ${PROJECT_SOURCE_DIR}/src/FlowUi/Private/storageSystem/FlowStorageSystem.cpp
         ${PROJECT_SOURCE_DIR}/src/devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.cpp
     )
     target_compile_features(flowui_storage_memory_dev_tests PRIVATE cxx_std_23)
@@ -1185,7 +1245,11 @@ if(FLOW_UI_DEV_MODE AND FLOW_UI_DEV_CAPTURE_CLAY)
     target_link_libraries(flowui_dev_changes_interaction_tests PRIVATE FlowUi::FlowUi)
     flowui_package_resources(flowui_dev_changes_interaction_tests)
     add_test(NAME flowui.dev.changes_interaction COMMAND flowui_dev_changes_interaction_tests)
-    set_tests_properties(flowui.dev.changes_interaction PROPERTIES TIMEOUT 90 LABELS "flowui;dev;changes;interaction")
+    # The wheel fixture keeps native GLFW focus/cursor state across multiple frames.
+    set_tests_properties(flowui.dev.changes_interaction PROPERTIES
+        TIMEOUT 90
+        LABELS "flowui;dev;changes;interaction"
+        RUN_SERIAL TRUE)
     if(FLOWUI_DEV_ERROR_LEVEL GREATER_EQUAL 2)
         add_executable(flowui_dev_diagnostics_interaction_tests DevSystemsTests/DevDiagnosticsInteractionTests.cpp)
         target_compile_features(flowui_dev_diagnostics_interaction_tests PRIVATE cxx_std_23)

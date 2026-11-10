@@ -1,7 +1,7 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Memory/Selector/DevMemorySelector.hpp"
 #include <GLFW/glfw3.h>

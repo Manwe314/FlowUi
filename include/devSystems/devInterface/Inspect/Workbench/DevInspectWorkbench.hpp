@@ -8,14 +8,14 @@
 #include <string_view>
 #include <vector>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
 #include "devSystems/devTooling/overlay/DevOverlayTypes.hpp"
 #include "devSystems/devTooling/override/DevOverrideTypes.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems { class DevPreviewViewPortRenderer; }
 
@@ -197,6 +197,9 @@ struct DevPreview {
 		TextureRef panIcon{};
 		TextureRef resetIcon{};
 		TextureRef rulerIcon{};
+		TextureRef zoom_in_icon{};
+		TextureRef zoom_out_icon{};
+		TextureRef fit_icon{};
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 		std::shared_ptr<DevPreviewViewPortRenderer> viewportRenderer{};
 #endif
@@ -238,22 +241,22 @@ struct DevOverviewAndPerformance {
 	static void buildElement(BuildContext& context);
 };
 
-/** Severity used by the selected-element issues console. */
+/* Severity used by the selected-element issues console. */
 enum class DevResolvedIssueSeverity : uint8_t {
 	Error,
 	Warning,
 	Advice,
 };
 
-/** Read-only summary of the winning override for one field. */
+/* Read-only summary of the winning override for one field. */
 struct DevMinimalChangeItem {
-	devMode::DevFieldId fieldId = 0u;
+	tooling::DevFieldId fieldId = 0u;
 	std::string fieldPath{};
 	std::string valueSummary{};
 	tooling::DevOverrideScope scope = tooling::DevOverrideScope::Definition;
 };
 
-/** Diagnostic or error that was resolved to the selected element. */
+/* Diagnostic or error that was resolved to the selected element. */
 struct DevResolvedElementIssue {
 	uint64_t issueId = 0u;
 	std::string title{};
@@ -265,7 +268,7 @@ struct DevResolvedElementIssue {
 	DevResolvedIssueSeverity severity = DevResolvedIssueSeverity::Warning;
 };
 
-/** Snapshot consumed by the Changes & Issues workbench card. */
+/* Snapshot consumed by the Changes & Issues workbench card. */
 struct DevChangeAndIssuePanelData {
 	std::vector<DevMinimalChangeItem> activeChanges{};
 	std::vector<DevResolvedElementIssue> resolvedIssues{};
@@ -304,6 +307,8 @@ struct DevClaySubTree {
 struct DevWorkbenchCardParameters {
 	DevInspectContentParameters inspect{};
 	DevWorkbenchSection section = DevWorkbenchSection::Preview;
+	/* Stack full-width cards in a scrollable narrow workbench. */
+	bool stacked = false;
 };
 
 struct DevWorkbenchCard {

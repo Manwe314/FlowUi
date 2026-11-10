@@ -17,4 +17,4 @@ When a table repeats expensive preparation, first correlate timing scopes with d
 
 Use `context read --topic layout.flow_and_clay` for ownership and `query visual` for retained geometry. Source selectors refer to the matching library revision; application-owned row builders require their own registered source sites.
 
-Source: [FlowUi::FlowElementID](include/FlowUi/ElementID.hpp).
+Source: [FlowUi::FlowElementID](include/FlowUi/Public/identificationTypes/ElementID.hpp).

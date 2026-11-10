@@ -106,7 +106,8 @@ $(function() {
   <div class="headertitle"><div class="title">Font Manager API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Aliases</h1>
+<div class="textblock"><p>The facade is <a href="../../include/FlowUi/Public/managers/FontManager.hpp">FontManager.hpp</a>. CPU identities, descriptors, and glyph/face metadata are in <a href="../../include/FlowUi/Public/managerStructs/FontTypes.hpp">FontTypes.hpp</a>; native atlas data is in <a href="../../include/FlowUi/Public/interop/vulkan/FontAtlas.hpp">interop/vulkan/FontAtlas.hpp</a>. The native structure retains its existing allocation handle and all original fields as borrowed data; ownership remains with FlowUi.</p>
+<h1>Aliases</h1>
 <h2><b>FontId</b></h2>
 <h3><span class="tt">using FontId = uint16_t</span></h3>
 <p>Stable concrete font id consumed by Clay text configuration. It identifies one loaded font face.</p>
@@ -138,47 +139,58 @@ $(function() {
 <p>Vulkan resources for the font atlas array. Renderer integrations can inspect image, view, sampler, dimensions, layer counts, and binding revision.</p>
 <h1>Public API</h1>
 <h2><b>createFamily</b></h2>
-<h3><span class="tt">FontFamilyId createFamily(const FontFamilyCreateInfo&amp; createInfo)</span></h3>
+<h3><span class="tt">Result&lt;FontFamilyId&gt; createFamily(const FontFamilyCreateInfo&amp; createInfo)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">FontFamilyId</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;FontFamilyId&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">createInfo</span> logical family name and initial concrete faces.</li>
 </ul>
 <p>Creates a logical font family and immediately loads its listed faces. Family names must be unique, and face paths load baked <span class="tt">.arfont</span> files unless runtime font baking is enabled for <span class="tt">.ttf</span>.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> bodyFamily = app.fonts().createFamily({.name = <span class="stringliteral">&quot;Body&quot;</span>});</div>
-<div class="ttc" id="agroup__flowui__font__manager_html_ga95598f991c84086ade49a9b22410496a"><div class="ttname"><a href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a></div><div class="ttdeci">uint32_t FontFamilyId</div><div class="ttdoc">Stable logical font family id returned by FlowUi::FontManager.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:18</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a2fd6b73942b1e8ffbccd4420de098b3f">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> family = app.fonts().createFamily({.name = <span class="stringliteral">&quot;Body&quot;</span>});</div>
+<div class="line"><span class="keywordflow">if</span> (!family) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(family.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> FlowUi::FontFamilyId bodyFamily = *family;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>getFamilyId</b></h2>
 <h3><span class="tt">FontFamilyId getFamilyId(std::string_view familyName) const</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">FontFamilyId</span></li>
 <li><b>Arguments:</b> <span class="tt">familyName</span> logical family name.</li>
 </ul>
-<p>Looks up a previously registered family id by name. Missing families return <span class="tt">UINT32_MAX</span>, making this a non-throwing cache-friendly lookup.</p>
+<p>Looks up a previously registered family id by name. Missing families return <span class="tt">UINT32_MAX</span>. Lookup metadata may allocate.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga95598f991c84086ade49a9b22410496a">FlowUi::FontFamilyId</a> bodyFamily = app.fonts().getFamilyId(<span class="stringliteral">&quot;Body&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a829f7e37438eef1eb8fa9981a8d511ec">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line">FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId(<span class="stringliteral">&quot;Body&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>addFamilyFace</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">FontId addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo&amp; createInfo)</span></h3>
+<h3><span class="tt">Result&lt;FontId&gt; addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo&amp; createInfo)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">FontId</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;FontId&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">familyId</span> existing family id, <span class="tt">createInfo</span> concrete face source and style data.</li>
 </ul>
 <p>Adds a concrete face to an existing family by id. The new face becomes available to <span class="tt">resolveFont()</span> for its weight and style.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> boldFace = app.fonts().addFamilyFace(<span class="stringliteral">&quot;Body&quot;</span>, {.path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>, .weight = 700});</div>
-<div class="ttc" id="agroup__flowui__font__manager_html_ga45ed3353542a8e69aead84b91e7d88ed"><div class="ttname"><a href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a></div><div class="ttdeci">uint16_t FontId</div><div class="ttdoc">Stable concrete font id consumed by Clay text configuration.</div><div class="ttdef"><b>Definition</b> FontManagerStructs.hpp:15</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#aaa09f54aa73849bba861457941bf1f19">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> face = app.fonts().addFamilyFace(<span class="stringliteral">&quot;Body&quot;</span>, {.path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>, .weight = 700});</div>
+<div class="line"><span class="keywordflow">if</span> (!face) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(face.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> FlowUi::FontId boldFace = *face;</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>addFamilyFace</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">FontId addFamilyFace(std::string_view familyName, const FontFaceCreateInfo&amp; createInfo)</span></h3>
+<h3><span class="tt">Result&lt;FontId&gt; addFamilyFace(std::string_view familyName, const FontFaceCreateInfo&amp; createInfo)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">FontId</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;FontId&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">familyName</span> existing family name, <span class="tt">createInfo</span> concrete face source and style data.</li>
 </ul>
 <p>Adds a concrete face to an existing family by name. Use this when the caller has not cached the family id.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> boldFace = app.fonts().addFamilyFace(<span class="stringliteral">&quot;Body&quot;</span>, {.path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>, .weight = 700});</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a5e530f7fa3bcb6b0c4da4987fc804a62">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> face = app.fonts().addFamilyFace(<span class="stringliteral">&quot;Body&quot;</span>, {.path = <span class="stringliteral">&quot;assets/fonts/Inter-Bold.arfont&quot;</span>, .weight = 700});</div>
+<div class="line"><span class="keywordflow">if</span> (!face) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(face.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> FlowUi::FontId boldFace = *face;</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>resolveFont</b> <span class="tt">1/2</span></h2>
 <h3><span class="tt">FontId resolveFont(FontFamilyId familyId, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
 <ul>
@@ -187,8 +199,8 @@ $(function() {
 </ul>
 <p>Resolves a logical font request to the best concrete face in a family. It prefers matching style and closest weight, with fallback behavior for missing variants.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> bodyFont = app.fonts().resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 400, FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a39c0eeaed6002691f954b1bcc6eadd83">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line">FlowUi::FontId bodyFont = app.fonts().resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 400, FlowUi::FontStyle::Normal);</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>resolveFont</b> <span class="tt">2/2</span></h2>
 <h3><span class="tt">FontId resolveFont(std::string_view familyName, uint32_t weight = 400, FontStyle style = FontStyle::Normal) const</span></h3>
 <ul>
@@ -197,8 +209,8 @@ $(function() {
 </ul>
 <p>Named-family overload for resolving a concrete Clay font id. Returns <span class="tt">0</span> when the family is missing or empty.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__font__manager.html#ga45ed3353542a8e69aead84b91e7d88ed">FlowUi::FontId</a> bodyFont = app.fonts().resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 400, FlowUi::FontStyle::Normal);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a32e8291f5b08bc0d46d0884b8b4bad12">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line">FlowUi::FontId bodyFont = app.fonts().resolveFont(<span class="stringliteral">&quot;Body&quot;</span>, 400, FlowUi::FontStyle::Normal);</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>getFontById</b></h2>
 <h3><span class="tt">const <a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html" title="Loaded font face and its baked variants.">FlowUi::Font::FontFaceData</a>* getFontById(FontId fontId) const</span></h3>
 <ul>
@@ -208,8 +220,8 @@ $(function() {
 <p>Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete face. Normal UI code usually only needs <span class="tt">resolveFont()</span>, but renderer or advanced layout integrations may need this data.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a>* face = app.fonts().getFontById(bodyFont);</div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1FontFaceData_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a></div><div class="ttdoc">Loaded font face and its baked variants.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:114</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#ad67d18ee896d36b0cd0b4567cf79c311">Full Doxygen reference</a>.</p>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1FontFaceData_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontFaceData.html">FlowUi::Font::FontFaceData</a></div><div class="ttdoc">Loaded font face and its baked variants.</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:143</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>getAtlasResource</b></h2>
 <h3><span class="tt">const <a class="el" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html" title="Vulkan resources for the font atlas array.">FlowUi::Font::AtlasArrayResource</a>&amp; getAtlasResource() const</span></h3>
 <ul>
@@ -219,8 +231,8 @@ $(function() {
 <p>Returns the Vulkan atlas array resource used by FlowUi text rendering. Use <span class="tt">bindingRevision</span> to decide when external descriptors need refreshing.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a>&amp; atlas = app.fonts().getAtlasResource();</div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a></div><div class="ttdoc">Vulkan resources for the font atlas array.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:159</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1FontManager.html#a20dada10a04d85cfb7b46f95c952085e">Full Doxygen reference</a>.</p>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1AtlasArrayResource_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1AtlasArrayResource.html">FlowUi::Font::AtlasArrayResource</a></div><div class="ttdoc">Vulkan resources for the font atlas array.</div><div class="ttdef"><b>Definition</b> FontAtlas.hpp:16</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/FontManager.hpp">Owning header</a>.</p>
 <h2><b>kerningKey</b></h2>
 <h3><span class="tt">static uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint)</span></h3>
 <ul>
@@ -229,9 +241,9 @@ $(function() {
 </ul>
 <p>Packs two codepoints into the key used by the kerning lookup table. This is mainly useful when inspecting or extending font metric data.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">uint64_t key = <a class="code hl_function" href="structFlowUi_1_1Font_1_1FontVariantData.html#aac641adb1ef8d9b2cfbaa10652b38986">FlowUi::Font::FontVariantData::kerningKey</a>(U<span class="charliteral">&#39;A&#39;</span>, U<span class="charliteral">&#39;V&#39;</span>);</div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1FontVariantData_html_aac641adb1ef8d9b2cfbaa10652b38986"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontVariantData.html#aac641adb1ef8d9b2cfbaa10652b38986">FlowUi::Font::FontVariantData::kerningKey</a></div><div class="ttdeci">static uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint)</div><div class="ttdoc">Pack two codepoints into the kerning lookup key.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:97</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1Font_1_1FontVariantData.html#aac641adb1ef8d9b2cfbaa10652b38986">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line">uint64_t key = <a class="code hl_function" href="structFlowUi_1_1Font_1_1FontVariantData.html#a1bd3d5a33200280271ef25d523b78b2b">FlowUi::Font::FontVariantData::kerningKey</a>(U<span class="charliteral">&#39;A&#39;</span>, U<span class="charliteral">&#39;V&#39;</span>);</div>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1FontVariantData_html_a1bd3d5a33200280271ef25d523b78b2b"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontVariantData.html#a1bd3d5a33200280271ef25d523b78b2b">FlowUi::Font::FontVariantData::kerningKey</a></div><div class="ttdeci">static constexpr uint64_t kerningKey(uint32_t leftCodepoint, uint32_t rightCodepoint) noexcept</div><div class="ttdoc">Pack two codepoints into the kerning lookup key.</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:123</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managerStructs/FontTypes.hpp">Owning header</a>.</p>
 <h2><b>kerningAdvance</b></h2>
 <h3><span class="tt">float kerningAdvance(uint32_t leftCodepoint, uint32_t rightCodepoint) const</span></h3>
 <ul>
@@ -241,7 +253,7 @@ $(function() {
 <p>Returns kerning advance for a codepoint pair. Missing pairs return <span class="tt">0.0f</span>.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keywordtype">float</span> advance = variant.kerningAdvance(U<span class="charliteral">&#39;A&#39;</span>, U<span class="charliteral">&#39;V&#39;</span>);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1Font_1_1FontVariantData.html#acb58bcb53965391de0525cb6850a9d29">Full Doxygen reference</a>.</p>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managerStructs/FontTypes.hpp">Owning header</a>.</p>
 <h2><b>defaultVariant</b></h2>
 <h3><span class="tt">const FontVariantData* defaultVariant() const</span></h3>
 <ul>
@@ -250,10 +262,10 @@ $(function() {
 </ul>
 <p>Returns the default baked variant for a loaded font face. Returns <span class="tt">nullptr</span> when the face has no variants or the default index is invalid.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1FontVariantData.html">FlowUi::Font::FontVariantData</a>* variant = face-&gt;<a class="code hl_function" href="structFlowUi_1_1Font_1_1FontFaceData.html#ad97f5e22e625cb9698ddd429fc1c63e1">defaultVariant</a>();</div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1FontFaceData_html_ad97f5e22e625cb9698ddd429fc1c63e1"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontFaceData.html#ad97f5e22e625cb9698ddd429fc1c63e1">FlowUi::Font::FontFaceData::defaultVariant</a></div><div class="ttdeci">const FontVariantData * defaultVariant() const</div><div class="ttdoc">Return the default variant, or nullptr if unavailable.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:145</div></div>
-<div class="ttc" id="astructFlowUi_1_1Font_1_1FontVariantData_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontVariantData.html">FlowUi::Font::FontVariantData</a></div><div class="ttdoc">One baked variant of a font face.</div><div class="ttdef"><b>Definition</b> FontResources.hpp:60</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1Font_1_1FontFaceData.html#ad97f5e22e625cb9698ddd429fc1c63e1">Full Doxygen reference</a>. </p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_struct" href="structFlowUi_1_1Font_1_1FontVariantData.html">FlowUi::Font::FontVariantData</a>* variant = face-&gt;<a class="code hl_function" href="structFlowUi_1_1Font_1_1FontFaceData.html#a61a9c59721076328a059c72829bb4d1b">defaultVariant</a>();</div>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1FontFaceData_html_a61a9c59721076328a059c72829bb4d1b"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontFaceData.html#a61a9c59721076328a059c72829bb4d1b">FlowUi::Font::FontFaceData::defaultVariant</a></div><div class="ttdeci">const FontVariantData * defaultVariant() const noexcept</div><div class="ttdoc">Return the default variant, or nullptr if unavailable.</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:145</div></div>
+<div class="ttc" id="astructFlowUi_1_1Font_1_1FontVariantData_html"><div class="ttname"><a href="structFlowUi_1_1Font_1_1FontVariantData.html">FlowUi::Font::FontVariantData</a></div><div class="ttdoc">One baked variant of a font face.</div><div class="ttdef"><b>Definition</b> FontTypes.hpp:86</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managerStructs/FontTypes.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

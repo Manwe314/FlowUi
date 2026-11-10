@@ -1,5 +1,7 @@
 # Font Manager API
 
+The facade is [FontManager.hpp](../../include/FlowUi/Public/managers/FontManager.hpp). CPU identities, descriptors, and glyph/face metadata are in [FontTypes.hpp](../../include/FlowUi/Public/managerStructs/FontTypes.hpp); native atlas data is in [interop/vulkan/FontAtlas.hpp](../../include/FlowUi/Public/interop/vulkan/FontAtlas.hpp). The native structure retains its existing allocation handle and all original fields as borrowed data; ownership remains with FlowUi.
+
 ## Aliases
 
 ### **FontId**
@@ -74,9 +76,9 @@ Vulkan resources for the font atlas array. Renderer integrations can inspect ima
 ### **createFamily**
 
 
-#### `FontFamilyId createFamily(const FontFamilyCreateInfo& createInfo)`
+#### `Result<FontFamilyId> createFamily(const FontFamilyCreateInfo& createInfo)`
 
-- **Returns:** `FontFamilyId`
+- **Returns:** `Result<FontFamilyId>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `createInfo` logical family name and initial concrete faces.
 
 Creates a logical font family and immediately loads its listed faces. Family names must be unique, and face paths load baked `.arfont` files unless runtime font baking is enabled for `.ttf`.
@@ -84,10 +86,14 @@ Creates a logical font family and immediately loads its listed faces. Family nam
 **Example:**
 
 ```cpp
-FlowUi::FontFamilyId bodyFamily = app.fonts().createFamily({.name = "Body"});
+const auto family = app.fonts().createFamily({.name = "Body"});
+if (!family) {
+    throw FlowUi::FlowUiException(family.error());
+}
+const FlowUi::FontFamilyId bodyFamily = *family;
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a2fd6b73942b1e8ffbccd4420de098b3f).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **getFamilyId**
 
@@ -97,7 +103,7 @@ See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a2fd6b73942b1e8ff
 - **Returns:** `FontFamilyId`
 - **Arguments:** `familyName` logical family name.
 
-Looks up a previously registered family id by name. Missing families return `UINT32_MAX`, making this a non-throwing cache-friendly lookup.
+Looks up a previously registered family id by name. Missing families return `UINT32_MAX`. Lookup metadata may allocate.
 
 **Example:**
 
@@ -105,14 +111,14 @@ Looks up a previously registered family id by name. Missing families return `UIN
 FlowUi::FontFamilyId bodyFamily = app.fonts().getFamilyId("Body");
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a829f7e37438eef1eb8fa9981a8d511ec).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **addFamilyFace** `1/2`
 
 
-#### `FontId addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo)`
+#### `Result<FontId> addFamilyFace(FontFamilyId familyId, const FontFaceCreateInfo& createInfo)`
 
-- **Returns:** `FontId`
+- **Returns:** `Result<FontId>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `familyId` existing family id, `createInfo` concrete face source and style data.
 
 Adds a concrete face to an existing family by id. The new face becomes available to `resolveFont()` for its weight and style.
@@ -120,17 +126,21 @@ Adds a concrete face to an existing family by id. The new face becomes available
 **Example:**
 
 ```cpp
-FlowUi::FontId boldFace = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+const auto face = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+if (!face) {
+    throw FlowUi::FlowUiException(face.error());
+}
+const FlowUi::FontId boldFace = *face;
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#aaa09f54aa73849bba861457941bf1f19).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **addFamilyFace** `2/2`
 
 
-#### `FontId addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo)`
+#### `Result<FontId> addFamilyFace(std::string_view familyName, const FontFaceCreateInfo& createInfo)`
 
-- **Returns:** `FontId`
+- **Returns:** `Result<FontId>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `familyName` existing family name, `createInfo` concrete face source and style data.
 
 Adds a concrete face to an existing family by name. Use this when the caller has not cached the family id.
@@ -138,10 +148,14 @@ Adds a concrete face to an existing family by name. Use this when the caller has
 **Example:**
 
 ```cpp
-FlowUi::FontId boldFace = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+const auto face = app.fonts().addFamilyFace("Body", {.path = "assets/fonts/Inter-Bold.arfont", .weight = 700});
+if (!face) {
+    throw FlowUi::FlowUiException(face.error());
+}
+const FlowUi::FontId boldFace = *face;
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a5e530f7fa3bcb6b0c4da4987fc804a62).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **resolveFont** `1/2`
 
@@ -159,7 +173,7 @@ Resolves a logical font request to the best concrete face in a family. It prefer
 FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a39c0eeaed6002691f954b1bcc6eadd83).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **resolveFont** `2/2`
 
@@ -177,7 +191,7 @@ Named-family overload for resolving a concrete Clay font id. Returns `0` when th
 FlowUi::FontId bodyFont = app.fonts().resolveFont("Body", 400, FlowUi::FontStyle::Normal);
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a32e8291f5b08bc0d46d0884b8b4bad12).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **getFontById**
 
@@ -195,7 +209,7 @@ Returns loaded font metrics, glyphs, kerning, and atlas placement for a concrete
 const FlowUi::Font::FontFaceData* face = app.fonts().getFontById(bodyFont);
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#ad67d18ee896d36b0cd0b4567cf79c311).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **getAtlasResource**
 
@@ -213,7 +227,7 @@ Returns the Vulkan atlas array resource used by FlowUi text rendering. Use `bind
 const FlowUi::Font::AtlasArrayResource& atlas = app.fonts().getAtlasResource();
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1FontManager.html#a20dada10a04d85cfb7b46f95c952085e).
+See: [Owning header](../../include/FlowUi/Public/managers/FontManager.hpp).
 
 ### **kerningKey**
 
@@ -231,7 +245,7 @@ Packs two codepoints into the key used by the kerning lookup table. This is main
 uint64_t key = FlowUi::Font::FontVariantData::kerningKey(U'A', U'V');
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1Font_1_1FontVariantData.html#aac641adb1ef8d9b2cfbaa10652b38986).
+See: [Owning header](../../include/FlowUi/Public/managerStructs/FontTypes.hpp).
 
 ### **kerningAdvance**
 
@@ -249,7 +263,7 @@ Returns kerning advance for a codepoint pair. Missing pairs return `0.0f`.
 float advance = variant.kerningAdvance(U'A', U'V');
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1Font_1_1FontVariantData.html#acb58bcb53965391de0525cb6850a9d29).
+See: [Owning header](../../include/FlowUi/Public/managerStructs/FontTypes.hpp).
 
 ### **defaultVariant**
 
@@ -267,4 +281,4 @@ Returns the default baked variant for a loaded font face. Returns `nullptr` when
 const FlowUi::Font::FontVariantData* variant = face->defaultVariant();
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1Font_1_1FontFaceData.html#ad97f5e22e625cb9698ddd429fc1c63e1).
+See: [Owning header](../../include/FlowUi/Public/managerStructs/FontTypes.hpp).

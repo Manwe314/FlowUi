@@ -66,8 +66,10 @@ void number(Context& context, LocalElementName identity, std::string_view label,
 	parameters.value = &value;
 	parameters.minimum = minimum;
 	parameters.maximum = maximum;
-	parameters.sizing =
-		Clay_Sizing{.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(28)};
+	// Stacked text steppers need their natural line height when icons are unavailable.
+	parameters.sizing = Clay_Sizing{.width = CLAY_SIZING_PERCENT(1),
+									.height = FLOWUI_INCLUDE_ICON_MANAGER ? CLAY_SIZING_FIXED(28)
+																		  : CLAY_SIZING_FIT(28)};
 	parameters.fontSize = 11;
 	parameters.floatingZIndex = floating_z_index;
 	parameters.padding = Clay_Padding{8, 8, 4, 4};

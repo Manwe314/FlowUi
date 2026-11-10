@@ -1,3 +1,4 @@
+#include "FlowUi/Private/elementSystem/ElementRegistrationSupport.hpp"
 #include "TestHarness.hpp"
 
 #include <concepts>
@@ -5,8 +6,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "managers/ElementManager.hpp"
-#include "managers/structs/FlowUiElementStructs.hpp"
+#include "FlowUi/Public/managers/ElementManager.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementContexts.hpp"
 
 namespace {
 

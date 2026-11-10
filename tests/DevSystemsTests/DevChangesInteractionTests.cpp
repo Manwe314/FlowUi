@@ -3,7 +3,7 @@
 #endif
 #include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "FSEL/TextInput.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Catalogue/Inspector/DevCatalogueInspector.hpp"
 #include "devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp"
 #include "devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp"
@@ -98,6 +98,11 @@ void check_centered_search(App& app, bool placeholder = false) {
 												   placeholder ? FSEL::TextInput::Parts::placeholder
 															   : FSEL::TextInput::Parts::text))});
 	assert(content.found && text.found && text.boundingBox.width > 0);
+	if (std::abs(content.boundingBox.x + content.boundingBox.width / 2 - text.boundingBox.x -
+				 text.boundingBox.width / 2) >= 2)
+		std::cerr << "Changes search centering content=" << content.boundingBox.x << ','
+				  << content.boundingBox.width << " text=" << text.boundingBox.x << ','
+				  << text.boundingBox.width << " placeholder=" << placeholder << '\n';
 	assert(std::abs(content.boundingBox.x + content.boundingBox.width / 2 - text.boundingBox.x -
 					text.boundingBox.width / 2) < 2);
 	assert(std::abs(content.boundingBox.y + content.boundingBox.height / 2 - text.boundingBox.y -
@@ -696,7 +701,7 @@ int main() {
 	session.activeTab = static_cast<uint64_t>(DevInterfaceTab::Changes);
 	auto& state = session.changes;
 	seed_review(state);
-	float selector_width = 280, inspector_width = 360;
+	float selector_width = 280, inspector_width = 360, panel_height = 900;
 	bool draw_changes = true;
 	const auto draw = [&](FlowElementID control = {}, int event = 0, int key = -1,
 						  Clay_Vector2 pointer = {-1, -1}, FlowElementID extra = {},
@@ -728,7 +733,8 @@ int main() {
 				interaction.releasedElementIds.emplace_back(identity);
 		}
 		auto root = changes_ui::column(0);
-		root.layout.sizing = {.width = CLAY_SIZING_FIXED(1400), .height = CLAY_SIZING_FIXED(900)};
+		root.layout.sizing = {.width = CLAY_SIZING_FIXED(1400),
+							  .height = CLAY_SIZING_FIXED(panel_height)};
 		root.backgroundColor = interface_theme::kDepth0Keel;
 		CLAY(CLAY_ID("changes-test"), root) {
 			if (draw_changes)
@@ -809,6 +815,14 @@ int main() {
 		callback(window, 0, delta);
 		draw();
 		const auto after = Clay_GetScrollContainerData(identity);
+		if ((delta < 0 && after.scrollPosition->y >= old_position - 1) ||
+			(delta > 0 && after.scrollPosition->y <= old_position + 1))
+			std::cerr << "Changes wheel failed viewport=" << identity.id
+					  << " before=" << old_position << " after=" << after.scrollPosition->y
+					  << " delta=" << delta << " view=" << state.view
+					  << " selected=" << state.selected_key
+					  << " content=" << after.contentDimensions.height
+					  << " height=" << after.scrollContainerDimensions.height << '\n';
 		if (delta < 0)
 			assert(after.scrollPosition->y < old_position - 1);
 		else
@@ -910,6 +924,43 @@ int main() {
 	preview_selector_references(app, session);
 	draw();
 	draw();
+
+	// Momentary pointer clicks retain keyboard focus without leaving a selected-looking border.
+	const auto control_border = [&](FlowElementID control) {
+		const auto& nodes = app.ui().devTreeSnapshot().clay.nodes;
+		const auto identity = app.ui().toClayEID(control).id;
+		const auto found = std::ranges::find(nodes, identity, &DevClayNode::clayId);
+		assert(found != nodes.end());
+		return found->declaration.border.color;
+	};
+	const auto same_color = [](Clay_Color first, Clay_Color second) {
+		return first.r == second.r && first.g == second.g && first.b == second.b &&
+			   first.a == second.a;
+	};
+	for (const auto name : std::array<LocalElementName, 2>{"overview", "refresh"}) {
+		const auto control =
+			local(FlowElementID{selector_id.value}, diagnostics_ui::Control::definitionId, name);
+		click(control);
+		assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(control).id);
+		assert(same_color(control_border(control), interface_theme::kBorderVisible));
+		const auto* pointer_state = app.ui().elements().getStatePointerConst(
+			diagnostics_ui::kControl, app.ui().windowId(), control);
+		assert(pointer_state && pointer_state->pointer_focused && !pointer_state->isArmed);
+		state.pending = DevChangesCommand::None;
+		const auto target = std::ranges::find(state.focus_targets, app.ui().toClayEID(control).id,
+											  [](const auto& entry) { return entry.identity.id; });
+		assert(target != state.focus_targets.end());
+		const auto target_index = static_cast<std::size_t>(target - state.focus_targets.begin());
+		const auto preceding = state
+								   .focus_targets[(target_index + state.focus_targets.size() - 1) %
+												  state.focus_targets.size()]
+								   .identity;
+		app.ui().shortcuts().setFocusedElement(preceding);
+		draw({}, 0, GLFW_KEY_TAB);
+		draw();
+		assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(control).id);
+		assert(same_color(control_border(control), interface_theme::kAccentCurrent));
+	}
 
 	// Shared matching is independent of collapse and group actions keep their explicit scope.
 	changes_select_key(state, "group:Elements");
@@ -1104,6 +1155,30 @@ int main() {
 	assert(selected_row->declaration.border.width.left == 3);
 	assert(selected_row->declaration.border.width.bottom == 0);
 	preview("selector-leaf-selection");
+	// Long hover names and canonical keys fit the floating tooltip, including narrow selectors.
+	selector_width = 220;
+	draw();
+	draw(leaf_control);
+	draw(leaf_control);
+	const auto tooltip_identity =
+		local(leaf_control, DevChangesSelectorNode::definitionId, LocalElementName{"tooltip"});
+	const auto tooltip = Clay_GetElementData(app.ui().toClayEID(tooltip_identity));
+	assert(tooltip.found && tooltip.boundingBox.width > 0);
+	const auto& tooltip_tree = app.ui().devTreeSnapshot();
+	for (const auto& node : tooltip_tree.clay.nodes) {
+		bool in_tooltip = node.clayId == app.ui().toClayEID(tooltip_identity).id;
+		for (auto parent = node.parent;
+			 parent != InvalidClayNode && parent < tooltip_tree.clay.nodes.size();
+			 parent = tooltip_tree.clay.nodes[parent].parent)
+			in_tooltip = in_tooltip || tooltip_tree.clay.nodes[parent].clayId ==
+										   app.ui().toClayEID(tooltip_identity).id;
+		if (in_tooltip && !hasFlag(node.flags, DevClayNodeFlag::BoundsUnavailable)) {
+			assert(node.bounds.x >= tooltip.boundingBox.x - 1);
+			assert(node.bounds.x + node.bounds.width <=
+				   tooltip.boundingBox.x + tooltip.boundingBox.width + 1);
+		}
+	}
+	selector_width = 280;
 	state.selected_key.clear();
 	state.queue_scope_key.clear();
 	for (const auto width : {220.0f, 280.0f, 360.0f, 450.0f}) {
@@ -1155,36 +1230,141 @@ int main() {
 	wheel(workbench_scroll, 4);
 	wheel(selector_scroll, 4);
 
-	// A selected leaf expands in the persistent queue; choosing a neighbor closes the old review.
+	// Aggregate card disclosure preserves scope; only Go to change selects a dedicated leaf.
 	reset_overview();
-	changes_select_key(state, state.review.rows.front().key);
+	changes_select_key(state, "group:Elements");
 	draw();
 	draw();
-	assert(rendered_queue_count() == 40 && expanded_count() == 1);
-	const auto first_identity = selected_changes_node(state)->identity;
+	assert(rendered_queue_count() == 30 && expanded_count() == 0);
+	const auto first_node =
+		std::ranges::find(state.nodes, state.review.rows.front().key, &DevChangesNode::key);
 	const auto neighbor_node =
 		std::ranges::find(state.nodes, state.review.rows[1].key, &DevChangesNode::key);
-	assert(neighbor_node != state.nodes.end());
+	assert(first_node != state.nodes.end() && neighbor_node != state.nodes.end());
+	const auto first_identity = first_node->identity;
+	const auto neighbor_identity = neighbor_node->identity;
 	const auto neighbor = local(FlowElementID{workbench_id.value},
 								DefinitionID("flowui.dev_interface.changes.queue-row"),
-								Keyed("review-row", neighbor_node->identity));
+								Keyed("review-row", neighbor_identity));
 	const auto first_queue_row = local(FlowElementID{workbench_id.value},
 									   DefinitionID("flowui.dev_interface.changes.queue-row"),
 									   Keyed("review-row", first_identity));
+	click(first_queue_row, workbench_scroll);
+	assert(state.selected_key == "group:Elements" && state.queue_scope_key == "group:Elements");
+	assert(rendered_queue_count() == 30 && expanded_count() == 1);
+	assert(!selected_changes_row(state));
+	assert(surface_has_text(FlowElementID{workbench_id.value}, "Already Baked"));
+	assert(surface_has_text(FlowElementID{workbench_id.value}, "Proposal"));
+	assert(surface_has_text(FlowElementID{workbench_id.value}, "Next bake"));
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	assert(!surface_has_text(workbench_control(Keyed("copy-value", 0)), "Copy"));
+#else
+	assert(surface_has_text(workbench_control(Keyed("copy-value", 0)), "Copy"));
+#endif
+	const auto first_card = Clay_GetElementData(app.ui().toClayEID(first_queue_row));
+	const auto expanded_card = Clay_GetElementData(app.ui().toClayEID(
+		local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
+			  Keyed("expanded-review", first_identity))));
+	assert(first_card.found && expanded_card.found);
+	assert(expanded_card.boundingBox.x > first_card.boundingBox.x);
+	assert(expanded_card.boundingBox.width < first_card.boundingBox.width);
+	assert(expanded_card.boundingBox.y > first_card.boundingBox.y + first_card.boundingBox.height);
+	for (uint64_t column_index = 0; column_index < 3; ++column_index) {
+		click(workbench_control(Keyed("copy-value", column_index)), workbench_scroll);
+		const auto& expected = column_index == 0   ? state.review.rows.front().on_disk
+							   : column_index == 1 ? state.review.rows.front().proposal
+												   : state.review.rows.front().next_value;
+		assert(app.clipboardText() == expected);
+		assert(state.selected_key == "group:Elements");
+	}
 	ensure_visible(first_queue_row, workbench_scroll);
 	app.ui().shortcuts().setFocusedElement(app.ui().toClayEID(first_queue_row));
 	draw({}, 0, GLFW_KEY_DOWN);
 	draw();
 	assert(app.ui().shortcuts().focusedElement().id == app.ui().toClayEID(neighbor).id);
-	assert(selected_changes_row(state) == &state.review.rows.front() &&
-		   state.pending == DevChangesCommand::None);
+	assert(state.selected_key == "group:Elements" && state.pending == DevChangesCommand::None);
 	draw({}, 0, GLFW_KEY_ENTER);
 	draw();
-	assert(selected_changes_row(state) == &state.review.rows[1]);
-	assert(rendered_queue_count() == 40 && expanded_count() == 1);
+	assert(state.selected_key == "group:Elements" && state.queue_scope_key == "group:Elements");
+	assert(rendered_queue_count() == 30 && expanded_count() == 1);
 	assert(!has_element(local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
 							  Keyed("expanded-review", first_identity))));
-	preview("persistent-queue");
+	preview("aggregate-card-expansion");
+	click(workbench_control(Keyed("go-to-change", neighbor_identity)), workbench_scroll);
+	assert(selected_changes_row(state) == &state.review.rows[1]);
+	assert(rendered_queue_count() == 0 && expanded_count() == 1);
+	assert(has_element(local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
+							 LocalElementName{"selected-change-header"})));
+	assert(!has_element(neighbor));
+	assert(!has_element(workbench_control(Keyed("go-to-change", neighbor_identity))));
+	changes_select_key(state, "group:Elements");
+	draw();
+	draw();
+	click(selector_node(neighbor_identity), selector_scroll);
+	assert(selected_changes_row(state) == &state.review.rows[1]);
+	assert(rendered_queue_count() == 0 && expanded_count() == 1);
+	preview("dedicated-change-view");
+
+	// Value tools use the expanded card target even while the selector stays on its group.
+	auto& structured_review = state.review.rows[5];
+	structured_review.proposal = structured_review.next_value =
+		"{\n  \"left\":24,\n  \"right\":24,\n  \"top\":24,\n  \"bottom\":24\n}";
+	structured_review.proposed_entry->valueJson = structured_review.proposal;
+	rebuild_fixture_output(state);
+	changes_select_key(state, "group:Elements");
+	draw();
+	draw();
+	const auto structured_node =
+		std::ranges::find(state.nodes, state.review.rows[5].key, &DevChangesNode::key);
+	assert(structured_node != state.nodes.end());
+	const auto structured_identity = structured_node->identity;
+	const auto structured_card = local(FlowElementID{workbench_id.value},
+									   DefinitionID("flowui.dev_interface.changes.queue-row"),
+									   Keyed("review-row", structured_identity));
+	click(structured_card, workbench_scroll);
+	assert(state.selected_key == "group:Elements");
+	const auto expanded_value_key = "value:" + state.review.rows[5].key + ":1";
+	const auto value_is_expanded = [&] {
+		const auto* workbench = app.ui().elements().getStatePointerConst(
+			kDevChangesWorkbench, app.ui().windowId(), FlowElementID{workbench_id.value});
+		assert(workbench);
+		return std::ranges::find(workbench->metadata_expanded, expanded_value_key) !=
+			   workbench->metadata_expanded.end();
+	};
+	assert(!value_is_expanded());
+	const auto value_identity = app.ui().toClayEID(
+		local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
+			  Keyed("value", structured_identity * 3 + 1)));
+	const auto collapsed_value_bounds = Clay_GetElementData(value_identity);
+	assert(collapsed_value_bounds.found);
+	click(workbench_control(Keyed("expand-value", 1)), workbench_scroll);
+	assert(value_is_expanded() && state.selected_key == "group:Elements");
+	const auto expanded_value_bounds = Clay_GetElementData(value_identity);
+	assert(expanded_value_bounds.found &&
+		   expanded_value_bounds.boundingBox.height > collapsed_value_bounds.boundingBox.height);
+
+	click(workbench_control(Keyed("copy-value", 1)), workbench_scroll);
+	assert(app.clipboardText() == state.review.rows[5].proposal);
+	click(workbench_control(Keyed("expand-value", 1)), workbench_scroll);
+	assert(!value_is_expanded());
+	const auto disclosure = local(structured_card, diagnostics_ui::Control::definitionId,
+								  LocalElementName{"disclosure"});
+	click(disclosure, workbench_scroll);
+	assert(expanded_count() == 0 && state.selected_key == "group:Elements");
+	click(disclosure, workbench_scroll);
+	assert(expanded_count() == 1 && state.selected_key == "group:Elements");
+	ensure_visible(disclosure, workbench_scroll);
+	draw(structured_card, 1, -1, {-1, -1}, disclosure);
+	draw(structured_card, 2);
+	draw();
+	assert(expanded_count() == 1 && state.selected_key == "group:Elements");
+	draw(structured_card, 1, -1, {-1, -1}, disclosure);
+	draw(structured_card, 2, -1, {-1, -1}, disclosure);
+	draw();
+	assert(expanded_count() == 0 && state.selected_key == "group:Elements");
+	changes_select_key(state, state.review.rows[1].key);
+	draw();
+	draw();
 
 	// The decision menu queues canonical intent and never fabricates a serviced success.
 	const auto decision = local(FlowElementID{workbench_id.value}, FSEL::ComboBox::definitionId,
@@ -1251,6 +1431,7 @@ int main() {
 	preview("zero-false-empty-values");
 
 	// Global feedback stays in a fixed workbench area and never duplicates into Context.
+	panel_height = 360;
 	state.message = "Manifest updated. Rebuild the application to use it.";
 	state.message_is_error = false;
 	draw();
@@ -1291,6 +1472,9 @@ int main() {
 		   std::abs(feedback_before.boundingBox.y - feedback_after.boundingBox.y) < 1);
 	wheel(workbench_scroll, 4);
 	state.message.clear();
+	panel_height = 900;
+	draw();
+	draw();
 
 	// A filtered selection remains visibly pinned, with explicit reveal and clear actions.
 	state.search = "no_matching_change";
@@ -1325,6 +1509,11 @@ int main() {
 	click(inspector_control(Keyed("section", 4)), inspector_scroll);
 	const auto copy_identity = inspector_control(
 		Keyed("copy-detail", ::FlowUi::detail::identity_hash::hashBytes("Canonical identity")));
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	assert(!surface_has_text(copy_identity, "Copy"));
+#else
+	assert(surface_has_text(copy_identity, "Copy"));
+#endif
 	click(copy_identity, inspector_scroll);
 	assert(app.clipboardText() == state.review.rows.front().key);
 	const auto copy_clay_id = app.ui().toClayEID(copy_identity);
@@ -1361,7 +1550,9 @@ int main() {
 		check_bounds(app, FlowElementID{workbench_id.value});
 		preview("inspector-" + std::to_string(static_cast<int>(width)));
 	}
+	panel_height = 360;
 	Clay_GetScrollContainerData(inspector_scroll).scrollPosition->y = 0;
+	draw();
 	draw();
 	wheel(inspector_scroll, -4);
 	const auto inspector_position = Clay_GetScrollContainerData(inspector_scroll).scrollPosition->y;
@@ -1415,11 +1606,14 @@ int main() {
 		assert(std::abs(restored.scrollPosition->y - retained_offsets[index]) <= 1);
 	}
 	preview("scroll-restored-after-tab-return");
+	panel_height = 900;
+	draw();
+	draw();
 
 	// Structured comparisons remain usable on both sides of the responsive stacking boundary.
 	changes_select_key(state, state.review.rows[5].key);
 	selector_width = 450;
-	for (const auto width : {500.0f, 560.0f, 600.0f}) {
+	for (const auto width : {490.0f, 500.0f, 560.0f, 600.0f}) {
 		inspector_width = 1400 - selector_width - width;
 		draw();
 		draw();
@@ -1427,6 +1621,18 @@ int main() {
 		check_bounds(app, FlowElementID{workbench_id.value});
 		check_bounds(app, FlowElementID{inspector_id.value});
 		assert(expanded_count() == 1);
+		const auto selected_identity = selected_changes_node(state)->identity;
+		float first_stage_width = 0;
+		for (uint64_t column_index = 0; column_index < 3; ++column_index) {
+			const auto stage = Clay_GetElementData(app.ui().toClayEID(
+				local(FlowElementID{workbench_id.value}, DevChangesWorkbench::definitionId,
+					  Keyed("value", selected_identity * 3 + column_index))));
+			assert(stage.found && stage.boundingBox.width > 0);
+			if (column_index == 0)
+				first_stage_width = stage.boundingBox.width;
+			else
+				assert(std::abs(stage.boundingBox.width - first_stage_width) <= 1);
+		}
 		preview("workbench-width-" + std::to_string(static_cast<int>(width)));
 	}
 	selector_width = 280;
@@ -1633,7 +1839,8 @@ int main() {
 	const auto selected_index =
 		static_cast<std::size_t>(selected_changes_row(state) - state.review.rows.data());
 	const auto selected_position = std::ranges::find(queue, selected_index) - queue.begin();
-	assert(state.workbench_page == static_cast<std::size_t>(selected_position) / 40);
+	assert(static_cast<std::size_t>(selected_position) < queue.size());
+	assert(rendered_queue_count() == 0);
 	assert(expanded_count() == 1);
 	check_bounds(app, FlowElementID{selector_id.value});
 	check_bounds(app, FlowElementID{workbench_id.value});
@@ -1641,6 +1848,7 @@ int main() {
 	preview("large-list");
 	verify_safe_point_service(app);
 	verify_catalogue_panel_scrolling(app);
-	std::cout << "Changes persistent review, exact output, Context, independent scrolling and "
+	std::cout << "Changes scope-preserving cards, dedicated review, exact output, Context, "
+				 "independent scrolling and "
 				 "responsive workflows verified\n";
 }

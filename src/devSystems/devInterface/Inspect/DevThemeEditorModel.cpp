@@ -2,14 +2,14 @@
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
 #include "devSystems/devInterface/Inspect/DevThemeEditorData.hpp"
-#include "managers/structs/InputFieldManagerStructs.hpp"
+#include "FlowUi/Public/managerStructs/InputFieldTypes.hpp"
 #include <array>
 #include <cmath>
 #include <cstdio>
 
 namespace FlowUi::devSystems::interface_elements::theme_editor {
 namespace {
-/** Overlay style is an opaque reflected FSEL token; compare its documented fields explicitly. */
+/* Overlay style is an opaque reflected FSEL token; compare its documented fields explicitly. */
 [[nodiscard]] ValueComparison compare_overlay(const InputFieldOverlayStyle& left,
 											  const InputFieldOverlayStyle& right) noexcept {
 	if (left.caretShape != right.caretShape)
@@ -51,8 +51,8 @@ namespace {
 	}
 	return unavailable ? ValueComparison::Unavailable : ValueComparison::Equal;
 }
-[[nodiscard]] ValueComparison compare_reflected(const devMode::DevSchemaGeneration& schema,
-												devMode::DevTypeIndex index, const void* left,
+[[nodiscard]] ValueComparison compare_reflected(const tooling::DevSchemaGeneration& schema,
+												tooling::DevTypeIndex index, const void* left,
 												const void* right, uint32_t depth) noexcept {
 	if (!left || !right || depth > 24)
 		return ValueComparison::Unavailable;
@@ -67,11 +67,11 @@ namespace {
 		return compare_overlay(*static_cast<const InputFieldOverlayStyle*>(left),
 							   *static_cast<const InputFieldOverlayStyle*>(right));
 	switch (type->kind) {
-	case devMode::DevTypeKind::Boolean:
-	case devMode::DevTypeKind::SignedInteger:
-	case devMode::DevTypeKind::UnsignedInteger:
-	case devMode::DevTypeKind::Enumeration:
-	case devMode::DevTypeKind::FloatingPoint: {
+	case tooling::DevTypeKind::Boolean:
+	case tooling::DevTypeKind::SignedInteger:
+	case tooling::DevTypeKind::UnsignedInteger:
+	case tooling::DevTypeKind::Enumeration:
+	case tooling::DevTypeKind::FloatingPoint: {
 		long double left_numeric = 0, right_numeric = 0;
 		if (!operations->numericValue || !operations->numericValue(left, left_numeric) ||
 			!operations->numericValue(right, right_numeric) || !std::isfinite(left_numeric) ||
@@ -79,17 +79,17 @@ namespace {
 			return ValueComparison::Unavailable;
 		const bool equal =
 			left_numeric == right_numeric &&
-			(type->kind != devMode::DevTypeKind::FloatingPoint || left_numeric != 0 ||
+			(type->kind != tooling::DevTypeKind::FloatingPoint || left_numeric != 0 ||
 			 std::signbit(left_numeric) == std::signbit(right_numeric));
 		return equal ? ValueComparison::Equal : ValueComparison::Different;
 	}
-	case devMode::DevTypeKind::Text:
+	case tooling::DevTypeKind::Text:
 		if (operations->textView)
 			return operations->textView(left) == operations->textView(right)
 					   ? ValueComparison::Equal
 					   : ValueComparison::Different;
 		break;
-	case devMode::DevTypeKind::Optional:
+	case tooling::DevTypeKind::Optional:
 		if (operations->optionalHasValue && operations->optionalValueAddress) {
 			const bool left_present = operations->optionalHasValue(left);
 			if (left_present != operations->optionalHasValue(right))
@@ -101,7 +101,7 @@ namespace {
 					   : ValueComparison::Equal;
 		}
 		break;
-	case devMode::DevTypeKind::Sequence:
+	case tooling::DevTypeKind::Sequence:
 		if (operations->sequenceSize && operations->sequenceElementAddress) {
 			const auto count = operations->sequenceSize(left);
 			if (count != operations->sequenceSize(right))
@@ -119,7 +119,7 @@ namespace {
 			return unavailable ? ValueComparison::Unavailable : ValueComparison::Equal;
 		}
 		break;
-	case devMode::DevTypeKind::Object: {
+	case tooling::DevTypeKind::Object: {
 		const auto cpp_type = schema.string(type->cppTypeName);
 		// Resource/action identity is defined by the bake serializer, not its incidental fields.
 		if (cpp_type.ends_with("TextureRef") || cpp_type.ends_with("ActionCall"))
@@ -154,8 +154,8 @@ namespace {
 	return left_value->json == right_value->json ? ValueComparison::Equal
 												 : ValueComparison::Different;
 }
-/** Compact typed values; raw serialization remains in the generated code. */
-[[nodiscard]] std::string token_value(const devMode::DevSchemaGeneration& schema,
+/* Compact typed values; raw serialization remains in the generated code. */
+[[nodiscard]] std::string token_value(const tooling::DevSchemaGeneration& schema,
 									  const ThemeLeaf& leaf, const void* value,
 									  std::string_view raw) {
 	const auto* type = schema.type(leaf.field->valueType);
@@ -177,7 +177,7 @@ namespace {
 		return "L " + std::to_string(padding.left) + " · R " + std::to_string(padding.right) +
 			   " · T " + std::to_string(padding.top) + " · B " + std::to_string(padding.bottom);
 	}
-	if (value && type && type->kind == devMode::DevTypeKind::Enumeration &&
+	if (value && type && type->kind == tooling::DevTypeKind::Enumeration &&
 		type->enumeration.values.first <= schema.enumValues.size() &&
 		type->enumeration.values.count <=
 			schema.enumValues.size() - type->enumeration.values.first) {
@@ -201,10 +201,10 @@ namespace {
 	return std::string(raw);
 }
 
-[[nodiscard]] devMode::DevFieldId group_of(const ThemeLeaf& leaf) noexcept {
+[[nodiscard]] tooling::DevFieldId group_of(const ThemeLeaf& leaf) noexcept {
 	return leaf.key.nestedPath.empty() ? leaf.key.field : leaf.key.nestedPath.front();
 }
-void refresh_values(const devMode::DevSchemaGeneration& schema, ThemePresentation& presentation,
+void refresh_values(const tooling::DevSchemaGeneration& schema, ThemePresentation& presentation,
 					uint64_t& serialization_count) {
 	std::vector<ThemeTokenValue> values;
 	values.reserve(presentation.fields.size());
@@ -235,7 +235,7 @@ void refresh_values(const devMode::DevSchemaGeneration& schema, ThemePresentatio
 			const auto* operations = leaf.field->valueType.value < schema.typeOperations.size()
 										 ? schema.typeOperations[leaf.field->valueType.value]
 										 : nullptr;
-			if (leaf.live && type && type->kind == devMode::DevTypeKind::Text && operations &&
+			if (leaf.live && type && type->kind == tooling::DevTypeKind::Text && operations &&
 				operations->textView)
 				token.live_text = operations->textView(leaf.live);
 		}
@@ -286,12 +286,16 @@ void refresh_code(ThemePresentation& presentation) {
 			presentation.code += "  // Runtime-only value omitted: " + leaf.path + "\n";
 		}
 	}
-	presentation.code += "  app.themes().registerTheme(" + cpp_string(presentation.variant) +
-						 ", theme, " + (presentation.source.active ? "true" : "false") + ");\n}\n";
+	presentation.code += "  if (const auto registration_status = app.themes().registerTheme(" +
+						 cpp_string(presentation.variant) + ", theme, " +
+						 (presentation.source.active ? "true" : "false") +
+						 "); !registration_status) {\n"
+						 "    throw FlowUi::FlowUiException(registration_status.error());\n"
+						 "  }\n}\n";
 }
 } // namespace
-ValueComparison compare_values(const devMode::DevSchemaGeneration& schema,
-							   devMode::DevTypeIndex type, const void* left,
+ValueComparison compare_values(const tooling::DevSchemaGeneration& schema,
+							   tooling::DevTypeIndex type, const void* left,
 							   const void* right) noexcept {
 	return compare_reflected(schema, type, left, right, 0);
 }
@@ -301,7 +305,7 @@ const ThemePresentation* ThemeEditorModel::find(const ThemeView& theme) const no
 	});
 	return found == presentations_.end() ? nullptr : &*found;
 }
-bool ThemeEditorModel::mixed(devMode::DevTypeId type, devMode::DevFieldId group) const noexcept {
+bool ThemeEditorModel::mixed(tooling::DevTypeId type, tooling::DevFieldId group) const noexcept {
 	return std::ranges::any_of(mixed_groups_, [&](const auto& entry) {
 		return entry.type == type && entry.group == group;
 	});

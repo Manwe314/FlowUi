@@ -2,10 +2,10 @@
 #undef NDEBUG
 #endif
 #include "FSEL/Button.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevContentHeader.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
-#include "internal/Resources/ExecutableDirectory.hpp"
+#include "FlowUi/Private/resourceService/ExecutableDirectory.hpp"
 #include <algorithm>
 #include <cassert>
 #include <filesystem>
@@ -57,10 +57,26 @@ int main() {
 		assert(app.endFrame());
 		assert(app.drawFrame());
 	};
-	const auto has_label = [&](std::string_view label) {
+	const auto has_export_content = [&](std::string_view label) {
 		const auto& tree = app.ui().devTreeSnapshot();
-		return std::ranges::any_of(
-			tree.clay.nodes, [&](const auto& node) { return tree.string(node.text) == label; });
+		const auto control = std::ranges::find(tree.clay.nodes, app.ui().toClayEID(export_id).id,
+											   &tooling::DevClayNode::clayId);
+		if (control == tree.clay.nodes.end() || control->bounds.width <= 0 ||
+			control->bounds.height <= 0)
+			return false;
+		bool has_icon = false, has_caption = false;
+		for (auto node = control;
+			 node != tree.clay.nodes.end() &&
+			 static_cast<std::size_t>(node - tree.clay.nodes.begin()) < control->subtreeEnd;
+			 ++node) {
+			has_icon = has_icon || node->pointerPresence.imageData;
+			has_caption = has_caption || tree.string(node->text) == label;
+		}
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		return has_icon && !has_caption;
+#else
+		return !has_icon && has_caption;
+#endif
 	};
 	const auto click = [&] {
 		draw(1);
@@ -69,7 +85,7 @@ int main() {
 	};
 	draw();
 	draw();
-	assert(has_label("Export"));
+	assert(has_export_content("Export"));
 	click();
 	assert(session.performance_export_generation == 0 && session.performance_export_path.empty());
 	auto& reporting = app.devMonitoring().timingReporting();
@@ -80,9 +96,9 @@ int main() {
 	reporting.seal_capture();
 	session.performance_timeline.capture_generation = 1;
 	draw();
-	assert(has_label("Export"));
+	assert(has_export_content("Export"));
 	click();
-	assert(session.performance_export_generation == 1 && has_label("Exported"));
+	assert(session.performance_export_generation == 1 && has_export_content("Exported"));
 	const auto path = path_from_utf8(session.performance_export_path);
 	assert(path.parent_path() == ::FlowUi::detail::executable_directory());
 	assert(path.filename().string().starts_with("performance-capture-1-") &&
@@ -97,7 +113,7 @@ int main() {
 	session.performance_selection.selected_scope = {99, DevPerformanceScopeKind::Window};
 	session.performance_timeline.zoom = 10;
 	draw();
-	assert(has_label("Exported"));
+	assert(has_export_content("Exported"));
 	click();
 	assert(session.performance_export_path == saved_path);
 	assert(reporting.begin_capture(3) == 2);
@@ -107,9 +123,9 @@ int main() {
 	reporting.seal_capture();
 	session.performance_timeline.capture_generation = 2;
 	draw();
-	assert(has_label("Export") && !has_label("Exported"));
+	assert(has_export_content("Export"));
 	click();
-	assert(session.performance_export_generation == 2 && has_label("Exported"));
+	assert(session.performance_export_generation == 2 && has_export_content("Exported"));
 	assert(session.performance_export_path != saved_path);
 	exported.close();
 	std::filesystem::remove(path);

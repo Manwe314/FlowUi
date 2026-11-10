@@ -1,34 +1,34 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
-#include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/Public/configurationStructs/MemoryCapacityProfile.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/bake/DevBakedChangesMetadata.hpp"
 #endif
 #include <span>
 #include <string_view>
 
-#if FLOW_UI_DEV_MODE && (!FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUiBakedChanges.hpp"))
+#if FLOW_UI_DEV_MODE && (!FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUi/Private/BakedChanges.hpp"))
 namespace FlowUi::baked {
-/** Exact manifest revision compiled into this executable, or zero without baked changes. */
+/* Exact manifest revision compiled into this executable, or zero without baked changes. */
 [[nodiscard]] constexpr std::uint64_t compiled_manifest_digest() noexcept {
 	return 0;
 }
-/** Development-only catalogue of compiled assignments. */
+/* Development-only catalogue of compiled assignments. */
 [[nodiscard]] inline std::span<const CompiledChangeEntry> compiled_change_entries() noexcept {
 	return {};
 }
-/** Saved memory payload, including evidence and disabled settings. */
+/* Saved memory payload, including evidence and disabled settings. */
 [[nodiscard]] constexpr std::string_view compiled_memory_capacity_manifest_json() noexcept {
 	return {};
 }
 } // namespace FlowUi::baked
 #endif
 
-#if !FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUiBakedChanges.hpp")
+#if !FLOW_UI_HAS_BAKED_CHANGES || !__has_include("FlowUi/Private/BakedChanges.hpp")
 namespace FlowUi::baked {
-/** No compiled capacity payload in this build. */
+/* No compiled capacity payload in this build. */
 [[nodiscard]] constexpr bool has_baked_memory_capacity() noexcept {
 	return false;
 }
@@ -45,13 +45,13 @@ baked_memory_capacity_settings() noexcept {
 #include <string_view>
 #include <type_traits>
 
-#include "internal/TypeOperations.hpp"
+#include "FlowUi/Private/TypeOperations.hpp"
 
-#if __has_include("FlowUiBakedChanges.hpp")
-#include "FlowUiBakedChanges.hpp"
+#if __has_include("FlowUi/Private/BakedChanges.hpp")
+#include "FlowUi/Private/BakedChanges.hpp"
 #else
-#include "FlowUi/ElementID.hpp"
-#include "internal/ElementInstanceKey.hpp"
+#include "FlowUi/Public/identificationTypes/ElementID.hpp"
+#include "FlowUi/Private/elementSystem/ElementInstanceKey.hpp"
 
 namespace FlowUi::baked {
 

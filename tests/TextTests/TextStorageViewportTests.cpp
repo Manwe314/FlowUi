@@ -6,15 +6,18 @@
 #include <type_traits>
 
 #include "TestHarness.hpp"
-#include "internal/ManagerStorage/InputFieldManagerState.hpp"
-#include "internal/Text/TextLineBreaker.hpp"
-#include "internal/Text/TextStorage.hpp"
-#include "managers/InputFieldManager.hpp"
+#include "FlowUi/Private/inputService/InputFieldManagerState.hpp"
+#include "FlowUi/Private/textLayoutService/TextLineBreaker.hpp"
+#include "FlowUi/Private/textLayoutService/TextStorage.hpp"
+#include "FlowUi/Public/managers/InputFieldManager.hpp"
 
 namespace {
 
 using namespace FlowUi;
 namespace text = FlowUi::detail::text;
+
+template <typename Config>
+concept HasLegacyNewlineFlag = requires(Config config) { config.allowNewline; };
 
 std::string readFile(const char* path) {
 	std::ifstream input(path, std::ios::binary);
@@ -92,6 +95,9 @@ void testClusterLineBreaking() {
 
 void testPublicAndConsumerBoundary() {
 	static_assert(std::is_same_v<decltype(FieldQueryResult{}.text), FieldTextView>);
+	static_assert(!std::is_convertible_v<FieldTextView, std::string_view>);
+	static_assert(!std::is_constructible_v<std::string, FieldTextView>);
+	static_assert(!HasLegacyNewlineFlag<FieldConfig>);
 	static_assert(std::is_same_v<decltype(FieldQueryResult{}.visibleLines),
 		std::span<const VisibleTextLine>>);
 	static_assert(requires(InputFieldManager& manager, FieldHandle handle,

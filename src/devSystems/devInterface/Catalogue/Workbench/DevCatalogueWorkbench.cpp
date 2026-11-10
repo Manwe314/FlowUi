@@ -4,9 +4,9 @@
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "internal/Text/CurrentTextShaper.hpp"
-#include "internal/Text/TextAnalysis.hpp"
-#include "managers/FontManager.hpp"
+#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
+#include "FlowUi/Private/textLayoutService/TextAnalysis.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -41,6 +41,7 @@ enum Action : uint64_t {
 	FollowViewport,
 	CaptureViewport,
 	ImageFrame,
+	PickRaster,
 	Raster = 100
 };
 struct AssetCard {
@@ -173,6 +174,11 @@ void activate(void* target, uint64_t action, uint64_t value) {
 		state.pending = DevCatalogueCommand::Refresh;
 	if (action == Tint)
 		view.tint = !view.tint;
+	if (action == PickRaster) {
+		view.raster_identity = value;
+		view.fit = true;
+		view.pan_x = view.pan_y = 0;
+	}
 	if (action == HostSize)
 		view.page = (view.page + 1) % 3;
 	if (action == ImageFrame)
@@ -190,20 +196,60 @@ void activate(void* target, uint64_t action, uint64_t value) {
 		state.pending_size = catalogue_icon_steps[action - Raster];
 	}
 }
+[[nodiscard]] diagnostics_icons::Icon action_icon(uint64_t action) noexcept {
+	using Icon = diagnostics_icons::Icon;
+	switch (action) {
+	case All:
+		return Icon::Back;
+	case Fit:
+		return Icon::Fit;
+	case Native:
+		return Icon::Native;
+	case ZoomOut:
+		return Icon::ZoomOut;
+	case ZoomIn:
+		return Icon::ZoomIn;
+	case Remove:
+		return Icon::Remove;
+	case PreviousPage:
+		return Icon::Previous;
+	case NextPage:
+		return Icon::Next;
+	case Refresh:
+		return Icon::Refresh;
+	case CaptureViewport:
+		return Icon::Snapshot;
+	case 0:
+		return Icon::Info;
+	default:
+		return Icon::None;
+	}
+}
 template <class Identity>
 void control_button(Context& context, Identity key, std::string label, uint64_t action,
 					uint64_t value, bool enabled = true, std::string tooltip = {}) {
+	const auto icon = action_icon(action);
+	const bool icon_only = diagnostics_icons::is_classic_action(icon) || action == CaptureViewport;
+	if (icon_only && tooltip.empty())
+		tooltip = label;
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
 		context.id, ui::Control::definitionId, key.token);
 	context.uiManager.createElement(ui::kControl, key)
 		.withID(element)
-		.setParameters({.label = std::move(label),
-						.tooltip = std::move(tooltip),
-						.activate = activate,
-						.target = &context.params.interfaceState->catalogue,
-						.action = action,
-						.value = value,
-						.enabled = enabled})
+		.setParameters(
+			{.label = std::move(label),
+			 .tooltip = std::move(tooltip),
+			 .icon = icon,
+			 .activate = activate,
+			 .target = &context.params.interfaceState->catalogue,
+			 .action = action,
+			 .value = value,
+			 .enabled = enabled,
+			 .selected =
+				 action == View && context.params.interfaceState->catalogue
+										   .domains[context.params.interfaceState->catalogue.domain]
+										   .view == value,
+			 .icon_only = icon_only})
 		.setDevInternalCapture(true)
 		.draw();
 	catalogue_focus::register_element(context, context.params.interfaceState->catalogue,
@@ -240,10 +286,10 @@ void picture(Context& context, IndexedElementName key, TextureRef texture, float
 						   CLAY_SIZING_FIXED(texture.sourceHeight * scale)};
 	image.image.imageData = context.uiManager.imageData(texture);
 	if (texture.tintEnabled)
-		image.backgroundColor = interface_theme::kAccentSeaGlass;
+		image.backgroundColor = context.state().tint_color;
 	CLAY(context.clayID(key), image) {}
 }
-[[nodiscard]] TextureRef icon_texture(const devMode::DevIconCatalogEntry& icon,
+[[nodiscard]] TextureRef icon_texture(const tooling::DevIconCatalogEntry& icon,
 									  bool tint = false) noexcept {
 	return TextureRef{.handle = icon.atlasTexture,
 					  .uv0x = icon.atlasUv.x,
@@ -264,11 +310,11 @@ void specimen_text(Context& context, const DevCatalogueAsset& asset, std::string
 	configuration.wrapMode = CLAY_TEXT_WRAP_WORDS;
 	CLAY_TEXT(context.uiManager.toClayString(text), CLAY_TEXT_CONFIG(configuration));
 }
-[[nodiscard]] const devMode::DevSchemaRegistry::ElementPreview*
+[[nodiscard]] const tooling::DevSchemaRegistry::ElementPreview*
 element_adapter(Context& context, const DevCatalogueAsset& asset) noexcept {
 	const auto adapters = context.params.app->devTooling().schemas().elementPreviews();
 	const auto found = std::ranges::find(adapters, asset.element.definition,
-										 &devMode::DevSchemaRegistry::ElementPreview::definition);
+										 &tooling::DevSchemaRegistry::ElementPreview::definition);
 	return found == adapters.end() ? nullptr : &*found;
 }
 void element_preview(Context& context, const DevCatalogueAsset& asset, bool focused) {
@@ -301,21 +347,124 @@ void theme_tokens(Context& context, const DevCatalogueAsset& asset, size_t maxim
 		return;
 	}
 	const auto schema = context.params.app->devTooling().schemas().view();
-	for (size_t index = 0; index < std::min(maximum, presentation->fields.size()); ++index) {
+	std::string_view previous_group{};
+	const auto field_count =
+		std::min({maximum, presentation->fields.size(), presentation->values.size()});
+	for (size_t index = 0; index < field_count; ++index) {
 		const auto& field = presentation->fields[index];
-		auto token = ui::row(25);
-		token.layout.sizing.height = CLAY_SIZING_FIT(25);
+		const auto separator = field.path.find('.');
+		const std::string_view path = field.path;
+		const auto group = separator == std::string::npos ? std::string_view("General")
+														  : path.substr(0, separator);
+		if (index == 0 || group != previous_group) {
+			auto heading = ui::row(32);
+			heading.layout.padding = {4, 4, 8, 0};
+			CLAY(context.clayID(Keyed("token-group", index)), heading)
+			ui::text(context, group, interface_theme::kAccentSeaGlass, 13);
+			previous_group = group;
+		}
+		auto token = ui::row();
+		token.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+		token.layout.sizing.height = CLAY_SIZING_FIT(38);
+		token.layout.padding = {10, 10, 8, 8};
+		token.layout.childGap = 12;
+		token.backgroundColor =
+			index % 2 ? interface_theme::kDepth2Ink : interface_theme::kDepth3Elevated;
+		token.border = {.color = interface_theme::kBorderVisible, .width = {0, 0, 0, 1, 0}};
 		CLAY(context.clayID(Keyed("token", asset.identity ^ (index + 1))), token) {
+			auto label = ui::column(2);
+			label.layout.sizing.width = CLAY_SIZING_PERCENT(.42f);
+			std::string display_name;
+			const auto local_path =
+				separator == std::string::npos ? path : path.substr(separator + 1);
+			display_name.reserve(local_path.size() + 16);
+			for (const char character : local_path)
+				if (character == '.')
+					display_name += " / ";
+				else
+					display_name += character;
+			CLAY(context.clayID(Keyed("token-label", index)), label) {
+				ui::text(context, display_name, interface_theme::kTextCanvas, 12);
+				if (field.field && schema) {
+					const auto hint = schema->string(field.field->hint);
+					if (!hint.empty())
+						ui::text(context, hint, interface_theme::kTextMuted, 10);
+				}
+			}
 			const auto* type =
 				schema && field.field ? schema->type(field.field->valueType) : nullptr;
-			if (type && type->id == ::FlowUi::detail::typeHash<Clay_Color>() && field.live) {
-				Clay_ElementDeclaration swatch{};
-				swatch.layout.sizing = {CLAY_SIZING_FIXED(18), CLAY_SIZING_FIXED(18)};
-				swatch.backgroundColor = *static_cast<const Clay_Color*>(field.live);
-				CLAY(context.clayID(Keyed("swatch", asset.identity ^ (index + 1))), swatch) {}
+			if (type && field.live) {
+				Clay_ElementDeclaration preview{};
+				preview.layout.sizing = {CLAY_SIZING_FIXED(28), CLAY_SIZING_FIXED(22)};
+				preview.border = {.color = interface_theme::kBorderVisible,
+								  .width = {1, 1, 1, 1, 0}};
+				bool visible = true;
+				if (type->id == ::FlowUi::detail::typeHash<Clay_Color>()) {
+					preview.backgroundColor = *static_cast<const Clay_Color*>(field.live);
+					preview.cornerRadius = CLAY_CORNER_RADIUS(3);
+				} else if (type->id == ::FlowUi::detail::typeHash<Clay_CornerRadius>()) {
+					preview.backgroundColor = interface_theme::kAccentSeaGlass;
+					preview.cornerRadius = *static_cast<const Clay_CornerRadius*>(field.live);
+				} else if (type->kind == tooling::DevTypeKind::Boolean) {
+					preview.layout.sizing.width = CLAY_SIZING_FIXED(16);
+					preview.layout.sizing.height = CLAY_SIZING_FIXED(16);
+					preview.cornerRadius = CLAY_CORNER_RADIUS(8);
+					preview.backgroundColor = *static_cast<const bool*>(field.live)
+												  ? interface_theme::kStatusGreen
+												  : interface_theme::kTextMuted;
+				} else
+					visible = false;
+				if (visible)
+					CLAY(context.clayID(Keyed("swatch", asset.identity ^ (index + 1))), preview) {}
 			}
-			ui::text(context, field.path + "  " + presentation->values[index].live_display,
-					 interface_theme::kTextSecondary, 11);
+			std::string display_value = presentation->values[index].live_display;
+			if (type && field.live) {
+				char formatted[160]{};
+				if (type->id == ::FlowUi::detail::typeHash<Clay_Color>()) {
+					const auto& color = *static_cast<const Clay_Color*>(field.live);
+					const auto channel = [](float value) noexcept {
+						return static_cast<unsigned>(std::lround(std::clamp(value, 0.0f, 255.0f)));
+					};
+					std::snprintf(formatted, sizeof(formatted), "#%02X%02X%02X%02X",
+								  channel(color.r), channel(color.g), channel(color.b),
+								  channel(color.a));
+				} else if (type->id == ::FlowUi::detail::typeHash<Clay_Padding>()) {
+					const auto& padding = *static_cast<const Clay_Padding*>(field.live);
+					std::snprintf(formatted, sizeof(formatted), "L %u / R %u / T %u / B %u",
+								  padding.left, padding.right, padding.top, padding.bottom);
+				} else if (type->id == ::FlowUi::detail::typeHash<Clay_BorderWidth>()) {
+					const auto& border = *static_cast<const Clay_BorderWidth*>(field.live);
+					std::snprintf(formatted, sizeof(formatted),
+								  "L %u / R %u / T %u / B %u / Gap %u", border.left, border.right,
+								  border.top, border.bottom, border.betweenChildren);
+				} else if (type->id == ::FlowUi::detail::typeHash<Clay_CornerRadius>()) {
+					const auto& radius = *static_cast<const Clay_CornerRadius*>(field.live);
+					std::snprintf(formatted, sizeof(formatted),
+								  "TL %.3g / TR %.3g / BL %.3g / BR %.3g", radius.topLeft,
+								  radius.topRight, radius.bottomLeft, radius.bottomRight);
+				}
+				if (formatted[0])
+					display_value = formatted;
+			}
+			if (display_value.starts_with('{') || display_value.starts_with('[')) {
+				std::string wrapped_value;
+				wrapped_value.reserve(display_value.size() * 2);
+				bool quoted = false, escaped = false;
+				for (const char character : display_value) {
+					wrapped_value += character;
+					if (character == '"' && !escaped)
+						quoted = !quoted;
+					if (!quoted && (character == ',' || character == ':'))
+						wrapped_value += ' ';
+					escaped = character == '\\' && !escaped;
+				}
+				display_value = std::move(wrapped_value);
+			}
+			auto value = ui::column(0);
+			value.layout.sizing.width = CLAY_SIZING_GROW(0);
+			value.layout.childAlignment.x = CLAY_ALIGN_X_RIGHT;
+			CLAY(context.clayID(Keyed("token-value", index)), value)
+			ui::text(context, display_value, interface_theme::kTextSecondary, 12);
 		}
 	}
 }
@@ -328,22 +477,37 @@ void theme_components(Context& context, const DevCatalogueAsset& asset) {
 	UiManager::DevThemeScope theme_scope(context.uiManager, presentation->source);
 	UiManager::DevPassivePreviewScope passive(context.uiManager);
 	bool rendered = false;
+	size_t scene_index = 0;
 	context.params.app->themes().visitDevPreviews(asset.theme.themeTypeId, [&](const auto& scene) {
-		if (!scene.uses_local_theme && !presentation->source.active) {
-			ui::text(context,
-					 scene.debug_name + ": inactive preview requires the local theme resolver",
-					 interface_theme::kTextMuted, 11);
-			return;
+		auto example = ui::card(16);
+		example.layout.padding = {18, 18, 16, 16};
+		CLAY(context.clayID(Keyed("theme-scene", scene_index++)), example) {
+			ui::text(context, scene.debug_name, interface_theme::kTextCanvas, 14);
+			if (!scene.uses_local_theme && !presentation->source.active) {
+				ui::text(context,
+						 "Activate this variant to preview a scene that uses the global theme",
+						 interface_theme::kTextMuted, 11);
+			} else {
+				try {
+					scene.draw(*context.params.app, context.uiManager);
+					rendered = true;
+				} catch (...) {
+					ui::text(context, "Component preview failed", interface_theme::kStatusAmber,
+							 12);
+				}
+			}
 		}
-		ui::text(context, scene.debug_name, interface_theme::kTextCanvas, 12);
-		scene.draw(*context.params.app, context.uiManager);
-		rendered = true;
 	});
 	if (!rendered && asset.theme.themeTypeId == ::FlowUi::detail::typeHash<FSEL::FSELTheme>()) {
-		draw_fsel_theme_specimens(context, *context.params.app, context.state().specimens);
+		auto examples = ui::card(18);
+		examples.layout.padding = {20, 20, 18, 18};
+		CLAY(context.clayID("fsel-components"), examples) {
+			ui::text(context, "Controls", interface_theme::kTextCanvas, 14);
+			draw_fsel_theme_specimens(context, *context.params.app, context.state().specimens);
+		}
 		rendered = true;
 	}
-	if (!rendered)
+	if (!rendered && scene_index == 0)
 		ui::text(context, "No scene registered for this theme type");
 }
 void icon_controls(Context& context, const DevCatalogueAsset& asset, bool compact) {
@@ -351,9 +515,10 @@ void icon_controls(Context& context, const DevCatalogueAsset& asset, bool compac
 	const auto step = std::min<size_t>(state.domains[state.domain].raster_step, 6);
 	if (compact) {
 		CLAY(context.clayID(Keyed("card-controls", asset.identity)), ui::row(28)) {
-			button(context, Keyed("rasterize-card", asset.identity),
-				   "Rasterize " + std::to_string(catalogue_icon_steps[step]), Raster + step,
-				   asset.identity);
+			if (asset.icons.empty())
+				button(context, Keyed("rasterize-card", asset.identity), "Rasterize", Raster + step,
+					   asset.identity, true,
+					   "Create a " + std::to_string(catalogue_icon_steps[step]) + "px preview");
 			if (std::ranges::any_of(state.preview_rasters, [&](const auto& owned) {
 					return owned.icon_name == asset.name;
 				}))
@@ -397,7 +562,7 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 				ui::text(context, "No cached raster", interface_theme::kTextMuted, 11);
 			break;
 		case Domain::Images:
-			if (asset.image.status == devMode::DevResourceStatus::Ready)
+			if (asset.image.status == tooling::DevResourceStatus::Ready)
 				picture(context, Keyed("image", asset.identity),
 						TextureRef{.handle = asset.image.textureHandle,
 								   .sourceWidth = static_cast<int32_t>(asset.image.width),
@@ -412,9 +577,53 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 		case Domain::Elements:
 			element_preview(context, asset, false);
 			break;
-		case Domain::Themes:
-			theme_tokens(context, asset, 3);
+		case Domain::Themes: {
+			const auto* presentation = theme_presentation(context, asset);
+			const auto schema = context.params.app->devTooling().schemas().view();
+			std::vector<Clay_Color> palette;
+			palette.reserve(8);
+			if (presentation && schema)
+				for (const auto& field : presentation->fields) {
+					const auto* type = field.field ? schema->type(field.field->valueType) : nullptr;
+					if (!type || !field.live ||
+						type->id != ::FlowUi::detail::typeHash<Clay_Color>())
+						continue;
+					const auto color = *static_cast<const Clay_Color*>(field.live);
+					if (color.a <= 0 || std::ranges::any_of(palette, [&](const auto& existing) {
+							return existing.r == color.r && existing.g == color.g &&
+								   existing.b == color.b && existing.a == color.a;
+						}))
+						continue;
+					palette.emplace_back(color);
+					if (palette.size() == 8)
+						break;
+				}
+			auto preview = ui::column(10);
+			preview.layout.padding = {12, 12, 12, 12};
+			CLAY(context.clayID(Keyed("theme-preview", asset.identity)), preview) {
+				if (!palette.empty()) {
+					auto colors = ui::row(36);
+					colors.layout.childGap = 3;
+					CLAY(context.clayID(Keyed("theme-palette", asset.identity)), colors)
+					for (size_t index = 0; index < palette.size(); ++index) {
+						Clay_ElementDeclaration swatch{};
+						swatch.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0)};
+						swatch.backgroundColor = palette[index];
+						swatch.cornerRadius = CLAY_CORNER_RADIUS(4);
+						CLAY(context.clayID(
+								 Keyed("theme-preview-color", asset.identity ^ (index + 1))),
+							 swatch) {}
+					}
+				} else
+					ui::text(context, "Aa", interface_theme::kAccentSeaGlass, 30);
+				ui::text(context,
+						 std::to_string(presentation ? presentation->fields.size()
+													 : asset.theme.reflectedFieldCount) +
+							 " tokens",
+						 interface_theme::kTextSecondary, 11);
+			}
 			break;
+		}
 		case Domain::Actions:
 			ui::text(context, asset.action.isBound ? "BOUND" : "UNBOUND",
 					 asset.action.isBound ? interface_theme::kStatusGreen
@@ -439,11 +648,21 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 				ui::text(context, asset.status, interface_theme::kTextMuted, 11);
 			break;
 		case Domain::Atlases:
-			ui::text(context,
-					 std::to_string(asset.atlas.width) + " x " + std::to_string(asset.atlas.height),
-					 interface_theme::kAccentSeaGlass, 16);
-			ui::text(context, std::to_string(asset.atlas.allocatedRegions) + " regions",
-					 interface_theme::kTextSecondary, 11);
+			if (asset.atlas.kind == tooling::DevAtlasKind::FontMsdfAtlas &&
+				asset.atlas.atlasTexture) {
+				picture(context, Keyed("font-atlas-thumbnail", asset.identity),
+						TextureRef{.handle = asset.atlas.atlasTexture,
+								   .sourceWidth = static_cast<int32_t>(asset.atlas.width),
+								   .sourceHeight = static_cast<int32_t>(asset.atlas.height)},
+						width - 24, 76);
+				ui::text(context, "MSDF RGB", interface_theme::kTextSecondary, 11);
+			} else {
+				ui::text(context,
+						 std::to_string(asset.atlas.width) + " x " + std::to_string(asset.atlas.height),
+						 interface_theme::kAccentSeaGlass, 16);
+				ui::text(context, std::to_string(asset.atlas.allocatedRegions) + " regions",
+						 interface_theme::kTextSecondary, 11);
+			}
 			break;
 		case Domain::Count:
 			break;
@@ -474,6 +693,28 @@ void thumbnail(Context& context, const DevCatalogueAsset& asset, float width) {
 		prefix = cluster.endByte;
 	}
 	return prefix ? std::string(label.substr(0, prefix)) + "..." : std::string("...");
+}
+[[nodiscard]] std::string asset_hint(const DevCatalogueAsset& asset) {
+	const std::string full_name =
+		asset.domain == Domain::Themes ? asset.group + " / " + asset.name : asset.name;
+	std::string wrapped;
+	wrapped.reserve(full_name.size() + full_name.size() / 30 + asset.status.size() + 1);
+	size_t column = 0;
+	for (const unsigned char character : full_name) {
+		if ((character & 0xc0) != 0x80) {
+			if (column >= 34) {
+				wrapped += '\n';
+				column = 0;
+			}
+			++column;
+		}
+		wrapped += static_cast<char>(character);
+		if (column >= 22 && (character == '/' || character == ':' || character == '.')) {
+			wrapped += '\n';
+			column = 0;
+		}
+	}
+	return wrapped + "\n" + asset.status;
 }
 void gallery(Context& context, float width, float height) {
 	auto& state = context.params.interfaceState->catalogue;
@@ -542,13 +783,21 @@ void gallery(Context& context, float width, float height) {
 								? std::string_view(asset.name).substr(separator + 1)
 								: std::string_view(asset.name);
 						CLAY(context.clayID(Keyed("card-title", asset.identity)), title)
-						ui::text(context, card_label(context, display_name, card_width - 24),
+						ui::text(context,
+								 card_label(context,
+											asset.domain == Domain::Themes
+												? std::string_view(asset.group)
+												: display_name,
+											card_width - 24),
 								 interface_theme::kTextCanvas, 13);
 						auto status = ui::column(0);
 						status.layout.sizing = {CLAY_SIZING_FIXED(std::max(1.0f, card_width - 22)),
 												CLAY_SIZING_FIXED(34)};
 						CLAY(context.clayID(Keyed("card-status", asset.identity)), status)
-						ui::text(context, asset.status, interface_theme::kTextSecondary, 11);
+						ui::text(context,
+								 asset.domain == Domain::Themes ? asset.name + " · " + asset.status
+																: asset.status,
+								 interface_theme::kTextSecondary, 11);
 						if (asset.domain == Domain::Icons)
 							icon_controls(context, asset, true);
 					}
@@ -559,7 +808,7 @@ void gallery(Context& context, float width, float height) {
 					if (context.uiManager.getPreviousFramesInteraction().isHovered(
 							context.uiManager.toClayEID(card_identity)))
 						ui::pointer_tooltip(context, Keyed("asset-tooltip", asset.identity),
-											asset.name + "\n" + asset.status);
+											asset_hint(asset));
 				}
 			}
 		}
@@ -589,10 +838,15 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 						 current.mouseX < bounds.boundingBox.x + bounds.boundingBox.width &&
 						 current.mouseY < bounds.boundingBox.y + bounds.boundingBox.height;
 	const float native_scale = 1 / framebuffer_scale(context);
+	const float fit_limit = asset.domain == Domain::Icons ? native_scale * 16 : native_scale;
 	const float fit_scale =
-		std::min({width / texture.sourceWidth, height / texture.sourceHeight, native_scale});
+		std::min({width / texture.sourceWidth, height / texture.sourceHeight, fit_limit});
 	float scale = view.fit ? fit_scale : view.zoom * native_scale;
-	if (hovered && current.ctrl && current.scrollY != 0) {
+	const bool wheel_canvas = asset.domain == Domain::Atlases || asset.domain == Domain::Icons;
+	if (hovered)
+		context.uiManager.requestCursor(
+			context.state().dragging ? CursorType::Grabbing : CursorType::Grab, 6);
+	if (hovered && (wheel_canvas || current.ctrl) && current.scrollY != 0) {
 		const float previous_scale = scale;
 		view.fit = false;
 		view.zoom =
@@ -603,7 +857,11 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 		view.pan_x = pointer_x - (pointer_x - view.pan_x) * scale / previous_scale;
 		view.pan_y = pointer_y - (pointer_y - view.pan_y) * scale / previous_scale;
 	}
-	if (hovered && current.mouseDown[0] && previous.mouseDown[0] && !view.fit) {
+	if (hovered && current.mouseDown[0] && !previous.mouseDown[0])
+		context.state().dragging = true;
+	if (!current.mouseDown[0])
+		context.state().dragging = false;
+	if (context.state().dragging && current.mouseDown[0] && previous.mouseDown[0] && !view.fit) {
 		view.pan_x += current.mouseX - previous.mouseX;
 		view.pan_y += current.mouseY - previous.mouseY;
 	}
@@ -646,10 +904,11 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 		image.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
 		image.image.imageData = context.uiManager.imageData(texture);
 		if (texture.tintEnabled)
-			image.backgroundColor = interface_theme::kAccentSeaGlass;
+			image.backgroundColor = context.state().tint_color;
 		image.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
 		CLAY(context.clayID("canvas-image"), image) {
-			if (asset.domain == Domain::Atlases && view.view == 1) {
+			if (asset.domain == Domain::Atlases &&
+				asset.atlas.kind == tooling::DevAtlasKind::IconVectorAtlas && view.view == 1) {
 				size_t region_index = 0;
 				for (const auto& owner : state.assets) {
 					if (owner.domain != Domain::Icons)
@@ -674,12 +933,14 @@ void canvas(Context& context, const DevCatalogueAsset& asset, float width, float
 			}
 		}
 	}
-	ui::text(context,
-			 std::to_string(texture.sourceWidth) + " x " + std::to_string(texture.sourceHeight) +
-				 " texels · " + std::to_string(static_cast<int>(scale * 100)) + "% layout · " +
-				 std::to_string(static_cast<int>(scale / native_scale * 100)) +
-				 "% physical · Ctrl+wheel zoom · drag to pan",
-			 interface_theme::kTextMuted, 11);
+	ui::text(
+		context,
+		std::string(asset.domain == Domain::Atlases &&
+					asset.atlas.kind == tooling::DevAtlasKind::FontMsdfAtlas ? "MSDF RGB · " : "") +
+			std::to_string(texture.sourceWidth) + " × " + std::to_string(texture.sourceHeight) +
+			" px · " + std::to_string(static_cast<int>(scale / native_scale * 100)) +
+			(wheel_canvas ? "% · Wheel zoom · Drag to pan" : "% · Ctrl+wheel zoom · Drag to pan"),
+		interface_theme::kTextMuted, 11);
 }
 [[nodiscard]] std::string unicode_name(uint32_t codepoint) {
 	char buffer[16]{};
@@ -714,13 +975,20 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 	auto& view = state.domains[state.domain];
 	FSEL::TextInputParameters input{};
 	input.value = &state.specimen_text;
+	input.placeholder = "Type your own sample text";
 	input.maxBytes = 1024;
-	input.fontSize = 12;
-	input.sizing = Clay_Sizing{CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(30)};
-	context.uiManager.createElement(FSEL::kTextInput, "font-sample")
-		.setParameters(input)
-		.setDevInternalCapture(true)
-		.draw();
+	input.fontSize = 14;
+	input.padding = Clay_Padding{10, 10, 6, 6};
+	input.sizing = Clay_Sizing{CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(38)};
+	auto sample_editor = ui::card(8);
+	sample_editor.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+	CLAY(context.clayID("font-sample-editor"), sample_editor) {
+		ui::text(context, "Sample text", interface_theme::kTextCanvas, 12);
+		context.uiManager.createElement(FSEL::kTextInput, "font-sample")
+			.setParameters(input)
+			.setDevInternalCapture(true)
+			.draw();
+	}
 	catalogue_focus::register_element(context, state, FSEL::TextInput::definitionId,
 									  LocalElementName{"font-sample"}, true, true);
 	const auto* face = context.params.app->fonts().getFontById(asset.font.fontHandle);
@@ -756,16 +1024,34 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 			 missing.empty() ? interface_theme::kTextMuted : interface_theme::kStatusAmber, 11);
 	if (view.view == 0) {
 		for (const uint16_t size : {10, 12, 14, 16, 20, 24, 32, 48, 64}) {
-			ui::text(context, std::to_string(size) + " pt", interface_theme::kTextMuted, 11);
-			specimen_text(context, asset, state.specimen_text, size);
+			auto specimen = ui::row();
+			specimen.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+			specimen.layout.sizing.height = CLAY_SIZING_FIT(size * 1.5f + 24);
+			specimen.layout.padding = {12, 12, 12, 12};
+			specimen.layout.childGap = 16;
+			specimen.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
+			CLAY(context.clayID(Keyed("font-specimen-row", size)), specimen) {
+				auto label = ui::column(0);
+				label.layout.sizing.width = CLAY_SIZING_FIXED(42);
+				CLAY(context.clayID(Keyed("font-specimen-size", size)), label)
+				ui::text(context, std::to_string(size) + " pt", interface_theme::kTextMuted, 11);
+				auto sample = ui::column(0);
+				CLAY(context.clayID(Keyed("font-specimen-text", size)), sample)
+				specimen_text(context, asset, state.specimen_text, size);
+			}
 		}
 	} else if (view.view == 1) {
-		specimen_text(
-			context, asset,
-			state.specimen_text +
-				"\n\nThe same face is rendered through the application's real text layout. Il1 O0 "
-				"0123456789; punctuation, wrapping and fallback are visible here.",
-			16);
+		auto paragraph = ui::card(12);
+		paragraph.layout.padding = {20, 20, 20, 20};
+		CLAY(context.clayID("font-paragraph"), paragraph) {
+			ui::text(context, "Paragraph · 16 pt", interface_theme::kTextMuted, 11);
+			specimen_text(context, asset,
+						  state.specimen_text +
+							  "\n\nThe same face is rendered through the application's real text "
+							  "layout. Il1 O0 "
+							  "0123456789; punctuation, wrapping and fallback are visible here.",
+						  16);
+		}
 	} else {
 		auto filter = input;
 		filter.value = &view.glyph_search;
@@ -798,8 +1084,10 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 		}
 		std::ranges::sort(codepoints);
 		const auto parent = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
-		const size_t columns = static_cast<size_t>(std::clamp(
-			std::floor((parent.found ? parent.boundingBox.width : 480) / 88), 1.0f, 8.0f));
+		const float grid_width = std::max(80.0f, parent.found ? parent.boundingBox.width : 480);
+		const size_t columns =
+			static_cast<size_t>(std::clamp(std::floor((grid_width + 8) / 88), 1.0f, 16.0f));
+		const float cell_width = std::max(40.0f, (grid_width - (columns - 1) * 8) / columns - 18);
 		const size_t per_page = columns * 4;
 		const size_t pages = std::max<size_t>(1, (codepoints.size() + per_page - 1) / per_page);
 		view.page = std::min<uint64_t>(view.page, pages - 1);
@@ -813,8 +1101,8 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 		for (size_t row_start = view.page * per_page;
 			 row_start < std::min(codepoints.size(), (view.page + 1) * per_page);
 			 row_start += columns) {
-			auto row = ui::row(94);
-			row.layout.childGap = 4;
+			auto row = ui::row(108);
+			row.layout.childGap = 8;
 			CLAY(context.clayID(Keyed("glyph-row", row_start)), row) {
 				for (size_t index = row_start;
 					 index < std::min(row_start + columns, codepoints.size()); ++index) {
@@ -830,7 +1118,7 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 					catalogue_focus::register_element(context, state, ui::Control::definitionId,
 													  Keyed("choose-glyph", codepoint));
 					auto cell = ui::column(2);
-					cell.layout.sizing = {CLAY_SIZING_FIXED(58), CLAY_SIZING_FIXED(82)};
+					cell.layout.sizing = {CLAY_SIZING_FIXED(cell_width), CLAY_SIZING_FIXED(94)};
 					cell.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
 					cell.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 					CLAY(context.clayID(Keyed("glyph-cell", codepoint)), cell) {
@@ -882,47 +1170,109 @@ void font_focus(Context& context, const DevCatalogueAsset& asset) {
 }
 void shortcut_focus(Context& context, const DevCatalogueAsset& asset) {
 	auto& state = context.params.interfaceState->catalogue;
-	const auto& view = state.domains[state.domain];
-	static constexpr std::array contexts{"No focus", "Input focus", "Element focus",
-										 "Input + element focus"};
+	auto& view = state.domains[state.domain];
+	static constexpr std::array contexts{"None", "Text input", "Element", "Both"};
 	static constexpr std::array transitions{"Press", "Release", "Down"};
-	CLAY(context.clayID("shortcut-experiment"), ui::column()) {
-		button(context, "shortcut-context", contexts[view.shortcut_context], ShortcutContext);
-		button(context, "shortcut-transition", transitions[view.shortcut_transition],
-			   ShortcutTransition);
+	CLAY(context.clayID("shortcut-registration"), ui::card(10)) {
+		ui::text(context, asset.name, interface_theme::kAccentSeaGlass, 22);
+		ui::text(context, asset.status, interface_theme::kTextCanvas, 12);
+		for (size_t fact_index = 0; fact_index < asset.facts.size(); ++fact_index) {
+			const auto& fact = asset.facts[fact_index];
+			auto fact_row = ui::row();
+			fact_row.layout.sizing.height = CLAY_SIZING_FIT(26);
+			fact_row.layout.padding = {0, 0, 4, 4};
+			fact_row.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
+			CLAY(context.clayID(Keyed("shortcut-fact", fact_index)), fact_row) {
+				auto label = ui::column(0);
+				label.layout.sizing.width = CLAY_SIZING_PERCENT(.38f);
+				CLAY(context.clayID(Keyed("shortcut-fact-label", fact_index)), label)
+				ui::text(context, fact.first, interface_theme::kTextMuted, 11);
+				CLAY(context.clayID(Keyed("shortcut-fact-value", fact_index)), ui::column(0))
+				ui::text(context, fact.second, interface_theme::kTextCanvas, 12);
+			}
+		}
+	}
+	const auto choice = [&](IndexedElementName identity, std::string_view label,
+							uint64_t choice_value, bool transition) {
+		context.uiManager.createElement(ui::kControl, identity)
+			.setParameters({.label = std::string(label),
+							.activate =
+								+[](void* target, uint64_t action, uint64_t value) {
+									auto& catalogue = *static_cast<DevCatalogueState*>(target);
+									auto& settings = catalogue.domains[catalogue.domain];
+									if (action == 0)
+										settings.shortcut_context = value;
+									else
+										settings.shortcut_transition = value;
+								},
+							.target = &state,
+							.action = transition ? 1ull : 0ull,
+							.value = choice_value,
+							.selected = choice_value == (transition ? view.shortcut_transition
+																	: view.shortcut_context)})
+			.setDevInternalCapture(true)
+			.draw();
+		catalogue_focus::register_element(context, state, ui::Control::definitionId, identity);
+	};
+	CLAY(context.clayID("shortcut-experiment"), ui::card(8)) {
+		ui::text(context, "Dispatch preview", interface_theme::kTextCanvas, 14);
+		ui::text(context, "Focus context", interface_theme::kTextMuted, 11);
+		CLAY(context.clayID("shortcut-context-choices"), ui::row(32)) {
+			for (size_t choice_index = 0; choice_index < contexts.size(); ++choice_index)
+				choice(Keyed("shortcut-context", choice_index), contexts[choice_index],
+					   choice_index, false);
+		}
+		ui::text(context, "Key transition", interface_theme::kTextMuted, 11);
+		CLAY(context.clayID("shortcut-transition-choices"), ui::row(32)) {
+			for (size_t choice_index = 0; choice_index < transitions.size(); ++choice_index)
+				choice(Keyed("shortcut-transition", choice_index), transitions[choice_index],
+					   choice_index, true);
+		}
 	}
 	auto chord = asset.shortcut.chord;
 	chord.trigger = static_cast<ShortcutTrigger>(view.shortcut_transition);
-	std::vector<const DevCatalogueAsset*> candidates;
-	for (const auto& candidate : state.assets)
+	std::vector<size_t> candidates;
+	candidates.reserve(state.assets.size());
+	for (size_t candidate_index = 0; candidate_index < state.assets.size(); ++candidate_index) {
+		const auto& candidate = state.assets[candidate_index];
 		if (candidate.domain == Domain::Shortcuts && candidate.window == asset.window &&
 			ShortcutManager::devMatches(candidate.shortcut, chord, view.shortcut_context & 1,
 										view.shortcut_context & 2))
-			candidates.emplace_back(&candidate);
-	std::ranges::sort(candidates, [](const auto* left, const auto* right) {
-		return ShortcutManager::devPrecedes(left->shortcut, right->shortcut);
+			candidates.emplace_back(candidate_index);
+	}
+	std::ranges::sort(candidates, [&](size_t left, size_t right) {
+		return ShortcutManager::devPrecedes(state.assets[left].shortcut,
+											state.assets[right].shortcut);
 	});
-	ui::text(context, "Hypothetical candidate order", interface_theme::kTextCanvas, 14);
+	ui::text(context, "Matching registrations · " + std::to_string(candidates.size()),
+			 interface_theme::kTextCanvas, 14);
 	if (candidates.empty())
-		ui::text(context, "No eligible registration for this exact chord and transition");
-	for (const auto* candidate : candidates) {
-		CLAY(context.clayID(Keyed("candidate", candidate->identity)), ui::card()) {
-			ui::text(context, candidate->group + " → " + candidate->name,
-					 interface_theme::kAccentSeaGlass);
+		CLAY(context.clayID("shortcut-no-candidates"), ui::card())
+	ui::text(context, "No registration matches this focus context and key transition.",
+			 interface_theme::kTextMuted, 12);
+	for (size_t rank = 0; rank < candidates.size(); ++rank) {
+		const auto& candidate = state.assets[candidates[rank]];
+		auto candidate_card = ui::card(8);
+		if (candidate.identity == asset.identity)
+			candidate_card.border.color = interface_theme::kAccentSeaGlass;
+		CLAY(context.clayID(Keyed("candidate", candidate.identity)), candidate_card) {
 			ui::text(context,
-					 "Priority " + std::to_string(candidate->shortcut.priority) + " · order " +
-						 std::to_string(candidate->shortcut.order),
+					 std::to_string(rank + 1) + ". " + candidate.group + " · " + candidate.name,
+					 interface_theme::kAccentSeaGlass, 13);
+			ui::text(context,
+					 "Priority " + std::to_string(candidate.shortcut.priority) +
+						 " · registration " + std::to_string(candidate.shortcut.order),
 					 interface_theme::kTextSecondary, 11);
 			ui::text(context,
-					 candidate->shortcut.handling == ShortcutHandling::PassThrough
+					 candidate.shortcut.handling == ShortcutHandling::PassThrough
 						 ? "Continues after action; outcome unknown"
 						 : "Stops if handled; otherwise continues",
 					 interface_theme::kTextMuted, 11);
 		}
 	}
 	ui::text(context,
-			 "Pure matching and ordering share dispatcher rules. No input, focus, callback or "
-			 "action is changed.",
+			 "Preview uses dispatcher matching and order. Callback results are observed only when "
+			 "the shortcut runs in its window.",
 			 interface_theme::kTextMuted, 11);
 }
 void focused(Context& context, const DevCatalogueAsset& asset, float width, float height) {
@@ -957,7 +1307,7 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 					 interface_theme::kTextMuted, 11);
 		ui::text(context, asset.detail, interface_theme::kTextMuted, 11);
 	} else if (asset.domain == Domain::Images) {
-		if (asset.image.status != devMode::DevResourceStatus::Ready) {
+		if (asset.image.status != tooling::DevResourceStatus::Ready) {
 			ui::text(context, asset.status);
 			return;
 		}
@@ -1038,78 +1388,121 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			}
 		}
 	} else if (asset.domain == Domain::Icons) {
-		ui::text(context,
-				 view.tint ? "Tint enabled · exact cached rasters"
-						   : "Source colors · exact cached rasters",
-				 interface_theme::kTextCanvas);
-		if (asset.icons.empty())
-			ui::text(context, "Registered · no cached raster. Choose an explicit step below to "
-							  "create a preview.");
-		if (view.view == 1 && !asset.icons.empty()) {
-			if (!view.raster_identity)
-				view.raster_identity =
-					asset.icons[std::min<size_t>(view.page, asset.icons.size() - 1)]
-						.atlasTexture.packed();
-			const auto found = std::ranges::find_if(asset.icons, [&](const auto& raster) {
-				return raster.atlasTexture.packed() == view.raster_identity;
-			});
-			if (found != asset.icons.end())
-				canvas(context, asset, width, std::max(140.0f, height - 180),
-					   icon_texture(*found, view.tint));
-			else
-				ui::text(context, "Cached raster no longer available",
-						 interface_theme::kStatusAmber);
-			button(context, "next-cached-raster", "Next cached size", NextRaster, 0,
-				   asset.icons.size() > 1);
-		} else
-			for (const auto& raster : asset.icons) {
-				const float row_height =
-					std::max(44.0f, static_cast<float>(raster.targetHeight) + 8);
-				CLAY(context.clayID(Keyed("cached-size", raster.atlasTexture.packed())),
-					 ui::row(row_height)) {
-					ui::text(context,
-							 std::to_string(raster.targetWidth) + " x " +
-								 std::to_string(raster.targetHeight) + " px",
-							 interface_theme::kTextMuted, 11);
-					for (uint64_t mode = 1; mode <= 2; ++mode) {
-						auto comparison = ui::row(row_height);
-						comparison.layout.sizing.width = CLAY_SIZING_FIXED(
-							std::min(width / 3, static_cast<float>(raster.targetWidth) + 24));
-						comparison.backgroundColor = background(mode);
-						comparison.layout.childAlignment.x = CLAY_ALIGN_X_CENTER;
-						CLAY(context.clayID(
-								 Keyed("icon-background", raster.atlasTexture.packed() ^ mode)),
-							 comparison)
-						picture(context,
-								Keyed("cached-raster", raster.atlasTexture.packed() ^ mode),
-								icon_texture(raster, view.tint), width / 3 - 10,
-								static_cast<float>(raster.targetHeight));
+		const auto step = std::min<size_t>(view.raster_step, catalogue_icon_steps.size() - 1);
+		constexpr float raster_slot_width = 72, raster_row_height = 34, raster_row_gap = 4;
+		const auto first_row_capacity =
+			static_cast<size_t>(std::max(1.0f, std::floor((width - 98) / raster_slot_width)));
+		const auto remaining_row_capacity =
+			static_cast<size_t>(std::max(1.0f, std::floor(width / raster_slot_width)));
+		const size_t remaining_rasters =
+			asset.icons.size() > first_row_capacity ? asset.icons.size() - first_row_capacity : 0;
+		const size_t raster_rows =
+			1 + (remaining_rasters + remaining_row_capacity - 1) / remaining_row_capacity;
+		const float raster_content_height =
+			raster_rows * raster_row_height + (raster_rows - 1) * raster_row_gap;
+		const float raster_toolbar_height =
+			std::min(raster_content_height, std::max(raster_row_height, height * .35f));
+		const auto raster_toolbar_id = context.clayID("cached-raster-toolbar");
+		const auto raster_scroll = Clay_GetScrollContainerData(raster_toolbar_id);
+		auto raster_toolbar = ui::column(static_cast<uint16_t>(raster_row_gap));
+		raster_toolbar.layout.sizing = {CLAY_SIZING_PERCENT(1),
+										CLAY_SIZING_FIXED(raster_toolbar_height)};
+		raster_toolbar.clip = {.vertical = true,
+							   .childOffset = raster_scroll.found && raster_scroll.scrollPosition
+												  ? *raster_scroll.scrollPosition
+												  : Clay_Vector2{}};
+		CLAY(raster_toolbar_id, raster_toolbar) {
+			const catalogue_focus::ViewportScope raster_focus(state, raster_toolbar_id);
+			size_t first_raster = 0;
+			for (size_t row_index = 0; row_index < raster_rows; ++row_index) {
+				auto raster_row = ui::row(raster_row_height);
+				raster_row.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+				CLAY(context.clayID(Keyed("cached-raster-row", row_index)), raster_row) {
+					if (row_index == 0)
+						ui::text(context, "Cached sizes", interface_theme::kTextMuted, 11);
+					const size_t row_end =
+						std::min(asset.icons.size(),
+								 first_raster + (row_index == 0 ? first_row_capacity
+																: remaining_row_capacity));
+					for (; first_raster < row_end; ++first_raster) {
+						const auto& raster = asset.icons[first_raster];
+						context.uiManager
+							.createElement(ui::kControl, Keyed("cached-raster-choice",
+															   raster.atlasTexture.packed()))
+							.setParameters(
+								{.label = std::to_string(raster.targetWidth) + "px",
+								 .activate = activate,
+								 .target = &state,
+								 .action = PickRaster,
+								 .value = raster.atlasTexture.packed(),
+								 .selected = view.raster_identity == raster.atlasTexture.packed()})
+							.setDevInternalCapture(true)
+							.draw();
+						catalogue_focus::register_element(
+							context, state, ui::Control::definitionId,
+							Keyed("cached-raster-choice", raster.atlasTexture.packed()));
 					}
 				}
 			}
-		ui::text(context, "Rasterize at a physical pixel step", interface_theme::kTextSecondary,
-				 12);
-		icon_controls(context, asset, false);
+		}
+		const bool cached = std::ranges::any_of(asset.icons, [&](const auto& raster) {
+			return raster.targetWidth == catalogue_icon_steps[step] &&
+				   raster.targetHeight == catalogue_icon_steps[step];
+		});
+		CLAY(context.clayID("raster-actions"), ui::row(30)) {
+			button(context, "create-icon-raster",
+				   cached ? "Size cached"
+						  : "Rasterize " + std::to_string(catalogue_icon_steps[step]) + "px",
+				   Raster + step, asset.identity, !cached);
+			const auto owned = std::ranges::count(state.preview_rasters, asset.name,
+												  &DevCataloguePreviewRaster::icon_name);
+			if (owned)
+				button(context, "remove-icon-previews", "Remove previews", Remove, asset.identity,
+					   true, "Remove only rasters created in Catalogue");
+		}
+		if (asset.icons.empty()) {
+			auto empty = ui::card();
+			empty.layout.sizing.height = CLAY_SIZING_GROW(0);
+			empty.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+			CLAY(context.clayID("uncached-icon"), empty)
+			ui::text(context, "Choose a raster size in the header, then Rasterize to preview.");
+		} else {
+			auto found = std::ranges::find_if(asset.icons, [&](const auto& raster) {
+				return raster.atlasTexture.packed() == view.raster_identity;
+			});
+			if (found == asset.icons.end()) {
+				found = asset.icons.begin();
+				view.raster_identity = found->atlasTexture.packed();
+			}
+			canvas(context, asset, width,
+				   std::max(40.0f, height - 116 - (raster_toolbar_height - raster_row_height)),
+				   icon_texture(*found, view.tint));
+		}
 	} else if (asset.domain == Domain::Fonts)
 		font_focus(context, asset);
 	else if (asset.domain == Domain::Elements) {
-		ui::text(context, "Effective defaults · passive specimen · bounded host",
-				 interface_theme::kTextSecondary, 11);
 		static constexpr std::array<Clay_Dimensions, 3> host_sizes{
-			{{360, 220}, {480, 320}, {240, 160}}};
+			{{0, 0}, {480, 320}, {360, 220}}};
 		const auto host_size = host_sizes[view.page % host_sizes.size()];
-		auto stage = ui::column();
-		stage.layout.sizing = {CLAY_SIZING_FIXED(std::min(width, host_size.width)),
-							   CLAY_SIZING_FIXED(host_size.height)};
-		stage.layout.padding = {12, 12, 12, 12};
-		stage.backgroundColor = background(view.background);
-		stage.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
-		stage.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-		CLAY(context.clayID("element-stage"), stage) element_preview(context, asset, true);
-		ui::text(context,
-				 "Empty text, absent borrowed values and unpainted layouts keep their actual "
-				 "defaults. The host outline shows available space.",
-				 interface_theme::kTextMuted, 11);
+		auto area = ui::column(0);
+		area.layout.sizing = {CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0)};
+		area.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+		CLAY(context.clayID("element-preview-area"), area) {
+			auto stage = ui::column();
+			stage.layout.sizing = {
+				CLAY_SIZING_FIXED(std::max(1.0f, host_size.width > 0
+													 ? std::min(width - 32, host_size.width)
+													 : width - 32)),
+				CLAY_SIZING_FIXED(std::max(1.0f, host_size.height > 0
+													 ? std::min(height - 32, host_size.height)
+													 : height - 32))};
+			stage.layout.padding = {20, 20, 20, 20};
+			stage.layout.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+			stage.backgroundColor = interface_theme::kDepth0Keel;
+			stage.border = {.color = interface_theme::kBorderVisible, .width = {1, 1, 1, 1, 0}};
+			stage.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+			CLAY(context.clayID("element-stage"), stage) element_preview(context, asset, true);
+		}
 	} else if (asset.domain == Domain::Themes) {
 		if (view.view == 0)
 			theme_tokens(context, asset, 10000);
@@ -1117,55 +1510,42 @@ void focused(Context& context, const DevCatalogueAsset& asset, float width, floa
 			theme_components(context, asset);
 	} else if (asset.domain == Domain::Shortcuts)
 		shortcut_focus(context, asset);
-	else if (asset.domain == Domain::Atlases &&
-			 asset.atlas.kind == devMode::DevAtlasKind::IconVectorAtlas &&
-			 asset.atlas.atlasTexture) {
-		canvas(context, asset, width, std::max(140.0f, height - 45),
+	else if (asset.domain == Domain::Atlases) {
+		const bool raw_msdf = asset.atlas.kind == tooling::DevAtlasKind::FontMsdfAtlas;
+		canvas(context, asset, width, std::max(80.0f, height - (raw_msdf ? 48 : 32)),
 			   TextureRef{.handle = asset.atlas.atlasTexture,
 						  .sourceWidth = static_cast<int32_t>(asset.atlas.width),
 						  .sourceHeight = static_cast<int32_t>(asset.atlas.height)});
-		ui::text(context, "Verified icon owners on this page", interface_theme::kTextCanvas, 13);
-		size_t owner_count = 0;
-		for (const auto& owner : state.assets) {
-			if (owner.domain != Domain::Icons ||
-				!std::ranges::any_of(owner.icons, [&](const auto& raster) {
-					return raster.atlasLayer == asset.atlas.pageIndex;
-				}))
-				continue;
-			if (owner_count++ >= 64) {
-				ui::text(context, "Additional owners are available in Icons",
-						 interface_theme::kTextMuted, 11);
-				break;
-			}
-			button(context, Keyed("atlas-owner", owner.identity), owner.name, Select,
-				   owner.identity);
-		}
-	} else if (asset.domain == Domain::Atlases &&
-			   asset.atlas.kind == devMode::DevAtlasKind::FontMsdfAtlas) {
-		ui::text(context, "MSDF reconstruction · layer " + std::to_string(asset.atlas.pageIndex),
-				 interface_theme::kTextCanvas, 16);
-		bool found_owner = false;
-		for (const auto& owner : state.assets) {
-			if (owner.domain != Domain::Fonts || owner.font.atlasLayer != asset.atlas.pageIndex)
-				continue;
-			found_owner = true;
-			specimen_text(context, owner, "Aa Bb Il1 O0 0123456789", 40);
-			button(context, Keyed("font-atlas-owner", owner.identity), "Open face: " + owner.name,
-				   Select, owner.identity);
-		}
-		if (!found_owner)
-			ui::text(context, "No registered face currently owns this layer");
-		ui::text(context,
-				 "Reconstruction uses the registered face's real MSDF renderer. Raw font atlas "
-				 "sampling is unavailable through the current texture binding.",
-				 interface_theme::kTextMuted, 11);
 	} else
 		CLAY(context.clayID("contract"), ui::card()) {
-			ui::text(context, asset.status, interface_theme::kAccentSeaGlass, 17);
-			ui::text(context, asset.detail);
-			for (const auto& fact : asset.facts)
-				ui::text(context, fact.first + "  " + fact.second, interface_theme::kTextSecondary,
-						 12);
+			CLAY(context.clayID("registration-summary"), ui::row(46)) {
+				ui::text(context, asset.status, interface_theme::kAccentSeaGlass, 17);
+				if (asset.domain == Domain::Actions)
+					ui::text(context,
+							 std::to_string(asset.action.lifetimeInvocations) + " invocations",
+							 interface_theme::kTextCanvas, 14);
+			}
+			if (!asset.detail.empty())
+				ui::text(context, asset.detail, interface_theme::kTextMuted, 12);
+			for (size_t fact_index = 0; fact_index < asset.facts.size(); ++fact_index) {
+				const auto& fact = asset.facts[fact_index];
+				auto fact_row = ui::row(36);
+				fact_row.layout.sizing.height = CLAY_SIZING_FIT(36);
+				fact_row.layout.padding = {8, 8, 7, 7};
+				fact_row.backgroundColor =
+					fact_index % 2 ? interface_theme::kDepth1Panel : interface_theme::kDepth0Keel;
+				fact_row.border = {.color = interface_theme::kBorderSubtle,
+								   .width = {0, 0, 0, 1, 0}};
+				CLAY(context.clayID(Keyed("registration-fact", fact_index)), fact_row) {
+					auto label = ui::column(0);
+					label.layout.sizing.width = CLAY_SIZING_PERCENT(.36f);
+					CLAY(context.clayID(Keyed("fact-label", fact_index)), label)
+					ui::text(context, fact.first, interface_theme::kTextMuted, 11);
+					auto value = ui::column(0);
+					CLAY(context.clayID(Keyed("fact-value", fact_index)), value)
+					ui::text(context, fact.second, interface_theme::kTextCanvas, 12);
+				}
+			}
 		}
 }
 } // namespace
@@ -1183,129 +1563,181 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 	auto& local = context.state();
 	auto& view = state.domains[state.domain];
 	const auto* selected = selected_catalogue_asset(state);
+	if (local.last_domain != state.domain || local.last_selection != state.selected_identity) {
+		local.dragging = false;
+		if (selected && selected->domain == Domain::Shortcuts)
+			view.shortcut_transition = static_cast<uint64_t>(selected->shortcut.chord.trigger);
+	}
 	const auto parent = Clay_GetElementData(Clay_ElementId{.id = Clay_GetOpenElementId()});
-	const float width = std::max(180.0f, parent.found ? parent.boundingBox.width - 24 : 480),
-				height = std::max(180.0f, parent.found ? parent.boundingBox.height - 145 : 400);
+	const float width = std::max(80.0f, parent.found ? parent.boundingBox.width - 24 : 480);
+	const float available_height =
+		std::max(80.0f, parent.found ? parent.boundingBox.height - 20 : 500);
+	const auto content_bounds = Clay_GetElementData(context.clayID("focused-scroll"));
+	const float height = std::max(40.0f, content_bounds.found ? content_bounds.boundingBox.height
+															  : available_height - 104);
 	auto root = ui::column(8);
-	root.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	root.layout.sizing.height = CLAY_SIZING_PERCENT(1);
+	root.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_PERCENT(1)};
 	root.layout.padding = {12, 12, 10, 10};
 	root.clip = {.horizontal = true, .scrollInputDisabled = true};
 	CLAY(context.clayID(), root) {
-		auto title = ui::row(32);
-		title.clip = {.horizontal = true, .scrollInputDisabled = true};
+		auto title = ui::row(36);
+		title.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+		title.layout.childGap = 8;
+		title.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 0, 1, 0}};
 		CLAY(context.clayID("title"), title) {
 			button(context, "all",
-				   std::string(catalogue_domain_name(static_cast<Domain>(state.domain))), All);
-			ui::text(context,
-					 selected			  ? "/ " + selected->name
-					 : view.group.empty() ? "/ All"
-										  : "/ " + view.group,
-					 interface_theme::kTextCanvas, 14);
+				   std::string(catalogue_domain_name(static_cast<Domain>(state.domain))), All, 0,
+				   true, "Return to this collection");
+			auto name = ui::row(30);
+			name.layout.sizing.width = CLAY_SIZING_GROW(0);
+			name.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+			CLAY(context.clayID("selection-title"), name) {
+				const std::string title_text =
+					selected ? (selected->domain == Domain::Themes ? selected->group + " / " : "") +
+								   selected->name
+					: view.group.empty() ? "All registrations"
+										 : view.group;
+				const float utility_width = selected && selected->domain == Domain::Elements
+												? 238.0f
+											: selected ? 184.0f
+													   : 128.0f;
+				ui::text(context,
+						 card_label(context, title_text, std::max(24.0f, width - utility_width)),
+						 interface_theme::kTextCanvas, 13);
+			}
+			if (selected && context.uiManager.getPreviousFramesInteraction().isHovered(
+								context.clayID("selection-title")))
+				ui::pointer_tooltip(context, LocalElementName{"selection-title-help"},
+									asset_hint(*selected));
+			if (selected && selected->domain == Domain::Elements)
+				button(context, "preview-help", "Info", 0, 0, true,
+					   selected->status + "\n" + selected->detail +
+						   "\nPassive preview uses effective defaults. Empty labels, missing "
+						   "borrowed values "
+						   "and layout-only elements can produce no visible content.");
+			if (selected) {
+				context.uiManager.createElement(ui::kControl, "copy-name")
+					.setParameters({.label = "Copy",
+									.tooltip = "Copy full registration name",
+									.clipboard_text = selected->domain == Domain::Themes
+														  ? selected->group + " / " + selected->name
+														  : selected->name,
+									.icon = diagnostics_icons::Icon::Copy,
+									.enabled = context.uiManager.hasClipboardAccess(),
+									.icon_only = true})
+					.setDevInternalCapture(true)
+					.draw();
+				catalogue_focus::register_element(context, state, ui::Control::definitionId,
+												  LocalElementName{"copy-name"},
+												  context.uiManager.hasClipboardAccess());
+			}
+			button(context, "refresh", "Refresh", Refresh, 0, true, "Refresh registered assets");
 		}
-		auto toolbar = ui::row(30);
-		toolbar.clip = {.horizontal = true, .scrollInputDisabled = true};
-		CLAY(context.clayID("toolbar"), toolbar) {
-			if (state.domain == static_cast<uint64_t>(Domain::Viewports)) {
-				button(context, "viewport-follow",
-					   view.follow_observed_output ? "Follow observed" : "Frozen", FollowViewport,
-					   0, true, "Follow copies output only when the source naturally renders");
-				if (selected)
-					button(context, "viewport-capture", "Capture next output", CaptureViewport,
-						   selected->identity, selected->viewport.supported);
-			}
-			if (selected && ((selected->domain == Domain::Images && view.view == 0) ||
-							 selected->domain == Domain::Atlases)) {
-				button(context, "fit", "Fit", Fit);
-				button(context, "native", "1:1", Native);
-				button(context, "zoom-out", "-", ZoomOut);
-				button(context, "zoom-in", "+", ZoomIn);
-			}
-			if (selected && selected->domain == Domain::Atlases &&
-				selected->atlas.kind == devMode::DevAtlasKind::IconVectorAtlas)
-				button(context, "atlas-overlay", view.view == 1 ? "Hide regions" : "Show regions",
-					   View, view.view == 1 ? 0 : 1);
-			if (state.domain == static_cast<uint64_t>(Domain::Icons)) {
-				button(context, "icon-tint", view.tint ? "Tint" : "Source", Tint);
-				if (selected) {
-					button(context, "icon-ladder", "Cached sizes", View, 0);
-					button(context, "icon-exact", "Inspect raster", View, 1);
+		const bool has_toolbar =
+			state.domain == static_cast<uint64_t>(Domain::Icons) ||
+			state.domain == static_cast<uint64_t>(Domain::Viewports) ||
+			(selected &&
+			 (selected->domain == Domain::Themes || selected->domain == Domain::Fonts ||
+			  selected->domain == Domain::Elements || selected->domain == Domain::Images ||
+			  selected->domain == Domain::Atlases));
+		const bool compact_icon_toolbar =
+			selected && selected->domain == Domain::Icons && width < 440;
+		if (has_toolbar) {
+			auto toolbar = ui::row(32);
+			toolbar.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+			toolbar.layout.childGap = 5;
+			toolbar.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+			CLAY(context.clayID("toolbar"), toolbar) {
+				if (selected && selected->domain == Domain::Themes) {
+					button(context, "tokens", "Tokens", View, 0);
+					button(context, "components", "Components", View, 1);
 				}
-			}
-			if (selected && selected->domain == Domain::Themes) {
-				button(context, "tokens", "Tokens", View, 0);
-				button(context, "components", "Components", View, 1);
-			}
-			if (selected && selected->domain == Domain::Fonts) {
-				button(context, "specimen", "Specimen", View, 0);
-				button(context, "paragraph", "Paragraph", View, 1);
-				button(context, "glyphs", "Glyph metrics", View, 2);
-			}
-			if (selected && selected->domain == Domain::Elements) {
-				static constexpr std::array host_labels{"Host 360 x 220", "Host 480 x 320",
-														"Host 240 x 160"};
-				button(context, "element-host-size", host_labels[view.page % host_labels.size()],
-					   HostSize);
-				const auto* adapter = element_adapter(context, *selected);
-				if (adapter && adapter->has_draw && adapter->has_construct) {
-					button(context, "draw", "Draw", View, 0);
-					button(context, "construct", "Construct", View, 1);
+				if (selected && selected->domain == Domain::Fonts) {
+					button(context, "specimen", "Specimen", View, 0);
+					button(context, "paragraph", "Paragraph", View, 1);
+					button(context, "glyphs", "Glyph metrics", View, 2);
 				}
-			}
-			if (selected && selected->domain != Domain::Icons &&
-				selected->domain != Domain::Viewports)
-				button(context, "background",
-					   view.background == 0	  ? "Checkerboard"
-					   : view.background == 1 ? "Light"
-											  : "Dark",
-					   Background);
-			else if (!selected)
-				button(context, "refresh", "Refresh", Refresh);
-		}
-		if (state.domain == static_cast<uint64_t>(Domain::Icons)) {
-			CLAY(context.clayID("icon-toolbar-secondary"), ui::row(30)) {
-				button(context, "raster-step",
-					   "Step " +
+				if (selected && selected->domain == Domain::Elements) {
+					static constexpr std::array host_labels{"Fill host", "480 × 320", "360 × 220"};
+					button(context, "element-host-size",
+						   host_labels[view.page % host_labels.size()], HostSize);
+					const auto* adapter = element_adapter(context, *selected);
+					if (adapter && adapter->has_draw && adapter->has_construct) {
+						button(context, "draw", "Draw", View, 0);
+						button(context, "construct", "Construct", View, 1);
+					}
+				}
+				if (state.domain == static_cast<uint64_t>(Domain::Viewports)) {
+					button(context, "viewport-follow",
+						   view.follow_observed_output ? "Following" : "Frozen", FollowViewport, 0,
+						   true, "Follow output when the source renders");
+					if (selected)
+						button(context, "viewport-capture", "Capture", CaptureViewport,
+							   selected->identity, selected->viewport.supported,
+							   "Capture next output");
+				}
+				if (state.domain == static_cast<uint64_t>(Domain::Icons)) {
+					button(context, "icon-tint", view.tint ? "Tinted" : "Source", Tint, 0, true,
+						   "Toggle source colors and the preview tint");
+					auto color_width = ui::row(30);
+					color_width.layout.sizing.width =
+						CLAY_SIZING_FIXED(std::min(174.0f, width * .27f));
+					CLAY(context.clayID("tint-color"), color_width) {
+						local.tint_editor.app = context.params.app;
+						local.tint_editor.interfaceState = context.params.interfaceState;
+						local.tint_editor.editValue = &local.tint_color;
+						local.tint_editor.editable = true;
+						local.tint_editor.local_value = true;
+						context.uiManager.createElement(kDevColorTypeEditor, "icon-tint-color")
+							.setParameters({.editor = &local.tint_editor})
+							.setDevInternalCapture(true)
+							.draw();
+					}
+					button(context, "raster-step",
 						   std::to_string(
 							   catalogue_icon_steps[std::min<size_t>(view.raster_step, 6)]) +
-						   "px",
-					   RasterStep);
-				if (selected) {
+							   "px",
+						   RasterStep, 0, true,
+						   "Choose the physical pixel size for new preview rasters");
+				}
+				if (selected && !compact_icon_toolbar &&
+					(selected->domain == Domain::Icons || selected->domain == Domain::Atlases ||
+					 selected->domain == Domain::Viewports ||
+					 (selected->domain == Domain::Images && view.view == 0))) {
+					button(context, "fit", "Fit", Fit);
+					button(context, "native", "1:1", Native);
+					if (width >= 620) {
+						button(context, "zoom-out", "−", ZoomOut);
+						button(context, "zoom-in", "+", ZoomIn);
+					}
 					button(context, "background",
 						   view.background == 0	  ? "Checker"
 						   : view.background == 1 ? "Light"
 												  : "Dark",
 						   Background);
-					if (view.view == 1 && width >= 460) {
-						button(context, "fit", "Fit", Fit);
-						button(context, "native", "1:1", Native);
-						button(context, "zoom-out", "-", ZoomOut);
-						button(context, "zoom-in", "+", ZoomIn);
-					}
-				} else
-					button(context, "remove-all-previews", "Remove preview rasters", Remove, 0,
-						   !state.preview_rasters.empty());
-			}
-			if (selected && view.view == 1 && width < 460)
-				CLAY(context.clayID("icon-toolbar-zoom"), ui::row(30)) {
-					button(context, "fit", "Fit", Fit);
-					button(context, "native", "1:1", Native);
-					button(context, "zoom-out", "-", ZoomOut);
-					button(context, "zoom-in", "+", ZoomIn);
 				}
+				if (selected && selected->domain == Domain::Atlases &&
+					selected->atlas.kind == tooling::DevAtlasKind::IconVectorAtlas)
+					button(context, "atlas-overlay", view.view == 1 ? "Hide regions" : "Regions",
+						   View, view.view == 1 ? 0 : 1);
+				if (selected && selected->domain == Domain::Atlases &&
+					selected->atlas.kind == tooling::DevAtlasKind::FontMsdfAtlas && width >= 400)
+					ui::text(context, "MSDF RGB", interface_theme::kAccentSeaGlass, 11);
+			}
 		}
-		if (selected && selected->domain == Domain::Viewports)
-			CLAY(context.clayID("viewport-toolbar-view"), ui::row(30)) {
+		if (compact_icon_toolbar) {
+			auto canvas_controls = ui::row(32);
+			canvas_controls.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+			CLAY(context.clayID("icon-canvas-controls"), canvas_controls) {
 				button(context, "fit", "Fit", Fit);
 				button(context, "native", "1:1", Native);
-				button(context, "zoom-out", "-", ZoomOut);
-				button(context, "zoom-in", "+", ZoomIn);
 				button(context, "background",
 					   view.background == 0	  ? "Checker"
 					   : view.background == 1 ? "Light"
 											  : "Dark",
 					   Background);
 			}
+		}
 		if (state.selected_outside_filter)
 			ui::text(context, "Selected asset is outside this filter",
 					 interface_theme::kStatusAmber, 11);
@@ -1322,11 +1754,20 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 			auto surface = ui::column(10);
 			surface.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 			surface.layout.sizing.height = CLAY_SIZING_GROW(0);
+			const bool canvas_only =
+				selected->domain == Domain::Elements || selected->domain == Domain::Icons ||
+				selected->domain == Domain::Atlases;
 			surface.clip = {.vertical = true,
+							.scrollInputDisabled = canvas_only,
 							.childOffset = scroll.found && scroll.scrollPosition
 											   ? *scroll.scrollPosition
 											   : Clay_Vector2{}};
-			catalogue_focus::register_target(context, state, scroll_id);
+			if (canvas_only) {
+				surface.clip.childOffset = {};
+				if (scroll.found && scroll.scrollPosition)
+					scroll.scrollPosition->y = 0;
+			}
+			catalogue_focus::register_target(context, state, scroll_id, {}, true, false);
 			CLAY(scroll_id, surface) {
 				const catalogue_focus::ViewportScope focus_viewport(state, scroll_id);
 				focused(context, *selected, width, height);
@@ -1338,6 +1779,10 @@ void DevCatalogueWorkbench::buildElement(BuildContext& context) {
 					 state.message_is_error ? interface_theme::kStatusAmber
 											: interface_theme::kAccentSeaGlass,
 					 11);
+		auto footer = ui::row(24);
+		footer.layout.sizing.width = CLAY_SIZING_PERCENT(1);
+		footer.border = {.color = interface_theme::kBorderSubtle, .width = {0, 0, 1, 0, 0}};
+		CLAY(context.clayID("footer"), footer)
 		ui::text(context,
 				 std::to_string(state.visible_assets.size()) + " / " +
 					 std::to_string(state.counts[state.domain]) +

@@ -1,4 +1,4 @@
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevContiguousTimelineStrip.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevDrillDownTimelineCard.hpp"
@@ -6,7 +6,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineLayout.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
-#include "managers/ElementManager.hpp"
+#include "FlowUi/Public/managers/ElementManager.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include <algorithm>
 #include <cmath>
@@ -160,7 +160,7 @@ int main() {
 			  << cached_stats.uploaded_bytes << " upload bytes\n";
 	const auto header_bounds = bounds(app, FlowElementID{.value = header_id.value});
 	const auto macro_bounds = bounds(app, FlowElementID{.value = macro_id.value});
-	require(header_bounds.height == 154 && macro_bounds.y >= header_bounds.y + 154,
+	require(header_bounds.height == 176 && macro_bounds.y >= header_bounds.y + 176,
 			"Header stays above the timeline");
 	draw_frame(app, state, selection, {}, 0, -10, -10, false, 0, true, 32);
 	require(state.zoom == 4, "Space does not change sealed investigation mode");
@@ -303,7 +303,14 @@ int main() {
 		require(app.beginFrame(), "begin Workbench frame");
 		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
 		input.mouseX = wheel || control ? 600 : -10;
-		input.mouseY = control ? pointer_y : wheel ? 220 : -10;
+		input.mouseY = control ? pointer_y : -10;
+		if (wheel) {
+			const auto major_identity = ::FlowUi::detail::element_id::resolveLocal(
+				FlowElementID{workbench_id.value}, DevContiguousTimelineStrip::definitionId,
+				LocalElementName{"macro"}.token);
+			const auto major_bounds = bounds(app, major_identity);
+			input.mouseY = major_bounds.y + std::min(60.0f, major_bounds.height * 0.5f);
+		}
 		input.scrollY = wheel;
 		input.windowFocused = true;
 		input.mouseDown = {};
@@ -370,7 +377,7 @@ int main() {
 	for (int frame_index = 0; frame_index < 14; ++frame_index)
 		draw_workbench();
 	const auto pinned_after = bounds(app, pinned_id);
-	require(pinned_before.y == pinned_after.y && pinned_after.height == 154,
+	require(pinned_before.y == pinned_after.y && pinned_after.height == 176,
 			"Pinned header remains fixed while canvas reveals cards");
 	require(app.ui().timeline_controller()->stats().surfaces == 3,
 			"Navigation history renders exactly minimap, major and one minor viewport");

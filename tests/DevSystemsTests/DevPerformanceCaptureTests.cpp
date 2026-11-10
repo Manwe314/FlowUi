@@ -3,7 +3,7 @@
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
 #include <cassert>
-#include "internal/InputQueue.hpp"
+#include "FlowUi/Private/inputService/InputQueue.hpp"
 #include <iostream>
 using namespace FlowUi;
 using namespace FlowUi::devSystems;

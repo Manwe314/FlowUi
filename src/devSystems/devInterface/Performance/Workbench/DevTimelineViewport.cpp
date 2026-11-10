@@ -1,10 +1,10 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
-#include "Ui/Vk_UiRenderer.hpp"
-#include "internal/ManagerStorage/FontCatalogController.hpp"
-#include "internal/Text/TextLayoutService.hpp"
-#include "internal/Vma.hpp"
-#include "managers/ViewPortManager.hpp"
+#include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
+#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
+#include "FlowUi/Public/managers/ViewPortManager.hpp"
 #include <algorithm>
 #include <bit>
 #include <chrono>

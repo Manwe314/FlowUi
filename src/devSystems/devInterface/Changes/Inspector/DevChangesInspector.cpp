@@ -2,7 +2,7 @@
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "internal/MemoryCapacityTargets.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp"
 #include <array>
 
 namespace FlowUi::devSystems::interface_elements {
@@ -54,7 +54,7 @@ void local_button(Context& context, const Identity& identity, std::string label,
 				  ui::Icon icon = ui::Icon::None) {
 	diagnostics_ui::button_with_identity(context, identity, std::move(label), &context.state(),
 										 activate_local, action, value, enabled,
-										 std::move(description), icon);
+										 std::move(description), icon, true);
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
 		context.id, diagnostics_ui::Control::definitionId, identity.token);
 	ui::register_focus_target(context, context.uiManager.toClayEID(element), enabled);
@@ -76,7 +76,8 @@ void copy_detail(Context& context, uint64_t identity, std::string_view field,
 						.tooltip = "Copy full " + std::string(field),
 						.clipboard_text = std::string(value),
 						.icon = ui::Icon::Copy,
-						.enabled = !value.empty() && context.uiManager.hasClipboardAccess()})
+						.enabled = !value.empty() && context.uiManager.hasClipboardAccess(),
+						.icon_only = true})
 		.setDevInternalCapture(true)
 		.draw();
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
@@ -143,7 +144,8 @@ void detail(Context& context, std::string_view field, std::string_view value,
 				local_button(context, Keyed("expand-detail", identity), expanded ? "Less" : "Full",
 							 ExpandDetail, identity, true,
 							 expanded ? "Collapse full " + std::string(field)
-									  : "Read full " + std::string(field));
+									  : "Read full " + std::string(field),
+							 expanded ? ui::Icon::Expanded : ui::Icon::Collapsed);
 			copy_detail(context, identity, field, value);
 		}
 		ui::text(context, expanded ? visible : preview, interface_theme::kTextCanvas, 12);
@@ -187,7 +189,8 @@ void scope(Context& context, const tooling::DevChangesReviewRow& row) {
 					 interface_theme::kTextSecondary, 12);
 			ui::text(context,
 					 row.key == "memory:policy.enabled"
-						 ? "Disabling retains saved assignments. Removing this policy removes the "
+						 ? "Disabling retains already baked assignments. Removing this policy "
+						   "removes the "
 						   "entire memory section."
 						 : "Removing an optional setting releases it to startup fallback.",
 					 interface_theme::kTextSecondary, 12);
@@ -221,10 +224,10 @@ void scope(Context& context, const tooling::DevChangesReviewRow& row) {
 		return;
 	}
 	if (!entry) {
-		notice(context, LocalElementName{"unresolved-target"}, "Saved target is unresolved.",
-			   interface_theme::kStatusRed);
+		notice(context, LocalElementName{"unresolved-target"},
+			   "Already baked target is unresolved.", interface_theme::kStatusRed);
 		ui::text(context,
-				 "Review replacement or explicit removal in the Workbench. The saved identity "
+				 "Review replacement or explicit removal in the Workbench. The baked identity "
 				 "remains available in Technical details.",
 				 interface_theme::kTextSecondary, 12);
 		return;
@@ -250,13 +253,13 @@ void scope(Context& context, const tooling::DevChangesReviewRow& row) {
 												   : entry->instanceDebugLabel,
 				 interface_theme::kTextCanvas, 13);
 		ui::text(context,
-				 "Definition assignments run first. Runtime windows are not part of this saved "
+				 "Definition assignments run first. Runtime windows are not part of this baked "
 				 "identity.",
 				 interface_theme::kTextSecondary, 12);
 	}
 	if (row.validity == tooling::DevChangesValidity::Unresolved)
 		notice(context, LocalElementName{"unresolved-scope"},
-			   "The saved target is unresolved; review its cause in the Workbench.",
+			   "The already baked target is unresolved; review its cause in the Workbench.",
 			   interface_theme::kStatusRed);
 }
 void source(Context& context, const tooling::DevBakeEntry& entry) {
@@ -273,7 +276,7 @@ void evidence(Context& context, const tooling::DevChangesReviewRow& row) {
 	if (!memory)
 		return;
 	const auto& evidence = memory->evidence;
-	ui::text(context, row.proposed_memory ? "Prepared evidence" : "Saved evidence",
+	ui::text(context, row.proposed_memory ? "Prepared evidence" : "Already baked evidence",
 			 interface_theme::kTextSecondary, 11);
 	ui::text(context,
 			 evidence.source_name.empty() ? "Unnamed evidence dataset" : evidence.source_name,
@@ -300,7 +303,7 @@ void evidence(Context& context, const tooling::DevChangesReviewRow& row) {
 		context.state().evidence_details_open ? ui::Icon::Expanded : ui::Icon::Collapsed);
 	if (!context.state().evidence_details_open)
 		return;
-	ui::text(context, row.proposed_memory ? "PREPARED EVIDENCE" : "SAVED EVIDENCE",
+	ui::text(context, row.proposed_memory ? "PREPARED EVIDENCE" : "ALREADY BAKED EVIDENCE",
 			 interface_theme::kTextSecondary, 11);
 	detail(context, "Evidence kind", evidence.kind);
 	detail(context, "Dataset", std::to_string(evidence.dataset_id));
@@ -336,15 +339,18 @@ void evidence(Context& context, const tooling::DevChangesReviewRow& row) {
 void runtime_option(Context& context, const tooling::DevChangesReviewRow& row,
 					std::size_t action_index) {
 	static constexpr std::array<std::string_view, 4> labels{
-		"Apply proposal", "Apply saved value", "Discard live edit", "Reset to authored"};
+		"Apply proposal", "Apply already baked value", "Discard live edit", "Reset to authored"};
 	static constexpr std::array<std::string_view, 4> consequences{
-		"Apply the proposal to the running application; saved assignments are preserved.",
-		"Apply the saved value to the running application; saved assignments are preserved.",
+		"Apply the proposal to the running application; already baked assignments are preserved.",
+		"Apply the already baked value to the running application; baked assignments are "
+		"preserved.",
 		"Remove the retained live override. Compiled or authored precedence applies again.",
 		"Apply the captured authored baseline to the running application."};
+	static constexpr std::array<ui::Icon, 4> icons{ui::Icon::Check, ui::Icon::History,
+												   ui::Icon::Close, ui::Icon::Refresh};
 	auto& changes = context.params.interfaceState->changes;
 	const auto schema = context.params.app ? context.params.app->devTooling().schemas().view()
-										   : devMode::DevSchemaView{};
+										   : tooling::DevSchemaView{};
 	tooling::DevChangesRuntimeEdit draft{};
 	if (schema)
 		draft = tooling::prepare_changes_runtime_edit(
@@ -358,8 +364,8 @@ void runtime_option(Context& context, const tooling::DevChangesReviewRow& row,
 									: !draft.available ? draft.error
 													   : std::string(consequences[action_index]);
 	local_button(context, Keyed("live-action", action_index), std::string(labels[action_index]),
-				 Runtime + action_index, 0, enabled, description);
-	ui::text(context, description, interface_theme::kTextSecondary, 11);
+				 Runtime + action_index, 0, enabled,
+				 std::string(labels[action_index]) + ": " + description, icons[action_index]);
 }
 void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 	auto& changes = context.params.interfaceState->changes;
@@ -430,35 +436,51 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 					 ? "Command scope: definition"
 					 : "Command scope: exact instance",
 				 interface_theme::kTextSecondary, 11);
-	local_button(context, LocalElementName{"apply-live-menu"}, "Apply to live…", ToggleApply, 0,
-				 !changes.runtime_transaction,
-				 "Choose a proposal or saved value for the running application.",
-				 local.live_menu_open ? ui::Icon::Expanded : ui::Icon::Collapsed);
-	if (local.live_menu_open) {
-		runtime_option(context, row, 0);
-		runtime_option(context, row, 1);
-	}
-	local_button(context, LocalElementName{"reset-live-menu"}, "Reset live edit…", ToggleReset, 0,
-				 !changes.runtime_transaction,
-				 "Discard a live override or restore the captured authored baseline.",
-				 local.reset_menu_open ? ui::Icon::Expanded : ui::Icon::Collapsed);
-	if (local.reset_menu_open) {
-		runtime_option(context, row, 2);
-		runtime_option(context, row, 3);
-	}
 	auto history = ui::row();
 	history.layout.sizing.height = CLAY_SIZING_FIT(0);
+	const bool toolbar_icons_available = context.resources().texture(ui::Icon::Resume).handle &&
+										 context.resources().texture(ui::Icon::Refresh).handle &&
+										 context.resources().texture(ui::Icon::Undo).handle &&
+										 context.resources().texture(ui::Icon::Redo).handle;
+	if (!toolbar_icons_available)
+		history.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	CLAY(context.clayID("live-history"), history) {
+		local_button(context, LocalElementName{"apply-live-menu"}, "Apply to live…", ToggleApply, 0,
+					 !changes.runtime_transaction,
+					 "Apply to live: choose a proposal or already baked value for the running "
+					 "application.",
+					 ui::Icon::Resume);
+		local_button(context, LocalElementName{"reset-live-menu"}, "Reset live edit…", ToggleReset,
+					 0, !changes.runtime_transaction,
+					 "Reset live edit: discard a live override or restore the captured authored "
+					 "baseline.",
+					 ui::Icon::Refresh);
 		local_button(context, LocalElementName{"undo-live"}, "Undo live", Runtime + 4, 0,
 					 !changes.runtime_undo.empty() && !changes.runtime_transaction,
-					 "Undo the last acknowledged live command. Manifest decisions are unchanged.");
+					 "Undo the last acknowledged live command in its original scope and window. "
+					 "Manifest decisions are unchanged.",
+					 ui::Icon::Undo);
 		local_button(context, LocalElementName{"redo-live"}, "Redo live", Runtime + 5, 0,
 					 !changes.runtime_redo.empty() && !changes.runtime_transaction,
-					 "Redo the last undone live command. Manifest decisions are unchanged.");
+					 "Redo the last undone live command in its original scope and window. "
+					 "Manifest decisions are unchanged.",
+					 ui::Icon::Redo);
 	}
-	ui::text(context,
-			 "Undo and Redo restore the recorded command scope, including its original window.",
-			 interface_theme::kTextSecondary, 11);
+	if (local.live_menu_open || local.reset_menu_open) {
+		auto options = ui::row();
+		options.layout.sizing.height = CLAY_SIZING_FIT(0);
+		const bool option_icons_available = context.resources().texture(ui::Icon::Check).handle &&
+											context.resources().texture(ui::Icon::History).handle &&
+											context.resources().texture(ui::Icon::Close).handle &&
+											context.resources().texture(ui::Icon::Refresh).handle;
+		if (!option_icons_available)
+			options.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+		CLAY(context.clayID("live-options"), options) {
+			const std::size_t first_action = local.live_menu_open ? 0 : 2;
+			runtime_option(context, row, first_action);
+			runtime_option(context, row, first_action + 1);
+		}
+	}
 	if (changes.runtime_transaction)
 		ui::text(context, "Waiting for application acknowledgement…", interface_theme::kStatusAmber,
 				 12);
@@ -499,8 +521,18 @@ void technical(Context& context, const tooling::DevChangesReviewRow& row) {
 		detail(context, "Compiled assignment", row.compiled_value, "Compiled");
 	}
 	detail(context, "Validation", tooling::changes_validity_name(row.validity));
-	if (!row.reason.empty())
-		detail(context, "Diagnostic", row.reason);
+	if (!row.reason.empty()) {
+		detail(context, "Issue", row.reason);
+		ui::text(context,
+				 row.blocking
+					 ? "Bake is blocked until this issue is resolved. Review the proposal, retain "
+					   "the already baked value, or explicitly remove the assignment in the "
+					   "Workbench when those decisions are available."
+					 : "This issue is advisory for the current decision. Review the Already Baked, "
+					   "Proposal, and Next Bake stages in the Workbench before baking.",
+				 row.blocking ? interface_theme::kStatusAmber : interface_theme::kTextSecondary,
+				 12);
+	}
 }
 } // namespace
 

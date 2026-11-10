@@ -1,9 +1,9 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
-#include "managers/FlowUiElementBuilder.hpp"
-#include "managers/structs/ElementManagerStructs.hpp"
-namespace FlowUi::devMode {
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementSet.hpp"
+namespace FlowUi::devSystems::tooling {
 /** Declare a named typed set without preparing resources or executing element builders.
  * Admission is an author contract: effective defaults must build without app side effects
  * or floating/pop-up roots. Unknown types discovered at runtime remain unadmitted. */
@@ -19,5 +19,5 @@ void register_element_catalogue(DevSchemaRegistry& registry, std::string_view na
 								DevElementCatalogue<Elements...>, bool admit_defaults = false) {
 	register_element_catalogue(registry, name, ElementSet<Elements...>{}, admit_defaults);
 }
-} // namespace FlowUi::devMode
+} // namespace FlowUi::devSystems::tooling
 #endif

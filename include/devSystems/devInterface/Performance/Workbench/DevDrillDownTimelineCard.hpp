@@ -2,7 +2,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #if FLOW_UI_DEV_MODE
 namespace FlowUi::devSystems::interface_elements {
-/** Fixed-domain parent and child hierarchy, with independent depth. */
+/* Fixed-domain parent and child hierarchy, with independent depth. */
 struct DevDrillDownTimelineCard {
 	using Parameters = DevTimelineParameters;
 	using BuildContext = ElementBuildContext<DevDrillDownTimelineCard>;

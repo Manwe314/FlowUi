@@ -1,5 +1,9 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+
+/** @file
+ * @brief Public AgenticLocalTransport declarations for optional development services.
+ */
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 
 #include "devSystems/devAgenticWorkflow/AgenticJson.hpp"
@@ -14,10 +18,17 @@ namespace FlowUi::devSystems::agentic {
 
 /** Owner-private local endpoint settings. The nonce authenticates a single App run. */
 struct AgenticLocalEndpoint {
+	/** @brief Local socket or named-pipe address for exactly one application run. */
 	std::string endpoint{};
+	/**
+	 * @brief Immutable application run identity, separate from job and capture identities.
+	 */
 	std::string run_id{};
+	/** @brief Owner-private authentication nonce bound to exactly one application run. */
 	std::string nonce{};
+	/** @brief Bounded command transport wait, in milliseconds. */
 	std::uint64_t timeout_ms = 2000;
+	/** @brief Maximum local request or response message size, in bytes. */
 	std::size_t maximum_message_bytes = 1024u * 1024u;
 };
 
@@ -27,7 +38,9 @@ using AgenticLocalHandler = std::function<Json(const Json&)>;
 /** Bounded owner-private local command server, independent of MCP and application stdout. */
 class AgenticLocalServer {
 public:
+	/** @brief Construct a dormant server; call start() to create an endpoint. */
 	AgenticLocalServer();
+	/** @brief Stop admission and join worker threads before releasing callbacks. */
 	~AgenticLocalServer();
 	AgenticLocalServer(const AgenticLocalServer&) = delete;
 	AgenticLocalServer& operator=(const AgenticLocalServer&) = delete;

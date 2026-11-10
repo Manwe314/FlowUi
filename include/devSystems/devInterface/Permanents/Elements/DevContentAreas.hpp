@@ -2,13 +2,13 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -17,7 +17,7 @@ struct DevContentAreaParameters {
 	DevInterfaceState* interfaceState = nullptr;
 };
 
-/** Closed tab-dependent content owner for the left selector region. */
+/* Closed tab-dependent content owner for the left selector region. */
 struct DevSelectorArea {
 	using Parameters = DevContentAreaParameters;
 	using BuildContext = ElementBuildContext<DevSelectorArea>;
@@ -30,7 +30,7 @@ struct DevSelectorArea {
 	static void buildElement(BuildContext& context);
 };
 
-/** Closed tab-dependent content owner for the central workbench region. */
+/* Closed tab-dependent content owner for the central workbench region. */
 struct DevWorkbenchArea {
 	using Parameters = DevContentAreaParameters;
 	using BuildContext = ElementBuildContext<DevWorkbenchArea>;
@@ -43,7 +43,7 @@ struct DevWorkbenchArea {
 	static void buildElement(BuildContext& context);
 };
 
-/** Closed tab-dependent content owner for the right inspector region. */
+/* Closed tab-dependent content owner for the right inspector region. */
 struct DevInspectorArea {
 	using Parameters = DevContentAreaParameters;
 	using BuildContext = ElementBuildContext<DevInspectorArea>;

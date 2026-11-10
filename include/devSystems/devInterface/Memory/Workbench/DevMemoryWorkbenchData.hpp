@@ -1,5 +1,5 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Memory/Analysis/DevMemorySession.hpp"
 #include "devSystems/devInterface/Memory/Selector/DevMemorySelection.hpp"
@@ -9,7 +9,7 @@
 #include <vector>
 namespace FlowUi::devSystems::interface_elements {
 enum class MemoryTrackRecipe { Container, Pool, Arena, ActiveOnly, Independent, Budget, Resource };
-/** Owned distribution row; source keys are diagnostic identities, never tuning totals. */
+/* Owned distribution row; source keys are diagnostic identities, never tuning totals. */
 struct MemoryWorkbenchTrack {
 	MemoryValueSample value{};
 	std::string title{}, note{};
@@ -20,7 +20,7 @@ struct MemoryWorkbenchTrack {
 	MemoryTrackRecipe recipe = MemoryTrackRecipe::Container;
 	bool available = false, included = false, estimated = false, window_scoped = false;
 };
-/** Pixel envelope of one actual source, never a sum of independent maxima. */
+/* Pixel envelope of one actual source, never a sum of independent maxima. */
 struct MemoryHistoryColumn {
 	uint64_t active_first = 0, active_last = 0, backing_first = 0, backing_last = 0;
 	uint64_t active_min = UINT64_MAX, active_max = 0, backing_min = UINT64_MAX, backing_max = 0;
@@ -29,7 +29,7 @@ struct MemoryHistoryColumn {
 	uint16_t value_fields = 0;
 	bool available = false, mixed_epochs = false, gap = false;
 };
-/** Exact endpoint evidence; invalid endpoints are never replaced with invented zeros. */
+/* Exact endpoint evidence; invalid endpoints are never replaced with invented zeros. */
 struct MemoryHistoryRangeSummary {
 	uint64_t duration_ns = 0, active_before = 0, active_after = 0;
 	uint64_t backing_before = 0, backing_after = 0;
@@ -37,7 +37,7 @@ struct MemoryHistoryRangeSummary {
 	uint16_t before_fields = 0, after_fields = 0;
 	bool valid = false, incomplete = false;
 };
-/** Persistent lane configuration. UINT64_MAX follows the workbench selector. */
+/* Persistent lane configuration. UINT64_MAX follows the workbench selector. */
 struct MemoryHistoryLaneSettings {
 	MemorySourceKey selected_key{};
 	uint64_t scope = UINT64_MAX, source_index = 0, metric = 0;
@@ -55,7 +55,7 @@ struct MemoryHistoryLane {
 	uint64_t scale = 1;
 	bool independent = false, point_available = false;
 };
-/** Persistent presentation state; inspection is independent of live collection. */
+/* Persistent presentation state; inspection is independent of live collection. */
 struct DevMemoryWorkbenchState {
 	MemoryAnalysisState analysis{};
 	std::vector<MemoryWorkbenchTrack> tracks{};
@@ -83,35 +83,35 @@ struct DevMemoryWorkbenchState {
 	uint64_t history_settings_key = UINT64_MAX;
 	uint32_t pending_action = 0;
 };
-/** Byte formatting shared by ruler, tracks and history. */
+/* Byte formatting shared by ruler, tracks and history. */
 [[nodiscard]] std::string memory_bytes(uint64_t bytes, bool decimal);
-/** Readings use producer-supported metrics, never unsupported zeros. */
+/* Readings use producer-supported metrics, never unsupported zeros. */
 [[nodiscard]] std::string memory_track_reading(const MemoryWorkbenchTrack& track, bool decimal);
-/** Format time relative to the newest collected sample; only that endpoint is Now. */
+/* Format time relative to the newest collected sample; only that endpoint is Now. */
 [[nodiscard]] std::string memory_history_time_label(uint64_t timestamp_ns, uint64_t newest_ns,
 													int precision = 1);
-/** Monotonic clock used for bounded presentation refresh. */
+/* Monotonic clock used for bounded presentation refresh. */
 [[nodiscard]] uint64_t memory_now_ns() noexcept;
-/** Resolve the complete selector catalogue against coherent live inputs. */
+/* Resolve the complete selector catalogue against coherent live inputs. */
 void resolve_memory_tracks(DevMemoryWorkbenchState& state, const DevMemorySelection& selection,
 						   const MemoryLiveRead& read);
-/** Resolve source-level historical rows; detail that was not retained remains unavailable. */
+/* Resolve source-level historical rows; detail that was not retained remains unavailable. */
 void resolve_memory_history_tracks(DevMemoryWorkbenchState& state, DevMemoryReporting& reporting,
 								   uint64_t timestamp_ns);
-/** Build bounded per-source envelopes directly from retained storage, without raw ring copies. */
+/* Build bounded per-source envelopes directly from retained storage, without raw ring copies. */
 void build_memory_history(DevMemoryWorkbenchState& state, DevMemoryReporting& reporting,
 						  size_t columns = 512);
-/** Preserve a bounded inspection interval without pausing global collection. */
+/* Preserve a bounded inspection interval without pausing global collection. */
 void hold_memory_history(DevMemoryWorkbenchState& state, DevMemoryReporting& reporting);
-/** Read selected immutable/live evidence; returns false on concurrent eviction. */
+/* Read selected immutable/live evidence; returns false on concurrent eviction. */
 [[nodiscard]] bool
 visit_memory_history(const DevMemoryWorkbenchState& state, DevMemoryReporting& reporting,
 					 const std::function<void(const MemorySampleSegment&)>& visitor);
-/** Move a held view within known retained bounds, without changing selected evidence. */
+/* Move a held view within known retained bounds, without changing selected evidence. */
 void pan_memory_view(DevMemoryWorkbenchState& state, int direction) noexcept;
-/** Zoom time around a normalized plot anchor and clamp to available history. */
+/* Zoom time around a normalized plot anchor and clamp to available history. */
 void zoom_memory_view(DevMemoryWorkbenchState& state, double factor, double anchor = .5) noexcept;
-/** Fit a readable byte axis with overflow-safe headroom. */
+/* Fit a readable byte axis with overflow-safe headroom. */
 [[nodiscard]] uint64_t memory_axis_max(uint64_t extent) noexcept;
 } // namespace FlowUi::devSystems::interface_elements
 #endif

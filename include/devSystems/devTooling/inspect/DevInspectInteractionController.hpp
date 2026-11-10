@@ -1,37 +1,55 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/overlay/DevOverlayTypes.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/structs/InputStructs.hpp"
+#include "FlowUi/Public/managerStructs/InputTypes.hpp"
 
 namespace FlowUi::devSystems::tooling {
 
-enum class DevInspectPickDomain : uint8_t { Flow = 0, Clay = 1 };
+/** @brief Hit-test domain used by pointer inspection. */
+enum class DevInspectPickDomain : uint8_t {
+	/** @brief Select the owning typed Flow invocation. */
+	Flow = 0,
+	/** @brief Select an individual raw Clay layout node. */
+	Clay = 1
+};
 
 /** Window-qualified identity retained independently of a captured tree's indices. */
 struct DevInspectTarget {
+	/** @brief Stable selection key independent of transient snapshot indices. */
 	uint64_t selection_key = 0u;
+	/** @brief Flow instance address when kind is Flow. */
 	::FlowUi::detail::element::ElementInstanceKey instance{};
+	/** @brief Flow definition identity when kind is Flow. */
 	FlowDefinitionID definition{};
+	/** @brief Application window owning the selected target. */
 	WindowId window = InvalidWindowId;
+	/** @brief Raw Clay element ID for Clay picks. */
 	uint32_t clay_id = 0u;
+	/** @brief Raw Clay root ID used to disambiguate attachment forests. */
 	uint32_t clay_root = 0u;
+	/** @brief Last resolved Clay index; refresh against a new snapshot. */
 	uint32_t clay_index = UINT32_MAX;
+	/** @brief Flow, raw Clay, or empty selection. */
 	DevInspectTargetKind kind = DevInspectTargetKind::None;
 
+	/** @brief Construct an empty selection with no window or target identity. */
 	constexpr DevInspectTarget() noexcept = default;
+	/** @brief Construct a window-qualified typed Flow selection from definition/instance identities. */
 	constexpr DevInspectTarget(WindowId win, FlowDefinitionID def,
 							   ::FlowUi::detail::element::ElementInstanceKey inst) noexcept
 		: selection_key(inst.value), instance(inst), definition(def), window(win),
 		  kind(inst ? DevInspectTargetKind::Flow : DevInspectTargetKind::None) {}
+	/** @brief Construct a window-qualified raw Clay selection with its stable correlation key. */
 	constexpr DevInspectTarget(WindowId win, uint32_t c_id, uint32_t c_root, uint32_t c_index,
 							   uint64_t s_key) noexcept
 		: selection_key(s_key), window(win), clay_id(c_id), clay_root(c_root), clay_index(c_index),
 		  kind(DevInspectTargetKind::Clay) {}
 
+	/** @brief Return whether a nonzero window and a valid Flow/Clay target identity are present. */
 	[[nodiscard]] explicit operator bool() const noexcept {
 		if (window == InvalidWindowId || kind == DevInspectTargetKind::None) {
 			return false;
@@ -41,18 +59,33 @@ struct DevInspectTarget {
 		}
 		return clay_id != 0u || clay_index != UINT32_MAX || selection_key != 0u;
 	}
+	/** @brief Compare every copied target-identity field, including the last resolved Clay index. */
 	[[nodiscard]] bool operator==(const DevInspectTarget&) const noexcept = default;
 };
 
-enum class DevInspectPickMode : uint8_t { Idle, Primary, Secondary };
+/** @brief Pointer-picking state of the inspection controller. */
+enum class DevInspectPickMode : uint8_t {
+	/** @brief No pointer pick is armed. */
+	Idle,
+	/** @brief Pick the primary inspected target. */
+	Primary,
+	/** @brief Pick a comparison target in the primary window. */
+	Secondary
+};
 
 /** Raw pointer history belongs to each application window, including consumed releases. */
 struct DevInspectPointerState {
+	/** @brief Last raw pointer X coordinate in layout space. */
 	float pointer_x = 0.0f;
+	/** @brief Last raw pointer Y coordinate in layout space. */
 	float pointer_y = 0.0f;
+	/** @brief Whether the pointer is inside this application window. */
 	bool pointer_inside = false;
+	/** @brief Raw primary-button state from the prior input sample. */
 	bool previous_down = false;
+	/** @brief Whether a raw button release has been observed. */
 	bool observed_release = false;
+	/** @brief Whether application pointer input remains suppressed for an active pick. */
 	bool consume_until_release = false;
 };
 
@@ -97,13 +130,21 @@ public:
 	/** Build this controller's frame-local renderer specification. */
 	[[nodiscard]] bool overlay_selection(const DevTreeSnapshot& snapshot,
 										 DevOverlaySelectionSpec& selection) const noexcept;
+	/** @brief Return whether window is a nonzero application window other than the excluded developer window. */
 	[[nodiscard]] bool eligible_window(WindowId window) const noexcept;
+	/** @brief Return whether primary or secondary pointer picking is armed. */
 	[[nodiscard]] bool picking() const noexcept { return pick_mode_ != DevInspectPickMode::Idle; }
+	/** @brief Return the currently armed pick mode. */
 	[[nodiscard]] DevInspectPickMode pick_mode() const noexcept { return pick_mode_; }
+	/** @brief Return whether pointer hit testing selects Flow owners or raw Clay nodes. */
 	[[nodiscard]] DevInspectPickDomain pick_domain() const noexcept { return pick_domain_; }
+	/** @brief Return the currently enabled visual overlay surfaces. */
 	[[nodiscard]] DevOverlayModeFlags mode_flags() const noexcept { return mode_flags_; }
+	/** @brief Copy the committed primary identity; resolve it against a completed snapshot before using node indices. */
 	[[nodiscard]] DevInspectTarget primary_target() const noexcept { return primary_target_; }
+	/** @brief Copy the optional comparison identity; resolve it against the matching window snapshot. */
 	[[nodiscard]] DevInspectTarget secondary_target() const noexcept { return secondary_target_; }
+	/** @brief Return the monotonic inspector-selection revision. */
 	[[nodiscard]] uint64_t selection_revision() const noexcept { return selection_revision_; }
 
 private:

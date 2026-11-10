@@ -6,7 +6,7 @@
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 
 namespace FlowUi::devSystems::interface_elements {

@@ -6,8 +6,8 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
-#include <algorithm>
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
+#include <algorithm>
 namespace FlowUi::devSystems::interface_elements {
 void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 	if (!context.params.interfaceState || !context.params.app)
@@ -154,13 +154,15 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 						row_indices.emplace_back(lane_index);
 				}
 				const auto control = [&](uint64_t control_key, std::string label,
-										 TimelineAction action, std::vector<size_t> members) {
+										 TimelineAction action, std::vector<size_t> members,
+										 std::string_view icon_key) {
 					context.uiManager
 						.createElement(kDevTimelineButton, Keyed("track-control", control_key))
 						.setParameters(DevTimelineButtonParameters{
 							{std::move(members), action, 0, 0, state.snapshot_revision},
 							std::move(label),
-							&state})
+							&state,
+							icon_key})
 						.setDevInternalCapture(true)
 						.draw();
 				};
@@ -185,15 +187,19 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 													uint32_t(root_index)),
 						 buttons) {
 						control(root_index * 4, hidden ? "Show" : "Hide", TimelineAction::TrackHide,
-								{root_index});
+								{root_index},
+								hidden ? interface_icons::kShowKey : interface_icons::kHideKey);
 						control(root_index * 4 + 1, pinned ? "Unpin" : "Pin",
-								TimelineAction::TrackPin, {root_index});
+								TimelineAction::TrackPin, {root_index},
+								pinned ? interface_icons::kUnpinKey : interface_icons::kPinKey);
 						if (row_index)
 							control(root_index * 4 + 2, "Up", TimelineAction::TrackMove,
-									{root_index, lanes[row_indices[row_index - 1]].blocks.front()});
+									{root_index, lanes[row_indices[row_index - 1]].blocks.front()},
+									interface_icons::kMoveUpKey);
 						if (row_index + 1 < row_indices.size())
 							control(root_index * 4 + 3, "Down", TimelineAction::TrackMove,
-									{root_index, lanes[row_indices[row_index + 1]].blocks.front()});
+									{root_index, lanes[row_indices[row_index + 1]].blocks.front()},
+									interface_icons::kMoveDownKey);
 					}
 				}
 			}
@@ -211,7 +217,6 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 			major.layout.sizing.height = CLAY_SIZING_FIXED(state.major_height);
 
 			CLAY(context.clayID("major-pane"), major) {
-
 				context.uiManager
 					.createElement(kDevContiguousTimelineStrip, LocalElementName{"macro"})
 					.setParameters(DevTimelineParameters{&state, &selection, 0,

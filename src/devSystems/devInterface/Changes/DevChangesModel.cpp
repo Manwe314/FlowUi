@@ -1,14 +1,14 @@
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #if FLOW_UI_DEV_MODE
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemorySession.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "internal/IdentityHash.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Private/IdentityHash.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 #include <bit>
 #include <cctype>
@@ -381,7 +381,8 @@ void navigate(App& app, DevInterfaceState& interface_state) {
 				}
 			}
 		}
-		state.message = "Opened Inspect for the saved target; Changes selection is retained.";
+		state.message =
+			"Opened Inspect for the already baked target; Changes selection is retained.";
 	}
 	state.return_available = true;
 }
@@ -394,7 +395,7 @@ std::string_view changes_decision_name(tooling::DevChangesDecision decision) noe
 	case DevChangesDecision::OmitProposal:
 		return "Omitted";
 	case DevChangesDecision::RetainDisk:
-		return "Keep saved value";
+		return "Keep already baked value";
 	case DevChangesDecision::Remove:
 		return "Remove from next bake";
 	}
@@ -418,7 +419,7 @@ std::string changes_memory_owner(std::string_view key) {
 			character = ' ';
 	if (!owner.empty())
 		owner.front() = static_cast<char>(std::toupper(static_cast<unsigned char>(owner.front())));
-	return owner.empty() ? "Unresolved saved targets" : owner;
+	return owner.empty() ? "Unresolved already baked targets" : owner;
 }
 const DevChangesNode* selected_changes_node(const DevChangesState& state) noexcept {
 	const auto found = std::ranges::find(state.nodes, state.selected_key, &DevChangesNode::key);
@@ -472,7 +473,7 @@ void rebuild_changes_model(DevChangesState& state) {
 																			 : row.field_path)
 				: row.target_name;
 		if (owner.empty())
-			owner = "Unresolved saved targets";
+			owner = "Unresolved already baked targets";
 		const std::string owner_key = root_key + ":" +
 									  (entry ? std::to_string(row.domain == DevChangesDomain::Themes
 																  ? entry->themeType
@@ -657,8 +658,9 @@ void queue_changes_scope_decision(DevChangesState& state, std::string_view scope
 	state.pending = DevChangesCommand::Decide;
 	const auto action = decision == DevChangesDecision::IncludeProposal ? "Use proposal"
 						: decision == DevChangesDecision::OmitProposal	? "Excluded"
-						: decision == DevChangesDecision::RetainDisk ? "Kept saved value"
-																	 : "Removed saved assignment";
+						: decision == DevChangesDecision::RetainDisk
+							? "Kept already baked value"
+							: "Removed already baked assignment";
 	state.feedback_label =
 		std::string(action) + " · " +
 		(selected && selected->leaf ? state.review.rows[selected->rows.front()].target_name + "." +
@@ -837,7 +839,7 @@ void service_changes(App& app, DevInterfaceState& interface_state, bool visible)
 		state.message = state.feedback_label + " · " + std::to_string(affected_targets) +
 						" targets in next bake. Live behavior is unchanged.";
 		if (removes_memory_section)
-			state.message += " The entire saved memory section is removed.";
+			state.message += " The entire already baked memory section is removed.";
 		if (state.pending_skipped)
 			state.message += " Skipped " + std::to_string(state.pending_skipped) +
 							 " blocked proposals; resolve their issues before including them.";

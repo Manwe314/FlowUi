@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <iostream>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -10,11 +11,11 @@
 #include <GLFW/glfw3.h>
 
 #include "FlowUi.hpp"
-#include "managers/ActionManager.hpp"
-#include "managers/UiManager.hpp"
-#include "managers/FontManager.hpp"
+#include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-#include "managers/ViewPortManager.hpp"
+#include "FlowUi/Public/managers/ViewPortManager.hpp"
 #endif
 
 namespace {
@@ -34,6 +35,80 @@ void emptyFrame(FlowUi::App& app, FlowUi::WindowId window) {
 	FLOWUI_CHECK(app.beginFrame(window));
 	FLOWUI_CHECK(app.endFrame(window));
 	FLOWUI_CHECK(app.drawFrame(window));
+}
+
+void test_text_field_modes(FlowUi::App& application) {
+	using namespace FlowUi;
+	FLOWUI_CHECK(application.beginFrame());
+	auto& manager = application.ui().inputFields();
+	const ResourceKey single_key{.name = "cleanup/single-line"};
+	const ResourceKey multiline_key{.name = "cleanup/multiline"};
+	FieldRequest single_request{
+		.initialText = "seed",
+		.config = FieldConfig{.mode = TextFieldMode::SingleLine},
+	};
+	FieldRequest multiline_request{
+		.initialText = "first",
+		.config = FieldConfig{.mode = TextFieldMode::MultiLine},
+	};
+	const auto single = manager.requestField(single_key, single_request);
+	FLOWUI_CHECK(single.mode == TextFieldMode::SingleLine);
+	FLOWUI_CHECK(single.text.contiguous().value_or("") == "seed");
+	const TextReplacement single_newline{.oldRange = {4, 4}, .insertedText = "\r\nnext"};
+	FLOWUI_CHECK(manager.applyEdits(single_key, std::span{&single_newline, 1}) ==
+				 EditResult::RejectedNewline);
+	FLOWUI_CHECK(manager.requestField(single_key, single_request).text.copy() == "seed");
+
+	FLOWUI_CHECK(manager.requestField(multiline_key, multiline_request).mode ==
+				 TextFieldMode::MultiLine);
+	const TextReplacement multiline_newlines{.oldRange = {5, 5},
+											 .insertedText = "\r\nsecond\rthird"};
+	FLOWUI_CHECK(manager.applyEdits(multiline_key, std::span{&multiline_newlines, 1}) ==
+				 EditResult::Applied);
+	const auto multiline = manager.requestField(multiline_key, multiline_request);
+	FLOWUI_CHECK(!multiline.text.contiguous());
+	FLOWUI_CHECK(multiline.text.copy() == "first\nsecond\nthird");
+	std::string visited_text;
+	visited_text.reserve(multiline.text.sizeBytes());
+	multiline.text.forEachChunk({0, multiline.text.sizeBytes()},
+								[&](std::string_view chunk) { visited_text.append(chunk); });
+	FLOWUI_CHECK(visited_text == "first\nsecond\nthird");
+
+	multiline_request.config.mode = TextFieldMode::SingleLine;
+	const auto rejected_migration = manager.requestField(multiline_key, multiline_request);
+	FLOWUI_CHECK(rejected_migration.modeChangeRejected);
+	FLOWUI_CHECK(rejected_migration.mode == TextFieldMode::MultiLine);
+	const size_t multiline_end = rejected_migration.text.sizeBytes();
+	const TextReplacement retained_multiline_newline{.oldRange = {multiline_end, multiline_end},
+													 .insertedText = "\r\nlast"};
+	FLOWUI_CHECK(manager.applyEdits(multiline_key, std::span{&retained_multiline_newline, 1}) ==
+				 EditResult::Applied);
+	const auto multiline_with_last = manager.requestField(multiline_key, multiline_request);
+	FLOWUI_CHECK(multiline_with_last.text.copy() == "first\nsecond\nthird\nlast");
+
+	const TextReplacement flatten_multiline{.oldRange = {0, multiline_with_last.text.sizeBytes()},
+											.insertedText = "plain"};
+	FLOWUI_CHECK(manager.applyEdits(multiline_key, std::span{&flatten_multiline, 1}) ==
+				 EditResult::Applied);
+	const auto migrated_single = manager.requestField(multiline_key, multiline_request);
+	FLOWUI_CHECK(!migrated_single.modeChangeRejected);
+	FLOWUI_CHECK(migrated_single.mode == TextFieldMode::SingleLine);
+	FLOWUI_CHECK(migrated_single.text.contiguous().value_or("") == "plain");
+	const TextReplacement migrated_newline{.oldRange = {5, 5}, .insertedText = "\n"};
+	FLOWUI_CHECK(manager.applyEdits(multiline_key, std::span{&migrated_newline, 1}) ==
+				 EditResult::RejectedNewline);
+
+	single_request.config.mode = TextFieldMode::MultiLine;
+	const auto migrated_multiline = manager.requestField(single_key, single_request);
+	FLOWUI_CHECK(migrated_multiline.mode == TextFieldMode::MultiLine);
+	FLOWUI_CHECK(!migrated_multiline.modeChangeRejected);
+	FLOWUI_CHECK(manager.applyEdits(single_key, std::span{&single_newline, 1}) ==
+				 EditResult::Applied);
+	FLOWUI_CHECK(manager.requestField(single_key, single_request).text.copy() == "seed\nnext");
+	FLOWUI_CHECK(manager.removeField(single_key));
+	FLOWUI_CHECK(manager.removeField(multiline_key));
+	FLOWUI_CHECK(application.endFrame());
+	FLOWUI_CHECK(application.drawFrame());
 }
 
 bool environmentUnavailable(std::string_view message) {
@@ -62,7 +137,9 @@ bool environmentUnavailable(std::string_view message) {
 
 } // namespace
 
-int main() {
+int main(int argument_count, char* arguments[]) {
+	const bool text_modes_only =
+		argument_count == 2 && std::string_view(arguments[1]) == "--text-modes";
 	const char* stage = "startup";
 	try {
 		stage = "main creation";
@@ -97,6 +174,11 @@ int main() {
 		// Without a concrete face, all UI text (including input fields) is invisible.
 		FLOWUI_CHECK(app.fonts().getFontById(0) != nullptr);
 
+		stage = "text field mode and explicit text views";
+		test_text_field_modes(app);
+		if (text_modes_only)
+			return 0;
+
 		stage = "secondary creation";
 		FlowUi::WindowConfig firstConfig{};
 		firstConfig.title = "FlowUi Phase 4 secondary A";
@@ -111,8 +193,12 @@ int main() {
 		FLOWUI_CHECK(invalidWindow.error().code == FlowUi::ErrorCode::InvalidWindowConfiguration);
 		FLOWUI_CHECK(app.hasWindow(app.mainWindowId()));
 		const auto firstResult = app.createWindow(firstConfig);
-		const auto secondResult = app.createWindow(secondConfig);
+		if (!firstResult && firstResult.error().code == FlowUi::ErrorCode::WindowPresentationUnsupported) {
+			std::cerr << "Phase 4 secondary-window presentation is unavailable on this device\n";
+			return 77;
+		}
 		FLOWUI_CHECK(firstResult);
+		const auto secondResult = app.createWindow(secondConfig);
 		FLOWUI_CHECK(secondResult);
 		const FlowUi::WindowId first = firstResult.value();
 		const FlowUi::WindowId second = secondResult.value();

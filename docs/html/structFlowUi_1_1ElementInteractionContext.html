@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Flow UI: FlowUi::ElementInteractionContext&lt; Parameters &gt; Struct Template Reference</title>
+<title>Flow UI: FlowUi::ElementInteractionContext&lt; Element &gt; Struct Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
@@ -103,128 +103,241 @@ $(function() {
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">FlowUi::ElementInteractionContext&lt; Parameters &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__flowui__element__system.html">Element System</a></div></div></div>
+  <div class="headertitle"><div class="title">FlowUi::ElementInteractionContext&lt; Element &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__flowui__element__system.html">Element System</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Context passed to event and logic callbacks.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="FlowUiElementStructs_8hpp_source.html">FlowUiElementStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="ElementContexts_8hpp_source.html">ElementContexts.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a55d8058dff17a54e97d7e934a7556f3e" id="r_a55d8058dff17a54e97d7e934a7556f3e"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a55d8058dff17a54e97d7e934a7556f3e">ParametersType</a> = std::conditional_t&lt;std::is_void_v&lt;Parameters&gt;, <a class="el" href="structFlowUi_1_1NoElementParameters.html">NoElementParameters</a>, Parameters&gt;</td></tr>
-<tr class="memdesc:a55d8058dff17a54e97d7e934a7556f3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameter type exposed through params.  <br /></td></tr>
+<tr class="memitem:a0b60168cedc70f473c76dd95b6d85e8b" id="r_a0b60168cedc70f473c76dd95b6d85e8b"><td class="memItemLeft"><a id="a0b60168cedc70f473c76dd95b6d85e8b" name="a0b60168cedc70f473c76dd95b6d85e8b"></a>
+using&#160;</td><td class="memItemRight"><b>ElementType</b> = std::remove_cvref_t&lt;Element&gt;</td></tr>
+<tr class="memdesc:a0b60168cedc70f473c76dd95b6d85e8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete element definition type associated with this callback. <br /></td></tr>
+<tr class="memitem:a5810253fdbc2ee15206b3752b2e827b8" id="r_a5810253fdbc2ee15206b3752b2e827b8"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> = ParametersOf&lt;<a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a>&gt;</td></tr>
+<tr class="memdesc:a5810253fdbc2ee15206b3752b2e827b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameter type exposed through params.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad1a4815b3e3cf5fdae8651902903b05a" id="r_ad1a4815b3e3cf5fdae8651902903b05a"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ad1a4815b3e3cf5fdae8651902903b05a">createChildElementId</a> (std::string_view localChildId) const</td></tr>
-<tr class="memdesc:ad1a4815b3e3cf5fdae8651902903b05a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a nested element id for child elements.  <br /></td></tr>
+<tr class="memitem:a19b0efdf0ccd58d56ecd7fea5adde2e2" id="r_a19b0efdf0ccd58d56ecd7fea5adde2e2"><td class="memItemLeft"><a id="a19b0efdf0ccd58d56ecd7fea5adde2e2" name="a19b0efdf0ccd58d56ecd7fea5adde2e2"></a>
+&#160;</td><td class="memItemRight"><b>ElementInteractionContext</b> (<a class="el" href="classFlowUi_1_1detail_1_1element_1_1ElementInvocation.html">detail::element::ElementInvocation</a>&lt; <a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a> &gt; &amp;invocation, <a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> &amp;parameters, const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;interaction) noexcept</td></tr>
+<tr class="memitem:a5b2041ef0c4efdc246daf9cb852af6dd" id="r_a5b2041ef0c4efdc246daf9cb852af6dd"><td class="memTemplParams" colspan="2">template&lt;typename E = ElementType&gt; </td></tr>
+<tr class="memitem:a5b2041ef0c4efdc246daf9cb852af6dd template"><td class="memItemLeft">StateOf&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a5b2041ef0c4efdc246daf9cb852af6dd">state</a> ()</td></tr>
+<tr class="memitem:aa05a5a54b644831c8a4e66ca9ac7d15b" id="r_aa05a5a54b644831c8a4e66ca9ac7d15b"><td class="memTemplParams" colspan="2">template&lt;typename E = ElementType&gt; </td></tr>
+<tr class="memitem:aa05a5a54b644831c8a4e66ca9ac7d15b template"><td class="memItemLeft">const StateOf&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aa05a5a54b644831c8a4e66ca9ac7d15b">state</a> () const</td></tr>
+<tr class="memitem:a7903827d895d42e8e0ef6b5ceb524d92" id="r_a7903827d895d42e8e0ef6b5ceb524d92"><td class="memTemplParams" colspan="2">template&lt;typename E = ElementType&gt; </td></tr>
+<tr class="memitem:a7903827d895d42e8e0ef6b5ceb524d92 template"><td class="memItemLeft">const ResourcesOf&lt; E &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a7903827d895d42e8e0ef6b5ceb524d92">resources</a> () const</td></tr>
+<tr class="memitem:gaeeaa0e4c984a4c5d85e96db214e4ba79" id="r_gaeeaa0e4c984a4c5d85e96db214e4ba79"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gaeeaa0e4c984a4c5d85e96db214e4ba79">clayID</a> () const</td></tr>
+<tr class="memitem:ga1ee806e7d92014131a6ace12aede2de0" id="r_ga1ee806e7d92014131a6ace12aede2de0"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga1ee806e7d92014131a6ace12aede2de0">childID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name) const</td></tr>
+<tr class="memitem:ga1295d0523fac0c200da40929bf194d02" id="r_ga1295d0523fac0c200da40929bf194d02"><td class="memItemLeft">
+<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>childID</b> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name) const</td></tr>
+<tr class="memitem:ga6770bc45c11a20de231a776b481094bb" id="r_ga6770bc45c11a20de231a776b481094bb"><td class="memItemLeft">
+<a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><b>childID</b> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name) const</td></tr>
+<tr class="memitem:gab90bca3eea23da84eefe7d3951f447a0" id="r_gab90bca3eea23da84eefe7d3951f447a0"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#gab90bca3eea23da84eefe7d3951f447a0">clayID</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> name) const</td></tr>
+<tr class="memitem:gaec1f2c98ba4904548a878e4f8fcbc325" id="r_gaec1f2c98ba4904548a878e4f8fcbc325"><td class="memItemLeft">
+Clay_ElementId&#160;</td><td class="memItemRight"><b>clayID</b> (<a class="el" href="structFlowUi_1_1RuntimeElementName.html">RuntimeElementName</a> name) const</td></tr>
+<tr class="memitem:gad15bb15a3c195809aa89a1843e0f64da" id="r_gad15bb15a3c195809aa89a1843e0f64da"><td class="memItemLeft">
+Clay_ElementId&#160;</td><td class="memItemRight"><b>clayID</b> (<a class="el" href="structFlowUi_1_1IndexedElementName.html">IndexedElementName</a> name) const</td></tr>
+<tr class="memitem:ga769797343a838239fecbe6789e6c1b86" id="r_ga769797343a838239fecbe6789e6c1b86"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowElementPartID.html">FlowElementPartID</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga769797343a838239fecbe6789e6c1b86">part</a> (<a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> declaration) const</td></tr>
+<tr class="memitem:ga18a436badc247d75f31fc2e069acd0b7" id="r_ga18a436badc247d75f31fc2e069acd0b7"><td class="memTemplParams" colspan="2">template&lt;FlowElement PartElement&gt; </td></tr>
+<tr class="memitem:ga18a436badc247d75f31fc2e069acd0b7 template"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1ElementBuilder.html">ElementBuilder</a>&lt; PartElement &gt;&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga18a436badc247d75f31fc2e069acd0b7">createPart</a> (const PartElement &amp;element, <a class="el" href="structFlowUi_1_1FlowElementPart.html">FlowElementPart</a> declaration) const</td></tr>
+<tr class="memitem:ad43cac79a92c0f6b6966e63bd65d0669" id="r_ad43cac79a92c0f6b6966e63bd65d0669"><td class="memItemLeft">constexpr <a class="el" href="classFlowUi_1_1IndexedElementIDSequence.html">IndexedElementIDSequence</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad43cac79a92c0f6b6966e63bd65d0669">indexedIDs</a> (<a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a> baseName, uint64_t firstIndex=0) const noexcept</td></tr>
+<tr class="memitem:ga9e06eb3ce46ac7553c04f68077d8566b" id="r_ga9e06eb3ce46ac7553c04f68077d8566b"><td class="memItemLeft">ActionInvocationStatus&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga9e06eb3ce46ac7553c04f68077d8566b">invoke</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call)</td></tr>
+<tr class="memitem:ga7b23903647b2b905818f5d5805ca7748" id="r_ga7b23903647b2b905818f5d5805ca7748"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1ActionAvailability.html">ActionAvailability</a>&#160;</td><td class="memItemRight"><a class="el" href="group__flowui__element__system.html#ga7b23903647b2b905818f5d5805ca7748">actionAvailability</a> (<a class="el" href="classFlowUi_1_1ActionCall.html">ActionCall</a> call) const</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a136cec0e73c637a01f4412e06675a5d8" id="r_a136cec0e73c637a01f4412e06675a5d8"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a136cec0e73c637a01f4412e06675a5d8">uiManager</a></td></tr>
-<tr class="memdesc:a136cec0e73c637a01f4412e06675a5d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">UI manager that owns the active frame.  <br /></td></tr>
-<tr class="memitem:a9b279299ee731d932d99f4c2a0b296c8" id="r_a9b279299ee731d932d99f4c2a0b296c8"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a9b279299ee731d932d99f4c2a0b296c8">elementID</a></td></tr>
-<tr class="memdesc:a9b279299ee731d932d99f4c2a0b296c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flow element id string for this element instance.  <br /></td></tr>
-<tr class="memitem:a9a36e1f8867d7939faa5abe30cdcc39a" id="r_a9a36e1f8867d7939faa5abe30cdcc39a"><td class="memItemLeft"><a class="el" href="#a55d8058dff17a54e97d7e934a7556f3e">ParametersType</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a9a36e1f8867d7939faa5abe30cdcc39a">params</a></td></tr>
-<tr class="memdesc:a9a36e1f8867d7939faa5abe30cdcc39a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameters for this element instance.  <br /></td></tr>
-<tr class="memitem:a3816f77ab7e946691c7a482425895793" id="r_a3816f77ab7e946691c7a482425895793"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a3816f77ab7e946691c7a482425895793">previousInteraction</a></td></tr>
-<tr class="memdesc:a3816f77ab7e946691c7a482425895793"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interaction state captured from the previous completed frame.  <br /></td></tr>
+<tr class="memitem:a6efe5a3cae03791d5ede6113d6dc4ff7" id="r_a6efe5a3cae03791d5ede6113d6dc4ff7"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6efe5a3cae03791d5ede6113d6dc4ff7">uiManager</a></td></tr>
+<tr class="memdesc:a6efe5a3cae03791d5ede6113d6dc4ff7"><td class="mdescLeft">&#160;</td><td class="mdescRight">UI manager that owns the active frame.  <br /></td></tr>
+<tr class="memitem:a22f82a924fa7dc8f679c7cec00d9680e" id="r_a22f82a924fa7dc8f679c7cec00d9680e"><td class="memItemLeft"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a>&#160;</td><td class="memItemRight"><a class="el" href="#a22f82a924fa7dc8f679c7cec00d9680e">id</a> {}</td></tr>
+<tr class="memitem:a6822d2aa590cec5ef02cecad5c4f0d9a" id="r_a6822d2aa590cec5ef02cecad5c4f0d9a"><td class="memItemLeft"><a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a6822d2aa590cec5ef02cecad5c4f0d9a">params</a></td></tr>
+<tr class="memdesc:a6822d2aa590cec5ef02cecad5c4f0d9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameters for this element instance.  <br /></td></tr>
+<tr class="memitem:aabe5c09d3f4c861c1076b1b842b783cf" id="r_aabe5c09d3f4c861c1076b1b842b783cf"><td class="memItemLeft">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aabe5c09d3f4c861c1076b1b842b783cf">previousInteraction</a></td></tr>
+<tr class="memdesc:aabe5c09d3f4c861c1076b1b842b783cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interaction state captured from the previous completed frame.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-friends" class="groupheader"><a id="friends" name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a2fe84d7ac8837e8b29eff6be7b27beca" id="r_a2fe84d7ac8837e8b29eff6be7b27beca"><td class="memItemLeft"><a id="a2fe84d7ac8837e8b29eff6be7b27beca" name="a2fe84d7ac8837e8b29eff6be7b27beca"></a>
+class&#160;</td><td class="memItemRight"><b>ElementBuilder&lt; ElementType &gt;</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;typename Parameters&gt;<br />
-struct FlowUi::ElementInteractionContext&lt; Parameters &gt;</div><p>Context passed to event and logic callbacks. </p>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename Element&gt;<br />
+struct FlowUi::ElementInteractionContext&lt; Element &gt;</div><p>Context passed to event and logic callbacks. </p>
 <p><a class="el" href="structFlowUi_1_1ElementInteractionContext.html" title="Context passed to event and logic callbacks.">ElementInteractionContext</a> provides the element instance data available while processing onHovered, onPressed, onHeld, onReleased, and runLogic callbacks. Event callbacks are invoked from the previous completed frame interaction snapshot. Logic callbacks receive the same context type when enabled. </p>
 </div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Member Typedef Documentation</h2>
-<a id="a55d8058dff17a54e97d7e934a7556f3e" name="a55d8058dff17a54e97d7e934a7556f3e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a55d8058dff17a54e97d7e934a7556f3e">&#9670;&#160;</a></span>ParametersType</h2>
+<a id="a5810253fdbc2ee15206b3752b2e827b8" name="a5810253fdbc2ee15206b3752b2e827b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5810253fdbc2ee15206b3752b2e827b8">&#9670;&#160;</a></span>ParametersType</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Parameters&gt; </div>
+template&lt;typename Element&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Parameters &gt;::ParametersType = std::conditional_t&lt;std::is_void_v&lt;Parameters&gt;, <a class="el" href="structFlowUi_1_1NoElementParameters.html">NoElementParameters</a>, Parameters&gt;</td>
+          <td class="memname">using <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::ParametersType = ParametersOf&lt;<a class="el" href="#a0b60168cedc70f473c76dd95b6d85e8b">ElementType</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Parameter type exposed through params. </p>
-<p>void parameter definitions resolve to <a class="el" href="structFlowUi_1_1NoElementParameters.html" title="Empty parameter type used by elements with no parameters.">NoElementParameters</a> so interaction callbacks always receive a valid params reference. </p>
+<p>Elements that omit Parameters resolve to <a class="el" href="structFlowUi_1_1NoElementParameters.html">NoElementParameters</a> so interaction callbacks always receive a valid params reference. </p>
 
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="ad1a4815b3e3cf5fdae8651902903b05a" name="ad1a4815b3e3cf5fdae8651902903b05a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1a4815b3e3cf5fdae8651902903b05a">&#9670;&#160;</a></span>createChildElementId()</h2>
+<a id="ad43cac79a92c0f6b6966e63bd65d0669" name="ad43cac79a92c0f6b6966e63bd65d0669"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad43cac79a92c0f6b6966e63bd65d0669">&#9670;&#160;</a></span>indexedIDs()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Parameters&gt; </div>
+template&lt;typename Element&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Parameters &gt;::createChildElementId </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1IndexedElementIDSequence.html">IndexedElementIDSequence</a> <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::indexedIDs </td>
           <td>(</td>
-          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>localChildId</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1LocalElementName.html">LocalElementName</a></td>          <td class="paramname"><span class="paramname"><em>baseName</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>firstIndex</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span><span class="mlabel constexpr">constexpr</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a local positional sequence. State follows position after reordering. </p>
+
+</div>
+</div>
+<a id="a7903827d895d42e8e0ef6b5ceb524d92" name="a7903827d895d42e8e0ef6b5ceb524d92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7903827d895d42e8e0ef6b5ceb524d92">&#9670;&#160;</a></span>resources()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Element&gt; </div>
+<div class="memtemplate">
+template&lt;typename E = ElementType&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const ResourcesOf&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::resources </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Lazily resolve and return this definition's immutable app-wide resources. </p>
 
-<p>Create a nested element id for child elements. </p>
-<p>The returned id is formed by appending "/" and localChildId to elementID. Use it when child Clay nodes or child Flow elements need stable ids scoped to the current element instance.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">localChildId</td><td>Local id segment or relative child path. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Combined child id string. </dd></dl>
+</div>
+</div>
+<a id="a5b2041ef0c4efdc246daf9cb852af6dd" name="a5b2041ef0c4efdc246daf9cb852af6dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b2041ef0c4efdc246daf9cb852af6dd">&#9670;&#160;</a></span>state() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Element&gt; </div>
+<div class="memtemplate">
+template&lt;typename E = ElementType&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">StateOf&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::state </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the state resolved once and cached for this element invocation. </p>
+
+</div>
+</div>
+<a id="aa05a5a54b644831c8a4e66ca9ac7d15b" name="aa05a5a54b644831c8a4e66ca9ac7d15b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa05a5a54b644831c8a4e66ca9ac7d15b">&#9670;&#160;</a></span>state() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Element&gt; </div>
+<div class="memtemplate">
+template&lt;typename E = ElementType&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const StateOf&lt; E &gt; &amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::state </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return immutable cached state from a const context. </p>
 
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
-<a id="a9b279299ee731d932d99f4c2a0b296c8" name="a9b279299ee731d932d99f4c2a0b296c8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b279299ee731d932d99f4c2a0b296c8">&#9670;&#160;</a></span>elementID</h2>
+<a id="a22f82a924fa7dc8f679c7cec00d9680e" name="a22f82a924fa7dc8f679c7cec00d9680e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22f82a924fa7dc8f679c7cec00d9680e">&#9670;&#160;</a></span>id</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Parameters&gt; </div>
+template&lt;typename Element&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::string_view <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Parameters &gt;::elementID</td>
+          <td class="memname"><a class="el" href="structFlowUi_1_1FlowElementID.html">FlowElementID</a> <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::id {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Flow element id string for this element instance. </p>
-<p>This is the id held by the <a class="el" href="classFlowUi_1_1ElementBuilder.html" title="builder returned by UiManager::createElement().">ElementBuilder</a> passed with createElement. </p>
+<p>Strong numeric identity of this Flow element instance. </p>
 
 </div>
 </div>
-<a id="a9a36e1f8867d7939faa5abe30cdcc39a" name="a9a36e1f8867d7939faa5abe30cdcc39a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9a36e1f8867d7939faa5abe30cdcc39a">&#9670;&#160;</a></span>params</h2>
+<a id="a6822d2aa590cec5ef02cecad5c4f0d9a" name="a6822d2aa590cec5ef02cecad5c4f0d9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6822d2aa590cec5ef02cecad5c4f0d9a">&#9670;&#160;</a></span>params</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Parameters&gt; </div>
+template&lt;typename Element&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#a55d8058dff17a54e97d7e934a7556f3e">ParametersType</a>&amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Parameters &gt;::params</td>
+          <td class="memname"><a class="el" href="#a5810253fdbc2ee15206b3752b2e827b8">ParametersType</a>&amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::params</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -234,16 +347,16 @@ template&lt;typename Parameters&gt; </div>
 
 </div>
 </div>
-<a id="a3816f77ab7e946691c7a482425895793" name="a3816f77ab7e946691c7a482425895793"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3816f77ab7e946691c7a482425895793">&#9670;&#160;</a></span>previousInteraction</h2>
+<a id="aabe5c09d3f4c861c1076b1b842b783cf" name="aabe5c09d3f4c861c1076b1b842b783cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabe5c09d3f4c861c1076b1b842b783cf">&#9670;&#160;</a></span>previousInteraction</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Parameters&gt; </div>
+template&lt;typename Element&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a>&amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Parameters &gt;::previousInteraction</td>
+          <td class="memname">const <a class="el" href="structFlowUi_1_1InteractionSnapshot.html">InteractionSnapshot</a>&amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::previousInteraction</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -253,16 +366,16 @@ template&lt;typename Parameters&gt; </div>
 
 </div>
 </div>
-<a id="a136cec0e73c637a01f4412e06675a5d8" name="a136cec0e73c637a01f4412e06675a5d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a136cec0e73c637a01f4412e06675a5d8">&#9670;&#160;</a></span>uiManager</h2>
+<a id="a6efe5a3cae03791d5ede6113d6dc4ff7" name="a6efe5a3cae03791d5ede6113d6dc4ff7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6efe5a3cae03791d5ede6113d6dc4ff7">&#9670;&#160;</a></span>uiManager</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Parameters&gt; </div>
+template&lt;typename Element&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a>&amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Parameters &gt;::uiManager</td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1UiManager.html">UiManager</a>&amp; <a class="el" href="structFlowUi_1_1ElementInteractionContext.html">FlowUi::ElementInteractionContext</a>&lt; Element &gt;::uiManager</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -272,8 +385,9 @@ template&lt;typename Parameters&gt; </div>
 
 </div>
 </div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/managers/structs/<a class="el" href="FlowUiElementStructs_8hpp_source.html">FlowUiElementStructs.hpp</a></li>
+<hr/>The documentation for this struct was generated from the following files:<ul>
+<li>include/FlowUi/Public/elementAuthoring/<a class="el" href="ElementContexts_8hpp_source.html">ElementContexts.hpp</a></li>
+<li>include/FlowUi/Public/elementAuthoring/<a class="el" href="ElementBuilder_8hpp_source.html">ElementBuilder.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

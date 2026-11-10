@@ -1,13 +1,13 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 
 namespace FlowUi::devSystems::interface_elements::catalogue_focus {
-/** Bind controls to their actual clipped panel so keyboard traversal can reveal them. */
+/* Bind controls to their actual clipped panel so keyboard traversal can reveal them. */
 class ViewportScope {
 public:
 	ViewportScope(DevCatalogueState& state, Clay_ElementId viewport) noexcept
@@ -22,10 +22,15 @@ private:
 	DevCatalogueState& state_;
 	Clay_ElementId previous_{};
 };
-/** Retain this frame's submitted target; no captured tree is required. */
+/*
+ * Retain this frame's submitted target; no captured tree is required.
+ * @param pointer_focus Whether pointer presses also assign focus. Disable for containers
+ * whose descendants manage their own text or control focus.
+ */
 template <class Context>
 void register_target(Context& context, DevCatalogueState& state, Clay_ElementId identity,
-					 FlowElementID text_input = {}, bool enabled = true) {
+					 FlowElementID text_input = {}, bool enabled = true,
+					 bool pointer_focus = true) {
 	if (!enabled || !identity.id)
 		return;
 	const auto found = std::ranges::find(state.focus_targets, identity.id,
@@ -33,14 +38,14 @@ void register_target(Context& context, DevCatalogueState& state, Clay_ElementId 
 	if (found == state.focus_targets.end())
 		state.focus_targets.emplace_back(
 			DevCatalogueFocusTarget{identity, state.registration_viewport, text_input});
-	if (context.uiManager.getPreviousFramesInteraction().isPressed(identity)) {
+	if (pointer_focus && context.uiManager.getPreviousFramesInteraction().isPressed(identity)) {
 		context.uiManager.shortcuts().setFocusedElement(identity);
 		if (!text_input.value)
 			context.uiManager.inputFields().requestCaret(FlowElementID{},
 														 CaretRequestKind::ClearAll);
 	}
 }
-/** Resolve a locally created retained control before registering its keyboard target. */
+/* Resolve a locally created retained control before registering its keyboard target. */
 template <class Context, class Identity>
 void register_element(Context& context, DevCatalogueState& state, FlowDefinitionID definition,
 					  const Identity& identity, bool enabled = true, bool text_input = false) {
@@ -49,7 +54,7 @@ void register_element(Context& context, DevCatalogueState& state, FlowDefinition
 	register_target(context, state, context.uiManager.toClayEID(element),
 					text_input ? element : FlowElementID{}, enabled);
 }
-/** Traverse the previous submitted order, then collect only this frame's visible controls. */
+/* Traverse the previous submitted order, then collect only this frame's visible controls. */
 template <class Context>
 void begin_frame(Context& context, DevCatalogueState& state) {
 	const auto& current = context.uiManager.getCurrentFrameInput();

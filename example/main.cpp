@@ -5,9 +5,9 @@
 #include <string_view>
 #include <vector>
 
-#include <FlowUi/Flow.hpp>
-#include <devMode/devFlowElements/devBasicButton.hpp>
-#include <devMode/devFlowElements/devBasicInputField.hpp>
+#include <FSEL/Button.hpp>
+#include <FSEL/TextInput.hpp>
+#include <FlowUi/Public/Flow.hpp>
 
 namespace {
 
@@ -22,6 +22,9 @@ struct DemoState {
 	uint64_t nextWindowNumber = 1;
 	bool createWindowRequested = false;
 };
+
+inline constexpr auto request_text_window = FlowUi::UiAction(
+	"example.open-text-window", [](DemoState& state) { state.createWindowRequested = true; });
 
 Clay_TextElementConfig textStyle(
 	uint16_t size,
@@ -56,32 +59,31 @@ void drawMainWindow(FlowUi::App& app, DemoState& state) {
 	CLAY(ui.toClaySID("example/main/page"), pageStyle()) {
 		CLAY_TEXT(ui.toClayString("Multi-window text demo"), CLAY_TEXT_CONFIG(heading));
 
-		ui.createElement(kDevBasicInputField, "example/main/text-input")
-			.setParameters(devBasicInputFieldParams{
-				.fieldId = "example/shared-text",
-				.initialText = state.text,
+		ui.createElement(FlowUi::FSEL::kTextInput, "example/main/text-input")
+			.setParameters(FlowUi::FSEL::TextInputParameters{
+				.value = &state.text,
 				.maxBytes = 4096,
-				.onTextChangedCallback = [&state](std::string_view value) {
-					state.text.assign(value);
-				},
-				.sizing = Clay_Sizing{
-					.width = CLAY_SIZING_GROW(0),
-					.height = CLAY_SIZING_FIT(0),
-				},
-				.backgroundColor = FlowUi::Flow_Color("#f3f5f8ff"),
+				.idleOverrides = {.backgroundColor = FlowUi::Flow_Color("#f3f5f8ff")},
+				.sizing =
+					Clay_Sizing{
+						.width = CLAY_SIZING_GROW(0),
+						.height = CLAY_SIZING_FIT(0),
+					},
 			})
 			.draw();
 
-		ui.createElement(kDevBasicButton, "example/main/open-window")
-			.setParameters(devBasicButtonParams{
+		ui.createElement(FlowUi::FSEL::kButton, "example/main/open-window")
+			.setParameters(FlowUi::FSEL::ButtonParameters{
+				.onActivate =
+					FlowUi::ActionCall{ui.actions().uiActions().make(request_text_window, state)},
 				.text = "Open text window",
-				.onPressedCallback = [&state](DevBasicButtonInteractionContext) {
-					state.createWindowRequested = true;
-				},
-				.contentMode = devBasicButtonParams::ContentMode::TextOnly,
-				.backgroundColor = FlowUi::Flow_Color("#78a9ffff"),
-				.borderColor = FlowUi::Flow_Color("#a9c7ffff"),
-				.textColor = FlowUi::Flow_Color("#101522ff"),
+				.idleOverrides =
+					{
+						.backgroundColor = FlowUi::Flow_Color("#78a9ffff"),
+						.labelColor = FlowUi::Flow_Color("#101522ff"),
+						.borderColor = FlowUi::Flow_Color("#a9c7ffff"),
+					},
+				.contentMode = FlowUi::FSEL::ButtonContentMode::TextOnly,
 			})
 			.draw();
 

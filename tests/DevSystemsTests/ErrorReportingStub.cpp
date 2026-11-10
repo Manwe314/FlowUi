@@ -1,4 +1,4 @@
-#include "FlowUi/Error.hpp"
+#include "FlowUi/Public/errorManagement/Error.hpp"
 
 namespace FlowUi::detail {
 

@@ -1,7 +1,7 @@
 #include "HeadlessVulkanFixture.hpp"
 #include "TestHarness.hpp"
-#include "Ui/Vk_UiRenderer.hpp"
-#include "internal/Vma.hpp"
+#include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 
 #include <algorithm>
 #include <array>

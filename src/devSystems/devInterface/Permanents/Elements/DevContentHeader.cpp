@@ -9,24 +9,27 @@
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceCapturePolicy.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceExport.hpp"
-#include "FlowUi/Resources.hpp"
+#include "FlowUi/Public/Resources.hpp"
 #include <limits>
 #include <string>
 #include <utility>
 
 #include "FSEL/Button.hpp"
-#include "devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp"
-#include "devSystems/devInterface/Changes/DevChangesControls.hpp"
-#include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
-#include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #include "FSEL/ComboBox.hpp"
 #include "FSEL/RadioChoice.hpp"
+#include "devSystems/devInterface/Changes/DevChangesControls.hpp"
+#include "devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp"
+#include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevActionButton.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/ActionManager.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -44,9 +47,9 @@ inline constexpr LocalElementName kSectionSeparatorLine{"section-separator-line"
 inline constexpr LocalElementName kContextualControls{"contextual-controls"};
 inline constexpr LocalElementName kFrameSelector{"frame-selector"};
 inline constexpr LocalElementName kCpuReportingLevel{"cpu-reporting-level"};
+inline constexpr LocalElementName kWindowTarget{"window-target"};
 inline constexpr LocalElementName kCapturedState{"captured-state"};
 inline constexpr LocalElementName kCaptureState{"capture-state"};
-inline constexpr LocalElementName kRefreshCatalogue{"refresh-catalogue"};
 
 struct TabSpec {
 	DevInterfaceTab tab;
@@ -119,12 +122,6 @@ constexpr auto kBackToChanges =
 		state.changes.pending = DevChangesCommand::Back;
 	});
 
-constexpr auto kRefreshCatalogueAction =
-	UiAction("flowui.dev_interface.catalogue.refresh", [](DevInterfaceState& state) {
-		state.catalogue.pending = DevCatalogueCommand::Refresh;
-		state.lastActionMessage = "Catalogue refresh requested";
-	});
-
 constexpr auto kApplyCpuReportingLevel = UiAction(
 	"flowui.dev_interface.apply-cpu-reporting-level",
 	[](App& app, DevInterfaceState& state) {
@@ -137,10 +134,10 @@ constexpr auto kApplyCpuReportingLevel = UiAction(
 	});
 
 inline constexpr std::array<FSEL::ComboBoxOption, 4> kCpuReportingOptions{{
-	{.value = 0u, .text = "CPU: Frame Only"},
-	{.value = 1u, .text = "CPU: Summary"},
-	{.value = 2u, .text = "CPU: Balanced"},
-	{.value = 3u, .text = "CPU: Deep"},
+	{.value = 0u, .text = "Record: Frame Only"},
+	{.value = 1u, .text = "Record: Summary"},
+	{.value = 2u, .text = "Record: Balanced"},
+	{.value = 3u, .text = "Record: Deep"},
 }};
 
 uint64_t tabValue(DevInterfaceTab tab) {
@@ -169,6 +166,7 @@ void drawTab(
 	DevInterfaceState& state,
 	const TabSpec& tab) {
 	const bool selected = state.activeTab == tabValue(tab.tab);
+	const bool compact = Clay_GetLayoutDimensions().width < 600.0f;
 	FSEL::RadioChoiceParameters parameters{};
 	parameters.choiceValue = tabValue(tab.tab);
 	parameters.selectedValue = &state.activeTab;
@@ -176,7 +174,7 @@ void drawTab(
 		.width = CLAY_SIZING_FIT(0),
 		.height = CLAY_SIZING_GROW(0),
 	};
-	parameters.style.padding = Clay_Padding{14, 14, 0, 0};
+	parameters.style.padding = compact ? Clay_Padding{6, 6, 0, 0} : Clay_Padding{14, 14, 0, 0};
 	parameters.style.childAlignment = Clay_ChildAlignment{
 		.x = CLAY_ALIGN_X_CENTER,
 		.y = CLAY_ALIGN_Y_CENTER,
@@ -198,9 +196,13 @@ void drawTab(
 		.construct();
 	const Clay_TextElementConfig labelStyle = textConfig(
 		selected ? interface_theme::kTextCanvas : interface_theme::kTextSecondary,
-		12);
+		compact ? 10 : 12);
+	std::string_view label = tab.label;
+	if (compact && tab.tab == DevInterfaceTab::Performance) label = "Perf";
+	if (compact && tab.tab == DevInterfaceTab::Diagnostics) label = "Issues";
+	if (compact && tab.tab == DevInterfaceTab::Catalogue) label = "Assets";
 	CLAY_TEXT(
-		context.uiManager.toClayString(tab.label),
+		context.uiManager.toClayString(label),
 		CLAY_TEXT_CONFIG(labelStyle));
 	context.uiManager.drawConstructed();
 }
@@ -211,7 +213,7 @@ void drawTabs(
 	Clay_ElementDeclaration strip{};
 	strip.layout.sizing = {
 		.width = CLAY_SIZING_FIT(0),
-		.height = CLAY_SIZING_GROW(0),
+		.height = CLAY_SIZING_FIXED(kContentHeaderHeight),
 	};
 	strip.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	strip.backgroundColor = interface_theme::kDepth2Ink;
@@ -277,17 +279,27 @@ FSEL::ButtonParameters controlParameters(
 	return parameters;
 }
 
-void drawControl(
-	DevContentHeader::BuildContext& context,
-	LocalElementName id,
-	std::string_view label,
-	ActionCall action = {},
-	bool enabled = true,
-	bool emphasized = false) {
+void drawControl(DevContentHeader::BuildContext& context, LocalElementName id,
+				 std::string_view label, ActionCall action = {}, bool enabled = true,
+				 bool emphasized = false, [[maybe_unused]] std::string_view icon_key = {}) {
+	auto parameters = controlParameters(label, action, enabled, emphasized);
+	TextureRef icon{};
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	if (context.params.app && !icon_key.empty()) {
+		auto& icons = context.params.app->icons();
+		if (!icons.contains(icon_key))
+			interface_icons::registerDevInterfaceIcons(icons);
+		if (icons.contains(icon_key))
+			icon = icons.textureRef(icon_key);
+	}
+#endif
+	action_button::set_icon(parameters, icon);
 	context.uiManager.createElement(FSEL::kButton, id)
-		.setParameters(controlParameters(label, action, enabled, emphasized))
+		.setParameters(std::move(parameters))
 		.setDevInternalCapture(true)
 		.draw();
+	if (icon.handle)
+		action_button::tooltip(context, id, label);
 }
 
 void drawReportingText(
@@ -316,25 +328,22 @@ void drawReportingText(
 	}
 }
 
-void drawCpuReportingSelector(
-	DevContentHeader::BuildContext& context,
-	App* app,
-	DevInterfaceState& state) {
+void drawCpuReportingSelector(DevContentHeader::BuildContext& context, App* app,
+							  DevInterfaceState& state) {
 	ActionCall changedAction{};
 	if (app) {
-		changedAction = ActionCall{
-			app->actions().uiActions().make(kApplyCpuReportingLevel, *app, state)};
+		changedAction =
+			ActionCall{app->actions().uiActions().make(kApplyCpuReportingLevel, *app, state)};
 	}
 
 	FSEL::ComboBoxParameters parameters{};
 	parameters.options = std::span<const FSEL::ComboBoxOption>{
-		kCpuReportingOptions.data(),
-		static_cast<std::size_t>(FLOWUI_DEV_TIMING_LEVEL) + 1u};
+		kCpuReportingOptions.data(), static_cast<std::size_t>(FLOWUI_DEV_TIMING_LEVEL) + 1u};
 	parameters.selectedValue = &state.cpuReportingLevel;
 	parameters.enabled = app != nullptr;
 	parameters.onChanged = changedAction;
 	parameters.sizing = Clay_Sizing{
-		.width = CLAY_SIZING_FIXED(160),
+		.width = CLAY_SIZING_FIXED(200),
 		.height = CLAY_SIZING_FIXED(28),
 	};
 	parameters.popupWidthPolicy = FSEL::ComboBoxPopupWidthPolicy::ContentAtLeastTrigger;
@@ -344,17 +353,67 @@ void drawCpuReportingSelector(
 		.setParameters(std::move(parameters))
 		.setDevInternalCapture(true)
 		.draw();
+	constexpr std::array<std::string_view, 4> compiled_labels{"Build: Frame Only", "Build: Summary",
+															  "Build: Balanced", "Build: Deep"};
+	drawReportingText(context, LocalElementName{"cpu-compiled-ceiling"},
+					  compiled_labels[FLOWUI_DEV_TIMING_LEVEL]);
+	action_button::tooltip(
+		context, kCpuReportingLevel,
+		"CPU recording detail for future captures. The build label is the compiled ceiling. "
+		"Timeline depth only changes the display of already captured records.",
+		FSEL::ComboBox::definitionId);
 }
 
-void drawContextualControls(
-	DevContentHeader::BuildContext& context,
-	App* app,
-	DevInterfaceState& state,
-	DevInterfaceTab activeTab) {
+constexpr auto kChangeInspectWindow =
+	UiAction("flowui.dev_interface.inspect.change-window", [](App& app, DevInterfaceState& state) {
+		set_inspect_window(app, state, state.selectedWindowId);
+	});
+
+void drawWindowTarget(DevContentHeader::BuildContext& context, App* app, DevInterfaceState& state) {
+	const auto windows = app ? app->devWindowSnapshot() : std::vector<DevWindowInfo>{};
+	std::vector<std::string> labels;
+	std::vector<FSEL::ComboBoxOption> options;
+	labels.reserve(windows.size());
+	options.reserve(windows.size());
+	for (const auto& window : windows) {
+		if (window.id == state.interface_window_id)
+			continue;
+		labels.emplace_back(window.title.empty() ? "Window " + std::to_string(window.id)
+												 : window.title);
+		options.emplace_back(FSEL::ComboBoxOption{.value = window.id, .text = labels.back()});
+	}
+	FSEL::ComboBoxParameters parameters{};
+	parameters.options = options;
+	parameters.selectedValue = &state.selectedWindowId;
+	parameters.onChanged =
+		app ? ActionCall{app->actions().uiActions().make(kChangeInspectWindow, *app, state)}
+			: ActionCall{};
+	parameters.enabled = app && !options.empty();
+	parameters.placeholder = "No application windows";
+	parameters.sizing =
+		Clay_Sizing{CLAY_SIZING_FIXED(Clay_GetLayoutDimensions().width < 600.0f ? 150.0f : 210.0f),
+					CLAY_SIZING_FIXED(28)};
+	parameters.popupWidthPolicy = FSEL::ComboBoxPopupWidthPolicy::ContentAtLeastTrigger;
+	parameters.fontSize = 12;
+	context.uiManager.createElement(FSEL::kComboBox, kWindowTarget)
+		.setParameters(std::move(parameters))
+		.setDevInternalCapture(true)
+		.draw();
+	action_button::tooltip(context, kWindowTarget,
+						   "Application window inspected by the tree, properties and overlays. "
+						   "Catalogue and Changes reuse this window context.",
+						   FSEL::ComboBox::definitionId);
+}
+
+void drawContextualControls(DevContentHeader::BuildContext& context, App* app,
+							DevInterfaceState& state, DevInterfaceTab activeTab) {
 	switch (activeTab) {
 	case DevInterfaceTab::Inspect:
-		context.uiManager.createElement(kDevInspectOverlayMenu, LocalElementName{"inspect-overlay-controls"})
-			.setParameters(DevInspectOverlayMenuParameters{.app = app}).draw();
+		drawWindowTarget(context, app, state);
+		context.uiManager
+			.createElement(kDevInspectOverlayMenu, LocalElementName{"inspect-overlay-controls"})
+			.setParameters(DevInspectOverlayMenuParameters{.app = app})
+			.draw();
 		break;
 	case DevInterfaceTab::Performance: {
 		drawControl(context, kFrameSelector, "Main Capture",
@@ -370,7 +429,7 @@ void drawContextualControls(
 		drawControl(context, LocalElementName{"export-capture"}, exported ? "Exported" : "Export",
 					app ? ActionCall{app->actions().uiActions().make(kExportCapture, *app, state)}
 						: ActionCall{},
-					can_export && !exported);
+					can_export && !exported, false, interface_icons::kExportKey);
 		drawCpuReportingSelector(context, app, state);
 		break;
 	}
@@ -390,8 +449,6 @@ void drawContextualControls(
 			.setParameters({app, &state}).setDevInternalCapture(true).draw();
 		break;
 	case DevInterfaceTab::Catalogue:
-		drawControl(context, kRefreshCatalogue, "Refresh",
-			app ? ActionCall{app->actions().uiActions().make(kRefreshCatalogueAction, state)} : ActionCall{}, app != nullptr);
 		break;
 	}
 }
@@ -408,19 +465,19 @@ void DevContentHeader::buildElement(BuildContext& context) {
 			static_cast<uint64_t>(
 				context.params.app->devMonitoring().timing().config().cpuLevel),
 			static_cast<uint64_t>(FLOWUI_DEV_TIMING_LEVEL));
-
 	}
 
 	Clay_ElementDeclaration header{};
+	const bool stacked = Clay_GetLayoutDimensions().width < 1280.0f;
 	header.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_FIXED(kContentHeaderHeight),
+		.width = CLAY_SIZING_PERCENT(1),
+		.height = CLAY_SIZING_FIXED(stacked ? 2.0f * kContentHeaderHeight : kContentHeaderHeight),
 	};
 	header.layout.childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT,
 		.y = CLAY_ALIGN_Y_CENTER,
 	};
-	header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+	header.layout.layoutDirection = stacked ? CLAY_TOP_TO_BOTTOM : CLAY_LEFT_TO_RIGHT;
 	header.backgroundColor = interface_theme::kDepth2Ink;
 	header.border = {
 		.color = interface_theme::kBorderPrimary,
@@ -429,12 +486,13 @@ void DevContentHeader::buildElement(BuildContext& context) {
 
 	CLAY(context.clayID(), header) {
 		drawTabs(context, *state);
-		drawInsetSeparator(context);
+		if (!stacked)
+			drawInsetSeparator(context);
 
 		Clay_ElementDeclaration controls{};
 		controls.layout.sizing = {
 			.width = CLAY_SIZING_GROW(0),
-			.height = CLAY_SIZING_GROW(0),
+			.height = CLAY_SIZING_FIXED(kContentHeaderHeight),
 		};
 		controls.layout.padding = Clay_Padding{10, 10, 0, 0};
 		controls.layout.childGap = 6;
@@ -450,11 +508,15 @@ void DevContentHeader::buildElement(BuildContext& context) {
 				context.params.app) {
 				drawControl(context, LocalElementName{"back-to-diagnostics"}, "Back to Diagnostics",
 							ActionCall{context.params.app->actions().uiActions().make(
-								kBackToDiagnostics, *state)});
+								kBackToDiagnostics, *state)},
+							true, false, interface_icons::kBackKey);
 			}
-			if (state->changes.return_available && activeTab != DevInterfaceTab::Changes && context.params.app) {
+			if (state->changes.return_available && activeTab != DevInterfaceTab::Changes &&
+				context.params.app) {
 				drawControl(context, LocalElementName{"back-to-changes"}, "Back to Changes",
-					ActionCall{context.params.app->actions().uiActions().make(kBackToChanges, *state)});
+							ActionCall{context.params.app->actions().uiActions().make(
+								kBackToChanges, *state)},
+							true, false, interface_icons::kBackKey);
 			}
 			drawContextualControls(context, context.params.app, *state, activeTab);
 		}

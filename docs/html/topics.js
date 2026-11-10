@@ -3,6 +3,8 @@ var topics =
     [ "App", "group__flowui__app.html", "group__flowui__app" ],
     [ "Config Structs", "group__flowui__config.html", "group__flowui__config" ],
     [ "Element System", "group__flowui__element__system.html", "group__flowui__element__system" ],
+    [ "Flow Standard Element Library", "group__flowui__fsel.html", null ],
+    [ "Action Manager", "group__flowui__action__manager.html", "group__flowui__action__manager" ],
     [ "Font Manager", "group__flowui__font__manager.html", "group__flowui__font__manager" ],
     [ "Image Manager", "group__flowui__image__manager.html", "group__flowui__image__manager" ],
     [ "Icon Manager", "group__flowui__icon__manager.html", "group__flowui__icon__manager" ],

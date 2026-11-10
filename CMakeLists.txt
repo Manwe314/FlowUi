@@ -7,7 +7,7 @@ option(FLOWUI_BUILD_FONT_BAKER "Build FlowUi offline font baker tool" ON)
 option(FLOWUI_ENABLE_RUNTIME_FONT_BAKING "Enable runtime TTF->MSDF atlas generation" OFF)
 option(FLOWUI_PUBLIC_VULKAN_INTEROP "Expose viewport Vulkan interop API in public headers" ON)
 option(FLOWUI_INCLUDE_ICON_MANAGER "Enable IconManager support (PlutoSVG)." ON)
-option(FLOW_UI_DEV_MODE "Enable FlowUi developer mode scaffolding and APIs." OFF)
+option(FLOW_UI_DEV_MODE "Enable the modern FlowUi developer systems and APIs." OFF)
 option(AGENTIC_WORKFLOW "Build FlowUi agentic workflow services and tools. Requires FLOW_UI_DEV_MODE." OFF)
 if(AGENTIC_WORKFLOW AND NOT FLOW_UI_DEV_MODE)
     message(FATAL_ERROR "AGENTIC_WORKFLOW requires -DFLOW_UI_DEV_MODE=ON -DAGENTIC_WORKFLOW=ON.")
@@ -36,7 +36,7 @@ set_property(CACHE FLOWUI_DEV_ERROR_LEVEL PROPERTY STRINGS 0 1 2 3 4)
 if(NOT FLOWUI_DEV_ERROR_LEVEL MATCHES "^[0-4]$")
     message(FATAL_ERROR "FLOWUI_DEV_ERROR_LEVEL must be 0, 1, 2, 3, or 4.")
 endif()
-option(COMPILE_FSELI "Include the Flow Standard Element Library in FlowUi/Flow.hpp." ON)
+option(COMPILE_FSELI "Include the Flow Standard Element Library in FlowUi/Public/Flow.hpp." ON)
 set(FLOWUI_COMPILE_FSELI_ENABLED ${COMPILE_FSELI})
 if(FLOW_UI_DEV_MODE AND NOT FLOWUI_COMPILE_FSELI_ENABLED)
     message(STATUS "FLOW_UI_DEV_MODE enables FSEL for this build.")
@@ -136,7 +136,7 @@ endif()
 set(FLOWUI_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FlowUiBuildConfig.hpp.in
-    ${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/BuildConfig.hpp
+    ${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/Public/BuildConfig.hpp
     @ONLY
 )
 
@@ -350,112 +350,48 @@ add_dependencies(flowui flowui_shaders)
 
 target_sources(flowui
     PRIVATE
-        src/clay.cpp
-        src/FlowUi.cpp
-        src/Resources.cpp
-        src/managers/FontManager.cpp
-        src/managers/FontCatalogController.cpp
-        src/managers/ElementManager.cpp
-		src/managers/ActionManager.cpp
-        src/managers/ElementStorageController.cpp
-        src/managers/ViewportStorageController.cpp
-        src/managers/ImageManager.cpp
-        src/managers/InputFieldManager.cpp
-		src/managers/PopupManager.cpp
-        src/managers/ShortcutManager.cpp
-        src/managers/ThemeManager.cpp
-        src/managers/ThemeStorageController.cpp
-        src/managers/ViewPortManager.cpp
-        src/managers/FlowUiElementSystem.cpp
-        src/managers/UiManager.cpp
-		src/internal/Text/CurrentTextShaper.cpp
-		src/internal/Text/TextLineBreaker.cpp
-		src/internal/Text/TextLayoutService.cpp
-		src/internal/Text/TextStorage.cpp
-        src/devMode/devJson.cpp
-        src/devMode/devRuntime.cpp
-        src/Ui/Vk_UiRenderer.cpp
-        src/Storagesystem/FlowStorageSystem.cpp
-        src/window/Inputs.cpp
-        src/Vulkan/Vk_Context.cpp
-        src/Vulkan/Vk_Frames.cpp
-        src/Vulkan/Vk_Swapchain.cpp
-        include/internal/StorageSystem/StorageTypes.hpp
-		include/internal/StorageSystem/IStorageSystem.hpp
-		include/internal/StorageSystem/FlowStorageSystem.hpp
-		include/internal/Text/CurrentTextShaper.hpp
-		include/internal/Text/TextAnalysis.hpp
-		include/internal/Text/TextLineBreaker.hpp
-		include/internal/Text/TextLayoutRecords.hpp
-		include/internal/Text/TextLayoutService.hpp
-		include/internal/Text/TextStorage.hpp
-		include/internal/MemoryCapacityProfile.hpp
-		include/internal/MemoryCapacityManifest.hpp
-		include/internal/MemoryCapacityTargets.hpp
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/App.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/AppActionID.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ElementID.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Flow.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/FontResources.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/MemoryCapacityTargets.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/PublicStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/ResourceKey.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/TextureHandle.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/WindowId.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/elements/Button.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ElementInstanceKey.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/IdentityHash.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ActionBinding.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ActionManagerAccess.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/UiActionBinding.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ActionManagerState.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowScopeStack.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/FlowUiElementBridge.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputFieldRenderOverrides.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/InputQueue.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ResourceKeyNormalization.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ManagerStateAccess.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ShortcutManagerState.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/PopupManagerState.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/InputFieldManagerState.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/UiManagerState.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/FontCatalogController.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ElementRegistration.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ElementStorageController.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/IconCacheController.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ManagerStorage/ViewportStorageController.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devApi.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/elementDevCapture.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devJson.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/devRuntime.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devMode/registry.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FontManagerStructs.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ActionManagerStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ElementManagerStructs.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ElementStatePolicy.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/FlowUiElementStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/InputFieldManagerStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/InputStructs.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/PopupManagerStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ShortcutManagerStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/structs/ViewPortManagerStructs.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/FlowUiElementBuilder.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/ElementManager.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/ActionManager.hpp>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/managers/PopupManager.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/Window.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/window/IWindow.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Context.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Frames.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan/Vk_Swapchain.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Ui/Vk_UiRenderer.hpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/clay.h>
+        src/FlowUi/Private/layoutService/Clay.cpp
+        src/FlowUi/Public/App.cpp
+        src/FlowUi/Private/AppRuntime.cpp
+        src/FlowUi/Public/Color.cpp
+        src/FlowUi/Public/Resources.cpp
+        src/FlowUi/Private/resourceService/ResourceDiscovery.cpp
+        src/FlowUi/Public/managers/FontManager.cpp
+        src/FlowUi/Private/resourceService/FontCatalogController.cpp
+        src/FlowUi/Public/managers/ElementManager.cpp
+		src/FlowUi/Public/managers/ActionManager.cpp
+        src/FlowUi/Private/elementSystem/ElementStorageController.cpp
+        src/FlowUi/Private/renderer/ViewportStorageController.cpp
+        src/FlowUi/Public/managers/ImageManager.cpp
+        src/FlowUi/Public/managers/InputFieldManager.cpp
+		src/FlowUi/Public/managers/PopupManager.cpp
+        src/FlowUi/Public/managers/ShortcutManager.cpp
+        src/FlowUi/Public/managers/ThemeManager.cpp
+        src/FlowUi/Private/resourceService/ThemeStorageController.cpp
+        src/FlowUi/Public/managers/ViewPortManager.cpp
+        src/FlowUi/Public/managers/UiManager.cpp
+        src/FlowUi/Private/layoutService/UiManagerState.cpp
+        src/FlowUi/Private/elementSystem/FlowUiElementBridge.cpp
+		src/FlowUi/Private/textLayoutService/CurrentTextShaper.cpp
+		src/FlowUi/Private/textLayoutService/TextLineBreaker.cpp
+		src/FlowUi/Private/textLayoutService/TextLayoutService.cpp
+		src/FlowUi/Private/textLayoutService/TextStorage.cpp
+        src/FlowUi/Private/renderer/Vk_UiRenderer.cpp
+        src/FlowUi/Private/storageSystem/FlowStorageSystem.cpp
+        src/FlowUi/Private/inputService/InputQueue.cpp
+        src/FlowUi/Private/renderer/vulkan/Vk_Context.cpp
+        src/FlowUi/Private/renderer/vulkan/Vk_Frames.cpp
+        src/FlowUi/Private/renderer/vulkan/Vk_Swapchain.cpp
+
 )
 
+include(cmake/FlowUiHeaders.cmake)
+foreach(flowui_header IN LISTS FLOWUI_PUBLIC_HEADERS FLOWUI_PRIVATE_SUPPORT_HEADERS FLOWUI_RUNTIME_ONLY_HEADERS)
+    target_sources(flowui PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/${flowui_header}")
+endforeach()
+target_sources(flowui PRIVATE include/FlowUi.hpp include/FSEL.hpp external/clay.h)
+
 if(FLOW_UI_DEV_MODE)
-	target_compile_definitions(flowui PRIVATE FLOWUI_SKIP_LEGACY_DEV_ELEMENTS=1)
 	target_sources(flowui
 		PRIVATE
 			src/devSystems/devTooling/bake/DevBakePipeline.cpp
@@ -489,6 +425,7 @@ if(FLOW_UI_DEV_MODE)
 			src/devSystems/devInterface/Inspect/Inspector/DevInspectInspector.cpp
 			src/devSystems/devInterface/Inspect/Inspector/DevClayInspector.cpp
 			src/devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.cpp
+			src/devSystems/devInterface/Inspect/DevValueSummary.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelector.cpp
 			src/devSystems/devInterface/Performance/Selector/DevPerformanceSelectorElements.cpp
 			src/devSystems/devInterface/Performance/Workbench/DevTimelineLayout.cpp
@@ -586,7 +523,7 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/schema/DevSchemaTypes.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/tree/DevTreeCapture.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devTooling/tree/DevTreeTypes.hpp>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/internal/ClayDevTreeBridge.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/FlowUi/Private/layoutService/ClayDevTreeBridge.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devSystems.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevInterface.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp>
@@ -598,6 +535,7 @@ if(FLOW_UI_DEV_MODE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevThemeEditorData.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevThemeSelector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevThemeEditorModel.hpp>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/DevValueSummary.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Inspector/DevThemeInspector.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/devSystems/devInterface/Inspect/Selector/DevInspectSelector.hpp>
@@ -729,7 +667,7 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 endif()
 
 if(FLOWUI_INCLUDE_ICON_MANAGER)
-    target_sources(flowui PRIVATE src/managers/IconManager.cpp src/managers/IconCacheController.cpp)
+    target_sources(flowui PRIVATE src/FlowUi/Public/managers/IconManager.cpp src/FlowUi/Private/resourceService/IconCacheController.cpp)
 endif()
 
 target_include_directories(flowui
@@ -815,16 +753,22 @@ if(FLOWUI_INSTALL)
         if(NOT CMAKE_CROSSCOMPILING)
             install(TARGETS flowui-dev-generate RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
-        install(FILES "${FLOWUI_BAKED_GENERATED_HPP}" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+        install(FILES "${FLOWUI_BAKED_GENERATED_HPP}" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/FlowUi/Private")
     endif()
 
-    install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(FILES include/FlowUi.hpp include/FSEL.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    foreach(flowui_header IN LISTS FLOWUI_PUBLIC_HEADERS FLOWUI_PRIVATE_SUPPORT_HEADERS)
+        get_filename_component(flowui_header_directory "${flowui_header}" DIRECTORY)
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/${flowui_header}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${flowui_header_directory}")
+    endforeach()
+    install(DIRECTORY include/FSEL include/devSystems DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(DIRECTORY "${FLOWUI_RESOURCE_DIRECTORY}/" DESTINATION "${FLOWUI_INSTALL_RESOURCE_DIRECTORY}")
     install(FILES cmake/FlowUiResources.cmake cmake/FlowUiCopyResources.cmake cmake/FlowUiCopyRuntime.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
     install(FILES external/clay.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/external)
     install(FILES
-        "${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/BuildConfig.hpp"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/FlowUi"
+        "${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/Public/BuildConfig.hpp"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/FlowUi/Public"
     )
 
     install(EXPORT FlowUiTargets

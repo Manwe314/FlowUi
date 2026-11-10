@@ -8,11 +8,12 @@
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceCapture.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 
-#include "FlowUi/AppElementWindows.hpp"
+#include "FlowUi/Public/AppElementWindows.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInterface.hpp"
-#include "managers/ShortcutManager.hpp"
-#include "managers/UiManager.hpp"
-#include "internal/StorageSystem/IStorageSystem.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInspectSelection.hpp"
+#include "FlowUi/Public/managers/ShortcutManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
 
 namespace FlowUi::devSystems {
 DevInterface::DevInterface() noexcept = default;
@@ -61,6 +62,7 @@ Status DevInterface::attachWindow(UiManager& ui) {
 Status DevInterface::synchronize(App& app) {
 	if (!enabled_)
 		return {};
+	synchronize_inspect_window(app, *session_, windowId_);
 	service_diagnostics(app, *session_,
 						windowId_ != InvalidWindowId && !suspended_ &&
 							session_->activeTab ==

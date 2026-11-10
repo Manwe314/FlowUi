@@ -1,10 +1,10 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Inspect/DevThemeEditorModel.hpp"
 #include "devSystems/devTooling/catalogue/DevCatalogLease.hpp"
 #include "devSystems/devTooling/catalogue/DevCatalogTypes.hpp"
-#include "managers/ShortcutManager.hpp"
+#include "FlowUi/Public/managers/ShortcutManager.hpp"
 #include <array>
 #include <cstdint>
 #include <string>
@@ -37,7 +37,7 @@ enum class DevCatalogueCommand : uint8_t {
 	CaptureViewport
 };
 
-/** Copied metadata for an immutable, completed viewport image. */
+/* Copied metadata for an immutable, completed viewport image. */
 struct DevCatalogueViewportObservation {
 	TextureHandle texture{}, source_texture{};
 	uint64_t frame = 0, generation = 0, submission = 0;
@@ -45,7 +45,7 @@ struct DevCatalogueViewportObservation {
 	bool supported = false, pending = false, failed = false;
 };
 
-/** Visible capture subscriptions are owned by DevInterface. */
+/* Visible capture subscriptions are owned by DevInterface. */
 struct DevCatalogueViewportRequest {
 	std::string key{};
 	DevCatalogueViewportObservation observation{};
@@ -56,18 +56,18 @@ struct DevCatalogueViewportRequest {
 	bool refresh_pending = false;
 };
 
-/** Owned display record: no manager-owned string views or payload pointers survive refresh. */
+/* Owned display record: no manager-owned string views or payload pointers survive refresh. */
 struct DevCatalogueAsset {
 	std::vector<std::pair<std::string, std::string>> facts{};
-	std::vector<devMode::DevIconCatalogEntry> icons{};
+	std::vector<tooling::DevIconCatalogEntry> icons{};
 	std::string name{}, group{}, source{}, status{}, detail{};
-	devMode::DevImageCatalogEntry image{};
-	devMode::DevIconCatalogEntry icon{};
-	devMode::DevAtlasCatalogEntry atlas{};
-	devMode::DevFontCatalogEntry font{};
-	devMode::DevActionCatalogEntry action{};
-	devMode::DevThemeCatalogEntry theme{};
-	devMode::DevElementCatalogEntry element{};
+	tooling::DevImageCatalogEntry image{};
+	tooling::DevIconCatalogEntry icon{};
+	tooling::DevAtlasCatalogEntry atlas{};
+	tooling::DevFontCatalogEntry font{};
+	tooling::DevActionCatalogEntry action{};
+	tooling::DevThemeCatalogEntry theme{};
+	tooling::DevElementCatalogEntry element{};
 	ShortcutManager::DevShortcutView shortcut{};
 	DevCatalogueViewportObservation viewport{};
 	WindowId window = InvalidWindowId;
@@ -75,7 +75,7 @@ struct DevCatalogueAsset {
 	DevCatalogueDomain domain = DevCatalogueDomain::Elements;
 };
 
-/** Viewing settings are local to each domain and never modify the registered asset. */
+/* Viewing settings are local to each domain and never modify the registered asset. */
 struct DevCatalogueDomainState {
 	std::string search{}, group{}, glyph_search{};
 	std::vector<std::string> collapsed_groups{};
@@ -89,20 +89,20 @@ struct DevCatalogueDomainState {
 	bool follow_observed_output = false;
 };
 
-/** Exact rasters created by explicit Catalogue requests; existing app rasters are never owned. */
+/* Exact rasters created by explicit Catalogue requests; existing app rasters are never owned. */
 struct DevCataloguePreviewRaster {
 	std::string icon_name{};
 	TextureHandle texture{};
 	uint32_t width = 0, height = 0;
 };
 
-/** Submitted keyboard targets are independent of optional developer tree capture. */
+/* Submitted keyboard targets are independent of optional developer tree capture. */
 struct DevCatalogueFocusTarget {
 	Clay_ElementId identity{}, viewport{};
 	FlowElementID text_input{};
 };
 
-/** DevInterface owns selection, copied observations and preview-resource bookkeeping. */
+/* DevInterface owns selection, copied observations and preview-resource bookkeeping. */
 struct DevCatalogueState {
 	std::vector<DevCatalogueAsset> assets{};
 	std::vector<size_t> visible_assets{};
@@ -112,7 +112,7 @@ struct DevCatalogueState {
 	std::vector<uint64_t> visible_viewports{};
 	std::vector<DevCatalogueViewportRequest> viewport_requests{};
 	interface_elements::theme_editor::ThemeEditorModel theme_model{};
-	devMode::DevCatalogLease lease{};
+	tooling::DevCatalogLease lease{};
 	std::array<DevCatalogueDomainState, 9> domains{};
 	std::array<size_t, 9> counts{};
 	std::array<std::string, 9> domain_status{};
@@ -134,18 +134,18 @@ struct DevCatalogueState {
 };
 
 inline constexpr std::array<uint32_t, 7> catalogue_icon_steps{12, 16, 20, 24, 32, 48, 64};
-/** Human-readable stable domain label. */
+/* Human-readable stable domain label. */
 [[nodiscard]] std::string_view catalogue_domain_name(DevCatalogueDomain domain) noexcept;
-/** Open the domain overview, retaining its own filter and view settings. */
+/* Open the domain overview, retaining its own filter and view settings. */
 void select_catalogue_domain(DevCatalogueState& state, DevCatalogueDomain domain) noexcept;
-/** Select the same canonical leaf from either the browser or a gallery card. */
+/* Select the same canonical leaf from either the browser or a gallery card. */
 void select_catalogue_asset(DevCatalogueState& state, uint64_t identity);
-/** Recompute the filtered, stable-sorted overview indices without manager access. */
+/* Recompute the filtered, stable-sorted overview indices without manager access. */
 void rebuild_catalogue_filter(DevCatalogueState& state);
-/** The selected copied observation, or null for overview/removal. */
+/* The selected copied observation, or null for overview/removal. */
 [[nodiscard]] const DevCatalogueAsset*
 selected_catalogue_asset(const DevCatalogueState& state) noexcept;
-/** Apply explicit requests and publish copied observations outside Clay construction. */
+/* Apply explicit requests and publish copied observations outside Clay construction. */
 void service_catalogue(App& app, DevInterfaceState& interface_state, bool visible);
 } // namespace FlowUi::devSystems
 #endif

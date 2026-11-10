@@ -1,7 +1,7 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 struct DevInspectOverlayMenuParameters {
@@ -13,15 +13,17 @@ struct DevInspectOverlayMenuState {
 	bool keyboard_focus = false;
 };
 
-/** Shared vector artwork for the dropdown indicator and checked surfaces. */
+/* Shared vector artwork for the dropdown indicator and checked surfaces. */
 struct DevInspectOverlayMenuResources {
 	TextureRef checked_icon{};
 	TextureRef dropdown_icon{};
+	TextureRef clear_icon{};
+	TextureRef pick_icon{};
 	DevInspectOverlayMenuResources() = default;
 	explicit DevInspectOverlayMenuResources(App& app);
 };
 
-/** Inspect-only contextual controls and their custom overlay configuration popup. */
+/* Inspect-only contextual controls and their custom overlay configuration popup. */
 struct DevInspectOverlayMenu {
 	using Parameters = DevInspectOverlayMenuParameters;
 	using State = DevInspectOverlayMenuState;

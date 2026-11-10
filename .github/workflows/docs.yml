@@ -28,7 +28,10 @@ jobs:
           sudo apt-get install -y doxygen graphviz
 
       - name: Build documentation
-        run: doxygen Doxyfile
+        run: |
+          rm -rf docs/html
+          doxygen Doxyfile
+          find docs/html -type f -name '*.html' -exec sed -i 's/[[:blank:]]*$//' {} +
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3

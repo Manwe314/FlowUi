@@ -117,10 +117,10 @@ $(function() {
 <hr  />
 <h1>Public API</h1>
 <h2><b>registerTheme</b></h2>
-<h3><span class="tt">template &lt;typename T&gt; void registerTheme(std::string_view variantName, T themeData, bool makeActive = true)</span></h3>
-<h3><span class="tt">template &lt;typename T&gt; void registerTheme(T themeData, bool makeActive = true)</span></h3>
+<h3><span class="tt">template &lt;typename T&gt; Status registerTheme(std::string_view variantName, T themeData, bool makeActive = true)</span></h3>
+<h3><span class="tt">template &lt;typename T&gt; Status registerTheme(T themeData, bool makeActive = true)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">variantName</span> logical variant name (e.g. <span class="tt">"dark"</span>, <span class="tt">"light"</span>), <span class="tt">themeData</span> instance of custom theme struct <span class="tt">T</span>, <span class="tt">makeActive</span> whether to set this variant active immediately.</li>
 </ul>
 <p>Registers a theme variant struct with <span class="tt">ThemeManager</span> in persistent storage. If <span class="tt">variantName</span> is omitted, variant name <span class="tt">"default"</span> is used.</p>
@@ -130,18 +130,25 @@ $(function() {
 <div class="line">    <span class="keywordtype">float</span> cardRadius = 6.0f;</div>
 <div class="line">};</div>
 <div class="line"> </div>
-<div class="line">app.themes().registerTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;default&quot;</span>, AppTheme{});</div>
-<div class="line">app.themes().registerTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>, AppTheme{.brandAccent = Flow_Color(<span class="stringliteral">&quot;#e05d00ff&quot;</span>)});</div>
+<div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = app.themes().registerTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;default&quot;</span>, AppTheme{}); !status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = app.themes().registerTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>, AppTheme{.brandAccent = Flow_Color(<span class="stringliteral">&quot;#e05d00ff&quot;</span>)}); !status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
 </div><!-- fragment --><hr  />
 <h2><b>setActiveVariant</b></h2>
-<h3><span class="tt">template &lt;typename T&gt; bool setActiveVariant(std::string_view variantName)</span></h3>
+<h3><span class="tt">template &lt;typename T&gt; Status setActiveVariant(std::string_view variantName)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span> (<span class="tt">true</span> if variant was found and set active, <span class="tt">false</span> otherwise)</li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">variantName</span> name of the registered variant.</li>
 </ul>
 <p>Activates a named variant for theme type <span class="tt">T</span>. Immediate-mode elements querying <span class="tt">ui.theme&lt;T&gt;()</span> will observe the new variant on subsequent frames.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.themes().setActiveVariant&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = app.themes().setActiveVariant&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>); !status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
 </div><!-- fragment --><hr  />
 <h2><b>getActiveTheme</b></h2>
 <h3><span class="tt">template &lt;typename T&gt; const T&amp; getActiveTheme() const</span></h3>
@@ -164,29 +171,53 @@ $(function() {
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; lightTheme = app.themes().getTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;light&quot;</span>);</div>
 </div><!-- fragment --><hr  />
 <h2><b>updateTheme</b></h2>
-<h3><span class="tt">template &lt;typename T&gt; void updateTheme(std::string_view variantName, std::function&lt;void(T&amp;)&gt; mutator)</span></h3>
+<h3><span class="tt">template &lt;typename T&gt; Status updateTheme(std::string_view variantName, std::function&lt;void(T&amp;)&gt; mutator)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">variantName</span> target variant name, <span class="tt">mutator</span> callback mutating the theme payload reference.</li>
 </ul>
 <p>Queues a staged theme mutation function for a named variant. Mutations take effect atomically during <span class="tt">app.pollEvents()</span> / <span class="tt">beginFrame()</span> to prevent intra-frame tearing across rendering windows.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.themes().updateTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;default&quot;</span>, [](AppTheme&amp; theme) {</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = app.themes().updateTheme&lt;AppTheme&gt;(<span class="stringliteral">&quot;default&quot;</span>, [](AppTheme&amp; theme) {</div>
 <div class="line">    theme.cardRadius = 12.0f;</div>
-<div class="line">});</div>
+<div class="line">}); !status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
 </div><!-- fragment --><hr  />
 <h2><b>updateActiveTheme</b></h2>
-<h3><span class="tt">template &lt;typename T&gt; void updateActiveTheme(std::function&lt;void(T&amp;)&gt; mutator)</span></h3>
+<h3><span class="tt">template &lt;typename T&gt; Status updateActiveTheme(std::function&lt;void(T&amp;)&gt; mutator)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
+<li><b>Returns:</b> <span class="tt">Status</span>; check success and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">mutator</span> callback mutating the active theme payload reference.</li>
 </ul>
 <p>Queues a staged theme mutation function for the currently active variant of type <span class="tt">T</span>.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.themes().updateActiveTheme&lt;AppTheme&gt;([](AppTheme&amp; theme) {</div>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span> status = app.themes().updateActiveTheme&lt;AppTheme&gt;([](AppTheme&amp; theme) {</div>
 <div class="line">    theme.brandAccent = Flow_Color(<span class="stringliteral">&quot;#007accff&quot;</span>);</div>
-<div class="line">});</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+<div class="line">}); !status) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(status.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><h1>Development previews</h1>
+<p>Register example scenes once per theme type, alongside your theme values. The Workbench offers vertical, horizontal, and individual-scene layouts. Each scene's name appears in the dropdown. Re-registering the same name replaces its callback. Normal theme registration and reflection remain sufficient for inspecting tokens.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#if FLOW_UI_DEV_MODE</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> preview_status = app.themes().registerDevPreview&lt;AppTheme&gt;(</div>
+<div class="line">    <span class="stringliteral">&quot;Brand button&quot;</span>, [](<a class="code hl_class" href="classFlowUi_1_1App.html">FlowUi::App</a>&amp;, <a class="code hl_class" href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a>&amp; ui) {</div>
+<div class="line">        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; theme = ui.theme&lt;AppTheme&gt;();</div>
+<div class="line">        FlowUi::FSEL::ButtonParameters example{};</div>
+<div class="line">        example.text = <span class="stringliteral">&quot;Example action&quot;</span>;</div>
+<div class="line">        example.contentMode = FlowUi::FSEL::ButtonContentMode::TextOnly;</div>
+<div class="line">        example.idleOverrides.backgroundColor = theme.brandAccent;</div>
+<div class="line">        example.cornerRadius = CLAY_CORNER_RADIUS(theme.cardRadius);</div>
+<div class="line">        ui.createElement(FlowUi::FSEL::kButton, <span class="stringliteral">&quot;brand-button-example&quot;</span>)</div>
+<div class="line">            .setParameters(example).setDevInternalCapture(<span class="keyword">true</span>).draw();</div>
+<div class="line">    });</div>
+<div class="line"><span class="keywordflow">if</span> (!preview_status) <span class="keywordflow">return</span> preview_status;</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassFlowUi_1_1App_html"><div class="ttname"><a href="classFlowUi_1_1App.html">FlowUi::App</a></div><div class="ttdoc">Main FlowUi application object and owner of runtime managers.</div><div class="ttdef"><b>Definition</b> App.hpp:61</div></div>
+<div class="ttc" id="aclassFlowUi_1_1UiManager_html"><div class="ttname"><a href="classFlowUi_1_1UiManager.html">FlowUi::UiManager</a></div><div class="ttdoc">Frame-scoped UI construction context and service bridge.</div><div class="ttdef"><b>Definition</b> UiManager.hpp:104</div></div>
+</div><!-- fragment --><p>Callbacks receive the current app and window UI manager and use the application's active theme. Selecting an inactive variant shows a centered activation message; All Variants shows the active variant's scene and labels it accordingly. Preview rendering never temporarily switches the application's theme. Without a scene, custom themes display registration guidance; reflected values remain available in Token Overview. FSEL has a built-in gallery.</p>
+<p>Capture owned example data/state by value, or keep borrowed resources alive until ThemeManager destruction. Use distinct element names for each example. Keep preview actions local to the example, and register scenes before rendering them. Callbacks must keep Clay scopes balanced and must not mutate the preview registry while drawing. Preview contents are clipped to the bounded card; select an individual scene when a group is too large. Registration is development-only and returns <span class="tt">Status</span> for invalid names/callbacks or allocation failures. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">

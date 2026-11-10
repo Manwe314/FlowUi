@@ -4,9 +4,9 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <FlowUi/Flow.hpp>
-#include "internal/ActionManagerAccess.hpp"
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
+#include <FlowUi/Public/Flow.hpp>
+#include "FlowUi/Private/actionService/ActionManagerAccess.hpp"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
 
 namespace {
 

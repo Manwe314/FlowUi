@@ -5,14 +5,14 @@
 #include <string>
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -70,7 +70,7 @@ struct DevNodeParameters {
 	// Optional frame-local output used by the forest after draw() completes.
 	// Expansion remains owned by DevNode's retained state.
 	bool* expandedOutput = nullptr;
-	/** Optional independent selection and expansion bindings for shared selector rows. */
+	/* Optional independent selection and expansion bindings for shared selector rows. */
 	uint64_t* selected_key = nullptr;
 	bool* expanded = nullptr;
 	uint64_t kind = 0u;

@@ -1,0 +1,104 @@
+{
+  "cases": [
+    {
+      "assertion_count": "1",
+      "assertion_details": "all",
+      "assertions": [
+        {
+          "assertion_id": "step_0",
+          "available": true,
+          "expected": 16,
+          "observed": 112,
+          "passed": true,
+          "reason": "",
+          "required": true
+        }
+      ],
+      "capture_id": "cap_c58f125e1863530ce8e272085278241b",
+      "case_id": "open-developer-interface",
+      "checkpoints": [],
+      "cleanup": {
+        "completed": true,
+        "fixture_usable": true
+      },
+      "coverage": {
+        "evaluated": "1",
+        "failed": "0",
+        "passed": "1",
+        "required": "1",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "duration_ns": "952085554",
+      "fixture_id": "",
+      "manifest": "/home/lkukhale/kodi/FlowUi/docs/dev-interface-notes-verification/baseline/run_fa57b51a0a67/workspace/.flowui/agentic/v1/runs/20261110T152113504600Z_run_7df8ace3f6b98a6e6f8785ace46e0729/captures/cap_c58f125e1863530ce8e272085278241b/manifest.json",
+      "verdict": "pass",
+      "workload": {
+        "kind": "interaction_plan",
+        "plan_digest": "37ee304ea5d6aba3bccc4c61c5445af4659d0ffe14a94dcd5b99bd43743a037a",
+        "seed": "0"
+      }
+    }
+  ],
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "fixture_usable": true
+  },
+  "coverage": {
+    "evaluated": "1",
+    "failed": "0",
+    "passed": "1",
+    "required": "1",
+    "skipped": "0",
+    "unavailable": "0"
+  },
+  "cursor": "",
+  "detail_selector": {
+    "report_digest": "50a41be910a71eea80d9421db6b1d054e1d06955358b1fa4c82bb37c1961728c"
+  },
+  "evidence": {
+    "contact_sheet": null,
+    "image_count": "0",
+    "selector": {
+      "instance": "run_7df8ace3f6b98a6e6f8785ace46e0729",
+      "job_id": "verification_d66b15468aca85fe6a76cd9ab873a7ed"
+    }
+  },
+  "execution_status": "completed",
+  "job_id": "verification_d66b15468aca85fe6a76cd9ab873a7ed",
+  "limitations": [
+    "unavailable_pipeline_spans_are_null",
+    "rss_gpu_and_encoder_workspace_unavailable",
+    "automatic_disk_retention_not_enabled",
+    "historical_failure_pixels_unavailable"
+  ],
+  "report_digest": "50a41be910a71eea80d9421db6b1d054e1d06955358b1fa4c82bb37c1961728c",
+  "request_digest": "6bfda6e1c2f4c52577d0b81a79eba1a8b06299cf6e7a6c6e1bf86f6d0b990af6",
+  "resources": {
+    "completed_rgb_bytes_peak": "0",
+    "disk_bytes": "24521",
+    "encoded_bytes": null,
+    "measurement_availability": "owned_snapshot_and_inventory_only",
+    "peak_owned_evidence_bytes": "696825",
+    "readback_reserved_bytes": "0"
+  },
+  "run_id": "run_7df8ace3f6b98a6e6f8785ace46e0729",
+  "schema": "FlowUi.Agentic.VerificationReport",
+  "schema_version": "1.0",
+  "suite_id": "catalogue.layout.interactions",
+  "suite_revision": "1",
+  "timings": {
+    "admission_ns": "2119803",
+    "assertion_ns": "0",
+    "execution_ns": "0",
+    "publication_ns": "27811979",
+    "queue_ns": "870185835",
+    "readback_ns": null,
+    "report_ns": null,
+    "setup_ns": "0",
+    "total_elapsed_ns": "1015244394"
+  },
+  "truncated": false,
+  "verdict": "pass"
+}

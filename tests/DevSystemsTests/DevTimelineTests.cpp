@@ -18,6 +18,9 @@ int main() {
 	for (size_t report_index = 0; report_index < reports.size(); ++report_index) {
 		auto& report = reports[report_index];
 		report.appTick = report_index + 1;
+		report.occupied = true;
+		report.captureConfig.cpuLevel = report_index == 0
+			? CpuTimingLevel::Summary : CpuTimingLevel::Balanced;
 		report.windows.resize(1);
 		auto& window = report.windows.front();
 		window.window = 1;
@@ -120,6 +123,12 @@ int main() {
 	DevPerformanceSelection selection;
 	selection.selected_scope = {1, DevPerformanceScopeKind::Window};
 	auto snapshot = extract_timeline(reports, descriptors, selection);
+	assert(snapshot.has_recording_policy);
+	assert(snapshot.minimum_recorded_cpu_level == CpuTimingLevel::Summary);
+	assert(snapshot.maximum_recorded_cpu_level == CpuTimingLevel::Balanced);
+	const TimelineSnapshot policy_copy = snapshot;
+	assert(policy_copy.minimum_recorded_cpu_level == CpuTimingLevel::Summary);
+	assert(policy_copy.maximum_recorded_cpu_level == CpuTimingLevel::Balanced);
 	assert(snapshot.frames.size() == 2 && snapshot.blocks.size() == 20);
 	assert(snapshot.uncalibrated_gpu_count == 2);
 	assert(snapshot.blocks[1].parent == 0 && snapshot.blocks[9].parent == 8);

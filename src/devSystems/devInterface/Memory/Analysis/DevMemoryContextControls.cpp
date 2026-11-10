@@ -2,7 +2,7 @@
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <GLFW/glfw3.h>
 #include <utility>
 namespace FlowUi::devSystems::interface_elements {
@@ -48,7 +48,7 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 			.draw();
 		button(context, workbench, 100, state.recording ? "Stop & save" : "Record",
 			   reporting.status().runtimeLevel != MemoryMonitoringLevel::Disabled);
-		button(context, workbench, 106, "...");
+		button(context, workbench, 106, "Settings");
 		if (state.show_recording_settings) {
 			auto panel = column(8);
 			panel.layout.sizing.width = CLAY_SIZING_FIXED(300);

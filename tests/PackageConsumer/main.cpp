@@ -1,5 +1,5 @@
 #include "FlowUi.hpp"
-#include "FlowUi/Resources.hpp"
+#include "FlowUi/Public/Resources.hpp"
 #include <iostream>
 #if defined(_MSC_VER)
 #include <crtdbg.h>

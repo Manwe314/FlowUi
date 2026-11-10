@@ -21,7 +21,7 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 		state->inspect_theme_type = 0;
 		state->inspect_theme_group = 0;
 	}
-	std::vector<devMode::DevTypeId> types;
+	std::vector<tooling::DevTypeId> types;
 	types.reserve(catalogue.size());
 	for (const auto& theme : catalogue)
 		if (types.empty() || types.back() != theme.type)
@@ -32,7 +32,7 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 		cache.labels.reserve(types.size() + 3);
 		cache.options.reserve(types.size() + 3);
 		cache.labels = {"All Themes", "Active Only", "Modified Only"};
-		devMode::DevTypeId last_type = 0;
+		tooling::DevTypeId last_type = 0;
 		for (const auto& theme : catalogue)
 			if (theme.type != last_type) {
 				cache.labels.emplace_back(theme.typeName);
@@ -67,7 +67,7 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 			tree_content.layout.childGap = 0;
 			tree_content.backgroundColor = interface_theme::kDepth0Keel;
 			CLAY(context.clayID("tree-content"), tree_content) {
-				devMode::DevTypeId last_type = 0;
+				tooling::DevTypeId last_type = 0;
 				bool type_expanded = true;
 				for (const auto& theme : catalogue) {
 					if (state->inspect_theme_filter > 2 &&
@@ -151,8 +151,8 @@ void DevThemeSelector::buildElement(BuildContext& context) {
 						continue;
 					for (const auto& field : schema->fieldsOf(theme_schema->themeType)) {
 						const auto* type = schema->type(field.valueType);
-						if (!type || type->kind != devMode::DevTypeKind::Object ||
-							type->editor != devMode::DevEditorKind::ObjectGroup)
+						if (!type || type->kind != tooling::DevTypeKind::Object ||
+							type->editor != tooling::DevEditorKind::ObjectGroup)
 							continue;
 						if (!match_theme && !std::ranges::any_of(fields, [&](const auto& leaf) {
 								return !leaf.key.nestedPath.empty() &&

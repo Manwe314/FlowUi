@@ -6,8 +6,9 @@ var searchData=
   ['radiussmall_3',['radiusSmall',['../structFlowUi_1_1FlowUiTheme.html#aeabdbb912fe2e22668f0edf09150b03c',1,'FlowUi::FlowUiTheme']]],
   ['rawmousemotion_4',['rawMouseMotion',['../structFlowUi_1_1WindowInputConfig.html#ab52aeb3022ade0cec09bf2d8d086386b',1,'FlowUi::WindowInputConfig']]],
   ['readonly_5',['readOnly',['../structFlowUi_1_1FieldConfig.html#a58e48e6172c02b7c03adfea1208f5779',1,'FlowUi::FieldConfig']]],
-  ['releasedelementids_6',['releasedElementIds',['../structFlowUi_1_1InteractionSnapshot.html#a36e5b9521a3d093ff8e25c51ae358966',1,'FlowUi::InteractionSnapshot']]],
+  ['releasedelementids_6',['releasedElementIds',['../structFlowUi_1_1InteractionSnapshot.html#ad96b6dd60a6c0493b3110a0eb78e59c9',1,'FlowUi::InteractionSnapshot']]],
   ['resizable_7',['resizable',['../structFlowUi_1_1WindowConfig.html#aa5943431837d9e67da7212dcda87dec5',1,'FlowUi::WindowConfig']]],
-  ['resources_8',['resources',['../structFlowUi_1_1ElementDefinition.html#acb4320f129035684cf6dcdb1f3519bad',1,'FlowUi::ElementDefinition']]],
-  ['runlogic_9',['runLogic',['../structFlowUi_1_1ElementDefinition.html#a70d373a490a9d103d90c2db3d66ada65',1,'FlowUi::ElementDefinition']]]
+  ['resizehysteresispixels_8',['resizeHysteresisPixels',['../structFlowUi_1_1ViewPortCreateInfo.html#a741d7d917e03c6df71cb816b90846550',1,'FlowUi::ViewPortCreateInfo']]],
+  ['resources_9',['resources',['../structFlowUi_1_1AppConfig.html#a1342370b9bee51342d95618c7de9ba8f',1,'FlowUi::AppConfig']]],
+  ['revision_10',['revision',['../structFlowUi_1_1FieldQueryResult.html#a0e70fc2a4a60ae1d4bf5b859422e2867',1,'FlowUi::FieldQueryResult::revision'],['../structFlowUi_1_1devSystems_1_1DevErrorReportingStatus.html#ab2f07542905538dd9ca05dae8e4ec53a',1,'FlowUi::devSystems::DevErrorReportingStatus::revision']]]
 ];

@@ -5,8 +5,8 @@
 #include <string>
 #include <type_traits>
 
-#include "FlowUi/App.hpp"
-#include "Vulkan/Vk_Swapchain.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "FlowUi/Private/renderer/vulkan/Vk_Swapchain.hpp"
 
 namespace {
 

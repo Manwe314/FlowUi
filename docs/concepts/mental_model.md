@@ -83,7 +83,7 @@ The loop starts with `app.shouldClose()`. That call is backed by the window back
 
 The code between `beginFrame()` and `endFrame()` is the UI construction phase. This is immediate-mode UI: the app describes the toolbar, profile card, search field, and preview panel every frame. The fact that those calls run every frame does not mean every piece of data is temporary. Text inside the search field is owned by `InputFieldManager`, font ids and atlas data are owned by `FlowUi::FontManager`, uploaded image textures are owned by `ImageManager`, parsed SVGs and icon atlas entries are owned by `IconManager`, the preview render target is owned by `ViewPortManager`, and custom element state is keyed by stable Flow ids.
 
-During a `createElement(...).draw()` call, the element builder has a clear sequence. It maps the Flow element id string to a Clay root id, checks previous-frame interaction for hover, press, hold, and release callbacks, optionally runs logic, applies developer-mode parameter overrides when enabled, and then calls the element's build callback. That build callback emits Clay nodes, but the element system gives the emitted nodes a typed wrapper: params describe this frame's configuration, state remembers per-instance data, resources store shared per-definition data, and callbacks define behavior.
+During a `createElement(...).draw()` call, the element builder has a clear sequence. It bridges the resolved strong Flow identity to a Clay root id, checks previous-frame interaction for hover, press, hold, and release callbacks, optionally runs logic, applies developer-mode parameter overrides when enabled, and then calls the element's build callback. That build callback emits Clay nodes, but the element system gives the emitted nodes a typed wrapper: params describe this frame's configuration, state remembers per-instance data, resources store shared per-definition data, and callbacks define behavior.
 
 The managers are usually touched during this same construction phase. `FlowUi::FontManager` resolves a logical family and style into a concrete `FontId` for Clay text. `ImageManager`, `IconManager`, and `ViewPortManager` return logical, generation-checked `TextureRef` values. Raw Clay image commands stage their per-command payload through `UiManager::imageData()`. `InputFieldManager` is requested by custom input elements so text, caret, focus, and selection can persist across frames. `ShortcutManager` dispatches registered chords from frame input and uses scopes to decide which callbacks should run. `PopupManager` turns stable popup identities and placement requests into Clay floating configurations while carrying measurement and dismissal state between frames.
 
@@ -97,40 +97,26 @@ The important mental model is that the frame is rebuilt, but the runtime is not.
 
 FlowUi's element system exists to make reusable UI blocks feel explicit in C++. A Flow element is a typed wrapper around one or more Clay nodes. It is not a replacement for Clay; it is a way to package Clay layout, drawing, interaction behavior, persistent state, and shared resources behind one reusable definition.
 
-The central type is:
+An element is an empty tag struct satisfying `FlowElement`, with a strong `definitionId`, optional `Parameters`, `State`, and `Resources` aliases, and static callbacks. `UiManager::createElement()` returns `ElementBuilder<Element>` to configure and invoke it.
 
-```cpp
-FlowUi::ElementDefinition<Params, State, Resources, FLOW_DEF_ID("definition_name")>
-```
+Parameters describe the current invocation. `context.state()` accesses persistent window/instance data owned by `App::elements()`. `context.resources()` accesses immutable resources shared by that definition within the application. Definitions do not own static state pools.
 
-`Params` describe per-frame configuration for one element invocation. A button might receive a label, an icon, colors, sizing, and a font id. Params are copied or moved into the `ElementBuilder`, then passed through event, logic, construct, and build callbacks.
-
-`State` describes per-instance data that should survive across frames. A disclosure panel might remember whether it is open. A slider might remember drag state. State is keyed by a `FlowElementId`, normally created from the element id string passed to `createElement()`.
-
-`Resources` describe shared per-definition data. A graph element might cache common colors, icon handles, reusable buffers, or data derived from `App`. Resources are initialized once for that element definition specialization and reused by all instances.
-
-FlowUi supports two build shapes. A `buildElement` callback emits the full Clay subtree for the element immediately. A `constructElement` callback returns only the root `Clay_ElementDeclaration`, then user code manually emits children until `UiManager::drawConstructed()` closes the root. The draw path is useful for self-contained widgets; the construct path is useful for open-ended containers.
-
-Clay and FlowUi both care about ids. Clay ids identify layout elements for interaction and layout bookkeeping. FlowUi ids identify reusable element instances, state entries, input fields, dev capture records, and generated child ids. The intended pattern is that the string id passed to `createElement()` also represents the root Clay element id that the Flow element builds.
+A `buildElement` callback emits a complete Clay subtree. A `constructElement` callback returns only a root declaration; the caller emits children and closes the root with `UiManager::drawConstructed()`.
 
 ```cpp
 ui.createElement(kProfileCard, "sidebar/profile").draw();
 ```
 
-Inside that element, the root Clay id should come from the same Flow element id:
+Inside the callback, use the resolved root and local child helpers:
 
 ```cpp
-CLAY(context.uiManager.toClayEID(context.elementID), rootDeclaration) {
-    CLAY(context.uiManager.toClayEID(context.createChildElementId("avatar")), avatarDeclaration) {}
+CLAY(context.clayID(), rootDeclaration) {
+    CLAY(context.clayID("avatar"), avatarDeclaration) {}
     CLAY_TEXT(context.uiManager.toClayString(context.params.name), CLAY_TEXT_CONFIG(textConfig));
 }
 ```
 
-That relationship is what keeps Flow elements grounded in Clay rather than floating above it as a separate UI system. The Flow element wraps a Clay root and optionally one or more Clay children. The Flow id string is the stable public name of that reusable block, and the root Clay id is the layout and interaction identity for the block in the current frame.
-
-Reusable elements create a practical id problem. If an element is drawn in a list, a table, or a repeated section, each instance still needs stable state and stable child ids. FlowUi provides helpers like `createChildElementId()` and `createIndexedFlowId()` for that reason. These ids can be used for custom state lookup, child element naming, input fields, interaction checks, shortcuts scoped to a focused element, developer capture, and any place where a value needs to connect one frame to the next.
-
-The result is a hybrid shape: layout stays immediate and local, but stateful behavior has explicit names. This is the core reason FlowUi code is structured around string ids, typed element definitions, and builder calls.
+Local names resolve under parent and definition scopes; they are not concatenated path strings. `Indexed` and `Keyed` distinguish positional and stable data identities. `Global` creates a reproducible definition-scoped address, while semantic `Part` declarations name meaningful sub-elements. See [the element system](element_system.md) for capabilities, identity, and state lifetime.
 
 ## Managers and Subsystems
 
@@ -160,13 +146,13 @@ The managers are separated because each subsystem has different lifetime and fra
 
 Immediate-mode UI makes the control flow easier to reason about, but visual iteration can still be slow in C++. A common workflow is: change a color, spacing value, radius, font size, or layout parameter; recompile; run the app; inspect the result; then repeat. FlowUi's element system gives developer tooling a way to shorten that loop because visual values can be expressed as typed element parameters.
 
-Developer mode is compiled in with `FLOW_UI_DEV_MODE` and enabled at runtime through `AppConfig::dev`. When enabled, FlowUi can capture element invocations during the frame, associate them with definition ids and instance ids, inspect registered parameter/state/resource types, and expose editable values in the developer UI. The goal is not to replace source code, but to make the running UI inspectable and tunable.
+Developer mode is compiled in with `FLOW_UI_DEV_MODE` and enabled at runtime through `AppConfig::dev`. When enabled, FlowUi can capture element invocations during the frame, associate them with definition ids and instance ids, inspect schema-described parameter/state/resource types, and expose editable values in the developer UI. The goal is not to replace source code, but to make the running UI inspectable and tunable.
 
-The key idea is that Flow elements produce structure the dev runtime can understand. A plain Clay block is just immediate layout code. A Flow element has a definition id, an instance id, typed params, optional state, optional resources, callback boundaries, and source location capture. That makes it possible to inspect both the definition shape and each instance drawn in the current UI.
+The key idea is that Flow elements produce structure the modern schema and tree-capture services can understand. A plain Clay block is just immediate layout code. A Flow element has a definition id, an instance id, typed params, optional state, optional resources, callback boundaries, and source location capture. That makes it possible to inspect both the definition shape and each instance drawn in the current UI.
 
 Parameters are especially important for visual iteration. If a button's colors, spacing, corner radius, icon size, text style, and sizing are stored in its params struct, developer tooling can present those fields as editable data. A user can tune an instance while the app is running instead of recompiling for each small visual adjustment.
 
-Developer mode also supports persistence through JSON export paths. Overrides can be written to a configured file such as `.flowui/overrides.v1.json`, then loaded or applied by the tooling path provided with the library. This gives visual iteration a path from temporary runtime edits to permanent data that can be reviewed, committed, or folded back into source defaults.
+Modern developer changes are reviewed and saved to `.flowui/changes/active.flowchanges`. The build generator validates the manifest and emits typed overlays for the next build, including production builds. `App::devTooling()` owns schema, catalogue, override, and bake services; the dedicated developer interface uses those same services. See [Developer Systems](../tutorials/developer_mode.md).
 
 The same capture system also helps with hierarchy inspection. Because FlowUi knows which element definition produced which instance id, and because ids are stable, the developer UI can show the structure of the current frame in terms of reusable Flow elements rather than only raw render commands. Internal developer elements can be excluded from capture so app-authored UI remains the focus.
 

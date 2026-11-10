@@ -112,16 +112,29 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:DevViewportView" id="r_DevViewportView"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html">DevViewportView</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a8ee38c364127fa942cef8d6f428388ae" id="r_a8ee38c364127fa942cef8d6f428388ae"><td class="memItemLeft"><a id="a8ee38c364127fa942cef8d6f428388ae" name="a8ee38c364127fa942cef8d6f428388ae"></a>
+using&#160;</td><td class="memItemRight"><b>DevViewportVisitor</b> = bool (*)(void*, const <a class="el" href="structFlowUi_1_1ViewPortManager_1_1DevViewportView.html">DevViewportView</a>&amp;)</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af6f5b9b1adf89a9ea58bec5fbf3ba86c" id="r_af6f5b9b1adf89a9ea58bec5fbf3ba86c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af6f5b9b1adf89a9ea58bec5fbf3ba86c">create</a> (std::string_view key, const <a class="el" href="structFlowUi_1_1ViewPortCreateInfo.html">ViewPortCreateInfo</a> &amp;createInfo={})</td></tr>
-<tr class="memdesc:af6f5b9b1adf89a9ea58bec5fbf3ba86c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a viewport by key.  <br /></td></tr>
-<tr class="memitem:a19923890380106198347f10300dee5c1" id="r_a19923890380106198347f10300dee5c1"><td class="memItemLeft"><a id="a19923890380106198347f10300dee5c1" name="a19923890380106198347f10300dee5c1"></a>
-bool&#160;</td><td class="memItemRight"><b>create</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="structFlowUi_1_1ViewPortCreateInfo.html">ViewPortCreateInfo</a> &amp;createInfo={})</td></tr>
-<tr class="memitem:a393b43dacaeb66f2ebd66be2d15329c0" id="r_a393b43dacaeb66f2ebd66be2d15329c0"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a393b43dacaeb66f2ebd66be2d15329c0">remove</a> (std::string_view key)</td></tr>
-<tr class="memdesc:a393b43dacaeb66f2ebd66be2d15329c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a viewport by key.  <br /></td></tr>
-<tr class="memitem:ab68f34eac032c2b6383c65077f8ae439" id="r_ab68f34eac032c2b6383c65077f8ae439"><td class="memItemLeft"><a id="ab68f34eac032c2b6383c65077f8ae439" name="ab68f34eac032c2b6383c65077f8ae439"></a>
-bool&#160;</td><td class="memItemRight"><b>remove</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
+<tr class="memitem:a5df6fbcbd30dd5cd9f52dffd2a9a304e" id="r_a5df6fbcbd30dd5cd9f52dffd2a9a304e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5df6fbcbd30dd5cd9f52dffd2a9a304e">visitDevViewports</a> (void *target, DevViewportVisitor visitor) const</td></tr>
+<tr class="memitem:a378b887178e3f75c3f16d3dc9d322ec1" id="r_a378b887178e3f75c3f16d3dc9d322ec1"><td class="memItemLeft">Status&#160;</td><td class="memItemRight"><a class="el" href="#a378b887178e3f75c3f16d3dc9d322ec1">request_dev_capture</a> (std::string_view key) noexcept</td></tr>
+<tr class="memitem:af63bfa3e78dd789677e9cce903f2df97" id="r_af63bfa3e78dd789677e9cce903f2df97"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af63bfa3e78dd789677e9cce903f2df97">release_dev_capture</a> (std::string_view key) noexcept</td></tr>
+<tr class="memitem:a8f9d09988546b1ce4e886e0a4c7e8d8d" id="r_a8f9d09988546b1ce4e886e0a4c7e8d8d"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a8f9d09988546b1ce4e886e0a4c7e8d8d">retain_dev_capture</a> (std::string_view key, <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> expected_capture) noexcept</td></tr>
+<tr class="memitem:a821179f12d30b198fb71fd5ea230dd84" id="r_a821179f12d30b198fb71fd5ea230dd84"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a821179f12d30b198fb71fd5ea230dd84">create</a> (std::string_view key, const <a class="el" href="structFlowUi_1_1ViewPortCreateInfo.html">ViewPortCreateInfo</a> &amp;createInfo={})</td></tr>
+<tr class="memdesc:a821179f12d30b198fb71fd5ea230dd84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a viewport by key.  <br /></td></tr>
+<tr class="memitem:a339889b6fc345b2a5d1d956f09fb78f4" id="r_a339889b6fc345b2a5d1d956f09fb78f4"><td class="memItemLeft"><a id="a339889b6fc345b2a5d1d956f09fb78f4" name="a339889b6fc345b2a5d1d956f09fb78f4"></a>
+<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>create</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key, const <a class="el" href="structFlowUi_1_1ViewPortCreateInfo.html">ViewPortCreateInfo</a> &amp;createInfo={})</td></tr>
+<tr class="memitem:a30e8a1b555b572966efcea707dca470c" id="r_a30e8a1b555b572966efcea707dca470c"><td class="memItemLeft"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a30e8a1b555b572966efcea707dca470c">remove</a> (std::string_view key)</td></tr>
+<tr class="memdesc:a30e8a1b555b572966efcea707dca470c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a viewport by key.  <br /></td></tr>
+<tr class="memitem:a3d61eb07f8323cf89227d13722ade99c" id="r_a3d61eb07f8323cf89227d13722ade99c"><td class="memItemLeft"><a id="a3d61eb07f8323cf89227d13722ade99c" name="a3d61eb07f8323cf89227d13722ade99c"></a>
+<a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight"><b>remove</b> (<a class="el" href="structFlowUi_1_1ResourceKey.html">ResourceKey</a> key)</td></tr>
 <tr class="memitem:a6ae77f78ebf36af55bf61ff75bef31ec" id="r_a6ae77f78ebf36af55bf61ff75bef31ec"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a6ae77f78ebf36af55bf61ff75bef31ec">contains</a> (std::string_view key) const</td></tr>
 <tr class="memdesc:a6ae77f78ebf36af55bf61ff75bef31ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether a viewport exists.  <br /></td></tr>
 <tr class="memitem:a94191add3d5a7578fc9f8684054acad5" id="r_a94191add3d5a7578fc9f8684054acad5"><td class="memItemLeft"><a id="a94191add3d5a7578fc9f8684054acad5" name="a94191add3d5a7578fc9f8684054acad5"></a>
@@ -160,6 +173,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FlowUi::ViewPortManager::contains </td>
@@ -168,6 +184,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return whether a viewport exists. </p>
@@ -187,14 +208,17 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
-<a id="af6f5b9b1adf89a9ea58bec5fbf3ba86c" name="af6f5b9b1adf89a9ea58bec5fbf3ba86c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6f5b9b1adf89a9ea58bec5fbf3ba86c">&#9670;&#160;</a></span>create()</h2>
+<a id="a821179f12d30b198fb71fd5ea230dd84" name="a821179f12d30b198fb71fd5ea230dd84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a821179f12d30b198fb71fd5ea230dd84">&#9670;&#160;</a></span>create()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::ViewPortManager::create </td>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ViewPortManager::create </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
         </tr>
@@ -204,6 +228,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td class="paramtype">const <a class="el" href="structFlowUi_1_1ViewPortCreateInfo.html">ViewPortCreateInfo</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>createInfo</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Create a viewport by key. </p>
@@ -215,16 +244,10 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>A new viewport was created. </td></tr>
-    <tr><td class="paramname">false</td><td>A viewport with key already exists.</td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section return"><dt>Returns</dt><dd>A result containing true when created or false when the key already exists. Initialization, key, and resource creation failures are returned as structured errors. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>if the manager is not initialized, the texture registry is unavailable, key is empty, or Vulkan resource creation fails.</td></tr>
+    <tr><td class="paramname">std::bad_alloc</td><td>if allocating viewport metadata fails.</td></tr>
   </table>
   </dd>
 </dl>
@@ -236,6 +259,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structFlowUi_1_1TextureRef.html">TextureRef</a> FlowUi::ViewPortManager::getTexture </td>
@@ -244,6 +270,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the texture reference for a viewport key. </p>
@@ -263,6 +294,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classFlowUi_1_1ViewPort.html">ViewPort</a> * FlowUi::ViewPortManager::getViewPort </td>
@@ -271,6 +305,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return a mutable viewport by key. </p>
@@ -289,6 +328,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="classFlowUi_1_1ViewPort.html">ViewPort</a> * FlowUi::ViewPortManager::getViewPort </td>
@@ -297,6 +339,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return an immutable viewport by key. </p>
@@ -315,6 +362,9 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">const <a class="el" href="structFlowUi_1_1ViewPortVulkanInterop.html">ViewPortVulkanInterop</a> &amp; FlowUi::ViewPortManager::getVulkanInterop </td>
@@ -323,6 +373,11 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return Vulkan interop handles for custom viewport rendering. </p>
@@ -339,19 +394,53 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 
 </div>
 </div>
-<a id="a393b43dacaeb66f2ebd66be2d15329c0" name="a393b43dacaeb66f2ebd66be2d15329c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a393b43dacaeb66f2ebd66be2d15329c0">&#9670;&#160;</a></span>remove()</h2>
+<a id="af63bfa3e78dd789677e9cce903f2df97" name="af63bfa3e78dd789677e9cce903f2df97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af63bfa3e78dd789677e9cce903f2df97">&#9670;&#160;</a></span>release_dev_capture()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool FlowUi::ViewPortManager::remove </td>
+          <td class="memname">void FlowUi::ViewPortManager::release_dev_capture </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Release the observation cache without affecting the viewport or its renderer. </p>
+
+</div>
+</div>
+<a id="a30e8a1b555b572966efcea707dca470c" name="a30e8a1b555b572966efcea707dca470c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30e8a1b555b572966efcea707dca470c">&#9670;&#160;</a></span>remove()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; bool &gt; FlowUi::ViewPortManager::remove </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Remove a viewport by key. </p>
@@ -362,13 +451,7 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">true</td><td>A viewport with key existed and was removed. </td></tr>
-    <tr><td class="paramname">false</td><td>No viewport with key exists.</td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section return"><dt>Returns</dt><dd>A result containing true when removed or false when the key is absent. Invalid manager/key and storage failures are structured errors.</dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::runtime_error</td><td>if the manager or its storage scope is not initialized.</td></tr>
@@ -378,8 +461,86 @@ class&#160;</td><td class="memItemRight"><b>App</b></td></tr>
 <div class="fragment"></div><!-- fragment --> 
 </div>
 </div>
+<a id="a378b887178e3f75c3f16d3dc9d322ec1" name="a378b887178e3f75c3f16d3dc9d322ec1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a378b887178e3f75c3f16d3dc9d322ec1">&#9670;&#160;</a></span>request_dev_capture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Status FlowUi::ViewPortManager::request_dev_capture </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Opt in to one immutable copy when this viewport naturally renders again. </p>
+
+</div>
+</div>
+<a id="a8f9d09988546b1ce4e886e0a4c7e8d8d" name="a8f9d09988546b1ce4e886e0a4c7e8d8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f9d09988546b1ce4e886e0a4c7e8d8d">&#9670;&#160;</a></span>retain_dev_capture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classFlowUi_1_1Result.html">Result</a>&lt; <a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a> &gt; FlowUi::ViewPortManager::retain_dev_capture </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structFlowUi_1_1TextureHandle.html">TextureHandle</a></td>          <td class="paramname"><span class="paramname"><em>expected_capture</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span><span class="mlabel noexcept">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Clone a completed observation's binding without copying or overwriting its image. </p>
+
+</div>
+</div>
+<a id="a5df6fbcbd30dd5cd9f52dffd2a9a304e" name="a5df6fbcbd30dd5cd9f52dffd2a9a304e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5df6fbcbd30dd5cd9f52dffd2a9a304e">&#9670;&#160;</a></span>visitDevViewports()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlowUi::ViewPortManager::visitDevViewports </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>target</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DevViewportVisitor</td>          <td class="paramname"><span class="paramname"><em>visitor</em></span>&#160;) const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Inspect registrations without referencing textures or scheduling render callbacks. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/managers/<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a></li>
+<li>include/FlowUi/Public/managers/<a class="el" href="ViewPortManager_8hpp_source.html">ViewPortManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

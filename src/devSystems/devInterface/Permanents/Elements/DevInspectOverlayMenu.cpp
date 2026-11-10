@@ -1,14 +1,15 @@
 #include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #if FLOW_UI_DEV_MODE
-#include "FlowUi/App.hpp"
 #include "FSEL/Button.hpp"
 #include "FSEL/Checkbox.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevActionButton.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/ActionManager.hpp"
-#include "managers/PopupManager.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Public/managers/PopupManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -221,11 +222,15 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 									? "Picking Secondary · Esc"
 								: controller.picking() ? "Picking Element · Esc"
 													   : "Pick Element";
+		auto pick =
+			button_parameters(pick_label, ActionCall{actions.make(toggle_pick, controller, state)},
+							  controller.picking(), FLOW_UI_DEV_CAPTURE_CLAY);
+		action_button::set_icon(pick, context.resources().pick_icon);
 		context.uiManager.createElement(FSEL::kButton, pick_id)
-			.setParameters(button_parameters(
-				pick_label, ActionCall{actions.make(toggle_pick, controller, state)},
-				controller.picking(), FLOW_UI_DEV_CAPTURE_CLAY))
+			.setParameters(std::move(pick))
 			.draw();
+		if (context.resources().pick_icon.handle)
+			action_button::tooltip(context, pick_id, pick_label);
 	}
 	// Child buttons execute their actions during draw(). Only decide whether to submit
 	// the popup afterward; PopupManager retires records that were not submitted.
@@ -360,11 +365,15 @@ void DevInspectOverlayMenu::buildElement(BuildContext& context) {
 					.draw();
 			}
 			separator(context, 3);
+			auto clear = button_parameters("Clear Selection",
+										   ActionCall{actions.make(clear_targets, controller)},
+										   state.keyboard_focus && state.focused_row == 9);
+			action_button::set_icon(clear, context.resources().clear_icon);
 			context.uiManager.createElement(FSEL::kButton, clear_id)
-				.setParameters(button_parameters(
-					"Clear Selection", ActionCall{actions.make(clear_targets, controller)},
-					state.keyboard_focus && state.focused_row == 9))
+				.setParameters(std::move(clear))
 				.draw();
+			if (context.resources().clear_icon.handle)
+				action_button::tooltip(context, clear_id, "Clear Selection");
 		}
 	}
 }
@@ -373,6 +382,10 @@ DevInspectOverlayMenuResources::DevInspectOverlayMenuResources([[maybe_unused]] 
 #if FLOWUI_INCLUDE_ICON_MANAGER
 	IconManager& icons = app.icons();
 	interface_icons::registerDevInterfaceIcons(icons);
+	if (icons.contains(interface_icons::kClearKey))
+		clear_icon = icons.textureRef(interface_icons::kClearKey);
+	if (icons.contains(interface_icons::kInspectKey))
+		pick_icon = icons.textureRef(interface_icons::kInspectKey);
 	if (icons.contains(interface_icons::kTreeExpandedKey)) {
 		dropdown_icon = icons.textureRef(interface_icons::kTreeExpandedKey);
 	}

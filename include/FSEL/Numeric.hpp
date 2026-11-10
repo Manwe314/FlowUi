@@ -8,10 +8,15 @@
 #include <optional>
 #include <type_traits>
 
-#include "managers/structs/ActionManagerStructs.hpp"
+#include "FlowUi/Public/managerStructs/ActionTypes.hpp"
 
 namespace FlowUi::FSEL {
 
+/**
+ * Native arithmetic type accepted by numeric controls. Boolean and character
+ * types are excluded; use an explicit definition ID for control specializations
+ * other than int, unsigned int and float.
+ */
 template<typename T>
 concept NumericValueType =
 	(std::integral<T> || std::floating_point<T>) &&
@@ -26,52 +31,84 @@ concept NumericValueType =
 
 /** Shared begin/change/commit/cancel contract for numeric controls. */
 struct NumericEditActions {
+	/** Optional notification when an edit or drag transaction begins. */
 	ActionCall onBegin{};
+	/** Optional notification after the bound value changes. */
 	ActionCall onChanged{};
+	/** Optional notification when the edit or drag transaction commits. */
 	ActionCall onCommit{};
+	/** Optional notification when an edit is cancelled and its initial value restored. */
 	ActionCall onCancel{};
 };
 
+/** When complete numeric editor text updates the bound native value. */
 enum class NumericTextSyncPolicy : uint8_t {
+	/** Publish complete accepted native values during editing. */
 	Live = 0,
+	/** Publish the accepted native value when the edit session commits. */
 	OnCommit,
 };
 
+/** How numeric text outside the configured bounds is displayed. */
 enum class NumericTextBoundsPolicy : uint8_t {
+	/** Preserve out-of-range edit text while clamping accepted native values. */
 	SoftClamp = 0,
+	/** Replace complete out-of-range edit text with its clamped value immediately. */
 	ClampTextImmediately,
 };
 
+/** Classification of numeric text against its grammar, native type and configured bounds. */
 enum class NumericTextStatus : uint8_t {
+	/** Complete text representing a value within the configured bounds. */
 	Complete = 0,
+	/** Text is empty or a partial numeric token. */
 	Incomplete,
+	/** Complete native value below the configured lower bound. */
 	BelowMinimum,
+	/** Complete native value above the configured upper bound. */
 	AboveMaximum,
+	/** Numeric text cannot be represented by the native value type. */
 	Overflow,
+	/** Bounds, formatting or native-value configuration is invalid. */
 	ConfigurationError,
 };
 
+/** Floating point output notation used by numeric editors. */
 enum class NumericFloatNotation : uint8_t {
+	/** Use general floating point notation. */
 	General = 0,
+	/** Use fixed point notation. */
 	Fixed,
+	/** Use scientific exponent notation. */
 	Scientific,
 };
 
 /** Locale-independent formatting and floating text grammar policy. */
 struct NumericFormatOptions {
+	/** Output notation for floating point values. */
 	NumericFloatNotation notation = NumericFloatNotation::General;
+	/** Optional floating point precision passed to the selected formatting mode. */
 	std::optional<int> precision = 10;
+	/** Remove redundant fractional zeros from formatted floating point text. */
 	bool trimTrailingZeros = true;
+	/** Format negative zero as zero when true. */
 	bool canonicalizeNegativeZero = true;
+	/** Accept exponent notation in floating point input when true. */
 	bool allowScientificInput = false;
 };
 
+/** Per-instance native edit transaction state; controls maintain this bookkeeping. */
 template<NumericValueType T>
 struct NumericEditSession {
+	/** Whether a numeric edit transaction is in progress. */
 	bool active = false;
+	/** Whether the current edit transaction has changed the bound value. */
 	bool valueChanged = false;
+	/** Whether lastValidValue holds a complete accepted value. */
 	bool hasLastValidValue = false;
+	/** Native value captured at the start of the current edit transaction. */
 	T beginValue{};
+	/** Most recent complete accepted native value during the edit transaction. */
 	T lastValidValue{};
 };
 
@@ -169,7 +206,7 @@ template<NumericValueType T>
 	}
 }
 
-/** Apply a signed number of native steps without overflowing intermediate values. */
+/* Apply a signed number of native steps without overflowing intermediate values. */
 template<NumericValueType T>
 [[nodiscard]] T offsetBySteps(
 	T value,

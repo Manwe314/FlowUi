@@ -1,14 +1,14 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
-#include "FlowUi/WindowId.hpp"
+#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
 
 namespace FlowUi::devSystems {
-/** Stable selector identities, independent of reporting-source and row indexes.
+/* Stable selector identities, independent of reporting-source and row indexes.
  * Append new identities to preserve existing retained row keys. */
 enum class DevMemoryNodeId : uint64_t {
 	None = 0,
@@ -56,7 +56,7 @@ enum class DevMemoryNodeId : uint64_t {
 	SharedCpuStorage,
 	SharedManagers,
 };
-/** One predefined row; scope policy describes navigation, not byte accounting. */
+/* One predefined row; scope policy describes navigation, not byte accounting. */
 struct DevMemoryNodeDescriptor {
 	std::string_view label;
 	DevMemoryNodeId id;
@@ -112,9 +112,9 @@ inline constexpr auto memory_selector_nodes = std::to_array<DevMemoryNodeDescrip
 	{"Tooling", DevMemoryNodeId::Tooling, DevMemoryNodeId::DevelopmentOverhead, true},
 	{"Tree Capture", DevMemoryNodeId::TreeCapture, DevMemoryNodeId::Tooling, true},
 });
-/** Heap keys occupy a separate range from fixed node identities. */
+/* Heap keys occupy a separate range from fixed node identities. */
 inline constexpr uint64_t memory_heap_node_base = uint64_t{1} << 32;
-/** Always-bound window modifier and optional tree selection. Zero selects Overview. */
+/* Always-bound window modifier and optional tree selection. Zero selects Overview. */
 struct DevMemorySelection {
 	std::array<bool, memory_selector_nodes.size() + 1> expanded = [] {
 		std::array<bool, memory_selector_nodes.size() + 1> values{};
@@ -125,14 +125,14 @@ struct DevMemorySelection {
 	uint64_t selected_node = 0;
 	WindowId window_scope = InvalidWindowId; // All Windows; not a reporting-source identity.
 };
-/** Find a fixed row without interpreting an unattributed memory sample as All Windows. */
+/* Find a fixed row without interpreting an unattributed memory sample as All Windows. */
 [[nodiscard]] constexpr const DevMemoryNodeDescriptor* memory_node(uint64_t identity) noexcept {
 	for (const auto& node : memory_selector_nodes)
 		if (static_cast<uint64_t>(node.id) == identity)
 			return &node;
 	return nullptr;
 }
-/** Whether this fixed node has predetermined children (heaps add runtime children). */
+/* Whether this fixed node has predetermined children (heaps add runtime children). */
 [[nodiscard]] constexpr bool memory_node_has_children(DevMemoryNodeId identity) noexcept {
 	if (identity == DevMemoryNodeId::GpuHeaps)
 		return true;
@@ -141,7 +141,7 @@ struct DevMemorySelection {
 			return true;
 	return false;
 }
-/** Whether a row lies below an ancestor; dynamic heap leaves belong to GPU Heaps. */
+/* Whether a row lies below an ancestor; dynamic heap leaves belong to GPU Heaps. */
 [[nodiscard]] constexpr bool memory_node_descends_from(uint64_t identity,
 													   DevMemoryNodeId ancestor) noexcept {
 	if (identity >= memory_heap_node_base)
@@ -154,7 +154,7 @@ struct DevMemorySelection {
 	}
 	return false;
 }
-/** Node applicability leaves the remembered window modifier intact. */
+/* Node applicability leaves the remembered window modifier intact. */
 [[nodiscard]] constexpr bool memory_selection_application_wide(uint64_t identity) noexcept {
 	const auto* node = memory_node(identity);
 	return identity >= memory_heap_node_base || (node && node->application_wide);

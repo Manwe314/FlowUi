@@ -3,7 +3,7 @@
 #endif
 #include "FSEL/Button.hpp"
 #include "FSEL/NumberInput.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceInspector.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevPerformanceWorkbench.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"

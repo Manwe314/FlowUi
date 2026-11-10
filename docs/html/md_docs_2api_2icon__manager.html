@@ -110,9 +110,6 @@ $(function() {
 <h2><b>TextureFitMode</b></h2>
 <h3><span class="tt">enum class TextureFitMode : uint8_t</span></h3>
 <p>Texture layout mode inside a target rectangle. Icon texture refs typically use contain sizing.</p>
-<h2><b>TextureSamplingMode</b></h2>
-<h3><span class="tt">enum class TextureSamplingMode : uint8_t</span></h3>
-<p>Texture filtering preference stored on TextureRef. It records intended filtering behavior for rendered icons.</p>
 <h1>Public Structs</h1>
 <h2><b>IconManagerConfig</b></h2>
 <h3><span class="tt">struct IconManagerConfig</span></h3>
@@ -122,35 +119,46 @@ $(function() {
 <p>Texture request handle returned by IconManager. FlowUi resolves it to a cached atlas variant sized to the rendered UI area.</p>
 <h1>Public API</h1>
 <h2><b>registerSvg</b></h2>
-<h3><span class="tt">bool registerSvg(std::string_view key, std::string_view svgSource)</span></h3>
+<h3><span class="tt">Result&lt;bool&gt; registerSvg(std::string_view key, std::string_view svgSource)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">key</span> icon key, <span class="tt">svgSource</span> complete SVG source text.</li>
 </ul>
 <p>Parses and registers an SVG document from memory. Raster variants are created lazily later when the icon is drawn at a particular size.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.icons().registerSvg(<span class="stringliteral">&quot;check&quot;</span>, checkSvgSource);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = app.icons().registerSvg(<span class="stringliteral">&quot;check&quot;</span>, checkSvgSource);</div>
+<div class="line"><span class="keywordflow">if</span> (!registered) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>registerFromFile</b></h2>
-<h3><span class="tt">bool registerFromFile(std::string_view key, std::string_view filePath)</span></h3>
+<h3><span class="tt">Result&lt;bool&gt; registerFromFile(std::string_view key, std::string_view filePath)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">key</span> icon key, <span class="tt">filePath</span> SVG file path.</li>
 </ul>
-<p>Parses and registers an SVG document from disk. Returns <span class="tt">false</span> if the key already exists and the current icon is left unchanged.</p>
+<p>Parses and registers an SVG document from disk. A successful result contains <span class="tt">false</span> if the key already exists and the current icon is left unchanged; failures carry a structured error.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> registered = app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!registered) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>remove</b></h2>
-<h3><span class="tt">bool remove(std::string_view key)</span></h3>
+<h3><span class="tt">Result&lt;bool&gt; remove(std::string_view key)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;bool&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">key</span> registered icon key.</li>
 </ul>
 <p>Removes a registered SVG document and its cached atlas variants. Previously returned texture references for the key should be discarded.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.icons().remove(<span class="stringliteral">&quot;save&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> removal = app.icons().remove(<span class="stringliteral">&quot;save&quot;</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (!removal) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(removal.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = *removal;</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>contains</b></h2>
 <h3><span class="tt">bool contains(std::string_view key) const</span></h3>
 <ul>
@@ -159,8 +167,13 @@ $(function() {
 </ul>
 <p>Checks whether an SVG document key is registered. This does not force rasterization or atlas allocation.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.icons().contains(<span class="stringliteral">&quot;save&quot;</span>)) { app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>); }</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (!app.icons().contains(<span class="stringliteral">&quot;save&quot;</span>)) {</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> registered = app.icons().registerFromFile(<span class="stringliteral">&quot;save&quot;</span>, <span class="stringliteral">&quot;assets/icons/save.svg&quot;</span>);</div>
+<div class="line">    <span class="keywordflow">if</span> (!registered) {</div>
+<div class="line">        <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(registered.error());</div>
+<div class="line">    }</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>.</p>
 <h2><b>textureRef</b></h2>
 <h3><span class="tt">TextureRef textureRef(std::string_view key)</span></h3>
 <ul>
@@ -170,8 +183,8 @@ $(function() {
 <p>Returns a texture request reference for a registered icon. FlowUi later resolves the request into a cached atlas variant sized to the rendered UI image area.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><a class="code hl_struct" href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a> saveIcon = app.icons().textureRef(<span class="stringliteral">&quot;save&quot;</span>);</div>
-<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> PublicStructs.hpp:473</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48">Full Doxygen reference</a>. </p>
+<div class="ttc" id="astructFlowUi_1_1TextureRef_html"><div class="ttname"><a href="structFlowUi_1_1TextureRef.html">FlowUi::TextureRef</a></div><div class="ttdoc">Renderer texture reference returned by image, icon, and viewport managers.</div><div class="ttdef"><b>Definition</b> TextureRef.hpp:30</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/IconManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

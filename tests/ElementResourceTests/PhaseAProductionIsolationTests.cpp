@@ -5,9 +5,9 @@
 #include <string>
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
-#include "managers/UiManager.hpp"
-#include "internal/ManagerStorage/UiManagerState.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Private/layoutService/UiManagerState.hpp"
 
 #if FLOW_UI_DEV_MODE
 #error "PhaseAProductionIsolationTests must be compiled only with FLOW_UI_DEV_MODE=0."
@@ -100,7 +100,8 @@ std::size_t occurrenceCount(std::string_view source, std::string_view token) {
 
 void testFlowIdCollisionImplementationIsDevGuarded() {
 	const std::string uiState = readSource(FLOWUI_UI_MANAGER_STATE_SOURCE);
-	const std::string uiManager = readSource(FLOWUI_UI_MANAGER_SOURCE);
+	const std::string uiManager = readSource(FLOWUI_UI_MANAGER_SOURCE) +
+		readSource(FLOWUI_ELEMENT_BRIDGE_SOURCE);
 	const std::string builder = readSource(FLOWUI_ELEMENT_BUILDER_SOURCE);
 	const std::string bridge = readSource(FLOWUI_ELEMENT_BRIDGE_HEADER);
 
@@ -121,7 +122,8 @@ void testFlowIdCollisionImplementationIsDevGuarded() {
 }
 
 void testTypedClayBridgeDoesNotHashStringsInProduction() {
-	const std::string uiManager = readSource(FLOWUI_UI_MANAGER_SOURCE);
+	const std::string uiManager = readSource(FLOWUI_UI_MANAGER_SOURCE) +
+		readSource(FLOWUI_ELEMENT_BRIDGE_SOURCE);
 	const std::string builder = readSource(FLOWUI_ELEMENT_BUILDER_SOURCE);
 	FLOWUI_CHECK(uiManager.find("Clay_GetElementId(") == std::string::npos);
 	FLOWUI_CHECK(everyTokenOccurrenceIsInsideDevGuard(uiManager, "id.debugName"));

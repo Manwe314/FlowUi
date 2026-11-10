@@ -12,7 +12,7 @@
 #include "devSystems/devInterface/Inspect/Workbench/DevInspectWorkbench.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -197,7 +197,7 @@ void DevClayWorkbench::buildElement(BuildContext& context) {
 #elif FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 

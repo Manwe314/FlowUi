@@ -2,20 +2,23 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Catalogue/DevCatalogueContentParameters.hpp"
+#include "devSystems/devInterface/Inspect/Inspector/TypeEditorElements/DevTypeEditorElements.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevFselThemeSpecimens.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
 struct DevCatalogueWorkbench {
 	using Parameters = DevCatalogueContentParameters;
 	struct State {
+		DevTypeEditorState tint_editor{};
 		FselThemeSpecimenState specimens{};
+		Clay_Color tint_color{169, 218, 209, 255};
 		uint64_t last_domain = UINT64_MAX, last_selection = UINT64_MAX;
 		float drag_mouse_x = 0, drag_mouse_y = 0;
 		bool dragging = false;

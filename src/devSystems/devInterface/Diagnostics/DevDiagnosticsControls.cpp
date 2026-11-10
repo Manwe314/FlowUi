@@ -12,7 +12,7 @@
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -154,13 +154,21 @@ void button(Context& context, uint64_t key, std::string_view label, ActionCall a
 		}
 	}
 	parameters.icon = context.resources().texture(icon);
+	const bool icon_only =
+		key == 2 || key == 3 || key == 4 || key == 5 || key == 22 || key == 32 || key >= 1000;
 	if (parameters.icon.handle)
-		parameters.contentMode = FSEL::ButtonContentMode::IconThenText;
+		parameters.contentMode =
+			icon_only ? FSEL::ButtonContentMode::IconOnly : FSEL::ButtonContentMode::IconThenText;
 	parameters.onActivate = action;
 	context.uiManager.createElement(FSEL::kButton, Keyed("diagnostics-control", key))
 		.setParameters(parameters)
 		.setDevInternalCapture(true)
 		.draw();
+	const auto element = ::FlowUi::detail::element_id::resolveLocal(
+		context.id, FSEL::Button::definitionId, Keyed("diagnostics-control", key).token);
+	if (icon_only && context.uiManager.getPreviousFramesInteraction().isHovered(
+						 context.uiManager.toClayEID(element)))
+		diagnostics_ui::pointer_tooltip(context, Keyed("control-tooltip", key), label);
 }
 void command(Context& context, uint64_t key, std::string_view label, DevDiagnosticsCommand action,
 			 bool enabled = true, uint32_t index = 0) {
@@ -175,8 +183,10 @@ void command(Context& context, uint64_t key, std::string_view label, DevDiagnost
 		: action == DevDiagnosticsCommand::ExportSelected ||
 				action == DevDiagnosticsCommand::ExportRetained
 			? Icon::Export
-		: action == DevDiagnosticsCommand::RemoveTrigger ? Icon::Close
-														 : Icon::None;
+		: action == DevDiagnosticsCommand::MoveTriggerUp   ? Icon::ChevronUp
+		: action == DevDiagnosticsCommand::MoveTriggerDown ? Icon::ChevronDown
+		: action == DevDiagnosticsCommand::RemoveTrigger   ? Icon::Remove
+														   : Icon::None;
 	button(context, key, label, call, enabled, icon);
 }
 void number(Context& context, uint64_t key, std::string_view label, uint32_t& value,

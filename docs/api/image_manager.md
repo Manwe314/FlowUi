@@ -9,13 +9,6 @@
 
 Texture layout mode inside a target rectangle. Image texture refs use it to control stretch, contain, cover, or source-size behavior.
 
-### **TextureSamplingMode**
-
-
-#### `enum class TextureSamplingMode : uint8_t`
-
-Texture filtering preference stored on TextureRef. It distinguishes linear and nearest sampling intent.
-
 ## Public Structs
 
 ### **TextureRef**
@@ -23,34 +16,37 @@ Texture filtering preference stored on TextureRef. It distinguishes linear and n
 
 #### `struct TextureRef`
 
-Renderer texture handle and draw options returned by ImageManager. App code may adjust fit mode, sampling mode, and tint behavior before drawing.
+Renderer texture handle and draw options returned by ImageManager. App code may adjust fit mode and tint behavior before drawing.
 
 ## Public API
 
 ### **registerImage**
 
 
-#### `bool registerImage(std::string_view key, std::string_view filePath)`
+#### `Result<bool> registerImage(std::string_view key, std::string_view filePath)`
 
-- **Returns:** `bool`
+- **Returns:** `Result<bool>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `key` application image key, `filePath` image file path.
 
-Loads an image file, uploads it, and registers it under the provided key. Returns `true` for a new key and `false` when replacing an existing key.
+Loads an image file, uploads it, and registers it under the provided key. The successful result contains `true` for a new key or `false` when replacing an existing key; failures carry a structured error.
 
 **Example:**
 
 ```cpp
-app.images().registerImage("avatar", "assets/avatar.png");
+const auto registered = app.images().registerImage("avatar", "assets/avatar.png");
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1ImageManager.html#a87c55cc08f33bb3fd8f83108aa15ea23).
+See: [Owning header](../../include/FlowUi/Public/managers/ImageManager.hpp).
 
 ### **removeImage**
 
 
-#### `bool removeImage(std::string_view key)`
+#### `Result<bool> removeImage(std::string_view key)`
 
-- **Returns:** `bool`
+- **Returns:** `Result<bool>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `key` registered image key.
 
 Removes an image registration and retires the GPU resource safely. Existing `TextureRef` values for that key should be treated as invalid after removal.
@@ -58,10 +54,14 @@ Removes an image registration and retires the GPU resource safely. Existing `Tex
 **Example:**
 
 ```cpp
-const bool removed = app.images().removeImage("avatar");
+const auto removal = app.images().removeImage("avatar");
+if (!removal) {
+    throw FlowUi::FlowUiException(removal.error());
+}
+const bool removed = *removal;
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1ImageManager.html#ab1bb3be63b631b3947dc8d8a1950b7b5).
+See: [Owning header](../../include/FlowUi/Public/managers/ImageManager.hpp).
 
 ### **contains**
 
@@ -76,10 +76,15 @@ Checks whether an image key is currently registered. This performs no file IO or
 **Example:**
 
 ```cpp
-if (!app.images().contains("avatar")) { app.images().registerImage("avatar", "assets/avatar.png"); }
+if (!app.images().contains("avatar")) {
+    const auto registered = app.images().registerImage("avatar", "assets/avatar.png");
+    if (!registered) {
+        throw FlowUi::FlowUiException(registered.error());
+    }
+}
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1ImageManager.html#a3ce30605daebf796adc6e757a93848c1).
+See: [Owning header](../../include/FlowUi/Public/managers/ImageManager.hpp).
 
 ### **getTexture**
 
@@ -89,7 +94,7 @@ See: [Full Doxygen reference](classFlowUi_1_1ImageManager.html#a3ce30605daebf796
 - **Returns:** `TextureRef`
 - **Arguments:** `key` registered image key.
 
-Returns the texture reference for a registered image. Missing keys return fallback texture id `0` and log a warning once for that key.
+Returns a generation-checked texture reference for a registered image. Missing keys return an invalid handle and report the configured fallback or skip resolution once for that key.
 
 **Example:**
 
@@ -97,4 +102,4 @@ Returns the texture reference for a registered image. Missing keys return fallba
 FlowUi::TextureRef avatar = app.images().getTexture("avatar");
 ```
 
-See: [Full Doxygen reference](classFlowUi_1_1ImageManager.html#a8db367968a237f11a7157d194a3720bc).
+See: [Owning header](../../include/FlowUi/Public/managers/ImageManager.hpp).

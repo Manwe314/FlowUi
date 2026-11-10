@@ -2,7 +2,7 @@
 
 #if FLOW_UI_AGENTIC_WORKFLOW && FLOW_UI_DEV_MODE
 
-/** Resettable developer-window fixture. The declared precondition is a closed interface. */
+/* Resettable developer-window fixture. The declared precondition is a closed interface. */
 struct DemoAgenticVerificationHarness {
 	std::string click_job_id;
 	std::string cleanup_job_id;
@@ -12,7 +12,7 @@ struct DemoAgenticVerificationHarness {
 	bool closing_requested = false;
 };
 
-/** Resolve the developer window through application metadata, without assuming an identity. */
+/* Resolve the developer window through application metadata, without assuming an identity. */
 [[nodiscard]] WindowId demo_agentic_interface_window(const App& application) {
 	for (const auto& window : application.devWindowSnapshot())
 		if (window.title == "FlowUi Developer Interface")
@@ -20,7 +20,7 @@ struct DemoAgenticVerificationHarness {
 	return InvalidWindowId;
 }
 
-/** Compile a real pointer click against a unique completed developer-header element. */
+/* Compile a real pointer click against a unique completed developer-header element. */
 [[nodiscard]] Result<agentic::Json> demo_agentic_interface_click(App& application, WindowId window,
 																 std::string_view suffix) noexcept {
 	try {
@@ -58,7 +58,7 @@ struct DemoAgenticVerificationHarness {
 	}
 }
 
-/** Exercise developer navigation through pointer routing and restore the closed fixture. */
+/* Exercise developer navigation through pointer routing and restore the closed fixture. */
 [[nodiscard]] Status
 register_demo_agentic_verification_scenario(App& application,
 											DemoAgenticVerificationHarness& harness) noexcept {

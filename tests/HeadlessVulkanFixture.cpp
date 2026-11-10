@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "internal/Vma.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 
 namespace FlowUi::test {
 namespace {

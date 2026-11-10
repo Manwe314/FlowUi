@@ -4,20 +4,18 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "FSEL/Button.hpp"
-#include "FSEL/ComboBox.hpp"
-#include "devMode/performanceDiagnostics.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "devSystems/devTooling/DevTooling.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevActionButton.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
-#include "managers/UiManager.hpp"
+#include "devSystems/devTooling/DevTooling.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -25,7 +23,6 @@ namespace {
 constexpr float kHeaderHeight = 44.0f;
 inline constexpr LocalElementName kTitleSeparatorInset{"title-separator-inset"};
 inline constexpr LocalElementName kTitleSeparatorLine{"title-separator-line"};
-inline constexpr LocalElementName kWindowSelector{"window-selector"};
 inline constexpr LocalElementName kActionSpacer{"action-spacer"};
 inline constexpr LocalElementName kHeaderActions{"header-actions"};
 inline constexpr LocalElementName kUndoAction{"undo"};
@@ -82,28 +79,6 @@ Clay_TextElementConfig textConfig(Clay_Color color, uint16_t fontSize) {
 	return config;
 }
 
-std::string fallbackWindowName(WindowId id) {
-	char buffer[48]{};
-	std::snprintf(buffer, sizeof(buffer), "Window %llu",
-		static_cast<unsigned long long>(id));
-	return buffer;
-}
-
-std::string truncateWindowTitle(std::string_view title) {
-	constexpr std::size_t kMaximumDisplayBytes = 24u;
-	constexpr std::size_t kEllipsisBytes = 3u;
-	if (title.size() <= kMaximumDisplayBytes) return std::string{title};
-
-	std::size_t end = kMaximumDisplayBytes - kEllipsisBytes;
-	while (end > 0u &&
-		(static_cast<unsigned char>(title[end]) & 0xC0u) == 0x80u) {
-		--end;
-	}
-	std::string result{title.substr(0u, end)};
-	result.append("...");
-	return result;
-}
-
 std::string formatBytes(uint64_t bytes) {
 	constexpr double kMegabyte = 1'000'000.0;
 	constexpr double kGigabyte = 1'000.0 * kMegabyte;
@@ -145,26 +120,30 @@ void drawInsetSeparator(DevInterfaceHeader::BuildContext& context) {
 	}
 }
 
-void drawActionButton(
-	DevInterfaceHeader::BuildContext& context,
-	LocalElementName id,
-	std::string_view label,
-	ActionCall action = {},
-	bool enabled = true,
-	TextureRef icon = {}) {
+void drawActionButton(DevInterfaceHeader::BuildContext& context, LocalElementName id,
+					  std::string_view label, ActionCall action = {}, bool enabled = true,
+					  TextureRef icon = {}) {
 	FSEL::ButtonParameters parameters{};
 	parameters.onActivate = action;
-	parameters.enabled = enabled;
-	parameters.contentMode = icon.handle
-		? FSEL::ButtonContentMode::IconOnly : FSEL::ButtonContentMode::TextOnly;
+	parameters.enabled = enabled && static_cast<bool>(action);
+	parameters.contentMode =
+		icon.handle ? FSEL::ButtonContentMode::IconOnly : FSEL::ButtonContentMode::TextOnly;
 	parameters.text = label;
 	parameters.icon = icon;
 	parameters.tintIcon = true;
 	parameters.sizing = {
-		.width = CLAY_SIZING_FIT(0),
+		.width = icon.handle ? CLAY_SIZING_FIXED(28) : CLAY_SIZING_FIT(0),
 		.height = CLAY_SIZING_FIXED(28),
 	};
-	parameters.padding = Clay_Padding{9, 9, 5, 5};
+	parameters.padding = icon.handle ? Clay_Padding{5, 5, 5, 5} : Clay_Padding{7, 7, 5, 5};
+	parameters.childAlignment = {CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER};
+	parameters.layoutDirection = CLAY_LEFT_TO_RIGHT;
+	parameters.contentGap = 0;
+	parameters.labelFontFamily = 0;
+	parameters.labelFontWeight = 400;
+	parameters.labelFontStyle = FontStyle::Normal;
+	parameters.labelWrapMode = CLAY_TEXT_WRAP_NONE;
+	parameters.labelAlignment = CLAY_TEXT_ALIGN_CENTER;
 	parameters.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 	parameters.cornerRadius = CLAY_CORNER_RADIUS(3);
 	parameters.idleOverrides.backgroundColor = interface_theme::kDepth3Elevated;
@@ -190,52 +169,57 @@ void drawActionButton(
 		.setParameters(std::move(parameters))
 		.setDevInternalCapture(true)
 		.draw();
+	if (icon.handle)
+		action_button::tooltip(context, id, label);
 }
 
-void drawHeaderContents(
-	DevInterfaceHeader::BuildContext& context,
-	App* app,
-	DevInterfaceState* state,
-	const std::vector<DevWindowInfo>& windows,
-	std::span<const FSEL::ComboBoxOption> windowOptions) {
+void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
+						DevInterfaceState* state, const std::vector<DevWindowInfo>& windows) {
+	const float available_width = Clay_GetLayoutDimensions().width;
 	const Clay_TextElementConfig titleStyle = textConfig(interface_theme::kTextCanvas, 15);
-	CLAY_TEXT(context.uiManager.toClayString("FlowUi DevInterface"), CLAY_TEXT_CONFIG(titleStyle));
+	CLAY_TEXT(context.uiManager.toClayString(available_width < 520.0f ? "FlowUi Dev"
+																	  : "FlowUi DevInterface"),
+			  CLAY_TEXT_CONFIG(titleStyle));
 
-	drawInsetSeparator(context);
-
-	auto combo = context.uiManager.createElement(
-		FSEL::kComboBox, kWindowSelector);
-	FSEL::ComboBoxParameters comboParameters{};
-	comboParameters.options = windowOptions;
-	comboParameters.selectedValue = state ? &state->selectedWindowId : nullptr;
-	comboParameters.placeholder = windows.empty() ? "No application windows" : "Select window";
-	comboParameters.enabled = state && !windows.empty();
-	comboParameters.sizing = Clay_Sizing{
-		.width = CLAY_SIZING_FIXED(210),
-		.height = CLAY_SIZING_FIXED(28),
-	};
-	comboParameters.popupWidthPolicy = FSEL::ComboBoxPopupWidthPolicy::ContentAtLeastTrigger;
-	comboParameters.fontSize = 12;
-	combo.setParameters(std::move(comboParameters));
-	combo.setDevInternalCapture(true).draw();
+	if (available_width >= 700.0f)
+		drawInsetSeparator(context);
 
 	uint32_t framesInFlight = 0u;
-	double rollingFps = 0.0;
+	double frames_per_second = 0.0;
 	if (app && state && state->selectedWindowId != InvalidWindowId) {
-		const auto selected = std::ranges::find(windows, state->selectedWindowId, &DevWindowInfo::id);
-		if (selected != windows.end()) framesInFlight = selected->framesInFlight;
+		const auto selected =
+			std::ranges::find(windows, state->selectedWindowId, &DevWindowInfo::id);
+		if (selected != windows.end())
+			framesInFlight = selected->framesInFlight;
 		if (app->hasWindow(state->selectedWindowId)) {
-			rollingFps = app->ui(state->selectedWindowId).performanceDiagnostics().rolling().fps;
+			const double frame_delta_seconds =
+				app->ui(state->selectedWindowId).getCurrentFrameInput().dt;
+			frames_per_second = frame_delta_seconds > 0.0 ? 1.0 / frame_delta_seconds : 0.0;
 		}
 	}
 
-	char telemetryBuffer[160]{};
-	const std::string memoryText = app ? formatBytes(currentMemoryBytes(*app)) : std::string{"Unavailable"};
-	std::snprintf(
-		telemetryBuffer, sizeof(telemetryBuffer), "Max Frames: %u   FPS: %.0f   Memory: %s",
-		framesInFlight, rollingFps, memoryText.c_str());
-	const Clay_TextElementConfig telemetryStyle = textConfig(interface_theme::kTextSecondary, 12);
-	CLAY_TEXT(context.uiManager.toClayString(telemetryBuffer), CLAY_TEXT_CONFIG(telemetryStyle));
+	if (available_width >= 700.0f) {
+		char telemetryBuffer[160]{};
+		const std::string memoryText =
+			app ? formatBytes(currentMemoryBytes(*app)) : std::string{"Unavailable"};
+		std::snprintf(
+			telemetryBuffer, sizeof(telemetryBuffer),
+			"Target #%llu · FPS %.0f · Max frames %u · %s",
+			static_cast<unsigned long long>(state ? state->selectedWindowId : InvalidWindowId),
+			frames_per_second, framesInFlight, memoryText.c_str());
+		const Clay_TextElementConfig telemetryStyle =
+			textConfig(interface_theme::kTextSecondary, 11);
+		Clay_ElementDeclaration telemetry{};
+		telemetry.layout.sizing = {
+			CLAY_SIZING_GROW(0, std::max(1.0f, available_width - 480.0f)),
+			CLAY_SIZING_GROW(0)};
+		telemetry.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
+		telemetry.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+		CLAY(context.clayID("telemetry"), telemetry) {
+			CLAY_TEXT(context.uiManager.toClayString(telemetryBuffer),
+					  CLAY_TEXT_CONFIG(telemetryStyle));
+		}
+	}
 
 	Clay_ElementDeclaration spacer{};
 	spacer.layout.sizing = {
@@ -259,21 +243,21 @@ void drawHeaderContents(
 		ActionCall undo{};
 		ActionCall redo{};
 		if (app && state) {
-			undo = ActionCall{app->actions().uiActions().make(
-				kUndoEditorTransaction, *app, *state)};
-			redo = ActionCall{app->actions().uiActions().make(
-				kRedoEditorTransaction, *app, *state)};
+			undo =
+				ActionCall{app->actions().uiActions().make(kUndoEditorTransaction, *app, *state)};
+			redo =
+				ActionCall{app->actions().uiActions().make(kRedoEditorTransaction, *app, *state)};
 		}
-		drawActionButton(
-			context, kUndoAction, "Undo", undo,
-			state && !state->editUndoStack.empty(),
-			context.resources().undoIcon);
-		drawActionButton(context, kHistoryAction, "History");
-		drawActionButton(
-			context, kRedoAction, "Redo", redo,
-			state && !state->editRedoStack.empty(),
-			context.resources().redoIcon);
-		drawActionButton(context, kConfigurationsAction, "Configurations");
+		drawActionButton(context, kUndoAction, "Undo", undo, state && !state->editUndoStack.empty(),
+						 context.resources().undoIcon);
+		if (available_width >= 480.0f)
+			drawActionButton(context, kHistoryAction, "History", {}, false,
+							 context.resources().history_icon);
+		drawActionButton(context, kRedoAction, "Redo", redo, state && !state->editRedoStack.empty(),
+						 context.resources().redoIcon);
+		if (available_width >= 480.0f)
+			drawActionButton(context, kConfigurationsAction, "Settings", {}, false,
+							 context.resources().settings_icon);
 	}
 }
 
@@ -289,6 +273,10 @@ DevInterfaceHeaderResources::DevInterfaceHeaderResources(App& app) {
 	if (icons.contains(interface_icons::kRedoKey)) {
 		redoIcon = icons.textureRef(interface_icons::kRedoKey);
 	}
+	if (icons.contains(interface_icons::kHistoryKey))
+		history_icon = icons.textureRef(interface_icons::kHistoryKey);
+	if (icons.contains(interface_icons::kSettingsKey))
+		settings_icon = icons.textureRef(interface_icons::kSettingsKey);
 #else
 	(void)app;
 #endif
@@ -303,35 +291,9 @@ void DevInterfaceHeader::buildElement(BuildContext& context) {
 		return window.id == context.params.interfaceWindowId;
 	});
 
-	if (state) {
-		const bool selectedWindowAvailable = std::ranges::any_of(
-			windows, [state](const DevWindowInfo& window) {
-				return window.id == state->selectedWindowId;
-			});
-		if (!selectedWindowAvailable) {
-			state->selectedWindowId = windows.empty() ? InvalidWindowId : windows.front().id;
-		}
-	}
-
-	std::vector<std::string> windowLabels;
-	windowLabels.reserve(windows.size());
-	for (const DevWindowInfo& window : windows) {
-		windowLabels.push_back(window.title.empty()
-			? fallbackWindowName(window.id)
-			: truncateWindowTitle(window.title));
-	}
-	std::vector<FSEL::ComboBoxOption> windowOptions;
-	windowOptions.reserve(windows.size());
-	for (std::size_t index = 0; index < windows.size(); ++index) {
-		windowOptions.push_back(FSEL::ComboBoxOption{
-			.value = windows[index].id,
-			.text = windowLabels[index],
-		});
-	}
-
 	Clay_ElementDeclaration header{};
 	header.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_FIXED(kHeaderHeight),
 	};
 	header.layout.padding = Clay_Padding{16, 16, 0, 0};
@@ -341,6 +303,7 @@ void DevInterfaceHeader::buildElement(BuildContext& context) {
 		.y = CLAY_ALIGN_Y_CENTER,
 	};
 	header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+	header.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 	header.backgroundColor = interface_theme::kDepth1Panel;
 	header.border = {
 		.color = interface_theme::kBorderPrimary,
@@ -348,7 +311,7 @@ void DevInterfaceHeader::buildElement(BuildContext& context) {
 	};
 
 	CLAY(context.clayID(), header) {
-		drawHeaderContents(context, app, state, windows, windowOptions);
+		drawHeaderContents(context, app, state, windows);
 	}
 }
 

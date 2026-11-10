@@ -7,7 +7,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "internal/StorageSystem/IStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
 #include "devSystems/devMonitoringAndReporting/memory/DevEnvironmentMemoryProbe.hpp"

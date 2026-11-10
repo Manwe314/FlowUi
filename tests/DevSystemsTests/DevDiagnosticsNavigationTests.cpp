@@ -2,7 +2,7 @@
 #undef NDEBUG
 #endif
 
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"

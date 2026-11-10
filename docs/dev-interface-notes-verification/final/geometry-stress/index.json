@@ -1,0 +1,2107 @@
+{
+  "schema": "FlowUi.DevInterfaceNotes.PortableEvidence",
+  "run_id": "run_13237e9a8b8766c29ca0bf4b082054eb",
+  "source_run": "run_4ad9536bb6b3",
+  "passed": true,
+  "cases": 50,
+  "required_checks": 127,
+  "layout_checks": 3974,
+  "mcp_calls": 154,
+  "user_changes_unchanged": true,
+  "export": "MCP PNGs, joined trees, reports, calls and sealed manifest inventories. Raw RGB capture stores are omitted. PNG containers are losslessly recompressed; original MCP byte hashes and identical decoded-pixel hashes are retained. Tree gzip files decompress to the exact integrity-checked sealed artifact bytes; parsed-tree equality was also verified.",
+  "files": [
+    {
+      "path": "evidence.json",
+      "bytes": 2085397,
+      "sha256": "7a87a6cb33aa3ef69ae3f83d22c883c6394516e2316ce59f4be783b88b23d26c"
+    },
+    {
+      "path": "geometry-normal-reference-report.json",
+      "bytes": 5533,
+      "sha256": "7876ed851c85f7e4c15fe9d61ead8463d8d2670b0ec7c514d9def0406ca10354"
+    },
+    {
+      "path": "geometry-normal-reference-tree.json.gz",
+      "bytes": 37401,
+      "sha256": "be9733fafb38587297d7c500bf6ef612e44191b8016174a05f69e34e6dc61a95"
+    },
+    {
+      "path": "geometry-normal-reference.png",
+      "bytes": 178381,
+      "sha256": "f80fb327b5edc21bb683246e9524f5a365e8fab7eaf982e22cef15bca6da4b7b"
+    },
+    {
+      "path": "geometry-overview-980-adjust-1-report.json",
+      "bytes": 5770,
+      "sha256": "bc8100aa625c802df8249a2fcd5b8b50590f822057a08d070ac5a20e3ed0b14b"
+    },
+    {
+      "path": "geometry-overview-980-adjust-1-tree.json.gz",
+      "bytes": 37395,
+      "sha256": "5c0384a664464a9f37c50f137facefd569bc4301765b74e53da8be600d6afef1"
+    },
+    {
+      "path": "geometry-overview-980-adjust-1.png",
+      "bytes": 174168,
+      "sha256": "5de1f49dc58894e7c730d1fd46450e8434c19ea9dde72932ff338ce4d0d8cfe4"
+    },
+    {
+      "path": "geometry-overview-980-adjust-2-report.json",
+      "bytes": 5770,
+      "sha256": "1a624d062e916b924a90903fb5be401d46d61cf4a31d94f1391198c26680bf0c"
+    },
+    {
+      "path": "geometry-overview-980-adjust-2-tree.json.gz",
+      "bytes": 37407,
+      "sha256": "97d84026a32e5b657dc304a691a3b3a6569f3a7be55b4d90c6edf7147111097b"
+    },
+    {
+      "path": "geometry-overview-980-adjust-2.png",
+      "bytes": 174005,
+      "sha256": "e93ce9461053453cb2980c995c8716d9c853284ec5bc674dbdcae031d7e7a3e0"
+    },
+    {
+      "path": "geometry-stress-disabled-restored-report.json",
+      "bytes": 5586,
+      "sha256": "c330dcb42f79929495c097a1c954a19eaea9e64a4fab06e5255d21b148094ead"
+    },
+    {
+      "path": "geometry-stress-disabled-restored-tree.json.gz",
+      "bytes": 37601,
+      "sha256": "63991debc5a1c7a7e7ac40daac9ccf51fcfd4a6a1a33af417e769607d30c217f"
+    },
+    {
+      "path": "geometry-stress-disabled-restored.png",
+      "bytes": 272300,
+      "sha256": "9310dd0f0632e17b52a0d5897018a596067403d56da47667de0b38b391d5dcb4"
+    },
+    {
+      "path": "geometry-stress-reference-1100-report.json",
+      "bytes": 5570,
+      "sha256": "38d0d5b04fba442a58788b217c8cb606e7c4bbd0e45eec3c3db9a921ae907fa8"
+    },
+    {
+      "path": "geometry-stress-reference-1100-tree.json.gz",
+      "bytes": 37303,
+      "sha256": "28c4fe62c056adef54ac844675e971023731ccea3f921af2682268980bf212a6"
+    },
+    {
+      "path": "geometry-stress-reference-1100.png",
+      "bytes": 185767,
+      "sha256": "941998b6dbebc496bcf8a2951f88d162429bf96e55a9ce6fc2aa6426f61c4f0a"
+    },
+    {
+      "path": "geometry-stress-reference-1420-report.json",
+      "bytes": 5580,
+      "sha256": "d3d8c4e72e1fc3beab2e197ff0166d3737077d886b2b08286b6706c40f53c08b"
+    },
+    {
+      "path": "geometry-stress-reference-1420-tree.json.gz",
+      "bytes": 37577,
+      "sha256": "ae1836e6c36b79ce4442bc251cb9571b65a736e4cd49456ac93f961bdf1a3ef3"
+    },
+    {
+      "path": "geometry-stress-reference-1420.png",
+      "bytes": 249233,
+      "sha256": "b9e97e979aa9c1e4ecc5c67b1ca09f87cd0d4726dccff819b85d47a20de32472"
+    },
+    {
+      "path": "geometry-stress-reference-980-report.json",
+      "bytes": 5564,
+      "sha256": "0eb913ba69426531fb00522420f7830ced529414b557ac09e40cfa83a08a8051"
+    },
+    {
+      "path": "geometry-stress-reference-980-tree.json.gz",
+      "bytes": 37321,
+      "sha256": "bc1ce734ef78bbec184dcff4ab92ffcdfd9cd916193040ed0fb233d6ae0d42b8"
+    },
+    {
+      "path": "geometry-stress-reference-980.png",
+      "bytes": 180228,
+      "sha256": "7d8e88de6b345b03c76514f4191e9ef66b80096ebe063b75d020f3de292ede8b"
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-1-report.json",
+      "bytes": 5804,
+      "sha256": "8d81b090c2774d4c88fd02d532607ca63759fa4fa74bfdf71fbac4c056cd1337"
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-1-tree.json.gz",
+      "bytes": 37321,
+      "sha256": "11fe24d954d25a71c7db2498d9c634e9068228a2b993066c39e94ba276d95900"
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-1.png",
+      "bytes": 174511,
+      "sha256": "699a593c72491da89de68042a9babeae44d3f2152ae8cd3a3a1ae8e352e9d0cd"
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-2-report.json",
+      "bytes": 5805,
+      "sha256": "5adbd96f81489ad92d4c544b658b1296b9489eb4a8bb847458890bd17b5545bb"
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-2-tree.json.gz",
+      "bytes": 37309,
+      "sha256": "fba51ca5b76b3a00954674ebdde6cd1a2b72d29fa193da1acd9e1899019d0bd1"
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-2.png",
+      "bytes": 172067,
+      "sha256": "4d08f992dafb96d82673287002c44879615a3cab2a3a8da498cc72df56704786"
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-1-report.json",
+      "bytes": 5814,
+      "sha256": "1f01c984abe0db92c508318b69ef5c125d5060bc4c9fc34423f03ee56a0a3ce1"
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-1-tree.json.gz",
+      "bytes": 37570,
+      "sha256": "22c41430530a725efebee1fd6145668415dfdd75852b3d72a8212f160fb493f1"
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-1.png",
+      "bytes": 236882,
+      "sha256": "ba7695e7330c105fa201f1cd62e5d6ea62e6b3981ca5ed688c7d185a812d0832"
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-2-report.json",
+      "bytes": 5814,
+      "sha256": "d7c842f21f8b9980746b17ebc0020ff37290257126943e77ca05463b2f6b6d9b"
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-2-tree.json.gz",
+      "bytes": 37553,
+      "sha256": "cc0fc4c1395ed66fee4eeea7736519fe8d9273822b271c8ec50acfe1df544f51"
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-2.png",
+      "bytes": 230735,
+      "sha256": "c2f67a93b12648403e6ef396d7d75240d4eb8bc066c25f69a07c389723c77b36"
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-1-report.json",
+      "bytes": 5798,
+      "sha256": "87122a80217b1d46e92a7313fcdfd01c747aad5a4858c02f4639786e8460f302"
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-1-tree.json.gz",
+      "bytes": 37328,
+      "sha256": "328e2219fe31e958f885d9327c07b953283576a2c559d9f47c2fc87add06154c"
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-1.png",
+      "bytes": 169802,
+      "sha256": "a3ed6e84c5f86a04c910f9105c8315fab62aa5419cf01b165daf08fdb7a2836f"
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-2-report.json",
+      "bytes": 5798,
+      "sha256": "ac8ccddba47f6a496864854fbcfb1db9681127e791fe5fe5348e9ece057533e9"
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-2-tree.json.gz",
+      "bytes": 37334,
+      "sha256": "b75e8393fbe610d3350a5000ec5ce707b0efdd21815c56a5be6ce0a91fcb8e22"
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-2.png",
+      "bytes": 171234,
+      "sha256": "8af2980b96f47fc36f184cf2e070c9249b9edcbdf72e00fc4bbd267ba07c0385"
+    },
+    {
+      "path": "geometry-stress-structure-visible-1100-report.json",
+      "bytes": 5586,
+      "sha256": "65c2832450146c7260861f16cae1532ac6feddfa817f6a0cc84ba494dcee2aa2"
+    },
+    {
+      "path": "geometry-stress-structure-visible-1100-tree.json.gz",
+      "bytes": 37316,
+      "sha256": "f8ca3f792bad81197136e26f2bd5ddceef4377710abf77248e264ec5a31eda61"
+    },
+    {
+      "path": "geometry-stress-structure-visible-1100.png",
+      "bytes": 172482,
+      "sha256": "d5f3b3d71c6355f3f8f35ea0e974ce130bb2e756a7bb2b46abebaa1ec4cc0976"
+    },
+    {
+      "path": "geometry-stress-structure-visible-1420-report.json",
+      "bytes": 5596,
+      "sha256": "148e49d3c76069041c27821f88237019c856431c1b238c65f9b1dccc4e9ae371"
+    },
+    {
+      "path": "geometry-stress-structure-visible-1420-tree.json.gz",
+      "bytes": 37551,
+      "sha256": "33688469136329da575d54a2f2e0a04aa487422db0504015aa74b0ef96c95ff1"
+    },
+    {
+      "path": "geometry-stress-structure-visible-1420.png",
+      "bytes": 231011,
+      "sha256": "d675b17befb6422ff69e55b83c9511bc1d7521f38f38697079b2d22f1c96cfb1"
+    },
+    {
+      "path": "geometry-stress-structure-visible-980-report.json",
+      "bytes": 5582,
+      "sha256": "8f726dc3991f12814b7d7c0c924238ef60888f1b0d8ed8767fb6b8d1d1dbbfcd"
+    },
+    {
+      "path": "geometry-stress-structure-visible-980-tree.json.gz",
+      "bytes": 37330,
+      "sha256": "53dca11d5438c61b5d477cca74a2e2dee6fbb03b2117306b27eba7de05e3b742"
+    },
+    {
+      "path": "geometry-stress-structure-visible-980.png",
+      "bytes": 171226,
+      "sha256": "7cf11711cff99d177f73bd8660fbeee59571f5f301ffa9c6d439979a2d45da3a"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-1-report.json",
+      "bytes": 5812,
+      "sha256": "c33466678475a46f99b0f3f939525067a8a8c4bfae364f2955069550a88018cc"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-1-tree.json.gz",
+      "bytes": 37319,
+      "sha256": "3f38f327f3f468e040b61e95f16cac43722080c3f059fada9650bfc25713eaf5"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-1.png",
+      "bytes": 182797,
+      "sha256": "9e48e65e4dff3b85441111388c2fd0b2d3cc2c0d7e3b29a54565e88ebc4bcf21"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-2-report.json",
+      "bytes": 5812,
+      "sha256": "414090cabf0514a7b390ea3da27ddd51b4c93b4d12419fcf28545690b5efb11a"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-2-tree.json.gz",
+      "bytes": 37296,
+      "sha256": "65423200ff5765a486ce834d24798acb7e435b0bd9fdd4aebb86d0316d5229fb"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-2.png",
+      "bytes": 185539,
+      "sha256": "d72782e3f950176bf10617591fb3999ebbb26823e24affd676411ceaf7a0463b"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-report.json",
+      "bytes": 5578,
+      "sha256": "411c7a6d793a752f0b99fbbffb3caf90ee6a8641a6ce3db2b25681c23df21eaf"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-tree.json.gz",
+      "bytes": 37285,
+      "sha256": "def80293060ec263f387234fddbd2f49df042f7d3fd92b45cd280a227452e0fa"
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1.png",
+      "bytes": 185739,
+      "sha256": "04599faa264e1cc50a361ff8c560af6f3981cdf4b0f8117722717255c25eb2e7"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-1-report.json",
+      "bytes": 5822,
+      "sha256": "d17b68543f5c323af2baab98baa8255e8caadb3277187e301ea6eaf3f6c3dcb4"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-1-tree.json.gz",
+      "bytes": 37554,
+      "sha256": "da50f392f447391d13b713bf595476496af777491743cbd1e551630488fe0940"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-1.png",
+      "bytes": 247350,
+      "sha256": "83ae41a6437f07770b52e323944f1698974244c5d7bcc57523c5c83056abe87e"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-2-report.json",
+      "bytes": 5822,
+      "sha256": "8d381fb2a39a2ab7e0e6ab2574e9f0187f4d45d4b91e8503c4e2687cd874406b"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-2-tree.json.gz",
+      "bytes": 37515,
+      "sha256": "f4010218a936389756b18c7b5e8ca809932c0ab1c8a92b4db072a39ef8ffab65"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-2.png",
+      "bytes": 248978,
+      "sha256": "ba1ec55f28c534a10e88769948724391326584c251242421a0fb41fcf33fa9be"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-report.json",
+      "bytes": 5588,
+      "sha256": "d52610889da5faf8e5f1f022819ff899f9928d0d019053284c7f935999726137"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-tree.json.gz",
+      "bytes": 37515,
+      "sha256": "573555c0206f58dc0ee80d5ca1e1d8665a64099bcef84e71024e7b00aecb0b3c"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1.png",
+      "bytes": 249056,
+      "sha256": "744e2d06fb629924440b806967a45458d384f433ad2298fef8a636ff0dbe0507"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-1-report.json",
+      "bytes": 5822,
+      "sha256": "608ed1a036f2b693664d83781a31777853b15a41f7dc213d8675f6d32e014b92"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-1-tree.json.gz",
+      "bytes": 37508,
+      "sha256": "5184691219cd1d45d26e322c3cd25e463d90c36666aa37e2373438ff2354e5c4"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-1.png",
+      "bytes": 248645,
+      "sha256": "eae17e360e7528a5323f6fb5cb33fa93fa6f08ce4040d3de07fdd2dae88c9aa9"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-2-report.json",
+      "bytes": 5822,
+      "sha256": "77119c14f571a9b1c0cbcf5c71931cfd6dbf34a347357d18392230192eb38a36"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-2-tree.json.gz",
+      "bytes": 37519,
+      "sha256": "1b10ebe80244fddab1cbb0ba2278b164669b663b52c93a082666b50a90f97045"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-2.png",
+      "bytes": 246886,
+      "sha256": "f61a4cfde667b7c4abe2a20f597e8d66d552919cf5c9a12a951cb5af72e9b34d"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-report.json",
+      "bytes": 5588,
+      "sha256": "dd38ef7236e3a9595ba0a8a81c01b73aae8c19332aa3380fec7d85e032dbce7e"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-tree.json.gz",
+      "bytes": 37516,
+      "sha256": "8714693ad6a830c9e9072f1d2151ac7172917012f6823918b2872654effa4c90"
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2.png",
+      "bytes": 246910,
+      "sha256": "24ce87de13d2873cfb12ae1499aba041ef602e0594f42af45b5f13249d332663"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-1-report.json",
+      "bytes": 5808,
+      "sha256": "3600cc5899784ef833d029c9fb3691ce9e7f30f3bdb724dae41bbd04ac74f519"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-1-tree.json.gz",
+      "bytes": 37330,
+      "sha256": "f23f131c2575d10ac57947e8348f213dc85a41bb11f1172c44cab6063c5d78d0"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-1.png",
+      "bytes": 179229,
+      "sha256": "ab0cfd7a9b51fd5ff158c8297e63cb98fe756cc51d6f7f9835372555c19c6b01"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-2-report.json",
+      "bytes": 5808,
+      "sha256": "8d2ebea4ca515c7c0cbc70199ef8ce9101f60bececf68940064765bf1ca39d9c"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-2-tree.json.gz",
+      "bytes": 37314,
+      "sha256": "d435a862e333cb97d7137c142b159700a78d3ebebee30a4dbc3f43b4f33226c1"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-2.png",
+      "bytes": 180077,
+      "sha256": "797dbef51639e8fc64f01720e08212ebbbe7179da054fc665d8e94165bdf08fe"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-report.json",
+      "bytes": 5574,
+      "sha256": "50cc829bda9e48c9b7d16a5508a065eb8daeada7ea0c0024ba336fa613ac88f0"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-tree.json.gz",
+      "bytes": 37320,
+      "sha256": "27d5dcca87ccc6e6143f29eaa83c748a060feb0bb7a60fdaa32ce4cb9b71031b"
+    },
+    {
+      "path": "geometry-stress-values-980-page-1.png",
+      "bytes": 180296,
+      "sha256": "2228ee5a3df60b3ba925453f2e8c2d561d4efa7cf87c8cc907c5c79e974366e1"
+    },
+    {
+      "path": "geometry-stress-warmup-report.json",
+      "bytes": 3052,
+      "sha256": "519c2999fe644b2e901b73e4ca610019e0914a6c8def5ad94b672fe0b8309c7f"
+    },
+    {
+      "path": "geometry-structure-1100-adjust-1-report.json",
+      "bytes": 5790,
+      "sha256": "cd84c99f71ac7d1badaa3c90f8264b93025032a5dea73daa5ffc766bcd7f6b8b"
+    },
+    {
+      "path": "geometry-structure-1100-adjust-1-tree.json.gz",
+      "bytes": 37380,
+      "sha256": "243c879c957732882a413e1f865239f427ec4b72baeee006f73f037abc413b51"
+    },
+    {
+      "path": "geometry-structure-1100-adjust-1.png",
+      "bytes": 162707,
+      "sha256": "580844c582451498affdda61a6d140c019ff28e691d25de184b9e851d079a617"
+    },
+    {
+      "path": "geometry-structure-1100-adjust-2-report.json",
+      "bytes": 5790,
+      "sha256": "dd05b03d4cc45f717f7c7400278e14644c078018b84355183172fba0babe8da7"
+    },
+    {
+      "path": "geometry-structure-1100-adjust-2-tree.json.gz",
+      "bytes": 37368,
+      "sha256": "d1ced1c34c64fce55251f339edbe1e5f1c3455d7b85303986b7cb84d61b1fdd2"
+    },
+    {
+      "path": "geometry-structure-1100-adjust-2.png",
+      "bytes": 163460,
+      "sha256": "3502fbcb48889a272fa014359c3d856ba6b5240656294ccd578de8bea5488dfe"
+    },
+    {
+      "path": "geometry-structure-1420-adjust-1-report.json",
+      "bytes": 5791,
+      "sha256": "c660862a5bc24d9914f0e023ac3d347a6b5f94148d689320948ad47db12bf741"
+    },
+    {
+      "path": "geometry-structure-1420-adjust-1-tree.json.gz",
+      "bytes": 37625,
+      "sha256": "0d165c4b60ccea32e07e3663facbdc263998d0174d87f95fb9790f94b0df6a29"
+    },
+    {
+      "path": "geometry-structure-1420-adjust-1.png",
+      "bytes": 256192,
+      "sha256": "8fb51cbc559ffa2db87d2600f787cfc1b4274d7abc2fec0da6a4afb1f201bc5b"
+    },
+    {
+      "path": "geometry-structure-1420-adjust-2-report.json",
+      "bytes": 5791,
+      "sha256": "220429d6c068bf29772532aae51c2c0f0a50696609369e79792732b60201dd6a"
+    },
+    {
+      "path": "geometry-structure-1420-adjust-2-tree.json.gz",
+      "bytes": 37601,
+      "sha256": "8b1be8e3aee3926f0fc22d9296892b033e6caa3904d85eedf7ceaed99c175298"
+    },
+    {
+      "path": "geometry-structure-1420-adjust-2.png",
+      "bytes": 256344,
+      "sha256": "c3d77d7db685ec5d4b4f407825fe7afdd95de1d03fca174e34008d9924847b56"
+    },
+    {
+      "path": "geometry-structure-980-adjust-1-report.json",
+      "bytes": 5781,
+      "sha256": "11d4e5efc5e5f9c623fc5566606693265a3c846597cb0c1c19016c8c39cc4a60"
+    },
+    {
+      "path": "geometry-structure-980-adjust-1-tree.json.gz",
+      "bytes": 37410,
+      "sha256": "1ecba0a8cb1294d9e21953a176ea8354b9d2deb4acf681b092f7762391b56f6f"
+    },
+    {
+      "path": "geometry-structure-980-adjust-1.png",
+      "bytes": 161630,
+      "sha256": "b2cbc9fbaf994117b44136dc92a847e310c1790000b191e2c3f7f7ac60bd1494"
+    },
+    {
+      "path": "geometry-structure-980-adjust-2-report.json",
+      "bytes": 5781,
+      "sha256": "4cb2651b0de5335570747a5d0eb89e8b240b399b3b38cad02c781bd49d13bfd7"
+    },
+    {
+      "path": "geometry-structure-980-adjust-2-tree.json.gz",
+      "bytes": 37399,
+      "sha256": "2cdbde01ff1eea61e22111b19f69621be8c95ae8090db1a0360b11492fa3ebd1"
+    },
+    {
+      "path": "geometry-structure-980-adjust-2.png",
+      "bytes": 161983,
+      "sha256": "3f444e52fd1634cda985793d1735631d5087a0cbbd377ee5b1c7f377f18d4aec"
+    },
+    {
+      "path": "geometry-structure-visible-1100-report.json",
+      "bytes": 5572,
+      "sha256": "c44ad1430d4e8b11f80250a2301ab5b166bc237e1ed4dd3ba6f348848f0ed238"
+    },
+    {
+      "path": "geometry-structure-visible-1100-tree.json.gz",
+      "bytes": 37376,
+      "sha256": "754e669f3b832d717d0b16a8db58e8cbf1316022914b0217ad338c0dcdf47a78"
+    },
+    {
+      "path": "geometry-structure-visible-1100.png",
+      "bytes": 163613,
+      "sha256": "d995f3c0019b073ae4816a7217945f40274966f3821791aea3ea8176d687596f"
+    },
+    {
+      "path": "geometry-structure-visible-1420-report.json",
+      "bytes": 5573,
+      "sha256": "b4b6dc5923f0d36542dcb873bd3b70d4488634b138bcdcee93aa6be27ea86334"
+    },
+    {
+      "path": "geometry-structure-visible-1420-tree.json.gz",
+      "bytes": 37599,
+      "sha256": "a4319c66322e3e72866f78c8195044eb5f8b90758fcb8dbd9013f3848101db64"
+    },
+    {
+      "path": "geometry-structure-visible-1420.png",
+      "bytes": 256373,
+      "sha256": "31becd3d497c50cb9e04f044a00d4e11b8ca6b278f8b66697fc19a9359c71d9e"
+    },
+    {
+      "path": "geometry-structure-visible-980-report.json",
+      "bytes": 5563,
+      "sha256": "dd338f4b262fd70cc0a91ad2f16367ca566ba20872a87c0cd60dbf99ebd1d777"
+    },
+    {
+      "path": "geometry-structure-visible-980-tree.json.gz",
+      "bytes": 37390,
+      "sha256": "10a27240649bb5572e282b994c2de8cec0d6d6d4458f15f640bcd368be4d66ac"
+    },
+    {
+      "path": "geometry-structure-visible-980.png",
+      "bytes": 162171,
+      "sha256": "e3909f2304b99645c5f60161aaaec05f5835f4bb3bce42c4f7e1e75e7c8f8219"
+    },
+    {
+      "path": "geometry-values-1100-adjust-1-report.json",
+      "bytes": 5784,
+      "sha256": "ad9f51c701c860a1aae960dc78a60ce656cd047f7aebf1aec60592762ab439ba"
+    },
+    {
+      "path": "geometry-values-1100-adjust-1-tree.json.gz",
+      "bytes": 37365,
+      "sha256": "b6db46072ceb165299f6ecbd405de56b4b06dfd40ed42777d92e523905261689"
+    },
+    {
+      "path": "geometry-values-1100-adjust-1.png",
+      "bytes": 166712,
+      "sha256": "69d14b3f56c25b1144851b661ff6ad1b3269c1bf0b9d4a2bde495e228b1afbd2"
+    },
+    {
+      "path": "geometry-values-1100-adjust-2-report.json",
+      "bytes": 5784,
+      "sha256": "b7de478a89a37efe8bfaad2dc6919dcdb5b6450eb8c14c36dd5dd12c077e7acb"
+    },
+    {
+      "path": "geometry-values-1100-adjust-2-tree.json.gz",
+      "bytes": 37392,
+      "sha256": "3041ced135fcb9550e332b3d863676bf4be250c24a5d91544867cce7e88f0cc1"
+    },
+    {
+      "path": "geometry-values-1100-adjust-2.png",
+      "bytes": 170270,
+      "sha256": "22b8107121d6da73959a3d94295890b91a8e90cc502e928272dbd53b5c2152f8"
+    },
+    {
+      "path": "geometry-values-1420-adjust-1-report.json",
+      "bytes": 5794,
+      "sha256": "8116d2882b524a0ab63c5797ac01fd016c1371ed8376f970c3c82937bc7fd5bf"
+    },
+    {
+      "path": "geometry-values-1420-adjust-1-tree.json.gz",
+      "bytes": 37599,
+      "sha256": "607d8b41882a4c35bd8c6e543963ff52a7808f8946b5341e1cbdeb92333dfe35"
+    },
+    {
+      "path": "geometry-values-1420-adjust-1.png",
+      "bytes": 258296,
+      "sha256": "4ea3d3ba5c6db44e3938acff914e8e36fc23bbd8681fd965c3b7cb74e461262d"
+    },
+    {
+      "path": "geometry-values-1420-adjust-2-report.json",
+      "bytes": 5794,
+      "sha256": "a5aa2facca00743bcb4ffba6e30ac6e78b1a8ff1f336d9a25f3320a0ab6697ea"
+    },
+    {
+      "path": "geometry-values-1420-adjust-2-tree.json.gz",
+      "bytes": 37643,
+      "sha256": "a0095a96b972161810a56e05f54fcc52fb911bd430c038a744a1d8792fb2a70a"
+    },
+    {
+      "path": "geometry-values-1420-adjust-2.png",
+      "bytes": 262567,
+      "sha256": "2da0b2474cc4bd7dbad7acf867526752fdfc7c4cc7ad562cb4ce66a2d8b2313f"
+    },
+    {
+      "path": "geometry-values-980-adjust-1-report.json",
+      "bytes": 5775,
+      "sha256": "80ba437dc3ee510bb5cebda4c6e2b8e558ad62e0aef13c3de88132fae2b42dee"
+    },
+    {
+      "path": "geometry-values-980-adjust-1-tree.json.gz",
+      "bytes": 37405,
+      "sha256": "9d18b608d245c732cc561132f4233acfd1721b4ca7a0509de5a9fed326222f00"
+    },
+    {
+      "path": "geometry-values-980-adjust-1.png",
+      "bytes": 165248,
+      "sha256": "9d268b9f6b18044ad7867e09a7ca122f0a975809f2685d7063d1b3ba024dfbff"
+    },
+    {
+      "path": "geometry-values-980-adjust-2-report.json",
+      "bytes": 5775,
+      "sha256": "cee7729ef853fedefa325d00fa85d1e4ae1f4845bb5ecad23389ebab1c0753b2"
+    },
+    {
+      "path": "geometry-values-980-adjust-2-tree.json.gz",
+      "bytes": 37397,
+      "sha256": "33605b3729ee10ed5c76fc07eda6d13e60028890b9e4b1df9267c1524e2d2783"
+    },
+    {
+      "path": "geometry-values-980-adjust-2.png",
+      "bytes": 169153,
+      "sha256": "501cd8eb69d31461252f1bc8e649c28c4e3501a284c599517ffc4092d4ed0785"
+    },
+    {
+      "path": "geometry-values-visible-1100-report.json",
+      "bytes": 5566,
+      "sha256": "bfd9cde228b5a5161e761e36cd554c0e2497352848f4316484d802cb2b1b0343"
+    },
+    {
+      "path": "geometry-values-visible-1100-tree.json.gz",
+      "bytes": 37386,
+      "sha256": "77be67468d2b270ba9df9b07371aacc72e0ae7a5f3aab68bb435327f8a928bc4"
+    },
+    {
+      "path": "geometry-values-visible-1100.png",
+      "bytes": 170166,
+      "sha256": "7bb41eacca8d39405f8be5f361e4dec2a9054fbde65d237d2e26af4ebbb85cfa"
+    },
+    {
+      "path": "geometry-values-visible-1420-report.json",
+      "bytes": 5576,
+      "sha256": "effe0ba675f1fea736f6900c6c6d2cf6da0d1d4282ae37dd2c2da7ee1c792b80"
+    },
+    {
+      "path": "geometry-values-visible-1420-tree.json.gz",
+      "bytes": 37640,
+      "sha256": "5e8954b62918804c2359191a4628e8fde140acfcc4b2039f06ef59f80abefdd9"
+    },
+    {
+      "path": "geometry-values-visible-1420.png",
+      "bytes": 262609,
+      "sha256": "b2b9670e6daa3b664c8d31d394f4b40037a851f47bb11d260f9d95f209621104"
+    },
+    {
+      "path": "geometry-values-visible-980-report.json",
+      "bytes": 5557,
+      "sha256": "70a863a01f27e38c919b2ad2728afb4570c531fb925219c6d9ab083a1b773ccd"
+    },
+    {
+      "path": "geometry-values-visible-980-tree.json.gz",
+      "bytes": 37404,
+      "sha256": "aefd550b03b7ad0e588962d7a75b5e62ee94bddf9776503ccef46352498d4a89"
+    },
+    {
+      "path": "geometry-values-visible-980.png",
+      "bytes": 169059,
+      "sha256": "5170eb6c2bf58f3798466c1671c19111190d2739e20183316c7b947c27cbb72c"
+    },
+    {
+      "path": "geometry-window-1100-report.json",
+      "bytes": 5551,
+      "sha256": "9fda6cd2da8498d039d581f81de78736e7e7db4d2d9e5d3cfae1bfe479f3f9ac"
+    },
+    {
+      "path": "geometry-window-1100-tree.json.gz",
+      "bytes": 37378,
+      "sha256": "268788fa39c586aab5370022a40fbd950b771937c92f48cf9b37994d9d7ae918"
+    },
+    {
+      "path": "geometry-window-1100.png",
+      "bytes": 170286,
+      "sha256": "79f31a444dc4785e3721f5ad326ed7cad8ce22e11904d297f15665840b60c54e"
+    },
+    {
+      "path": "geometry-window-1420-report.json",
+      "bytes": 5551,
+      "sha256": "9b220d59ebcc8ec295840ecada582884fab7d7fece8cb27a46169b358887d02e"
+    },
+    {
+      "path": "geometry-window-1420-tree.json.gz",
+      "bytes": 37626,
+      "sha256": "39da9097c1d799721ae1b2fbf54b4868e7be6d96d84c226e371c612e8871a136"
+    },
+    {
+      "path": "geometry-window-1420.png",
+      "bytes": 262605,
+      "sha256": "79db77b26bb81b7d0acc40d5aa2b265a94d6ad46cdb66f47b073dbfcc025f957"
+    },
+    {
+      "path": "geometry-window-980-report.json",
+      "bytes": 5532,
+      "sha256": "7a22a091f7ad410a067ed28c4c214925f12bd5a22e72ed78b91c8ce481c7a227"
+    },
+    {
+      "path": "geometry-window-980-tree.json.gz",
+      "bytes": 37405,
+      "sha256": "11d28ced3a96a286ff6e69a7a6bf7999f7c88c3d354a9cad916eb456914c5e1e"
+    },
+    {
+      "path": "geometry-window-980.png",
+      "bytes": 178460,
+      "sha256": "4843086521c1c93bd204dcebb5c39abc3320a1f54bf86a17da97f5b1f5a6d132"
+    },
+    {
+      "path": "manifests/cap_04c297214b406ec8ee5fab23d8af5b6a.json",
+      "bytes": 12853,
+      "sha256": "07c23225a3cb302ed8aa595f13b78446846acabe8e0e82df0ecb7e0a928872c5"
+    },
+    {
+      "path": "manifests/cap_0989488b3427cf43dae16325dc3d4db4.json",
+      "bytes": 12861,
+      "sha256": "d9e46bd6b42a179f04d32abb74f6ddf5ebde2e224e465499776b2fc96e48a9a7"
+    },
+    {
+      "path": "manifests/cap_0e16c312d8d22eb324a7dbbedfbc3a8e.json",
+      "bytes": 12871,
+      "sha256": "f35c94186000eaade0ddf51b348e26c0217b068473971047ed1fe25acc702266"
+    },
+    {
+      "path": "manifests/cap_1bc6bf41a138e63dedf76a82991e0165.json",
+      "bytes": 12865,
+      "sha256": "34aca92b7dac5d09418469e7651b1dcbc9f694b25df096d4de43da4d6b6c8318"
+    },
+    {
+      "path": "manifests/cap_20407d7cb67f96ab722f6b7f6d57ac58.json",
+      "bytes": 12867,
+      "sha256": "136e129bd3b1c3060c3d3a2199c1fac93f732afd48840d75e3c247019d820582"
+    },
+    {
+      "path": "manifests/cap_20ba64058d54dea4e448857265ed1462.json",
+      "bytes": 12871,
+      "sha256": "a21de30ecedb46baa859dc97b4234c538cea031725247eb8e635f820aca60cfc"
+    },
+    {
+      "path": "manifests/cap_2f172c6930f5457052f364d9725c2fba.json",
+      "bytes": 12871,
+      "sha256": "67f84c5165bb3dabb18cb2668ccb1939be2a2133f0721c097457214f352b902e"
+    },
+    {
+      "path": "manifests/cap_2fbbf2d90bebeda83aed047deb007dbc.json",
+      "bytes": 12867,
+      "sha256": "6fafb6f5b5e2b247e6882267a8f979b2952056d81a4f7f1dd3d5325ed2bedc73"
+    },
+    {
+      "path": "manifests/cap_33913f2a1503b4bb07320120d52674e5.json",
+      "bytes": 10879,
+      "sha256": "7b62808c815c55a5a76bece6b1100816251db63f8c507e8632f1542ca9db65a7"
+    },
+    {
+      "path": "manifests/cap_3e19a545864c4154eaa51f0eb5fd4e7c.json",
+      "bytes": 12865,
+      "sha256": "1baa657a78d329e89384a4c71ec7bb8def2e0a63cda657eb26e9df1134a0753c"
+    },
+    {
+      "path": "manifests/cap_41c9a3394e41af9796ebb8a9ea326da4.json",
+      "bytes": 12867,
+      "sha256": "9acee3cc66c520a0e829abd0add139571b663b84efcbe2ec35d5d6435d68741a"
+    },
+    {
+      "path": "manifests/cap_42b59b834bb24414289c219dce1dae3d.json",
+      "bytes": 12861,
+      "sha256": "781303d100e3c9a4d10c0a987fee2381352b6c9307b6e1283e26d2c4b3d06a97"
+    },
+    {
+      "path": "manifests/cap_47740fe03713e282db7f898e516945d6.json",
+      "bytes": 10730,
+      "sha256": "3a70f621555df80ba50c051536b5d29e49ee6e654a1fb4858f52534e8c42566f"
+    },
+    {
+      "path": "manifests/cap_4981e58f59f02c9646e5c0501adc48cb.json",
+      "bytes": 12867,
+      "sha256": "92605c33aef705df809c538a824ea1abdd28ba3460ab589fce0400f806a5ac0a"
+    },
+    {
+      "path": "manifests/cap_4afc84634464e4681ea2d8c808c8ae23.json",
+      "bytes": 12865,
+      "sha256": "3ccbdf5ef7cbfed10f98f373fffeb1bef34c5b1e4104cfb3732de1afffa4ba75"
+    },
+    {
+      "path": "manifests/cap_4b5b056a266bf71114973c3d420e7ea0.json",
+      "bytes": 12871,
+      "sha256": "128f37af2d9c7fb20563d4386fb5f50f2db363981468bef9423596d25a5e32bc"
+    },
+    {
+      "path": "manifests/cap_4d095a9020c81366d8aab71dd66a26f5.json",
+      "bytes": 12867,
+      "sha256": "2da056a5814a24ea85c74e9c08476094089b7f26e6604839278f8d06851615aa"
+    },
+    {
+      "path": "manifests/cap_5748e5f1ab9b2d87999bca81fe52a510.json",
+      "bytes": 12871,
+      "sha256": "7fda03f9b884d9ec2293f4597033fae8124365f3d96c01078946b0a7afcee5f4"
+    },
+    {
+      "path": "manifests/cap_587617ce6751303ad1b9427a51f71300.json",
+      "bytes": 12871,
+      "sha256": "69e8243eaf350a53ac3fd6072a121b8b70bc670889629a53201570e2d1497be5"
+    },
+    {
+      "path": "manifests/cap_5983a330989cc80527e4bad69a761adc.json",
+      "bytes": 10730,
+      "sha256": "9584e14928fb2dd7c3619560795608982c8e7af72c19080b2649392cf6f89e69"
+    },
+    {
+      "path": "manifests/cap_5cfdf4d7d1b549a568748851903f19d8.json",
+      "bytes": 12867,
+      "sha256": "8bdc2983ad8f4aeac638fe21771b67d8a6d08eced10d7cc780eabe38edee1068"
+    },
+    {
+      "path": "manifests/cap_66dde2a9640dfcd8da1155f82bb3b8ae.json",
+      "bytes": 10726,
+      "sha256": "33fe528a76167c87ea640842fe8ed049bdf6bf87681c4729ea0e95d235d7f6be"
+    },
+    {
+      "path": "manifests/cap_68bebcf68a2e0939586b447dd834f890.json",
+      "bytes": 12871,
+      "sha256": "6a1a958fa9a4b90fb7f9191483d6b358e7c8e402af2616850bd327e941a848f3"
+    },
+    {
+      "path": "manifests/cap_6abb5a68035fcba834da99e61f650b56.json",
+      "bytes": 12867,
+      "sha256": "5e08036387aed210cdf383de4e4b69118e7ab8105fd6436dd37fc89f49625867"
+    },
+    {
+      "path": "manifests/cap_7482c8e30f20e183ecc8e29ccfbe6cf4.json",
+      "bytes": 12867,
+      "sha256": "6d0afc5d6fc90af19a1b677d9e2930f169006cfe7996eeb92fc133391a40c37c"
+    },
+    {
+      "path": "manifests/cap_74f517856f82f1a82ed3a702240ccd6a.json",
+      "bytes": 12861,
+      "sha256": "7c52c4f1610d7fcfcbe6b6dc129031325a88223ae394b486e98a12ee6ff7c32f"
+    },
+    {
+      "path": "manifests/cap_7efdfd469845be4883bd926cb3d3c69f.json",
+      "bytes": 12857,
+      "sha256": "55e9662a27b9e15d399f9c77f0b95fb5ea94688d5fc89995bc82fec4fc5ee23e"
+    },
+    {
+      "path": "manifests/cap_89cc177313cf5e4671a5748d453f4624.json",
+      "bytes": 12871,
+      "sha256": "e387ed57a1b0694c18379e1bc6603a0c3f8e0aae9a22de0d68431df09806d67b"
+    },
+    {
+      "path": "manifests/cap_8c974708aa21cc3b09c66ed78b575212.json",
+      "bytes": 10730,
+      "sha256": "bfb8ec5e9a6a0a46bf90b07ee893dc6ec6176658d0622d63a5609fedea905a17"
+    },
+    {
+      "path": "manifests/cap_9014a7cfbb6c0d394f1bffbb957b2bc4.json",
+      "bytes": 12865,
+      "sha256": "52ca1e2aaa0a121e5ee1b1d6750e2ef2c77f7919147f52d3d71a4dc7557137de"
+    },
+    {
+      "path": "manifests/cap_90bc49293bb13643b76dfa32992d5239.json",
+      "bytes": 12871,
+      "sha256": "93e28236416e314a21c3e0e403471f6be8274376ba0f643e22e02df67d2b4243"
+    },
+    {
+      "path": "manifests/cap_91cbc6576a0221f71a598a44c20a2870.json",
+      "bytes": 12857,
+      "sha256": "e76e210b5cb0b56fff95efe4549c2c69fbcb2fed1c150a326794e6e5fcf9bf36"
+    },
+    {
+      "path": "manifests/cap_91e307b0408b42f173ad1070311e5801.json",
+      "bytes": 12865,
+      "sha256": "4e688ac95feff1bf22b9c08d0147a002b6a5703d6165682596c76537caf922e2"
+    },
+    {
+      "path": "manifests/cap_92fc54ca5952797dd49d1b793d54f2dd.json",
+      "bytes": 10728,
+      "sha256": "a3ab548590e7e064686cd59a37bde7176d01080f906282ce82b493762c5a3878"
+    },
+    {
+      "path": "manifests/cap_965abb67ee82d1f97839577b58da9485.json",
+      "bytes": 12857,
+      "sha256": "179e1bb571e53b58e71819ed61a9d858a816009b1db44de5fbec5ddbb8014aa8"
+    },
+    {
+      "path": "manifests/cap_9d5e598c80c54c78941cd3da71d36c8e.json",
+      "bytes": 12871,
+      "sha256": "0c00388cd79d9d40fa30edc5fb6479eb7c7b5f924ac761d99f309ad046c8e4c5"
+    },
+    {
+      "path": "manifests/cap_9fef7ae9dd16b309ca4eecc8ef8d194e.json",
+      "bytes": 10730,
+      "sha256": "b324c8bb266e39b4a46d43dc2d4126db5c606f0523541366bcfa3d9bd3719d5d"
+    },
+    {
+      "path": "manifests/cap_a09928713fa34685e19987346f0b5471.json",
+      "bytes": 12861,
+      "sha256": "fd1f9cda57888251f6f642ef5656f48ab0e0fab4f277e33522d7c26731978027"
+    },
+    {
+      "path": "manifests/cap_a16b915d10714ac77566ff6ce0f526af.json",
+      "bytes": 12867,
+      "sha256": "8e50d675583242845a0b87f562e5657e7984ce8ccee44fb34c1f5b350679e351"
+    },
+    {
+      "path": "manifests/cap_a1f93968f0b898cdb3b42e56cdb7c928.json",
+      "bytes": 12867,
+      "sha256": "6e7421901c9838f2e8f5d3c5747b1f5bb26e03546eaae508fb3dcbbb6ab354d2"
+    },
+    {
+      "path": "manifests/cap_a5f04677fb467f958916687dd5b1a0cb.json",
+      "bytes": 12861,
+      "sha256": "04e4df452fc785f45231a43e1cf79940d19c4227e5bb66fd846fac56f62306b7"
+    },
+    {
+      "path": "manifests/cap_a9acc6c800c902e5091d4ae30f9b75ca.json",
+      "bytes": 10730,
+      "sha256": "50bf7d0864e9e3d0176c0042d2708370614ef0f5009f43cc77f8735b39a76c2f"
+    },
+    {
+      "path": "manifests/cap_b0d510a53f6ab9277cbb8b73a27cf89e.json",
+      "bytes": 12867,
+      "sha256": "d7198cf8b337ee812b24bed155e28e5d87d99552dc67277e82ae9df47c45bb81"
+    },
+    {
+      "path": "manifests/cap_b188c5ac5c3cc7465cc706d5e13fba42.json",
+      "bytes": 10730,
+      "sha256": "f3222ea0f5330926f66840f6da5eca55ae8648ac2f7106877bb4e87628c08c87"
+    },
+    {
+      "path": "manifests/cap_b987f573f900bfbbe8f7e063b3c56b23.json",
+      "bytes": 10732,
+      "sha256": "73c837664e3da965849dceefe901bd757007c63a625b2e38c01b26ecfd4718d2"
+    },
+    {
+      "path": "manifests/cap_ba6377d34c647ae2dfd119870ab66374.json",
+      "bytes": 12867,
+      "sha256": "3317405e6909700f9586d6d9cbb7e16f788204df4cdddc52d345900810d53308"
+    },
+    {
+      "path": "manifests/cap_bc5ad3421ad3b627a1c5c1cbee234a68.json",
+      "bytes": 12871,
+      "sha256": "a51a83342d0064d8589f26320ffc91b13a6f491b0f974eafc02f7e17c8c0f068"
+    },
+    {
+      "path": "manifests/cap_bcf8dae805943c1ae8355265005c67d8.json",
+      "bytes": 12861,
+      "sha256": "520bcb30d6eeb04cd812136e9be6e028cd40e2de9b6adc9eba5f8e7ffca7ee20"
+    },
+    {
+      "path": "manifests/cap_c6560c05c91ef4335410b508316bae07.json",
+      "bytes": 12867,
+      "sha256": "cde8e45787cea1b14fa2a2c56a7944f30560a98387d47920c978c236cfb0f6a2"
+    },
+    {
+      "path": "manifests/cap_d019a5d89586adad3cc24195387ccd64.json",
+      "bytes": 12865,
+      "sha256": "71acfd16466fc3b2c04e2e972b1be2b68239f2a93effe8185206a24b5b716f12"
+    },
+    {
+      "path": "manifests/cap_d4b7f3d2dec947b4688da2ff3140baa2.json",
+      "bytes": 12867,
+      "sha256": "6eaa950f3687c2ef989707bce5b2329f2651aedb55ddbbd6c0df60cf0b0163f5"
+    },
+    {
+      "path": "manifests/cap_d81a76f4a001e82dcbe8ad1ad5e4a4e4.json",
+      "bytes": 12865,
+      "sha256": "9ad35b78d4f53010704a18b81f99c644355afc5a863d3c494a702a2a38eff99a"
+    },
+    {
+      "path": "manifests/cap_dcb6e8cdd3c95b177a78a2ee20583637.json",
+      "bytes": 12867,
+      "sha256": "5516687b5da9ff865eaa90033538085fabd114a55c440d6753b05e501c8c7e5d"
+    },
+    {
+      "path": "manifests/cap_e07ab1d1de62215c187f1d6a87f9aa51.json",
+      "bytes": 12867,
+      "sha256": "fa736a282a8c57cac7433a602c67800eed19eaa9765c6fc8954ffe8bfa8324ec"
+    },
+    {
+      "path": "manifests/cap_e2521d3748df020beb0d67e1915040d7.json",
+      "bytes": 10732,
+      "sha256": "ea37a03d0f5b3d9e495baf884ac0f7154dfdd7ba484ddfdcf0915f55288cb778"
+    },
+    {
+      "path": "manifests/cap_e260691f0f00fae18fc591feb3776c90.json",
+      "bytes": 12867,
+      "sha256": "8742c9ba03b6edec69ec7b0d3c1490adff18b86dbc7652eda977b33b02b427ab"
+    },
+    {
+      "path": "manifests/cap_e45f7f805560b57e04d608ccb2b2c6f0.json",
+      "bytes": 10728,
+      "sha256": "030863379ea11e8035953de6a1aad6fe9731b8aa2cc17d24ba5a2dcb6efb0c3a"
+    },
+    {
+      "path": "manifests/cap_ec3faf35d9a580969ec5c41a1dd7cec0.json",
+      "bytes": 12871,
+      "sha256": "809563078cd7aff8bc5ecc6cdde19f5b98704d6bf1dc27688493915b25ed462b"
+    },
+    {
+      "path": "manifests/cap_ed98ebdbd0ad5063e2c628203b4ff89f.json",
+      "bytes": 12867,
+      "sha256": "98697696182ee9fd1d70e385ff85a3f05931998716e4051e40c8b2d1b1330e7e"
+    },
+    {
+      "path": "manifests/cap_efb0f94fb7586e3da2691d0b19fb7328.json",
+      "bytes": 12871,
+      "sha256": "026c6da894500dc293122b071183039363e66db9b7b14b20afff5d7ca3987736"
+    },
+    {
+      "path": "manifests/cap_f5c171ab6584695d48d019f20249337c.json",
+      "bytes": 12871,
+      "sha256": "1a07e3f5d5e9af2e67f7a086e0de53e7c8e26f67bced34e350918dfe1b00ba72"
+    },
+    {
+      "path": "mcp-calls.jsonl",
+      "bytes": 509064,
+      "sha256": "3a7d30319084b7abff7919ccfd513f90d5812674b333985eb0e242f135c09802"
+    },
+    {
+      "path": "mcp-discovery.json",
+      "bytes": 1561,
+      "sha256": "1a6f3036c3ed31d1b58c8e7eea64cf3828cabd748419cec173712b819332f170"
+    }
+  ],
+  "image_exports": [
+    {
+      "path": "geometry-normal-reference.png",
+      "source_png_sha256": "6c14f8cfe9f25e8d3daa3f996774fba191a87f89c02dc583c1bb678b00992714",
+      "source_bytes": 2411868,
+      "exported_bytes": 178381,
+      "decoded_pixels_sha256": "9ea1c6319ef69507d81e9ff8777015776ff1a2aa01ad93a7cbeadb8fccc12ebc",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-overview-980-adjust-1.png",
+      "source_png_sha256": "4f2399914f095cee969d6779f3a04de2a87a2e89494e45f1ee0e35b13be1878a",
+      "source_bytes": 2411868,
+      "exported_bytes": 174168,
+      "decoded_pixels_sha256": "52c361a671409d76d6f8c3d2a147e882b1b5b261bb08ffd0f54612101f9aa123",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-overview-980-adjust-2.png",
+      "source_png_sha256": "f8e584fa234b662d5700929acb619b585e682b70d7d223a8abcf7912ccc9566b",
+      "source_bytes": 2411868,
+      "exported_bytes": 174005,
+      "decoded_pixels_sha256": "e176e302945a240c3d42c9da3e4bb6cff7af475ae7f0c77e4a73b43a4559e4b1",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-disabled-restored.png",
+      "source_png_sha256": "d3330aaf1a0d9586c50bf538cbcb2ca7c102259a1385386e4477992327b7b0dc",
+      "source_bytes": 3494353,
+      "exported_bytes": 272300,
+      "decoded_pixels_sha256": "eb6ed48bdef63257104f227eb3ee0e20d24e85c66afa9f836361cc769e7b7976",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-reference-1100.png",
+      "source_png_sha256": "325364a014e4b5dfe4dcddac676b0fc19b589561916c5551109b70f8cc0d69cd",
+      "source_bytes": 2707093,
+      "exported_bytes": 185767,
+      "decoded_pixels_sha256": "933347f728da0f85b66a86bce3bef43c4b27b65291476838546238d1499773e6",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-reference-1420.png",
+      "source_png_sha256": "98940aeba4f3118c7e11c39fd63b233dab3094af33b6bedf5c47b0167c648055",
+      "source_bytes": 3494353,
+      "exported_bytes": 249233,
+      "decoded_pixels_sha256": "32d2391f860ca68e7f09eca0c59b13455b31ca30764b28c90a523fb9939c7c43",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-reference-980.png",
+      "source_png_sha256": "bdd09e4c3e48e99c1e9e993d5a133d6499074f8449a94a85cf562aabba8582bd",
+      "source_bytes": 2411868,
+      "exported_bytes": 180228,
+      "decoded_pixels_sha256": "ff17c504124237ae0fca62ecb30c77c93f4e90e9170b79a63a5e0a6dd0c58e44",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-1.png",
+      "source_png_sha256": "83d2d7874d761bd847ee6c32d724b609e8830a5e4491f032538eb9b8751f15d9",
+      "source_bytes": 2707093,
+      "exported_bytes": 174511,
+      "decoded_pixels_sha256": "b4122374ebebd3f4f9cd5d73b2ae0a429e582cdc95507824bd46d484ac1cdfa9",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-1100-adjust-2.png",
+      "source_png_sha256": "d06c87e999c0291b0f81e62850965da6b07000cd9620a907ddac41aa59795b2e",
+      "source_bytes": 2707093,
+      "exported_bytes": 172067,
+      "decoded_pixels_sha256": "77adf1907834c545a6b5df4ba8901ac3af03fb920d5a584f4a68e29c48f31707",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-1.png",
+      "source_png_sha256": "462680c110124f8b232360364b5b969cfebef24cfbfaa7d4a8d207f6b3bca305",
+      "source_bytes": 3494353,
+      "exported_bytes": 236882,
+      "decoded_pixels_sha256": "1998a9fc10f5d489234f806bc0d0c364fc793c9314283b5b0b32ab858e21aa2e",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-1420-adjust-2.png",
+      "source_png_sha256": "3a718c85e88c3476108f970b5db213df0be515759cc2ed471a911e478a4468c6",
+      "source_bytes": 3494353,
+      "exported_bytes": 230735,
+      "decoded_pixels_sha256": "287bd87039210ad8256eb8c0514a68fdf1d28f64d07823974a4b5cd3fe68d67f",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-1.png",
+      "source_png_sha256": "06d793697a5c206118b9a18d7bf4237ce879d5aa4b9cc06d2ef452305a13d66e",
+      "source_bytes": 2411868,
+      "exported_bytes": 169802,
+      "decoded_pixels_sha256": "c31915a5615fb1368c0a5e51937e3884d01f95ea32f988b5246c97cdcf897621",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-980-adjust-2.png",
+      "source_png_sha256": "c24a99c773333f1ce3bd7b51965e322529df457aad5feb9fa9dd7c14d2b5db6c",
+      "source_bytes": 2411868,
+      "exported_bytes": 171234,
+      "decoded_pixels_sha256": "9d0723dd95d658954fe4243ea4e727695071180ded30cecb549779158f5eea2d",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-visible-1100.png",
+      "source_png_sha256": "bf8e2bfd23a97cb80bccd81cae077cafc8281a9a4e351ce9cd247a54b2f7ba0f",
+      "source_bytes": 2707093,
+      "exported_bytes": 172482,
+      "decoded_pixels_sha256": "335cda7d7d009458367287d7deca4985cff678302d5e1bfb96eb8bcfdedbaa97",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-visible-1420.png",
+      "source_png_sha256": "5d0716c12bc51f0828a9d52d9d55b93abb98e14f5e152dfe04348152409a930e",
+      "source_bytes": 3494353,
+      "exported_bytes": 231011,
+      "decoded_pixels_sha256": "9816264f0623b5ed7d89d8c6dc146466fef19206e158ecda8a09be8e31fd71ba",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-structure-visible-980.png",
+      "source_png_sha256": "4378819747140c27c1c2a7d97ca9c194724fd2fd8d155536fc50151a1b66ee14",
+      "source_bytes": 2411868,
+      "exported_bytes": 171226,
+      "decoded_pixels_sha256": "6b1b8a81ddfb72c58d7766e00d946c8dadb3399e8b6a4e6a5e733fe52cab35b5",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-1.png",
+      "source_png_sha256": "38d7df6ac9b87e9ded3cf12069bc22ed3e3c6bc9d96f7ed56b3a87574421525f",
+      "source_bytes": 2707093,
+      "exported_bytes": 182797,
+      "decoded_pixels_sha256": "3208d1e9951bdf8cefe61e6dab571bc82a9d7101769d67b26632017f7c0e326b",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1-adjust-2.png",
+      "source_png_sha256": "dfae7f927ca245ddc03f43cf0dfff8742ac6f499d76aad7bdd0c887cada36bed",
+      "source_bytes": 2707093,
+      "exported_bytes": 185539,
+      "decoded_pixels_sha256": "95593db96f14838ac21dd9f55cdd3c9e650ef86d81968b89cf6923df016cfa75",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1100-page-1.png",
+      "source_png_sha256": "bdcf72dc5f1cb7e70c77f7c887b642f5beeb692ff352b4b20f068d750f33d108",
+      "source_bytes": 2707093,
+      "exported_bytes": 185739,
+      "decoded_pixels_sha256": "dda7d1527d148b0c855906bfce1e4e023677f2bd19a5262920b38bee1415552d",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-1.png",
+      "source_png_sha256": "7a91402ab29d6ab7ed1c0c6e65cbea331bb56f46e6e34e4879d30ca41cf5fe93",
+      "source_bytes": 3494353,
+      "exported_bytes": 247350,
+      "decoded_pixels_sha256": "b923bcdda157e21dbd0c776caadf49e06044bc27709bab2123ccbd1d8de9e8c4",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1-adjust-2.png",
+      "source_png_sha256": "fc22d05dc310fba90e78c20db7bd4065e0d5161fa93363bde6673c2efef847a1",
+      "source_bytes": 3494353,
+      "exported_bytes": 248978,
+      "decoded_pixels_sha256": "941e78e3fe8d10e2e594e14e0e39a9724cae6356ee8f715f2af299ce77317388",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1420-page-1.png",
+      "source_png_sha256": "b02f88fc6f6a8ae18e88bab089020e2be1a5fb4c5f18b53bc85270c080702c8f",
+      "source_bytes": 3494353,
+      "exported_bytes": 249056,
+      "decoded_pixels_sha256": "8e99daa7238a0e4bdb1271bce603c28fc512b79394e6893410653a23dd5e644a",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-1.png",
+      "source_png_sha256": "00d8060fda4b7fc50eba5f3a801742ed314e64eeee631ca4d7f070a3c73435ef",
+      "source_bytes": 3494353,
+      "exported_bytes": 248645,
+      "decoded_pixels_sha256": "404e846d2e6e7f860689c39b1e47de1f3f44e56ec008180c8f58fccc05553770",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2-adjust-2.png",
+      "source_png_sha256": "b65971b30346ed3fd25c73413a81e6e602902c53791d8d4cd9a705d062138f73",
+      "source_bytes": 3494353,
+      "exported_bytes": 246886,
+      "decoded_pixels_sha256": "9c3bcfa4dc7cdedf380b1ed8aa829f4a4325150e78e9d45c73f3abe8b6ce6e5e",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-1420-page-2.png",
+      "source_png_sha256": "2350f99aff025cd3b576c979200ca5b46299388bd6b512c4134c4885b14e26b2",
+      "source_bytes": 3494353,
+      "exported_bytes": 246910,
+      "decoded_pixels_sha256": "2e9c0945f95062dba6df1ffb0d9246e13962b0f02357b799e464f3ac4bd70c06",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-1.png",
+      "source_png_sha256": "e0d37b3f53b565f714feadfb3f5d4e54ccda9eadf60b14d3445eab239f9acdb1",
+      "source_bytes": 2411868,
+      "exported_bytes": 179229,
+      "decoded_pixels_sha256": "6db119082b7f892cc36b9094337d8f32702ee1cd04944a8adaab601ee07ae2d8",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-980-page-1-adjust-2.png",
+      "source_png_sha256": "c421b187f3a46b4b239a438cac30a4a7d017b7aa6ff89b6cb7c23d82cacbb91c",
+      "source_bytes": 2411868,
+      "exported_bytes": 180077,
+      "decoded_pixels_sha256": "a2d6398330534678cc2028a61e75871f5da05e00699da247f765d43effdb9cec",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-stress-values-980-page-1.png",
+      "source_png_sha256": "014ae6ad43b3bdd6c67a6b8e802f5f8786b4d558933bad84ad4125306b3d7e7b",
+      "source_bytes": 2411868,
+      "exported_bytes": 180296,
+      "decoded_pixels_sha256": "cf277f855e512feb4d1875fc9d565aa6cc13e6e16595b80ba4677da8aa2bfad4",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-1100-adjust-1.png",
+      "source_png_sha256": "16ac3cc38c2c1670f9a49e35f1a09d9728c32e6dd4ac3c8d28d4f2d56e6827d8",
+      "source_bytes": 2707093,
+      "exported_bytes": 162707,
+      "decoded_pixels_sha256": "f23bfdf85258d02b2cab9bb82c17b31a658fa484009c4329e3f1e870b1526f74",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-1100-adjust-2.png",
+      "source_png_sha256": "01767bb1ede27d0161daae636a12698a4f8ea0407da8b49e7bf7833430c62330",
+      "source_bytes": 2707093,
+      "exported_bytes": 163460,
+      "decoded_pixels_sha256": "61a16ff414eb3311f617bcd137040a5d00d88eda0b88a66be25d7d7a1c99dea1",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-1420-adjust-1.png",
+      "source_png_sha256": "f1e7eb1a01e8b897689671692b06fe636fd116fab67f8d259d4a09eaf45c99fe",
+      "source_bytes": 3494353,
+      "exported_bytes": 256192,
+      "decoded_pixels_sha256": "6b6c7e04051caa2180f469c4774bae28d6cbbe325c26f9e18c8a926cbf571ab8",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-1420-adjust-2.png",
+      "source_png_sha256": "34b562d50dcc9956ac220c893922124270180b9b9b651094baee3290aafde8a1",
+      "source_bytes": 3494353,
+      "exported_bytes": 256344,
+      "decoded_pixels_sha256": "a5f41e5a6f9612d214ff4f939d684c950d68f337b930cec06c902cf37cde4965",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-980-adjust-1.png",
+      "source_png_sha256": "c0fe4cd7ef9d794f7d4d28173f5c0e3e8a70ec81ef8a131a1df3ddb2afe9af8d",
+      "source_bytes": 2411868,
+      "exported_bytes": 161630,
+      "decoded_pixels_sha256": "4a6c2518da32d0fc45b7d2c197c93beb7f35e75eacb4be596a2be4705a6e88cb",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-980-adjust-2.png",
+      "source_png_sha256": "d7bd6b4b26477c2ff66e62e5863843d4959919b9c39449fda91d53b40efd06b3",
+      "source_bytes": 2411868,
+      "exported_bytes": 161983,
+      "decoded_pixels_sha256": "28c3f2ea41a1aa867d5ed806b6225a11bc524129f2a7e15d52ef3c92cba30f1a",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-visible-1100.png",
+      "source_png_sha256": "cbec977e351a43aca807a42c8105a0747815a51a1cb4d6aae8ff51241647f2e3",
+      "source_bytes": 2707093,
+      "exported_bytes": 163613,
+      "decoded_pixels_sha256": "32496cb07bfbc7eaaba8e7bffa9b38febb87a052795ba7fcdb39ca2dd9881a8f",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-visible-1420.png",
+      "source_png_sha256": "8076380951141685bc2a486ed45ec970a85a398e4db8f7680d1f6f759c8118ed",
+      "source_bytes": 3494353,
+      "exported_bytes": 256373,
+      "decoded_pixels_sha256": "641f06551ccfb24f6bb52623a8e92d32c6541fcfeaaa99aa68ff14433157c1da",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-structure-visible-980.png",
+      "source_png_sha256": "ae98ea9b7efb6bf98699d5d273c0e82b1b2a396f1ef0692af6b1116f445d80b3",
+      "source_bytes": 2411868,
+      "exported_bytes": 162171,
+      "decoded_pixels_sha256": "da23a4c060f2f016e84ed4bff9fa139536e2684268122c4ed24578fc4a7c9386",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-1100-adjust-1.png",
+      "source_png_sha256": "4982a94a911cb1fd12f8285a2ca2ccb86539c4d4f9fa14376ca907c0f836c769",
+      "source_bytes": 2707093,
+      "exported_bytes": 166712,
+      "decoded_pixels_sha256": "ae69b2d0fa791c939ea399a677a73e0a374dd849bf969e21b2b7bfa518e31c1b",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-1100-adjust-2.png",
+      "source_png_sha256": "4521a357d2a81966ac55949d195ce856bdba139ab60c3251f44d352391307205",
+      "source_bytes": 2707093,
+      "exported_bytes": 170270,
+      "decoded_pixels_sha256": "1cedccc501e7b5dfb7a7a93145234f4b50abd4c0bd4c47e4eb8838c85119d974",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-1420-adjust-1.png",
+      "source_png_sha256": "1a049bc2d9e28ef228cfec1931080d4a220eef2044cf288d13c1718f9d678069",
+      "source_bytes": 3494353,
+      "exported_bytes": 258296,
+      "decoded_pixels_sha256": "7f188a74c6603cb243384796a6abea2e80c2aa92cadbee1fac7494dd564a3e93",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-1420-adjust-2.png",
+      "source_png_sha256": "2bc1277ff6db389baef7c7c8e87e522a2f6bfdc1eb862225e02b71b98d2b8009",
+      "source_bytes": 3494353,
+      "exported_bytes": 262567,
+      "decoded_pixels_sha256": "47064dccdf56aab3067a2021fc70348900737217ac7ac8b04415f9196b32cec3",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-980-adjust-1.png",
+      "source_png_sha256": "a585fc7ec8abcbf0bf17bcb311490e00f6c04d1b8ef6b10c80f783d2105e9658",
+      "source_bytes": 2411868,
+      "exported_bytes": 165248,
+      "decoded_pixels_sha256": "f875fb76dcb8a230890db0aef218690bb368100bb3abe5a8878f399bf8e718ef",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-980-adjust-2.png",
+      "source_png_sha256": "04722732b9ac6884eb0a590e8d754a8422cca395dcdd880913a211fbf1086be1",
+      "source_bytes": 2411868,
+      "exported_bytes": 169153,
+      "decoded_pixels_sha256": "d483c52eda3c1d7c50fc837448ca0bb8f4f7424bbdda8486ee414b284d6f9248",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-visible-1100.png",
+      "source_png_sha256": "3da2954fbf1c786a4867ba1bf55a3148a1e04a3da6bd695d7f6869a49d0cce70",
+      "source_bytes": 2707093,
+      "exported_bytes": 170166,
+      "decoded_pixels_sha256": "a52cb04658e6224359c4d3d8ec72a5a1959a2d474557a0cef761e8f4326c889d",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-visible-1420.png",
+      "source_png_sha256": "62f0d1fd904311b16f60a88367dfa3bf2635550423c9e974616f002f2db62e21",
+      "source_bytes": 3494353,
+      "exported_bytes": 262609,
+      "decoded_pixels_sha256": "ae522e79b422fda6b40c931b0e8a7f64064d8afc5e41e2af98d3e9e259273dd4",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-values-visible-980.png",
+      "source_png_sha256": "76f77a7a28a9bbb2683c7412345de7d182c389ddd217bb0a3a3915b2a57a2561",
+      "source_bytes": 2411868,
+      "exported_bytes": 169059,
+      "decoded_pixels_sha256": "0599fc7fbdc97e91038ef6fd347edb18174450039998bb00d0a8a53b9cab17d1",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-window-1100.png",
+      "source_png_sha256": "2e5482a25bbd44431a221fdf49bcd97983f1b9959d18be8c1be611772f0100d3",
+      "source_bytes": 2707093,
+      "exported_bytes": 170286,
+      "decoded_pixels_sha256": "328d06290f2fa8b432e315d7f6d46834838e8639bdd1c15946d5a344febc44d4",
+      "mode": "RGB",
+      "size": [
+        1100,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-window-1420.png",
+      "source_png_sha256": "fe231dada7488ae9bcf24092548955f7f3b449a83119c0dbe3b5d8cedccbcbf6",
+      "source_bytes": 3494353,
+      "exported_bytes": 262605,
+      "decoded_pixels_sha256": "eef772b125c87cf7b28f19dabec48c73eede810d964df0aee1ff75ac7d8ff2bd",
+      "mode": "RGB",
+      "size": [
+        1420,
+        820
+      ],
+      "identical_decoded_pixels": true
+    },
+    {
+      "path": "geometry-window-980.png",
+      "source_png_sha256": "001a643694c4a32b6f9b7c2e7bf967565a7c10cc879eb691d529f2d34444a031",
+      "source_bytes": 2411868,
+      "exported_bytes": 178460,
+      "decoded_pixels_sha256": "a6d23dd0338f6747973f788857a46e9ed4f28f6cb1c17066cd66a0fdc1e2dc1f",
+      "mode": "RGB",
+      "size": [
+        980,
+        820
+      ],
+      "identical_decoded_pixels": true
+    }
+  ],
+  "tree_exports": [
+    {
+      "case_id": "geometry-normal-reference",
+      "path": "geometry-normal-reference-tree.json.gz",
+      "artifact_id": "tree_3_59",
+      "sealed_bytes": 509997,
+      "sealed_sha256": "0b7aa62674a67f2be37e7bfec23006fcfcfb4e6717b8fd4e6506477a5539db0f",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-overview-980-adjust-1",
+      "path": "geometry-overview-980-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_614",
+      "sealed_bytes": 509914,
+      "sealed_sha256": "2623110e9b13fde38fa8a1f9475272ad7dcf450b2a3806f14d413e01835cb936",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-overview-980-adjust-2",
+      "path": "geometry-overview-980-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_882",
+      "sealed_bytes": 509925,
+      "sealed_sha256": "179568efaeb4efd5c1be0b9159b250ab7e6002649f9da3fadcbc58a068074f4b",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-disabled-restored",
+      "path": "geometry-stress-disabled-restored-tree.json.gz",
+      "artifact_id": "tree_3_14758",
+      "sealed_bytes": 512953,
+      "sealed_sha256": "86ba35ec7575f46f1562c3772a2cce7fcc411ada0d4ed606260626e9d7bd0bae",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-reference-1100",
+      "path": "geometry-stress-reference-1100-tree.json.gz",
+      "artifact_id": "tree_3_6783",
+      "sealed_bytes": 510009,
+      "sealed_sha256": "8b016d285b3868c59836879f0f61ea29de5835254ae9846a267f715f03a1d152",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-reference-1420",
+      "path": "geometry-stress-reference-1420-tree.json.gz",
+      "artifact_id": "tree_3_11287",
+      "sealed_bytes": 513392,
+      "sealed_sha256": "372d484c8222222e4b3d3e98bcf3796369c2d08a586199733dd7449f5f6f614b",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-reference-980",
+      "path": "geometry-stress-reference-980-tree.json.gz",
+      "artifact_id": "tree_3_2779",
+      "sealed_bytes": 509950,
+      "sealed_sha256": "00a770bdca348a1b2db3287260ed3d3d61d7e1ee55b79dcf74a43a230bb13901",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-1100-adjust-1",
+      "path": "geometry-stress-structure-1100-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_7074",
+      "sealed_bytes": 510114,
+      "sealed_sha256": "e0fc77cc8c2fe42d0dfb93245e0ba07060633d71321fcccbd5f0a07d6398c513",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-1100-adjust-2",
+      "path": "geometry-stress-structure-1100-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_7377",
+      "sealed_bytes": 510032,
+      "sealed_sha256": "4468088b5b677e81658542c5a644330661bcc6d7b9a0f83310b2f08ee3a5b3c6",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-1420-adjust-1",
+      "path": "geometry-stress-structure-1420-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_11625",
+      "sealed_bytes": 513371,
+      "sealed_sha256": "7b48c4cceda71363382823bfb2fffb77c1a87422e5d518e15f82547aac712f51",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-1420-adjust-2",
+      "path": "geometry-stress-structure-1420-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_11970",
+      "sealed_bytes": 513174,
+      "sealed_sha256": "0b6dc944cbafed24a6b59a07494482290fdc7b31166d5b48c74615dae1fc5cb7",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-980-adjust-1",
+      "path": "geometry-stress-structure-980-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_3050",
+      "sealed_bytes": 509954,
+      "sealed_sha256": "ff88a984b6307d14814a1575194520fb47e35d56b9dc0b92296d2b1e6513feba",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-980-adjust-2",
+      "path": "geometry-stress-structure-980-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_3328",
+      "sealed_bytes": 510000,
+      "sealed_sha256": "f6f6b24dd0ee1eeefb0713a2316a745033b8879dd9bd57d6886ac9e59fa04e3b",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-visible-1100",
+      "path": "geometry-stress-structure-visible-1100-tree.json.gz",
+      "artifact_id": "tree_3_7669",
+      "sealed_bytes": 510122,
+      "sealed_sha256": "e8cf65c516467fa8265084b4d588936daf0bb1e50dd21feaf848ea60979b46b0",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-visible-1420",
+      "path": "geometry-stress-structure-visible-1420-tree.json.gz",
+      "artifact_id": "tree_3_12311",
+      "sealed_bytes": 513169,
+      "sealed_sha256": "4a1468465281b59b0872473a2999e7691b89d77d8cdbd332e7839e857839e53d",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-structure-visible-980",
+      "path": "geometry-stress-structure-visible-980-tree.json.gz",
+      "artifact_id": "tree_3_3600",
+      "sealed_bytes": 510003,
+      "sealed_sha256": "eb761f1d3f707f3c0f1d644bcc299f24e53293d9048a9134a594e0f3caa07c28",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1100-page-1-adjust-1",
+      "path": "geometry-stress-values-1100-page-1-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_7963",
+      "sealed_bytes": 510097,
+      "sealed_sha256": "a65d4451b9ba921e905f84e33be82a5d38df575918132cfb42884cd2f5cad6d9",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1100-page-1-adjust-2",
+      "path": "geometry-stress-values-1100-page-1-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_8254",
+      "sealed_bytes": 509991,
+      "sealed_sha256": "da21cfa2f3d0fc49f22a9d1e60757263924653d99276d3f9a88e046aa48b9226",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1100-page-1",
+      "path": "geometry-stress-values-1100-page-1-tree.json.gz",
+      "artifact_id": "tree_3_8547",
+      "sealed_bytes": 510009,
+      "sealed_sha256": "eb2a8a1898cd5a8f0caba4ecab48118134e493ca226f835df2a80e8918ca2c1f",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1420-page-1-adjust-1",
+      "path": "geometry-stress-values-1420-page-1-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_12665",
+      "sealed_bytes": 513150,
+      "sealed_sha256": "47c3af439723fbd2d2f8594154f1e0cc27df6fc810c98ee7710383f772b059be",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1420-page-1-adjust-2",
+      "path": "geometry-stress-values-1420-page-1-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_13011",
+      "sealed_bytes": 513177,
+      "sealed_sha256": "8194d75a47e9b077f9f26fc628073185bd91fdee18307da8547cf3915c717304",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1420-page-1",
+      "path": "geometry-stress-values-1420-page-1-tree.json.gz",
+      "artifact_id": "tree_3_13356",
+      "sealed_bytes": 513177,
+      "sealed_sha256": "73c3d1b0c0815a688553243386dd2ec492b08ac3f837fef20d2d6c7e18ead29c",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1420-page-2-adjust-1",
+      "path": "geometry-stress-values-1420-page-2-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_13708",
+      "sealed_bytes": 513177,
+      "sealed_sha256": "e6a07b72e2316e0618df6b72d3cfe2c1f8be1facdceb11fe1e64652791caf36b",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1420-page-2-adjust-2",
+      "path": "geometry-stress-values-1420-page-2-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_14053",
+      "sealed_bytes": 513141,
+      "sealed_sha256": "b11a2de159f6993697d6d5afbc9ca0ebd4054a4a28e78a2f636cf9bf4c769f9c",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-1420-page-2",
+      "path": "geometry-stress-values-1420-page-2-tree.json.gz",
+      "artifact_id": "tree_3_14395",
+      "sealed_bytes": 513141,
+      "sealed_sha256": "2f6ef81da4ba7710973f6567b11d779d5beaa8a321ec7345e00c48ec076c1c46",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-980-page-1-adjust-1",
+      "path": "geometry-stress-values-980-page-1-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_3874",
+      "sealed_bytes": 509969,
+      "sealed_sha256": "e1ef282284cfac71ca080bc4a25c5a9e1e55d2ecf1e7e464c4616107e6c928ea",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-980-page-1-adjust-2",
+      "path": "geometry-stress-values-980-page-1-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_4156",
+      "sealed_bytes": 509937,
+      "sealed_sha256": "15fbf435c4c29017a057d53bc584030f7d6e35ae6285eb89fbb4f2e775755eaa",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-stress-values-980-page-1",
+      "path": "geometry-stress-values-980-page-1-tree.json.gz",
+      "artifact_id": "tree_3_4428",
+      "sealed_bytes": 509950,
+      "sealed_sha256": "e4f872bc4f0ee9dd5bf47b186c631f599bdac683c058dd7e37bc697861ac83a7",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-1100-adjust-1",
+      "path": "geometry-structure-1100-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_5020",
+      "sealed_bytes": 509923,
+      "sealed_sha256": "5f8b9e55fa444a29880c9ce26ef6e87ad1262fdce4961070df7a2f1c9e1600e9",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-1100-adjust-2",
+      "path": "geometry-structure-1100-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_5312",
+      "sealed_bytes": 509858,
+      "sealed_sha256": "56be3c2227924af981875e0ac5b02f8c27578de29dc08b2b198f14215c86839d",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-1420-adjust-1",
+      "path": "geometry-structure-1420-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_9206",
+      "sealed_bytes": 512925,
+      "sealed_sha256": "2432b6dbac3f1b03b2d759847f0ee7dd39fc13ff30540580fe1258a115950cc0",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-1420-adjust-2",
+      "path": "geometry-structure-1420-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_9560",
+      "sealed_bytes": 512991,
+      "sealed_sha256": "010406406f26e83324a97b38b3932f659f1df882ab91476dce6bf482c943397b",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-980-adjust-1",
+      "path": "geometry-structure-980-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_1149",
+      "sealed_bytes": 509871,
+      "sealed_sha256": "f8ae4e4fac06fea611f78231d39c27664fa6df3c6cf5bfb35cc75f2bd4f30cc7",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-980-adjust-2",
+      "path": "geometry-structure-980-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_1420",
+      "sealed_bytes": 509883,
+      "sealed_sha256": "3fe9ccc69714f152d3d10045a7001261f03cb52f99cf420ade17628d362db1a9",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-visible-1100",
+      "path": "geometry-structure-visible-1100-tree.json.gz",
+      "artifact_id": "tree_3_5603",
+      "sealed_bytes": 509950,
+      "sealed_sha256": "dc64272dcd912d0fe8387181094f8c599b776b4a357098e65d6033b420ae1003",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-visible-1420",
+      "path": "geometry-structure-visible-1420-tree.json.gz",
+      "artifact_id": "tree_3_9900",
+      "sealed_bytes": 512983,
+      "sealed_sha256": "e42b4611f729fed8a61485eac00c248ed4b4d091eb25c9ac12f19f296e0fef75",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-structure-visible-980",
+      "path": "geometry-structure-visible-980-tree.json.gz",
+      "artifact_id": "tree_3_1688",
+      "sealed_bytes": 509864,
+      "sealed_sha256": "76c7f5664a95f08694f7fe3e36a75268d7f71e525ee8af0c261a9234808fe4a6",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-1100-adjust-1",
+      "path": "geometry-values-1100-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_5896",
+      "sealed_bytes": 509829,
+      "sealed_sha256": "4550b0c76eea1e7c0421fb3c51f4f094dcbb7caa9b9a68c37e5bc77c32c61cfd",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-1100-adjust-2",
+      "path": "geometry-values-1100-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_6185",
+      "sealed_bytes": 509929,
+      "sealed_sha256": "92b0891d6f3b1eab10b2a0a7f04907215abdbd672dc6d9f1d7c42626c18dbfee",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-1420-adjust-1",
+      "path": "geometry-values-1420-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_10243",
+      "sealed_bytes": 512971,
+      "sealed_sha256": "57bf62627129a4f2caa3e7160d6e9d0e620ee3c7204059212b763314ca752574",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-1420-adjust-2",
+      "path": "geometry-values-1420-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_10585",
+      "sealed_bytes": 513217,
+      "sealed_sha256": "2fbdf85059579b22523d5d8ef8c896b4101a6c25f3cff7e339ac051b3c75baed",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-980-adjust-1",
+      "path": "geometry-values-980-adjust-1-tree.json.gz",
+      "artifact_id": "tree_3_1956",
+      "sealed_bytes": 509860,
+      "sealed_sha256": "a2698ddaac0bb9e401ea32a39ad3cb1bc8f6f50da3b9d3d847aabfc7d279355e",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-980-adjust-2",
+      "path": "geometry-values-980-adjust-2-tree.json.gz",
+      "artifact_id": "tree_3_2224",
+      "sealed_bytes": 509786,
+      "sealed_sha256": "6e1a99097f44dd3ab7ef735836dd937e8bb58edda76c3c45788d842c3653950e",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-visible-1100",
+      "path": "geometry-values-visible-1100-tree.json.gz",
+      "artifact_id": "tree_3_6475",
+      "sealed_bytes": 509841,
+      "sealed_sha256": "529ea710c2753158a1ee47d4fb888fb93b45b591203e332a737ac1dd4de2918f",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-visible-1420",
+      "path": "geometry-values-visible-1420-tree.json.gz",
+      "artifact_id": "tree_3_10928",
+      "sealed_bytes": 513217,
+      "sealed_sha256": "81cefac633a901e81fdaf3555a83c2ec4fd57f0ce1abce02b7536bc9be5e5adc",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-values-visible-980",
+      "path": "geometry-values-visible-980-tree.json.gz",
+      "artifact_id": "tree_3_2494",
+      "sealed_bytes": 509806,
+      "sealed_sha256": "9d0c942c57f5b0c81d8dbf9056a42418a924d1c4d459c736d8e362ab2f38021c",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-window-1100",
+      "path": "geometry-window-1100-tree.json.gz",
+      "artifact_id": "tree_3_4730",
+      "sealed_bytes": 509940,
+      "sealed_sha256": "0ed4b4e4163d365baae3719bc848afb945eba166dac0f3c1917b406894709714",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-window-1420",
+      "path": "geometry-window-1420-tree.json.gz",
+      "artifact_id": "tree_3_8867",
+      "sealed_bytes": 512933,
+      "sealed_sha256": "c213f905323f58bdeee1e2d127228d160fdd896444a833752a14219f934dce65",
+      "matches_parsed_tree_export": true
+    },
+    {
+      "case_id": "geometry-window-980",
+      "path": "geometry-window-980-tree.json.gz",
+      "artifact_id": "tree_3_348",
+      "sealed_bytes": 510000,
+      "sealed_sha256": "d59035778a7c71800b1b22ae5c293a91e0632c43f5af3f29334ac9eed0fb9b6c",
+      "matches_parsed_tree_export": true
+    }
+  ]
+}

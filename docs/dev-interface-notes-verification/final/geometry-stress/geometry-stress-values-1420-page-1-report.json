@@ -1,0 +1,175 @@
+{
+  "cases": [
+    {
+      "assertion_count": "1",
+      "assertion_details": "all",
+      "assertions": [
+        {
+          "assertion_id": "step_0",
+          "available": true,
+          "expected": 16,
+          "observed": 112,
+          "passed": true,
+          "reason": "",
+          "required": true
+        }
+      ],
+      "capture_id": "cap_5748e5f1ab9b2d87999bca81fe52a510",
+      "case_id": "geometry-stress-values-1420-page-1",
+      "checkpoints": [
+        {
+          "available": true,
+          "capture_id": "cap_5748e5f1ab9b2d87999bca81fe52a510",
+          "checkpoint_id": "geometry-stress-values-1420-page-1",
+          "image": {
+            "alpha": "discarded",
+            "app_tick": "13356",
+            "capture_id": "cap_5748e5f1ab9b2d87999bca81fe52a510",
+            "completed_monotonic_ns": "20404687345140",
+            "copy_duration_ns": "34023460",
+            "crop": {
+              "logical_to_physical_scale_x": 1,
+              "logical_to_physical_scale_y": 1,
+              "original_height": 820,
+              "original_width": 1420,
+              "x": 0,
+              "y": 0
+            },
+            "encoding": "native-rgb8",
+            "frame_slot": 0,
+            "height": 820,
+            "image_id": "image_44",
+            "origin": "top-left",
+            "path": "visual/images/image_44.png",
+            "producer_frame": {
+              "app_tick": "13356",
+              "device_id": "1",
+              "queue_id": "1",
+              "run_id": "run_13237e9a8b8766c29ca0bf4b082054eb",
+              "source_image_revision": "13356",
+              "submission_serial": "40065",
+              "window_frame": "13356",
+              "window_id": "3"
+            },
+            "recorded_monotonic_ns": "20404647902538",
+            "run_id": "run_13237e9a8b8766c29ca0bf4b082054eb",
+            "schema": "FlowUi.Agentic.Image",
+            "schema_generation": "4",
+            "schema_version": "1.0",
+            "source": "window",
+            "source_color_space": "unknown",
+            "source_image_revision": "13356",
+            "source_ppm_artifact_id": "image_44_ppm",
+            "source_vk_format": 50,
+            "submission": {
+              "device_id": "1",
+              "queue_id": "1",
+              "serial": "40065"
+            },
+            "theme": {
+              "artifact_id": "theme_115_4",
+              "revision": "115",
+              "schema_generation": "4"
+            },
+            "theme_revision": "115",
+            "tree": {
+              "artifact_id": "tree_3_13356",
+              "generation": "13356"
+            },
+            "viewport_key": null,
+            "width": 1420,
+            "window_frame": "13356",
+            "window_id": "3"
+          },
+          "passed": true,
+          "required": true,
+          "temporal_relation": "after_required_observation",
+          "tree_artifact": "tree_3_13356",
+          "trigger": "case_verified"
+        }
+      ],
+      "cleanup": {
+        "completed": true,
+        "fixture_usable": true
+      },
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "duration_ns": "933360575",
+      "fixture_id": "",
+      "manifest": "/tmp/flowui-dev-notes-geometry-stress/run_4ad9536bb6b3/workspace/.flowui/agentic/v1/runs/20261110T163830672661Z_run_13237e9a8b8766c29ca0bf4b082054eb/captures/cap_5748e5f1ab9b2d87999bca81fe52a510/manifest.json",
+      "verdict": "pass",
+      "workload": {
+        "kind": "interaction_plan",
+        "plan_digest": "77176058bda1c8981e586e2e12e71f42466715bcf358c025e97279bb8b1466ee",
+        "seed": "0"
+      }
+    }
+  ],
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "fixture_usable": true
+  },
+  "coverage": {
+    "evaluated": "2",
+    "failed": "0",
+    "passed": "2",
+    "required": "2",
+    "skipped": "0",
+    "unavailable": "0"
+  },
+  "cursor": "",
+  "detail_selector": {
+    "report_digest": "67eb34541534d7fa3140ac75a67ae333a1198cc709191292e07c29e0020b2ac6"
+  },
+  "evidence": {
+    "contact_sheet": null,
+    "image_count": "1",
+    "selector": {
+      "instance": "run_13237e9a8b8766c29ca0bf4b082054eb",
+      "job_id": "verification_c69699f73813b537a964feb7cab9f4cf"
+    }
+  },
+  "execution_status": "completed",
+  "job_id": "verification_c69699f73813b537a964feb7cab9f4cf",
+  "limitations": [
+    "unavailable_pipeline_spans_are_null",
+    "rss_gpu_and_encoder_workspace_unavailable",
+    "automatic_disk_retention_not_enabled",
+    "historical_failure_pixels_unavailable"
+  ],
+  "report_digest": "67eb34541534d7fa3140ac75a67ae333a1198cc709191292e07c29e0020b2ac6",
+  "request_digest": "7f459a591883df2c7897c6bf2755d86409054baa09a8cd667577c8f7d5d27232",
+  "resources": {
+    "completed_rgb_bytes_peak": "3493200",
+    "disk_bytes": "10209719",
+    "encoded_bytes": null,
+    "measurement_availability": "owned_snapshot_and_inventory_only",
+    "peak_owned_evidence_bytes": "6031261",
+    "readback_reserved_bytes": null
+  },
+  "run_id": "run_13237e9a8b8766c29ca0bf4b082054eb",
+  "schema": "FlowUi.Agentic.VerificationReport",
+  "schema_version": "1.0",
+  "suite_id": "catalogue.layout.interactions",
+  "suite_revision": "1",
+  "timings": {
+    "admission_ns": "1622093",
+    "assertion_ns": "0",
+    "execution_ns": "0",
+    "publication_ns": "2702946508",
+    "queue_ns": "536047771",
+    "readback_ns": null,
+    "report_ns": null,
+    "setup_ns": "0",
+    "total_elapsed_ns": "4120932544"
+  },
+  "truncated": false,
+  "verdict": "pass"
+}

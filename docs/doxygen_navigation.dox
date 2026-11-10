@@ -44,7 +44,7 @@
 - \subpage md_docs_2internals_2ui__renderer "UI Renderer"
 - \subpage md_docs_2internals_2texture__registry "Texture Registry"
 - \subpage md_docs_2internals_2text__layout__engine "Text Layout Engine"
-- \subpage md_docs_2internals_2dev__runtime "Developer Runtime"
+- \subpage md_docs_2internals_2dev__runtime "Developer Systems"
 
 \page flowui_tutorials Tutorials
 
@@ -56,6 +56,6 @@
 - \subpage md_docs_2tutorials_2images__icons__textures "Images, Icons, and Texture References"
 - \subpage md_docs_2tutorials_2input__fields__and__shortcuts "Input Fields and Shortcuts"
 - \subpage md_docs_2tutorials_2viewports__vulkan__interop "Viewports and Vulkan Interop"
-- \subpage md_docs_2tutorials_2developer__mode "Developer Mode"
+- \subpage md_docs_2tutorials_2developer__mode "Developer Systems"
 - \subpage md_docs_2tutorials_2complete__app "Complete Application Tutorial"
 */

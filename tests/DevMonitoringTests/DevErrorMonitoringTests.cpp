@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string_view>
 
-#include "FlowUi/Error.hpp"
+#include "FlowUi/Public/errorManagement/Error.hpp"
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/errors/DevErrorStackProvider.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemory.hpp"

@@ -1,4 +1,4 @@
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticWorkflow.hpp"
 #include <chrono>
 #include <filesystem>

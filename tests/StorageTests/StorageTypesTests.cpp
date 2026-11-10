@@ -7,12 +7,21 @@
 #include <memory>
 #include <type_traits>
 
-#include "internal/StorageSystem/AlignedRecord.hpp"
-#include "internal/StorageSystem/StorageTypes.hpp"
+#include "FlowUi/Private/storageSystem/AlignedRecord.hpp"
+#include "FlowUi/Private/storageSystem/StorageTypes.hpp"
 
 namespace {
 
 using namespace FlowUi::detail::storage;
+
+static_assert(std::is_same_v<std::underlying_type_t<ResourceDomain>, std::uint8_t>);
+static_assert(std::is_same_v<std::underlying_type_t<PixelFormat>, std::uint8_t>);
+static_assert(static_cast<std::uint8_t>(ResourceDomain::Image) == 0u);
+static_assert(static_cast<std::uint8_t>(ResourceDomain::Action) == 9u);
+static_assert(static_cast<std::uint8_t>(PixelFormat::Undefined) == 0u);
+static_assert(static_cast<std::uint8_t>(PixelFormat::D32Float) == 7u);
+static_assert(sizeof(SubmissionSerial) == sizeof(std::uint64_t));
+static_assert(sizeof(FrameEpoch) == sizeof(std::uint64_t));
 
 struct ArenaProbe {
 	alignas(64) std::array<std::byte, 256> memory{};
@@ -46,6 +55,10 @@ void testHandlePacking() {
 	FLOWUI_CHECK(handle.packed() == 0x76543210fedcba98ull);
 	FLOWUI_CHECK(TextureHandle::fromPacked(handle.packed()) == handle);
 	FLOWUI_CHECK(!TextureHandle::fromPacked(0));
+	const TextureHandle maximum_handle{std::numeric_limits<std::uint32_t>::max(),
+									   std::numeric_limits<std::uint32_t>::max()};
+	FLOWUI_CHECK(maximum_handle.packed() == std::numeric_limits<std::uint64_t>::max());
+	FLOWUI_CHECK(TextureHandle::fromPacked(maximum_handle.packed()) == maximum_handle);
 
 	static_assert(sizeof(PersistentRecordHandle) == sizeof(uint64_t));
 	static_assert(std::is_trivially_copyable_v<PersistentRecordHandle>);
@@ -99,8 +112,10 @@ void testFlagsAndKeys() {
 	const ResourceKey first{ResourceDomain::Renderer, 17u, 9u};
 	const ResourceKey same{ResourceDomain::Renderer, 17u, 9u};
 	const ResourceKey otherWindow{ResourceDomain::Renderer, 17u, 10u};
+	const ResourceKey other_domain{ResourceDomain::Action, 17u, 9u};
 	FLOWUI_CHECK(first == same);
 	FLOWUI_CHECK(first != otherWindow);
+	FLOWUI_CHECK(first != other_domain);
 	FLOWUI_CHECK(ResourceKeyHash{}(first) == ResourceKeyHash{}(same));
 }
 

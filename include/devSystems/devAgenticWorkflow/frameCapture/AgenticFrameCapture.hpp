@@ -1,6 +1,10 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+/** @file
+ * @brief Public AgenticFrameCapture declarations for optional development services.
+ */
+
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_AGENTIC_WORKFLOW
 
@@ -16,12 +20,19 @@ namespace FlowUi::devSystems::agentic::frame_capture {
 
 /** Explicit per-frame capture selection; copied before any GPU commands are recorded. */
 struct AgenticFrameCaptureRequest {
+	/** @brief Copied exact producer/frame metadata to attach to completed image readback. */
 	AgenticCompletedImage stamp;
+	/** @brief Borrowed completion sink invoked with owned RGB bytes after the frame fence retires. */
 	Status (*completed_image)(void* owner, AgenticCompletedImage&& image) noexcept = nullptr;
+	/** @brief Borrowed callback owner; it must remain valid until all pending callbacks finish. */
 	void* owner = nullptr;
+	/** @brief Maximum retained GPU readback buffer bytes for frame capture. */
 	std::uint64_t maximum_readback_bytes = 67108864u;
+	/** @brief Maximum image count admitted within the configured capture bounds. */
 	std::uint32_t maximum_images = 16u;
+	/** @brief Whether capture requests include the native window image. */
 	bool capture_window = true;
+	/** @brief Whether capture requests include viewport image sources. */
 	bool capture_viewports = true;
 };
 

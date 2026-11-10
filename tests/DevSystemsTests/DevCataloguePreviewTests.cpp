@@ -1,9 +1,10 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
+#include "devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devTooling/catalogue/DevElementPreviews.hpp"
-#include "managers/IconManager.hpp"
+#include "FlowUi/Public/managers/IconManager.hpp"
 #include <cassert>
 #include <memory>
 
@@ -65,12 +66,12 @@ template <class Theme>
 }
 
 void registration_preserves_admission_and_noncopyable_defaults() {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	schemas.registerElementPreview<DefaultProbe>();
 	assert(schemas.elementPreviews().size() == 1);
 	assert(!schemas.elementPreviews().front().admitted);
 	const auto discovery_revision = schemas.previewRevision();
-	FlowUi::devMode::register_element_catalogue(
+	FlowUi::devSystems::tooling::register_element_catalogue(
 		schemas, "Custom set", FlowUi::ElementSet<DefaultProbe, ConstructProbe>{}, true);
 	assert(schemas.elementPreviews().size() == 2);
 	assert(schemas.previewRevision() > discovery_revision);
@@ -180,9 +181,100 @@ void verify_live_preview_scopes() {
 	assert(app.endFrame());
 	assert(app.drawFrame());
 }
+
+#if FLOWUI_INCLUDE_ICON_MANAGER
+void verify_cached_raster_layout() {
+	using namespace FlowUi;
+	using namespace FlowUi::devSystems;
+	using namespace FlowUi::devSystems::interface_elements;
+	AppConfig configuration{};
+	configuration.window.title = "Catalogue cached raster layout verification";
+	configuration.window.width = 600;
+	configuration.window.height = 720;
+	auto app = makeApplication(configuration);
+	constexpr std::string_view icon_name = "catalogue-test/responsive-cached-sizes";
+	assert(app.icons().registerSvg(
+		icon_name,
+		R"(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#ef8530"/></svg>)"));
+	for (const uint32_t size : {12, 16, 20, 24, 32, 40, 48, 56, 64})
+		assert(app.icons().devRasterize(icon_name, size, size));
+	DevInterfaceState session{};
+	service_catalogue(app, session, true);
+	const auto selected =
+		std::ranges::find(session.catalogue.assets, icon_name, &DevCatalogueAsset::name);
+	assert(selected != session.catalogue.assets.end() && selected->icons.size() == 9);
+	select_catalogue_asset(session.catalogue, selected->identity);
+	constexpr auto workbench = Global<kDevCatalogueWorkbench>("catalogue.cached-raster.regression");
+	const auto owner = FlowElementID{workbench.value};
+	const auto named_bounds = [&](LocalElementName name) {
+		return Clay_GetElementData(app.ui().toClayEID(::FlowUi::detail::element_id::resolveLocal(
+			owner, DevCatalogueWorkbench::definitionId, name.token)));
+	};
+	const auto draw = [&](float host_width) {
+		for (unsigned frame = 0; frame < 3; ++frame) {
+			assert(app.beginFrame());
+			Clay_ElementDeclaration root{};
+			root.layout.sizing = {CLAY_SIZING_FIXED(host_width), CLAY_SIZING_FIXED(600)};
+			root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+			CLAY(CLAY_ID("cached-raster-regression-host"), root)
+			app.ui()
+				.createElement(kDevCatalogueWorkbench, workbench)
+				.setParameters({&app, &session})
+				.draw();
+			assert(app.endFrame());
+			assert(app.drawFrame());
+		}
+		const auto host = Clay_GetElementData(app.ui().toClayEID(owner));
+		const auto toolbar = named_bounds(LocalElementName{"cached-raster-toolbar"});
+		const auto canvas = named_bounds(LocalElementName{"asset-canvas"});
+		const auto content = named_bounds(LocalElementName{"focused-scroll"});
+		assert(host.found && toolbar.found && canvas.found && content.found);
+		for (const auto name :
+			 {LocalElementName{"fit"}, LocalElementName{"native"}, LocalElementName{"background"},
+			  LocalElementName{"raster-step"}, LocalElementName{"icon-tint"}}) {
+			const auto identity = ::FlowUi::detail::element_id::resolveLocal(
+				owner, diagnostics_ui::Control::definitionId, name.token);
+			const auto control = Clay_GetElementData(app.ui().toClayEID(identity));
+			assert(control.found && control.boundingBox.x >= host.boundingBox.x);
+			assert(control.boundingBox.x + control.boundingBox.width <=
+				   host.boundingBox.x + host.boundingBox.width);
+			assert(control.boundingBox.y + control.boundingBox.height <= content.boundingBox.y);
+		}
+		std::vector<float> row_positions;
+		row_positions.reserve(selected->icons.size());
+		for (const auto& raster : selected->icons) {
+			const auto identity = ::FlowUi::detail::element_id::resolveLocal(
+				owner, diagnostics_ui::Control::definitionId,
+				Keyed("cached-raster-choice", raster.atlasTexture.packed()).token);
+			const auto choice = Clay_GetElementData(app.ui().toClayEID(identity));
+			assert(choice.found);
+			assert(choice.boundingBox.x >= host.boundingBox.x);
+			assert(choice.boundingBox.x + choice.boundingBox.width <=
+				   host.boundingBox.x + host.boundingBox.width);
+			assert(choice.boundingBox.y >= toolbar.boundingBox.y);
+			assert(choice.boundingBox.y + choice.boundingBox.height <=
+				   toolbar.boundingBox.y + toolbar.boundingBox.height);
+			if (std::ranges::find(row_positions, choice.boundingBox.y) == row_positions.end())
+				row_positions.emplace_back(choice.boundingBox.y);
+		}
+		assert(canvas.boundingBox.y >= toolbar.boundingBox.y + toolbar.boundingBox.height);
+		assert(canvas.boundingBox.y + canvas.boundingBox.height <=
+			   content.boundingBox.y + content.boundingBox.height);
+		return std::pair{row_positions.size(), canvas.boundingBox.height};
+	};
+	const auto narrow = draw(320);
+	const auto wide = draw(560);
+	assert(narrow.first > 1 && wide.first < narrow.first);
+	assert(wide.second > narrow.second);
+}
+#endif
 } // namespace
 int main(int argument_count, char**) {
 	registration_preserves_admission_and_noncopyable_defaults();
-	if (argument_count > 1)
+	if (argument_count > 1) {
 		verify_live_preview_scopes();
+#if FLOWUI_INCLUDE_ICON_MANAGER
+		verify_cached_raster_layout();
+#endif
+	}
 }

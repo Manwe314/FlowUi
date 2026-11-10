@@ -18,89 +18,160 @@
 
 namespace FlowUi::FSEL {
 
+/** Numeric text synchronization policy used by NumberInput. */
 using NumberInputSyncPolicy = NumericTextSyncPolicy;
+/** Numeric text bounds policy used by NumberInput. */
 using NumberInputBoundsPolicy = NumericTextBoundsPolicy;
 
+/** Visibility and trailing arrangement of numeric step buttons. */
 enum class NumberInputStepButtons : uint8_t {
+	/** Hide increment and decrement buttons. */
 	None = 0,
+	/** Stack increment and decrement buttons vertically at the trailing edge. */
 	TrailingVertical,
+	/** Place decrement and increment buttons horizontally at the trailing edge. */
 	TrailingHorizontal,
 };
 
+/** Numeric text classification retained by NumberInput state. */
 using NumberInputTextStatus = NumericTextStatus;
 
+/**
+ * Per-invocation NumberInput configuration. Borrowed models and text must remain valid through
+ * the frame; empty visual overrides inherit the active FSELTheme.
+ */
 template<NumericValueType T>
 struct NumberInputParameters {
+	/** Optional begin, change, commit and cancel notifications for native numeric editing. */
 	NumericEditActions edit{};
+	/** Per-instance caret and text selection overrides. */
 	TextFieldCaretOverrides caret{};
+	/** Optional notification when the editor receives a submit request. */
 	ActionCall onSubmit{};
+	/** Optional notification when the editor gains focus. */
 	ActionCall onFocus{};
+	/** Optional notification when the editor loses focus. */
 	ActionCall onBlur{};
+	/** Optional notification that the editor requested application undo. */
 	ActionCall onUndoRequested{};
+	/** Optional notification that the editor requested application redo. */
 	ActionCall onRedoRequested{};
+	/** Increment artwork; omitted uses the cached standard increment icon. */
 	std::optional<TextureRef> incrementIcon = std::nullopt;
+	/** Decrement artwork; omitted uses the cached standard decrement icon. */
 	std::optional<TextureRef> decrementIcon = std::nullopt;
+	/** Borrowed UTF-8 text shown when no value is displayed. */
 	std::string_view placeholder{};
 	/** Borrowed authoritative native value. Null disables interaction. */
 	T* value = nullptr;
+	/** When editor text is published to the borrowed application value. */
 	NumberInputSyncPolicy syncPolicy = NumberInputSyncPolicy::Live;
+	/** Whether out-of-range text remains visible or is clamped immediately. */
 	NumberInputBoundsPolicy boundsPolicy = NumberInputBoundsPolicy::SoftClamp;
+	/** Maximum UTF-8 byte length accepted by the editor buffer. */
 	size_t maxBytes = 128;
 
+	/** Appearance when enabled and idle. Empty colors inherit the theme. */
 	TextFieldStateOverrides idleOverrides{};
+	/** Appearance while hovered. Empty colors inherit the theme. */
 	TextFieldStateOverrides hoveredOverrides{};
+	/** Appearance while the editor is focused. Empty colors inherit the theme. */
 	TextFieldStateOverrides focusedOverrides{};
+	/** Appearance while the editor is read-only. Empty colors inherit the theme. */
 	TextFieldStateOverrides readOnlyOverrides{};
+	/** Appearance for an invalid value. Empty colors inherit the theme. */
 	TextFieldStateOverrides invalidOverrides{};
+	/** Appearance when interaction is disabled. Empty colors inherit the theme. */
 	TextFieldStateOverrides disabledOverrides{};
 
+	/** Clay width and height sizing rules for the root element. Empty inherits the active theme. */
 	std::optional<Clay_Sizing> sizing = std::nullopt;
+	/** Corner radii in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	/** Locale-independent native value formatting and parsing policy. */
 	NumericFormatOptions format{};
+	/** Lower bound of the native value range. Empty uses the native type limit. */
 	std::optional<T> minimum = std::nullopt;
+	/** Upper bound of the native value range. Empty uses the native type limit. */
 	std::optional<T> maximum = std::nullopt;
+	/** Explicit content viewport width in layout pixels; empty uses measured layout. */
 	std::optional<float> viewportWidth = std::nullopt;
+	/** Explicit content viewport height in layout pixels; empty uses measured layout. */
 	std::optional<float> viewportHeight = std::nullopt;
+	/** Width of the trailing step button region in layout pixels. Empty inherits the active theme. */
 	std::optional<float> stepButtonWidth = std::nullopt;
+	/** Step button artwork side length in layout pixels. Empty inherits the active theme. */
 	std::optional<float> stepIconSize = std::nullopt;
 
+	/** Registered font family used for field or label text. Empty inherits the active theme. */
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
+	/** Font weight requested for text, such as 400 for normal. Empty inherits the active theme. */
 	std::optional<uint32_t> fontWeight = std::nullopt;
+	/** Native value delta used by a step button or one drag step. */
 	T step = T{1};
+	/** Arrangement of optional increment and decrement buttons. */
 	NumberInputStepButtons stepButtons =
 		NumberInputStepButtons::TrailingVertical;
+	/** Amount of edit transaction detail requested from InputFieldManager. */
 	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	/** Per-edge border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	/**
+	 * Inset between the root border and its children, in layout pixels. Empty inherits the active
+	 * theme.
+	 */
 	std::optional<Clay_Padding> padding = std::nullopt;
+	/** Text font size in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> fontSize = std::nullopt;
+	/** Additional spacing between glyphs in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> letterSpacing = std::nullopt;
 	/** Layer for text, caret and placeholder when nested in a floating surface. */
 	std::optional<int16_t> floatingZIndex = std::nullopt;
+	/** Font style requested for text. Empty inherits the active theme. */
 	std::optional<FontStyle> fontStyle = std::nullopt;
+	/** Cursor requested while this enabled control is hovered. Empty inherits the active theme. */
 	std::optional<CursorType> cursor = std::nullopt;
+	/** Priority used to arbitrate this control's cursor request. Empty inherits the active theme. */
 	std::optional<uint8_t> cursorPriority = std::nullopt;
 
 	/** Center single-line text and its caret when it fits the field viewport. */
 	bool centerText = false;
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
+	/** Allow display and text selection while preventing value edits. */
 	bool readOnly = false;
+	/** Application validation result used for invalid styling. */
 	bool valid = true;
+	/** Clear editor focus after submission when true. */
 	bool clearFocusOnSubmit = true;
 };
 
+/** Per-instance interaction state maintained by the element and retained by ElementManager. */
 template<NumericValueType T>
 struct NumberInputState {
+	/** Transaction bookkeeping retained for this element instance. */
 	NumericEditSession<T> editSession{};
+	/** Classification of the current numeric editor text. */
 	NumberInputTextStatus textStatus = NumberInputTextStatus::Complete;
+	/** Focus observed during the previous invocation. */
 	bool wasFocused = false;
+	/** Request replacement of editor text from the native value on the next build. */
 	bool forceTextSynchronization = false;
 };
 
+/** App-wide borrowed icon references resolved once for this element definition. */
 struct NumberInputResources {
+	/** Borrowed cached increment icon texture; empty if the semantic key was unavailable. */
 	TextureRef incrementIcon{};
+	/** Borrowed cached decrement icon texture; empty if the semantic key was unavailable. */
 	TextureRef decrementIcon{};
 
+	/** Construct empty icon references. */
 	NumberInputResources() = default;
+	/**
+	 * Resolve available standard icons from the app; missing icons remain empty. @param app Owning
+	 * application whose icon resources outlive these references.
+	 */
 	explicit NumberInputResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 		IconManager& icons = app.icons();
@@ -116,23 +187,42 @@ struct NumberInputResources {
 	}
 };
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<NumericValueType T>
 struct DefaultNumberInputIdentity;
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<>
 struct DefaultNumberInputIdentity<int> {
+	/** Stable definition identity assigned to this native type. */
 	static constexpr FlowDefinitionID value =
 		DefinitionID("FSEL.number-input.int");
 };
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<>
 struct DefaultNumberInputIdentity<unsigned int> {
+	/** Stable definition identity assigned to this native type. */
 	static constexpr FlowDefinitionID value =
 		DefinitionID("FSEL.number-input.uint");
 };
 
+/**
+ * Default stable definition identity for the supported native value types; supply an explicit
+ * definition ID for other NumericValueType specializations.
+ */
 template<>
 struct DefaultNumberInputIdentity<float> {
+	/** Stable definition identity assigned to this native type. */
 	static constexpr FlowDefinitionID value =
 		DefinitionID("FSEL.number-input.float");
 };
@@ -142,23 +232,40 @@ template<
 	NumericValueType T,
 	FlowDefinitionID Definition = DefaultNumberInputIdentity<T>::value>
 struct NumberInput {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = NumberInputParameters<T>;
+	/** Per-instance state owned and retained by ElementManager. */
 	using State = NumberInputState<T>;
+	/** Immutable app-wide resources shared by this element definition. */
 	using Resources = NumberInputResources;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<NumberInput>;
+	/** Frame-scoped context supplied to pointer and logic hooks. */
 	using InteractionContext = ElementInteractionContext<NumberInput>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId = Definition;
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL NumberInput";
 
+	/** Definition-time semantic parts used to address child surfaces and interaction targets. */
 	struct Parts {
+		/** Semantic identity of the content part relative to its owner instance. */
 		static constexpr FlowElementPart content = Part("content");
+		/** Semantic identity of the text part relative to its owner instance. */
 		static constexpr FlowElementPart text = Part("text");
+		/** Semantic identity of the placeholder part relative to its owner instance. */
 		static constexpr FlowElementPart placeholder = Part("placeholder");
+		/** Semantic identity of the decrement part relative to its owner instance. */
 		static constexpr FlowElementPart decrement = Part("decrement");
+		/** Semantic identity of the increment part relative to its owner instance. */
 		static constexpr FlowElementPart increment = Part("increment");
 	};
 
+	/**
+	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onHovered(InteractionContext& context) {
 		if (!isBoundAndEnabled(context.params)) {
 			return;
@@ -184,6 +291,10 @@ struct NumberInput {
 					theme.field.cursorPriority));
 	}
 
+	/**
+	 * ElementBuilder logic hook; reconciles retained interaction state with the current input.
+	 * @param context Borrowed context valid for this callback only.
+	 */
 	static void runLogic(InteractionContext& context) {
 		if (!hasStepButtons(context.params)) {
 			return;
@@ -198,6 +309,10 @@ struct NumberInput {
 		applyStep(context, increment ? 1 : -1);
 	}
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const FSELNumberInputTheme& numberTheme =
 			context.uiManager.template theme<FSELTheme>().numberInputTheme;
@@ -257,7 +372,6 @@ struct NumberInput {
 				.mode = TextFieldMode::SingleLine,
 				.transactionDetail = context.params.transactionDetail,
 				.readOnly = !editable,
-				.allowNewline = false,
 				.softWrap = false,
 				.allowArrowNavigation = true,
 			},
@@ -720,8 +834,20 @@ private:
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr NumberInput<int> kNumberInputInt{};
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr NumberInput<unsigned int> kNumberInputUInt{};
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr NumberInput<float> kNumberInputFloat{};
 
 static_assert(FlowElement<NumberInput<int>>);

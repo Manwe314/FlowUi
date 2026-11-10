@@ -19,4 +19,4 @@ Use `query visual --kind themes`, `changes preview`, `changes apply` and matchin
 
 Theme queries paginate individual reflected fields rather than returning an entire multi-megabyte theme export. Each row keeps the field's `path`, identity, constraints and authored/effective/startup values together with its variant identity and revisions. Use a small `limit`, follow the returned cursor with the same filters, or select exact `variant` and `path` values in `filter`. The inventoried Themes artifact retains the complete nested variant/field document. Built-in input overlay styles are serialized as their actual caret, color and blink settings even though generic editing treats that type as opaque.
 
-Source: [FlowUi::ThemeManager](include/managers/ThemeManager.hpp).
+Source: [FlowUi::ThemeManager](include/FlowUi/Public/managers/ThemeManager.hpp).

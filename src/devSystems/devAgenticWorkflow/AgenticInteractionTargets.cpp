@@ -1,8 +1,8 @@
 #include "devSystems/devAgenticWorkflow/AgenticInteractionTargets.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>

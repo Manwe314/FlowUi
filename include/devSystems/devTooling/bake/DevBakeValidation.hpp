@@ -70,7 +70,12 @@ namespace FlowUi::devSystems::tooling {
 	bool quoted = false;
 	bool escaped = false;
 	bool has_token = false;
-	for (const unsigned char character : expression) {
+	const auto identifier_character = [](unsigned char character) constexpr noexcept {
+		return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
+			   (character >= '0' && character <= '9') || character == '_';
+	};
+	for (std::size_t character_index = 0; character_index < expression.size(); ++character_index) {
+		const unsigned char character = expression[character_index];
 		if (quoted) {
 			if (character < 32)
 				return false;
@@ -89,6 +94,14 @@ namespace FlowUi::devSystems::tooling {
 			has_token = true;
 			continue;
 		}
+		// Older generated initializers reference the removed no-op sampling type.
+		// Reject them before generation; the same text inside a resource key remains valid.
+		constexpr std::string_view obsolete_type = "FlowUi::TextureSamplingMode";
+		const std::size_t type_end = character_index + obsolete_type.size();
+		if (expression.substr(character_index).starts_with(obsolete_type) &&
+			(character_index == 0 || !identifier_character(expression[character_index - 1])) &&
+			(type_end == expression.size() || !identifier_character(expression[type_end])))
+			return false;
 		if (character == '{' || character == '(') {
 			if (delimiter_count == delimiters.size())
 				return false;
@@ -98,14 +111,11 @@ namespace FlowUi::devSystems::tooling {
 				delimiters[--delimiter_count] != (character == '}' ? '{' : '('))
 				return false;
 		}
-		const bool identifier_character =
-			(character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
-			(character >= '0' && character <= '9') || character == '_';
-		if (!identifier_character &&
+		if (!identifier_character(character) &&
 			std::string_view(":<>, \t\n\r.+-={}()").find(static_cast<char>(character)) ==
 				std::string_view::npos)
 			return false;
-		if (identifier_character)
+		if (identifier_character(character))
 			has_token = true;
 	}
 	return has_token && !quoted && !escaped && delimiter_count == 0;

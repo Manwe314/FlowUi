@@ -311,46 +311,31 @@ struct ScenePreviewParams {
     };
 };
 
-using ScenePreviewDefinition = FlowUi::ElementDefinition<
-    ScenePreviewParams,
-    void,
-    void,
-    FLOW_DEF_ID("tutorial_scene_preview")>;
-```
+struct ScenePreview {
+    using Parameters = ScenePreviewParams;
+    using BuildContext = FlowUi::ElementBuildContext<ScenePreview>;
+    static constexpr auto definitionId = FlowUi::DefinitionID("tutorial.scene-preview");
+    static constexpr std::string_view debugName = "Scene Preview";
 
-The build callback gets the viewport texture and stores it for Clay.
-
-```cpp
-inline const ScenePreviewDefinition kScenePreview = {
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    +[](ScenePreviewDefinition::BuildContext& context) {
-        if (!context.params.viewPorts) {
-            return;
-        }
-
-        FlowUi::TextureRef sceneTexture =
-            context.params.viewPorts->getTexture(context.params.viewportKey);
-        sceneTexture.fitMode = FlowUi::TextureFitMode::Contain;
-
-        Clay_ImageElementConfig image{};
-        image.imageData = context.uiManager.storeTexture(sceneTexture);
-
+    static void buildElement(BuildContext& context) {
         Clay_ElementDeclaration root{};
         root.layout.sizing = context.params.sizing;
         root.backgroundColor = FlowUi::Flow_Color("#05070cff");
         root.cornerRadius = CLAY_CORNER_RADIUS(8);
-
-        CLAY(context.uiManager.toClayEID(context.elementID), root) {
-            CLAY_IMAGE(image);
+        if (context.params.viewPorts != nullptr) {
+            auto scene_texture = context.params.viewPorts->getTexture(context.params.viewportKey);
+            scene_texture.fitMode = FlowUi::TextureFitMode::Contain;
+            root.image.imageData = context.uiManager.imageData(scene_texture);
         }
-    },
+        CLAY(context.clayID(), root) {}
+    }
 };
+
+inline constexpr ScenePreview kScenePreview{};
+static_assert(FlowUi::FlowElement<ScenePreview>);
 ```
+
+The tag declares only its parameter capability. The build callback borrows the viewport manager, resolves the current texture, and copies its payload into frame-owned Clay storage with `imageData()`. Storage and the viewport manager retain GPU ownership; the returned pointer must not be kept across frames.
 
 ### Using ViewPortManager::getTexture
 

@@ -6,5 +6,5 @@ var flowui_internal_details =
     [ "UI Renderer", "md_docs_2internals_2ui__renderer.html", null ],
     [ "Texture Registry", "md_docs_2internals_2texture__registry.html", null ],
     [ "Text Layout Engine", "md_docs_2internals_2text__layout__engine.html", null ],
-    [ "Developer Runtime", "md_docs_2internals_2dev__runtime.html", null ]
+    [ "Developer Systems", "md_docs_2internals_2dev__runtime.html", null ]
 ];

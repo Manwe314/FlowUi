@@ -146,7 +146,7 @@ The interaction snapshot advance is important. `UiManager` keeps both a previous
 From user code's point of view, after `beginFrame()` returns:
 
 - `app.ui()` is ready for frame-local UI construction.
-- `UiManager::toClayString()` and `storeTexture()` have fresh arena space.
+- `UiManager::toClayString()` and `imageData()` have fresh arena space.
 - `UiManager::getCurrentFrameInput()` returns this frame's layout-space input.
 - Shortcuts have already had a chance to dispatch from the current input transition.
 - Input fields have already applied keyboard edits for the active field.
@@ -267,7 +267,7 @@ Treat `endFrame()` as the point where UI construction is done. After it returns,
 
 Treat `drawFrame()` as a consuming operation. It uses the render commands prepared by `endFrame()`, records Vulkan work, submits, presents, and advances the frame slot.
 
-Do not store pointers returned from `UiManager::toClayString()` or `UiManager::storeTexture()` beyond the frame. They are backed by frame-local arena storage.
+Do not store pointers returned from `UiManager::toClayString()` or `UiManager::imageData()` beyond the frame. They are backed by frame-local arena storage.
 
 Use stable ids for anything that must survive across frames. The UI tree is rebuilt every frame, but state, resources, input fields, shortcut focus, viewport references, and developer capture need stable names.
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevContent.hpp"
@@ -88,6 +88,20 @@ void testPublicSurface() {
 			&App::setWindowUiCallback)),
 		Status (App::*)(WindowId, FlowUi::UiBuildCallback, FlowUi::ManagedWindowFlags)>);
 	static_assert(std::is_same_v<decltype(&App::dispatchManagedWindows), Status (App::*)()>);
+	static_assert(noexcept(std::declval<FlowUi::UiManager&>().inputFields()));
+	static_assert(noexcept(std::declval<const FlowUi::UiManager&>().shortcuts()));
+	static_assert(noexcept(std::declval<FlowUi::UiManager&>().popups()));
+	static_assert(noexcept(FlowUi::Font::FontVariantData::kerningKey(0u, 0u)));
+	static_assert(noexcept(std::declval<const FlowUi::Font::FontFaceData&>().defaultVariant()));
+	static_assert(!noexcept(std::declval<App&>().ui(FlowUi::InvalidWindowId)));
+	static_assert(!noexcept(std::declval<FlowUi::UiManager&>().toClayString(std::string_view{})));
+	static_assert(
+		!noexcept(std::declval<const FlowUi::ImageManager&>().getTexture(std::string_view{})));
+#if FLOWUI_PUBLIC_VULKAN_INTEROP
+	static_assert(noexcept(std::declval<const FlowUi::ViewPort&>().getKey()));
+	static_assert(noexcept(std::declval<const FlowUi::ViewPort&>().getSize()));
+	static_assert(noexcept(std::declval<const FlowUi::ViewPort&>().textureRef()));
+#endif
 
 	WindowConfigOverrides overrides{};
 	FLOWUI_CHECK(!overrides.width.has_value());
@@ -97,11 +111,11 @@ void testPublicSurface() {
 #if FLOW_UI_DEV_MODE
 	static_assert(FlowUi::DrawableFlowElement<
 		FlowUi::devSystems::interface_elements::DevInterface>);
-	static_assert(FlowUi::HasState<
-		FlowUi::devSystems::interface_elements::DevInterface>);
-	static_assert(std::same_as<
-		FlowUi::StateOf<FlowUi::devSystems::interface_elements::DevInterface>,
-		FlowUi::devSystems::DevInterfaceState>);
+	static_assert(!FlowUi::HasState<FlowUi::devSystems::interface_elements::DevInterface>);
+	static_assert(
+		std::same_as<decltype(FlowUi::devSystems::interface_elements::DevInterfaceParameters{}
+								  .interface_state),
+					 FlowUi::devSystems::DevInterfaceState*>);
 	static_assert(std::same_as<
 		FlowUi::ParametersOf<FlowUi::devSystems::interface_elements::DevInterface>,
 		FlowUi::devSystems::interface_elements::DevInterfaceParameters>);

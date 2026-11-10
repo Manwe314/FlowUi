@@ -37,7 +37,7 @@ FLOWUI_DEV_SCHEMA(State, FLOWUI_DEV_FIELD(State, selections))
 
 void verifyElementCatalogueCachingAndTreeCorrelation() {
 	using namespace FlowUi;
-	using namespace FlowUi::devMode;
+	using namespace FlowUi::devSystems::tooling;
 	using namespace FlowUi::devSystems::tooling;
 
 	DevSchemaRegistry schemas;
@@ -72,7 +72,7 @@ void verifyElementCatalogueCachingAndTreeCorrelation() {
 }
 
 void verifyUnboundCategoriesAreEmpty() {
-	FlowUi::devMode::DevCatalogues catalogues;
+	FlowUi::devSystems::tooling::DevCatalogues catalogues;
 	assert(catalogues.queryImages().empty());
 	assert(catalogues.queryIcons().empty());
 	assert(catalogues.queryAtlases().empty());

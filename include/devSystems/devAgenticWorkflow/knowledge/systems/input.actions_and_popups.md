@@ -19,4 +19,4 @@ Use `interaction targets` for window coordinates, Clay identities and optional F
 
 Read `interaction.execution` for offsets, consumer delay and recording. Offset `0` is valid immediately after baseline synchronization. Optionally begin at offset `2` or `3` when startup layout frames are not representative; there is no mandatory delay.
 
-Source: [FlowUi::ActionManager](include/managers/ActionManager.hpp).
+Source: [FlowUi::ActionManager](include/FlowUi/Public/managers/ActionManager.hpp).

@@ -1,9 +1,10 @@
 var flowui_api_cheat_sheet =
 [
-    [ "All Public API", "md_docs_2api_2all__public__api.html", null ],
+    [ "Public API Index", "md_docs_2api_2all__public__api.html", null ],
     [ "App API", "md_docs_2api_2app.html", null ],
     [ "Configuration API", "md_docs_2api_2config.html", null ],
     [ "Element API", "md_docs_2api_2elements.html", null ],
+    [ "Action Manager API", "md_docs_2api_2action__manager.html", null ],
     [ "UI Manager API", "md_docs_2api_2ui__manager.html", null ],
     [ "Theme Manager API", "md_docs_2api_2theme__manager.html", null ],
     [ "Font Manager API", "md_docs_2api_2font__manager.html", null ],

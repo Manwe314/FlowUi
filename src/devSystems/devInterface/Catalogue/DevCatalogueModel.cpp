@@ -2,9 +2,9 @@
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/IconManager.hpp"
-#include "managers/ShortcutManager.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/IconManager.hpp"
+#include "FlowUi/Public/managers/ShortcutManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -67,17 +67,17 @@ std::string dimensions(uint32_t width, uint32_t height) {
 		name.remove_prefix(8);
 	return std::string(name);
 }
-std::string resource_status(devMode::DevResourceStatus status) {
+std::string resource_status(tooling::DevResourceStatus status) {
 	switch (status) {
-	case devMode::DevResourceStatus::Unloaded:
+	case tooling::DevResourceStatus::Unloaded:
 		return "Unloaded";
-	case devMode::DevResourceStatus::Loading:
+	case tooling::DevResourceStatus::Loading:
 		return "Loading";
-	case devMode::DevResourceStatus::Ready:
+	case tooling::DevResourceStatus::Ready:
 		return "Ready";
-	case devMode::DevResourceStatus::Failed:
+	case tooling::DevResourceStatus::Failed:
 		return "Failed";
-	case devMode::DevResourceStatus::Retiring:
+	case tooling::DevResourceStatus::Retiring:
 		return "Retiring";
 	}
 	return "Unknown";
@@ -143,7 +143,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 		asset.status = "Registered definition";
 		const auto adapters = app.devTooling().schemas().elementPreviews();
 		const auto adapter = std::ranges::find(
-			adapters, entry.definition, &devMode::DevSchemaRegistry::ElementPreview::definition);
+			adapters, entry.definition, &tooling::DevSchemaRegistry::ElementPreview::definition);
 		if (adapter != adapters.end()) {
 			if (!adapter->set_name.empty())
 				asset.group = adapter->set_name;
@@ -195,7 +195,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 	}
 	for (const auto& [name, index] : logical_icons) {
 		auto& asset = assets[index];
-		std::ranges::sort(asset.icons, {}, &devMode::DevIconCatalogEntry::targetWidth);
+		std::ranges::sort(asset.icons, {}, &tooling::DevIconCatalogEntry::targetWidth);
 		if (!asset.icons.empty())
 			asset.icon = asset.icons.front();
 		asset.status = asset.icons.empty() ? "Registered · no cached raster"
@@ -250,7 +250,7 @@ void collect(App& app, DevInterfaceState& interface_state) {
 		fact(asset, "Representation", "Decoded RGBA8 sRGB");
 	}
 	for (const auto& entry : catalogues.queryActions()) {
-		const auto kind = entry.kind == devMode::DevActionKind::AppActionBinding
+		const auto kind = entry.kind == tooling::DevActionKind::AppActionBinding
 							  ? "Application bindings"
 							  : "UI recipes";
 		const auto stable = std::string(kind) + "/" + std::to_string(entry.stableId);
@@ -357,51 +357,49 @@ void collect(App& app, DevInterfaceState& interface_state) {
 		}
 	}
 	for (const auto& entry : catalogues.queryAtlases()) {
-		const bool icon = entry.kind == devMode::DevAtlasKind::IconVectorAtlas;
-		const uint32_t page_count = icon ? 1u : std::max(1u, entry.allocatedRegions);
-		for (uint32_t page = 0; page < page_count; ++page) {
-			const auto page_index = icon ? entry.pageIndex : page;
-			const auto stable = std::string(icon ? "icon/" : "font/") + std::to_string(page_index);
-			auto& asset = append(assets, Domain::Atlases,
-								 std::string(entry.debugName) + (icon ? " · page " : " · layer ") +
-									 std::to_string(page_index),
-								 icon ? "Icon pages" : "Font layers", stable);
-			asset.atlas = entry;
-			asset.atlas.pageIndex = page_index;
-			asset.generation = entry.atlasTexture.packed() ^ entry.atlasImageView.packed();
-			asset.atlas.atlasKey.name = {};
-			asset.atlas.debugName = {};
-			asset.status = "Storage observation";
-			asset.detail = icon ? "Icon atlas region map; pages are storage, not individual icons."
-								: "MSDF storage requires font reconstruction; raw color previews "
-								  "are unavailable.";
-			fact(asset, "Page dimensions", dimensions(entry.width, entry.height));
-			fact(asset, "Layers", std::to_string(entry.layerCount));
-			fact(asset, icon ? "Page" : "Layer", std::to_string(page_index));
-			if (!icon) {
-				const auto owner =
-					std::ranges::find_if(assets, [page_index](const auto& candidate) {
-						return candidate.domain == Domain::Fonts &&
-							   candidate.font.atlasLayer == page_index;
-					});
-				if (owner != assets.end()) {
-					asset.font = owner->font;
-					fact(asset, "Font owner", owner->name);
-				}
-				fact(asset, "Allocation accounting", "Shared atlas image across font layers");
+		const bool icon = entry.kind == tooling::DevAtlasKind::IconVectorAtlas;
+		const auto page_index = entry.pageIndex;
+		const auto stable = std::string(icon ? "icon/" : "font/") + std::to_string(page_index);
+		auto& asset = append(assets, Domain::Atlases,
+							 std::string(entry.debugName) + (icon ? " · page " : " · layer ") +
+								 std::to_string(page_index),
+							 icon ? "Icon pages" : "Font layers", stable);
+		asset.atlas = entry;
+		asset.generation = entry.atlasTexture.packed() ^ entry.atlasImageView.packed();
+		asset.atlas.atlasKey.name = {};
+		asset.atlas.debugName = {};
+		asset.status = icon ? "Storage observation"
+					   : entry.atlasTexture ? "Raw RGB MSDF storage" : "MSDF atlas preview unavailable";
+		asset.detail = icon ? "Icon atlas region map; pages are storage, not individual icons."
+							: "Stored RGB distance channels for this font layer, displayed with "
+							  "opaque alpha. Text rendering reconstructs glyph edges from these channels.";
+		fact(asset, "Page dimensions", dimensions(entry.width, entry.height));
+		fact(asset, "Layers", std::to_string(entry.layerCount));
+		fact(asset, icon ? "Page" : "Layer", std::to_string(page_index));
+		if (!icon) {
+			const auto owner =
+				std::ranges::find_if(assets, [page_index](const auto& candidate) {
+					return candidate.domain == Domain::Fonts &&
+						   candidate.font.atlasLayer == page_index;
+				});
+			if (owner != assets.end()) {
+				asset.font = owner->font;
+				fact(asset, "Font owner", owner->name);
 			}
-			fact(asset, icon ? "Allocated regions" : "Used layers",
-				 std::to_string(entry.allocatedRegions));
-			fact(asset, "Reported allocation bytes", std::to_string(entry.gpuMemoryBytes));
-			fact(asset, icon ? "Occupied area ratio" : "Used layer ratio",
-				 std::to_string(entry.occupancyRatio));
+			fact(asset, "Preview texture", std::to_string(entry.atlasTexture.packed()));
+			fact(asset, "Allocation accounting", "Shared atlas image across font layers");
 		}
+		if (icon)
+			fact(asset, "Allocated regions", std::to_string(entry.allocatedRegions));
+		fact(asset, "Reported allocation bytes", std::to_string(entry.gpuMemoryBytes));
+		fact(asset, icon ? "Occupied area ratio" : "Used layer ratio",
+			 std::to_string(entry.occupancyRatio));
 	}
 	static constexpr std::array query_domains{Domain::Images,  Domain::Icons,	Domain::Atlases,
 											  Domain::Fonts,   Domain::Actions, Domain::Themes,
 											  Domain::Elements};
 	for (size_t query_index = 0; query_index < query_domains.size(); ++query_index) {
-		if (!catalogues.queryFailed(static_cast<devMode::DevCatalogueQuery>(query_index)))
+		if (!catalogues.queryFailed(static_cast<tooling::DevCatalogueQuery>(query_index)))
 			continue;
 		const auto domain = query_domains[query_index];
 		state.domain_status[domain_index(domain)] = "Observation failed; previous data retained";
@@ -752,6 +750,8 @@ void service_catalogue(App& app, DevInterfaceState& interface_state, bool visibl
 			textures.emplace_back(asset.image.textureHandle);
 		if (asset.icon.atlasTexture)
 			textures.emplace_back(asset.icon.atlasTexture);
+		if (asset.atlas.atlasTexture)
+			textures.emplace_back(asset.atlas.atlasTexture);
 		if (asset.viewport.texture)
 			textures.emplace_back(asset.viewport.texture);
 		if (asset.domain == Domain::Icons && state.selected_identity)

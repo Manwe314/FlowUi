@@ -2,17 +2,17 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** App-owned dependencies and identities made available to the interface root. */
+/* App-owned dependencies and identities made available to the interface root. */
 struct DevInterfaceParameters {
 	App* app = nullptr;
 	DevInterfaceState* interface_state = nullptr;
@@ -20,7 +20,7 @@ struct DevInterfaceParameters {
 	WindowId mainWindowId = MainWindowId;
 };
 
-/** Singleton drawable root for the dedicated developer-interface window. */
+/* Singleton drawable root for the dedicated developer-interface window. */
 struct DevInterface {
 	using Parameters = DevInterfaceParameters;
 	using BuildContext = ElementBuildContext<DevInterface>;

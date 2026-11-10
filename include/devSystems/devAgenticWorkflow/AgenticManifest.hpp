@@ -1,5 +1,9 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+
+/** @file
+ * @brief Public AgenticManifest declarations for optional development services.
+ */
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticSnapshot.hpp"
 
@@ -7,29 +11,62 @@ namespace FlowUi::devSystems::agentic {
 
 /** Inventory record, verified against final bytes and capture-root confinement. */
 struct AgenticArtifact {
+	/** @brief Stable artifact identity within the sealed capture inventory. */
 	std::string artifact_id;
+	/** @brief Validated artifact path relative to its capture root. */
 	std::string path;
+	/** @brief Artifact MIME type used to interpret its final bytes. */
 	std::string media_type;
+	/** @brief Artifact schema identity used for strict versioned validation. */
 	std::string schema;
+	/** @brief Version of the serialized artifact schema. */
 	std::string schema_version;
+	/**
+	 * @brief Schema convention used for exact integers; decimal_strings preserves 64-bit
+	 * identities.
+	 */
 	std::string integer_encoding;
+	/** @brief Lowercase SHA-256 digest of the exact final artifact bytes. */
 	std::string sha256;
+	/** @brief Exact final artifact size in bytes, verified against the inventory. */
 	std::uint64_t bytes = 0;
 };
 /** Validated sealed capture, including its preserved envelope. */
 struct AgenticManifest {
+	/** @brief Filesystem location of the authoritative sealed manifest. */
 	std::filesystem::path manifest_path;
+	/**
+	 * @brief Owned validated manifest envelope, preserved alongside decoded inventory fields.
+	 */
 	Json document;
+	/**
+	 * @brief Owned immutable artifact payloads or inventory entries associated with this capture.
+	 */
 	std::vector<AgenticArtifact> artifacts;
+	/**
+	 * @brief Immutable application run identity, separate from job and capture identities.
+	 */
 	std::string run_id;
+	/** @brief Immutable capture identity within its run. */
 	std::string capture_id;
+	/**
+	 * @brief Content digest used to bind immutable evidence or compiled workload identity.
+	 */
 	std::string digest;
+	/**
+	 * @brief Whether the sealed evidence explicitly contains incomplete requested coverage.
+	 */
 	bool partial = false;
 };
 /** Immutable store writer and offline inventory reader. Never initializes an App or GPU. */
 class AgenticStore {
 public:
+	/**
+	 * @brief Retain store root and admission limits; construction does not create files or
+	 * initialize a store.
+	 */
 	explicit AgenticStore(std::filesystem::path root, AgenticLimits limits = {});
+	/** @brief Borrow the configured store root; valid while this store object lives. */
 	[[nodiscard]] const std::filesystem::path& root() const noexcept;
 	/** Explicit initialization reserves a store ID; constructors never create files. */
 	[[nodiscard]] Status initialize() noexcept;
@@ -57,6 +94,7 @@ private:
 };
 /** SHA-256 of exact final bytes; lowercase hexadecimal. */
 [[nodiscard]] std::string sha256(std::span<const std::uint8_t> bytes);
+/** @brief Return the lowercase SHA-256 digest of the exact supplied bytes. */
 [[nodiscard]] std::string sha256(std::string_view bytes);
 /** Validate inventory/schema, reference integrity, checksums and safe relative paths. */
 [[nodiscard]] Result<AgenticManifest>
@@ -66,9 +104,17 @@ read_manifest(const std::filesystem::path& path, bool verify_hashes = true,
 [[nodiscard]] Result<std::vector<std::uint8_t>>
 read_artifact(const AgenticManifest& manifest, std::string_view artifact_id,
 			  std::uint64_t maximum_bytes = 1024u * 1024u) noexcept;
+/**
+ * @brief Read and parse only an inventoried JSON artifact under maximum_bytes and capture-root
+ * path bounds.
+ */
 [[nodiscard]] Result<Json>
 read_artifact_json(const AgenticManifest& manifest, std::string_view artifact_id,
 				   std::uint64_t maximum_bytes = 16u * 1024u * 1024u) noexcept;
+/**
+ * @brief Return a bounded filtered artifact page; cursor must match the immutable manifest and
+ * query digests.
+ */
 [[nodiscard]] Result<AgenticPage>
 query_artifact(const AgenticManifest& manifest, std::string_view artifact_id,
 			   const Json& filter = Json::make_object(), std::uint32_t limit = 100,

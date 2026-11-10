@@ -106,342 +106,116 @@ $(function() {
   <div class="headertitle"><div class="title">Element API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Aliases</h1>
-<h2><b>FlowElementId</b></h2>
-<h3><span class="tt">using FlowElementId = uint64_t</span></h3>
-<p>Stable hashed id for an element instance. It is used for state lookup and stable generated child ids.</p>
-<h2><b>FlowDefinitionId</b></h2>
-<h3><span class="tt">using FlowDefinitionId = uint64_t</span></h3>
-<p>Stable hashed id for an element definition. It identifies the element definition specialization.</p>
-<h1>Enums</h1>
-<h2><b>ElementDrawOptions</b></h2>
-<h3><span class="tt">enum class ElementDrawOptions : uint32_t</span></h3>
-<p>Flags controlling which callbacks ElementBuilder executes. Combine values with operator| to skip event, logic, or build callbacks for one invocation.</p>
-<h1>Public Structs</h1>
-<h2><b>InteractionSnapshot</b></h2>
-<h3><span class="tt">struct InteractionSnapshot</span></h3>
-<p>Snapshot of hover, press, hold, and release state for one completed frame. Element callbacks query the previous snapshot for stable interaction decisions.</p>
-<h2><b>NoElementParameters</b></h2>
-<h3><span class="tt">struct NoElementParameters</span></h3>
-<p>Empty marker type used by elements with no parameter struct.</p>
-<h2><b>NoElementState</b></h2>
-<h3><span class="tt">struct NoElementState</span></h3>
-<p>Empty marker type used by elements with no state struct.</p>
-<h2><b>NoElementResources</b></h2>
-<h3><span class="tt">struct NoElementResources</span></h3>
-<p>Empty marker type used by elements with no shared resource struct.</p>
-<h2><b>ElementBuildContext</b></h2>
-<h3><span class="tt">template &lt;typename Parameters&gt; struct ElementBuildContext</span></h3>
-<p>Context passed to construct and build callbacks. It exposes the active UiManager, current element id, parameters, and child-id helper.</p>
-<h2><b>ElementInteractionContext</b></h2>
-<h3><span class="tt">template &lt;typename Parameters&gt; struct ElementInteractionContext</span></h3>
-<p>Context passed to event and logic callbacks. It exposes UiManager, element id, parameters, previous interaction data, and child-id helper.</p>
-<h2><b>ElementDefinition</b></h2>
-<h3><span class="tt">template &lt;typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal&gt; struct ElementDefinition</span></h3>
-<p>Typed definition for a FlowUi element. It binds params, state, resources, definition id, callback fields, resource storage, and state storage to an element builder flow.</p>
-<h2><b>ElementBuilder</b></h2>
-<h3><span class="tt">template &lt;typename Parameters, typename State, typename Resources, uint64_t DefinitionId, bool IsDevInternal&gt; class ElementBuilder</span></h3>
-<p>Builder returned by UiManager::createElement. It stores definition, id, and params until draw or construct executes the element flow.</p>
-<h1>Public API</h1>
-<h2><b>toFlowId</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">constexpr FlowElementId toFlowId(std::string_view elementName) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">elementName</span> string to hash into an element instance id.</li>
-</ul>
-<p>Hashes a runtime string into a stable FlowUi element id. Use this when looking up or managing state for an element instance outside the builder path.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> saveButtonId = <a class="code hl_function" href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga0bedfbab552fbf49a5a1d31ed8abe9f8"><div class="ttname"><a href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a></div><div class="ttdeci">constexpr FlowElementId toFlowId(std::string_view elementName) noexcept</div><div class="ttdoc">Hash an element name into a FlowUi element id.</div><div class="ttdef"><b>Definition</b> App.hpp:70</div></div>
-<div class="ttc" id="agroup__flowui__app_html_ga4b108885c4ed16c331241f6a02d70a93"><div class="ttname"><a href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a></div><div class="ttdeci">uint64_t FlowElementId</div><div class="ttdoc">ID type for element instances.</div><div class="ttdef"><b>Definition</b> App.hpp:30</div></div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga49ddb3f056407bc53580f77d61664c2a">Full Doxygen reference</a>.</p>
-<h2><b>toFlowId</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">template &lt;std::size_t N&gt; constexpr FlowElementId toFlowId(const char (&amp;elementName)[N]) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">elementName</span> string literal to hash into an element instance id.</li>
-</ul>
-<p>String-literal overload for <span class="tt">toFlowId</span>. It avoids counting the terminating null byte and can be used in constant expressions.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> saveButtonId = <a class="code hl_function" href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a>(<span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">Full Doxygen reference</a>.</p>
-<h2><b>toFlowDefinitionId</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowDefinitionId</span></li>
-<li><b>Arguments:</b> <span class="tt">definitionName</span> string to hash into an element definition id.</li>
-</ul>
-<p>Hashes a runtime string into a stable FlowUi element definition id. This is the function behind definition ids used by <span class="tt">ElementDefinition</span>.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b89fed28a3ee56a6e7ae71a1aef9569">FlowUi::FlowDefinitionId</a> buttonDefinitionId = <a class="code hl_function" href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">FlowUi::toFlowDefinitionId</a>(<span class="stringliteral">&quot;button&quot;</span>);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga4b89fed28a3ee56a6e7ae71a1aef9569"><div class="ttname"><a href="group__flowui__app.html#ga4b89fed28a3ee56a6e7ae71a1aef9569">FlowUi::FlowDefinitionId</a></div><div class="ttdeci">uint64_t FlowDefinitionId</div><div class="ttdoc">ID type for element definitions.</div><div class="ttdef"><b>Definition</b> App.hpp:38</div></div>
-<div class="ttc" id="agroup__flowui__app_html_gadd3c481eff5accc8b1891802844a95a9"><div class="ttname"><a href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">FlowUi::toFlowDefinitionId</a></div><div class="ttdeci">constexpr FlowDefinitionId toFlowDefinitionId(std::string_view definitionName) noexcept</div><div class="ttdoc">Hash a definition name into a FlowUi definition id.</div><div class="ttdef"><b>Definition</b> App.hpp:89</div></div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#gad4ef9ba85d5584740ebdaba96078d2a6">Full Doxygen reference</a>.</p>
-<h2><b>toFlowDefinitionId</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">template &lt;std::size_t N&gt; constexpr FlowDefinitionId toFlowDefinitionId(const char (&amp;definitionName)[N]) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowDefinitionId</span></li>
-<li><b>Arguments:</b> <span class="tt">definitionName</span> string literal to hash into an element definition id.</li>
-</ul>
-<p>String-literal overload for <span class="tt">toFlowDefinitionId</span>. Prefer this through <span class="tt">FLOW_DEF_ID("name")</span> when declaring custom element definition types.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">constexpr</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b89fed28a3ee56a6e7ae71a1aef9569">FlowUi::FlowDefinitionId</a> buttonDefinitionId = <a class="code hl_function" href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">FlowUi::toFlowDefinitionId</a>(<span class="stringliteral">&quot;button&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#gadd3c481eff5accc8b1891802844a95a9">Full Doxygen reference</a>.</p>
-<h2><b>createIndexedFlowId</b> <span class="tt">1/3</span></h2>
-<h3><span class="tt">constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">rootId</span> parent/root Flow id, <span class="tt">index</span> numeric child/index value.</li>
-</ul>
-<p>Creates a stable child-style id by mixing an existing Flow id with an index. This is useful for repeated UI rows or generated children where a string id would be awkward.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> rowId = <a class="code hl_function" href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a>(<span class="stringliteral">&quot;asset-list/row&quot;</span>, rowIndex);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga02a4d740ce7ac4121c6ba24f0b0bcd52"><div class="ttname"><a href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a></div><div class="ttdeci">constexpr FlowElementId createIndexedFlowId(FlowElementId rootId, uint64_t index) noexcept</div><div class="ttdoc">Create a stable child/index id from a root and numeric index.</div><div class="ttdef"><b>Definition</b> App.hpp:109</div></div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#gab3403318b43d5e0e47a7b32d0dddb12b">Full Doxygen reference</a>.</p>
-<h2><b>createIndexedFlowId</b> <span class="tt">2/3</span></h2>
-<h3><span class="tt">constexpr FlowElementId createIndexedFlowId(std::string_view rootName, uint64_t index) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">rootName</span> parent/root name, <span class="tt">index</span> numeric child/index value.</li>
-</ul>
-<p>Hashes the root name and then mixes in the numeric index. Use this when generating stable ids from a named collection or repeated layout section.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> rowId = <a class="code hl_function" href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a>(<span class="stringliteral">&quot;asset-list/row&quot;</span>, rowIndex);</div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">Full Doxygen reference</a>.</p>
-<h2><b>createIndexedFlowId</b> <span class="tt">3/3</span></h2>
-<h3><span class="tt">template &lt;std::size_t N&gt; constexpr FlowElementId createIndexedFlowId(const char (&amp;rootName)[N], uint64_t index) noexcept</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">FlowElementId</span></li>
-<li><b>Arguments:</b> <span class="tt">rootName</span> string literal parent/root name, <span class="tt">index</span> numeric child/index value.</li>
-</ul>
-<p>String-literal overload for indexed id creation. It is useful for compile-time root names paired with runtime loop indexes.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__app.html#ga4b108885c4ed16c331241f6a02d70a93">FlowUi::FlowElementId</a> rowId = <a class="code hl_function" href="group__flowui__app.html#ga02a4d740ce7ac4121c6ba24f0b0bcd52">FlowUi::createIndexedFlowId</a>(<span class="stringliteral">&quot;asset-list/row&quot;</span>, rowIndex);</div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#gac4775bf6801619b1dc54427bc63d43a6">Full Doxygen reference</a>.</p>
-<h2><b>operator|</b></h2>
-<h3><span class="tt">ElementDrawOptions operator|(ElementDrawOptions a, ElementDrawOptions b)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementDrawOptions</span></li>
-<li><b>Arguments:</b> <span class="tt">a</span> first option flag, <span class="tt">b</span> second option flag.</li>
-</ul>
-<p>Combines draw-option flags for <span class="tt">ElementBuilder::draw()</span> and <span class="tt">ElementBuilder::construct()</span>. This is the normal way to skip multiple callback phases in one builder call.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> options = <a class="code hl_enumvalue" href="group__flowui__element__system.html#gga061f4f4bff223fbdde2f92f78d1f28a3ae1ee3d1f24e799c63d454d0e4dbf3d2e">FlowUi::ElementDrawOptions::SkipEventCallbacks</a> | <a class="code hl_enumvalue" href="group__flowui__element__system.html#gga061f4f4bff223fbdde2f92f78d1f28a3a9f21f11f159d57fb45b47d51e1d6da7e">FlowUi::ElementDrawOptions::SkipLogicCallback</a>;</div>
-<div class="ttc" id="agroup__flowui__element__system_html_gga061f4f4bff223fbdde2f92f78d1f28a3a9f21f11f159d57fb45b47d51e1d6da7e"><div class="ttname"><a href="group__flowui__element__system.html#gga061f4f4bff223fbdde2f92f78d1f28a3a9f21f11f159d57fb45b47d51e1d6da7e">FlowUi::ElementDrawOptions::SkipLogicCallback</a></div><div class="ttdeci">@ SkipLogicCallback</div><div class="ttdoc">Skip runLogic.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:716</div></div>
-<div class="ttc" id="agroup__flowui__element__system_html_gga061f4f4bff223fbdde2f92f78d1f28a3ae1ee3d1f24e799c63d454d0e4dbf3d2e"><div class="ttname"><a href="group__flowui__element__system.html#gga061f4f4bff223fbdde2f92f78d1f28a3ae1ee3d1f24e799c63d454d0e4dbf3d2e">FlowUi::ElementDrawOptions::SkipEventCallbacks</a></div><div class="ttdeci">@ SkipEventCallbacks</div><div class="ttdoc">Skip onHovered, onPressed, onHeld, and onReleased.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:708</div></div>
-</div><!-- fragment --><p>See: <a href="group__flowui__element__system.html#ga83272f87e6796154839aa8e2df16f531">Full Doxygen reference</a>.</p>
-<h2><b>elementDrawOptionsHas</b></h2>
-<h3><span class="tt">bool elementDrawOptionsHas(ElementDrawOptions value, ElementDrawOptions flag)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">value</span> combined option value, <span class="tt">flag</span> flag to test.</li>
-</ul>
-<p>Checks whether an <span class="tt">ElementDrawOptions</span> value contains a specific flag. This is mostly useful inside infrastructure or advanced element helper code.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> skipsLogic = <a class="code hl_function" href="group__flowui__element__system.html#ga1a34831c629e5d93e711ca00c1f12bf2">FlowUi::elementDrawOptionsHas</a>(options, <a class="code hl_enumvalue" href="group__flowui__element__system.html#gga061f4f4bff223fbdde2f92f78d1f28a3a9f21f11f159d57fb45b47d51e1d6da7e">FlowUi::ElementDrawOptions::SkipLogicCallback</a>);</div>
-<div class="ttc" id="agroup__flowui__element__system_html_ga1a34831c629e5d93e711ca00c1f12bf2"><div class="ttname"><a href="group__flowui__element__system.html#ga1a34831c629e5d93e711ca00c1f12bf2">FlowUi::elementDrawOptionsHas</a></div><div class="ttdeci">bool elementDrawOptionsHas(ElementDrawOptions value, ElementDrawOptions flag)</div><div class="ttdoc">Return whether an ElementDrawOptions flag is set.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:747</div></div>
-</div><!-- fragment --><p>See: <a href="group__flowui__element__system.html#ga1a34831c629e5d93e711ca00c1f12bf2">Full Doxygen reference</a>.</p>
-<h2><b>ElementBuilder</b></h2>
-<h3><span class="tt">ElementBuilder(UiManager&amp; uiManager, const DefinitionType* definition, std::string elementID)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder</span></li>
-<li><b>Arguments:</b> <span class="tt">uiManager</span> active UI manager, <span class="tt">definition</span> element definition pointer, <span class="tt">elementID</span> stable element instance id.</li>
-</ul>
-<p>Constructs a builder for one element invocation. User code normally gets builders from <span class="tt">UiManager::createElement()</span> rather than calling this constructor directly.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> builder = app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>);</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ElementBuilder.html#a46780ec97486821e4b9f366bbab8fdab">Full Doxygen reference</a>.</p>
-<h2><b>setParameters</b> <span class="tt">1/2</span></h2>
-<h3><span class="tt">ElementBuilder&amp; setParameters(const ParametersType&amp; parameters)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">parameters</span> parameter values to copy.</li>
-</ul>
-<p>Copies parameter values into the builder. The stored parameters are passed to interaction, logic, construct, and build callbacks.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).setParameters(ButtonParams{.label = <span class="stringliteral">&quot;Save&quot;</span>}).draw();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ElementBuilder.html#a55159e63934e32a22bd30889b5639a99">Full Doxygen reference</a>.</p>
-<h2><b>setParameters</b> <span class="tt">2/2</span></h2>
-<h3><span class="tt">ElementBuilder&amp; setParameters(ParametersType&amp;&amp; parameters)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">parameters</span> parameter values to move.</li>
-</ul>
-<p>Moves parameter values into the builder. Use this when parameter construction is dynamic or owns heavier data.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).setParameters(ButtonParams{.label = <span class="stringliteral">&quot;Save&quot;</span>}).draw();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ElementBuilder.html#a711158a45396b9b1a83522eaa051f26e">Full Doxygen reference</a>.</p>
-<h2><b>mergeParams</b></h2>
-<h3><span class="tt">template &lt;typename MergeFn&gt; ElementBuilder&amp; mergeParams(MergeFn&amp;&amp; mergeFn)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">mergeFn</span> callable invoked with <span class="tt">ParametersType&amp;</span>.</li>
-</ul>
-<p>Mutates the builder's existing parameter storage. This is useful when defaults are mostly correct and only a few fields need to be changed.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).mergeParams([](ButtonParams&amp; params) { params.enabled = <span class="keyword">false</span>; }).draw();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ElementBuilder.html#a0cb3694ec3a0bc7ac94feee7217f4788">Full Doxygen reference</a>.</p>
-<h2><b>withElementID</b></h2>
-<h3><span class="tt">ElementBuilder&amp; withElementID(std::string_view elementID)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">elementID</span> replacement element id string.</li>
-</ul>
-<p>Replaces the id stored by the builder. Use it when a builder is created before the final stable id is known.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">buttonBuilder.withElementID(<span class="stringliteral">&quot;toolbar/save-secondary&quot;</span>).draw();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ElementBuilder.html#addcbec2dd601b254be83f4114cb679f7">Full Doxygen reference</a>.</p>
-<h2><b>setDevInternalCapture</b></h2>
-<h3><span class="tt">ElementBuilder&amp; setDevInternalCapture(bool isDevInternal = true)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ElementBuilder&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">isDevInternal</span> whether dev capture should mark this invocation internal.</li>
-</ul>
-<p>Controls how this element invocation is captured in developer mode. Normal user elements usually do not need this.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kDevPanel, <span class="stringliteral">&quot;flowui/dev/panel&quot;</span>).setDevInternalCapture(<span class="keyword">true</span>).draw();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ElementBuilder.html#ab2a74747085369a4b157d804c85f9699">Full Doxygen reference</a>.</p>
-<h2><b>construct</b></h2>
-<h3><span class="tt">void construct(ElementDrawOptions options = ElementDrawOptions::Default)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">options</span> callback phases to skip.</li>
-</ul>
-<p>Runs enabled callbacks and opens a constructed Clay root using the definition's <span class="tt">constructElement</span> callback. Emit child nodes after this call, then close the element with <span class="tt">UiManager::drawConstructed()</span>.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kPanel, <span class="stringliteral">&quot;settings&quot;</span>).construct();</div>
-</div><!-- fragment --><p>See: <a href="group__flowui__element__system.html#gadd7adf768823bd01379c9054c516448f">Full Doxygen reference</a>.</p>
-<h2><b>draw</b></h2>
-<h3><span class="tt">void draw(ElementDrawOptions options = ElementDrawOptions::Default)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">void</span></li>
-<li><b>Arguments:</b> <span class="tt">options</span> callback phases to skip.</li>
-</ul>
-<p>Runs enabled callbacks and emits the element through its <span class="tt">buildElement</span> callback. This is the most common final call for a FlowUi element builder.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">app.ui().createElement(kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>).draw();</div>
-</div><!-- fragment --><p>See: <a href="group__flowui__element__system.html#ga7cefdbb08aab1d49879d08adc61d0509">Full Doxygen reference</a>.</p>
-<h2><b>contains</b></h2>
-<h3><span class="tt">static bool contains(const std::vector&lt;Clay_ElementId&gt;&amp; list, Clay_ElementId id)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">list</span> interaction id list, <span class="tt">id</span> Clay element id to find.</li>
-</ul>
-<p>Checks whether a Clay element id exists in an interaction list. Comparison uses the underlying Clay id value.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> hasButton = <a class="code hl_function" href="structFlowUi_1_1InteractionSnapshot.html#a63d6503a6bcc503717b0ad8ee9fca8cd">FlowUi::InteractionSnapshot::contains</a>(snapshot.pressedElementIds, buttonId);</div>
-<div class="ttc" id="astructFlowUi_1_1InteractionSnapshot_html_a63d6503a6bcc503717b0ad8ee9fca8cd"><div class="ttname"><a href="structFlowUi_1_1InteractionSnapshot.html#a63d6503a6bcc503717b0ad8ee9fca8cd">FlowUi::InteractionSnapshot::contains</a></div><div class="ttdeci">static bool contains(const std::vector&lt; Clay_ElementId &gt; &amp;list, Clay_ElementId id)</div><div class="ttdoc">Return whether a list contains an element with the same Clay id.</div><div class="ttdef"><b>Definition</b> FlowUiElementStructs.hpp:76</div></div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1InteractionSnapshot.html#a63d6503a6bcc503717b0ad8ee9fca8cd">Full Doxygen reference</a>.</p>
-<h2><b>isHovered</b></h2>
-<h3><span class="tt">bool isHovered(Clay_ElementId id) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">id</span> Clay element id.</li>
-</ul>
-<p>Reports whether the element was hovered in this snapshot. Element callbacks commonly use this for child interaction checks.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> hovered = context.previousInteraction.isHovered(rootId);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1InteractionSnapshot.html#ad98a8c6a0e0664f27c24c97c11e1e031">Full Doxygen reference</a>.</p>
-<h2><b>isPressed</b></h2>
-<h3><span class="tt">bool isPressed(Clay_ElementId id) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">id</span> Clay element id.</li>
-</ul>
-<p>Reports whether the element received a primary pointer press in this snapshot. This is based on the previous completed frame when used from element callbacks.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> pressed = context.previousInteraction.isPressed(rootId);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1InteractionSnapshot.html#a389ad759f1f175955c065a5fe6a88b5b">Full Doxygen reference</a>.</p>
-<h2><b>isHeld</b></h2>
-<h3><span class="tt">bool isHeld(Clay_ElementId id) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">id</span> Clay element id.</li>
-</ul>
-<p>Reports whether the element was held by the primary pointer in this snapshot. Use it for drag-like or continuous pressed behavior.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> held = context.previousInteraction.isHeld(rootId);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1InteractionSnapshot.html#acb7231c76df9dbfbba2bdc1c02daeb02">Full Doxygen reference</a>.</p>
-<h2><b>isReleased</b></h2>
-<h3><span class="tt">bool isReleased(Clay_ElementId id) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">id</span> Clay element id.</li>
-</ul>
-<p>Reports whether the element received a primary pointer release in this snapshot. Use it for release-triggered actions.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> released = context.previousInteraction.isReleased(rootId);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1InteractionSnapshot.html#ad70c5be92f52d3e35a7bea1d7c904874">Full Doxygen reference</a>.</p>
-<h2><b>createChildElementId</b></h2>
-<h3><span class="tt">std::string createChildElementId(std::string_view localChildId) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">std::string</span></li>
-<li><b>Arguments:</b> <span class="tt">localChildId</span> child id segment or relative child path.</li>
-</ul>
-<p>Creates a stable child id by appending the local child id to the current element id. Use this for child Clay nodes or nested Flow elements owned by the current element.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">Clay_ElementId labelId = context.uiManager.toClayEID(context.createChildElementId(<span class="stringliteral">&quot;label&quot;</span>));</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementBuildContext.html#ac92999f9addc15917028cea0cbdf39a3">Full Doxygen reference</a>.</p>
-<h2><b>createChildElementId</b></h2>
-<h3><span class="tt">std::string createChildElementId(std::string_view localChildId) const</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">std::string</span></li>
-<li><b>Arguments:</b> <span class="tt">localChildId</span> child id segment or relative child path.</li>
-</ul>
-<p>Creates a stable child id from inside interaction or logic callbacks. This is useful when querying previous interaction for child elements.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">Clay_ElementId labelId = context.uiManager.toClayEID(context.createChildElementId(<span class="stringliteral">&quot;label&quot;</span>));</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementInteractionContext.html#ad1a4815b3e3cf5fdae8651902903b05a">Full Doxygen reference</a>.</p>
-<h2><b>getResources</b></h2>
-<h3><span class="tt">static ResourcesType&amp; getResources(App&amp; app)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">ResourcesType&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">app</span> active FlowUi app used for resource construction.</li>
-</ul>
-<p>Lazily creates and returns the shared resources instance for this element definition specialization. Available only when the <span class="tt">Resources</span> template argument is not <span class="tt">void</span>.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">ButtonResources&amp; resources = ButtonDefinition::getResources(app);</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementDefinition.html#acd4597db7232a8da38104d1c14fd8abb">Full Doxygen reference</a>.</p>
-<h2><b>getOrCreateState</b></h2>
-<h3><span class="tt">static StateType&amp; getOrCreateState(uint64_t elementFlowId)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">StateType&amp;</span></li>
-<li><b>Arguments:</b> <span class="tt">elementFlowId</span> Flow id for one element instance.</li>
-</ul>
-<p>Returns existing state for an element instance or creates default state when missing. Available only when the <span class="tt">State</span> template argument is not <span class="tt">void</span>.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line">ButtonState&amp; state = ButtonDefinition::getOrCreateState(<a class="code hl_function" href="group__flowui__app.html#ga0bedfbab552fbf49a5a1d31ed8abe9f8">FlowUi::toFlowId</a>(context.elementID));</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementDefinition.html#ab8d37b94a61ee757c7656e01bd69849e">Full Doxygen reference</a>.</p>
-<h2><b>tryGetState</b></h2>
-<h3><span class="tt">static StateType* tryGetState(uint64_t elementFlowId)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">StateType*</span></li>
-<li><b>Arguments:</b> <span class="tt">elementFlowId</span> Flow id for one element instance.</li>
-</ul>
-<p>Looks up mutable state without creating it. Returns <span class="tt">nullptr</span> when the element instance has no stored state.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keywordflow">if</span> (ButtonState* state = ButtonDefinition::tryGetState(FLOW_ID(<span class="stringliteral">&quot;toolbar/save&quot;</span>))) { state-&gt;pressed = <span class="keyword">false</span>; }</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementDefinition.html#a8245c51a90d1d7e66df56670be390b05">Full Doxygen reference</a>.</p>
-<h2><b>tryGetStateConst</b></h2>
-<h3><span class="tt">static const StateType* tryGetStateConst(uint64_t elementFlowId)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">const StateType*</span></li>
-<li><b>Arguments:</b> <span class="tt">elementFlowId</span> Flow id for one element instance.</li>
-</ul>
-<p>Looks up immutable state without creating it. Use this for read-only checks outside element callbacks.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> ButtonState* state = ButtonDefinition::tryGetStateConst(FLOW_ID(<span class="stringliteral">&quot;toolbar/save&quot;</span>));</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementDefinition.html#a1d8bacf80f61458c0b24b2b49b7d897d">Full Doxygen reference</a>.</p>
-<h2><b>eraseState</b></h2>
-<h3><span class="tt">static bool eraseState(uint64_t elementFlowId)</span></h3>
-<ul>
-<li><b>Returns:</b> <span class="tt">bool</span></li>
-<li><b>Arguments:</b> <span class="tt">elementFlowId</span> Flow id for one element instance.</li>
-</ul>
-<p>Erases stored state for one element instance. FlowUi does not automatically garbage-collect custom element state, so dynamic UI can use this to keep state pools bounded.</p>
-<p><b>Example:</b></p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> erased = ButtonDefinition::eraseState(FLOW_ID(<span class="stringliteral">&quot;toolbar/save&quot;</span>));</div>
-</div><!-- fragment --><p>See: <a href="structFlowUi_1_1ElementDefinition.html#a86a3273921a616d575a46a3538b88382">Full Doxygen reference</a>. </p>
+<div class="textblock"><p>The supported authoring surface is defined by <a href="../../include/FlowUi/Public/elementAuthoring/ElementConcepts.hpp">element concepts</a>, <a href="../../include/FlowUi/Public/elementAuthoring/ElementContexts.hpp">callback contexts</a>, <a href="../../include/FlowUi/Public/elementAuthoring/ElementBuilder.hpp">ElementBuilder</a>, and <a href="../../include/FlowUi/Public/managers/ElementManager.hpp">ElementManager</a>.</p>
+<h1>Definition contracts</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Contract  </th><th class="markdownTableHeadNone">Meaning  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">FlowElement&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Complete empty-tag definition with strong <span class="tt">definitionId</span>, valid optional capabilities, and an output callback.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">DrawableFlowElement&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Supports <span class="tt">buildElement(ElementBuildContext&lt;Element&gt;&amp;)</span> and <span class="tt">.draw()</span>.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">ConstructibleFlowElement&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Supports <span class="tt">constructElement(ElementBuildContext&lt;Element&gt;&amp;)</span> returning a Clay declaration and <span class="tt">.construct()</span>.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">ParametersOf&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Declared <span class="tt">Parameters</span>, otherwise <span class="tt">NoElementParameters</span>.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">HasState&lt;Element&gt;</span>, <span class="tt">StateOf&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Optional instance-state capability and payload type.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">HasResources&lt;Element&gt;</span>, <span class="tt">ResourcesOf&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Optional app-wide immutable resource capability and payload type.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">HasParts&lt;Element&gt;</span>  </td><td class="markdownTableBodyNone">Definition declares semantic part metadata through nested <span class="tt">Parts</span>.  </td></tr>
+</table>
+<p>Declare static <span class="tt">onHovered</span>, <span class="tt">onPressed</span>, <span class="tt">onHeld</span>, <span class="tt">onReleased</span>, and <span class="tt">runLogic</span> only when needed. They take <span class="tt">ElementInteractionContext&lt;Element&gt;&amp;</span>. <span class="tt">debugName</span> is optional descriptive metadata. <span class="tt">statePolicy</span> can select <span class="tt">ElementStatePolicy::transient(grace_frames)</span> or <span class="tt">windowLifetime()</span>.</p>
+<p>See <a class="el" href="md_docs_2concepts_2element__system.html" title="Element System">the element-system concepts</a> and <a class="el" href="md_docs_2tutorials_2quick__start.html" title="FlowUi Quick Start">Quick Start</a> for complete definitions.</p>
+<h1>Identity</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Type or factory  </th><th class="markdownTableHeadNone">Purpose  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">FlowDefinitionID</span>, <span class="tt">DefinitionID("name")</span>  </td><td class="markdownTableBodyNone">Stable identity of a reusable definition.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">FlowElementID</span>  </td><td class="markdownTableBodyNone">Resolved local instance identity.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">LocalElementName</span>  </td><td class="markdownTableBodyNone">Compile-time literal name resolved under a parent/definition scope.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">RuntimeName(text)</span>  </td><td class="markdownTableBodyNone">Explicit runtime text hashing for a local name.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">Indexed("name", position)</span>  </td><td class="markdownTableBodyNone">Position-based local name.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">Keyed("name", stable_key)</span>  </td><td class="markdownTableBodyNone">Stable data-key local name.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">IndexedIDs("name", first)</span>  </td><td class="markdownTableBodyNone">Sequence of positional local names.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">AutoID()</span>  </td><td class="markdownTableBodyNone">Callsite identity; also the no-name builder default.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">Global&lt;kElement&gt;("name")</span>, <span class="tt">GlobalFlowID</span>  </td><td class="markdownTableBodyNone">Explicit definition-scoped address reproducible outside the local branch.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">Part("name")</span>, <span class="tt">FlowElementPart</span>  </td><td class="markdownTableBodyNone">Definition-time declaration of a semantic part.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">context.part(part)</span>, <span class="tt">PartID(...)</span>, <span class="tt">FlowElementPartID</span>  </td><td class="markdownTableBodyNone">Part address bound to a concrete owner.  </td></tr>
+</table>
+<p>The <a href="../../include/FlowUi/Public/identificationTypes/ElementID.hpp">identity header</a> defines the exact overloads. Give repeated elements distinct names or stable keys. An automatic ID used repeatedly from one loop callsite does not create distinct instances.</p>
+<h1>Builder</h1>
+<p>Obtain <span class="tt">ElementBuilder&lt;Element&gt;</span> through <span class="tt">UiManager::createElement()</span>:</p>
+<div class="fragment"><div class="line">ui.createElement(FlowUi::kButton, <span class="stringliteral">&quot;toolbar/save&quot;</span>)</div>
+<div class="line">    .setParameters({.onActivate = save_action, .label = <span class="stringliteral">&quot;Save&quot;</span>})</div>
+<div class="line">    .draw();</div>
+</div><!-- fragment --><table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Method  </th><th class="markdownTableHeadNone">Behavior  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">setParameters(const ParametersType&amp;)</span>  </td><td class="markdownTableBodyNone">Copy a complete parameter draft.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">setParameters(ParametersType&amp;&amp;)</span>  </td><td class="markdownTableBodyNone">Move a complete parameter draft.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">mergeParams(callable)</span>  </td><td class="markdownTableBodyNone">Mutate the current draft through <span class="tt">ParametersType&amp;</span>.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">withID(name_or_id)</span>  </td><td class="markdownTableBodyNone">Replace identity using a supported local/runtime/indexed/automatic/resolved/global/part token. Local names resolve against the captured parent.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">draw(options = Default)</span>  </td><td class="markdownTableBodyNone">Run enabled event/logic callbacks and <span class="tt">buildElement</span>. Requires <span class="tt">DrawableFlowElement</span>.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">construct(options = Default)</span>  </td><td class="markdownTableBodyNone">Run enabled callbacks and open the root returned by <span class="tt">constructElement</span>. Requires <span class="tt">ConstructibleFlowElement</span>. Close with <span class="tt">ui.drawConstructed()</span>.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">setDevInternalCapture(bool = true)</span>  </td><td class="markdownTableBodyNone">Mark this invocation as internal developer UI when developer support is compiled in.  </td></tr>
+</table>
+<p><span class="tt">ElementDrawOptions : std::uint8_t</span> contains <span class="tt">Default</span>, <span class="tt">SkipEventCallbacks</span>, <span class="tt">SkipLogicCallback</span>, and <span class="tt">SkipBuildCallback</span>. Combine flags with <span class="tt">operator|</span>; <span class="tt">elementDrawOptionsHas(value, flag)</span> queries them. <span class="tt">SkipBuildCallback</span> affects <span class="tt">.draw()</span>; <span class="tt">.construct()</span> still obtains its root declaration.</p>
+<h1>Callback contexts</h1>
+<p>Both contexts expose <span class="tt">UiManager&amp; uiManager</span>, strong <span class="tt">FlowElementID id</span>, and <span class="tt">ParametersType&amp; params</span>.</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Observer/helper  </th><th class="markdownTableHeadNone">Behavior  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">state()</span>  </td><td class="markdownTableBodyNone">Return cached instance state; available only with <span class="tt">HasState</span>. A const context returns const state.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">resources() const</span>  </td><td class="markdownTableBodyNone">Lazily resolve immutable app-wide resources; available only with <span class="tt">HasResources</span>.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">clayID()</span>  </td><td class="markdownTableBodyNone">Bridge the current root identity to Clay.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">childID(name)</span>  </td><td class="markdownTableBodyNone">Resolve a strong named child under this instance.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">clayID(name)</span>  </td><td class="markdownTableBodyNone">Resolve and bridge a child in one call.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">part(declaration)</span>  </td><td class="markdownTableBodyNone">Bind a semantic part to this instance.  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">createPart(element, declaration)</span>  </td><td class="markdownTableBodyNone">Create a child Flow element at a semantic part address.  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">indexedIDs(name, first = 0)</span>  </td><td class="markdownTableBodyNone">Make a positional child-name sequence.  </td></tr>
+</table>
+<p>Interaction contexts additionally expose <span class="tt">previousInteraction</span>, <span class="tt">invoke(ActionCall)</span>, and <span class="tt">actionAvailability(ActionCall)</span>. Build contexts optionally expose <span class="tt">devTimingRecorder()</span> in developer builds.</p>
+<p>Use <span class="tt">context.clayID()</span> for the element's root so normal builder interaction matches its actual Clay node:</p>
+<div class="fragment"><div class="line">CLAY(context.clayID(), root) {</div>
+<div class="line">    CLAY(context.clayID(<span class="stringliteral">&quot;content&quot;</span>), content) {}</div>
+<div class="line">}</div>
+</div><!-- fragment --><p><span class="tt">InteractionSnapshot</span> stores contiguous hovered, pressed, held, and released Clay IDs from one completed frame. <span class="tt">isHovered</span>, <span class="tt">isPressed</span>, <span class="tt">isHeld</span>, and <span class="tt">isReleased</span> accept Clay IDs and supported strong Flow IDs. Event callbacks see the previous completed snapshot.</p>
+<h1>App-owned runtime data</h1>
+<p><span class="tt">App::elements()</span> owns state and resources through the storage system. Inside callbacks prefer the cached <span class="tt">context.state()</span>/<span class="tt">resources()</span> accessors. Outside callbacks:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span>* state = application.elements().getStatePointerConst(</div>
+<div class="line">    kCustomElement, application.mainWindowId(), resolved_element_id);</div>
+</div><!-- fragment --><p><span class="tt">getStatePointer()</span> and <span class="tt">getStatePointerConst()</span> query existing state without creating it, with overloads for local, global, and semantic-part identities. <span class="tt">eraseState()</span> removes one instance explicitly. <span class="tt">collectStateGarbage(window)</span> collects eligible transient state; ordinary successful frame completion already manages retirement. Transient-state pointers must not be retained across frame boundaries.</p>
+<p>Resources are immutable, app-wide, and initialized through a default constructor or <span class="tt">Resources(App&amp;)</span>. <span class="tt">prepare(element)</span>/<span class="tt">prepare(ElementSet&lt;...&gt;)</span> can predeclare definitions; normal invocation resolves the required data lazily.</p>
+<h1>Modern developer tooling</h1>
+<p><span class="tt">FLOW_UI_DEV_MODE</span> enables descriptors, capture, catalogues, and typed overrides under <span class="tt">FlowUi::devSystems::tooling</span>. Describe types with <span class="tt">FLOWUI_DEV_SCHEMA</span>/<span class="tt">FLOWUI_DEV_FIELD</span> and enums with <span class="tt">FLOWUI_DEV_ENUM_SCHEMA</span>/<span class="tt">FLOWUI_DEV_ENUM_VALUE</span>. No legacy registration or runtime API is provided. See <a class="el" href="md_docs_2tutorials_2developer__mode.html" title="Developer Systems">Developer Systems</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

@@ -2,7 +2,7 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
 #if FLOW_UI_DEV_MODE
 namespace FlowUi::devSystems::interface_elements {
-/** Shared CPU/GPU time transform with pan, zoom and depth controls. */
+/* Shared CPU/GPU time transform with pan, zoom and depth controls. */
 struct DevContiguousTimelineStrip {
 	using Parameters = DevTimelineParameters;
 	using BuildContext = ElementBuildContext<DevContiguousTimelineStrip>;

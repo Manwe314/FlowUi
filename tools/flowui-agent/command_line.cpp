@@ -348,7 +348,7 @@ parse_command_line(std::span<const std::string_view> arguments) noexcept {
 											? locate_pack(executable, result.context.workspace)
 											: std::filesystem::absolute(explicit_pack);
 		if (result.context.source_root.empty() &&
-			std::filesystem::is_regular_file(result.context.workspace / "include/FlowUi/App.hpp"))
+			std::filesystem::is_regular_file(result.context.workspace / "include/FlowUi/Public/App.hpp"))
 			result.context.source_root = result.context.workspace;
 		if (result.request.operation.starts_with("capture.") ||
 			result.request.operation == "scenario.run")

@@ -1,7 +1,7 @@
 #include "devSystems/devAgenticWorkflow/AgenticAction.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
-#include "FlowUi/App.hpp"
-#include "managers/ActionManager.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "FlowUi/Public/managers/ActionManager.hpp"
 #include <algorithm>
 #include <limits>
 

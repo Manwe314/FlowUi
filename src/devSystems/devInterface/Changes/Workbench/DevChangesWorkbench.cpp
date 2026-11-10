@@ -1,7 +1,7 @@
 #include "devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
-#include "internal/MemoryCapacityTargets.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp"
 #include <cmath>
 
 namespace FlowUi::devSystems::interface_elements {
@@ -19,7 +19,7 @@ constexpr std::size_t review_page_size = 40;
 	return result;
 }
 [[nodiscard]] Clay_ElementDeclaration action_row(float width) noexcept {
-	auto result = width < 560 ? ui::column(8) : ui::row(30);
+	auto result = width < 400 ? ui::column(8) : ui::row(30);
 	result.layout.sizing.height = CLAY_SIZING_FIT(0);
 	return result;
 }
@@ -29,7 +29,7 @@ constexpr std::size_t review_page_size = 40;
 		return row.key.starts_with("memory:policy.") ? "Shared startup policy"
 													 : changes_memory_owner(row.field_path);
 	if (!entry)
-		return "Saved target is unresolved";
+		return "Already Baked target is unresolved";
 	if (row.domain == tooling::DevChangesDomain::Themes)
 		return entry->themeVariant == "*"
 				   ? "All theme variants, including future variants"
@@ -56,18 +56,20 @@ constexpr std::size_t review_page_size = 40;
 		return row.proposal_removes ? "The proposed removal will be used, subject to validation."
 			   : row.has_proposal
 				   ? "The proposal will be used for the next bake, subject to validation."
-				   : "The saved assignment is retained; no proposal is available.";
+				   : "The already baked assignment is retained; no proposal is available.";
 	case Decision::OmitProposal:
 		return row.has_disk
-				   ? "Saved value stays. Live and prepared work remain available."
+				   ? "Already Baked value stays. Live and prepared work remain available."
 				   : "This new proposal stays absent. Live and prepared work remain available.";
 	case Decision::RetainDisk:
-		return "The reviewed saved value is explicitly retained. Live behavior is unchanged.";
+		return "The reviewed already baked value is explicitly retained. Live behavior is "
+			   "unchanged.";
 	case Decision::Remove:
-		return row.key == "memory:policy.enabled"
-				   ? "All saved memory capacities and shared policy settings will be removed."
-				   : "The saved assignment will be removed. Compiled behavior remains until "
-					 "rebuild.";
+		return row.key == "memory:policy.enabled" ? "All already baked memory capacities and "
+													"shared policy settings will be removed."
+												  : "The already baked assignment will be removed. "
+													"Compiled behavior remains until "
+													"rebuild.";
 	}
 	return "The next-bake result follows the reviewed decision.";
 }
@@ -94,14 +96,37 @@ void register_widget(BuildContext& context, DevChangesState& state, FlowDefiniti
 	ui::register_focus_target(context, state, context.uiManager.toClayEID(element), enabled,
 							  text_input);
 }
-void copy_value(void* target, uint64_t, uint64_t column_index) {
+[[nodiscard]] const ReviewRow* action_row(const DevChangesWorkbench::State& local,
+										  uint64_t identity) noexcept {
+	if (!local.changes)
+		return nullptr;
+	const auto node = std::ranges::find(local.changes->nodes, identity, &DevChangesNode::identity);
+	return node != local.changes->nodes.end() && node->leaf && !node->rows.empty()
+			   ? &local.changes->review.rows[node->rows.front()]
+			   : nullptr;
+}
+void copy_value(void* target, uint64_t identity, uint64_t column_index) {
 	auto& local = *static_cast<DevChangesWorkbench::State*>(target);
-	const auto* selected = local.changes ? selected_changes_row(*local.changes) : nullptr;
-	if (!local.ui_manager || !selected)
+	const auto* review_row = action_row(local, identity);
+	if (!local.ui_manager || !review_row)
 		return;
-	local.ui_manager->setClipboardText(column_index == 0   ? selected->on_disk
-									   : column_index == 1 ? selected->proposal
-														   : selected->next_value);
+	local.ui_manager->setClipboardText(column_index == 0   ? review_row->on_disk
+									   : column_index == 1 ? review_row->proposal
+														   : review_row->next_value);
+}
+void toggle_review(void* target, uint64_t, uint64_t identity) {
+	auto& local = *static_cast<DevChangesWorkbench::State*>(target);
+	const auto* review_row = action_row(local, identity);
+	if (!review_row)
+		return;
+	const bool expanded =
+		std::ranges::find(local.expanded_reviews, review_row->key) != local.expanded_reviews.end();
+	local.expanded_reviews.clear();
+	if (!expanded) {
+		local.expanded_reviews.reserve(1);
+		local.expanded_reviews.emplace_back(review_row->key);
+	}
+	local.decision_open = local.decision_was_open = false;
 }
 void batch_decision(void* target, uint64_t, uint64_t decision) {
 	auto& local = *static_cast<DevChangesWorkbench::State*>(target);
@@ -124,11 +149,12 @@ void raw_page_action(void* target, uint64_t action, uint64_t) {
 	if (scroll.found && scroll.scrollPosition)
 		*scroll.scrollPosition = {};
 }
-void toggle_value(void* target, uint64_t, uint64_t column_index) {
+void toggle_value(void* target, uint64_t identity, uint64_t column_index) {
 	auto& local = *static_cast<DevChangesWorkbench::State*>(target);
-	if (!local.changes)
+	const auto* review_row = action_row(local, identity);
+	if (!review_row)
 		return;
-	const auto key = "value:" + local.changes->selected_key + ":" + std::to_string(column_index);
+	const auto key = "value:" + review_row->key + ":" + std::to_string(column_index);
 	const auto found = std::ranges::find(local.metadata_expanded, key);
 	if (found == local.metadata_expanded.end())
 		local.metadata_expanded.emplace_back(key);
@@ -139,10 +165,11 @@ constexpr auto change_decision =
 	UiAction("flowui.dev.changes.next-bake-choice",
 			 [](DevChangesState& state, DevChangesWorkbench::State& local) {
 				 if (local.decision_choice < 4)
-					 queue_changes_decision(state, static_cast<Decision>(local.decision_choice));
+					 queue_changes_scope_decision(state, local.decision_target_key,
+												  static_cast<Decision>(local.decision_choice));
 			 });
 
-/** Flat queue rows retain release-inside behavior without inheriting a card surface. */
+/* Flat queue rows retain release-inside behavior without inheriting a card surface. */
 struct QueueRow {
 	struct Parameters {
 		std::string title{}, preview{}, operation{}, tooltip{};
@@ -156,7 +183,9 @@ struct QueueRow {
 		float width = 0;
 		bool selected = false, blocking = false, excluded = false;
 	};
-	using State = FSEL::detail::selectable_surface::State;
+	struct State : FSEL::detail::selectable_surface::State {
+		bool pointer_focused = false;
+	};
 	using Resources = diagnostics_icons::Resources;
 	using BuildContext = ElementBuildContext<QueueRow>;
 	using InteractionContext = ElementInteractionContext<QueueRow>;
@@ -165,24 +194,41 @@ struct QueueRow {
 	static constexpr std::string_view debugName = "Changes Review Queue Row";
 	static constexpr bool isDevInternal = true;
 	static void onPressed(InteractionContext& context) {
-		FSEL::detail::selectable_surface::onPressed(context, context.params.changes != nullptr);
+		context.state().pointer_focused = true;
+		const auto disclosure =
+			context.uiManager.toClayEID(::FlowUi::detail::element_id::resolveLocal(
+				context.id, diagnostics_ui::Control::definitionId,
+				LocalElementName{"disclosure"}.token));
+		FSEL::detail::selectable_surface::onPressed(
+			context, context.params.changes != nullptr &&
+						 !context.previousInteraction.isPressed(disclosure));
 	}
 	static void onReleased(InteractionContext& context) {
 		if (FSEL::detail::selectable_surface::onReleased(context,
-														 context.params.changes != nullptr)) {
+														 context.params.changes != nullptr) &&
+			!context.uiManager.getPreviousFramesInteraction().isHovered(
+				context.uiManager.toClayEID(::FlowUi::detail::element_id::resolveLocal(
+					context.id, diagnostics_ui::Control::definitionId,
+					LocalElementName{"disclosure"}.token)))) {
 			context.uiManager.shortcuts().setFocusedElement(context.clayID());
-			ui::activate(context.params.changes, ui::Select, context.params.identity);
+			toggle_review(context.params.workbench, 0, context.params.identity);
 		}
 	}
 	static void runLogic(InteractionContext& context) {
 		FSEL::detail::selectable_surface::runLogic(context, context.params.changes != nullptr);
 		const auto& current = context.uiManager.getCurrentFrameInput();
 		const auto& previous = context.uiManager.getPreviousFrameInput();
+		if ((!context.state().isArmed &&
+			 context.uiManager.shortcuts().focusedElement().id != context.clayID().id) ||
+			(current.keyDown[GLFW_KEY_TAB] && !previous.keyDown[GLFW_KEY_TAB]))
+			context.state().pointer_focused = false;
 		if (context.uiManager.shortcuts().focusedElement().id != context.clayID().id ||
 			context.uiManager.inputFields().hasPrimaryFieldFocus())
 			return;
-		if (current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER])
-			ui::activate(context.params.changes, ui::Select, context.params.identity);
+		if (current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) {
+			context.state().pointer_focused = false;
+			toggle_review(context.params.workbench, 0, context.params.identity);
+		}
 		const bool down = current.keyDown[GLFW_KEY_DOWN] && !previous.keyDown[GLFW_KEY_DOWN];
 		const bool up = current.keyDown[GLFW_KEY_UP] && !previous.keyDown[GLFW_KEY_UP];
 		if ((!down && !up) || !context.params.changes || !context.params.workbench ||
@@ -226,31 +272,72 @@ struct QueueRow {
 	static void buildElement(BuildContext& context) {
 		const auto& parameters = context.params;
 		auto row = ui::column(4);
-		row.layout.sizing.height = CLAY_SIZING_FIXED(44);
-		row.layout.padding = {10, 10, 4, 4};
+		row.layout.sizing.height = CLAY_SIZING_FIT(58);
+		row.layout.padding = {12, 10, 10, 10};
+		row.backgroundColor =
+			parameters.selected ? interface_theme::kDepth3Elevated : interface_theme::kDepth1Panel;
 		const bool focused =
+			!context.state().pointer_focused &&
 			context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
 		row.border = {.color = parameters.selected || focused ? interface_theme::kAccentCurrent
 															  : interface_theme::kBorderPrimary,
-					  .width = parameters.selected ? Clay_BorderWidth{3, 0, 0, 1, 0}
+					  .width = parameters.selected ? Clay_BorderWidth{3, 0, 0, 0, 0}
 							   : focused		   ? Clay_BorderWidth{1, 1, 1, 1, 0}
-												   : Clay_BorderWidth{0, 0, 0, 1, 0}};
+												   : Clay_BorderWidth{0, 0, 0, 0, 0}};
 		CLAY(context.clayID(), row) {
-			auto headline = ui::row(15);
+			const bool compact = parameters.width < 480;
+			auto headline = compact ? ui::column(8) : ui::row(15);
 			headline.layout.sizing.height = CLAY_SIZING_FIT(0);
+			headline.layout.childGap = 8;
 			CLAY(context.clayID("headline"), headline) {
+				const auto title_bounds = Clay_GetElementData(context.clayID("title"));
+				const float title_width =
+					title_bounds.found
+						? std::min(title_bounds.boundingBox.width, parameters.width - 24)
+					: compact ? parameters.width - 24
+							  : parameters.width - 176;
 				auto title = ui::column(0);
 				title.clip = {.horizontal = true, .scrollInputDisabled = true};
 				CLAY(context.clayID("title"), title)
-				ui::text(context,
-						 ui::ellipsize(context, parameters.title, parameters.width - 128, 12),
+				ui::text(context, ui::ellipsize(context, parameters.title, title_width, 12),
 						 interface_theme::kTextCanvas, 12);
-				if (parameters.blocking)
-					ui::text(context, "Issue", interface_theme::kStatusRed, 11);
-				ui::text(context, parameters.excluded ? "Excluded" : parameters.operation,
-						 parameters.excluded ? interface_theme::kTextSecondary
-											 : parameters.operation_color,
-						 11);
+				const auto draw_status = [&] {
+					if (parameters.blocking)
+						ui::text(context, "Issue", interface_theme::kStatusRed, 11);
+					ui::text(context, parameters.excluded ? "Excluded" : parameters.operation,
+							 parameters.excluded ? interface_theme::kTextSecondary
+												 : parameters.operation_color,
+							 11);
+					if (compact) {
+						auto spacer = ui::column(0);
+						spacer.layout.sizing.height = CLAY_SIZING_FIXED(0);
+						CLAY(context.clayID("status-spacer"), spacer) {}
+					}
+					context.uiManager.createElement(ui::kControl, LocalElementName{"disclosure"})
+						.setParameters(
+							{.label = parameters.selected ? "Collapse" : "Expand",
+							 .tooltip = parameters.selected ? "Collapse change" : "Expand change",
+							 .icon =
+								 parameters.selected ? ui::Icon::ChevronUp : ui::Icon::ChevronDown,
+							 .activate = toggle_review,
+							 .target = parameters.workbench,
+							 .value = parameters.identity,
+							 .icon_only = true})
+						.setDevInternalCapture(true)
+						.draw();
+				};
+				if (compact) {
+					auto status = ui::row(28);
+					status.layout.sizing.height = CLAY_SIZING_FIT(0);
+					CLAY(context.clayID("status"), status)
+					draw_status();
+				} else
+					draw_status();
+				const auto disclosure = ::FlowUi::detail::element_id::resolveLocal(
+					context.id, diagnostics_ui::Control::definitionId,
+					LocalElementName{"disclosure"}.token);
+				ui::register_focus_target(context, *parameters.changes,
+										  context.uiManager.toClayEID(disclosure));
 			}
 			ui::text(context, ui::ellipsize(context, parameters.preview, parameters.width - 32, 11),
 					 interface_theme::kTextSecondary, 11);
@@ -271,21 +358,31 @@ struct QueueRow {
 inline constexpr QueueRow queue_row{};
 
 void comparison(Context& context, const ReviewRow& row, uint64_t identity, float width) {
-	auto cells = width < 560 ? ui::column(8) : ui::row();
+	const auto previous_bounds = Clay_GetElementData(context.clayID(Keyed("comparison", identity)));
+	const float comparison_width =
+		previous_bounds.found && previous_bounds.boundingBox.width > 0
+			? std::min(previous_bounds.boundingBox.width, std::max(0.0f, width - 56))
+			: std::max(0.0f, width - 56);
+	const float stage_width = std::max(0.0f, (comparison_width - 16) / 3);
+	auto cells = width < 440 ? ui::column(8) : ui::row();
 	cells.layout.sizing.height = CLAY_SIZING_FIT(0);
 	cells.layout.childAlignment.y = CLAY_ALIGN_Y_TOP;
-	if (width >= 560)
-		cells.layout.childGap = 0;
+	if (width >= 440)
+		cells.layout.childGap = 8;
 	CLAY(context.clayID(Keyed("comparison", identity)), cells) {
-		static constexpr std::array<std::string_view, 3> headings{"Saved", "Proposal", "Next bake"};
+		static constexpr std::array<std::string_view, 3> headings{"Already Baked", "Proposal",
+																  "Next bake"};
 		for (uint64_t column_index = 0; column_index < headings.size(); ++column_index) {
 			auto cell = ui::column(6);
-			if (width >= 560)
-				cell.layout.sizing.width = CLAY_SIZING_PERCENT(1.0f / 3.0f);
-			cell.layout.padding = {8, 8, 8, 8};
+			if (width >= 440)
+				cell.layout.sizing.width = CLAY_SIZING_FIXED(stage_width);
+			cell.layout.padding = {10, 10, 10, 10};
+			cell.backgroundColor = column_index == 0   ? interface_theme::kDepth1Panel
+								   : column_index == 1 ? interface_theme::kDepth2Ink
+													   : interface_theme::kDepth3Elevated;
 			cell.border = {.color = column_index == 2 ? ui::operation_color(row.operation)
 													  : interface_theme::kBorderVisible,
-						   .width = {0, 0, 2, 0, 0}};
+						   .width = {1, 1, 2, 1, 0}};
 			CLAY(context.clayID(Keyed("value", identity * 3 + column_index)), cell) {
 				const bool present =
 					column_index == 0 ? row.has_disk
@@ -307,20 +404,24 @@ void comparison(Context& context, const ReviewRow& row, uint64_t identity, float
 						? capacity_value(row, raw, present)
 						: ui::value(raw, present);
 				ui::text(context, headings[column_index], interface_theme::kTextSecondary, 11);
-				const bool structured = raw.size() > 160 ||
-										raw.find('\n') != std::string_view::npos ||
-										raw.find('{') != std::string_view::npos;
 				const auto expanded_key = "value:" + row.key + ":" + std::to_string(column_index);
 				const bool expanded =
 					std::ranges::find(context.state().metadata_expanded, expanded_key) !=
 					context.state().metadata_expanded.end();
-				ui::text(context,
-						 structured && !expanded
-							 ? ui::ellipsize(context, display,
-											 width < 560 ? width - 80 : (width - 80) / 3, 12)
-							 : display,
+				auto compact_display = display;
+				std::ranges::replace(compact_display, '\n', ' ');
+				std::ranges::replace(compact_display, '\r', ' ');
+				const auto collapsed_display =
+					ui::ellipsize(context, compact_display,
+								  width < 440 ? width - 80 : std::max(0.0f, stage_width - 20), 12);
+				const bool expandable = present && collapsed_display != display;
+				ui::text(context, expandable && !expanded ? collapsed_display : display,
 						 interface_theme::kTextCanvas, 12);
-				auto actions = width >= 560 && width < 720 ? ui::column(4) : ui::row(28);
+				const auto disclosure_icon = expanded ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
+				const bool action_icons_available =
+					context.resources().texture(ui::Icon::Copy).handle &&
+					(!expandable || context.resources().texture(disclosure_icon).handle);
+				auto actions = action_icons_available ? ui::row(28) : ui::column(6);
 				actions.layout.sizing.height = CLAY_SIZING_FIT(0);
 				CLAY(context.clayID(Keyed("value-actions", column_index)), actions) {
 					context.uiManager.createElement(ui::kControl, Keyed("copy-value", column_index))
@@ -330,24 +431,31 @@ void comparison(Context& context, const ReviewRow& row, uint64_t identity, float
 							 .icon = ui::Icon::Copy,
 							 .activate = copy_value,
 							 .target = &context.state(),
+							 .action = identity,
 							 .value = column_index,
-							 .enabled = present && context.uiManager.hasClipboardAccess()})
+							 .enabled = present && context.uiManager.hasClipboardAccess(),
+							 .icon_only = true})
 						.setDevInternalCapture(true)
 						.draw();
 					register_widget(context, context.params.interfaceState->changes,
 									diagnostics_ui::Control::definitionId,
 									Keyed("copy-value", column_index),
 									present && context.uiManager.hasClipboardAccess());
-					if (structured)
+					if (expandable)
 						context.uiManager
 							.createElement(ui::kControl, Keyed("expand-value", column_index))
-							.setParameters({.label = expanded ? "Collapse" : "Expand",
-											.activate = toggle_value,
-											.target = &context.state(),
-											.value = column_index})
+							.setParameters(
+								{.label = expanded ? "Collapse" : "Expand",
+								 .tooltip = expanded ? "Collapse full value" : "Expand full value",
+								 .icon = disclosure_icon,
+								 .activate = toggle_value,
+								 .target = &context.state(),
+								 .action = identity,
+								 .value = column_index,
+								 .icon_only = true})
 							.setDevInternalCapture(true)
 							.draw();
-					if (structured)
+					if (expandable)
 						register_widget(context, context.params.interfaceState->changes,
 										diagnostics_ui::Control::definitionId,
 										Keyed("expand-value", column_index));
@@ -358,19 +466,21 @@ void comparison(Context& context, const ReviewRow& row, uint64_t identity, float
 }
 void decision_control(Context& context, DevChangesState& state, const ReviewRow& row, float width) {
 	auto& local = context.state();
+	local.decision_target_key = row.key;
 	const bool valid_proposal = row.has_proposal;
-	local.decision_labels = {!row.has_proposal		? "Saved retained — no proposal"
-							 : row.proposal_removes ? "Use proposed removal"
-													: "Use proposal",
-							 row.has_proposal ? row.has_disk ? "Exclude proposal — saved stays"
-															 : "Exclude proposal — stays absent"
-											  : "Exclude proposal — no proposal",
-							 row.has_disk ? "Keep saved value" : "Keep saved — no saved assignment",
-							 row.has_disk ? row.key == "memory:policy.enabled"
-												? "Remove entire memory section"
-												: "Remove saved assignment"
-										  : "Remove assignment — nothing saved",
-							 ""};
+	local.decision_labels = {
+		!row.has_proposal	   ? "Already Baked retained — no proposal"
+		: row.proposal_removes ? "Use proposed removal"
+							   : "Use proposal",
+		row.has_proposal ? row.has_disk ? "Exclude proposal — already baked stays"
+										: "Exclude proposal — stays absent"
+						 : "Exclude proposal — no proposal",
+		row.has_disk ? "Keep already baked value"
+					 : "Keep already baked — no already baked assignment",
+		row.has_disk ? row.key == "memory:policy.enabled" ? "Remove entire memory section"
+														  : "Remove already baked assignment"
+					 : "Remove assignment — nothing already baked",
+		""};
 	for (std::size_t option_index = 0; option_index < 4; ++option_index)
 		local.decision_options[option_index] = {.value = option_index,
 												.text = local.decision_labels[option_index],
@@ -446,7 +556,8 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		} else if (local.decision_open && owns_focus && local.decision_highlight < 4 &&
 				   local.decision_options[local.decision_highlight].enabled &&
 				   (pressed(GLFW_KEY_ENTER) || pressed(GLFW_KEY_SPACE))) {
-			queue_changes_decision(state, static_cast<Decision>(local.decision_highlight));
+			queue_changes_scope_decision(state, row.key,
+										 static_cast<Decision>(local.decision_highlight));
 			local.decision_open = false;
 			context.uiManager.shortcuts().setFocusedElement(trigger);
 		}
@@ -507,15 +618,17 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		const bool policy = row.key.starts_with("memory:policy.");
 		const bool can_edit = row.domain == tooling::DevChangesDomain::Memory ||
 							  (entry && row.validity != tooling::DevChangesValidity::Unresolved);
-		ui::button(context, LocalElementName{"edit"},
-				   policy											 ? "Edit startup policy"
-				   : row.domain == tooling::DevChangesDomain::Memory ? "Edit in Memory"
-																	 : "Edit in Inspect",
-				   state, policy ? ui::OpenPolicy : ui::Edit, 0, can_edit,
-				   can_edit
-					   ? "Open compatible authoring tools; the review and filters are retained."
-					   : "This saved target is unresolved. Author a compatible replacement and "
-						 "explicitly remove the saved assignment.");
+		if (selected_changes_row(state))
+			ui::button(context, LocalElementName{"edit"},
+					   policy											 ? "Edit startup policy"
+					   : row.domain == tooling::DevChangesDomain::Memory ? "Edit in Memory"
+																		 : "Edit in Inspect",
+					   state, policy ? ui::OpenPolicy : ui::Edit, 0, can_edit,
+					   can_edit
+						   ? "Open compatible authoring tools; the review and filters are retained."
+						   : "This already baked target is unresolved. Author a compatible "
+							 "replacement and "
+							 "explicitly remove the already baked assignment.");
 	}
 	ui::text(context, decision_consequence(row), interface_theme::kTextSecondary, 12);
 	if (row.blocking && valid_proposal)
@@ -532,7 +645,7 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		});
 		ui::text(context,
 				 "Removal affects all " + std::to_string(capacities) +
-					 " saved capacity targets and " + std::to_string(policies) +
+					 " already baked capacity targets and " + std::to_string(policies) +
 					 " shared policy settings.",
 				 interface_theme::kStatusAmber, 12);
 	}
@@ -576,9 +689,11 @@ void incomplete_evidence(Context& context, DevChangesState& state) {
 				 interface_theme::kTextSecondary, 11);
 	context.uiManager.createElement(ui::kControl, LocalElementName{"copy-affected-targets"})
 		.setParameters({.label = "Copy all affected targets",
+						.tooltip = "Copy all targets affected by incomplete prepared evidence",
 						.clipboard_text = affected_targets,
 						.icon = ui::Icon::Copy,
-						.enabled = context.uiManager.hasClipboardAccess()})
+						.enabled = context.uiManager.hasClipboardAccess(),
+						.icon_only = true})
 		.setDevInternalCapture(true)
 		.draw();
 	register_widget(context, state, diagnostics_ui::Control::definitionId,
@@ -592,23 +707,70 @@ void incomplete_evidence(Context& context, DevChangesState& state) {
 			   "This is a session-wide choice for all prepared memory proposals, including hidden "
 			   "targets.");
 }
+[[nodiscard]] std::string issue_impact(const ReviewRow& row) {
+	switch (row.validity) {
+	case tooling::DevChangesValidity::Unresolved:
+		return "The baked target or field cannot be matched to the current application schema. "
+			   "FlowUi cannot safely generate its assignment. Restore a compatible target or "
+			   "explicitly remove this assignment.";
+	case tooling::DevChangesValidity::Conflict:
+		return "Multiple values or an external manifest edit disagree about this destination. "
+			   "Choose the proposal, retain the reviewed baked value, or remove the assignment to "
+			   "resolve the conflict.";
+	case tooling::DevChangesValidity::Invalid:
+		return "The value or its build metadata cannot produce a valid assignment. "
+			   "Correct the proposal in the authoring tab or remove the invalid assignment.";
+	case tooling::DevChangesValidity::Unavailable:
+		return "This target or its evidence is unavailable in the current run. "
+			   "Refresh after the target is registered and the required evidence is available.";
+	default:
+		return "Resolve the reported issue before baking. The reviewed values remain unchanged "
+			   "until a decision is baked.";
+	}
+}
 void expanded_review(Context& context, DevChangesState& state, const ReviewRow& row,
 					 uint64_t identity, float width) {
-	auto surface = ui::card(10);
+	const bool dedicated = selected_changes_row(state) != nullptr;
+	auto surface = ui::card(12);
 	surface.layout.sizing.width = CLAY_SIZING_PERCENT(1);
-	surface.border.color =
-		row.blocking ? interface_theme::kStatusRed : interface_theme::kAccentCurrent;
+	surface.layout.padding = {14, 14, 14, 14};
+	surface.backgroundColor = interface_theme::kDepth2Ink;
+	surface.border.color = interface_theme::kBorderVisible;
 	CLAY(context.clayID(Keyed("expanded-review", identity)), surface) {
-		ui::text(context, scope_label(row), interface_theme::kTextSecondary, 12);
-		if (row.blocking) {
-			ui::text(context,
-					 "Blocks Bake · " + std::string(tooling::changes_validity_name(row.validity)),
-					 interface_theme::kTextCanvas, 12);
-			ui::text(context,
-					 row.reason.empty() ? "Resolve this target before baking." : row.reason,
-					 interface_theme::kTextCanvas, 12);
-		} else if (row.validity != tooling::DevChangesValidity::Ready && !row.reason.empty())
-			ui::text(context, "Warning · " + row.reason, interface_theme::kStatusAmber, 12);
+		CLAY(context.clayID("change-context"), action_row(width)) {
+			ui::text(context, scope_label(row), interface_theme::kTextSecondary, 12);
+			if (!dedicated) {
+				auto spacer = ui::column(0);
+				spacer.layout.sizing = {.width = CLAY_SIZING_GROW(0),
+										.height = CLAY_SIZING_FIXED(0)};
+				if (width >= 400)
+					CLAY(context.clayID("change-context-spacer"), spacer) {}
+				ui::button(context, Keyed("go-to-change", identity), "Go to change", state,
+						   ui::Select, identity, true,
+						   "Select this change in the tree and open its dedicated view.",
+						   ui::Icon::Link);
+			}
+		}
+		if (row.blocking || row.validity != tooling::DevChangesValidity::Ready) {
+			auto issue = ui::card(8);
+			issue.backgroundColor = interface_theme::kDepth1Panel;
+			issue.border = {.color = row.blocking ? interface_theme::kStatusRed
+												  : interface_theme::kStatusAmber,
+							.width = {3, 1, 1, 1, 0}};
+			CLAY(context.clayID(Keyed("change-issue", identity)), issue) {
+				ui::text(context,
+						 std::string(row.blocking ? "Issue · Blocks Bake · " : "Warning · ") +
+							 std::string(tooling::changes_validity_name(row.validity)),
+						 row.blocking ? interface_theme::kStatusRed : interface_theme::kStatusAmber,
+						 13);
+				ui::text(context, row.reason.empty() ? "This assignment needs review." : row.reason,
+						 interface_theme::kTextCanvas, 12);
+				ui::text(context, "Affected field: " + row.target_name + " / " + row.field_path,
+						 interface_theme::kTextSecondary, 12);
+				ui::text(context, "Why it matters", interface_theme::kTextCanvas, 12);
+				ui::text(context, issue_impact(row), interface_theme::kTextSecondary, 12);
+			}
+		}
 		comparison(context, row, identity, width);
 		if (row.domain == tooling::DevChangesDomain::Memory) {
 			if (const auto& memory = row.proposed_memory ? row.proposed_memory : row.disk_memory) {
@@ -735,20 +897,20 @@ void batch_menu(Context& context, DevChangesState& state, std::span<const std::s
 	CLAY(context.clayID("group-decisions-menu"), ui::card(8)) {
 		ui::text(context, scope_name + " decisions", interface_theme::kTextCanvas, 14);
 		static constexpr std::array<std::string_view, 4> labels{
-			"Use eligible proposals", "Exclude proposals", "Keep saved values",
-			"Remove saved assignments"};
+			"Use eligible proposals", "Exclude proposals", "Keep already baked values",
+			"Remove already baked assignments"};
 		static constexpr std::array<LocalElementName, 4> identities{"batch-include", "batch-omit",
 																	"batch-keep", "batch-remove"};
 		for (std::size_t index = 0; index < labels.size(); ++index) {
 			if (index == 3) {
-				ui::text(context, "Removal area · saved assignments only",
+				ui::text(context, "Removal area · already baked assignments only",
 						 interface_theme::kStatusAmber, 12);
 				if (removes_memory_section)
 					ui::text(context,
 							 "This includes the ENTIRE memory section: " +
 								 std::to_string(removed_capacities) +
-								 " saved capacity targets and " + std::to_string(removed_policies) +
-								 " shared policy settings." +
+								 " already baked capacity targets and " +
+								 std::to_string(removed_policies) + " shared policy settings." +
 								 (scoped ? " This includes targets outside this group." : ""),
 							 interface_theme::kTextCanvas, 12);
 			}
@@ -762,7 +924,7 @@ void batch_menu(Context& context, DevChangesState& state, std::span<const std::s
 			context.uiManager.createElement(ui::kControl, identities[index])
 				.setParameters({.label = index == 3 && removes_memory_section
 											 ? scoped ? "Remove group and memory section"
-													  : "Remove all saved assignments"
+													  : "Remove all already baked assignments"
 											 : std::string(labels[index]),
 								.activate = batch_decision,
 								.target = &context.state(),
@@ -785,11 +947,34 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 	const auto rows = changes_queue_rows(state);
 	const auto selected = selected_changes_row(state);
 	const auto selected_node = selected_changes_node(state);
-	const bool pinned =
-		selected &&
-		(state.selected_outside_filter ||
-		 std::ranges::find(rows, static_cast<std::size_t>(selected - state.review.rows.data())) ==
-			 rows.end());
+	if (selected && selected_node) {
+		if (state.selected_outside_filter) {
+			CLAY(context.clayID("pinned-selection"), section(10)) {
+				context.state().submitted_pinned = true;
+				ui::text(context, "Selected change outside current filters",
+						 interface_theme::kStatusAmber, 13);
+				CLAY(context.clayID("pinned-actions"), action_row(width)) {
+					ui::button(context, LocalElementName{"reveal-selection"}, "Reveal in list",
+							   state, ui::RevealSelection);
+					ui::button(context, LocalElementName{"clear-selection"}, "Clear selection",
+							   state, ui::ClearSelection);
+				}
+			}
+		}
+		auto header = section(8);
+		header.layout.padding = {12, 12, 12, 12};
+		header.backgroundColor = interface_theme::kDepth1Panel;
+		header.border = {.color = ui::operation_color(selected->operation),
+						 .width = {3, 0, 0, 0, 0}};
+		CLAY(context.clayID("selected-change-header"), header) {
+			ui::text(context, selected->target_name + " / " + selected->field_path,
+					 interface_theme::kTextCanvas, 15);
+			ui::text(context, ui::operation_label(selected->operation),
+					 ui::operation_color(selected->operation), 12);
+		}
+		expanded_review(context, state, *selected, selected_node->identity, width);
+		return;
+	}
 	const auto scope = std::ranges::find(state.nodes, state.queue_scope_key, &DevChangesNode::key);
 	const bool scoped =
 		!state.queue_scope_key.empty() && scope != state.nodes.end() && !scope->leaf;
@@ -819,31 +1004,12 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 		}
 	}
 	batch_menu(context, state, rows);
-	if (pinned && selected_node) {
-		CLAY(context.clayID("pinned-selection"), section()) {
-			context.state().submitted_pinned = true;
-			ui::text(context,
-					 scope_missing ? "Selected change outside the unavailable queue"
-					 : state.selected_outside_filter ? "Selected change outside current filters"
-													 : "Selected change outside current queue",
-					 interface_theme::kStatusAmber, 13);
-			CLAY(context.clayID("pinned-actions"), action_row(width)) {
-				ui::button(context, LocalElementName{"reveal-selection"}, "Reveal in list", state,
-						   ui::RevealSelection);
-				ui::button(context, LocalElementName{"clear-selection"}, "Clear selection", state,
-						   ui::ClearSelection);
-			}
-			ui::text(context, selected->target_name + " / " + selected->field_path,
-					 interface_theme::kTextCanvas, 13);
-			expanded_review(context, state, *selected, selected_node->identity, width);
-		}
-	}
 	const auto page_count =
 		std::max<std::size_t>(1, (rows.size() + review_page_size - 1) / review_page_size);
 	state.workbench_page = std::min<uint64_t>(state.workbench_page, page_count - 1);
 	const auto begin = std::min<std::size_t>(rows.size(), state.workbench_page * review_page_size);
 	const auto end = std::min(rows.size(), begin + review_page_size);
-	CLAY(context.clayID("review-queue"), section(0)) {
+	CLAY(context.clayID("review-queue"), section(12)) {
 		for (std::size_t position = begin; position < end; ++position) {
 			const auto& row = state.review.rows[rows[position]];
 			const auto node = std::ranges::find(state.nodes, row.key, &DevChangesNode::key);
@@ -858,32 +1024,41 @@ void review_queue(Context& context, DevChangesState& state, float width) {
 								 row.has_disk || (row.has_proposal &&
 												  row.decision == Decision::IncludeProposal &&
 												  !row.proposal_removes)));
-			context.uiManager.createElement(queue_row, Keyed("review-row", node->identity))
-				.setParameters({.title = row.target_name + " / " + row.field_path,
-								.preview = preview,
-								.operation = std::string(ui::operation_label(row.operation)),
-								.tooltip = row.target_name + "\n" + row.field_path + "\n" +
-										   scope_label(row) +
-										   (row.blocking ? "\n" + row.reason : std::string{}),
-								.app = context.params.app,
-								.changes = &state,
-								.workbench = &context.state(),
-								.queue_parent = context.id,
-								.operation_color = ui::operation_color(row.operation),
-								.viewport = context.clayID("scroll"),
-								.identity = node->identity,
-								.width = width - 32,
-								.selected = row.key == state.selected_key,
-								.blocking = row.blocking,
-								.excluded = row.decision == Decision::OmitProposal})
-				.setDevInternalCapture(true)
-				.draw();
-			if (!pinned && row.key == state.selected_key)
-				expanded_review(context, state, row, node->identity, width);
+			const bool expanded = std::ranges::find(context.state().expanded_reviews, row.key) !=
+								  context.state().expanded_reviews.end();
+			auto group = section(8);
+			CLAY(context.clayID(Keyed("review-card", node->identity)), group) {
+				context.uiManager.createElement(queue_row, Keyed("review-row", node->identity))
+					.setParameters({.title = row.target_name + " / " + row.field_path,
+									.preview = preview,
+									.operation = std::string(ui::operation_label(row.operation)),
+									.tooltip = row.target_name + "\n" + row.field_path + "\n" +
+											   scope_label(row) +
+											   (row.blocking ? "\n" + row.reason : std::string{}),
+									.app = context.params.app,
+									.changes = &state,
+									.workbench = &context.state(),
+									.queue_parent = context.id,
+									.operation_color = ui::operation_color(row.operation),
+									.viewport = context.clayID("scroll"),
+									.identity = node->identity,
+									.width = width - 32,
+									.selected = expanded,
+									.blocking = row.blocking,
+									.excluded = row.decision == Decision::OmitProposal})
+					.setDevInternalCapture(true)
+					.draw();
+				if (expanded) {
+					auto inset = section(0);
+					inset.layout.padding = {10, 10, 0, 0};
+					CLAY(context.clayID(Keyed("review-detail-inset", node->identity)), inset)
+					expanded_review(context, state, row, node->identity, width - 20);
+				}
+			}
 		}
 		if (rows.empty())
 			ui::text(context,
-					 state.review.rows.empty() ? "No saved or proposed changes"
+					 state.review.rows.empty() ? "No already baked or proposed changes"
 											   : "No targets match these filters.",
 					 interface_theme::kTextCanvas, 14);
 	}
@@ -908,7 +1083,8 @@ void copy_text(Context& context, LocalElementName identity, std::string_view val
 						.tooltip = std::string(label),
 						.clipboard_text = std::string(value),
 						.icon = ui::Icon::Copy,
-						.enabled = !value.empty() && context.uiManager.hasClipboardAccess()})
+						.enabled = !value.empty() && context.uiManager.hasClipboardAccess(),
+						.icon_only = true})
 		.setDevInternalCapture(true)
 		.draw();
 	register_widget(context, context.params.interfaceState->changes,
@@ -921,6 +1097,11 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 		ui::button(context, LocalElementName{"raw-manifest"},
 				   state.raw_manifest_open ? "Hide raw manifest" : "Raw manifest", state,
 				   ui::ToggleRawManifest);
+		if (width >= 400) {
+			auto spacer = ui::column(0);
+			spacer.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(0)};
+			CLAY(context.clayID("raw-actions-spacer"), spacer) {}
+		}
 		copy_text(context, "copy-manifest", state.review.candidate_json, "Copy full manifest");
 	}
 	if (!state.raw_manifest_open)
@@ -949,10 +1130,13 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 		CLAY(context.clayID("raw-pages"), action_row(width)) {
 			context.uiManager.createElement(ui::kControl, LocalElementName{"previous-candidate"})
 				.setParameters({.label = "Previous",
+								.tooltip = "Previous raw manifest page",
+								.icon = ui::Icon::Previous,
 								.activate = raw_page_action,
 								.target = &context.state(),
 								.action = 0,
-								.enabled = context.state().raw_page > 0})
+								.enabled = context.state().raw_page > 0,
+								.icon_only = true})
 				.setDevInternalCapture(true)
 				.draw();
 			register_widget(context, state, diagnostics_ui::Control::definitionId,
@@ -963,10 +1147,13 @@ void raw_manifest(Context& context, DevChangesState& state, float width) {
 					 interface_theme::kTextSecondary, 12);
 			context.uiManager.createElement(ui::kControl, LocalElementName{"next-candidate"})
 				.setParameters({.label = "Next",
+								.tooltip = "Next raw manifest page",
+								.icon = ui::Icon::Next,
 								.activate = raw_page_action,
 								.target = &context.state(),
 								.action = 1,
-								.enabled = context.state().raw_page + 1 < pages})
+								.enabled = context.state().raw_page + 1 < pages,
+								.icon_only = true})
 				.setDevInternalCapture(true)
 				.draw();
 			register_widget(context, state, diagnostics_ui::Control::definitionId,
@@ -1038,12 +1225,16 @@ void output(Context& context, DevChangesState& state, float width) {
 																 : "Reviewed candidate: ") +
 				 std::to_string(counts.additions) + " new, " + std::to_string(counts.updates) +
 				 " updates and " + std::to_string(counts.removals) + " removals; " +
-				 std::to_string(counts.retained) + " saved assignments retained.",
+				 std::to_string(counts.retained) + " already baked assignments retained.",
 			 interface_theme::kTextCanvas, 13);
-	CLAY(context.clayID("output-destination"), section()) {
-		ui::text(context, "Manifest destination", interface_theme::kTextSecondary, 11);
-		ui::text(context, state.review.manifest_path.filename().generic_string(),
-				 interface_theme::kTextCanvas, 13);
+	CLAY(context.clayID("output-destination"), action_row(width)) {
+		auto destination_label = ui::column(4);
+		destination_label.layout.sizing.width = CLAY_SIZING_GROW(0);
+		CLAY(context.clayID("output-destination-label"), destination_label) {
+			ui::text(context, "Manifest destination", interface_theme::kTextSecondary, 11);
+			ui::text(context, state.review.manifest_path.filename().generic_string(),
+					 interface_theme::kTextCanvas, 13);
+		}
 		copy_text(context, "copy-destination", state.review.manifest_path.generic_string(),
 				  "Copy full path");
 	}
@@ -1054,15 +1245,23 @@ void output(Context& context, DevChangesState& state, float width) {
 			 counts.errors + counts.conflicts == 0)
 		ui::text(context, "No output changes.", interface_theme::kTextCanvas, 12);
 	else {
-		ui::text(context, "Resolve blocking issues or refresh before writing.",
-				 interface_theme::kStatusRed, 12);
-		ui::button(context, LocalElementName{"output-next-issue"}, "Review next issue", state,
-				   ui::NextIssue);
+		CLAY(context.clayID("output-readiness"), action_row(width)) {
+			ui::text(context, "Resolve blocking issues or refresh before writing.",
+					 interface_theme::kStatusRed, 12);
+			if (width >= 400) {
+				auto spacer = ui::column(0);
+				spacer.layout.sizing = {.width = CLAY_SIZING_GROW(0),
+										.height = CLAY_SIZING_FIXED(0)};
+				CLAY(context.clayID("output-readiness-spacer"), spacer) {}
+			}
+			ui::button(context, LocalElementName{"output-next-issue"}, "Review next issue", state,
+					   ui::NextIssue);
+		}
 	}
 	ui::text(context,
 			 state.review.rebuild_required
-				 ? "This executable differs from the saved manifest — rebuild required."
-				 : "This executable matches the reviewed saved manifest.",
+				 ? "This executable differs from the already baked manifest — rebuild required."
+				 : "This executable matches the reviewed already baked manifest.",
 			 state.review.rebuild_required ? interface_theme::kStatusAmber
 										   : interface_theme::kTextSecondary,
 			 12);
@@ -1094,9 +1293,17 @@ void output(Context& context, DevChangesState& state, float width) {
 		auto group = section(6);
 		group.layout.padding = {0, 0, 10, 10};
 		group.border = {.color = interface_theme::kBorderPrimary, .width = {0, 0, 0, 1, 0}};
+		group.layout.layoutDirection = width < 720 ? CLAY_TOP_TO_BOTTOM : CLAY_LEFT_TO_RIGHT;
+		group.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
 		CLAY(context.clayID(Keyed("output-domain", domain_index)), group) {
+			auto domain_label = ui::column(0);
+			domain_label.layout.sizing.width = CLAY_SIZING_GROW(0);
+			CLAY(context.clayID(Keyed("output-domain-label", domain_index)), domain_label)
 			ui::text(context, domains[domain_index], interface_theme::kTextCanvas, 13);
-			CLAY(context.clayID(Keyed("output-domain-counts", domain_index)), action_row(width)) {
+			auto counts_row = width < 400 ? ui::column(6) : ui::row(28);
+			counts_row.layout.sizing = {.width = CLAY_SIZING_FIT(0), .height = CLAY_SIZING_FIT(0)};
+			counts_row.layout.childGap = 14;
+			CLAY(context.clayID(Keyed("output-domain-counts", domain_index)), counts_row) {
 				ui::text(context, std::to_string(operations[0]) + " New",
 						 ui::operation_color(Operation::Add), 12);
 				ui::text(context, std::to_string(operations[1]) + " Update",
@@ -1143,31 +1350,31 @@ void policy_editor(Context& context, DevChangesState& state) {
 			 "Drafts affect output only after Stage. These settings apply at future startup; "
 			 "current allocations stay active.",
 			 interface_theme::kTextSecondary, 12);
-	const auto saved_policy = [&](std::string_view key) {
+	const auto baked_policy = [&](std::string_view key) {
 		const auto found = std::ranges::find(state.review.rows, key, &ReviewRow::key);
 		return found == state.review.rows.end() ? std::string("Absent — use startup fallback")
 												: ui::value(found->on_disk, found->has_disk);
 	};
 	CLAY(context.clayID("section-policy"), ui::card(8)) {
-		ui::text(context, "Use saved memory capacities at future startup",
+		ui::text(context, "Use already baked memory capacities at future startup",
 				 interface_theme::kTextCanvas, 13);
-		ui::text(context, "Saved: " + saved_policy("memory:policy.enabled"),
+		ui::text(context, "Already Baked: " + baked_policy("memory:policy.enabled"),
 				 interface_theme::kTextSecondary, 12);
 		CLAY(context.clayID("policy-enabled"), selector_choice_track()) {
 			ui::choice(context, Keyed("enabled-choice", 0), "No", 0, state.policy_enabled_choice);
 			ui::choice(context, Keyed("enabled-choice", 1), "Yes", 1, state.policy_enabled_choice);
 		}
-		ui::text(context, "No retains saved assignments while disabling their use.",
+		ui::text(context, "No retains already baked assignments while disabling their use.",
 				 interface_theme::kTextSecondary, 12);
 		ui::button(context, LocalElementName{"stage-enabled"}, "Stage section state", state,
 				   ui::StagePolicy, 0);
 	}
 	CLAY(context.clayID("growth-policy"), ui::card(8)) {
 		ui::text(context, "Storage growth factor", interface_theme::kTextCanvas, 13);
-		ui::text(context, "Saved: " + saved_policy("memory:policy.growth_factor"),
+		ui::text(context, "Already Baked: " + baked_policy("memory:policy.growth_factor"),
 				 interface_theme::kTextSecondary, 12);
 		CLAY(context.clayID("growth-intent"), selector_choice_track()) {
-			ui::choice(context, Keyed("growth-intent", 0), "Keep saved", 0,
+			ui::choice(context, Keyed("growth-intent", 0), "Keep already baked", 0,
 					   context.state().growth_intent);
 			ui::choice(context, Keyed("growth-intent", 1), "Set value", 1,
 					   context.state().growth_intent);
@@ -1213,10 +1420,10 @@ void policy_editor(Context& context, DevChangesState& state) {
 	}
 	CLAY(context.clayID("runtime-growth-policy"), ui::card(8)) {
 		ui::text(context, "Permit storage runtime growth", interface_theme::kTextCanvas, 13);
-		ui::text(context, "Saved: " + saved_policy("memory:policy.allow_runtime_growth"),
+		ui::text(context, "Already Baked: " + baked_policy("memory:policy.allow_runtime_growth"),
 				 interface_theme::kTextSecondary, 12);
 		CLAY(context.clayID("runtime-intent"), selector_choice_track()) {
-			ui::choice(context, Keyed("runtime-intent", 0), "Keep saved", 0,
+			ui::choice(context, Keyed("runtime-intent", 0), "Keep already baked", 0,
 					   context.state().runtime_intent);
 			ui::choice(context, Keyed("runtime-intent", 1), "Set value", 1,
 					   context.state().runtime_intent);
@@ -1243,8 +1450,8 @@ void policy_editor(Context& context, DevChangesState& state) {
 	CLAY(context.clayID("policy-removal"), section()) {
 		ui::text(context, "Removal area", interface_theme::kStatusAmber, 13);
 		ui::text(context,
-				 "Remove all " + std::to_string(capacities) + " saved capacity targets and " +
-					 std::to_string(policies) +
+				 "Remove all " + std::to_string(capacities) +
+					 " already baked capacity targets and " + std::to_string(policies) +
 					 " shared policy settings. This is reversible before bake.",
 				 interface_theme::kTextSecondary, 12);
 		ui::button(context, LocalElementName{"clear-section"}, "Remove entire memory section",
@@ -1362,35 +1569,11 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 		state.workbench_scroll = 0;
 		state.workbench_page_changed = false;
 	}
-	if (local.reveal_pending && state.view == 0 && scroll.found && scroll.scrollPosition) {
-		const auto* selected = selected_changes_node(state);
-		if (selected && selected->leaf) {
-			const auto queue = changes_queue_rows(state);
-			const bool pinned = state.selected_outside_filter || selected->rows.empty() ||
-								std::ranges::find(queue, selected->rows.front()) == queue.end();
-			const auto target =
-				pinned ? context.clayID("pinned-selection")
-					   : context.uiManager.toClayEID(::FlowUi::detail::element_id::resolveLocal(
-							 context.id, QueueRow::definitionId,
-							 Keyed("review-row", selected->identity).token));
-			const auto target_bounds = Clay_GetElementData(target);
-			const auto viewport_bounds = Clay_GetElementData(context.clayID("scroll"));
-			const auto submitted_rows = std::span<const uint32_t>(local.submitted_queue_ids)
-											.first(local.submitted_queue_count);
-			const bool submitted =
-				pinned ? local.submitted_pinned
-					   : std::ranges::find(submitted_rows, target.id) != submitted_rows.end();
-			if (submitted && target_bounds.found && viewport_bounds.found) {
-				if (target_bounds.boundingBox.y < viewport_bounds.boundingBox.y ||
-					target_bounds.boundingBox.y + 44 >
-						viewport_bounds.boundingBox.y + viewport_bounds.boundingBox.height)
-					scroll.scrollPosition->y =
-						std::min(0.0f, scroll.scrollPosition->y + viewport_bounds.boundingBox.y +
-										   8 - target_bounds.boundingBox.y);
-				state.workbench_scroll = scroll.scrollPosition->y;
-				local.reveal_pending = false;
-			}
-		}
+	if (local.reveal_pending && state.view == 0) {
+		if (scroll.found && scroll.scrollPosition)
+			scroll.scrollPosition->y = 0;
+		state.workbench_scroll = 0;
+		local.reveal_pending = false;
 	}
 	if (local.queue_focus_target.id && state.view == 0 && scroll.found && scroll.scrollPosition) {
 		const auto bounds = Clay_GetElementData(local.queue_focus_target);
@@ -1423,6 +1606,8 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 			LocalElementName{"group-decisions"}.token);
 		context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(trigger));
 	}
+	const auto blocking = std::ranges::count_if(
+		state.review.rows, [](const auto& review_row) { return review_row.blocking; });
 	auto root = ui::column(0);
 	root.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_PERCENT(1)};
 	root.backgroundColor = interface_theme::kDepth0Keel;
@@ -1442,36 +1627,11 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 				ui::choice(context, Keyed("view", 0), "Review", 0, state.view);
 				ui::choice(context, Keyed("view", 1), "Output", 1, state.view);
 			}
-			const auto blocking = std::ranges::count_if(
-				state.review.rows, [](const auto& row) { return row.blocking; });
 			ui::text(context,
 					 std::to_string(state.review.counts.pending()) +
 						 " whole-plan output changes · " + std::to_string(blocking) +
 						 " blocking issues",
 					 interface_theme::kTextSecondary, 12);
-			blocking_causes(context, state);
-			if (state.stale)
-				ui::text(context,
-						 "Sources changed. Refresh before baking. Values below are the last "
-						 "reviewed snapshot.",
-						 interface_theme::kStatusAmber, 12);
-			if (!state.review.valid_disk) {
-				ui::text(context,
-						 state.review.error.empty() ? "The active manifest could not be read."
-													: state.review.error,
-						 interface_theme::kTextCanvas, 12);
-				ui::button(context, LocalElementName{"retry-refresh"}, "Retry refresh", state,
-						   ui::Refresh);
-			}
-			if (!state.memory_error.empty())
-				ui::text(context, state.memory_error, interface_theme::kTextCanvas, 12);
-			if (blocking || !state.memory_error.empty())
-				CLAY(context.clayID("issue-navigation"), action_row(width)) {
-					ui::button(context, LocalElementName{"next-issue"}, "Next issue", state,
-							   ui::NextIssue);
-					ui::button(context, LocalElementName{"show-issues"}, "Show issues", state,
-							   ui::Issues);
-				}
 		}
 		auto viewport = ui::viewport(context, "scroll", state.workbench_scroll);
 		viewport.layout.sizing.width = CLAY_SIZING_PERCENT(1);
@@ -1482,6 +1642,29 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 			auto body = section(12);
 			body.layout.padding = {14, 14, 12, 16};
 			CLAY(context.clayID("contents"), body) {
+				blocking_causes(context, state);
+				if (state.stale)
+					ui::text(context,
+							 "Sources changed. Refresh before baking. Values below are the last "
+							 "reviewed snapshot.",
+							 interface_theme::kStatusAmber, 12);
+				if (!state.review.valid_disk) {
+					ui::text(context,
+							 state.review.error.empty() ? "The active manifest could not be read."
+														: state.review.error,
+							 interface_theme::kTextCanvas, 12);
+					ui::button(context, LocalElementName{"retry-refresh"}, "Retry refresh", state,
+							   ui::Refresh);
+				}
+				if (!state.memory_error.empty())
+					ui::text(context, state.memory_error, interface_theme::kTextCanvas, 12);
+				if (blocking || !state.memory_error.empty())
+					CLAY(context.clayID("issue-navigation"), action_row(width)) {
+						ui::button(context, LocalElementName{"next-issue"}, "Next issue", state,
+								   ui::NextIssue);
+						ui::button(context, LocalElementName{"show-issues"}, "Show issues", state,
+								   ui::Issues);
+					}
 				if (state.view == 2)
 					policy_editor(context, state);
 				else if (state.view == 1)

@@ -9,7 +9,7 @@
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -102,18 +102,25 @@ void DevClayInspector::buildElement(BuildContext& context) {
 		// Scrollable Content Area
 		Clay_ElementDeclaration content_column{};
 		content_column.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0),
+			.width = CLAY_SIZING_PERCENT(1),
 			.height = CLAY_SIZING_GROW(0),
 		};
 		content_column.layout.padding = Clay_Padding{12, 12, 12, 12};
 		content_column.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		content_column.layout.childGap = 12;
+		const auto scroll = Clay_GetScrollContainerData(context.clayID("inspector-content"));
+		content_column.clip = {
+			.horizontal = true,
+			.vertical = true,
+			.childOffset =
+				scroll.found && scroll.scrollPosition ? *scroll.scrollPosition : Clay_Vector2{},
+		};
 
 		CLAY(context.clayID("inspector-content"), content_column) {
 			// Card 1: Clay Element Identity
 			Clay_ElementDeclaration identity_card{};
 			identity_card.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0),
+				.width = CLAY_SIZING_PERCENT(1),
 				.height = CLAY_SIZING_FIT(0),
 			};
 			identity_card.layout.padding = Clay_Padding{10, 10, 10, 10};
@@ -173,7 +180,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 			// Card 2: Owning Flow Element
 			Clay_ElementDeclaration owner_card{};
 			owner_card.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0),
+				.width = CLAY_SIZING_PERCENT(1),
 				.height = CLAY_SIZING_FIT(0),
 			};
 			owner_card.layout.padding = Clay_Padding{10, 10, 10, 10};
@@ -236,7 +243,7 @@ void DevClayInspector::buildElement(BuildContext& context) {
 #elif FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 

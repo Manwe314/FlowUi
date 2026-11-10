@@ -6,7 +6,7 @@
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryWorkbenchControls.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <array>

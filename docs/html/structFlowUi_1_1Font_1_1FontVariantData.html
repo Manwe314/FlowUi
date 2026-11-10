@@ -110,19 +110,19 @@ $(function() {
 <p>One baked variant of a font face.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="FontResources_8hpp_source.html">FontResources.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acb58bcb53965391de0525cb6850a9d29" id="r_acb58bcb53965391de0525cb6850a9d29"><td class="memItemLeft"><a id="acb58bcb53965391de0525cb6850a9d29" name="acb58bcb53965391de0525cb6850a9d29"></a>
-float&#160;</td><td class="memItemRight"><b>kerningAdvance</b> (uint32_t leftCodepoint, uint32_t rightCodepoint) const</td></tr>
-<tr class="memdesc:acb58bcb53965391de0525cb6850a9d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return kerning advance for a codepoint pair. <br /></td></tr>
+<tr class="memitem:a4464d6512f5c1f1845fe8803c95a34e6" id="r_a4464d6512f5c1f1845fe8803c95a34e6"><td class="memItemLeft"><a id="a4464d6512f5c1f1845fe8803c95a34e6" name="a4464d6512f5c1f1845fe8803c95a34e6"></a>
+float&#160;</td><td class="memItemRight"><b>kerningAdvance</b> (uint32_t leftCodepoint, uint32_t rightCodepoint) const noexcept</td></tr>
+<tr class="memdesc:a4464d6512f5c1f1845fe8803c95a34e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return kerning advance for a codepoint pair. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aac641adb1ef8d9b2cfbaa10652b38986" id="r_aac641adb1ef8d9b2cfbaa10652b38986"><td class="memItemLeft"><a id="aac641adb1ef8d9b2cfbaa10652b38986" name="aac641adb1ef8d9b2cfbaa10652b38986"></a>
-static uint64_t&#160;</td><td class="memItemRight"><b>kerningKey</b> (uint32_t leftCodepoint, uint32_t rightCodepoint)</td></tr>
-<tr class="memdesc:aac641adb1ef8d9b2cfbaa10652b38986"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack two codepoints into the kerning lookup key. <br /></td></tr>
+<tr class="memitem:a1bd3d5a33200280271ef25d523b78b2b" id="r_a1bd3d5a33200280271ef25d523b78b2b"><td class="memItemLeft"><a id="a1bd3d5a33200280271ef25d523b78b2b" name="a1bd3d5a33200280271ef25d523b78b2b"></a>
+static constexpr uint64_t&#160;</td><td class="memItemRight"><b>kerningKey</b> (uint32_t leftCodepoint, uint32_t rightCodepoint) noexcept</td></tr>
+<tr class="memdesc:a1bd3d5a33200280271ef25d523b78b2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack two codepoints into the kerning lookup key. <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -182,7 +182,7 @@ std::unordered_map&lt; uint64_t, float &gt;&#160;</td><td class="memItemRight"><
 <div class="textblock"><p>One baked variant of a font face. </p>
 <p>A variant stores metrics, glyphs, and kerning for one loaded font face variant. <a class="el" href="structFlowUi_1_1Font_1_1FontFaceData.html" title="Loaded font face and its baked variants.">FontFaceData</a> selects one variant as the default for layout. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/FlowUi/<a class="el" href="FontResources_8hpp_source.html">FontResources.hpp</a></li>
+<li>include/FlowUi/Public/managerStructs/<a class="el" href="FontTypes_8hpp_source.html">FontTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

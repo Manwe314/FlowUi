@@ -1,15 +1,15 @@
 #include "devSystems/devAgenticWorkflow/AgenticProvenance.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticAdapters.hpp"
-#include "FlowUi/App.hpp"
-#include "FlowUi/Resources.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "FlowUi/Public/Resources.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/errors/DevError.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 
 #include <algorithm>
 #include <array>

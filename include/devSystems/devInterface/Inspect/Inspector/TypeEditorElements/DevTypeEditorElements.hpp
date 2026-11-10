@@ -9,17 +9,18 @@
 #include <string_view>
 #include <vector>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "devSystems/devInterface/Inspect/DevValueSummary.hpp"
 #include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
 #include "devSystems/devTooling/catalogue/DevCatalogLease.hpp"
 #include "devSystems/devTooling/schema/DevSchemaTypes.hpp"
-#include "internal/ElementInstanceKey.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Private/elementSystem/ElementInstanceKey.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -40,17 +41,17 @@ enum class DevEditorRole : uint8_t {
 struct DevEditorBinding {
 	std::string elementName{};
 	std::string theme_variant{};
-	devMode::DevTypeId theme_type = 0;
-	std::vector<devMode::DevFieldId> nestedPath{};
+	tooling::DevTypeId theme_type = 0;
+	std::vector<tooling::DevFieldId> nestedPath{};
 	FlowDefinitionID definition{};
 	WindowId window = InvalidWindowId;
 	::FlowUi::detail::element::ElementInstanceKey instance{};
-	devMode::DevTypeId rootOwnerType = 0u;
+	tooling::DevTypeId rootOwnerType = 0u;
 	DevEditorRole role = DevEditorRole::Parameters;
-	devMode::DevFieldIndex field{};
+	tooling::DevFieldIndex field{};
 };
 
-/** One snapshot of every override state represented by an editor card. */
+/* One snapshot of every override state represented by an editor card. */
 struct DevOverridePresence {
 	bool exactLive = false;
 	bool descendantLive = false;
@@ -62,18 +63,6 @@ struct DevOverridePresence {
 	[[nodiscard]] bool hasCommittedChange() const noexcept {
 		return exactLive || descendantLive;
 	}
-};
-
-enum class DevQuickStatus : std::uint8_t { Normal, Missing, Warning, Unavailable };
-
-struct DevQuickView {
-	enum class Kind : std::uint8_t { Text, Color, Sizing, Spacing, Status };
-	std::optional<TextureRef> thumbnail{};
-	std::string primary{};
-	std::string secondary{};
-	std::optional<Clay_Color> swatch{};
-	Kind kind = Kind::Text;
-	DevQuickStatus status = DevQuickStatus::Normal;
 };
 
 struct DevInterfaceInspectorTitle {
@@ -114,18 +103,19 @@ struct DevInterfaceInspectorTabs {
 	static void buildElement(BuildContext& context);
 };
 
-/**
+/*
  * One semantic field editor. The body is intentionally deferred; the card
  * already owns schema identity so a compound Clay type remains one editor.
  */
 struct DevEditorCardParameters {
-	devMode::DevSchemaView schema{};
+	tooling::DevSchemaView schema{};
 	DevEditorBinding binding{};
 	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
 	const void* value = nullptr;
 	std::string_view labelOverride{};
 	uint16_t depth = 0u;
+	DevSummaryAvailability availability = DevSummaryAvailability::NotCaptured;
 };
 
 struct DevEditorCardState {
@@ -135,7 +125,7 @@ struct DevEditorCardState {
 	tooling::DevOwnedValue currentValue{};
 	std::string fieldName{};
 	std::string typeName{};
-	devMode::DevTypeId fieldType = 0u;
+	tooling::DevTypeId fieldType = 0u;
 	// Editor bodies are intentionally lazy. A selected element can expose dozens
 	// of deeply nested fields; eagerly constructing every FSEL control can exhaust
 	// the developer window's per-frame Clay arena before it presents the selection.
@@ -207,7 +197,7 @@ struct DevEditorCardHeader {
 };
 
 struct DevEditingFieldParameters {
-	devMode::DevSchemaView schema{};
+	tooling::DevSchemaView schema{};
 	DevEditorBinding binding{};
 	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
@@ -226,7 +216,7 @@ struct DevEditingField {
 };
 
 struct DevEditorParameters {
-	devMode::DevSchemaView schema{};
+	tooling::DevSchemaView schema{};
 	DevEditorBinding binding{};
 	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
@@ -314,7 +304,7 @@ struct DevCatalogueChoice {
 };
 
 struct DevTypeEditorParameters {
-	devMode::DevSchemaView schema{};
+	tooling::DevSchemaView schema{};
 	DevEditorBinding binding{};
 	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
@@ -328,7 +318,7 @@ struct DevTypeEditorState {
 	std::string draft{};
 	std::string semanticText{};
 	std::string localDiagnostic{};
-	devMode::DevCatalogLease catalogLease{};
+	tooling::DevCatalogLease catalogLease{};
 	std::vector<std::string> choiceLabels{};
 	std::vector<FSEL::ComboBoxOption> choiceOptions{};
 	std::vector<std::string> choiceKeys{};
@@ -337,25 +327,24 @@ struct DevTypeEditorState {
 	std::array<std::uint64_t, 2> semanticSelections{};
 	App* app = nullptr;
 	DevInterfaceState* interfaceState = nullptr;
-	devMode::DevTypeId type = 0u;
+	tooling::DevTypeId type = 0u;
 	void* editValue = nullptr;
-	devMode::DevTypeId choiceType = 0u;
-	devMode::DevChoiceDomain choiceDomain = devMode::DevChoiceDomain::None;
+	tooling::DevTypeId choiceType = 0u;
+	tooling::DevChoiceDomain choiceDomain = tooling::DevChoiceDomain::None;
 	std::uint64_t choiceRevision = std::numeric_limits<std::uint64_t>::max();
 	std::uint64_t choiceCurrentIdentity = std::numeric_limits<std::uint64_t>::max();
 	uint64_t enumSelection = 0u;
 	uint64_t resourceSelection = 0u;
 	uint64_t resourceFitSelection = 0u;
-	uint64_t resourceSamplingSelection = 0u;
-	devMode::DevTypeId dragValueType = 0u;
+	tooling::DevTypeId dragValueType = 0u;
 	uint64_t semanticMode = std::numeric_limits<uint64_t>::max();
 	double semanticSliderValue = 0.0;
 	std::size_t sequenceActionIndex = 0u;
 	std::array<unsigned int, 5> semanticUnsigned{};
 	std::array<float, 4> semanticChannels{};
 	std::array<float, 4> semanticCorners{};
-	devMode::DevTypeIndex typeIndex{};
-	devMode::DevTypeIndex operationType{};
+	tooling::DevTypeIndex typeIndex{};
+	tooling::DevTypeIndex operationType{};
 	int dragSigned = 0;
 	unsigned int dragUnsigned = 0u;
 	float dragFloat = 0.0f;
@@ -368,6 +357,8 @@ struct DevTypeEditorState {
 	bool resourceTintEnabled = false;
 	bool semanticLinked = true;
 	bool previewActive = false;
+	/* Edit a caller-owned preview value without submitting application overrides. */
+	bool local_value = false;
 };
 
 struct DevOptionalTypeEditorParameters {
@@ -529,7 +520,7 @@ struct DevChangesHeaderState {
 	std::string elementName{};
 };
 
-/** Shared precedence legend and batch controls for the Inspector's Changes tab. */
+/* Shared precedence legend and batch controls for the Inspector's Changes tab. */
 struct DevChangesHeader {
 	using Parameters = DevChangesHeaderParameters;
 	using State = DevChangesHeaderState;
@@ -550,7 +541,7 @@ struct DevChangeCardParameters {
 	::FlowUi::detail::element::ElementInstanceKey instance{};
 	std::string_view elementName{};
 	tooling::DevOverrideFieldKey field{};
-	devMode::DevFieldIndex fieldIndex{};
+	tooling::DevFieldIndex fieldIndex{};
 	std::string_view fieldName{};
 	std::string_view typeName{};
 	std::string_view authoredValue{};
@@ -565,14 +556,14 @@ struct DevChangeCardState {
 	::FlowUi::detail::element::ElementInstanceKey instance{};
 	std::string elementName{};
 	tooling::DevOverrideFieldKey field{};
-	devMode::DevFieldIndex fieldIndex{};
+	tooling::DevFieldIndex fieldIndex{};
 	std::string fieldName{};
 	std::string typeName{};
 	std::string authoredValue{};
 	std::string bakedValue{};
 };
 
-/** One compact, vertically composed provenance/action row in the Changes tab. */
+/* One compact, vertically composed provenance/action row in the Changes tab. */
 struct DevChangeCard {
 	using Parameters = DevChangeCardParameters;
 	using State = DevChangeCardState;

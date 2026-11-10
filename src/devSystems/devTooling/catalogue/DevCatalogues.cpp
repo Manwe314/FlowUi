@@ -12,15 +12,15 @@
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
-#include "internal/StorageSystem/IStorageSystem.hpp"
-#include "managers/ActionManager.hpp"
-#include "managers/FontManager.hpp"
-#include "managers/IconManager.hpp"
-#include "managers/ImageManager.hpp"
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
+#include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
+#include "FlowUi/Public/managers/IconManager.hpp"
+#include "FlowUi/Public/managers/ImageManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 
-namespace FlowUi::devMode {
-namespace storage = detail::storage;
+namespace FlowUi::devSystems::tooling {
+namespace storage = ::FlowUi::detail::storage;
 
 namespace {
 
@@ -150,7 +150,7 @@ std::span<const DevThemeCatalogEntry> DevCatalogues::queryThemes() noexcept {
 }
 
 std::span<const DevElementCatalogEntry> DevCatalogues::queryElements(
-	const devSystems::tooling::DevTreeSnapshot* currentTree) noexcept {
+	const tooling::DevTreeSnapshot* currentTree) noexcept {
 	const DevSchemaView schema = schemaRegistry_ ? schemaRegistry_->view() : DevSchemaView{};
 	const std::uint64_t schemaRevision = schema ? schema->generation : 0;
 	const std::uint64_t treeRevision = currentTree ? currentTree->generation : 0;
@@ -230,22 +230,25 @@ void DevCatalogues::rebuildAtlasCache() {
 		devSystems::TimingZoneRole::DevToolWork, "flowui.dev.catalogues.atlases.rebuild");
 	cachedAtlases_.clear();
 	const std::size_t iconCount = iconManager_ ? iconManager_->devAtlasCount() : 0;
-	cachedAtlases_.reserve(iconCount + (fontManager_ ? 1u : 0u));
+	const auto font_layers = fontManager_ ? fontManager_->dev_atlas_layers()
+		: std::span<const FontManager::DevAtlasLayerView>{};
+	cachedAtlases_.reserve(iconCount + font_layers.size());
 	if (fontManager_) {
 		const FontManager::DevAtlasView atlas = fontManager_->devAtlas();
-		if (atlas.imageView || atlas.layersCapacity != 0) {
+		for (const auto& layer : font_layers) {
 			cachedAtlases_.push_back(DevAtlasCatalogEntry{
 				.atlasKey = ResourceKey{.name = "flowui.font.atlas", .domain = ResourceDomain::Font},
 				.debugName = "FlowUi font MSDF atlas",
 				.kind = DevAtlasKind::FontMsdfAtlas,
-				.atlasTexture = atlas.texture,
-				.atlasImageView = atlas.imageView,
+				.atlasTexture = layer.texture,
+				.atlasImageView = layer.image_view,
 				.width = atlas.width,
 				.height = atlas.height,
 				.layerCount = atlas.layersCapacity,
+				.pageIndex = layer.layer_index,
 				.occupancyRatio = atlas.layersCapacity == 0 ? 0.0f :
 					static_cast<float>(atlas.layersUsed) / static_cast<float>(atlas.layersCapacity),
-				.allocatedRegions = atlas.layersUsed,
+				.allocatedRegions = 1,
 				.gpuMemoryBytes = static_cast<std::uint64_t>(atlas.width) * atlas.height *
 					atlas.layersCapacity * 4u,
 			});
@@ -377,7 +380,7 @@ void DevCatalogues::rebuildThemeCache() {
 }
 
 void DevCatalogues::rebuildElementCache(
-	const devSystems::tooling::DevTreeSnapshot* currentTree) {
+	const tooling::DevTreeSnapshot* currentTree) {
 	FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
 		timingRecorder_, devSystems::TimingCategory::DevTool,
 		devSystems::TimingZoneRole::DevToolWork, "flowui.dev.catalogues.elements.rebuild");
@@ -387,7 +390,7 @@ void DevCatalogues::rebuildElementCache(
 	std::unordered_map<std::uint64_t, std::uint32_t> liveCounts;
 	if (currentTree) {
 		liveCounts.reserve(currentTree->flow.nodes.size());
-		for (const devSystems::tooling::DevFlowNode& node : currentTree->flow.nodes) {
+		for (const tooling::DevFlowNode& node : currentTree->flow.nodes) {
 			if (node.definition) ++liveCounts[node.definition.value];
 		}
 	}
@@ -473,6 +476,6 @@ std::size_t DevCatalogues::memoryFootprintBytes() const noexcept {
 		vectorBytes(cachedElements_);
 }
 
-} // namespace FlowUi::devMode
+} // namespace FlowUi::devSystems::tooling
 
 #endif

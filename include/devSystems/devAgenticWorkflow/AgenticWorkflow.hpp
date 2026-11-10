@@ -1,5 +1,13 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+
+/** @namespace FlowUi::devSystems::agentic
+ * @brief Bounded capture, application-declared scenarios and owned evidence APIs. Available when FLOW_UI_AGENTIC_WORKFLOW is enabled.
+ */
+
+/** @file
+ * @brief Public AgenticWorkflow declarations for optional development services.
+ */
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticAnalysis.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticKnowledge.hpp"

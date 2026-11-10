@@ -1,10 +1,10 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/SelectableSurfaceStyle.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Appearance shared by the Inspect and Performance segmented choices. */
+/* Appearance shared by the Inspect and Performance segmented choices. */
 [[nodiscard]] inline FSEL::SelectableSurfaceStyle selector_choice_style() noexcept {
 	FSEL::SelectableSurfaceStyle style{};
 	style.sizing = {
@@ -32,7 +32,7 @@ namespace FlowUi::devSystems::interface_elements {
 	style.selectedDisabledOverrides.borderColor = interface_theme::kBorderPrimary;
 	return style;
 }
-/** Full-width selection row matching the Performance selector's surface treatment. */
+/* Full-width selection row matching the Performance selector's surface treatment. */
 [[nodiscard]] inline FSEL::SelectableSurfaceStyle selector_bar_style() noexcept {
 	auto style = selector_choice_style();
 	style.sizing.height = CLAY_SIZING_FIXED(25);
@@ -43,7 +43,7 @@ namespace FlowUi::devSystems::interface_elements {
 	style.selectedOverrides.backgroundColor = interface_theme::kSelectedRow;
 	return style;
 }
-/** Bordered, inset track around a group of segmented choices. */
+/* Bordered, inset track around a group of segmented choices. */
 [[nodiscard]] inline Clay_ElementDeclaration selector_choice_track() noexcept {
 	Clay_ElementDeclaration track{};
 	track.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(28)};

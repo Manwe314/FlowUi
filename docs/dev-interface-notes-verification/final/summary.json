@@ -1,0 +1,89 @@
+{
+  "schema": "FlowUi.DevInterfaceNotes.VerificationSummary",
+  "passed": true,
+  "native_tests_passed": 16,
+  "mcp_cases": 186,
+  "required_assertions": 473,
+  "layout_pixel_checks": 9799,
+  "mcp_calls": 858,
+  "suites": [
+    {
+      "suite": "ceiling-0",
+      "index": "ceiling-0/index.json",
+      "run_id": "run_c92b6cc57310199a9263edbe7b05f011",
+      "cases": 5,
+      "required_checks": 11,
+      "layout_checks": 45,
+      "mcp_calls": 24,
+      "passed": true,
+      "user_changes_unchanged": true
+    },
+    {
+      "suite": "ceiling-1",
+      "index": "ceiling-1/index.json",
+      "run_id": "run_15de775e07e500cd17b8158b7a98d312",
+      "cases": 8,
+      "required_checks": 19,
+      "layout_checks": 78,
+      "mcp_calls": 37,
+      "passed": true,
+      "user_changes_unchanged": true
+    },
+    {
+      "suite": "ceiling-2",
+      "index": "ceiling-2/index.json",
+      "run_id": "run_f39b4b670d18a875534e59a585d908fd",
+      "cases": 8,
+      "required_checks": 19,
+      "layout_checks": 78,
+      "mcp_calls": 41,
+      "passed": true,
+      "user_changes_unchanged": true
+    },
+    {
+      "suite": "ceiling-3",
+      "index": "ceiling-3/index.json",
+      "run_id": "run_195cfc7677d8e841305acc363662ca4a",
+      "cases": 8,
+      "required_checks": 19,
+      "layout_checks": 78,
+      "mcp_calls": 42,
+      "passed": true,
+      "user_changes_unchanged": true
+    },
+    {
+      "suite": "demo",
+      "index": "demo/index.json",
+      "run_id": "run_c2e8439c749a4199bfcbce313a90963c",
+      "cases": 8,
+      "required_checks": 21,
+      "layout_checks": 53,
+      "mcp_calls": 35,
+      "passed": true,
+      "user_changes_unchanged": true
+    },
+    {
+      "suite": "fixture",
+      "index": "fixture/index.json",
+      "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+      "cases": 99,
+      "required_checks": 257,
+      "layout_checks": 5493,
+      "mcp_calls": 525,
+      "passed": true,
+      "user_changes_unchanged": true
+    },
+    {
+      "suite": "geometry-stress",
+      "index": "geometry-stress/index.json",
+      "run_id": "run_13237e9a8b8766c29ca0bf4b082054eb",
+      "cases": 50,
+      "required_checks": 127,
+      "layout_checks": 3974,
+      "mcp_calls": 154,
+      "passed": true,
+      "user_changes_unchanged": true
+    }
+  ],
+  "validation_stages": "Complete 99-case suite and independent ceiling/native suites, followed by an isolated metric wrapping fix and 50-case normal/stress suite. Native and compile matrix checks cover the final production source."
+}

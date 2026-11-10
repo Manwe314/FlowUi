@@ -1,0 +1,104 @@
+{
+  "cases": [
+    {
+      "assertion_count": "1",
+      "assertion_details": "all",
+      "assertions": [
+        {
+          "assertion_id": "step_0",
+          "available": true,
+          "expected": 16,
+          "observed": 112,
+          "passed": true,
+          "reason": "",
+          "required": true
+        }
+      ],
+      "capture_id": "cap_d3a70b147cef9b207775037689430cd5",
+      "case_id": "probe-warmup",
+      "checkpoints": [],
+      "cleanup": {
+        "completed": true,
+        "fixture_usable": true
+      },
+      "coverage": {
+        "evaluated": "1",
+        "failed": "0",
+        "passed": "1",
+        "required": "1",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "duration_ns": "717291704",
+      "fixture_id": "",
+      "manifest": "/tmp/flowui-dev-notes-probe-final-level-1/run_e854ed62d26c/workspace/.flowui/agentic/v1/runs/20261110T162040626546Z_run_15de775e07e500cd17b8158b7a98d312/captures/cap_d3a70b147cef9b207775037689430cd5/manifest.json",
+      "verdict": "pass",
+      "workload": {
+        "kind": "interaction_plan",
+        "plan_digest": "37ee304ea5d6aba3bccc4c61c5445af4659d0ffe14a94dcd5b99bd43743a037a",
+        "seed": "0"
+      }
+    }
+  ],
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "fixture_usable": true
+  },
+  "coverage": {
+    "evaluated": "1",
+    "failed": "0",
+    "passed": "1",
+    "required": "1",
+    "skipped": "0",
+    "unavailable": "0"
+  },
+  "cursor": "",
+  "detail_selector": {
+    "report_digest": "12b5e8f9d24339c6e7313c4fc0fa5912c3ffa9579fa19c154c48a8736b66fbaa"
+  },
+  "evidence": {
+    "contact_sheet": null,
+    "image_count": "0",
+    "selector": {
+      "instance": "run_15de775e07e500cd17b8158b7a98d312",
+      "job_id": "verification_019ad5365bfe0980938be916c1a5594e"
+    }
+  },
+  "execution_status": "completed",
+  "job_id": "verification_019ad5365bfe0980938be916c1a5594e",
+  "limitations": [
+    "unavailable_pipeline_spans_are_null",
+    "rss_gpu_and_encoder_workspace_unavailable",
+    "automatic_disk_retention_not_enabled",
+    "historical_failure_pixels_unavailable"
+  ],
+  "report_digest": "12b5e8f9d24339c6e7313c4fc0fa5912c3ffa9579fa19c154c48a8736b66fbaa",
+  "request_digest": "3b8f215523853d2b846dd339af7ac128c27198b98db4bdb223a1755a6ce33ee7",
+  "resources": {
+    "completed_rgb_bytes_peak": "0",
+    "disk_bytes": "24661",
+    "encoded_bytes": null,
+    "measurement_availability": "owned_snapshot_and_inventory_only",
+    "peak_owned_evidence_bytes": "695820",
+    "readback_reserved_bytes": "0"
+  },
+  "run_id": "run_15de775e07e500cd17b8158b7a98d312",
+  "schema": "FlowUi.Agentic.VerificationReport",
+  "schema_version": "1.0",
+  "suite_id": "catalogue.layout.interactions",
+  "suite_revision": "1",
+  "timings": {
+    "admission_ns": "1856843",
+    "assertion_ns": "0",
+    "execution_ns": "0",
+    "publication_ns": "31654335",
+    "queue_ns": "642311267",
+    "readback_ns": null,
+    "report_ns": null,
+    "setup_ns": "0",
+    "total_elapsed_ns": "778214538"
+  },
+  "truncated": false,
+  "verdict": "pass"
+}

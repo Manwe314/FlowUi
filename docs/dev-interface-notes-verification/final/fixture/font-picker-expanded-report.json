@@ -1,0 +1,184 @@
+{
+  "cases": [
+    {
+      "assertion_count": "2",
+      "assertion_details": "all",
+      "assertions": [
+        {
+          "assertion_id": "step_0",
+          "available": true,
+          "expected": 27,
+          "observed": 123,
+          "passed": true,
+          "reason": "",
+          "required": true
+        },
+        {
+          "assertion_id": "step_1",
+          "available": true,
+          "expected": 16,
+          "observed": 112,
+          "passed": true,
+          "reason": "",
+          "required": true
+        }
+      ],
+      "capture_id": "cap_c210fa1074d9451579e26489684b857e",
+      "case_id": "font-picker-expanded",
+      "checkpoints": [
+        {
+          "available": true,
+          "capture_id": "cap_c210fa1074d9451579e26489684b857e",
+          "checkpoint_id": "font-picker-expanded",
+          "image": {
+            "alpha": "discarded",
+            "app_tick": "22828",
+            "capture_id": "cap_c210fa1074d9451579e26489684b857e",
+            "completed_monotonic_ns": "19434636207498",
+            "copy_duration_ns": "34002181",
+            "crop": {
+              "logical_to_physical_scale_x": 1,
+              "logical_to_physical_scale_y": 1,
+              "original_height": 820,
+              "original_width": 1420,
+              "x": 0,
+              "y": 0
+            },
+            "encoding": "native-rgb8",
+            "frame_slot": 0,
+            "height": 820,
+            "image_id": "image_66",
+            "origin": "top-left",
+            "path": "visual/images/image_66.png",
+            "producer_frame": {
+              "app_tick": "22828",
+              "device_id": "1",
+              "queue_id": "1",
+              "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+              "source_image_revision": "22828",
+              "submission_serial": "68479",
+              "window_frame": "22828",
+              "window_id": "3"
+            },
+            "recorded_monotonic_ns": "19434597099388",
+            "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+            "schema": "FlowUi.Agentic.Image",
+            "schema_generation": "10",
+            "schema_version": "1.0",
+            "source": "window",
+            "source_color_space": "unknown",
+            "source_image_revision": "22828",
+            "source_ppm_artifact_id": "image_66_ppm",
+            "source_vk_format": 50,
+            "submission": {
+              "device_id": "1",
+              "queue_id": "1",
+              "serial": "68479"
+            },
+            "theme": {
+              "artifact_id": "theme_122_10",
+              "revision": "122",
+              "schema_generation": "10"
+            },
+            "theme_revision": "122",
+            "tree": {
+              "artifact_id": "tree_3_22828",
+              "generation": "22828"
+            },
+            "viewport_key": null,
+            "width": 1420,
+            "window_frame": "22828",
+            "window_id": "3"
+          },
+          "passed": true,
+          "required": true,
+          "temporal_relation": "after_required_observation",
+          "tree_artifact": "tree_3_22828",
+          "trigger": "case_verified"
+        }
+      ],
+      "cleanup": {
+        "completed": true,
+        "fixture_usable": true
+      },
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "duration_ns": "985721233",
+      "fixture_id": "",
+      "manifest": "/tmp/flowui-dev-notes-full-verified/run_335e46a6c30d/workspace/.flowui/agentic/v1/runs/20261110T161853362548Z_run_34faf546fe88dfc40a0f2d14be94ef9d/captures/cap_c210fa1074d9451579e26489684b857e/manifest.json",
+      "verdict": "pass",
+      "workload": {
+        "kind": "interaction_plan",
+        "plan_digest": "da9321803b7deb063080bb81d46861711da060cc587397387b9b111290ac864f",
+        "seed": "0"
+      }
+    }
+  ],
+  "cleanup": {
+    "completed": true,
+    "errors": [],
+    "fixture_usable": true
+  },
+  "coverage": {
+    "evaluated": "3",
+    "failed": "0",
+    "passed": "3",
+    "required": "3",
+    "skipped": "0",
+    "unavailable": "0"
+  },
+  "cursor": "",
+  "detail_selector": {
+    "report_digest": "1afe3f379cf37b900697be27c281f2b2d8898cff0816716fa1282ba4b9da5f34"
+  },
+  "evidence": {
+    "contact_sheet": null,
+    "image_count": "1",
+    "selector": {
+      "instance": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+      "job_id": "verification_a1688ccfd453c8bee3033b67c7b8806e"
+    }
+  },
+  "execution_status": "completed",
+  "job_id": "verification_a1688ccfd453c8bee3033b67c7b8806e",
+  "limitations": [
+    "unavailable_pipeline_spans_are_null",
+    "rss_gpu_and_encoder_workspace_unavailable",
+    "automatic_disk_retention_not_enabled",
+    "historical_failure_pixels_unavailable"
+  ],
+  "report_digest": "1afe3f379cf37b900697be27c281f2b2d8898cff0816716fa1282ba4b9da5f34",
+  "request_digest": "3ccf5d260bffca4cfa0e6fdf4507053c97bd87a5d6028c95d690e7c420e96b03",
+  "resources": {
+    "completed_rgb_bytes_peak": "3493200",
+    "disk_bytes": "10256509",
+    "encoded_bytes": null,
+    "measurement_availability": "owned_snapshot_and_inventory_only",
+    "peak_owned_evidence_bytes": "6054154",
+    "readback_reserved_bytes": null
+  },
+  "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
+  "schema": "FlowUi.Agentic.VerificationReport",
+  "schema_version": "1.0",
+  "suite_id": "catalogue.layout.interactions",
+  "suite_revision": "1",
+  "timings": {
+    "admission_ns": "2206913",
+    "assertion_ns": "0",
+    "execution_ns": "0",
+    "publication_ns": "2785385703",
+    "queue_ns": "545853002",
+    "readback_ns": null,
+    "report_ns": null,
+    "setup_ns": "0",
+    "total_elapsed_ns": "4270544871"
+  },
+  "truncated": false,
+  "verdict": "pass"
+}

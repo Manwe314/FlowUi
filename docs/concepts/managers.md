@@ -123,7 +123,7 @@ app.images().registerImage("profile/avatar", "assets/avatar.png");
 FlowUi::TextureRef avatar = app.images().getTexture("profile/avatar");
 ```
 
-Internally, the image manager decodes the file, uploads it as a Vulkan texture, registers it with the UI texture registry, and gives user code a compact texture reference. The returned `TextureRef` can then be passed through an element params struct or stored into Clay image data with `UiManager::storeTexture()`.
+Internally, the image manager decodes the file, uploads it as a Vulkan texture, registers it with the UI texture registry, and gives user code a compact texture reference. The returned `TextureRef` can then be passed through an element params struct or stored into Clay image data with `UiManager::imageData()`.
 
 The image manager also owns replacement and removal behavior:
 
@@ -267,7 +267,7 @@ app.themes().updateActiveTheme<AppTheme>([](AppTheme& t) {
 
 Image, icon, and viewport managers all return the same logical `TextureRef` type.
 
-Managers do not hand Clay raw Vulkan handles or renderer-local slots. A `TextureRef` carries a generational app-level handle, UV coordinates, source size, fit mode, sampling mode, and tint behavior. Before direct instance emission, storage resolves the handle to the current window/frame descriptor index.
+Managers do not hand Clay raw Vulkan handles or renderer-local slots. A `TextureRef` carries a generational app-level handle, UV coordinates, source size, fit mode, and tint behavior. Filtering comes from the logical texture's sampler. Before direct instance emission, storage resolves the handle to the current window/frame descriptor index.
 
 This lets different resource systems share one rendering path:
 

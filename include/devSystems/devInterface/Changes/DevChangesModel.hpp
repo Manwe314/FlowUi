@@ -1,5 +1,5 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/bake/DevChangesReview.hpp"
 #include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
@@ -12,7 +12,7 @@ class App;
 namespace FlowUi::devSystems {
 struct DevInterfaceState;
 
-/** A stable shallow hierarchy; descendant indices always refer to the owned review. */
+/* A stable shallow hierarchy; descendant indices always refer to the owned review. */
 struct DevChangesNode {
 	std::vector<std::size_t> rows{};
 	std::string key{}, parent{}, label{};
@@ -21,7 +21,7 @@ struct DevChangesNode {
 	bool leaf = false, expanded = true, matches = false;
 };
 
-/** Deferred commands run outside Clay drawing, at the interface safe point. */
+/* Deferred commands run outside Clay drawing, at the interface safe point. */
 enum class DevChangesCommand : uint8_t {
 	None,
 	Refresh,
@@ -40,24 +40,24 @@ enum class DevChangesCommand : uint8_t {
 	StagePolicy
 };
 
-/** Explicit future-startup policy intent, independent of the Memory authoring recipe. */
+/* Explicit future-startup policy intent, independent of the Memory authoring recipe. */
 struct DevChangesPolicyIntent {
 	std::optional<bool> enabled{}, runtime_growth{};
 	std::optional<float> growth_factor{};
 	bool clear_section = false, clear_growth_factor = false, clear_runtime_growth = false;
 };
-/** One reversible manifest intent change, including shared policy set/clear semantics. */
+/* One reversible manifest intent change, including shared policy set/clear semantics. */
 struct DevChangesDecisionSnapshot {
 	std::vector<tooling::DevChangesDecisionEntry> decisions{};
 	DevChangesPolicyIntent policies{};
 };
-/** Lightweight read-only memory facts captured with the reviewed snapshot at a safe point. */
+/* Lightweight read-only memory facts captured with the reviewed snapshot at a safe point. */
 struct DevChangesMemoryObservation {
 	std::string key{}, startup{}, demand{}, allocations{};
 	uint64_t observed_ns = 0, observed_tick = 0, peak_ns = 0;
 };
 
-/** Submitted keyboard targets are retained independently of optional developer tree capture. */
+/* Submitted keyboard targets are retained independently of optional developer tree capture. */
 struct DevChangesFocusTarget {
 	Clay_ElementId identity{}, viewport{};
 	FlowElementID text_input{};
@@ -65,7 +65,7 @@ struct DevChangesFocusTarget {
 	uint64_t radio_value = 0;
 };
 
-/** Session-owned review shared by all Changes surfaces, including the header. */
+/* Session-owned review shared by all Changes surfaces, including the header. */
 struct DevChangesState {
 	tooling::DevChangesReviewPlan review{};
 	std::vector<DevChangesNode> nodes{};
@@ -107,29 +107,29 @@ struct DevChangesState {
 	bool reveal_selection_pending = false;
 };
 
-/** Rebuild only owned display hierarchy/filter indices; never reads files or changes bake scope. */
+/* Rebuild only owned display hierarchy/filter indices; never reads files or changes bake scope. */
 void rebuild_changes_model(DevChangesState& state);
-/** Queue a per-leaf manifest decision, preserving selection and unrelated proposals. */
+/* Queue a per-leaf manifest decision, preserving selection and unrelated proposals. */
 void queue_changes_decision(DevChangesState& state, tooling::DevChangesDecision decision);
-/** Queue eligible descendants of an explicit group; an empty scope means the whole plan. */
+/* Queue eligible descendants of an explicit group; an empty scope means the whole plan. */
 void queue_changes_scope_decision(DevChangesState& state, std::string_view scope_key,
 								  tooling::DevChangesDecision decision);
-/** Filtered queue membership is independent of tree expansion and pinned selection. */
+/* Filtered queue membership is independent of tree expansion and pinned selection. */
 [[nodiscard]] std::vector<std::size_t> changes_queue_rows(const DevChangesState& state);
-/** Select a canonical target and reveal its page, retaining the current group when applicable. */
+/* Select a canonical target and reveal its page, retaining the current group when applicable. */
 void changes_select_key(DevChangesState& state, std::string_view key);
-/** Handle review refresh, atomic commit, manifest undo/redo and authoring navigation. */
+/* Handle review refresh, atomic commit, manifest undo/redo and authoring navigation. */
 void service_changes(App& app, DevInterfaceState& interface_state, bool visible);
-/** Exact selected hierarchy node; stable even while hidden by filtering. */
+/* Exact selected hierarchy node; stable even while hidden by filtering. */
 [[nodiscard]] const DevChangesNode* selected_changes_node(const DevChangesState& state) noexcept;
-/** Exact selected leaf, or null for an aggregate/overview. */
+/* Exact selected leaf, or null for an aggregate/overview. */
 [[nodiscard]] const tooling::DevChangesReviewRow*
 selected_changes_row(const DevChangesState& state) noexcept;
-/** Human-readable whole-plan operation totals used by all review surfaces. */
+/* Human-readable whole-plan operation totals used by all review surfaces. */
 [[nodiscard]] std::string changes_summary(const tooling::DevChangesReviewCounts& counts);
-/** Decision vocabulary independent of output operation and validation. */
+/* Decision vocabulary independent of output operation and validation. */
 [[nodiscard]] std::string_view changes_decision_name(tooling::DevChangesDecision decision) noexcept;
-/** Canonical memory owner grouping and authoring navigation. */
+/* Canonical memory owner grouping and authoring navigation. */
 [[nodiscard]] std::string changes_memory_owner(std::string_view key);
 } // namespace FlowUi::devSystems
 #endif

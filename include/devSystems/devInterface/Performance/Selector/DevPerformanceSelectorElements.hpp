@@ -1,13 +1,13 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/internal/SelectableSurfaceBehavior.hpp"
 #include "devSystems/devInterface/Performance/DevPerformanceSelection.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** A selectable tree row or independently toggleable category surface. */
+/* A selectable tree row or independently toggleable category surface. */
 struct DevPerformanceRowParameters {
 	std::string_view label{};
 	uint64_t* selection = nullptr;

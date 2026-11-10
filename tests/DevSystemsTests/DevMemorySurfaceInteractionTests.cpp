@@ -2,7 +2,7 @@
 #undef NDEBUG
 #endif
 #include "FSEL/Button.hpp"
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryCapacityTool.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"

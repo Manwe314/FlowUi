@@ -1,4 +1,5 @@
 #include "devSystems/devTooling/overlay/DevOverlayService.hpp"
+#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -21,7 +22,7 @@ constexpr uint32_t kBadgeColor = 0x1E1E1EFAu;
 constexpr uint32_t kGuideColor = 0xEB5757AAu;
 constexpr uint32_t kDistanceColor = 0x2F80EDFFu;
 
-/** Overlay primitives use the report's 0xRRGGBBAA notation; UiInstance is byte-packed RGBA. */
+/* Overlay primitives use the report's 0xRRGGBBAA notation; UiInstance is byte-packed RGBA. */
 [[nodiscard]] constexpr uint32_t nativeUiColor(uint32_t rrggbbaa) noexcept {
 	return ((rrggbbaa >> 24u) & 0xFFu) |
 		(((rrggbbaa >> 16u) & 0xFFu) << 8u) |

@@ -1,9 +1,12 @@
 # FlowUi
 
 FlowUi is a C++23 Vulkan-first UI runtime built around:
+
 - [Clay](https://github.com/nicbarker/clay) for layout and command generation
 - A custom Vulkan renderer
 - A typed element system for reusable UI components
+
+The core API lives under [include/FlowUi/Public](include/FlowUi/Public/), with IDs and handles grouped in [identificationTypes](include/FlowUi/Public/identificationTypes/). Private declarations and template support live under [include/FlowUi/Private](include/FlowUi/Private/). Core source files are grouped under [src/FlowUi/Public](src/FlowUi/Public/) and [src/FlowUi/Private](src/FlowUi/Private/); FSEL and developer systems retain their own roots. See the [repository layout](docs/internals/architecture.md) for the current navigation map. Include `<FlowUi.hpp>` for the application surface or `<FlowUi/Public/Flow.hpp>` for complete authoring support.
 
 ## Overview
 
@@ -48,7 +51,7 @@ FlowUi uses:
 ## Minimal App Loop Example
 
 ```cpp
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 #include "backgroundElement.hpp"
 
 int main() {
@@ -56,14 +59,23 @@ int main() {
     FlowUi::App app = FlowUi::makeApplication(config);
 
     while (!app.shouldClose()) {
-        app.beginFrame();
+        if (const auto status = app.beginFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
 
         app.ui().createElement(kBackground, "background")
             .setParameters({.color = FlowUi::Flow_Color("#09f1deff")})
             .draw();
 
-        app.endFrame();
-        app.drawFrame();
+        if (const auto status = app.endFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
+        if (const auto status = app.drawFrame(); !status) {
+            app.reportError(status.error());
+            return 1;
+        }
     }
 }
 ```
@@ -86,7 +98,7 @@ Start from a tagged release of FlowUi rather than an arbitrary commit:
 | `FLOWUI_ENABLE_RUNTIME_FONT_BAKING` | `OFF` | Link the runtime TTF-to-MSDF atlas generation dependencies and define `FLOWUI_RUNTIME_FONT_BAKING=1`. |
 | `FLOWUI_PUBLIC_VULKAN_INTEROP` | `ON` | Expose viewport Vulkan interop APIs in public headers. |
 | `FLOWUI_INCLUDE_ICON_MANAGER` | `ON` | Build IconManager support and link PlutoSVG. |
-| `FLOW_UI_DEV_MODE` | `OFF` | Compile FlowUi developer-mode APIs and tooling, including `debugView`, runtime capture, overrides, and JSON export support. |
+| `FLOW_UI_DEV_MODE` | `OFF` | Compile the modern `devSystems` schema, capture, overrides, catalogue, monitoring, and dedicated developer interface. |
 | `FLOWUI_GLFW_PROVIDER` | `auto` | Select the GLFW provider: `auto`, `system`, or `vendored`. |
 
 `FLOWUI_GLFW_PROVIDER=auto` uses the vendored GLFW submodule when it is present, otherwise it falls back to a system `glfw3` package.

@@ -1,90 +1,63 @@
 #pragma once
 
-#include <FlowUi/Flow.hpp>
-#include <devMode/devApi.hpp>
+#include <cstdint>
+#include <string>
 
-struct templateParams {
-	int importantInt = 42;
+#include <FlowUi/Public/Flow.hpp>
+#include <devSystems/devTooling/schema/DevSchemaDescriptor.hpp>
+
+/** Parameters for a reusable, inspectable stateful element. */
+struct TemplateParameters {
+	std::int32_t value = 42;
 };
 
-struct templateState {
+/** Per-instance state retained by the element manager. */
+struct TemplateState {
 	bool enabled = true;
 };
 
-struct templateResources {
-	templateResources() = default;
-	explicit templateResources(FlowUi::App& app) {
-		(void)app;
-	}
-};
-
+/** A clickable value card; pressing it toggles its local enabled state. */
 struct TemplateElement {
-	using Parameters = templateParams;
-	using State = templateState;
-	using Resources = templateResources;
+	using Parameters = TemplateParameters;
+	using State = TemplateState;
 	using InteractionContext = FlowUi::ElementInteractionContext<TemplateElement>;
 	using BuildContext = FlowUi::ElementBuildContext<TemplateElement>;
 
-	struct Parts {
-		static constexpr auto content = FlowUi::Part("content");
-	};
-
 	static constexpr FlowUi::FlowDefinitionID definitionId = FlowUi::DefinitionID("template");
+	static constexpr std::string_view debugName = "Template value card";
 
-	// onHovered: optional callback when this element was hovered in the previous frame
 	static void onHovered(InteractionContext& context) {
-		(void)context;
+		context.uiManager.requestCursor(FlowUi::CursorType::PointingHand);
 	}
 
-	// onPressed: optional callback when this element was pressed in the previous frame
 	static void onPressed(InteractionContext& context) {
-		(void)context;
+		context.state().enabled = !context.state().enabled;
 	}
 
-	// onHeld: optional callback when this element was held in the previous frame
-	static void onHeld(InteractionContext& context) {
-		(void)context;
-	}
-
-	// onReleased: optional callback when this element was released in the previous frame
-	static void onReleased(InteractionContext& context) {
-		(void)context;
-	}
-
-	// runLogic: optional per-frame logic callback before build/construct callback
-	static void runLogic(InteractionContext& context) {
-		(void)context;
-		// Example state access:
-		// auto& state = context.state();
-	}
-
-	// constructElement: optional callback used by .construct() flows
-	static Clay_ElementDeclaration constructElement(BuildContext& context) {
-		(void)context;
-		// Example resources access:
-		// const auto& resources = context.resources();
-		return Clay_ElementDeclaration{};
-	}
-
-	// buildElement: callback used by .draw()
 	static void buildElement(BuildContext& context) {
-		CLAY(context.uiManager.toClayEID(context.part(Parts::content)), {}) {}
+		Clay_ElementDeclaration root{};
+		root.layout.sizing = {
+			.width = CLAY_SIZING_FIT(0),
+			.height = CLAY_SIZING_FIT(0),
+		};
+		root.layout.padding = CLAY_PADDING_ALL(12);
+		root.backgroundColor =
+			context.state().enabled ? FlowUi::Flow_Color("#315a80") : FlowUi::Flow_Color("#353a40");
+		Clay_TextElementConfig text{};
+		text.fontSize = 16;
+		text.textColor = FlowUi::Flow_Color("#ffffff");
+		const std::string label =
+			std::string(context.state().enabled ? "Enabled: " : "Disabled: ") +
+			std::to_string(context.params.value);
+		CLAY(context.clayID(), root) {
+			CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(text));
+		}
 	}
 };
 
-static_assert(FlowUi::FlowElement<TemplateElement>);
+static_assert(FlowUi::DrawableFlowElement<TemplateElement>);
 inline constexpr TemplateElement kTemplate{};
 
-// Dev-mode registration examples:
-FLOWUI_DEV_REGISTER_STRUCT(
-	templateParams,
-	FLOWUI_DEV_REFLECT_FIELD(templateParams, importantInt));
-
-FLOWUI_DEV_REGISTER_STRUCT(
-	templateState,
-	FLOWUI_DEV_REFLECT_FIELD(templateState, enabled));
-
-// Empty registration is valid when a struct has no editable fields yet.
-FLOWUI_DEV_REGISTER_STRUCT(templateResources);
-
-FLOWUI_DEV_REGISTER_ELEMENT(TemplateElement, "Template");
+// Modern ADL schemas are discovered when the element is registered or built.
+FLOWUI_DEV_SCHEMA(TemplateParameters, FLOWUI_DEV_FIELD(TemplateParameters, value))
+FLOWUI_DEV_SCHEMA(TemplateState, FLOWUI_DEV_FIELD(TemplateState, enabled))

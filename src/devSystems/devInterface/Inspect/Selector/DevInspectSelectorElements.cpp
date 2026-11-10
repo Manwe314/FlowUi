@@ -15,7 +15,7 @@
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {

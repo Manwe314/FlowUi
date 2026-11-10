@@ -9,13 +9,6 @@
 
 Texture layout mode inside a target rectangle. Icon texture refs typically use contain sizing.
 
-### **TextureSamplingMode**
-
-
-#### `enum class TextureSamplingMode : uint8_t`
-
-Texture filtering preference stored on TextureRef. It records intended filtering behavior for rendered icons.
-
 ## Public Structs
 
 ### **IconManagerConfig**
@@ -37,9 +30,9 @@ Texture request handle returned by IconManager. FlowUi resolves it to a cached a
 ### **registerSvg**
 
 
-#### `bool registerSvg(std::string_view key, std::string_view svgSource)`
+#### `Result<bool> registerSvg(std::string_view key, std::string_view svgSource)`
 
-- **Returns:** `bool`
+- **Returns:** `Result<bool>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `key` icon key, `svgSource` complete SVG source text.
 
 Parses and registers an SVG document from memory. Raster variants are created lazily later when the icon is drawn at a particular size.
@@ -47,35 +40,41 @@ Parses and registers an SVG document from memory. Raster variants are created la
 **Example:**
 
 ```cpp
-app.icons().registerSvg("check", checkSvgSource);
+const auto registered = app.icons().registerSvg("check", checkSvgSource);
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#af03e06a033403fd88d04412b6d11395c).
+See: [Owning header](../../include/FlowUi/Public/managers/IconManager.hpp).
 
 ### **registerFromFile**
 
 
-#### `bool registerFromFile(std::string_view key, std::string_view filePath)`
+#### `Result<bool> registerFromFile(std::string_view key, std::string_view filePath)`
 
-- **Returns:** `bool`
+- **Returns:** `Result<bool>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `key` icon key, `filePath` SVG file path.
 
-Parses and registers an SVG document from disk. Returns `false` if the key already exists and the current icon is left unchanged.
+Parses and registers an SVG document from disk. A successful result contains `false` if the key already exists and the current icon is left unchanged; failures carry a structured error.
 
 **Example:**
 
 ```cpp
-app.icons().registerFromFile("save", "assets/icons/save.svg");
+const auto registered = app.icons().registerFromFile("save", "assets/icons/save.svg");
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#a3014f0a3c8ae23869d23c107c6f469eb).
+See: [Owning header](../../include/FlowUi/Public/managers/IconManager.hpp).
 
 ### **remove**
 
 
-#### `bool remove(std::string_view key)`
+#### `Result<bool> remove(std::string_view key)`
 
-- **Returns:** `bool`
+- **Returns:** `Result<bool>`; check success before reading the value, and use `.error()` on failure.
 - **Arguments:** `key` registered icon key.
 
 Removes a registered SVG document and its cached atlas variants. Previously returned texture references for the key should be discarded.
@@ -83,10 +82,14 @@ Removes a registered SVG document and its cached atlas variants. Previously retu
 **Example:**
 
 ```cpp
-const bool removed = app.icons().remove("save");
+const auto removal = app.icons().remove("save");
+if (!removal) {
+    throw FlowUi::FlowUiException(removal.error());
+}
+const bool removed = *removal;
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#a152fda978ab8ce39d2b33ab74cf7df29).
+See: [Owning header](../../include/FlowUi/Public/managers/IconManager.hpp).
 
 ### **contains**
 
@@ -101,10 +104,15 @@ Checks whether an SVG document key is registered. This does not force rasterizat
 **Example:**
 
 ```cpp
-if (!app.icons().contains("save")) { app.icons().registerFromFile("save", "assets/icons/save.svg"); }
+if (!app.icons().contains("save")) {
+    const auto registered = app.icons().registerFromFile("save", "assets/icons/save.svg");
+    if (!registered) {
+        throw FlowUi::FlowUiException(registered.error());
+    }
+}
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#aacefdec239a3b1fcd8aadae4eec05516).
+See: [Owning header](../../include/FlowUi/Public/managers/IconManager.hpp).
 
 ### **textureRef**
 
@@ -122,4 +130,4 @@ Returns a texture request reference for a registered icon. FlowUi later resolves
 FlowUi::TextureRef saveIcon = app.icons().textureRef("save");
 ```
 
-See: [Full Doxygen reference](structFlowUi_1_1IconManager.html#a0de1a60d027cd3b9985f73aebf128f48).
+See: [Owning header](../../include/FlowUi/Public/managers/IconManager.hpp).

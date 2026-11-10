@@ -110,25 +110,29 @@ $(function() {
 <p>Input field request submitted by UI code.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="InputFieldManagerStructs_8hpp_source.html">InputFieldManagerStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a692fd9cdb9cbb26068d2a187396ba270" id="r_a692fd9cdb9cbb26068d2a187396ba270"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a692fd9cdb9cbb26068d2a187396ba270">fieldId</a> {}</td></tr>
-<tr class="memdesc:a692fd9cdb9cbb26068d2a187396ba270"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stable field id.  <br /></td></tr>
 <tr class="memitem:a12ef2017e97ede3355dcfc887efc3b03" id="r_a12ef2017e97ede3355dcfc887efc3b03"><td class="memItemLeft">std::string_view&#160;</td><td class="memItemRight"><a class="el" href="#a12ef2017e97ede3355dcfc887efc3b03">initialText</a> {}</td></tr>
 <tr class="memdesc:a12ef2017e97ede3355dcfc887efc3b03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial text used when the field state is first created.  <br /></td></tr>
 <tr class="memitem:a188446e94b5a0af8040e569fcf155aac" id="r_a188446e94b5a0af8040e569fcf155aac"><td class="memItemLeft"><a id="a188446e94b5a0af8040e569fcf155aac" name="a188446e94b5a0af8040e569fcf155aac"></a>
 <a class="el" href="structFlowUi_1_1FieldConfig.html">FieldConfig</a>&#160;</td><td class="memItemRight"><b>config</b> {}</td></tr>
 <tr class="memdesc:a188446e94b5a0af8040e569fcf155aac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Field behavior configuration for this frame. <br /></td></tr>
+<tr class="memitem:a418ed8d03f3b3c5416511fec97b49507" id="r_a418ed8d03f3b3c5416511fec97b49507"><td class="memItemLeft"><a id="a418ed8d03f3b3c5416511fec97b49507" name="a418ed8d03f3b3c5416511fec97b49507"></a>
+<a class="el" href="structFlowUi_1_1TextLayoutDescriptor.html">TextLayoutDescriptor</a>&#160;</td><td class="memItemRight"><b>layout</b> {}</td></tr>
+<tr class="memdesc:a418ed8d03f3b3c5416511fec97b49507"><td class="mdescLeft">&#160;</td><td class="mdescRight">Font and viewport data used for editable-line materialization. <br /></td></tr>
+<tr class="memitem:a71d151fe193f7289fd35d7ef2a919fe4" id="r_a71d151fe193f7289fd35d7ef2a919fe4"><td class="memItemLeft">std::optional&lt; <a class="el" href="structFlowUi_1_1InputFieldOverlayStyle.html">InputFieldOverlayStyle</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a71d151fe193f7289fd35d7ef2a919fe4">overlayStyle</a> = std::nullopt</td></tr>
 <tr class="memitem:a6af8584e0fef10efd0691052b6ee02c9" id="r_a6af8584e0fef10efd0691052b6ee02c9"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#a6af8584e0fef10efd0691052b6ee02c9">textElementId</a> {}</td></tr>
 <tr class="memdesc:a6af8584e0fef10efd0691052b6ee02c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clay text element id for measuring caret and selection positions.  <br /></td></tr>
 <tr class="memitem:aa1e23f55fe98494083ca7147939b6652" id="r_aa1e23f55fe98494083ca7147939b6652"><td class="memItemLeft">Clay_ElementId&#160;</td><td class="memItemRight"><a class="el" href="#aa1e23f55fe98494083ca7147939b6652">contentElementId</a> {}</td></tr>
 <tr class="memdesc:aa1e23f55fe98494083ca7147939b6652"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clay content element id for pointer hit testing.  <br /></td></tr>
+<tr class="memitem:a2f652321def168d65b652ee9bb24ef46" id="r_a2f652321def168d65b652ee9bb24ef46"><td class="memItemLeft">std::span&lt; const Clay_ElementId &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2f652321def168d65b652ee9bb24ef46">focusRetentionElementIds</a> {}</td></tr>
+<tr class="memdesc:a2f652321def168d65b652ee9bb24ef46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Auxiliary element surfaces whose pointer presses retain this field's focus.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Input field request submitted by UI code. </p>
-<p>A custom input element calls <a class="el" href="classFlowUi_1_1InputFieldManager.html#a6deadc46f16595277ae8e2258e63b787" title="Register or update an input field for the current frame.">InputFieldManager::requestField</a> while building its Clay nodes. The request marks the field as present for the current frame, updates its behavior config and element ids, and returns the manager-owned text state through <a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a>. </p>
+<p>A custom input element calls <a class="el" href="classFlowUi_1_1InputFieldManager.html#a7f1ce20bf8737644ac1ae01bfb5da5f7" title="Register or update an input field for the current frame.">InputFieldManager::requestField</a> while building its Clay nodes. The request marks the field as present for the current frame, updates its behavior config and element ids, and returns the manager-owned text state through <a class="el" href="structFlowUi_1_1FieldQueryResult.html" title="Result returned from an input field request.">FieldQueryResult</a>. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="aa1e23f55fe98494083ca7147939b6652" name="aa1e23f55fe98494083ca7147939b6652"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa1e23f55fe98494083ca7147939b6652">&#9670;&#160;</a></span>contentElementId</h2>
@@ -147,20 +151,20 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a692fd9cdb9cbb26068d2a187396ba270" name="a692fd9cdb9cbb26068d2a187396ba270"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a692fd9cdb9cbb26068d2a187396ba270">&#9670;&#160;</a></span>fieldId</h2>
+<a id="a2f652321def168d65b652ee9bb24ef46" name="a2f652321def168d65b652ee9bb24ef46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f652321def168d65b652ee9bb24ef46">&#9670;&#160;</a></span>focusRetentionElementIds</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string_view FlowUi::FieldRequest::fieldId {}</td>
+          <td class="memname">std::span&lt;const Clay_ElementId&gt; FlowUi::FieldRequest::focusRetentionElementIds {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Stable field id. </p>
-<p>This id keys the persistent text and caret state. Use a value that remains stable across frames for the same logical field. </p>
+<p>Auxiliary element surfaces whose pointer presses retain this field's focus. </p>
+<p>Composite inputs use these surfaces for controls such as numeric increment and decrement buttons. Pressing one of the submitted elements does not move the caret, begin text selection, or clear the field's existing focus. The manager copies the IDs during requestField(), so this span only needs to remain valid for the duration of that call. </p>
 
 </div>
 </div>
@@ -177,7 +181,22 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Initial text used when the field state is first created. </p>
-<p>The value is copied only when fieldId has no existing managed state. Later requests with the same fieldId preserve the current edited text. </p>
+<p>The value is copied only when the explicit ID passed to requestField() has no existing managed state. Later requests with the same ID preserve the current edited text. </p>
+
+</div>
+</div>
+<a id="a71d151fe193f7289fd35d7ef2a919fe4" name="a71d151fe193f7289fd35d7ef2a919fe4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71d151fe193f7289fd35d7ef2a919fe4">&#9670;&#160;</a></span>overlayStyle</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="structFlowUi_1_1InputFieldOverlayStyle.html">InputFieldOverlayStyle</a>&gt; FlowUi::FieldRequest::overlayStyle = std::nullopt</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional field-local caret and selection presentation. </p>
 
 </div>
 </div>
@@ -199,7 +218,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/managers/structs/<a class="el" href="InputFieldManagerStructs_8hpp_source.html">InputFieldManagerStructs.hpp</a></li>
+<li>include/FlowUi/Public/managerStructs/<a class="el" href="InputFieldTypes_8hpp_source.html">InputFieldTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

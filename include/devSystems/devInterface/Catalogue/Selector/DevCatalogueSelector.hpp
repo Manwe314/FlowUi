@@ -4,12 +4,12 @@
 #include <string_view>
 #include <vector>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Catalogue/DevCatalogueContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -28,7 +28,9 @@ struct DevCatalogueSelector {
 		DevCatalogueState* catalogue = nullptr;
 		UiManager* ui_manager = nullptr;
 		Clay_ElementId domains_id{}, browser_id{};
+		uint64_t browser_selection = 0;
 		float domain_scroll = 0;
+		bool browser_expanded = false;
 		bool restore_scroll = true;
 	};
 	using BuildContext = ElementBuildContext<DevCatalogueSelector>;

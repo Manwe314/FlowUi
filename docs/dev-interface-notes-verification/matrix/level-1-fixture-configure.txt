@@ -1,0 +1,8 @@
+CMake Warning at CMakeLists.txt:169 (message):
+  Vulkan glslc was not found; using glslangValidator to compile FlowUi
+  shaders.
+
+
+-- Configuring done (0.3s)
+-- Generating done (0.3s)
+-- Build files have been written to: /home/lkukhale/kodi/FlowUi/build-dev-notes-level-1

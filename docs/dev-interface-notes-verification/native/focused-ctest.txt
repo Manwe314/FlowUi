@@ -1,0 +1,49 @@
+Internal ctest changing into directory: /home/lkukhale/kodi/FlowUi/build-msdf
+Test project /home/lkukhale/kodi/FlowUi/build-msdf
+      Start  6: flowui.dev.value_summary
+ 1/16 Test  #6: flowui.dev.value_summary ..............   Passed    0.00 sec
+      Start  7: flowui.dev.interface_notes_controls
+ 2/16 Test  #7: flowui.dev.interface_notes_controls ...   Passed    1.65 sec
+      Start  8: flowui.dev.baked_internal_isolation
+ 3/16 Test  #8: flowui.dev.baked_internal_isolation ...   Passed    0.19 sec
+      Start  9: flowui.dev.timing_level_0
+ 4/16 Test  #9: flowui.dev.timing_level_0 .............   Passed    0.00 sec
+      Start 10: flowui.dev.timing_level_1
+ 5/16 Test #10: flowui.dev.timing_level_1 .............   Passed    0.00 sec
+      Start 11: flowui.dev.timing_level_2
+ 6/16 Test #11: flowui.dev.timing_level_2 .............   Passed    0.00 sec
+      Start 12: flowui.dev.timing_level_3
+ 7/16 Test #12: flowui.dev.timing_level_3 .............   Passed    0.00 sec
+      Start 21: flowui.dev.timeline_layout
+ 8/16 Test #21: flowui.dev.timeline_layout ............   Passed    0.18 sec
+      Start 22: flowui.dev.timeline
+ 9/16 Test #22: flowui.dev.timeline ...................   Passed    0.00 sec
+      Start 23: flowui.dev.timeline_interaction
+10/16 Test #23: flowui.dev.timeline_interaction .......   Passed    1.52 sec
+      Start 30: flowui.dev.override_engine
+11/16 Test #30: flowui.dev.override_engine ............   Passed    0.00 sec
+      Start 50: flowui.fsel.combo_box_contracts
+12/16 Test #50: flowui.fsel.combo_box_contracts .......   Passed    0.00 sec
+      Start 74: flowui.dev.changes_review
+13/16 Test #74: flowui.dev.changes_review .............   Passed    0.09 sec
+      Start 75: flowui.dev.changes_runtime
+14/16 Test #75: flowui.dev.changes_runtime ............   Passed    0.05 sec
+      Start 83: flowui.dev.inspect_scroll
+15/16 Test #83: flowui.dev.inspect_scroll .............   Passed    0.01 sec
+      Start 95: flowui.dev.theme_editor_interaction
+16/16 Test #95: flowui.dev.theme_editor_interaction ...   Passed    2.00 sec
+
+100% tests passed, 0 tests failed out of 16
+
+Label Time Summary:
+changes        =   0.13 sec*proc (2 tests)
+dev            =   1.66 sec*proc (4 tests)
+elements       =   0.00 sec*proc (1 test)
+flowui         =   1.66 sec*proc (5 tests)
+fsel           =   0.00 sec*proc (1 test)
+integration    =   1.52 sec*proc (1 test)
+override       =   0.00 sec*proc (1 test)
+runtime        =   0.05 sec*proc (1 test)
+unit           =   0.09 sec*proc (3 tests)
+
+Total Test time (real) =   5.71 sec

@@ -11,7 +11,7 @@
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -33,8 +33,8 @@ struct SelectorBuildData {
 void refreshDefinitionOptions(
 	App* app,
 	DevInspectSelectorState& cache) {
-	const devMode::DevSchemaView schema = app
-		? app->devTooling().schemas().view() : devMode::DevSchemaView{};
+	const tooling::DevSchemaView schema = app
+		? app->devTooling().schemas().view() : tooling::DevSchemaView{};
 	const uint64_t generation = schema ? schema->generation : 0u;
 	if (cache.definitionSchemaGeneration == generation) return;
 
@@ -46,7 +46,7 @@ void refreshDefinitionOptions(
 
 	cache.definitionLabels.emplace_back("All");
 	if (schema) {
-		for (const devMode::DevElementSchema& definition : schema->elements) {
+		for (const tooling::DevElementSchema& definition : schema->elements) {
 			if (!definition.definitionId) continue;
 			const std::string_view name = schema->string(definition.displayName);
 			cache.definitionLabels.emplace_back(
@@ -60,7 +60,7 @@ void refreshDefinitionOptions(
 	});
 	std::size_t labelIndex = 1u;
 	if (schema) {
-		for (const devMode::DevElementSchema& definition : schema->elements) {
+		for (const tooling::DevElementSchema& definition : schema->elements) {
 			if (!definition.definitionId) continue;
 			cache.definitionOptions.push_back(FSEL::ComboBoxOption{
 				.value = definition.definitionId.value,

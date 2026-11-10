@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "devSystems/devMonitoringAndReporting/timing/DevTimingZone.hpp"
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 
 namespace FlowUi::devSystems::tooling {
 namespace {
@@ -42,7 +42,7 @@ bool layerMatchesScope(DevOverrideLayer layer, DevOverrideScope scope) noexcept 
 } // namespace
 
 DevOverrideEngine::DevOverrideEngine(
-	devMode::DevSchemaRegistry& schemas,
+	tooling::DevSchemaRegistry& schemas,
 	DevOverrideEngineConfig config) noexcept
 	: schemas_(schemas), config_(config) {}
 
@@ -210,17 +210,28 @@ void DevOverrideEngine::applyElement(FlowDefinitionID definition, WindowId windo
 	apply_.apply(definition, window, instance, draftParameters, timing);
 }
 
+DevAuthoredElementCapture DevOverrideEngine::captureAuthoredParameters(
+	FlowDefinitionID definition, const void* parameters) const noexcept {
+	if (!value_collection_enabled_)
+		return {};
+	return capture_.captureAuthoredParameters(definition, schema_, parameters);
+}
+
 void DevOverrideEngine::captureElement(
 	FlowDefinitionID definition,
 	WindowId window,
 	::FlowUi::detail::element::ElementInstanceKey instance,
 	std::uint32_t flowNode,
 	const void* effectiveParameters,
-	DevTimingRecorder* timing) noexcept {
+	DevTimingRecorder* timing,
+	DevAuthoredElementCapture authored,
+	const void* state,
+	const void* resources,
+	bool isDevInternal) noexcept {
 	if (!value_collection_enabled_)
 		return;
-	capture_.captureElement(
-		definition, window, instance, flowNode, effectiveParameters, apply_, timing);
+	capture_.captureElement(definition, window, instance, flowNode, effectiveParameters, apply_,
+		timing, std::move(authored), state, resources, isDevInternal);
 }
 
 DevOverrideStats DevOverrideEngine::stats() const noexcept {
@@ -245,14 +256,14 @@ std::size_t DevOverrideEngine::memoryFootprintBytes() const noexcept {
 	for (const ThemeBakeRecord& record : themeRecords_) {
 		bytes += record.target.variant.capacity() + record.original.heapBytes() +
 			record.value.heapBytes() +
-			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
-			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);
+			record.field.nestedPath.capacity() * sizeof(tooling::DevFieldId) +
+			record.ownerPath.capacity() * sizeof(const tooling::DevFieldOps*);
 	}
 	for (const ThemeBakeRecord& record : themeBakeTombstones_) {
 		bytes += record.target.variant.capacity() + record.original.heapBytes() +
 			record.value.heapBytes() +
-			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
-			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);
+			record.field.nestedPath.capacity() * sizeof(tooling::DevFieldId) +
+			record.ownerPath.capacity() * sizeof(const tooling::DevFieldOps*);
 	}
 	std::lock_guard lock(ingressMutex_);
 	bytes += ingress_.size() * sizeof(DevChangeSet);
@@ -260,14 +271,14 @@ std::size_t DevOverrideEngine::memoryFootprintBytes() const noexcept {
 		bytes += changeSet.commands.capacity() * sizeof(DevOverrideCommand);
 		for (const DevOverrideCommand& command : changeSet.commands) {
 			bytes += command.theme.variant.capacity() + command.value.heapBytes() +
-				command.field.nestedPath.capacity() * sizeof(devMode::DevFieldId);
+				command.field.nestedPath.capacity() * sizeof(tooling::DevFieldId);
 		}
 	}
 	return bytes;
 }
 
 void DevOverrideEngine::syncSchema() {
-	const devMode::DevSchemaView current = schemas_.view();
+	const tooling::DevSchemaView current = schemas_.view();
 	if (schema_ && current && schema_->generation == current->generation) return;
 	schema_ = current;
 	apply_.bindSchema(schema_);
@@ -295,7 +306,7 @@ DevCommandStatus DevOverrideEngine::validate(
 
 	if (command.kind == DevOverrideCommandKind::SetThemeField ||
 		command.kind == DevOverrideCommandKind::ClearThemeField || command.theme.themeType != 0) {
-		const devMode::DevThemeSchema* theme = schema_->findTheme(command.theme.themeType);
+		const tooling::DevThemeSchema* theme = schema_->findTheme(command.theme.themeType);
 		if (!theme || command.theme.variant.empty()) return DevCommandStatus::InvalidTarget;
 		resolved = resolveRootField(theme->themeType, command.field);
 		if (!resolved.schema) return DevCommandStatus::FieldUnavailable;
@@ -304,7 +315,7 @@ DevCommandStatus DevOverrideEngine::validate(
 		}
 		if (command.kind == DevOverrideCommandKind::ResetThemeField) {
 			if (command.theme.variant == "*" ||
-				resolved.schema->effectiveEdit != devMode::DevEditCapability::Editable)
+				resolved.schema->effectiveEdit != tooling::DevEditCapability::Editable)
 				return DevCommandStatus::InvalidTarget;
 			return captureOriginalThemeField(themes, command.theme, resolved,
 											 resolved.originalThemeValue, true)
@@ -327,7 +338,7 @@ DevCommandStatus DevOverrideEngine::validate(
 		if (!alreadyRetained && command.theme.variant == "*") {
 			struct Context {
 				std::vector<std::string> variants;
-				devMode::DevTypeId type;
+				tooling::DevTypeId type;
 			} context{{}, command.theme.themeType};
 			const auto visitor = [](void* data,
 									const ThemeManager::DevThemePayloadView& view) noexcept {
@@ -366,7 +377,7 @@ DevCommandStatus DevOverrideEngine::validate(
 
 	if (!isElementFieldCommand(command.kind))
 		return DevCommandStatus::InvalidTarget;
-	const devMode::DevElementSchema* element = schema_->findElement(command.element.definition);
+	const tooling::DevElementSchema* element = schema_->findElement(command.element.definition);
 	if (!element) return DevCommandStatus::InvalidTarget;
 	if (command.element.scope == DevOverrideScope::ExactInstance && !command.element.instance) {
 		return DevCommandStatus::InvalidTarget;
@@ -390,16 +401,16 @@ DevCommandStatus DevOverrideEngine::validateValue(const DevOverrideCommand& comm
 												  const ResolvedField& resolved) const noexcept {
 	if (!resolved.schema || !command.value)
 		return DevCommandStatus::TypeMismatch;
-	const devMode::DevTypeSchema* type = schema_->type(resolved.schema->valueType);
+	const tooling::DevTypeSchema* type = schema_->type(resolved.schema->valueType);
 	const bool action_choice =
 		type && type->id == ::FlowUi::detail::typeHash<ActionCall>() &&
-		resolved.schema->editor == devMode::DevEditorKind::ActionChoice &&
-		resolved.schema->effectiveEdit == devMode::DevEditCapability::SemanticCommand;
+		resolved.schema->editor == tooling::DevEditorKind::ActionChoice &&
+		resolved.schema->effectiveEdit == tooling::DevEditCapability::SemanticCommand;
 	const bool resource_choice =
 		type && type->id == ::FlowUi::detail::typeHash<TextureRef>() &&
-		resolved.schema->editor == devMode::DevEditorKind::ResourceChoice &&
-		resolved.schema->effectiveEdit == devMode::DevEditCapability::PartiallyEditable;
-	if (resolved.schema->effectiveEdit != devMode::DevEditCapability::Editable && !action_choice &&
+		resolved.schema->editor == tooling::DevEditorKind::ResourceChoice &&
+		resolved.schema->effectiveEdit == tooling::DevEditCapability::PartiallyEditable;
+	if (resolved.schema->effectiveEdit != tooling::DevEditCapability::Editable && !action_choice &&
 		!resource_choice) {
 		return DevCommandStatus::FieldReadOnly;
 	}
@@ -417,22 +428,20 @@ DevCommandStatus DevOverrideEngine::validateValue(const DevOverrideCommand& comm
 		if ((texture.sourceKey.empty() && texture.handle) ||
 			(!texture.sourceKey.empty() && texture.sourceDomain != ResourceDomain::Image &&
 			 texture.sourceDomain != ResourceDomain::Icon) ||
-			static_cast<unsigned>(texture.fitMode) > static_cast<unsigned>(TextureFitMode::None) ||
-			static_cast<unsigned>(texture.samplingMode) >
-				static_cast<unsigned>(TextureSamplingMode::Nearest))
+			static_cast<unsigned>(texture.fitMode) > static_cast<unsigned>(TextureFitMode::None))
 			return DevCommandStatus::ConstraintRejected;
 	}
 	if (resolved.schema->constraint != 0) {
 		if (resolved.schema->constraint >= schema_->constraints.size()) {
 			return DevCommandStatus::SchemaMismatch;
 		}
-		const devMode::DevConstraintRecord& constraint =
+		const tooling::DevConstraintRecord& constraint =
 			schema_->constraints[resolved.schema->constraint];
 		if (constraint.hasTextMaximum) {
 			if (resolved.schema->valueType.value >= schema_->typeOperations.size()) {
 				return DevCommandStatus::SchemaMismatch;
 			}
-			const devMode::DevTypeOps* operations =
+			const tooling::DevTypeOps* operations =
 				schema_->typeOperations[resolved.schema->valueType.value];
 			if (!operations || !operations->textView ||
 				operations->textView(command.value.data()).size() > constraint.textMaximum) {
@@ -441,7 +450,7 @@ DevCommandStatus DevOverrideEngine::validateValue(const DevOverrideCommand& comm
 		}
 		if (constraint.numeric.hasMinimum || constraint.numeric.hasMaximum ||
 			constraint.numeric.hasStep) {
-			const devMode::DevTypeOps* operations =
+			const tooling::DevTypeOps* operations =
 				resolved.schema->valueType.value < schema_->typeOperations.size()
 					? schema_->typeOperations[resolved.schema->valueType.value] : nullptr;
 			long double value = 0.0L;
@@ -473,9 +482,9 @@ DevCommandStatus DevOverrideEngine::validateValue(const DevOverrideCommand& comm
 			}
 		}
 	}
-	if (type->kind == devMode::DevTypeKind::Enumeration &&
+	if (type->kind == tooling::DevTypeKind::Enumeration &&
 		type->enumeration.values.count != 0) {
-		const devMode::DevTypeOps* operations =
+		const tooling::DevTypeOps* operations =
 			resolved.schema->valueType.value < schema_->typeOperations.size()
 				? schema_->typeOperations[resolved.schema->valueType.value] : nullptr;
 		long double value = 0.0L;
@@ -500,35 +509,35 @@ DevCommandStatus DevOverrideEngine::validateValue(const DevOverrideCommand& comm
 }
 
 DevOverrideEngine::ResolvedField DevOverrideEngine::resolveRootField(
-	devMode::DevTypeIndex owner,
+	tooling::DevTypeIndex owner,
 	DevOverrideFieldKey key) const noexcept {
 	try {
-		const devMode::DevTypeSchema* ownerType = schema_ ? schema_->type(owner) : nullptr;
+		const tooling::DevTypeSchema* ownerType = schema_ ? schema_->type(owner) : nullptr;
 		if (!ownerType || ownerType->id != key.ownerType) return {};
 		ResolvedField result{};
-		for (const devMode::DevFieldId pathFieldId : key.nestedPath) {
-			const devMode::DevFieldSchema* pathField = nullptr;
-			for (const devMode::DevFieldSchema& candidate : schema_->fieldsOf(owner)) {
+		for (const tooling::DevFieldId pathFieldId : key.nestedPath) {
+			const tooling::DevFieldSchema* pathField = nullptr;
+			for (const tooling::DevFieldSchema& candidate : schema_->fieldsOf(owner)) {
 				if (candidate.id == pathFieldId) {
 					pathField = std::addressof(candidate);
 					break;
 				}
 			}
 			if (!pathField || pathField->operations >= schema_->fieldOperations.size()) return {};
-			if (pathField->effectiveEdit != devMode::DevEditCapability::Editable &&
-				pathField->effectiveEdit != devMode::DevEditCapability::PartiallyEditable) return {};
-			const devMode::DevFieldOps* operations =
+			if (pathField->effectiveEdit != tooling::DevEditCapability::Editable &&
+				pathField->effectiveEdit != tooling::DevEditCapability::PartiallyEditable) return {};
+			const tooling::DevFieldOps* operations =
 				schema_->fieldOperations[pathField->operations];
 			if (!operations || !operations->constAddress || !operations->mutableAddress) return {};
 			result.ownerPath.push_back(operations);
 			owner = pathField->valueType;
 		}
-		for (const devMode::DevFieldSchema& field : schema_->fieldsOf(owner)) {
+		for (const tooling::DevFieldSchema& field : schema_->fieldsOf(owner)) {
 			if (field.id != key.field) continue;
 			const std::size_t index = static_cast<std::size_t>(
 				std::addressof(field) - schema_->fields.data());
 			result.schema = std::addressof(field);
-			result.index = devMode::DevFieldIndex{static_cast<std::uint32_t>(index + 1u)};
+			result.index = tooling::DevFieldIndex{static_cast<std::uint32_t>(index + 1u)};
 			return result;
 		}
 		return {};
@@ -675,9 +684,9 @@ void DevOverrideEngine::applyCommand(
 				themeBakeTombstones_.push_back(*found);
 			const std::uint32_t index = found->fieldIndex.value - 1u;
 			if (index < schema_->fields.size()) {
-				const devMode::DevFieldSchema& field = schema_->fields[index];
+				const tooling::DevFieldSchema& field = schema_->fields[index];
 				if (field.operations < schema_->fieldOperations.size()) {
-					const devMode::DevFieldOps* operations =
+					const tooling::DevFieldOps* operations =
 						schema_->fieldOperations[field.operations];
 					if (operations) {
 						if (found->target.variant == "*") {
@@ -714,11 +723,11 @@ void DevOverrideEngine::bindThemeRecords() {
 	}
 	for (ThemeBakeRecord& record : themeRecords_) {
 		record.schemaValid = false;
-		const devMode::DevThemeSchema* theme = schema_->findTheme(record.target.themeType);
+		const tooling::DevThemeSchema* theme = schema_->findTheme(record.target.themeType);
 		if (!theme) continue;
 		const ResolvedField resolved = resolveRootField(theme->themeType, record.field);
 		if (!resolved.schema) continue;
-		const devMode::DevTypeSchema* valueType = schema_->type(resolved.schema->valueType);
+		const tooling::DevTypeSchema* valueType = schema_->type(resolved.schema->valueType);
 		if (!valueType || valueType->id != record.value.type() ||
 			valueType->id != record.original.type()) continue;
 		record.fieldIndex = resolved.index;
@@ -735,7 +744,7 @@ void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 			continue;
 		struct Context {
 			ThemeBakeRecord* record;
-			const devMode::DevSchemaGeneration* schema;
+			const tooling::DevSchemaGeneration* schema;
 		} context{&record, schema_.operator->()};
 		const auto visitor = [](void* data,
 								const ThemeManager::DevThemePayloadView& view) noexcept {
@@ -757,7 +766,7 @@ void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 				DevOwnedValue original;
 				if (DevOwnedValue::copyFrom(*context.schema, field.valueType,
 											operations->constAddress(owner),
-											original) != devMode::DevValueOperationStatus::Success)
+											original) != tooling::DevValueOperationStatus::Success)
 					return false;
 				record.variant_originals.emplace_back(std::string(view.variant),
 													  std::move(original));
@@ -781,10 +790,10 @@ void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 			const std::uint32_t index = record.fieldIndex.value - 1u;
 			if (index >= schema_->fields.size())
 				continue;
-			const devMode::DevFieldSchema& field = schema_->fields[index];
+			const tooling::DevFieldSchema& field = schema_->fields[index];
 			if (field.operations >= schema_->fieldOperations.size())
 				continue;
-			const devMode::DevFieldOps* operations = schema_->fieldOperations[field.operations];
+			const tooling::DevFieldOps* operations = schema_->fieldOperations[field.operations];
 			if (!operations)
 				continue;
 			auto& assigned_value = record.preview_value ? record.preview_value : record.value;
@@ -793,17 +802,17 @@ void DevOverrideEngine::applyThemeRecords(ThemeManager& themes) noexcept {
 			if (themes.assignDevThemeField(
 					record.target.themeType, record.target.variant, record.ownerPath, *operations,
 					assigned_value.data()) ==
-				devMode::DevValueOperationStatus::Success) {
+				tooling::DevValueOperationStatus::Success) {
 				record.dirty = false;
 			}
 		}
 }
 
 bool DevOverrideEngine::stabilize_theme_references(ThemeManager& themes, DevOwnedValue& value,
-	devMode::DevTypeIndex type) const noexcept {
+	tooling::DevTypeIndex type) const noexcept {
 	if (!schema_ || !value)
 		return false;
-	const auto stabilize = [&](auto&& self, devMode::DevTypeIndex current_type,
+	const auto stabilize = [&](auto&& self, tooling::DevTypeIndex current_type,
 		void* destination, uint32_t depth) -> bool {
 		const auto* descriptor = schema_->type(current_type);
 		if (!descriptor || !destination || depth > 16)
@@ -818,7 +827,7 @@ bool DevOverrideEngine::stabilize_theme_references(ThemeManager& themes, DevOwne
 			texture.sourceKey = *retained;
 			return true;
 		}
-		if (descriptor->kind == devMode::DevTypeKind::Object) {
+		if (descriptor->kind == tooling::DevTypeKind::Object) {
 			for (const auto& member : schema_->fieldsOf(current_type)) {
 				if (member.operations >= schema_->fieldOperations.size())
 					return false;
@@ -827,14 +836,14 @@ bool DevOverrideEngine::stabilize_theme_references(ThemeManager& themes, DevOwne
 					!self(self, member.valueType, access->mutableAddress(destination), depth + 1))
 					return false;
 			}
-		} else if (descriptor->kind == devMode::DevTypeKind::Optional ||
-			descriptor->kind == devMode::DevTypeKind::Sequence) {
+		} else if (descriptor->kind == tooling::DevTypeKind::Optional ||
+			descriptor->kind == tooling::DevTypeKind::Sequence) {
 			if (current_type.value >= schema_->typeOperations.size())
 				return false;
 			const auto* access = schema_->typeOperations[current_type.value];
 			if (!access)
 				return false;
-			if (descriptor->kind == devMode::DevTypeKind::Optional) {
+			if (descriptor->kind == tooling::DevTypeKind::Optional) {
 				if (access->optionalHasValue && access->optionalHasValue(destination))
 					return access->optionalMutableValueAddress && self(self, descriptor->elementType,
 						access->optionalMutableValueAddress(destination), depth + 1);
@@ -876,7 +885,7 @@ bool DevOverrideEngine::captureOriginalThemeField(const ThemeManager& themes,
 	struct Context {
 		const DevThemeOverrideTarget* target = nullptr;
 		const ResolvedField* field = nullptr;
-		const devMode::DevSchemaGeneration* schema = nullptr;
+		const tooling::DevSchemaGeneration* schema = nullptr;
 		DevOwnedValue* destination = nullptr;
 		bool copied = false;
 		bool authored = false;
@@ -887,23 +896,23 @@ bool DevOverrideEngine::captureOriginalThemeField(const ThemeManager& themes,
 			(state.target->variant == "*" ? !view.active : view.variant != state.target->variant)) {
 			return true;
 		}
-		const devMode::DevFieldSchema& schemaField = *state.field->schema;
+		const tooling::DevFieldSchema& schemaField = *state.field->schema;
 		if (schemaField.operations >= state.schema->fieldOperations.size()) return false;
-		const devMode::DevFieldOps* operations =
+		const tooling::DevFieldOps* operations =
 			state.schema->fieldOperations[schemaField.operations];
 		if (!operations || !operations->constAddress) return false;
 		const void* owner =
 			state.authored ? view.authored : (view.startup ? view.startup : view.payload);
 		if (!owner)
 			return false;
-		for (const devMode::DevFieldOps* path : state.field->ownerPath) {
+		for (const tooling::DevFieldOps* path : state.field->ownerPath) {
 			owner = path && path->constAddress ? path->constAddress(owner) : nullptr;
 			if (!owner) return false;
 		}
 		state.copied = DevOwnedValue::copyFrom(
 			*state.schema, schemaField.valueType,
 			operations->constAddress(owner), *state.destination) ==
-			devMode::DevValueOperationStatus::Success;
+			tooling::DevValueOperationStatus::Success;
 		return false;
 	};
 	(void)themes.visitDevThemePayloads(&context, visitor);
@@ -912,9 +921,9 @@ bool DevOverrideEngine::captureOriginalThemeField(const ThemeManager& themes,
 
 bool DevOverrideEngine::themeFieldIsOverridden(
 	const void* owner,
-	devMode::DevTypeId themeType,
+	tooling::DevTypeId themeType,
 	std::string_view variant,
-	devMode::DevFieldId field,
+	tooling::DevFieldId field,
 	DevOverrideLayer& layer) noexcept {
 	const auto& engine = *static_cast<const DevOverrideEngine*>(owner);
 	for (const ThemeBakeRecord& record : engine.themeRecords_) {

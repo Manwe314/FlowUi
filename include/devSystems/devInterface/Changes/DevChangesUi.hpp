@@ -1,13 +1,13 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #include "devSystems/devInterface/Changes/DevChangesViewportState.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsUi.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorStyle.hpp"
-#include "internal/Text/CurrentTextShaper.hpp"
-#include "managers/FontManager.hpp"
+#include "FlowUi/Private/textLayoutService/CurrentTextShaper.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements::changes_ui {
 using diagnostics_ui::card;
@@ -16,7 +16,7 @@ using diagnostics_ui::kControl;
 using diagnostics_ui::row;
 using Icon = diagnostics_icons::Icon;
 
-/** Bind submitted controls to a panel viewport while its content is being built. */
+/* Bind submitted controls to a panel viewport while its content is being built. */
 class FocusViewportScope {
 public:
 	FocusViewportScope(DevChangesState& changes, Clay_ElementId viewport) noexcept
@@ -32,7 +32,7 @@ private:
 	Clay_ElementId previous_{};
 };
 
-/** Register a submitted, enabled control without reading optional captured developer trees. */
+/* Register a submitted, enabled control without reading optional captured developer trees. */
 template <class Context>
 void register_focus_target(Context& context, DevChangesState& changes, Clay_ElementId identity,
 						   bool enabled = true, FlowElementID text_input = {},
@@ -57,7 +57,7 @@ void register_focus_target(Context& context, DevChangesState& changes, Clay_Elem
 	}
 }
 
-/** Register a control whose enclosing Changes panel supplies its shared session. */
+/* Register a control whose enclosing Changes panel supplies its shared session. */
 template <class Context>
 void register_focus_target(Context& context, Clay_ElementId identity, bool enabled = true,
 						   FlowElementID text_input = {}, uint64_t* radio_selection = nullptr,
@@ -67,7 +67,7 @@ void register_focus_target(Context& context, Clay_ElementId identity, bool enabl
 							  text_input, radio_selection, radio_value, viewport);
 }
 
-/** Traverse the preceding submitted order, then collect this frame's live targets. */
+/* Traverse the preceding submitted order, then collect this frame's live targets. */
 template <class Context>
 void begin_focus_frame(Context& context, DevChangesState& changes) {
 	const auto& input = context.uiManager.getCurrentFrameInput();
@@ -116,7 +116,7 @@ void begin_focus_frame(Context& context, DevChangesState& changes) {
 		changes.focus_targets.reserve(256);
 	changes.registration_viewport = {};
 }
-/** Output operation identity is shared by the selector, queue and context panel. */
+/* Output operation identity is shared by the selector, queue and context panel. */
 [[nodiscard]] inline Clay_Color operation_color(tooling::DevChangesOperation operation) noexcept {
 	switch (operation) {
 	case tooling::DevChangesOperation::Add:
@@ -129,7 +129,7 @@ void begin_focus_frame(Context& context, DevChangesState& changes) {
 		return interface_theme::kTextSecondary;
 	}
 }
-/** Friendly operation names never replace the independent validity or decision dimensions. */
+/* Friendly operation names never replace the independent validity or decision dimensions. */
 [[nodiscard]] inline std::string_view
 operation_label(tooling::DevChangesOperation operation) noexcept {
 	switch (operation) {
@@ -140,7 +140,7 @@ operation_label(tooling::DevChangesOperation operation) noexcept {
 	case tooling::DevChangesOperation::Remove:
 		return "Removal";
 	case tooling::DevChangesOperation::Keep:
-		return "Saved";
+		return "Already Baked";
 	default:
 		return "Unchanged";
 	}
@@ -185,7 +185,7 @@ enum Action : uint64_t {
 	DismissMessage
 };
 
-/** UI callbacks retain only owned identities; commands are deferred to service_changes. */
+/* UI callbacks retain only owned identities; commands are deferred to service_changes. */
 inline void activate(void* target, uint64_t action, uint64_t value) {
 	auto& state = *static_cast<DevChangesState*>(target);
 	if (action == Select || action == Toggle) {
@@ -331,7 +331,7 @@ inline void activate(void* target, uint64_t action, uint64_t value) {
 	}
 }
 
-/** Resolve the same default face used by the window's Clay text configuration. */
+/* Resolve the same default face used by the window's Clay text configuration. */
 template <class Context>
 [[nodiscard]] const Font::FontFaceData* text_face(Context& context) {
 	const Font::FontFaceData* face =
@@ -345,7 +345,7 @@ template <class Context>
 	return face;
 }
 
-/** Measure with the application's actual face and resolved line height, preserving UTF-8. */
+/* Measure with the application's actual face and resolved line height, preserving UTF-8. */
 template <class Context>
 [[nodiscard]] std::string ellipsize(Context& context, std::string_view label, float width,
 									uint16_t size = 12) {
@@ -379,7 +379,7 @@ template <class Context>
 	return prefix ? std::string(label.substr(0, prefix)) + "..." : std::string{};
 }
 
-/** Preserve full technical values, splitting oversized tokens at measured UTF-8 boundaries. */
+/* Preserve full technical values, splitting oversized tokens at measured UTF-8 boundaries. */
 template <class Context>
 void text(Context& context, std::string_view label,
 		  Clay_Color color = interface_theme::kTextSecondary, uint16_t size = 12) {
@@ -468,7 +468,7 @@ void text(Context& context, std::string_view label,
 	}
 	diagnostics_ui::text(context, display, color, size);
 }
-/** Keep explanatory prose on a labeled hover target using the Diagnostics pointer help. */
+/* Keep explanatory prose on a labeled hover target using the Diagnostics pointer help. */
 template <class Context, class Identity>
 void hinted_text(Context& context, const Identity& identity, std::string_view label,
 				 std::string_view description, Clay_Color color = interface_theme::kTextSecondary,
@@ -484,18 +484,61 @@ void hinted_text(Context& context, const Identity& identity, std::string_view la
 											description);
 	}
 }
-/** Shared release-inside control reuses the established Diagnostics/Memory treatment. */
+/* Shared release-inside control reuses the established Diagnostics/Memory treatment. */
 template <class Context, class Identity>
 void button(Context& context, const Identity& identity, std::string label, DevChangesState& state,
 			uint64_t action, uint64_t value = 0, bool enabled = true, std::string tooltip = {},
-			Icon icon = Icon::None) {
+			Icon icon = Icon::None, bool icon_only = false) {
+	if (icon == Icon::None) {
+		switch (action) {
+		case Refresh:
+		case ResetAuthored:
+			icon = Icon::Refresh;
+			break;
+		case Undo:
+		case UndoLive:
+			icon = Icon::Undo;
+			break;
+		case Redo:
+		case RedoLive:
+			icon = Icon::Redo;
+			break;
+		case Back:
+		case ClosePolicy:
+			icon = Icon::Back;
+			break;
+		case PreviousPage:
+			icon = Icon::Previous;
+			break;
+		case NextPage:
+			icon = Icon::Next;
+			break;
+		case CloseReview:
+		case CloseGroupDecisions:
+		case ClearSelection:
+		case DismissMessage:
+			icon = Icon::Close;
+			break;
+		default:
+			break;
+		}
+	}
 	diagnostics_ui::button_with_identity(context, identity, std::move(label), &state, activate,
-										 action, value, enabled, std::move(tooltip), icon);
+										 action, value, enabled, std::move(tooltip), icon,
+										 icon_only);
 	const auto element = ::FlowUi::detail::element_id::resolveLocal(
 		context.id, diagnostics_ui::Control::definitionId, identity.token);
 	register_focus_target(context, state, context.uiManager.toClayEID(element), enabled);
 }
-/** Shared segmented or full-width selector; filtering never changes candidate scope. */
+/* Keep action labels available to tooling and display them when no icon can be rendered. */
+template <class Context, class Identity>
+void icon_button(Context& context, const Identity& identity, std::string label,
+				 DevChangesState& state, uint64_t action, uint64_t value = 0, bool enabled = true,
+				 std::string tooltip = {}, Icon icon = Icon::None) {
+	button(context, identity, std::move(label), state, action, value, enabled, std::move(tooltip),
+		   icon, true);
+}
+/* Shared segmented or full-width selector; filtering never changes candidate scope. */
 template <class Context>
 void choice(Context& context, IndexedElementName identity, std::string_view label, uint64_t value,
 			uint64_t& selected, uint16_t horizontal_padding = 7, bool selection_bar = false) {
@@ -511,7 +554,7 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 	const auto clay_identity = context.uiManager.toClayEID(element);
 	if (context.uiManager.shortcuts().focusedElement().id == clay_identity.id) {
 		parameters.style.borderWidth =
-			selection_bar ? Clay_BorderWidth{3, 1, 1, 1, 0} : Clay_BorderWidth{1, 1, 1, 1, 0};
+			selection_bar ? Clay_BorderWidth{3, 0, 0, 0, 0} : Clay_BorderWidth{1, 1, 1, 1, 0};
 		parameters.style.idleOverrides.borderColor = interface_theme::kAccentCurrent;
 		parameters.style.hoveredOverrides.borderColor = interface_theme::kAccentCurrent;
 		parameters.style.selectedOverrides.borderColor = interface_theme::kAccentCurrent;
@@ -542,13 +585,13 @@ void choice(Context& context, IndexedElementName identity, std::string_view labe
 	context.uiManager.drawConstructed();
 	register_focus_target(context, clay_identity, true, {}, &selected, value);
 }
-/** Full-width radio row using the Performance selector's colors, stripe and alignment. */
+/* Full-width radio row using the Performance selector's colors, stripe and alignment. */
 template <class Context>
 void bar_choice(Context& context, IndexedElementName identity, std::string_view label,
 				uint64_t value, uint64_t& selected) {
 	choice(context, identity, label, value, selected, 7, true);
 }
-/** Three independent Clay scroll containers retain their positions across refreshed plans. */
+/* Three independent Clay scroll containers retain their positions across refreshed plans. */
 template <class Context>
 [[nodiscard]] Clay_ElementDeclaration viewport(Context& context, LocalElementName identity,
 											   float& retained_scroll,
@@ -590,7 +633,7 @@ template <class Context>
 									  : Clay_Vector2{0, retained_scroll}};
 	return result;
 }
-/** Seed newly recreated Clay scroll state after opening a retained panel viewport. */
+/* Seed newly recreated Clay scroll state after opening a retained panel viewport. */
 template <class Context, class Identity>
 void restore_viewport_scroll(Context& context, const Identity& identity, float retained_scroll) {
 	const auto scroll = Clay_GetScrollContainerData(context.clayID(identity));
@@ -606,7 +649,7 @@ void restore_viewport_scroll(Context& context, const Identity& identity, float r
 		return interface_theme::kTextMuted;
 	return interface_theme::kAccentSeaGlass;
 }
-/** Explicit absence and zero/default semantics remain distinct. */
+/* Explicit absence and zero/default semantics remain distinct. */
 [[nodiscard]] inline std::string value(std::string_view text_value, bool present) {
 	return present ? (text_value.empty() ? "\"\"" : std::string(text_value)) : "Absent";
 }

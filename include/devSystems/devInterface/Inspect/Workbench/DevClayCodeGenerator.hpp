@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -21,8 +21,15 @@ struct DevClayCodeGeneratorParameters {
 	uint64_t selectionKey = 0;
 };
 
-/**
- * @brief C++ code generator element for the selected Clay layout element.
+/* Cached conventional artwork for the generated-code copy action. */
+struct DevClayCodeGeneratorResources {
+	TextureRef copy_icon{};
+	DevClayCodeGeneratorResources() = default;
+	explicit DevClayCodeGeneratorResources(App& app);
+};
+
+/*
+ * C++ code generator element for the selected Clay layout element.
  *
  * Emits a copyable C++ declaration with a header containing 'Element Code' and
  * an interactive 'Copy' button.
@@ -30,6 +37,7 @@ struct DevClayCodeGeneratorParameters {
 struct DevClayCodeGenerator {
 	using Parameters = DevClayCodeGeneratorParameters;
 	using State = DevClayCodeGeneratorState;
+	using Resources = DevClayCodeGeneratorResources;
 	using BuildContext = ElementBuildContext<DevClayCodeGenerator>;
 	using InteractionContext = ElementInteractionContext<DevClayCodeGenerator>;
 

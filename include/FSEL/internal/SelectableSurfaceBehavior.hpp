@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FSEL/SelectableSurfaceStyle.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::FSEL::detail::selectable_surface {
 

@@ -7,7 +7,7 @@
 #include <limits>
 #include <utility>
 
-#include "Vulkan/Vk_Context.hpp"
+#include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 
 namespace FlowUi::devSystems {

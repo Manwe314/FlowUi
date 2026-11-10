@@ -42,7 +42,7 @@ flowui_package_resources(my_app
 ## Runtime configuration and UTF-8
 
 ```cpp
-#include <FlowUi/Resources.hpp>
+#include <FlowUi/Public/Resources.hpp>
 
 FlowUi::AppConfig config;
 config.resources.roots = {std::filesystem::path(u8"/my/package/资源")};

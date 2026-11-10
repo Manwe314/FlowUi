@@ -4,12 +4,12 @@
 #include <string>
 #include <type_traits>
 
-#include "FlowUi/ElementID.hpp"
-#include "internal/ElementInstanceKey.hpp"
-#include "internal/FlowScopeStack.hpp"
+#include "FlowUi/Public/identificationTypes/ElementID.hpp"
+#include "FlowUi/Private/elementSystem/ElementInstanceKey.hpp"
+#include "FlowUi/Private/layoutService/FlowScopeStack.hpp"
 #if FLOW_UI_DEV_MODE
-#include "managers/UiManager.hpp"
-#include "internal/ManagerStorage/UiManagerState.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Private/layoutService/UiManagerState.hpp"
 #endif
 
 namespace {

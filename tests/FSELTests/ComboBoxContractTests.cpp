@@ -57,5 +57,29 @@ int main() {
 		FLOWUI_CHECK(!calculate(100.0f, 100.0f, 0.0f, 80.0f, 16.0f).visible);
 	});
 
+	runner.run("compact triggers reserve the disclosure and clamp oversized decoration", [] {
+		using FlowUi::FSEL::detail::combo_box::fit_content;
+		for (const float height : {20.0f, 24.0f, 28.0f}) {
+			const auto layout = fit_content(180, height, {10, 8, 6, 6}, 80, 8, true, true);
+			FLOWUI_CHECK(layout.icon_size == height - 12);
+			FLOWUI_CHECK(layout.show_leading_icon);
+			FLOWUI_CHECK(2 * layout.icon_size + 2 * layout.gap <= 162);
+		}
+		const auto narrow = fit_content(24, 20, {10, 8, 6, 6}, 80, 8, true, true);
+		FLOWUI_CHECK(!narrow.show_leading_icon);
+		FLOWUI_CHECK(narrow.icon_size + narrow.gap <= 6);
+		const auto tiny = fit_content(4, 3, {10, 8, 6, 6}, 80, 8, true, true);
+		FLOWUI_CHECK(tiny.padding.left + tiny.padding.right <= 4);
+		FLOWUI_CHECK(tiny.padding.top + tiny.padding.bottom <= 3);
+		FLOWUI_CHECK(tiny.icon_size == 0);
+		const auto option = fit_content(120, 20, {8, 8, 4, 4}, 80, 8, true, false);
+		FLOWUI_CHECK(option.show_leading_icon && option.icon_size == 12);
+		const auto readable = fit_content(180, 20, {10, 8, 6, 6}, 80, 8, true, true, 12);
+		FLOWUI_CHECK(readable.content_height == 12);
+		FLOWUI_CHECK(readable.padding.top + readable.padding.bottom == 8);
+		FLOWUI_CHECK(readable.icon_size == 12);
+		FLOWUI_CHECK(readable.label_width + 2 * (readable.icon_size + readable.gap) == 162);
+	});
+
 	return runner.finish();
 }

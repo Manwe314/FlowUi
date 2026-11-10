@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "internal/ManagerStorage/FontCatalogController.hpp"
-#include "internal/Text/TextLayoutService.hpp"
+#include "FlowUi/Private/resourceService/FontCatalogController.hpp"
+#include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
 
 namespace {
 

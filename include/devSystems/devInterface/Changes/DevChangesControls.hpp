@@ -1,10 +1,10 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Open whole-plan Output review and commit the reviewed manifest with the sole Bake action. */
+/* Open whole-plan Output review and commit the reviewed manifest with the sole Bake action. */
 struct DevChangesControls {
 	using Parameters = DevChangesContentParameters;
 	using BuildContext = ElementBuildContext<DevChangesControls>;

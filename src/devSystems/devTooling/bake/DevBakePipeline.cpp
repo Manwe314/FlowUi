@@ -22,7 +22,7 @@
 #include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
 #include "devSystems/devTooling/schema/DevSchemaRegistry.hpp"
-#include "managers/structs/ActionManagerStructs.hpp"
+#include "FlowUi/Public/managerStructs/ActionTypes.hpp"
 
 namespace FlowUi::devSystems::tooling {
 namespace {
@@ -390,10 +390,10 @@ std::string nowUtc() {
 	return buffer;
 }
 
-const devMode::DevFieldSchema* findField(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevTypeIndex owner,
-	devMode::DevFieldId field) {
+const tooling::DevFieldSchema* findField(
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevTypeIndex owner,
+	tooling::DevFieldId field) {
 	for (const auto& candidate : schema.fieldsOf(owner)) if (candidate.id == field) return &candidate;
 	return nullptr;
 }
@@ -417,14 +417,14 @@ bool looksLikeHeader(const std::filesystem::path& path) {
 struct SerializedValue { std::string json; std::string cpp; };
 
 std::optional<SerializedValue> serializeValue(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevTypeIndex typeIndex,
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevTypeIndex typeIndex,
 	const void* value,
 	std::uint32_t depth = 0) {
 	if (!value || depth > 12) return std::nullopt;
-	const devMode::DevTypeSchema* type = schema.type(typeIndex);
+	const tooling::DevTypeSchema* type = schema.type(typeIndex);
 	if (!type || typeIndex.value >= schema.typeOperations.size()) return std::nullopt;
-	const devMode::DevTypeOps* operations = schema.typeOperations[typeIndex.value];
+	const tooling::DevTypeOps* operations = schema.typeOperations[typeIndex.value];
 	if (!operations) return std::nullopt;
 	if (type->id == ::FlowUi::detail::typeHash<ActionCall>()) {
 		const auto& action = *static_cast<const ActionCall*>(value);
@@ -447,53 +447,51 @@ std::optional<SerializedValue> serializeValue(
 		const auto& texture = *static_cast<const TextureRef*>(value);
 		if (texture.sourceKey.empty() ||
 			(texture.sourceDomain != ResourceDomain::Image &&
-			 texture.sourceDomain != ResourceDomain::Icon)) return std::nullopt;
+			 texture.sourceDomain != ResourceDomain::Icon) ||
+			static_cast<unsigned>(texture.fitMode) > static_cast<unsigned>(TextureFitMode::None))
+			return std::nullopt;
 		std::string keyLiteral;
 		appendEscaped(keyLiteral, texture.sourceKey);
-		const std::string domain = texture.sourceDomain == ResourceDomain::Image
-			? "Image" : "Icon";
+		const std::string domain = texture.sourceDomain == ResourceDomain::Image ? "Image" : "Icon";
 		return SerializedValue{
 			"{\"domain\":" + std::to_string(static_cast<unsigned>(texture.sourceDomain)) +
 				",\"key\":" + keyLiteral +
 				",\"fitMode\":" + std::to_string(static_cast<unsigned>(texture.fitMode)) +
-				",\"samplingMode\":" + std::to_string(static_cast<unsigned>(texture.samplingMode)) +
 				",\"tintEnabled\":" + (texture.tintEnabled ? "true" : "false") + "}",
 			"FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::" + domain + "," + keyLiteral +
 				",static_cast<FlowUi::TextureFitMode>(" +
-				std::to_string(static_cast<unsigned>(texture.fitMode)) +
-				"),static_cast<FlowUi::TextureSamplingMode>(" +
-				std::to_string(static_cast<unsigned>(texture.samplingMode)) + ")," +
+				std::to_string(static_cast<unsigned>(texture.fitMode)) + ")," +
 				(texture.tintEnabled ? "true" : "false") + ")"};
 	}
 	long double numeric = 0.0L;
-	if (type->kind == devMode::DevTypeKind::Boolean) {
+	if (type->kind == tooling::DevTypeKind::Boolean) {
 		if (!operations->numericValue || !operations->numericValue(value, numeric)) return std::nullopt;
 		return SerializedValue{numeric == 0.0L ? "false" : "true", numeric == 0.0L ? "false" : "true"};
 	}
-	if (type->kind == devMode::DevTypeKind::SignedInteger ||
-		type->kind == devMode::DevTypeKind::UnsignedInteger ||
-		type->kind == devMode::DevTypeKind::FloatingPoint ||
-		type->kind == devMode::DevTypeKind::Enumeration) {
+	if (type->kind == tooling::DevTypeKind::SignedInteger ||
+		type->kind == tooling::DevTypeKind::UnsignedInteger ||
+		type->kind == tooling::DevTypeKind::FloatingPoint ||
+		type->kind == tooling::DevTypeKind::Enumeration) {
 		if (!operations->numericValue || !operations->numericValue(value, numeric) ||
 			!std::isfinite(numeric)) return std::nullopt;
 		std::ostringstream stream;
 		stream.imbue(std::locale::classic());
 		stream << std::setprecision(20) << numeric;
 		std::string literal = stream.str();
-		if (type->kind == devMode::DevTypeKind::FloatingPoint && numeric == 0 &&
+		if (type->kind == tooling::DevTypeKind::FloatingPoint && numeric == 0 &&
 			std::signbit(numeric))
 			literal = "-0.0";
-		if (type->kind == devMode::DevTypeKind::Enumeration) {
+		if (type->kind == tooling::DevTypeKind::Enumeration) {
 			literal = "static_cast<" + std::string(schema.string(type->cppTypeName)) + ">(" + literal + ")";
 		}
 		return SerializedValue{stream.str(), std::move(literal)};
 	}
-	if (type->kind != devMode::DevTypeKind::Object || type->fields.count == 0) return std::nullopt;
+	if (type->kind != tooling::DevTypeKind::Object || type->fields.count == 0) return std::nullopt;
 	SerializedValue result{"{", std::string(schema.string(type->cppTypeName)) + "{"};
 	bool first = true;
 	for (const auto& field : schema.fieldsOf(typeIndex)) {
 		if (field.operations >= schema.fieldOperations.size()) return std::nullopt;
-		const devMode::DevFieldOps* fieldOps = schema.fieldOperations[field.operations];
+		const tooling::DevFieldOps* fieldOps = schema.fieldOperations[field.operations];
 		const std::string name(schema.string(field.name));
 		if (!fieldOps || !fieldOps->constAddress || !validIdentifier(name)) return std::nullopt;
 		const auto child = serializeValue(schema, field.valueType, fieldOps->constAddress(value), depth + 1);
@@ -512,16 +510,16 @@ std::optional<SerializedValue> serializeValue(
 struct ResolvedPath {
 	std::string path{};
 	std::string header{};
-	const devMode::DevFieldSchema* leaf = nullptr;
+	const tooling::DevFieldSchema* leaf = nullptr;
 };
 
 ResolvedPath resolvePath(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevTypeIndex root,
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevTypeIndex root,
 	const DevOverrideFieldKey& key) {
 	ResolvedPath result;
-	devMode::DevTypeIndex owner = root;
-	const auto append = [&](const devMode::DevFieldSchema& field, ResolvedPath& target) {
+	tooling::DevTypeIndex owner = root;
+	const auto append = [&](const tooling::DevFieldSchema& field, ResolvedPath& target) {
 		const std::string name(schema.string(field.name));
 		if (!validIdentifier(name)) return false;
 		if (!target.path.empty()) target.path += '.';
@@ -551,7 +549,7 @@ bool isLive(DevOverrideLayer layer) {
 }
 
 std::optional<DevBakeEntry> makeElementEntry(
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const DevOverrideApply::Record& record,
 	DevBakeDiagnostic& diagnostic) {
 	if (!isLive(record.layer) || !record.schemaValid || !record.value) return std::nullopt;
@@ -599,7 +597,7 @@ std::optional<DevBakeEntry> makeElementEntry(
 }
 
 std::optional<DevBakeEntry> makeThemeEntry(
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const DevOverrideEngine::ThemeBakeRecord& record,
 	DevBakeDiagnostic& diagnostic) {
 	if (!record.schemaValid || !record.value) return std::nullopt;
@@ -857,8 +855,8 @@ std::string utc_timestamp() {
 	return nowUtc();
 }
 
-bool entry_cpp_value_consistent(const devMode::DevSchemaGeneration& schema,
-								const devMode::DevFieldSchema& field, const DevBakeEntry& entry) {
+bool entry_cpp_value_consistent(const tooling::DevSchemaGeneration& schema,
+								const tooling::DevFieldSchema& field, const DevBakeEntry& entry) {
 	JsonValue value;
 	if (!JsonParser(entry.valueJson).parse(value))
 		return false;
@@ -867,8 +865,17 @@ bool entry_cpp_value_consistent(const devMode::DevSchemaGeneration& schema,
 		return candidate && candidate->kind == JsonValue::Kind::Number &&
 			   parseCppNumber(candidate->text, number);
 	};
+	const auto json_unsigned_integer = [](const JsonValue* candidate,
+										  std::uint64_t& number) noexcept {
+		if (!candidate || candidate->kind != JsonValue::Kind::Number)
+			return false;
+		const auto parsed = std::from_chars(
+			candidate->text.data(), candidate->text.data() + candidate->text.size(), number);
+		return parsed.ec == std::errc{} &&
+			   parsed.ptr == candidate->text.data() + candidate->text.size();
+	};
 	const auto compare = [&](const auto& self, const JsonValue& candidate,
-							 devMode::DevTypeIndex type_index, std::string_view cpp,
+							 tooling::DevTypeIndex type_index, std::string_view cpp,
 							 std::uint32_t depth) -> bool {
 		const auto* type = schema.type(type_index);
 		if (!type || depth > 16)
@@ -895,63 +902,55 @@ bool entry_cpp_value_consistent(const devMode::DevSchemaGeneration& schema,
 		}
 		if (type->id == ::FlowUi::detail::typeHash<TextureRef>()) {
 			constexpr std::string_view prefix = "FlowUi::TextureRef::fromStable(";
-			if (!cpp.starts_with(prefix) || !cpp.ends_with(')'))
+			if (candidate.kind != JsonValue::Kind::Object || candidate.object.size() != 4 ||
+				!cpp.starts_with(prefix) || !cpp.ends_with(')'))
 				return false;
 			const auto arguments =
 				splitCppArguments(cpp.substr(prefix.size(), cpp.size() - prefix.size() - 1));
-			long double domain = 0;
+			std::uint64_t domain = 0;
 			const auto* key = candidate.find("key");
 			JsonValue generated_key;
-			if (arguments.size() != 5 || !json_number(candidate.find("domain"), domain) ||
+			if (arguments.size() != 4 || !json_unsigned_integer(candidate.find("domain"), domain) ||
 				(domain != 1 && domain != 2) || !key || key->kind != JsonValue::Kind::String ||
+				key->text.empty() ||
 				arguments[0] != (domain == 1 ? "FlowUi::ResourceDomain::Image"
 											 : "FlowUi::ResourceDomain::Icon") ||
 				!JsonParser(arguments[1]).parse(generated_key) ||
 				generated_key.kind != JsonValue::Kind::String || generated_key.text != key->text)
 				return false;
-			long double generated_fit = 0, generated_sampling = 0;
+			long double generated_fit = 0;
 			if (!arguments[2].starts_with("static_cast<FlowUi::TextureFitMode>(") ||
-				!arguments[3].starts_with("static_cast<FlowUi::TextureSamplingMode>(") ||
-				!parseCppNumber(arguments[2], generated_fit) ||
-				!parseCppNumber(arguments[3], generated_sampling) || generated_fit < 0 ||
+				!parseCppNumber(arguments[2], generated_fit) || generated_fit < 0 ||
 				generated_fit > 3 || std::floor(generated_fit) != generated_fit ||
-				generated_sampling < 0 || generated_sampling > 1 ||
-				std::floor(generated_sampling) != generated_sampling ||
-				(arguments[4] != "true" && arguments[4] != "false"))
+				(arguments[3] != "true" && arguments[3] != "false"))
 				return false;
-			// Legacy JSON omitted these properties; generator metadata explicitly retains their
-			// values.
-			long double saved_setting = 0;
-			if (const auto* fit = candidate.find("fitMode");
-				fit && (!json_number(fit, saved_setting) || saved_setting != generated_fit))
+			std::uint64_t saved_setting = 0;
+			if (!json_unsigned_integer(candidate.find("fitMode"), saved_setting) ||
+				saved_setting != generated_fit)
 				return false;
-			if (const auto* sampling = candidate.find("samplingMode");
-				sampling &&
-				(!json_number(sampling, saved_setting) || saved_setting != generated_sampling))
-				return false;
-			if (const auto* tint = candidate.find("tintEnabled");
-				tint && (tint->kind != JsonValue::Kind::Boolean ||
-						 tint->boolean != (arguments[4] == "true")))
+			const auto* tint = candidate.find("tintEnabled");
+			if (!tint || tint->kind != JsonValue::Kind::Boolean ||
+				tint->boolean != (arguments[3] == "true"))
 				return false;
 			return true;
 		}
-		if (type->kind == devMode::DevTypeKind::Boolean)
+		if (type->kind == tooling::DevTypeKind::Boolean)
 			return candidate.kind == JsonValue::Kind::Boolean &&
 				   cpp == (candidate.boolean ? "true" : "false");
-		if (type->kind == devMode::DevTypeKind::SignedInteger ||
-			type->kind == devMode::DevTypeKind::UnsignedInteger ||
-			type->kind == devMode::DevTypeKind::FloatingPoint ||
-			type->kind == devMode::DevTypeKind::Enumeration) {
+		if (type->kind == tooling::DevTypeKind::SignedInteger ||
+			type->kind == tooling::DevTypeKind::UnsignedInteger ||
+			type->kind == tooling::DevTypeKind::FloatingPoint ||
+			type->kind == tooling::DevTypeKind::Enumeration) {
 			long double saved_number = 0, generated_number = 0;
 			if (!json_number(std::addressof(candidate), saved_number) ||
 				!parseCppNumber(cpp, generated_number))
 				return false;
-			if (type->kind == devMode::DevTypeKind::Enumeration &&
+			if (type->kind == tooling::DevTypeKind::Enumeration &&
 				!cpp.starts_with("static_cast<" + type_name + ">("))
 				return false;
-			if (type->kind != devMode::DevTypeKind::Enumeration && cpp.starts_with("static_cast<"))
+			if (type->kind != tooling::DevTypeKind::Enumeration && cpp.starts_with("static_cast<"))
 				return false;
-			if (type->kind == devMode::DevTypeKind::FloatingPoint) {
+			if (type->kind == tooling::DevTypeKind::FloatingPoint) {
 				if (saved_number == 0 && std::signbit(saved_number) &&
 					cpp.find_first_of(".eE") == std::string_view::npos)
 					return false;
@@ -966,7 +965,7 @@ bool entry_cpp_value_consistent(const devMode::DevSchemaGeneration& schema,
 			return saved_number == generated_number &&
 				   std::signbit(saved_number) == std::signbit(generated_number);
 		}
-		if (type->kind != devMode::DevTypeKind::Object ||
+		if (type->kind != tooling::DevTypeKind::Object ||
 			candidate.kind != JsonValue::Kind::Object || !cpp.starts_with(type_name + "{") ||
 			!cpp.ends_with('}'))
 			return false;
@@ -1000,8 +999,8 @@ bool entry_cpp_value_consistent(const devMode::DevSchemaGeneration& schema,
 	return compare(compare, value, field.valueType, expression, 0);
 }
 
-bool entry_value_valid(const devMode::DevSchemaGeneration& schema,
-					   const devMode::DevFieldSchema& field, const DevBakeEntry& entry,
+bool entry_value_valid(const tooling::DevSchemaGeneration& schema,
+					   const tooling::DevFieldSchema& field, const DevBakeEntry& entry,
 					   std::string& reason) {
 	JsonValue value;
 	if (!JsonParser(entry.valueJson).parse(value)) {
@@ -1009,16 +1008,16 @@ bool entry_value_valid(const devMode::DevSchemaGeneration& schema,
 		return false;
 	}
 	const auto validate = [&](const auto& self, const JsonValue& candidate,
-							  devMode::DevTypeIndex type_index,
-							  const devMode::DevFieldSchema* member, std::uint32_t depth) -> bool {
+							  tooling::DevTypeIndex type_index,
+							  const tooling::DevFieldSchema* member, std::uint32_t depth) -> bool {
 		const auto* type = schema.type(type_index);
 		if (!type || depth > 16)
 			return false;
 		long double numeric = 0;
-		const bool numeric_type = type->kind == devMode::DevTypeKind::SignedInteger ||
-								  type->kind == devMode::DevTypeKind::UnsignedInteger ||
-								  type->kind == devMode::DevTypeKind::FloatingPoint ||
-								  type->kind == devMode::DevTypeKind::Enumeration;
+		const bool numeric_type = type->kind == tooling::DevTypeKind::SignedInteger ||
+								  type->kind == tooling::DevTypeKind::UnsignedInteger ||
+								  type->kind == tooling::DevTypeKind::FloatingPoint ||
+								  type->kind == tooling::DevTypeKind::Enumeration;
 		if (numeric_type) {
 			if (candidate.kind != JsonValue::Kind::Number)
 				return false;
@@ -1028,23 +1027,23 @@ bool entry_value_valid(const devMode::DevSchemaGeneration& schema,
 				parsed.ptr != candidate.text.data() + candidate.text.size() ||
 				!std::isfinite(numeric))
 				return false;
-			if (type->kind != devMode::DevTypeKind::FloatingPoint && std::floor(numeric) != numeric)
+			if (type->kind != tooling::DevTypeKind::FloatingPoint && std::floor(numeric) != numeric)
 				return false;
-			if (type->kind == devMode::DevTypeKind::UnsignedInteger &&
+			if (type->kind == tooling::DevTypeKind::UnsignedInteger &&
 				(numeric < 0 || numeric >= std::ldexp(1.0L, static_cast<int>(type->size * 8))))
 				return false;
-			if (type->kind == devMode::DevTypeKind::SignedInteger) {
+			if (type->kind == tooling::DevTypeKind::SignedInteger) {
 				const auto bound = std::ldexp(1.0L, static_cast<int>(type->size * 8 - 1));
 				if (numeric < -bound || numeric >= bound)
 					return false;
 			}
-			if (type->kind == devMode::DevTypeKind::FloatingPoint &&
+			if (type->kind == tooling::DevTypeKind::FloatingPoint &&
 				std::abs(numeric) >
 					(type->size <= sizeof(float)
 						 ? static_cast<long double>(std::numeric_limits<float>::max())
 						 : static_cast<long double>(std::numeric_limits<double>::max())))
 				return false;
-			if (type->kind == devMode::DevTypeKind::Enumeration && type->enumeration.values.count) {
+			if (type->kind == tooling::DevTypeKind::Enumeration && type->enumeration.values.count) {
 				bool matched = false;
 				for (std::uint32_t index = 0; index < type->enumeration.values.count; ++index) {
 					const auto enum_index = type->enumeration.values.first + index;
@@ -1064,13 +1063,13 @@ bool entry_value_valid(const devMode::DevSchemaGeneration& schema,
 				if (!matched)
 					return false;
 			}
-		} else if (type->kind == devMode::DevTypeKind::Boolean) {
+		} else if (type->kind == tooling::DevTypeKind::Boolean) {
 			if (candidate.kind != JsonValue::Kind::Boolean)
 				return false;
-		} else if (type->kind == devMode::DevTypeKind::Text) {
+		} else if (type->kind == tooling::DevTypeKind::Text) {
 			if (candidate.kind != JsonValue::Kind::String)
 				return false;
-		} else if (type->kind == devMode::DevTypeKind::Object ||
+		} else if (type->kind == tooling::DevTypeKind::Object ||
 				   type->id == ::FlowUi::detail::typeHash<ActionCall>()) {
 			if (candidate.kind != JsonValue::Kind::Object)
 				return false;
@@ -1203,20 +1202,20 @@ bool write_manifest_atomically(const std::filesystem::path& destination,
 							   std::string_view contents) {
 	return writeAtomically(destination, contents);
 }
-std::optional<DevBakeEntry> element_proposal(const devMode::DevSchemaGeneration& schema,
+std::optional<DevBakeEntry> element_proposal(const tooling::DevSchemaGeneration& schema,
 											 const DevOverrideApply::Record& record,
 											 DevBakeDiagnostic& diagnostic) {
 	return makeElementEntry(schema, record, diagnostic);
 }
-std::optional<DevBakeEntry> theme_proposal(const devMode::DevSchemaGeneration& schema,
+std::optional<DevBakeEntry> theme_proposal(const tooling::DevSchemaGeneration& schema,
 										   const DevOverrideEngine::ThemeBakeRecord& record,
 										   DevBakeDiagnostic& diagnostic) {
 	return makeThemeEntry(schema, record, diagnostic);
 }
 } // namespace bake_detail
 
-std::optional<DevSerializedValue> serialize_dev_value(const devMode::DevSchemaGeneration& schema,
-													  devMode::DevTypeIndex type,
+std::optional<DevSerializedValue> serialize_dev_value(const tooling::DevSchemaGeneration& schema,
+													  tooling::DevTypeIndex type,
 													  const void* value) noexcept {
 	try {
 		if (const auto formatted = serializeValue(schema, type, value))
@@ -1227,8 +1226,166 @@ std::optional<DevSerializedValue> serialize_dev_value(const devMode::DevSchemaGe
 	return std::nullopt;
 }
 
+DevValueCaptureStatus query_authored_element_value(
+	const DevOverrideEngine& overrides, const tooling::DevSchemaGeneration& schema,
+	const DevElementOverrideTarget& target, const DevOverrideFieldKey& field,
+	DevOwnedValue& destination) noexcept {
+	destination.reset();
+	const auto* element = schema.findElement(target.definition);
+	if (!element || !overrides.value_collection())
+		return DevValueCaptureStatus::Unavailable;
+	const auto* parameters_type = schema.type(element->parametersType);
+	if (!parameters_type || parameters_type->id != field.ownerType)
+		return DevValueCaptureStatus::SchemaMismatch;
+	try {
+		struct QueryContext {
+			std::vector<const tooling::DevFieldSchema*> path;
+			std::string serialized;
+			const tooling::DevSchemaGeneration* schema;
+			const DevElementOverrideTarget* target;
+			DevOwnedValue* destination;
+			DevValueCaptureStatus failure = DevValueCaptureStatus::Available;
+			bool found = false;
+		} context{{}, {}, &schema, &target, &destination};
+		context.path.reserve(field.nestedPath.size() + 1);
+		auto owner = element->parametersType;
+		const auto append_field = [&](tooling::DevFieldId identity) {
+			const auto fields = schema.fieldsOf(owner);
+			const auto selected = std::find_if(fields.begin(), fields.end(),
+				[&](const auto& candidate) { return candidate.id == identity; });
+			if (selected == fields.end())
+				return false;
+			context.path.emplace_back(&*selected);
+			owner = selected->valueType;
+			return true;
+		};
+		for (const auto identity : field.nestedPath)
+			if (!append_field(identity))
+				return DevValueCaptureStatus::SchemaMismatch;
+		if (!append_field(field.field))
+			return DevValueCaptureStatus::SchemaMismatch;
+		overrides.visitElementSnapshots(&context,
+			[](void* pointer, const DevElementCaptureSnapshot& snapshot) noexcept {
+				auto& query = *static_cast<QueryContext*>(pointer);
+				if (query.target->window != InvalidWindowId &&
+					query.target->window != snapshot.window)
+					return true;
+				try {
+					for (const auto& captured_element : snapshot.elements) {
+						if (captured_element.isDevInternal ||
+							captured_element.definition != query.target->definition ||
+							(query.target->scope == DevOverrideScope::ExactInstance &&
+							 captured_element.instance != query.target->instance))
+							continue;
+						if (!snapshot.schema || snapshot.schema->generation != query.schema->generation) {
+							query.failure = DevValueCaptureStatus::SchemaMismatch;
+							continue;
+						}
+						const DevCapturedField* root = nullptr;
+						const auto end = std::min<std::size_t>(snapshot.fields.size(),
+							captured_element.firstField + captured_element.fieldCount);
+						for (std::size_t index = captured_element.firstField; index < end; ++index) {
+							const auto& candidate = snapshot.fields[index];
+							if (candidate.field && candidate.field.value <= query.schema->fields.size() &&
+								query.schema->fields[candidate.field.value - 1].id == query.path.front()->id) {
+								root = &candidate;
+								break;
+							}
+						}
+						if (!root || root->authoredStatus != DevValueCaptureStatus::Available ||
+							!root->authoredValue) {
+							query.failure = root ? root->authoredStatus : DevValueCaptureStatus::Unavailable;
+							continue;
+						}
+						const void* value = root->authoredValue.data();
+						for (std::size_t index = 1; index < query.path.size() && value; ++index) {
+							const auto operation_index = query.path[index]->operations;
+							const auto* operations = operation_index < query.schema->fieldOperations.size()
+								? query.schema->fieldOperations[operation_index] : nullptr;
+							value = operations && operations->constAddress ? operations->constAddress(value) : nullptr;
+						}
+						const auto type = query.path.back()->valueType;
+						const auto serialized = serialize_dev_value(*query.schema, type, value);
+						if (!serialized) {
+							query.failure = DevValueCaptureStatus::Unsupported;
+							continue;
+						}
+						if (query.found && query.serialized != serialized->json) {
+							query.failure = DevValueCaptureStatus::Ambiguous;
+							return false;
+						}
+						if (!query.found) {
+							if (DevOwnedValue::copyFrom(*query.schema, type, value, *query.destination) !=
+								tooling::DevValueOperationStatus::Success) {
+								query.failure = DevValueCaptureStatus::CopyFailed;
+								return false;
+							}
+							query.serialized = serialized->json;
+							query.found = true;
+						}
+					}
+					return true;
+				} catch (...) {
+					query.failure = DevValueCaptureStatus::CopyFailed;
+					return false;
+				}
+			});
+		if (context.failure != DevValueCaptureStatus::Available || !context.found) {
+			destination.reset();
+			return context.failure == DevValueCaptureStatus::Available
+				? DevValueCaptureStatus::Unavailable : context.failure;
+		}
+		return DevValueCaptureStatus::Available;
+	} catch (...) {
+		destination.reset();
+		return DevValueCaptureStatus::CopyFailed;
+	}
+}
+
+DevValueCaptureStatus query_authored_element_value(
+	const DevOverrideEngine& overrides, const tooling::DevSchemaGeneration& schema,
+	const DevBakeEntry& entry, WindowId window, DevOwnedValue& destination) noexcept {
+	destination.reset();
+	const auto* element = schema.findElement(entry.definition);
+	if (entry.targetKind != DevBakeTargetKind::Element || !element)
+		return DevValueCaptureStatus::Unavailable;
+	try {
+		auto owner = element->parametersType;
+		const auto* root = schema.type(owner);
+		if (!root)
+			return DevValueCaptureStatus::SchemaMismatch;
+		DevOverrideFieldKey key{.ownerType = root->id};
+		key.nestedPath.reserve(8);
+		std::string_view remaining = entry.fieldPath;
+		while (!remaining.empty()) {
+			const auto separator = remaining.find('.');
+			const auto name = remaining.substr(0, separator);
+			const auto fields = schema.fieldsOf(owner);
+			const auto field = std::find_if(fields.begin(), fields.end(),
+				[&](const auto& candidate) { return schema.string(candidate.name) == name; });
+			if (field == fields.end())
+				return DevValueCaptureStatus::SchemaMismatch;
+			if (separator == std::string_view::npos) {
+				key.field = field->id;
+				const auto* value_type = schema.type(field->valueType);
+				if (key.field != entry.fieldId || !value_type || value_type->id != entry.valueType)
+					return DevValueCaptureStatus::SchemaMismatch;
+				const DevElementOverrideTarget target{.definition = entry.definition,
+					.window = window, .instance = entry.instanceKey, .scope = entry.targetScope};
+				return query_authored_element_value(overrides, schema, target, key, destination);
+			}
+			key.nestedPath.emplace_back(field->id);
+			owner = field->valueType;
+			remaining.remove_prefix(separator + 1);
+		}
+		return DevValueCaptureStatus::SchemaMismatch;
+	} catch (...) {
+		return DevValueCaptureStatus::CopyFailed;
+	}
+}
+
 DevBakePipeline::DevBakePipeline(
-	devMode::DevSchemaRegistry& schemas,
+	tooling::DevSchemaRegistry& schemas,
 	DevOverrideEngine& overrides) noexcept
 	: schemas_(schemas), overrides_(overrides) {
 	try {
@@ -1349,7 +1506,7 @@ DevCommandResult DevBakePipeline::bake() noexcept {
 DevBakeStatusSnapshot DevBakePipeline::queryStatus() const noexcept {
 	try {
 		DevBakeStatusSnapshot result{};
-		const devMode::DevSchemaView schema = schemas_.view();
+		const tooling::DevSchemaView schema = schemas_.view();
 		if (!schema) {
 			result.bakeDiagnostics.push_back({DevBakeDiagnosticCode::SchemaUnavailable,
 				"Publish the developer schema before baking."});
@@ -1408,8 +1565,21 @@ std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const noexcept {
 				.targetKind = entry.targetKind,
 				.isBaked = true,});
 		}
-		const devMode::DevSchemaView schema = schemas_.view();
+		const tooling::DevSchemaView schema = schemas_.view();
 		if (!schema) return result;
+		for (std::size_t index = 0; index < manifest_.entries.size(); ++index) {
+			const auto& entry = manifest_.entries[index];
+			DevOwnedValue authored;
+			if (query_authored_element_value(overrides_, *schema, entry, InvalidWindowId, authored) !=
+				DevValueCaptureStatus::Available)
+				continue;
+			const auto* type = schema->findType(authored.type());
+			const auto original = type ? serializeValue(*schema,
+				tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
+				authored.data()) : std::nullopt;
+			if (original)
+				result[index].authoredValueString = original->json;
+		}
 		const auto mergeLive = [&](const DevBakeEntry& live) {
 			const auto baked = std::find_if(manifest_.entries.begin(), manifest_.entries.end(),
 				[&](const DevBakeEntry& entry) { return sameIdentity(entry, live); });
@@ -1441,7 +1611,26 @@ std::vector<DevBakeDiffEntry> DevBakePipeline::queryDiff() const noexcept {
 		for (const auto& record : overrides_.appliedOverrides().records()) {
 			if (!isLive(record.layer)) continue;
 			DevBakeDiagnostic ignored;
-			if (auto entry = makeElementEntry(*schema, record, ignored)) mergeLive(*entry);
+			if (auto entry = makeElementEntry(*schema, record, ignored)) {
+				mergeLive(*entry);
+				DevOwnedValue authored;
+				auto target = record.target;
+				if (target.scope == DevOverrideScope::Definition)
+					target.window = InvalidWindowId;
+				if (query_authored_element_value(overrides_, *schema, target, record.field, authored) ==
+					DevValueCaptureStatus::Available) {
+					const auto* type = schema->findType(authored.type());
+					const auto original = type ? serializeValue(*schema,
+						tooling::DevTypeIndex{static_cast<std::uint32_t>(type - schema->types.data())},
+						authored.data()) : std::nullopt;
+					if (original)
+						for (auto& diff : result)
+							if (diff.targetKind == DevBakeTargetKind::Element &&
+								diff.definition == entry->definition && diff.instance == entry->instanceKey &&
+								diff.fieldPath == entry->fieldPath)
+								diff.authoredValueString = original->json;
+				}
+			}
 		}
 		for (const auto& record : overrides_.themeBakeRecords()) {
 			if (record.preview_only || record.remove_baked)

@@ -1,11 +1,24 @@
 var searchData=
 [
-  ['layerscapacity_0',['layersCapacity',['../structFlowUi_1_1Font_1_1AtlasArrayResource.html#a56a8ae8c55ea5db732b933d90a76c193',1,'FlowUi::Font::AtlasArrayResource']]],
-  ['layersused_1',['layersUsed',['../structFlowUi_1_1Font_1_1AtlasArrayResource.html#acc8285da8f0eff29718cd9149eff14dd',1,'FlowUi::Font::AtlasArrayResource']]],
-  ['layout_20engine_2',['Text Layout Engine',['../md_docs_2internals_2text__layout__engine.html',1,'flowui_internal_details']]],
-  ['lifecycle_3',['Frame Lifecycle',['../md_docs_2concepts_2frame__lifecycle.html',1,'flowui_concepts']]],
-  ['light_4',['light',['../structFlowUi_1_1FlowUiTheme.html#a4ff0e7fc6464f8876b0877eff601e192',1,'FlowUi::FlowUiTheme']]],
-  ['linear_5',['Linear',['../group__flowui__config.html#gga45632b801edaf6ba2ce69d7892e23ec9a32a843da6ea40ab3b17a3421ccdf671b',1,'FlowUi']]],
-  ['lineheight_6',['lineHeight',['../structFlowUi_1_1Font_1_1FontVariantData.html#a5733711f92c11d84be2db0c420b4779b',1,'FlowUi::Font::FontVariantData']]],
-  ['lockkeymods_7',['lockKeyMods',['../structFlowUi_1_1WindowInputConfig.html#a88a6f00d74fdd4aebf67459750e12016',1,'FlowUi::WindowInputConfig']]]
+  ['handle_0',['handle',['../structFlowUi_1_1TextureRef.html#afa9bd316197d0e297f1455843dcef0b2',1,'FlowUi::TextureRef']]],
+  ['has_5fopen_5fpopups_1',['has_open_popups',['../classFlowUi_1_1PopupManager.html#ae96fbe5989be085605215cba276eb746',1,'FlowUi::PopupManager']]],
+  ['hasadldevenumschema_2',['HasAdlDevEnumSchema',['../conceptFlowUi_1_1devSystems_1_1tooling_1_1schema__detail_1_1HasAdlDevEnumSchema.html',1,'FlowUi::devSystems::tooling::schema_detail']]],
+  ['hasadldevschema_3',['HasAdlDevSchema',['../conceptFlowUi_1_1devSystems_1_1tooling_1_1schema__detail_1_1HasAdlDevSchema.html',1,'FlowUi::devSystems::tooling::schema_detail']]],
+  ['hasclipboardaccess_4',['hasClipboardAccess',['../classFlowUi_1_1UiManager.html#a64bfd45ccd65d7eb70792e13a4559a8f',1,'FlowUi::UiManager']]],
+  ['hasintrusivedevschema_5',['HasIntrusiveDevSchema',['../conceptFlowUi_1_1devSystems_1_1tooling_1_1schema__detail_1_1HasIntrusiveDevSchema.html',1,'FlowUi::devSystems::tooling::schema_detail']]],
+  ['hasparts_6',['HasParts',['../conceptFlowUi_1_1HasParts.html',1,'FlowUi']]],
+  ['hasprimarycaret_7',['hasPrimaryCaret',['../structFlowUi_1_1FieldQueryResult.html#adc1df1e3983f22b4afd71ecadbf6d945',1,'FlowUi::FieldQueryResult']]],
+  ['hasprimaryfieldfocus_8',['hasPrimaryFieldFocus',['../classFlowUi_1_1InputFieldManager.html#a4f494c501874c594a05a8e28f8e9954f',1,'FlowUi::InputFieldManager']]],
+  ['hasrendercallback_9',['hasRenderCallback',['../classFlowUi_1_1ViewPort.html#a3c831bc9ef15c303e504f22569d7aca6',1,'FlowUi::ViewPort']]],
+  ['hasresources_10',['HasResources',['../conceptFlowUi_1_1HasResources.html',1,'FlowUi']]],
+  ['hasselection_11',['hasSelection',['../structFlowUi_1_1FieldQueryResult.html#a9d76f82f0b1744a8140a681e49f7e957',1,'FlowUi::FieldQueryResult']]],
+  ['hasstate_12',['HasState',['../conceptFlowUi_1_1HasState.html',1,'FlowUi']]],
+  ['hasvalidsize_13',['hasValidSize',['../classFlowUi_1_1ViewPort.html#a5f2cac10eb5a33309f1900921530e5dc',1,'FlowUi::ViewPort']]],
+  ['haswindow_14',['hasWindow',['../classFlowUi_1_1App.html#a936d6288d15558fe4a130bf2a05df796',1,'FlowUi::App']]],
+  ['height_15',['height',['../structFlowUi_1_1WindowConfig.html#add143cbfcadd4db14d2d76ad409ea37d',1,'FlowUi::WindowConfig::height'],['../structFlowUi_1_1Font_1_1AtlasArrayResource.html#a67ba75e756b068a776f07b2caab4fa4d',1,'FlowUi::Font::AtlasArrayResource::height']]],
+  ['heldelementids_16',['heldElementIds',['../structFlowUi_1_1InteractionSnapshot.html#a7400fda2dd4a98e026278f6bbc95a0ce',1,'FlowUi::InteractionSnapshot']]],
+  ['highdpi_17',['highDPI',['../structFlowUi_1_1WindowConfig.html#a71991fa5d1f255c6bac3a9b0174cf472',1,'FlowUi::WindowConfig']]],
+  ['highlightboxcolor_18',['highlightBoxColor',['../structFlowUi_1_1InputManagerConfig.html#a24137fc630c674e4a0946c3cbaa68bca',1,'FlowUi::InputManagerConfig']]],
+  ['highlightedtextcolor_19',['highlightedTextColor',['../structFlowUi_1_1InputManagerConfig.html#a7f6b15e14cb64bb7c713eb185e4ef6da',1,'FlowUi::InputManagerConfig']]],
+  ['hoveredelementids_20',['hoveredElementIds',['../structFlowUi_1_1InteractionSnapshot.html#a4030653c29e6336590b9b59a6f9068e2',1,'FlowUi::InteractionSnapshot']]]
 ];

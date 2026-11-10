@@ -1,0 +1,265 @@
+#include "FlowUi/Private/resourceService/ThemeStorageController.hpp"
+#include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
+#if FLOW_UI_DEV_MODE
+#include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
+#include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
+#endif
+#include <cstring>
+#include <new>
+#include <stdexcept>
+#include <string>
+
+namespace FlowUi::detail::manager_storage {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+void ThemeStorageController::appendDevMemorySamples(
+	::FlowUi::devSystems::MemorySampleSink& sink) const noexcept {
+	try {
+		std::scoped_lock lock(mutex_);
+		devSystems::DevContainerMemoryAccumulator memory{};
+		memory.addNodeContainer(typeRegistry_);
+		devSystems::append_capacity_demand(sink,
+										   FlowUi::detail::InitialCapacityTarget::themes_types,
+										   typeRegistry_, detail::MemoryDemandPeaks{});
+		uint64_t variant_maximum = 0;
+		for (const auto& [type_id, type] : typeRegistry_)
+			variant_maximum = std::max<uint64_t>(variant_maximum, type.variants.size());
+		(void)sink.append(devSystems::MemoryValueSample{
+			.source =
+				FlowUi::detail::initial_capacity_definitions
+					[static_cast<size_t>(FlowUi::detail::InitialCapacityTarget::themes_variants)]
+						.id(),
+			.objectCount = variant_maximum,
+			.flags = devSystems::MemorySampleFlag::TuningAggregate,
+			.value_fields = uint16_t(devSystems::MemoryValueField::Objects)});
+		for (const auto& [_, type] : typeRegistry_) memory.addNodeContainer(type.variants);
+		memory.add(stagedMutations_);
+		devSystems::appendManagerSample(sink, devSystems::memory_sources::kThemes.id, memory);
+	} catch (...) {}
+}
+#endif
+
+void ThemeStorageController::init(storage::IStorageSystem& storage) {
+	std::lock_guard<std::mutex> lock(mutex_);
+	storage_ = &storage;
+	::FlowUi::detail::reserve_initial_capacity(
+		typeRegistry_,
+		storage.initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::themes_types));
+	typeRegistry_.clear();
+	stagedMutations_.clear();
+}
+
+void ThemeStorageController::shutdown() noexcept {
+	std::lock_guard<std::mutex> lock(mutex_);
+	if (!storage_) return;
+
+	for (auto& [typeHash, record] : typeRegistry_) {
+		(void)typeHash;
+		for (auto& [variantId, variant] : record.variants) {
+			(void)variantId;
+			storage_->removeManagerRecord(variant.resourceKey, storage::ResourceKind::UiTheme);
+		}
+	}
+
+	typeRegistry_.clear();
+	stagedMutations_.clear();
+	storage_ = nullptr;
+}
+
+storage::StringId ThemeStorageController::internString(std::string_view str) {
+	if (!storage_) {
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeRegisterVariant));
+	}
+	return storage_->intern(str);
+}
+
+storage::ResourceKey ThemeStorageController::makeThemeResourceKey(
+	uint64_t typeHash,
+	storage::StringId variantNameId) const {
+	if (!storage_) {
+		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::ThemeLookupActiveVariant));
+	}
+
+	const std::string_view variantName = storage_->string(variantNameId);
+	std::string resourceName = "flowui/theme/";
+	resourceName += std::to_string(typeHash);
+	resourceName += '/';
+	resourceName.append(variantName.data(), variantName.size());
+
+	return storage::ResourceKey{
+		.domain = storage::ResourceDomain::Internal,
+		.name = storage_->intern(resourceName),
+		.window = 0
+	};
+}
+
+void ThemeStorageController::applyStagedMutations() {
+	std::vector<StagedThemeMutation> pending;
+	{
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (stagedMutations_.empty()) return;
+		pending.swap(stagedMutations_);
+	}
+
+	for (const auto& mutation : pending) {
+		storage::ManagerRecordHandle handle{};
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			auto it = typeRegistry_.find(mutation.typeHash);
+			if (it == typeRegistry_.end()) continue;
+			auto varIt = it->second.variants.find(mutation.variantNameId);
+			if (varIt == it->second.variants.end()) continue;
+			handle = varIt->second.handle;
+		}
+
+		void* rawRecord = storage_->managerRecordData(handle, storage::ResourceKind::UiTheme);
+		if (!rawRecord) continue;
+		auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
+		mutation.mutator(header->payload());
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			void* current = storage_->managerRecordData(handle, storage::ResourceKind::UiTheme);
+			if (current == rawRecord) {
+				reinterpret_cast<storage::ThemeRecordHeader*>(current)->revision++;
+			}
+		}
+		storage_->noteManagerMutation(InvalidWindowId);
+	}
+
+}
+
+#if FLOW_UI_DEV_MODE
+bool ThemeStorageController::clone_dev_variant(std::uint64_t type, std::string_view source,
+											   std::string_view destination) {
+	if (destination.empty() || destination == "*")
+		return false;
+	const auto source_id = internString(source);
+	const auto destination_id = internString(destination);
+	decltype(TypeRegistrationRecord::clone_variant) clone = nullptr;
+	{
+		std::lock_guard lock(mutex_);
+		const auto found = typeRegistry_.find(type);
+		if (found == typeRegistry_.end() || !found->second.variants.contains(source_id) ||
+			found->second.variants.contains(destination_id))
+			return false;
+		clone = found->second.clone_variant;
+	}
+	if (!clone)
+		return false;
+	(void)clone(*this, source_id, destination_id);
+	storage_->noteManagerMutation(InvalidWindowId);
+	return true;
+}
+
+bool ThemeStorageController::set_dev_active_variant(std::uint64_t type,
+													std::string_view variant) noexcept {
+	try {
+		std::lock_guard lock(mutex_);
+		if (!storage_)
+			return false;
+		const auto found = typeRegistry_.find(type);
+		if (found == typeRegistry_.end())
+			return false;
+		for (const auto& [variant_id, registration] : found->second.variants) {
+			if (storage_->string(variant_id) != variant)
+				continue;
+			found->second.activeVariantNameId = variant_id;
+			storage_->noteManagerMutation(InvalidWindowId);
+			return true;
+		}
+	} catch (...) {
+		return false;
+	}
+	return false;
+}
+
+bool ThemeStorageController::visitDevPayloads(
+	void* userData,
+	DevPayloadVisitor visitor) const noexcept {
+	if (!visitor) return false;
+	try {
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (!storage_) return false;
+		for (const auto& [typeHash, type] : typeRegistry_) {
+			for (const auto& [variantId, variant] : type.variants) {
+				void* rawRecord = storage_->managerRecordData(
+					variant.handle, storage::ResourceKind::UiTheme);
+				if (!rawRecord) continue;
+				const auto* header =
+					reinterpret_cast<const storage::ThemeRecordHeader*>(rawRecord);
+				if (!visitor(
+						userData,
+						DevPayloadView{
+							.type = typeHash,
+							.typeName = storage_->string(type.typeNameId),
+							.variant = storage_->string(variantId),
+							.payload = header->payload(),
+							.authored = variant.authored ? variant.authored->payload() : nullptr,
+							.startup = variant.startup ? variant.startup->payload() : nullptr,
+							.payloadSize = header->dataSize,
+							.revision = header->revision,
+							.active = type.activeVariantNameId == variantId,
+						}))
+					return false;
+			}
+		}
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+std::size_t ThemeStorageController::devPayloadCount() const noexcept {
+	try {
+		std::lock_guard<std::mutex> lock(mutex_);
+		std::size_t count = 0;
+		for (const auto& [_, type] : typeRegistry_) count += type.variants.size();
+		return count;
+	} catch (...) {
+		return 0;
+	}
+}
+
+devSystems::tooling::DevValueOperationStatus ThemeStorageController::assignDevField(
+	std::uint64_t type,
+	std::string_view variant,
+	std::span<const devSystems::tooling::DevFieldOps* const> ownerPath,
+	const devSystems::tooling::DevFieldOps& field,
+	const void* source) noexcept {
+	if (!field.assignMemberFromCopy) return devSystems::tooling::DevValueOperationStatus::Unsupported;
+	try {
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (!storage_) return devSystems::tooling::DevValueOperationStatus::NullDestination;
+		const auto typeIt = typeRegistry_.find(type);
+		if (typeIt == typeRegistry_.end()) return devSystems::tooling::DevValueOperationStatus::Unsupported;
+		bool assigned = false;
+		for (const auto& [variantId, registration] : typeIt->second.variants) {
+			if (variant != "*" && storage_->string(variantId) != variant)
+				continue;
+			void* rawRecord = storage_->managerRecordData(
+				registration.handle, storage::ResourceKind::UiTheme);
+			if (!rawRecord) return devSystems::tooling::DevValueOperationStatus::NullDestination;
+			auto* header = reinterpret_cast<storage::ThemeRecordHeader*>(rawRecord);
+			void* owner = header->payload();
+			for (const devSystems::tooling::DevFieldOps* path : ownerPath) {
+				owner = path && path->mutableAddress ? path->mutableAddress(owner) : nullptr;
+				if (!owner) return devSystems::tooling::DevValueOperationStatus::NullDestination;
+			}
+			const devSystems::tooling::DevValueOperationStatus status =
+				field.assignMemberFromCopy(owner, source);
+			if (status == devSystems::tooling::DevValueOperationStatus::Success) {
+				++header->revision;
+				storage_->noteManagerMutation(InvalidWindowId);
+			}
+			if (status != devSystems::tooling::DevValueOperationStatus::Success)
+				return status;
+			assigned = true;
+		}
+		return assigned ? devSystems::tooling::DevValueOperationStatus::Success
+						: devSystems::tooling::DevValueOperationStatus::Unsupported;
+	} catch (...) {
+		return devSystems::tooling::DevValueOperationStatus::Failed;
+	}
+}
+#endif
+
+} // namespace FlowUi::detail::manager_storage

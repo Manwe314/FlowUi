@@ -1,12 +1,12 @@
 #include "devSystems/devAgenticWorkflow/AgenticInteractionRuntime.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAction.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteraction.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticInteractionTargets.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticService.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>

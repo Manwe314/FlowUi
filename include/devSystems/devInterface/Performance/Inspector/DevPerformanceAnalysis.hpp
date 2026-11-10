@@ -8,11 +8,11 @@
 #include <tuple>
 
 namespace FlowUi::devSystems::interface_elements {
-/** Display refresh gate. A changed data context refreshes immediately; ordinary frames count down.
+/* Display refresh gate. A changed data context refreshes immediately; ordinary frames count down.
  */
 struct PerformanceRefreshGate {
 	uint32_t frames_remaining = 0;
-	/** Return true on the first frame, a context change, or every 240 subsequent builds. */
+	/* Return true on the first frame, a context change, or every 240 subsequent builds. */
 	[[nodiscard]] bool advance(bool context_changed) noexcept {
 		if (context_changed || frames_remaining == 0 || --frames_remaining == 0) {
 			frames_remaining = 240;
@@ -21,7 +21,7 @@ struct PerformanceRefreshGate {
 		return false;
 	}
 };
-/** Owned measurement identity; no borrowed capture data survives the read lease. */
+/* Owned measurement identity; no borrowed capture data survives the read lease. */
 struct PerformanceAnalysisSample {
 	uint64_t duration_ns = 0, exclusive_ns = 0, type_id = 0, invocation_id = 0;
 	uint64_t app_tick = 0, track = 0, device = 0, queue = 0, submission = 0;
@@ -29,11 +29,11 @@ struct PerformanceAnalysisSample {
 	uint32_t zone_index = UINT32_MAX;
 	TimingSampleDomain domain = TimingSampleDomain::Cpu;
 	bool self_valid = false;
-	/** Comparison populations never mix CPU threads or GPU devices/queues. */
+	/* Comparison populations never mix CPU threads or GPU devices/queues. */
 	[[nodiscard]] auto population() const noexcept {
 		return std::tuple{domain, type_id, frame.window, track, device, queue};
 	}
-	/** Match a freshly leased timeline record by stable semantic identity. */
+	/* Match a freshly leased timeline record by stable semantic identity. */
 	[[nodiscard]] bool matches(const TimelineBlockSlice& block) const noexcept {
 		return !block.synthetic_tick && domain == block.domain && type_id == block.type_id &&
 			   app_tick == block.app_tick && frame == block.frame && track == block.track &&
@@ -43,7 +43,7 @@ struct PerformanceAnalysisSample {
 						  submission == block.submission_serial && zone_index == block.zone_index);
 	}
 };
-/** One comparable population, with separately labeled inclusive and recorded self totals. */
+/* One comparable population, with separately labeled inclusive and recorded self totals. */
 struct PerformanceAnalysisZone {
 	std::string label{};
 	std::vector<uint64_t> durations{};
@@ -53,7 +53,7 @@ struct PerformanceAnalysisZone {
 	TimingCategory category = TimingCategory::User;
 	TimingZoneRole role = TimingZoneRole::Work;
 };
-/** Bounded retained timing analysis, independent of investigation filters. */
+/* Bounded retained timing analysis, independent of investigation filters. */
 struct PerformanceAnalysis {
 	std::vector<PerformanceAnalysisSample> samples{};
 	std::vector<PerformanceAnalysisZone> zones{};
@@ -62,7 +62,7 @@ struct PerformanceAnalysis {
 	uint64_t complete_ticks = 0, excluded_intervals = 0, excluded_samples = 0;
 	uint64_t dropped_records = 0;
 };
-/** Nearest-rank percentile. Empty distributions have no measurement. */
+/* Nearest-rank percentile. Empty distributions have no measurement. */
 [[nodiscard]] inline uint64_t performance_percentile(std::span<const uint64_t> sorted,
 													 double percentile) noexcept {
 	if (sorted.empty())
@@ -70,7 +70,7 @@ struct PerformanceAnalysis {
 	const auto rank = size_t(std::ceil(std::clamp(percentile, 0.0, 1.0) * sorted.size()));
 	return sorted[std::min(sorted.size() - 1, rank ? rank - 1 : 0)];
 }
-/** Duration text preserves sub-millisecond optimization opportunities. */
+/* Duration text preserves sub-millisecond optimization opportunities. */
 [[nodiscard]] inline std::string performance_duration(double duration_ns) {
 	if (duration_ns > 0 && duration_ns < 1)
 		return "<0.001 us";
@@ -79,7 +79,7 @@ struct PerformanceAnalysis {
 				  duration_ns >= 1e6 ? "ms" : "us");
 	return buffer;
 }
-/** Completed CPU records without cancellation or clock errors are duration-eligible. */
+/* Completed CPU records without cancellation or clock errors are duration-eligible. */
 [[nodiscard]] inline bool performance_sample_valid(const TimelineBlockSlice& block) noexcept {
 	if (block.synthetic_tick)
 		return false;
@@ -93,7 +93,7 @@ struct PerformanceAnalysis {
 							  timingRecordFlags(TimingRecordFlag::Exception);
 	return (flags & timingRecordFlags(TimingRecordFlag::Completed)) && !(flags & rejected);
 }
-/** Extract owned aggregates while a capture is leased. Range is complete retained application
+/* Extract owned aggregates while a capture is leased. Range is complete retained application
  * ticks. */
 [[nodiscard]] inline PerformanceAnalysis analyze_performance(const TimingCaptureReadView& capture,
 															 uint64_t tick_limit,

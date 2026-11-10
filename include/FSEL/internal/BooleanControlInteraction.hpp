@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::FSEL::detail::boolean_control {
 

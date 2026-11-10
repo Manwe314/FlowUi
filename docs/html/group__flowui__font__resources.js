@@ -15,7 +15,7 @@ var group__flowui__font__resources =
       [ "sourceImageIndex", "structFlowUi_1_1Font_1_1GlyphData.html#ac000e88a6fb5d689c606240791a09db8", null ]
     ] ],
     [ "FlowUi::Font::FontVariantData", "structFlowUi_1_1Font_1_1FontVariantData.html", [
-      [ "kerningAdvance", "structFlowUi_1_1Font_1_1FontVariantData.html#acb58bcb53965391de0525cb6850a9d29", null ],
+      [ "kerningAdvance", "structFlowUi_1_1Font_1_1FontVariantData.html#a4464d6512f5c1f1845fe8803c95a34e6", null ],
       [ "ascender", "structFlowUi_1_1Font_1_1FontVariantData.html#ad008b5f8390a60690414553c83ae65b9", null ],
       [ "descender", "structFlowUi_1_1Font_1_1FontVariantData.html#afeb9298d15febf484dd1582f978900d6", null ],
       [ "distanceRange", "structFlowUi_1_1Font_1_1FontVariantData.html#a4d6b70933f69ca45c603148163500612", null ],
@@ -35,7 +35,7 @@ var group__flowui__font__resources =
       [ "weight", "structFlowUi_1_1Font_1_1FontVariantData.html#a3dd79b48f544c0f1fa7c11cf96ca5cb5", null ]
     ] ],
     [ "FlowUi::Font::FontFaceData", "structFlowUi_1_1Font_1_1FontFaceData.html", [
-      [ "defaultVariant", "structFlowUi_1_1Font_1_1FontFaceData.html#ad97f5e22e625cb9698ddd429fc1c63e1", null ],
+      [ "defaultVariant", "structFlowUi_1_1Font_1_1FontFaceData.html#a61a9c59721076328a059c72829bb4d1b", null ],
       [ "atlasHeight", "structFlowUi_1_1Font_1_1FontFaceData.html#afec66d30fde81da2e3b1429fc0672c8c", null ],
       [ "atlasLayer", "structFlowUi_1_1Font_1_1FontFaceData.html#a44a4be320d492fd4ff591ab22b7565c3", null ],
       [ "atlasWidth", "structFlowUi_1_1Font_1_1FontFaceData.html#add7dc639ef6d1840b77a71eb0e9efb57", null ],
@@ -50,16 +50,5 @@ var group__flowui__font__resources =
       [ "sourceAtlasY", "structFlowUi_1_1Font_1_1FontFaceData.html#ab691aa2d2b2fa9cd9fb3c0a32a9423b9", null ],
       [ "sourcePath", "structFlowUi_1_1Font_1_1FontFaceData.html#a61c7c0c65e9839d2cdd1bd10148b29c5", null ],
       [ "variants", "structFlowUi_1_1Font_1_1FontFaceData.html#ad1d2da0bbb280296314966b2c3025744", null ]
-    ] ],
-    [ "FlowUi::Font::AtlasArrayResource", "structFlowUi_1_1Font_1_1AtlasArrayResource.html", [
-      [ "allocation", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#a500a6e45e635f1b73e79e1bfe61b39e8", null ],
-      [ "bindingRevision", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#aa1d78a88c89971534bc25d09504e5773", null ],
-      [ "height", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#a67ba75e756b068a776f07b2caab4fa4d", null ],
-      [ "image", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#aac47847171d122e2f4814a0b82b8055e", null ],
-      [ "layersCapacity", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#a56a8ae8c55ea5db732b933d90a76c193", null ],
-      [ "layersUsed", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#acc8285da8f0eff29718cd9149eff14dd", null ],
-      [ "sampler", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#af998adbcc3b30134597ed71f55f75bdb", null ],
-      [ "view", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#a53e6e87eb15c2b20a60c43dce05464f7", null ],
-      [ "width", "structFlowUi_1_1Font_1_1AtlasArrayResource.html#a0e1e1bc28a14fa5e89c50fa4de432b3e", null ]
     ] ]
 ];

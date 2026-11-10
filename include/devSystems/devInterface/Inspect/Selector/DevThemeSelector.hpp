@@ -1,11 +1,11 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Theme selector surface. */
+/* Theme selector surface. */
 struct DevThemeSelector {
 	using Parameters = DevInspectContentParameters;
 	struct State {

@@ -2,13 +2,13 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -17,7 +17,7 @@ struct DevContentHeaderParameters {
 	DevInterfaceState* interfaceState = nullptr;
 };
 
-/** Closed owner of navigation tabs and their contextual control strip. */
+/* Closed owner of navigation tabs and their contextual control strip. */
 struct DevContentHeader {
 	using Parameters = DevContentHeaderParameters;
 	using BuildContext = ElementBuildContext<DevContentHeader>;

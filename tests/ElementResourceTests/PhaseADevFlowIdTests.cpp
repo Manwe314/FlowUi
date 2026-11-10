@@ -2,7 +2,7 @@
 #include "TestHarness.hpp"
 
 // This test executable must only be compiled with FLOW_UI_DEV_MODE=1.
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if !FLOW_UI_DEV_MODE
 #error "PhaseADevFlowIdTests must be compiled only in a FlowUi developer-mode build."

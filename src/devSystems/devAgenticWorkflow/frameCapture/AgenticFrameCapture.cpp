@@ -2,8 +2,8 @@
 
 #if FLOW_UI_AGENTIC_WORKFLOW
 
-#include "Vulkan/Vk_Context.hpp"
-#include "internal/Vma.hpp"
+#include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 
 #include <algorithm>
 #include <atomic>

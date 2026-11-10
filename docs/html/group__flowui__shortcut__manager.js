@@ -1,12 +1,15 @@
 var group__flowui__shortcut__manager =
 [
     [ "FlowUi::ShortcutManager", "classFlowUi_1_1ShortcutManager.html", [
+      [ "DevShortcutView", "structFlowUi_1_1ShortcutManager_1_1DevShortcutView.html", null ],
       [ "clear", "classFlowUi_1_1ShortcutManager.html#af08e7e2bb696cec1bf476a3afda5d6b1", null ],
       [ "clearFocusedElement", "classFlowUi_1_1ShortcutManager.html#abf2f8245061c1fd51116e79c615ce52d", null ],
       [ "focusedElement", "classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2", null ],
-      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f", null ],
+      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#a85b5c95b323ace22144320b9679a820d", null ],
+      [ "registerShortcut", "classFlowUi_1_1ShortcutManager.html#a2bc44da2fe129e8b7ab3a6f2ff8b0b9b", null ],
       [ "setFocusedElement", "classFlowUi_1_1ShortcutManager.html#a8a496694eeaf4fdf03166ecf9c273212", null ],
-      [ "unregisterShortcut", "classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e", null ]
+      [ "unregisterShortcut", "classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e", null ],
+      [ "visitDevShortcuts", "classFlowUi_1_1ShortcutManager.html#a36fec101cdc166336fedc06d6ddc12e5", null ]
     ] ],
     [ "FlowUi::ShortcutChord", "structFlowUi_1_1ShortcutChord.html", [
       [ "alt", "structFlowUi_1_1ShortcutChord.html#ad4895e2238cad0480ba4f2317b040355", null ],
@@ -24,6 +27,7 @@ var group__flowui__shortcut__manager =
     ] ],
     [ "FlowUi::ShortcutCallback", "group__flowui__shortcut__manager.html#gafe920a194eec62fa501a18d765c03a35", null ],
     [ "FlowUi::ShortcutId", "group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9", null ],
+    [ "FlowUi::ShortcutHandling", "group__flowui__shortcut__manager.html#gaa96df297b2a302ec17595a07e88af64f", null ],
     [ "FlowUi::ShortcutScope", "group__flowui__shortcut__manager.html#ga1b3c08a536c355e5163a7a367297bfee", [
       [ "FlowUi::ShortcutScope::FocusedInput", "group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeac39487764c47d7394c716eb92cf51694", null ],
       [ "FlowUi::ShortcutScope::FocusedElement", "group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeeada12bd1e401dad9ceac02d871dbb34e3", null ],

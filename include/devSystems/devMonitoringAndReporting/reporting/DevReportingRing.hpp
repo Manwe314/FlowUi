@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace FlowUi::devSystems::detail {
-/** Bounded chronological storage. Appending/evicting never moves retained payloads.
+/* Bounded chronological storage. Appending/evicting never moves retained payloads.
  * Slot contents survive eviction for buffer reuse; references expire on reuse/reconfiguration. */
 template <class Value>
 class ReportingRing {
@@ -78,12 +78,12 @@ public:
 		head_ = (head_ + 1) % slots_.size();
 		--count_;
 	}
-	/** Withdraw an uncommitted tail slot when admitting its metadata fails. */
+	/* Withdraw an uncommitted tail slot when admitting its metadata fails. */
 	void pop_back() noexcept {
 		assert(count_);
 		--count_;
 	}
-	/** Admit a reusable slot; callers account for eviction before using this operation. */
+	/* Admit a reusable slot; callers account for eviction before using this operation. */
 	[[nodiscard]] Value& append_slot() noexcept {
 		assert(count_ < slots_.size());
 		return (*this)[count_++];
@@ -93,7 +93,7 @@ public:
 			pop_front();
 		append_slot() = std::move(value);
 	}
-	/** Explicit reconfiguration is the only operation that moves retained payloads. */
+	/* Explicit reconfiguration is the only operation that moves retained payloads. */
 	void set_capacity(size_t capacity) {
 		capacity = std::max(size_t{1}, capacity);
 		if (capacity == slots_.size())

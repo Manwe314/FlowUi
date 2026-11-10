@@ -66,14 +66,10 @@ void summary(Context& context, DevChangesState& state, float panel_width) {
 				label(context, description,
 					  issue_count ? interface_theme::kStatusRed : interface_theme::kTextMuted, 10);
 			}
-#if FLOWUI_INCLUDE_ICON_MANAGER
-			ui::button(context, LocalElementName{"refresh"}, "", state, ui::Refresh, 0, true,
-					   "Refresh review: accept current disk, live edits and prepared memory.",
-					   ui::Icon::Refresh);
-#else
-			ui::button(context, LocalElementName{"refresh"}, "Refresh", state, ui::Refresh, 0, true,
-					   "Refresh review: accept current disk, live edits and prepared memory.");
-#endif
+			ui::icon_button(context, LocalElementName{"refresh"}, "Refresh", state, ui::Refresh, 0,
+							true,
+							"Refresh review: accept current disk, live edits and prepared memory.",
+							ui::Icon::Refresh);
 		}
 		if (context.uiManager.getPreviousFramesInteraction().isHovered(
 				context.clayID("operation-counts")) ||
@@ -87,7 +83,7 @@ void summary(Context& context, DevChangesState& state, float panel_width) {
 					std::to_string(counts.conflicts) + " conflicts, " +
 					std::to_string(counts.errors) + " errors, " + std::to_string(counts.warnings) +
 					" warnings. New adds a missing assignment; "
-					"Update replaces a saved value; Removal deletes a saved assignment. "
+					"Update replaces an already baked value; Removal deletes a baked assignment. "
 					"Red markers indicate errors independently of change type.");
 	}
 }
@@ -298,7 +294,12 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 							   state.domain);
 		}
 		summary(context, state, panel_width);
-		CLAY(context.clayID("filters"), section(44)) {
+		auto filters = section(44);
+		if (panel_width < 250) {
+			filters.layout.padding.left = filters.layout.padding.right = 2;
+			filters.layout.childGap = 4;
+		}
+		CLAY(context.clayID("filters"), filters) {
 			context.uiManager.createElement(kDevSelectorSearch, LocalElementName{"search"})
 				.setParameters({.query = &state.search,
 								.placeholder = "Search...",
@@ -313,14 +314,15 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 			ui::register_focus_target(context, state, context.uiManager.toClayEID(search_input),
 									  true, search_input);
 			static constexpr std::array<FSEL::ComboBoxOption, 5> statuses{
-				{{0, "All"}, {1, "Pending"}, {2, "Saved"}, {3, "Issues"}, {4, "Omitted"}}};
+				{{0, "All"}, {1, "Pending"}, {2, "Already Baked"}, {3, "Issues"}, {4, "Omitted"}}};
 			FSEL::ComboBoxParameters status{};
 			status.options = statuses;
 			status.selectedValue = &state.status;
 			status.fontSize = 10;
+			status.iconSize = 12;
 			status.labelAlignment = CLAY_TEXT_ALIGN_CENTER;
 			status.popupWidthPolicy = FSEL::ComboBoxPopupWidthPolicy::ContentAtLeastTrigger;
-			status.sizing = {.width = CLAY_SIZING_FIXED(100), .height = CLAY_SIZING_FIXED(28)};
+			status.sizing = {.width = CLAY_SIZING_FIXED(132), .height = CLAY_SIZING_FIXED(28)};
 			context.uiManager.createElement(FSEL::kComboBox, LocalElementName{"status"})
 				.setParameters(status)
 				.setDevInternalCapture(true)
@@ -359,16 +361,34 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 					const auto trailing = node.leaf
 											  ? std::string(operation_label(review_row.operation))
 											  : std::to_string(node.rows.size());
+					const float tooltip_width =
+						std::min(300.0f, std::max(80.0f, Clay_GetLayoutDimensions().width - 16)) -
+						22;
+					const auto tooltip_label =
+						ui::ellipsize(context, node.label, tooltip_width, 11);
 					const auto description =
 						node.leaf
-							? node.label + "\n" + review_row.key + "\n" +
+							? tooltip_label + "\n" +
+								  ui::ellipsize(context, review_row.key, tooltip_width, 11) + "\n" +
 								  std::string(changes_decision_name(review_row.decision)) + " · " +
 								  std::string(tooling::changes_validity_name(review_row.validity)) +
 								  "\n" + review_row.reason
-							: node.label + "\n" + std::to_string(node.rows.size()) +
+							: tooltip_label + "\n" + std::to_string(node.rows.size()) +
 								  " destinations" + (error ? " · Contains blocking errors" : "");
-					const float label_width = panel_width - std::min<uint16_t>(node.depth, 5) * 14 -
-											  42 - trailing.size() * 7.0f - (error ? 18 : 0);
+					const auto node_identity = ::FlowUi::detail::element_id::resolveLocal(
+						context.id, DevChangesSelectorNode::definitionId,
+						Keyed("node", node.identity).token);
+					const auto label_identity = ::FlowUi::detail::element_id::resolveLocal(
+						node_identity, DevChangesSelectorNode::definitionId,
+						LocalElementName{"label"}.token);
+					const auto label_bounds =
+						Clay_GetElementData(context.uiManager.toClayEID(label_identity));
+					const float label_width =
+						label_bounds.found && panel_bounds.found &&
+								std::abs(panel_bounds.boundingBox.width - panel_width) < 1
+							? label_bounds.boundingBox.width
+							: panel_width - std::min<uint16_t>(node.depth, 5) * 14 - 42 -
+								  trailing.size() * 7.0f - (error ? 18 : 0);
 					context.uiManager
 						.createElement(kDevChangesSelectorNode, Keyed("node", node.identity))
 						.setParameters(
@@ -400,13 +420,14 @@ void DevChangesSelector::buildElement(BuildContext& context) {
 					empty.layout.padding = {12, 12, 16, 16};
 					CLAY(context.clayID("empty"), empty) {
 						ui::text(context,
-								 state.review.rows.empty() ? "No saved or proposed changes"
+								 state.review.rows.empty() ? "No baked or proposed changes"
 														   : "No changes match this filter",
 								 interface_theme::kTextCanvas);
-						ui::text(context,
-								 "Live edits and prepared memory appear here. Saved assignments "
-								 "remain visible across sessions.",
-								 interface_theme::kTextSecondary, 11);
+						ui::text(
+							context,
+							"Live edits and prepared memory appear here. Already baked assignments "
+							"remain visible across sessions.",
+							interface_theme::kTextSecondary, 11);
 					}
 				}
 			}

@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# The demo intentionally uses FlowUi's built-in developer elements.
-set(FLOW_UI_DEV_MODE ON CACHE BOOL "" FORCE)
+# The example uses the standard element library in production and development builds.
+set(COMPILE_FSELI ON CACHE BOOL "" FORCE)
 set(FLOWUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(FLOWUI_BUILD_FONT_BAKER OFF CACHE BOOL "" FORCE)
 set(FLOWUI_INSTALL OFF CACHE BOOL "" FORCE)

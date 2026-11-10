@@ -34,12 +34,12 @@ with tempfile.TemporaryDirectory(prefix="memory-capacity-codegen-", dir=argument
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         generate = [str(arguments.generator), "--manifest", str(manifest_path), "--output-dir", str(directory)]
         subprocess.run(generate, check=True)
-        source_path = directory / "FlowUiBakedChanges.cpp"
+        source_path = directory / "src/FlowUi/Private/BakedChanges.cpp"
         first_mtime = source_path.stat().st_mtime_ns
         subprocess.run(generate, check=True)
         assert source_path.stat().st_mtime_ns == first_mtime, "Unchanged generated TU was rewritten"
         driver = directory / "main.cpp"
-        driver.write_text('''#include "FlowUiBakedChanges.hpp"
+        driver.write_text('''#include "FlowUi/Private/BakedChanges.hpp"
 #include <cassert>
 #include <vector>
 int main() {
@@ -63,7 +63,7 @@ int main() {
 ''', encoding="utf-8")
         executable = directory / "check"
         subprocess.run([arguments.compiler, "-std=c++23", "-DENABLED=" + str(int(enabled)),
-                        "-I" + str(directory), "-I" + str(arguments.build / "include"),
+                        "-I" + str(directory / "include"), "-I" + str(arguments.build / "include"),
                         "-I" + str(arguments.source / "include"), "-I" + str(arguments.source / "external"),
                         str(source_path), str(driver), "-o", str(executable)], check=True)
         subprocess.run([str(executable)], check=True)
@@ -113,6 +113,13 @@ with tempfile.TemporaryDirectory(prefix="memory-capacity-cmake-", dir=arguments.
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     def cmake_path(path):
         return str(path.resolve()).replace("\\", "/").replace('"', '\\"')
+    # An installed package can provide its own default header at the same logical path.
+    # The target's generated provider must win even when package headers were added first.
+    shadow_include = root / "installed-include"
+    shadow_header = shadow_include / "FlowUi" / "Private" / "BakedChanges.hpp"
+    shadow_header.parent.mkdir(parents=True)
+    shadow_header.write_text('#error "Installed default shadowed the target-generated provider"\n',
+                             encoding="utf-8")
     (root / "CMakeLists.txt").write_text(f'''cmake_minimum_required(VERSION 3.25)
 project(MemoryCapacityIncremental LANGUAGES CXX)
 set(FLOW_UI_ENABLE_BAKED_CHANGES ON)
@@ -121,12 +128,12 @@ set_target_properties(flowui-dev-generate PROPERTIES IMPORTED_LOCATION "{cmake_p
 include("{cmake_path(arguments.source / 'cmake' / 'FlowUiBaking.cmake')}")
 add_library(capacity_probe STATIC probe.cpp)
 target_compile_features(capacity_probe PRIVATE cxx_std_23)
-target_include_directories(capacity_probe PRIVATE "{cmake_path(arguments.source / 'include')}" "{cmake_path(arguments.build / 'include')}" "{cmake_path(arguments.source / 'external')}")
+target_include_directories(capacity_probe PRIVATE "{cmake_path(shadow_include)}" "{cmake_path(arguments.source / 'include')}" "{cmake_path(arguments.build / 'include')}" "{cmake_path(arguments.source / 'external')}")
 flowui_configure_baking(capacity_probe)
 add_executable(check main.cpp)
 target_link_libraries(check PRIVATE capacity_probe)
 ''', encoding="utf-8")
-    (root / "probe.cpp").write_text('''#include "FlowUiBakedChanges.hpp"
+    (root / "probe.cpp").write_text('''#include "FlowUi/Private/BakedChanges.hpp"
 std::uint64_t capacity_value() { return FlowUi::baked::baked_memory_capacity_settings().front().value; }
 ''', encoding="utf-8")
     (root / "main.cpp").write_text('''#include <cstdint>
@@ -147,7 +154,7 @@ int main() { std::cout << capacity_value(); }
     changed_build = build_fixture()
     assert "Generating FlowUi baked" in changed_build and "Building CXX object" in changed_build
     assert subprocess.check_output([str(build / "check")], text=True) == "256"
-    generated = build / "flowui_generated" / "FlowUiBakedChanges.cpp"
+    generated = build / "flowui_generated" / "src/FlowUi/Private/BakedChanges.cpp"
     unchanged_timestamp = generated.stat().st_mtime_ns
     manifest["createdTimestamp"] = "metadata-only-change"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")

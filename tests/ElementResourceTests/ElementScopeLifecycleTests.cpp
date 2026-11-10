@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-#include <FlowUi/Flow.hpp>
+#include <FlowUi/Public/Flow.hpp>
 
 namespace {
 

@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/App.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -27,7 +27,7 @@ struct DevInterfaceFooterResources {
 	explicit DevInterfaceFooterResources(App& app);
 };
 
-/** Closed, build-only owner of the permanent developer-interface footer. */
+/* Closed, build-only owner of the permanent developer-interface footer. */
 struct DevInterfaceFooter {
 	using Parameters = DevInterfaceFooterParameters;
 	using Resources = DevInterfaceFooterResources;

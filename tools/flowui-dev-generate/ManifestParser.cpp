@@ -124,6 +124,41 @@ bool hex(std::string_view value, std::uint64_t& result) {
 	return parsed.ec == std::errc{} && parsed.ptr == value.data() + value.size();
 }
 
+[[nodiscard]] bool stable_texture_initializer(std::string_view expression) noexcept {
+	constexpr std::string_view prefix = "FlowUi::TextureRef::fromStable(";
+	for (const char prefix_character : prefix) {
+		while (!expression.empty() && std::isspace(static_cast<unsigned char>(expression.front())))
+			expression.remove_prefix(1);
+		if (expression.empty() || expression.front() != prefix_character)
+			return false;
+		expression.remove_prefix(1);
+	}
+	return true;
+}
+
+[[nodiscard]] bool texture_metadata_valid(const JsonValue& value) noexcept {
+	if (value.kind != JsonValue::Kind::Object || value.object.size() != 4)
+		return false;
+	const auto* domain = value.find("domain");
+	const auto* key = value.find("key");
+	const auto* fit = value.find("fitMode");
+	const auto* tint = value.find("tintEnabled");
+	if (!domain || domain->kind != JsonValue::Kind::Number || domain->text.size() != 1 || !key ||
+		key->kind != JsonValue::Kind::String || key->text.empty() || !fit ||
+		fit->kind != JsonValue::Kind::Number || fit->text.size() != 1 || !tint ||
+		tint->kind != JsonValue::Kind::Boolean)
+		return false;
+	std::uint64_t domain_value = 0, fit_value = 0;
+	const auto parsed_domain = std::from_chars(
+		domain->text.data(), domain->text.data() + domain->text.size(), domain_value);
+	const auto parsed_fit =
+		std::from_chars(fit->text.data(), fit->text.data() + fit->text.size(), fit_value);
+	return parsed_domain.ec == std::errc{} &&
+		   parsed_domain.ptr == domain->text.data() + domain->text.size() &&
+		   (domain_value == 1 || domain_value == 2) && parsed_fit.ec == std::errc{} &&
+		   parsed_fit.ptr == fit->text.data() + fit->text.size() && fit_value <= 3;
+}
+
 bool read_document(const std::filesystem::path& path, std::string& contents, JsonValue& root,
 				   std::string& error) {
 	std::ifstream input(path, std::ios::binary);
@@ -241,14 +276,17 @@ bool parseManifest(const std::filesystem::path& path, Manifest& output, std::str
 				value_json->kind == JsonValue::Kind::String
 					? value_json->text
 					: contents.substr(value_json->begin, value_json->end - value_json->begin);
+			if (stable_texture_initializer(entry.cppValue)) {
+				JsonValue texture_metadata;
+				if (!Parser(entry.value_json).parse(texture_metadata) ||
+					!texture_metadata_valid(texture_metadata))
+					return fail_entry("texture valueJson requires only domain, key, fitMode and "
+									  "tintEnabled with valid values");
+			}
 		}
 		if (const auto value_type = member(item, "valueTypeId")) {
 			if (!hex(*value_type, entry.value_type))
 				return fail_entry("invalid valueTypeId");
-		} else if (const auto legacy_type = member(item, "valueType");
-				   legacy_type && legacy_type->starts_with("0x")) {
-			if (!hex(*legacy_type, entry.value_type))
-				return fail_entry("invalid legacy valueType identity");
 		}
 		if (entry.targetKind == TargetKind::Element) {
 			const auto id = member(item, "definitionId");

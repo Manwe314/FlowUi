@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -10,11 +10,11 @@
 #include "devSystems/devInterface/Changes/DevChangesContentParameters.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** Compact Changes tree row with independent selection and disclosure hit targets. */
+/* Compact Changes tree row with independent selection and disclosure hit targets. */
 struct DevChangesSelectorNode {
 	struct Parameters {
 		std::string label{}, trailing{}, tooltip{};

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "FlowUi/Public/BuildConfig.hpp"
+
 // Demo-local reflection declarations for every FSEL element instantiated by
 // the gallery. Production FSEL remains usable without developer tooling.
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "FSEL.hpp"
 #include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
 
@@ -118,29 +120,25 @@ FLOWUI_DEV_SCHEMA(
 
 namespace FlowUi::FSEL {
 
-#define FLOWUI_DEMO_COLOR_FIELD(TYPE, MEMBER) \
-	FLOWUI_DEV_FIELD( \
-		TYPE, MEMBER, \
-		::FlowUi::devMode::DevFieldOptions{}.withEditor( \
-			::FlowUi::devMode::DevEditorKind::Color))
+#define FLOWUI_DEMO_COLOR_FIELD(TYPE, MEMBER)                                     \
+	FLOWUI_DEV_FIELD(TYPE, MEMBER,                                                \
+					 ::FlowUi::devSystems::tooling::DevFieldOptions{}.withEditor( \
+						 ::FlowUi::devSystems::tooling::DevEditorKind::Color))
 
-#define FLOWUI_DEMO_PADDING_FIELD(TYPE, MEMBER) \
-	FLOWUI_DEV_FIELD( \
-		TYPE, MEMBER, \
-		::FlowUi::devMode::DevFieldOptions{}.withEditor( \
-			::FlowUi::devMode::DevEditorKind::Spacing))
+#define FLOWUI_DEMO_PADDING_FIELD(TYPE, MEMBER)                                   \
+	FLOWUI_DEV_FIELD(TYPE, MEMBER,                                                \
+					 ::FlowUi::devSystems::tooling::DevFieldOptions{}.withEditor( \
+						 ::FlowUi::devSystems::tooling::DevEditorKind::Spacing))
 
-#define FLOWUI_DEMO_BORDER_FIELD(TYPE, MEMBER) \
-	FLOWUI_DEV_FIELD( \
-		TYPE, MEMBER, \
-		::FlowUi::devMode::DevFieldOptions{}.withEditor( \
-			::FlowUi::devMode::DevEditorKind::Spacing))
+#define FLOWUI_DEMO_BORDER_FIELD(TYPE, MEMBER)                                    \
+	FLOWUI_DEV_FIELD(TYPE, MEMBER,                                                \
+					 ::FlowUi::devSystems::tooling::DevFieldOptions{}.withEditor( \
+						 ::FlowUi::devSystems::tooling::DevEditorKind::Spacing))
 
-#define FLOWUI_DEMO_CORNER_FIELD(TYPE, MEMBER) \
-	FLOWUI_DEV_FIELD( \
-		TYPE, MEMBER, \
-		::FlowUi::devMode::DevFieldOptions{}.withEditor( \
-			::FlowUi::devMode::DevEditorKind::CornerRadius))
+#define FLOWUI_DEMO_CORNER_FIELD(TYPE, MEMBER)                                    \
+	FLOWUI_DEV_FIELD(TYPE, MEMBER,                                                \
+					 ::FlowUi::devSystems::tooling::DevFieldOptions{}.withEditor( \
+						 ::FlowUi::devSystems::tooling::DevEditorKind::CornerRadius))
 
 FLOWUI_DEV_ENUM_SCHEMA(
 	ButtonContentMode,
@@ -378,14 +376,10 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEMO_BORDER_FIELD(BoxParameters, borderWidth))
 
 FLOWUI_DEV_SCHEMA(
-	ButtonParameters,
-	FLOWUI_DEV_FIELD(ButtonParameters, onActivate),
-	FLOWUI_DEV_FIELD(ButtonParameters, enabled),
-	FLOWUI_DEV_FIELD(ButtonParameters, contentMode),
-	FLOWUI_DEV_FIELD(ButtonParameters, text),
-	FLOWUI_DEV_FIELD(ButtonParameters, icon),
-	FLOWUI_DEV_FIELD(ButtonParameters, tintIcon),
-	FLOWUI_DEV_FIELD(ButtonParameters, sizing),
+	ButtonParameters, FLOWUI_DEV_FIELD(ButtonParameters, onActivate),
+	FLOWUI_DEV_FIELD(ButtonParameters, enabled), FLOWUI_DEV_FIELD(ButtonParameters, contentMode),
+	FLOWUI_DEV_FIELD(ButtonParameters, text), FLOWUI_DEV_FIELD(ButtonParameters, icon),
+	FLOWUI_DEV_FIELD(ButtonParameters, tintIcon), FLOWUI_DEV_FIELD(ButtonParameters, sizing),
 	FLOWUI_DEMO_PADDING_FIELD(ButtonParameters, padding),
 	FLOWUI_DEV_FIELD(ButtonParameters, childAlignment),
 	FLOWUI_DEV_FIELD(ButtonParameters, layoutDirection),
@@ -396,14 +390,17 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(ButtonParameters, hoveredOverrides),
 	FLOWUI_DEV_FIELD(ButtonParameters, pressedOverrides),
 	FLOWUI_DEV_FIELD(ButtonParameters, disabledOverrides),
-	FLOWUI_DEV_FIELD(ButtonParameters, labelFontFamily),
+	FLOWUI_DEV_FIELD(
+		ButtonParameters, labelFontFamily,
+		FlowUi::devSystems::tooling::DevFieldOptions{}
+			.withEditor(FlowUi::devSystems::tooling::DevEditorKind::FontChoice)
+			.withChoiceDomain(FlowUi::devSystems::tooling::DevChoiceDomain::FontFamily)),
 	FLOWUI_DEV_FIELD(ButtonParameters, labelFontWeight),
 	FLOWUI_DEV_FIELD(ButtonParameters, labelFontStyle),
 	FLOWUI_DEV_FIELD(ButtonParameters, labelFontSize),
 	FLOWUI_DEV_FIELD(ButtonParameters, labelWrapMode),
 	FLOWUI_DEV_FIELD(ButtonParameters, labelAlignment),
-	FLOWUI_DEV_FIELD(ButtonParameters, iconSize),
-	FLOWUI_DEV_FIELD(ButtonParameters, cursor),
+	FLOWUI_DEV_FIELD(ButtonParameters, iconSize), FLOWUI_DEV_FIELD(ButtonParameters, cursor),
 	FLOWUI_DEV_FIELD(ButtonParameters, cursorPriority))
 
 FLOWUI_DEV_SCHEMA(
@@ -552,15 +549,11 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEMO_CORNER_FIELD(PopupSurfaceParameters, cornerRadius))
 
 FLOWUI_DEV_SCHEMA(
-	ComboBoxParameters,
-	FLOWUI_DEV_FIELD(ComboBoxParameters, options),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, selectedValue),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, open),
+	ComboBoxParameters, FLOWUI_DEV_FIELD(ComboBoxParameters, options),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, selectedValue), FLOWUI_DEV_FIELD(ComboBoxParameters, open),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, placeholder),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, enabled),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, onChanged),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, onOpened),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, onClosed),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, enabled), FLOWUI_DEV_FIELD(ComboBoxParameters, onChanged),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, onOpened), FLOWUI_DEV_FIELD(ComboBoxParameters, onClosed),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, popupSearchValue),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, popupSearchPlaceholder),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, popupSearchHeight),
@@ -570,18 +563,18 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(ComboBoxParameters, popupMaxHeight),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, optionHeight),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, showScrollIndicator),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, placement),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, overflow),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, layer),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, outsidePress),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, placement), FLOWUI_DEV_FIELD(ComboBoxParameters, overflow),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, layer), FLOWUI_DEV_FIELD(ComboBoxParameters, outsidePress),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, pointerCaptureMode),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, closedIcon),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, openIcon),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, iconSize),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, fontFamily),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, openIcon), FLOWUI_DEV_FIELD(ComboBoxParameters, iconSize),
+	FLOWUI_DEV_FIELD(
+		ComboBoxParameters, fontFamily,
+		FlowUi::devSystems::tooling::DevFieldOptions{}
+			.withEditor(FlowUi::devSystems::tooling::DevEditorKind::FontChoice)
+			.withChoiceDomain(FlowUi::devSystems::tooling::DevChoiceDomain::FontFamily)),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, fontWeight),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, fontStyle),
-	FLOWUI_DEV_FIELD(ComboBoxParameters, fontSize),
+	FLOWUI_DEV_FIELD(ComboBoxParameters, fontStyle), FLOWUI_DEV_FIELD(ComboBoxParameters, fontSize),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, cursor),
 	FLOWUI_DEV_FIELD(ComboBoxParameters, cursorPriority))
 
@@ -602,13 +595,10 @@ FLOWUI_DEV_SCHEMA(
 FLOWUI_DEV_SCHEMA(SpacerParameters, FLOWUI_DEV_FIELD(SpacerParameters, sizing))
 
 FLOWUI_DEV_SCHEMA(
-	TextInputParameters,
-	FLOWUI_DEV_FIELD(TextInputParameters, value),
+	TextInputParameters, FLOWUI_DEV_FIELD(TextInputParameters, value),
 	FLOWUI_DEV_FIELD(TextInputParameters, syncPolicy),
-	FLOWUI_DEV_FIELD(TextInputParameters, actions),
-	FLOWUI_DEV_FIELD(TextInputParameters, enabled),
-	FLOWUI_DEV_FIELD(TextInputParameters, readOnly),
-	FLOWUI_DEV_FIELD(TextInputParameters, valid),
+	FLOWUI_DEV_FIELD(TextInputParameters, actions), FLOWUI_DEV_FIELD(TextInputParameters, enabled),
+	FLOWUI_DEV_FIELD(TextInputParameters, readOnly), FLOWUI_DEV_FIELD(TextInputParameters, valid),
 	FLOWUI_DEV_FIELD(TextInputParameters, clearFocusOnSubmit),
 	FLOWUI_DEV_FIELD(TextInputParameters, maxBytes),
 	FLOWUI_DEV_FIELD(TextInputParameters, transactionDetail),
@@ -625,29 +615,27 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(TextInputParameters, readOnlyOverrides),
 	FLOWUI_DEV_FIELD(TextInputParameters, invalidOverrides),
 	FLOWUI_DEV_FIELD(TextInputParameters, disabledOverrides),
-	FLOWUI_DEV_FIELD(TextInputParameters, fontFamily),
+	FLOWUI_DEV_FIELD(
+		TextInputParameters, fontFamily,
+		FlowUi::devSystems::tooling::DevFieldOptions{}
+			.withEditor(FlowUi::devSystems::tooling::DevEditorKind::FontChoice)
+			.withChoiceDomain(FlowUi::devSystems::tooling::DevChoiceDomain::FontFamily)),
 	FLOWUI_DEV_FIELD(TextInputParameters, fontWeight),
 	FLOWUI_DEV_FIELD(TextInputParameters, fontStyle),
 	FLOWUI_DEV_FIELD(TextInputParameters, fontSize),
 	FLOWUI_DEV_FIELD(TextInputParameters, letterSpacing),
 	FLOWUI_DEV_FIELD(TextInputParameters, floatingZIndex),
-	FLOWUI_DEV_FIELD(TextInputParameters, caret),
-	FLOWUI_DEV_FIELD(TextInputParameters, cursor),
+	FLOWUI_DEV_FIELD(TextInputParameters, caret), FLOWUI_DEV_FIELD(TextInputParameters, cursor),
 	FLOWUI_DEV_FIELD(TextInputParameters, cursorPriority))
 
 FLOWUI_DEV_SCHEMA(
-	TextAreaParameters,
-	FLOWUI_DEV_FIELD(TextAreaParameters, value),
-	FLOWUI_DEV_FIELD(TextAreaParameters, syncPolicy),
-	FLOWUI_DEV_FIELD(TextAreaParameters, actions),
-	FLOWUI_DEV_FIELD(TextAreaParameters, enabled),
-	FLOWUI_DEV_FIELD(TextAreaParameters, readOnly),
-	FLOWUI_DEV_FIELD(TextAreaParameters, valid),
-	FLOWUI_DEV_FIELD(TextAreaParameters, softWrap),
+	TextAreaParameters, FLOWUI_DEV_FIELD(TextAreaParameters, value),
+	FLOWUI_DEV_FIELD(TextAreaParameters, syncPolicy), FLOWUI_DEV_FIELD(TextAreaParameters, actions),
+	FLOWUI_DEV_FIELD(TextAreaParameters, enabled), FLOWUI_DEV_FIELD(TextAreaParameters, readOnly),
+	FLOWUI_DEV_FIELD(TextAreaParameters, valid), FLOWUI_DEV_FIELD(TextAreaParameters, softWrap),
 	FLOWUI_DEV_FIELD(TextAreaParameters, maxBytes),
 	FLOWUI_DEV_FIELD(TextAreaParameters, transactionDetail),
-	FLOWUI_DEV_FIELD(TextAreaParameters, placeholder),
-	FLOWUI_DEV_FIELD(TextAreaParameters, sizing),
+	FLOWUI_DEV_FIELD(TextAreaParameters, placeholder), FLOWUI_DEV_FIELD(TextAreaParameters, sizing),
 	FLOWUI_DEV_FIELD(TextAreaParameters, viewportWidth),
 	FLOWUI_DEV_FIELD(TextAreaParameters, viewportHeight),
 	FLOWUI_DEMO_PADDING_FIELD(TextAreaParameters, padding),
@@ -659,63 +647,68 @@ FLOWUI_DEV_SCHEMA(
 	FLOWUI_DEV_FIELD(TextAreaParameters, readOnlyOverrides),
 	FLOWUI_DEV_FIELD(TextAreaParameters, invalidOverrides),
 	FLOWUI_DEV_FIELD(TextAreaParameters, disabledOverrides),
-	FLOWUI_DEV_FIELD(TextAreaParameters, fontFamily),
+	FLOWUI_DEV_FIELD(
+		TextAreaParameters, fontFamily,
+		FlowUi::devSystems::tooling::DevFieldOptions{}
+			.withEditor(FlowUi::devSystems::tooling::DevEditorKind::FontChoice)
+			.withChoiceDomain(FlowUi::devSystems::tooling::DevChoiceDomain::FontFamily)),
 	FLOWUI_DEV_FIELD(TextAreaParameters, fontWeight),
-	FLOWUI_DEV_FIELD(TextAreaParameters, fontStyle),
-	FLOWUI_DEV_FIELD(TextAreaParameters, fontSize),
+	FLOWUI_DEV_FIELD(TextAreaParameters, fontStyle), FLOWUI_DEV_FIELD(TextAreaParameters, fontSize),
 	FLOWUI_DEV_FIELD(TextAreaParameters, letterSpacing),
-	FLOWUI_DEV_FIELD(TextAreaParameters, tabWidth),
-	FLOWUI_DEV_FIELD(TextAreaParameters, caret),
+	FLOWUI_DEV_FIELD(TextAreaParameters, tabWidth), FLOWUI_DEV_FIELD(TextAreaParameters, caret),
 	FLOWUI_DEV_FIELD(TextAreaParameters, cursor),
 	FLOWUI_DEV_FIELD(TextAreaParameters, cursorPriority))
 
-#define FLOWUI_DEMO_NUMBER_PARAMETERS(TYPE) \
-	FLOWUI_DEV_SCHEMA( \
-		NumberInputParameters<TYPE>, \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, value), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, minimum), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, maximum), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, step), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, syncPolicy), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, boundsPolicy), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, format), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, edit), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onSubmit), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onFocus), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onBlur), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onUndoRequested), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onRedoRequested), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, enabled), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, readOnly), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, valid), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, clearFocusOnSubmit), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, stepButtons), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, maxBytes), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, transactionDetail), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, placeholder), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, sizing), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, viewportWidth), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, viewportHeight), \
-		FLOWUI_DEMO_PADDING_FIELD(NumberInputParameters<TYPE>, padding), \
-		FLOWUI_DEMO_BORDER_FIELD(NumberInputParameters<TYPE>, borderWidth), \
-		FLOWUI_DEMO_CORNER_FIELD(NumberInputParameters<TYPE>, cornerRadius), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, stepButtonWidth), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, stepIconSize), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, idleOverrides), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, hoveredOverrides), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, focusedOverrides), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, readOnlyOverrides), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, invalidOverrides), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, disabledOverrides), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontFamily), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontWeight), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontStyle), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontSize), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, letterSpacing), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, caret), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, incrementIcon), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, decrementIcon), \
-		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, cursor), \
+#define FLOWUI_DEMO_NUMBER_PARAMETERS(TYPE)                                                   \
+	FLOWUI_DEV_SCHEMA(                                                                        \
+		NumberInputParameters<TYPE>, FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, value),    \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, minimum),                               \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, maximum),                               \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, step),                                  \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, syncPolicy),                            \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, boundsPolicy),                          \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, format),                                \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, edit),                                  \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onSubmit),                              \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onFocus),                               \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onBlur),                                \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onUndoRequested),                       \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, onRedoRequested),                       \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, enabled),                               \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, readOnly),                              \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, valid),                                 \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, clearFocusOnSubmit),                    \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, stepButtons),                           \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, maxBytes),                              \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, transactionDetail),                     \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, placeholder),                           \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, sizing),                                \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, viewportWidth),                         \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, viewportHeight),                        \
+		FLOWUI_DEMO_PADDING_FIELD(NumberInputParameters<TYPE>, padding),                      \
+		FLOWUI_DEMO_BORDER_FIELD(NumberInputParameters<TYPE>, borderWidth),                   \
+		FLOWUI_DEMO_CORNER_FIELD(NumberInputParameters<TYPE>, cornerRadius),                  \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, stepButtonWidth),                       \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, stepIconSize),                          \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, idleOverrides),                         \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, hoveredOverrides),                      \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, focusedOverrides),                      \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, readOnlyOverrides),                     \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, invalidOverrides),                      \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, disabledOverrides),                     \
+		FLOWUI_DEV_FIELD(                                                                     \
+			NumberInputParameters<TYPE>, fontFamily,                                          \
+			FlowUi::devSystems::tooling::DevFieldOptions{}                                    \
+				.withEditor(FlowUi::devSystems::tooling::DevEditorKind::FontChoice)           \
+				.withChoiceDomain(FlowUi::devSystems::tooling::DevChoiceDomain::FontFamily)), \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontWeight),                            \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontStyle),                             \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, fontSize),                              \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, letterSpacing),                         \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, caret),                                 \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, incrementIcon),                         \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, decrementIcon),                         \
+		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, cursor),                                \
 		FLOWUI_DEV_FIELD(NumberInputParameters<TYPE>, cursorPriority))
 
 #define FLOWUI_DEMO_NUMBER_STATE(TYPE) \
@@ -741,52 +734,55 @@ FLOWUI_DEV_SCHEMA(
 #undef FLOWUI_DEMO_NUMBER_PARAMETERS
 #undef FLOWUI_DEMO_NUMBER_STATE
 
-#define FLOWUI_DEMO_DRAG_PARAMETERS(TYPE) \
-	FLOWUI_DEV_SCHEMA( \
-		DragValueParameters<TYPE>, \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, value), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, minimum), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, maximum), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, step), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, pixelsPerStep), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, dragThreshold), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, allowTextEntry), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, syncPolicy), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, boundsPolicy), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, format), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, edit), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onSubmit), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onFocus), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onBlur), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onUndoRequested), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onRedoRequested), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, enabled), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, readOnly), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, valid), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, clearFocusOnSubmit), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, maxBytes), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, transactionDetail), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, sizing), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, viewportWidth), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, viewportHeight), \
-		FLOWUI_DEMO_PADDING_FIELD(DragValueParameters<TYPE>, padding), \
-		FLOWUI_DEMO_BORDER_FIELD(DragValueParameters<TYPE>, borderWidth), \
-		FLOWUI_DEMO_CORNER_FIELD(DragValueParameters<TYPE>, cornerRadius), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, idleOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, hoveredOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, draggingOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, focusedOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, readOnlyOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, invalidOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, disabledOverrides), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontFamily), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontWeight), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontStyle), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontSize), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, letterSpacing), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, caret), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, dragCursor), \
-		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, editCursor), \
+#define FLOWUI_DEMO_DRAG_PARAMETERS(TYPE)                                                     \
+	FLOWUI_DEV_SCHEMA(                                                                        \
+		DragValueParameters<TYPE>, FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, value),        \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, minimum),                                 \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, maximum),                                 \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, step),                                    \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, pixelsPerStep),                           \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, dragThreshold),                           \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, allowTextEntry),                          \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, syncPolicy),                              \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, boundsPolicy),                            \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, format),                                  \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, edit),                                    \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onSubmit),                                \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onFocus),                                 \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onBlur),                                  \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onUndoRequested),                         \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, onRedoRequested),                         \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, enabled),                                 \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, readOnly),                                \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, valid),                                   \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, clearFocusOnSubmit),                      \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, maxBytes),                                \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, transactionDetail),                       \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, sizing),                                  \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, viewportWidth),                           \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, viewportHeight),                          \
+		FLOWUI_DEMO_PADDING_FIELD(DragValueParameters<TYPE>, padding),                        \
+		FLOWUI_DEMO_BORDER_FIELD(DragValueParameters<TYPE>, borderWidth),                     \
+		FLOWUI_DEMO_CORNER_FIELD(DragValueParameters<TYPE>, cornerRadius),                    \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, idleOverrides),                           \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, hoveredOverrides),                        \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, draggingOverrides),                       \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, focusedOverrides),                        \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, readOnlyOverrides),                       \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, invalidOverrides),                        \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, disabledOverrides),                       \
+		FLOWUI_DEV_FIELD(                                                                     \
+			DragValueParameters<TYPE>, fontFamily,                                            \
+			FlowUi::devSystems::tooling::DevFieldOptions{}                                    \
+				.withEditor(FlowUi::devSystems::tooling::DevEditorKind::FontChoice)           \
+				.withChoiceDomain(FlowUi::devSystems::tooling::DevChoiceDomain::FontFamily)), \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontWeight),                              \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontStyle),                               \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, fontSize),                                \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, letterSpacing),                           \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, caret),                                   \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, dragCursor),                              \
+		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, editCursor),                              \
 		FLOWUI_DEV_FIELD(DragValueParameters<TYPE>, cursorPriority))
 
 #define FLOWUI_DEMO_DRAG_STATE(TYPE) \

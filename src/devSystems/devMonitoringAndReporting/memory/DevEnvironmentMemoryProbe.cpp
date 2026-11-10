@@ -9,7 +9,7 @@
 #include <limits>
 #include <mutex>
 
-#include "Vulkan/Vk_Context.hpp"
+#include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
 #include "vk_mem_alloc.h"
 
 #if defined(__linux__)

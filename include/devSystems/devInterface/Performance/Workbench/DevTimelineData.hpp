@@ -1,5 +1,5 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Performance/DevPerformanceSelection.hpp"
 #include <limits>
@@ -8,7 +8,7 @@
 
 namespace FlowUi::devSystems::interface_elements {
 inline constexpr size_t timeline_no_parent = std::numeric_limits<size_t>::max();
-/** Non-owning measured details, resolved directly from the sealed reporting ring. */
+/* Non-owning measured details, resolved directly from the sealed reporting ring. */
 struct TimelineSampleDetails {
 	std::string_view source_file{}, source_function{};
 	TimingEntityRef entity{};
@@ -20,7 +20,7 @@ struct TimelineSampleDetails {
 	uint32_t source_line = 0, timestamp_valid_bits = 64;
 	uint16_t quality_flags = 0;
 };
-/** Derived interval/identity index; measured detail stays in its original ring slot. */
+/* Derived interval/identity index; measured detail stays in its original ring slot. */
 struct TimelineBlockSlice {
 	std::span<const CpuTimingRecord> cpu_sample{};
 	std::span<const GpuTimingRecord> gpu_sample{};
@@ -37,14 +37,14 @@ struct TimelineBlockSlice {
 	TimingZoneRole role = TimingZoneRole::Work;
 	bool selected = false, scope_visible = true, cpu_clock_aligned = true;
 	bool synthetic_tick = false, measured_cadence = false;
-	/** Read original CPU/GPU detail while the containing sealed generation is leased. */
+	/* Read original CPU/GPU detail while the containing sealed generation is leased. */
 	[[nodiscard]] TimelineSampleDetails details() const noexcept;
-	/** Recorded exclusive CPU duration; synthetic/GPU groupings have none. */
+	/* Recorded exclusive CPU duration; synthetic/GPU groupings have none. */
 	[[nodiscard]] uint64_t recorded_exclusive_ns() const noexcept {
 		return cpu_sample.empty() ? 0 : cpu_sample.front().exclusiveNs();
 	}
 };
-/** Derived investigation indexes and display labels, never a second timing history. */
+/* Derived investigation indexes and display labels, never a second timing history. */
 struct TimelineSnapshot {
 	std::vector<TimelineBlockSlice> blocks{}, frames{}, ticks{};
 	std::vector<std::string> labels{};
@@ -52,15 +52,18 @@ struct TimelineSnapshot {
 	std::vector<size_t> tick_samples{}, child_offsets{}, children{};
 	uint64_t start_ns = 0, end_ns = 0, percentile_ns = 0;
 	size_t uncalibrated_gpu_count = 0;
+	CpuTimingLevel minimum_recorded_cpu_level = CpuTimingLevel::Deep;
+	CpuTimingLevel maximum_recorded_cpu_level = CpuTimingLevel::OnlyFrameTime;
+	bool has_recording_policy = false;
 	bool window_milestones = false, tick_cadence = false;
 	TimelineSnapshot() = default;
 	TimelineSnapshot(TimelineSnapshot&&) noexcept = default;
 	TimelineSnapshot& operator=(TimelineSnapshot&&) noexcept = default;
-	/** Copy derived indexes and rebind their owned label views. */
+	/* Copy derived indexes and rebind their owned label views. */
 	TimelineSnapshot(const TimelineSnapshot& other);
 	TimelineSnapshot& operator=(const TimelineSnapshot& other);
 };
-/** A rendered group retains every member so clustered zones can be inspected. */
+/* A rendered group retains every member so clustered zones can be inspected. */
 struct TimelineCluster {
 	std::vector<size_t> members{};
 	uint64_t start_ns = 0, duration_ns = 0;
@@ -72,14 +75,14 @@ struct TimelineTrackLane {
 	TimingSampleDomain domain = TimingSampleDomain::Cpu;
 	uint64_t window = 0;
 };
-/** Stable semantic row identity, independent of overlap sibling lanes. */
+/* Stable semantic row identity, independent of overlap sibling lanes. */
 struct TimelineTrackKey {
 	uint64_t device = 0, track = 0, window = 0;
 	TimingSampleDomain domain = TimingSampleDomain::Cpu;
 	bool contextual = false;
 	[[nodiscard]] bool operator==(const TimelineTrackKey&) const noexcept = default;
 };
-/** Session-persistent presentation settings; capture configuration is unaffected. */
+/* Session-persistent presentation settings; capture configuration is unaffected. */
 struct TimelineTrackPreference {
 	TimelineTrackKey key{};
 	bool hidden = false, pinned = false;
@@ -119,7 +122,7 @@ struct TimelineCommand {
 	double value = 0;
 	uint64_t revision = 0;
 };
-/** Interface-owned session shared by the Workbench and Inspector, independent of recording. */
+/* Interface-owned session shared by the Workbench and Inspector, independent of recording. */
 struct DevTimelineState {
 	TimelineSnapshot snapshot{};
 	std::vector<TimelineCard> cards{};
@@ -142,40 +145,40 @@ struct DevTimelineState {
 	uint32_t active_depth = 1;
 	uint32_t reveal_frames = 0;
 };
-/** Index two chronological sealed-ring segments without copying timing records. */
+/* Index two chronological sealed-ring segments without copying timing records. */
 [[nodiscard]] TimelineSnapshot extract_timeline(const TimingCaptureReadView& capture,
 												const DevPerformanceSelection& selection);
-/** Extract scoped history without dropping nonmatching zones needed for context. */
+/* Extract scoped history without dropping nonmatching zones needed for context. */
 [[nodiscard]] TimelineSnapshot extract_timeline(std::span<const TimingAppTickReport> reports,
 												std::span<const TimingZoneDescriptor> descriptors,
 												const DevPerformanceSelection& selection);
-/** Partition hierarchy by hardware track and relative depth. Empty roots select macro lanes. */
+/* Partition hierarchy by hardware track and relative depth. Empty roots select macro lanes. */
 [[nodiscard]] std::vector<TimelineTrackLane> timeline_lanes(const TimelineSnapshot& snapshot,
 															uint32_t depth,
 															std::span<const size_t> roots = {});
-/** Select flat semantic roots and allocate sibling lanes only for genuine overlaps. */
+/* Select flat semantic roots and allocate sibling lanes only for genuine overlaps. */
 [[nodiscard]] std::vector<TimelineTrackLane>
 timeline_major_lanes(const TimelineSnapshot& snapshot, const DevPerformanceSelection& selection,
 					 std::span<const TimelineTrackPreference> preferences = {});
-/** Recover a semantic row key from its retained geometry/data projection. */
+/* Recover a semantic row key from its retained geometry/data projection. */
 [[nodiscard]] TimelineTrackKey timeline_track_key(const TimelineSnapshot& snapshot,
 												  const TimelineTrackLane& lane) noexcept;
-/** Group adjacent subpixel/micro samples without crossing gaps or selected-zone boundaries. */
+/* Group adjacent subpixel/micro samples without crossing gaps or selected-zone boundaries. */
 [[nodiscard]] std::vector<TimelineCluster>
 cluster_timeline(const TimelineSnapshot& snapshot, std::span<const size_t> blocks,
 				 uint64_t start_ns, uint64_t duration_ns, float width,
 				 size_t inspected_sample = timeline_no_parent,
 				 std::span<const size_t> protected_roots = {});
-/** Saturating timestamp end, also used for malformed/incomplete records. */
+/* Saturating timestamp end, also used for malformed/incomplete records. */
 [[nodiscard]] uint64_t timeline_end(uint64_t start_ns, uint64_t duration_ns) noexcept;
-/** Apply transport/card commands and clamp the viewport to retained history. */
+/* Apply transport/card commands and clamp the viewport to retained history. */
 void apply_timeline_command(DevTimelineState& state, DevPerformanceSelection& selection);
-/** Recompute bounded viewport after zooming, resizing, or snapshot replacement. */
+/* Recompute bounded viewport after zooming, resizing, or snapshot replacement. */
 void clamp_timeline_view(DevTimelineState& state) noexcept;
-/** Lock the minimap timing domain to the current selection's retained metrics. */
+/* Lock the minimap timing domain to the current selection's retained metrics. */
 void reset_timeline_minimap_scale(DevTimelineState& state,
 								  const DevPerformanceSelection& selection) noexcept;
-/** Center the viewport on a timestamp, without unsigned underflow. */
+/* Center the viewport on a timestamp, without unsigned underflow. */
 void center_timeline(DevTimelineState& state, uint64_t timestamp) noexcept;
 } // namespace FlowUi::devSystems::interface_elements
 #endif

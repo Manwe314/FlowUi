@@ -110,7 +110,7 @@ $(function() {
 <p>Per-frame input snapshot consumed by FlowUi managers and elements.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="InputStructs_8hpp_source.html">InputStructs.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="InputTypes_8hpp_source.html">InputTypes.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -120,6 +120,8 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:a9a75539258d14d48e716e4fb5096fd9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse X position in FlowUi layout coordinates.  <br /></td></tr>
 <tr class="memitem:af26a7a1a649fe61f64afb3bf5e346563" id="r_af26a7a1a649fe61f64afb3bf5e346563"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#af26a7a1a649fe61f64afb3bf5e346563">mouseY</a> = 0.0f</td></tr>
 <tr class="memdesc:af26a7a1a649fe61f64afb3bf5e346563"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse Y position in FlowUi layout coordinates.  <br /></td></tr>
+<tr class="memitem:a8a48da6f7962249c939d6a1ab0c657a4" id="r_a8a48da6f7962249c939d6a1ab0c657a4"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8a48da6f7962249c939d6a1ab0c657a4">pointerInside</a> = false</td></tr>
+<tr class="memitem:ab8e79ecba91397b7b7a86ab483ad932c" id="r_ab8e79ecba91397b7b7a86ab483ad932c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ab8e79ecba91397b7b7a86ab483ad932c">windowFocused</a> = true</td></tr>
 <tr class="memitem:ad452ab0c1a10ba4938ed4cc235dadc38" id="r_ad452ab0c1a10ba4938ed4cc235dadc38"><td class="memItemLeft">std::array&lt; bool, <a class="el" href="#ac10ce8d3397c4042dec7d0e4a1a6d02a">kMouseButtonCount</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad452ab0c1a10ba4938ed4cc235dadc38">mouseDown</a> {}</td></tr>
 <tr class="memdesc:ad452ab0c1a10ba4938ed4cc235dadc38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mouse button down states for the current frame.  <br /></td></tr>
 <tr class="memitem:a2cc30aed2f6f968480ce49df132cc215" id="r_a2cc30aed2f6f968480ce49df132cc215"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a2cc30aed2f6f968480ce49df132cc215">scrollX</a> = 0.0f</td></tr>
@@ -142,6 +144,7 @@ bool&#160;</td><td class="memItemRight"><b>super</b> = false</td></tr>
 <tr class="memdesc:af84121e285a0104883cc8931873ba00a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether either Super/Command key is currently held. <br /></td></tr>
 <tr class="memitem:a72e6dfc1d2fc70ed0d25ae94984fd391" id="r_a72e6dfc1d2fc70ed0d25ae94984fd391"><td class="memItemLeft">std::vector&lt; char32_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a72e6dfc1d2fc70ed0d25ae94984fd391">text</a></td></tr>
 <tr class="memdesc:a72e6dfc1d2fc70ed0d25ae94984fd391"><td class="mdescLeft">&#160;</td><td class="mdescRight">Text input codepoints received this frame.  <br /></td></tr>
+<tr class="memitem:a3523d8a4f3739473e893ebcf8d1849dc" id="r_a3523d8a4f3739473e893ebcf8d1849dc"><td class="memItemLeft">std::uint64_t&#160;</td><td class="memItemRight"><a class="el" href="#a3523d8a4f3739473e893ebcf8d1849dc">droppedTextInputCount</a> = 0</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-attribs" class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -155,6 +158,21 @@ Static Public Attributes</h2></td></tr>
 <p><a class="el" href="structFlowUi_1_1FrameInput.html" title="Per-frame input snapshot consumed by FlowUi managers and elements.">FrameInput</a> is the normalized input state for one FlowUi frame. <a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">App</a> builds it from the active window backend, scales pointer and scroll values into FlowUi layout space, and then passes it through <a class="el" href="classFlowUi_1_1UiManager.html" title="Frame-scoped UI construction context and service bridge.">UiManager</a> to input fields, shortcuts, and custom element interaction callbacks.</p>
 <p>Keyboard state is stored as backend key slots. In the default backend those slots are GLFW-compatible key codes. Text input is stored separately as Unicode codepoints received during the frame. </p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a3523d8a4f3739473e893ebcf8d1849dc" name="a3523d8a4f3739473e893ebcf8d1849dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3523d8a4f3739473e893ebcf8d1849dc">&#9670;&#160;</a></span>droppedTextInputCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint64_t FlowUi::FrameInput::droppedTextInputCount = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Text codepoints discarded by the bounded platform queue since the prior frame. </p>
+
+</div>
+</div>
 <a id="aa674bc1fccd2120042ffef7e9b323e50" name="aa674bc1fccd2120042ffef7e9b323e50"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa674bc1fccd2120042ffef7e9b323e50">&#9670;&#160;</a></span>dt</h2>
 
@@ -290,6 +308,21 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a8a48da6f7962249c939d6a1ab0c657a4" name="a8a48da6f7962249c939d6a1ab0c657a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a48da6f7962249c939d6a1ab0c657a4">&#9670;&#160;</a></span>pointerInside</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::FrameInput::pointerInside = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the native pointer currently belongs to this window. </p>
+
+</div>
+</div>
 <a id="a2cc30aed2f6f968480ce49df132cc215" name="a2cc30aed2f6f968480ce49df132cc215"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2cc30aed2f6f968480ce49df132cc215">&#9670;&#160;</a></span>scrollX</h2>
 
@@ -341,8 +374,23 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="ab8e79ecba91397b7b7a86ab483ad932c" name="ab8e79ecba91397b7b7a86ab483ad932c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8e79ecba91397b7b7a86ab483ad932c">&#9670;&#160;</a></span>windowFocused</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool FlowUi::FrameInput::windowFocused = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Native window focus; focus loss cancels captured development gestures. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/managers/structs/<a class="el" href="InputStructs_8hpp_source.html">InputStructs.hpp</a></li>
+<li>include/FlowUi/Public/managerStructs/<a class="el" href="InputTypes_8hpp_source.html">InputTypes.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

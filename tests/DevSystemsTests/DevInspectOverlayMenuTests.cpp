@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevInspectOverlayMenu.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 
@@ -22,7 +22,7 @@ void require(const Value& value, const char* message) {
 
 enum class PointerEvent { None, Press, Release };
 
-/** Exercise real retained FSEL button callbacks without desktop focus/timing dependencies. */
+/* Exercise real retained FSEL button callbacks without desktop focus/timing dependencies. */
 [[nodiscard]] bool draw_frame(App& app, FlowElementID control, PointerEvent event) {
 	require(app.beginFrame(), "Menu frame must begin");
 	auto& ui = app.ui();

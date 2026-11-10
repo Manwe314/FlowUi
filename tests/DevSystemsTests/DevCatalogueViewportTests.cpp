@@ -1,10 +1,10 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/UiManager.hpp"
-#include "managers/ViewPortManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Public/managers/ViewPortManager.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>

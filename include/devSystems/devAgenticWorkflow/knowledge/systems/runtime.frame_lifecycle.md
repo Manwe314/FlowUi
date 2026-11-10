@@ -17,4 +17,4 @@ Start-to-start cadence includes work and waiting outside the CPU frame scope. Su
 
 Useful commands: `status`, `query performance`, `artifact read --artifact frame_relations`. Invariants are exercised by frame contract and agentic identity tests.
 
-Source: [FlowUi::App](include/FlowUi/App.hpp).
+Source: [FlowUi::App](include/FlowUi/Public/App.hpp).

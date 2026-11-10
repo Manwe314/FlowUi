@@ -1,6 +1,6 @@
 #include "devSystems/devMonitoringAndReporting/reporting/DevPerformanceExport.hpp"
 #if FLOW_UI_DEV_MODE
-#include "internal/Resources/ExecutableDirectory.hpp"
+#include "FlowUi/Private/resourceService/ExecutableDirectory.hpp"
 #include <algorithm>
 #include <array>
 #include <chrono>

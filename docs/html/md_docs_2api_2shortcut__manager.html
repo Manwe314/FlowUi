@@ -120,6 +120,8 @@ $(function() {
 <h2><b>ShortcutTrigger</b></h2>
 <h3><span class="tt">enum class ShortcutTrigger : uint8_t</span></h3>
 <p>Input transition used to trigger a shortcut. It supports press, release, and every-frame down behavior.</p>
+<h2><b>ShortcutHandling</b></h2>
+<p>Explicit consumption policy for the <span class="tt">AppActionCall</span> registration overload. <span class="tt">Consume</span> stops later matches after successful invocation; <span class="tt">PassThrough</span> continues dispatch. Disabled and unbound actions fall through.</p>
 <h1>Public Structs</h1>
 <h2><b>ShortcutChord</b></h2>
 <h3><span class="tt">struct ShortcutChord</span></h3>
@@ -129,17 +131,24 @@ $(function() {
 <p>Runtime data passed to shortcut callbacks. It exposes UiManager, current and previous input, and the focused element id.</p>
 <h1>Public API</h1>
 <h2><b>registerShortcut</b></h2>
-<h3><span class="tt">ShortcutId registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback)</span></h3>
+<h3><span class="tt">Result&lt;ShortcutId&gt; registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, ShortcutCallback callback)</span></h3>
 <ul>
-<li><b>Returns:</b> <span class="tt">ShortcutId</span></li>
+<li><b>Returns:</b> <span class="tt">Result&lt;ShortcutId&gt;</span>; check success before reading the value, and use <span class="tt">.error()</span> on failure.</li>
 <li><b>Arguments:</b> <span class="tt">chord</span> key/modifier/trigger match, <span class="tt">scope</span> eligibility scope, <span class="tt">priority</span> ordering value, <span class="tt">callback</span> handler.</li>
 </ul>
 <p>Registers a keyboard shortcut and returns an opaque id. Matching callbacks run by scope and priority, and a callback returning <span class="tt">true</span> stops later handlers for the same chord.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> saveShortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = <span class="keyword">true</span>}, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, saveCallback);</div>
-<div class="ttc" id="agroup__flowui__shortcut__manager_html_ga1797e2b57628fb0d605888569f1c1dc9"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a></div><div class="ttdeci">uint32_t ShortcutId</div><div class="ttdoc">Opaque shortcut registration id.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:111</div></div>
-<div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutManagerStructs.hpp:33</div></div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#a185118dced81d2cccdc61bbc5e74307f">Full Doxygen reference</a>.</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> shortcut = app.ui().shortcuts().registerShortcut({.key = GLFW_KEY_S, .ctrl = <span class="keyword">true</span>}, <a class="code hl_enumvalue" href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a>, 100, saveCallback);</div>
+<div class="line"><span class="keywordflow">if</span> (!shortcut) {</div>
+<div class="line">    <span class="keywordflow">throw</span> <a class="code hl_class" href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a>(shortcut.error());</div>
+<div class="line">}</div>
+<div class="line"><span class="keyword">const</span> <a class="code hl_typedef" href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a> saveShortcut = *shortcut;</div>
+<div class="ttc" id="aclassFlowUi_1_1FlowUiException_html"><div class="ttname"><a href="classFlowUi_1_1FlowUiException.html">FlowUi::FlowUiException</a></div><div class="ttdef"><b>Definition</b> Exception.hpp:9</div></div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_ga1797e2b57628fb0d605888569f1c1dc9"><div class="ttname"><a href="group__flowui__shortcut__manager.html#ga1797e2b57628fb0d605888569f1c1dc9">FlowUi::ShortcutId</a></div><div class="ttdeci">uint32_t ShortcutId</div><div class="ttdoc">Opaque shortcut registration id.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:119</div></div>
+<div class="ttc" id="agroup__flowui__shortcut__manager_html_gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8"><div class="ttname"><a href="group__flowui__shortcut__manager.html#gga1b3c08a536c355e5163a7a367297bfeea4cc6684df7b4a92b1dec6fce3264fac8">FlowUi::ShortcutScope::Global</a></div><div class="ttdeci">@ Global</div><div class="ttdoc">Run regardless of focused input or focused element state.</div><div class="ttdef"><b>Definition</b> ShortcutTypes.hpp:35</div></div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
+<h3><span class="tt">Result&lt;ShortcutId&gt; registerShortcut(const ShortcutChord&amp; chord, ShortcutScope scope, int32_t priority, AppActionCall action, ShortcutHandling handling = ShortcutHandling::Consume)</span></h3>
+<p>Registers a semantic app action without retaining a local UI recipe or arbitrary callback. Return values never determine consumption.</p>
 <h2><b>unregisterShortcut</b></h2>
 <h3><span class="tt">bool unregisterShortcut(ShortcutId id)</span></h3>
 <ul>
@@ -149,7 +158,7 @@ $(function() {
 <p>Removes a registered shortcut. It is valid to unregister a shortcut from inside a shortcut callback.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> removed = app.ui().shortcuts().unregisterShortcut(saveShortcut);</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#aa1243fa0e00dffc89ec688db82954a5e">Full Doxygen reference</a>.</p>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>clear</b></h2>
 <h3><span class="tt">void clear()</span></h3>
 <ul>
@@ -159,7 +168,7 @@ $(function() {
 <p>Removes every registered shortcut and resets focused-element shortcut state. Use this for app-level shortcut reloads or teardown.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().shortcuts().clear();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#af08e7e2bb696cec1bf476a3afda5d6b1">Full Doxygen reference</a>.</p>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>setFocusedElement</b></h2>
 <h3><span class="tt">void setFocusedElement(Clay_ElementId elementId)</span></h3>
 <ul>
@@ -169,7 +178,7 @@ $(function() {
 <p>Sets the focused element marker used by <span class="tt">ShortcutScope::FocusedElement</span>. Application or element code decides when an element should become shortcut-focused.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().shortcuts().setFocusedElement(context.uiManager.toClayEID(context.elementID));</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#a8a496694eeaf4fdf03166ecf9c273212">Full Doxygen reference</a>.</p>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>clearFocusedElement</b></h2>
 <h3><span class="tt">void clearFocusedElement()</span></h3>
 <ul>
@@ -179,7 +188,7 @@ $(function() {
 <p>Clears the focused element marker. After this, focused-element shortcuts are not eligible until another element id is set.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">app.ui().shortcuts().clearFocusedElement();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#abf2f8245061c1fd51116e79c615ce52d">Full Doxygen reference</a>.</p>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>.</p>
 <h2><b>focusedElement</b></h2>
 <h3><span class="tt">Clay_ElementId focusedElement() const</span></h3>
 <ul>
@@ -189,7 +198,7 @@ $(function() {
 <p>Returns the currently focused Clay element id for shortcut dispatch. A zero id means no shortcut-focused element is active.</p>
 <p><b>Example:</b></p>
 <div class="fragment"><div class="line">Clay_ElementId focused = app.ui().shortcuts().focusedElement();</div>
-</div><!-- fragment --><p>See: <a href="classFlowUi_1_1ShortcutManager.html#a2d2a678228d439ea9889a30b1a6c94b2">Full Doxygen reference</a>. </p>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/managers/ShortcutManager.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

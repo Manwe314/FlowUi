@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -9,14 +9,14 @@
 #include "FSEL/internal/SelectableSurfaceBehavior.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <string>
 
 namespace FlowUi::devSystems::interface_elements::diagnostics_ui {
 
-/** Shared Diagnostics column with the same depth and spacing vocabulary as Memory. */
+/* Shared Diagnostics column with the same depth and spacing vocabulary as Memory. */
 [[nodiscard]] inline Clay_ElementDeclaration column(uint16_t gap = 6) noexcept {
 	Clay_ElementDeclaration declaration{};
 	declaration.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
@@ -25,7 +25,7 @@ namespace FlowUi::devSystems::interface_elements::diagnostics_ui {
 	return declaration;
 }
 
-/** A compact control row; callers can switch to a column at their local width. */
+/* A compact control row; callers can switch to a column at their local width. */
 [[nodiscard]] inline Clay_ElementDeclaration row(float height = 28) noexcept {
 	auto declaration = column();
 	declaration.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
@@ -34,7 +34,7 @@ namespace FlowUi::devSystems::interface_elements::diagnostics_ui {
 	return declaration;
 }
 
-/** Elevated evidence/advice surface, with a restrained structural border. */
+/* Elevated evidence/advice surface, with a restrained structural border. */
 [[nodiscard]] inline Clay_ElementDeclaration card(uint16_t gap = 7) noexcept {
 	auto declaration = column(gap);
 	declaration.layout.padding = {11, 11, 10, 10};
@@ -44,7 +44,7 @@ namespace FlowUi::devSystems::interface_elements::diagnostics_ui {
 	return declaration;
 }
 
-/** Wrapped prose; exact numerical/source values remain available in the Inspector. */
+/* Wrapped prose; exact numerical/source values remain available in the Inspector. */
 template <class Context>
 void text(Context& context, std::string_view label,
 		  Clay_Color color = interface_theme::kTextSecondary, uint16_t size = 13) {
@@ -55,7 +55,7 @@ void text(Context& context, std::string_view label,
 	CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(configuration));
 }
 
-/** Pointer help keeps its bottom-left corner above/right of the cursor, flipping below near the
+/* Pointer help keeps its bottom-left corner above/right of the cursor, flipping below near the
  * top. */
 template <class Context, class Identity>
 void pointer_tooltip(Context& context, const Identity& identity, std::string_view description) {
@@ -84,7 +84,7 @@ void pointer_tooltip(Context& context, const Identity& identity, std::string_vie
 	text(context, description, interface_theme::kTextCanvas, 11);
 }
 
-/** Render registered SVG artwork with the surface's semantic tint. */
+/* Render registered SVG artwork with the surface's semantic tint. */
 template <class Context, class Identity>
 void icon_with_identity(Context& context, const Identity& identity,
 						diagnostics_icons::Icon semantic,
@@ -115,7 +115,7 @@ void icon(Context& context, IndexedElementName identity, diagnostics_icons::Icon
 	icon_with_identity(context, identity, semantic, color, size);
 }
 
-/** Retained release-inside control; callbacks only update UI state or queue commands. */
+/* Retained release-inside control; callbacks only update UI state or queue commands. */
 struct Control {
 	struct Parameters {
 		std::string label{}, secondary{}, badge{}, tooltip{}, clipboard_text{};
@@ -126,9 +126,11 @@ struct Control {
 		Clay_Color marker = interface_theme::kTextMuted;
 		bool enabled = true, selected = false, focused = false, issue_row = false, flexible = false,
 			 histogram_bin = false, keyboard_activation = true, domain_row = false,
-			 section_header = false;
+			 section_header = false, icon_only = false;
 	};
-	using State = FSEL::detail::selectable_surface::State;
+	struct State : FSEL::detail::selectable_surface::State {
+		bool pointer_focused = false;
+	};
 	using Resources = diagnostics_icons::Resources;
 	using BuildContext = ElementBuildContext<Control>;
 	using InteractionContext = ElementInteractionContext<Control>;
@@ -138,6 +140,7 @@ struct Control {
 
 	static void onPressed(InteractionContext& context) {
 		FSEL::detail::selectable_surface::onPressed(context, context.params.enabled);
+		context.state().pointer_focused = true;
 	}
 	static void activate(InteractionContext& context) {
 		if (!context.params.enabled)
@@ -158,18 +161,24 @@ struct Control {
 		FSEL::detail::selectable_surface::runLogic(context, context.params.enabled);
 		const auto& current = context.uiManager.getCurrentFrameInput();
 		const auto& previous = context.uiManager.getPreviousFrameInput();
+		if ((!context.state().isArmed &&
+			 context.uiManager.shortcuts().focusedElement().id != context.clayID().id) ||
+			(current.keyDown[GLFW_KEY_TAB] && !previous.keyDown[GLFW_KEY_TAB]))
+			context.state().pointer_focused = false;
 		if (context.params.keyboard_activation &&
 			context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
 			!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 			((current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) ||
-			 (current.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE])))
+			 (current.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE]))) {
+			context.state().pointer_focused = false;
 			activate(context);
+		}
 	}
 	static void onHovered(InteractionContext& context) {
 		if (context.params.enabled)
 			context.uiManager.requestCursor(CursorType::PointingHand, 4);
 	}
-	/** Surface suitable for caller-owned content such as a histogram bin. */
+	/* Surface suitable for caller-owned content such as a histogram bin. */
 	[[nodiscard]] static Clay_ElementDeclaration constructElement(BuildContext& context) {
 		const auto& parameters = context.params;
 		const bool hovered =
@@ -182,7 +191,8 @@ struct Control {
 				hovered ? interface_theme::kHoverSurface : interface_theme::kDepth2Ink;
 			const bool focused =
 				parameters.focused ||
-				context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
+				(context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+				 !context.state().pointer_focused);
 			surface.border = {.color = focused ? interface_theme::kAccentCurrent
 											   : interface_theme::kBorderPrimary,
 							  .width = {0, 0, 0, 1, 0}};
@@ -227,7 +237,8 @@ struct Control {
 														 : interface_theme::kDepth3Elevated;
 		const bool focused =
 			parameters.focused ||
-			context.uiManager.shortcuts().focusedElement().id == context.clayID().id;
+			(context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
+			 !context.state().pointer_focused);
 		surface.border = {.color = focused				  ? interface_theme::kAccentCurrent
 								   : parameters.issue_row ? interface_theme::kBorderSubtle
 														  : interface_theme::kBorderVisible,
@@ -287,18 +298,30 @@ struct Control {
 											  parameters.icon == diagnostics_icons::Icon::None
 										  ? diagnostics_icons::Icon::Copy
 										  : parameters.icon;
-				icon(context, "action-icon", semantic,
-					 parameters.enabled ? interface_theme::kTextSecondary
-										: interface_theme::kTextMuted,
-					 parameters.section_header ? 12 : 14);
-				text(context, parameters.label,
-					 parameters.enabled ? interface_theme::kTextCanvas
-										: interface_theme::kTextMuted,
-					 12);
+				bool has_icon = false;
+#if FLOWUI_INCLUDE_ICON_MANAGER
+				has_icon = static_cast<bool>(context.resources().texture(semantic).handle);
+#endif
+				const bool icon_only = parameters.icon_only || !parameters.clipboard_text.empty();
+				if (!icon_only || has_icon)
+					icon(context, "action-icon", semantic,
+						 parameters.enabled ? interface_theme::kTextSecondary
+											: interface_theme::kTextMuted,
+						 parameters.section_header ? 12 : 14);
+				if (!icon_only || !has_icon)
+					text(context, parameters.label,
+						 parameters.enabled ? interface_theme::kTextCanvas
+											: interface_theme::kTextMuted,
+						 12);
 			}
-			if (!parameters.tooltip.empty() &&
+			const std::string_view tooltip =
+				parameters.tooltip.empty() &&
+						(parameters.icon_only || !parameters.clipboard_text.empty())
+					? parameters.label
+					: parameters.tooltip;
+			if (!tooltip.empty() &&
 				context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID())) {
-				pointer_tooltip(context, LocalElementName{"tooltip"}, parameters.tooltip);
+				pointer_tooltip(context, LocalElementName{"tooltip"}, tooltip);
 			}
 		}
 	}
@@ -308,13 +331,17 @@ inline constexpr Control kControl{};
 inline constexpr FSEL::NumberInput<uint64_t, DefinitionID("flowui.dev.diagnostics.number")>
 	kNumber{};
 
-/** Draw a stable, keyboard-focusable action with owned labels. */
+/* Draw a stable, keyboard-focusable action with owned labels. */
 template <class Context, class Identity>
 void button_with_identity(Context& context, const Identity& identity, std::string label,
 						  void* target, void (*activate)(void*, uint64_t, uint64_t),
 						  uint64_t action, uint64_t value = 0, bool enabled = true,
 						  std::string tooltip = {},
-						  diagnostics_icons::Icon icon = diagnostics_icons::Icon::None) {
+						  diagnostics_icons::Icon icon = diagnostics_icons::Icon::None,
+						  bool icon_only = false) {
+	icon_only = icon_only || diagnostics_icons::is_classic_action(icon);
+	if (icon_only && tooltip.empty())
+		tooltip = label;
 	context.uiManager.createElement(kControl, identity)
 		.setParameters({.label = std::move(label),
 						.tooltip = std::move(tooltip),
@@ -323,7 +350,8 @@ void button_with_identity(Context& context, const Identity& identity, std::strin
 						.target = target,
 						.action = action,
 						.value = value,
-						.enabled = enabled})
+						.enabled = enabled,
+						.icon_only = icon_only})
 		.setDevInternalCapture(true)
 		.draw();
 }
@@ -345,7 +373,7 @@ void button(Context& context, IndexedElementName identity, std::string label, vo
 						 enabled, std::move(tooltip), icon);
 }
 
-/** Inset selector consistent with existing shared Performance and Memory controls. */
+/* Inset selector consistent with existing shared Performance and Memory controls. */
 template <class Context>
 void choice(Context& context, LocalElementName identity, std::string_view label, uint64_t& selected,
 			std::span<const FSEL::ComboBoxOption> options) {
@@ -362,7 +390,7 @@ void choice(Context& context, LocalElementName identity, std::string_view label,
 		.draw();
 }
 
-/** Exact unsigned identity or application-tick bound, without floating-point loss. */
+/* Exact unsigned identity or application-tick bound, without floating-point loss. */
 template <class Context>
 void number(Context& context, LocalElementName identity, std::string_view label, uint64_t& value,
 			uint64_t minimum = 0, uint64_t maximum = UINT64_MAX,

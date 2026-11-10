@@ -1,0 +1,1482 @@
+{
+  "schema": "FlowUi.DevInterfaceNotes.Verification",
+  "run_id": "run_c2e8439c749a4199bfcbce313a90963c",
+  "mcp_calls": 35,
+  "cases": [
+    {
+      "case_id": "open-developer-interface",
+      "verdict": "pass",
+      "job_id": "verification_97641b8bdd3ef2af6d660f860ae28b4b",
+      "coverage": {
+        "evaluated": "1",
+        "failed": "0",
+        "passed": "1",
+        "required": "1",
+        "skipped": "0",
+        "unavailable": "0"
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "verdict": "pass",
+      "job_id": "verification_5faa0f3ab11334f800952ce7b841e6ee",
+      "coverage": {
+        "evaluated": "2",
+        "failed": "0",
+        "passed": "2",
+        "required": "2",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "capture_id": "cap_d9060a457c3268c0fb54332bcf4f9a38",
+      "image_id": "image_0",
+      "window_frame": "36",
+      "image": "inspect-reference.png"
+    },
+    {
+      "case_id": "panel-performance",
+      "verdict": "pass",
+      "job_id": "verification_85f45a0140833caef94bb431913a8b23",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "image": "panel-performance.png",
+      "capture_id": "cap_1b1f098ae05902ba92d4946da08bdf35",
+      "image_id": "image_1",
+      "window_frame": "428"
+    },
+    {
+      "case_id": "panel-memory",
+      "verdict": "pass",
+      "job_id": "verification_85f45a0140833caef94bb431913a8b23",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "image": "panel-memory.png",
+      "capture_id": "cap_7fe31c67184caa4dcbf3c8bb3baf1db3",
+      "image_id": "image_2",
+      "window_frame": "634"
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "verdict": "pass",
+      "job_id": "verification_85f45a0140833caef94bb431913a8b23",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "image": "panel-diagnostics.png",
+      "capture_id": "cap_15d68366248634bc97bd2df48ea82428",
+      "image_id": "image_3",
+      "window_frame": "786"
+    },
+    {
+      "case_id": "panel-changes",
+      "verdict": "pass",
+      "job_id": "verification_85f45a0140833caef94bb431913a8b23",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "image": "panel-changes.png",
+      "capture_id": "cap_b4014572c9b3f6204bd6d38502e3273a",
+      "image_id": "image_4",
+      "window_frame": "982"
+    },
+    {
+      "case_id": "panel-catalogue",
+      "verdict": "pass",
+      "job_id": "verification_85f45a0140833caef94bb431913a8b23",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "image": "panel-catalogue.png",
+      "capture_id": "cap_e72b9364edbd947839fe82a8fa3a2d8f",
+      "image_id": "image_5",
+      "window_frame": "1199"
+    },
+    {
+      "case_id": "panel-inspect",
+      "verdict": "pass",
+      "job_id": "verification_85f45a0140833caef94bb431913a8b23",
+      "coverage": {
+        "evaluated": "3",
+        "failed": "0",
+        "passed": "3",
+        "required": "3",
+        "skipped": "0",
+        "unavailable": "0"
+      },
+      "image": "panel-inspect.png",
+      "capture_id": "cap_04ea55f1462f2eafc632177dc7e4fd6c",
+      "image_id": "image_6",
+      "window_frame": "1400"
+    }
+  ],
+  "required_checks": 21,
+  "failures": [],
+  "layout_checks": [
+    {
+      "case_id": "inspect-reference",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "inspect-reference",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "cpu-recording-label-slot-present",
+      "passed": true,
+      "observed_count": 1,
+      "trigger": "window/root-element/content-header/cpu-reporting-level"
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "cpu-recording-selected-label-present",
+      "passed": true,
+      "observed_count": 1,
+      "slot": "window/root-element/content-header/cpu-reporting-level/label"
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "cpu-recording-selected-label-fits",
+      "passed": true,
+      "text": "Record: Balanced",
+      "observed": {
+        "height": 19.359375,
+        "width": 136.8125,
+        "x": 187.9635467529297,
+        "y": 94.3203125
+      },
+      "slot": {
+        "height": 19.359375,
+        "width": 158,
+        "x": 187.9635467529297,
+        "y": 94.3203125
+      },
+      "trigger": {
+        "height": 28,
+        "width": 200,
+        "x": 177.9635467529297,
+        "y": 90
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480.0000305175781,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480.0000305175781,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 60.71875,
+        "width": 320,
+        "x": 780,
+        "y": 797.03125
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-performance",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-memory",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-diagnostics",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-changes",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-catalogue",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "selector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 280,
+        "x": 0,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "workbench-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 480,
+        "x": 290,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "inspector-area-content-bounded",
+      "passed": true,
+      "root": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      },
+      "observed": {
+        "height": 564,
+        "width": 320,
+        "x": 780,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "selector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 280,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "selector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 285.5,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "inspector-splitter-leading-surface-pixels",
+      "passed": true,
+      "expected": [
+        7,
+        26,
+        34
+      ],
+      "samples": [
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ],
+        [
+          7,
+          26,
+          34
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 770,
+        "y": 124
+      }
+    },
+    {
+      "case_id": "panel-inspect",
+      "check": "inspector-splitter-trailing-surface-pixels",
+      "passed": true,
+      "expected": [
+        13,
+        34,
+        48
+      ],
+      "samples": [
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ],
+        [
+          13,
+          34,
+          48
+        ]
+      ],
+      "bounds": {
+        "height": 564,
+        "width": 4.5,
+        "x": 775.5,
+        "y": 124
+      }
+    }
+  ],
+  "user_changes_unchanged": true,
+  "bootstrap": "Native Ctrl+Shift+D on the owned demo PID; subsequent interactions use MCP",
+  "passed": true
+}

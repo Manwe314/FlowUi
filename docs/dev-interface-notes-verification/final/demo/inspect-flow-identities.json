@@ -1,0 +1,2667 @@
+[
+  {
+    "clay_root": 2,
+    "debug_name": "window/root-element",
+    "definition_id": "5710272839200377825",
+    "definition_name": "Developer Interface",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterface; std::string_view = std::basic_string_view<char>]",
+    "depth": 0,
+    "direct_clay_nodes": [
+      2
+    ],
+    "first_child": 1,
+    "flags": 6,
+    "index": 0,
+    "instance_id": "14672951888699232539",
+    "next_sibling": null,
+    "parent": null,
+    "source": {
+      "column": 36,
+      "file": null,
+      "line": 61,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::App::createWindow<FlowUi::devSystems::interface_elements::DevInterface>(const FlowUi::WindowConfigOverrides&, const FlowUi::devSystems::interface_elements::DevInterface&, std::function<void(FlowUi::ElementBuilder<FlowUi::devSystems::interface_elements::DevInterface>&, long unsigned int)>, FlowUi::LocalElementName)::<lambda(FlowUi::UiManager&, FlowUi::WindowId)>::<lambda()>"
+    },
+    "subtree_end_exclusive": 89
+  },
+  {
+    "clay_root": 3,
+    "debug_name": "window/root-element/permanent-header",
+    "definition_id": "14760502008929444944",
+    "definition_name": "Developer Interface Header",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceHeader; std::string_view = std::basic_string_view<char>]",
+    "depth": 1,
+    "direct_clay_nodes": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "first_child": 2,
+    "flags": 6,
+    "index": 1,
+    "instance_id": "3131905559438955101",
+    "next_sibling": 6,
+    "parent": 0,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildPermanentHeader(BuildContext&)"
+    },
+    "subtree_end_exclusive": 6
+  },
+  {
+    "clay_root": 11,
+    "debug_name": "window/root-element/permanent-header/undo",
+    "definition_id": "10937231333189412017",
+    "definition_name": "FSEL Button",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::Button; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      11,
+      12
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 2,
+    "instance_id": "17882055695028835144",
+    "next_sibling": 3,
+    "parent": 1,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 168,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawActionButton(FlowUi::devSystems::interface_elements::DevInterfaceHeader::BuildContext&, FlowUi::LocalElementName, std::string_view, FlowUi::ActionCall, bool, FlowUi::TextureRef)"
+    },
+    "subtree_end_exclusive": 3
+  },
+  {
+    "clay_root": 13,
+    "debug_name": "window/root-element/permanent-header/history",
+    "definition_id": "10937231333189412017",
+    "definition_name": "FSEL Button",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::Button; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      13,
+      14
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 3,
+    "instance_id": "3717097288563499969",
+    "next_sibling": 4,
+    "parent": 1,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 168,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawActionButton(FlowUi::devSystems::interface_elements::DevInterfaceHeader::BuildContext&, FlowUi::LocalElementName, std::string_view, FlowUi::ActionCall, bool, FlowUi::TextureRef)"
+    },
+    "subtree_end_exclusive": 4
+  },
+  {
+    "clay_root": 15,
+    "debug_name": "window/root-element/permanent-header/redo",
+    "definition_id": "10937231333189412017",
+    "definition_name": "FSEL Button",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::Button; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      15,
+      16
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 4,
+    "instance_id": "11550906590785172803",
+    "next_sibling": 5,
+    "parent": 1,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 168,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawActionButton(FlowUi::devSystems::interface_elements::DevInterfaceHeader::BuildContext&, FlowUi::LocalElementName, std::string_view, FlowUi::ActionCall, bool, FlowUi::TextureRef)"
+    },
+    "subtree_end_exclusive": 5
+  },
+  {
+    "clay_root": 17,
+    "debug_name": "window/root-element/permanent-header/configurations",
+    "definition_id": "10937231333189412017",
+    "definition_name": "FSEL Button",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::Button; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      17,
+      18
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 5,
+    "instance_id": "2592669016614614937",
+    "next_sibling": null,
+    "parent": 1,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 168,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawActionButton(FlowUi::devSystems::interface_elements::DevInterfaceHeader::BuildContext&, FlowUi::LocalElementName, std::string_view, FlowUi::ActionCall, bool, FlowUi::TextureRef)"
+    },
+    "subtree_end_exclusive": 6
+  },
+  {
+    "clay_root": 19,
+    "debug_name": "window/root-element/content-header",
+    "definition_id": "15771285456508590371",
+    "definition_name": "Developer Interface Content Header",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevContentHeader; std::string_view = std::basic_string_view<char>]",
+    "depth": 1,
+    "direct_clay_nodes": [
+      19,
+      20,
+      33
+    ],
+    "first_child": 7,
+    "flags": 6,
+    "index": 6,
+    "instance_id": "2249792644589689773",
+    "next_sibling": 17,
+    "parent": 0,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 203,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContentHeader(BuildContext&)"
+    },
+    "subtree_end_exclusive": 17
+  },
+  {
+    "clay_root": 21,
+    "debug_name": "window/root-element/content-header/tab-inspect",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      21,
+      22
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 7,
+    "instance_id": "10587197216023656403",
+    "next_sibling": 8,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawTab(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::devSystems::DevInterfaceState&, const TabSpec&)"
+    },
+    "subtree_end_exclusive": 8
+  },
+  {
+    "clay_root": 23,
+    "debug_name": "window/root-element/content-header/tab-performance",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      23,
+      24
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 8,
+    "instance_id": "13147057919730233769",
+    "next_sibling": 9,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawTab(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::devSystems::DevInterfaceState&, const TabSpec&)"
+    },
+    "subtree_end_exclusive": 9
+  },
+  {
+    "clay_root": 25,
+    "debug_name": "window/root-element/content-header/tab-memory",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      25,
+      26
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 9,
+    "instance_id": "13847858638117669640",
+    "next_sibling": 10,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawTab(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::devSystems::DevInterfaceState&, const TabSpec&)"
+    },
+    "subtree_end_exclusive": 10
+  },
+  {
+    "clay_root": 27,
+    "debug_name": "window/root-element/content-header/tab-diagnostics",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      27,
+      28
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 10,
+    "instance_id": "18274952207043543590",
+    "next_sibling": 11,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawTab(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::devSystems::DevInterfaceState&, const TabSpec&)"
+    },
+    "subtree_end_exclusive": 11
+  },
+  {
+    "clay_root": 29,
+    "debug_name": "window/root-element/content-header/tab-changes",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      29,
+      30
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 11,
+    "instance_id": "2411720199883961055",
+    "next_sibling": 12,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawTab(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::devSystems::DevInterfaceState&, const TabSpec&)"
+    },
+    "subtree_end_exclusive": 12
+  },
+  {
+    "clay_root": 31,
+    "debug_name": "window/root-element/content-header/tab-catalogue",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      31,
+      32
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 12,
+    "instance_id": "9706627850794283839",
+    "next_sibling": 13,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 193,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawTab(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::devSystems::DevInterfaceState&, const TabSpec&)"
+    },
+    "subtree_end_exclusive": 13
+  },
+  {
+    "clay_root": 34,
+    "debug_name": "window/root-element/content-header/window-target",
+    "definition_id": "11425591412586259245",
+    "definition_name": "FSEL ComboBox",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::ComboBox; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      34,
+      35,
+      36,
+      37,
+      38
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 13,
+    "instance_id": "10484333972279348727",
+    "next_sibling": 14,
+    "parent": 6,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 398,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawWindowTarget(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::App*, FlowUi::devSystems::DevInterfaceState&)"
+    },
+    "subtree_end_exclusive": 14
+  },
+  {
+    "clay_root": 39,
+    "debug_name": "window/root-element/content-header/inspect-overlay-controls",
+    "definition_id": "2706285011576528118",
+    "definition_name": "Inspect Overlay Menu",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectOverlayMenu; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      39
+    ],
+    "first_child": 15,
+    "flags": 6,
+    "index": 14,
+    "instance_id": "16339715590395247495",
+    "next_sibling": null,
+    "parent": 6,
+    "source": {
+      "column": 18,
+      "file": null,
+      "line": 414,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawContextualControls(FlowUi::devSystems::interface_elements::DevContentHeader::BuildContext&, FlowUi::App*, FlowUi::devSystems::DevInterfaceState&, FlowUi::devSystems::DevInterfaceTab)"
+    },
+    "subtree_end_exclusive": 17
+  },
+  {
+    "clay_root": 40,
+    "debug_name": "window/root-element/content-header/inspect-overlay-controls/trigger",
+    "definition_id": "10937231333189412017",
+    "definition_name": "FSEL Button",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::Button; std::string_view = std::basic_string_view<char>]",
+    "depth": 3,
+    "direct_clay_nodes": [
+      40,
+      41,
+      42,
+      43
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 15,
+    "instance_id": "11355956283948930878",
+    "next_sibling": 16,
+    "parent": 14,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 220,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectOverlayMenu::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 16
+  },
+  {
+    "clay_root": 44,
+    "debug_name": "window/root-element/content-header/inspect-overlay-controls/pick",
+    "definition_id": "10937231333189412017",
+    "definition_name": "FSEL Button",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::Button; std::string_view = std::basic_string_view<char>]",
+    "depth": 3,
+    "direct_clay_nodes": [
+      44,
+      45
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 16,
+    "instance_id": "10456365806873995016",
+    "next_sibling": null,
+    "parent": 14,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 229,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectOverlayMenu::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 17
+  },
+  {
+    "clay_root": 46,
+    "debug_name": "window/root-element/content",
+    "definition_id": "8597529862841927828",
+    "definition_name": "Developer Interface Content",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevContent; std::string_view = std::basic_string_view<char>]",
+    "depth": 1,
+    "direct_clay_nodes": [
+      46
+    ],
+    "first_child": 18,
+    "flags": 5,
+    "index": 17,
+    "instance_id": "7795425831711503577",
+    "next_sibling": 88,
+    "parent": 0,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 228,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContent(BuildContext&)"
+    },
+    "subtree_end_exclusive": 88
+  },
+  {
+    "clay_root": 47,
+    "debug_name": "window/root-element/content/selector-area",
+    "definition_id": "10785139056480748287",
+    "definition_name": "Developer Interface Selector Area",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevSelectorArea; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      47
+    ],
+    "first_child": 19,
+    "flags": 6,
+    "index": 18,
+    "instance_id": "16272448263590172809",
+    "next_sibling": 78,
+    "parent": 17,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 231,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContent(BuildContext&)"
+    },
+    "subtree_end_exclusive": 78
+  },
+  {
+    "clay_root": 48,
+    "debug_name": "window/root-element/content/selector-area/selected-content",
+    "definition_id": "10616545411344772337",
+    "definition_name": "Inspect Selector",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectSelector; std::string_view = std::basic_string_view<char>]",
+    "depth": 3,
+    "direct_clay_nodes": [
+      48
+    ],
+    "first_child": 20,
+    "flags": 6,
+    "index": 19,
+    "instance_id": "8746223893326624997",
+    "next_sibling": null,
+    "parent": 18,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 55,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawSelected(Context&, const Element&, Parameters) [with Context = FlowUi::ElementBuildContext<FlowUi::devSystems::interface_elements::DevSelectorArea>; Element = FlowUi::devSystems::interface_elements::DevInspectSelector; Parameters = FlowUi::devSystems::interface_elements::DevInspectContentParameters]"
+    },
+    "subtree_end_exclusive": 78
+  },
+  {
+    "clay_root": 49,
+    "debug_name": "window/root-element/content/selector-area/selected-content/title",
+    "definition_id": "9283144635474536186",
+    "definition_name": "Inspect Selector Title",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceSelectorTitle; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      49,
+      50
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 20,
+    "instance_id": "9551305109655869965",
+    "next_sibling": 21,
+    "parent": 19,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 144,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectSelector::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 21
+  },
+  {
+    "clay_root": 51,
+    "debug_name": "window/root-element/content/selector-area/selected-content/controls",
+    "definition_id": "4772517120353738145",
+    "definition_name": "Inspect Selector Controls",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceSelectorControls; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      51,
+      52
+    ],
+    "first_child": 22,
+    "flags": 6,
+    "index": 21,
+    "instance_id": "2188690245298777906",
+    "next_sibling": 26,
+    "parent": 19,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 148,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectSelector::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 26
+  },
+  {
+    "clay_root": 53,
+    "debug_name": "window/root-element/content/selector-area/selected-content/controls/flow-choice",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      53,
+      54
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 22,
+    "instance_id": "16901751468340199045",
+    "next_sibling": 23,
+    "parent": 21,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 91,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawForestChoice(FlowUi::devSystems::interface_elements::DevInterfaceSelectorControls::BuildContext&, FlowUi::LocalElementName, std::string_view, uint64_t, bool)"
+    },
+    "subtree_end_exclusive": 23
+  },
+  {
+    "clay_root": 55,
+    "debug_name": "window/root-element/content/selector-area/selected-content/controls/clay-choice",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      55,
+      56
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 23,
+    "instance_id": "17951499576122778413",
+    "next_sibling": 24,
+    "parent": 21,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 91,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawForestChoice(FlowUi::devSystems::interface_elements::DevInterfaceSelectorControls::BuildContext&, FlowUi::LocalElementName, std::string_view, uint64_t, bool)"
+    },
+    "subtree_end_exclusive": 24
+  },
+  {
+    "clay_root": 57,
+    "debug_name": "window/root-element/content/selector-area/selected-content/controls/themes-choice",
+    "definition_id": "762916437793720825",
+    "definition_name": "FSEL RadioChoice",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::RadioChoice; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      57,
+      58
+    ],
+    "first_child": null,
+    "flags": 5,
+    "index": 24,
+    "instance_id": "3048281041912942661",
+    "next_sibling": 25,
+    "parent": 21,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 91,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawForestChoice(FlowUi::devSystems::interface_elements::DevInterfaceSelectorControls::BuildContext&, FlowUi::LocalElementName, std::string_view, uint64_t, bool)"
+    },
+    "subtree_end_exclusive": 25
+  },
+  {
+    "clay_root": 59,
+    "debug_name": "window/root-element/content/selector-area/selected-content/controls/definition-filter",
+    "definition_id": "11425591412586259245",
+    "definition_name": "FSEL ComboBox",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::ComboBox; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 25,
+    "instance_id": "4696278050069496160",
+    "next_sibling": null,
+    "parent": 21,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 229,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterfaceSelectorControls::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 26
+  },
+  {
+    "clay_root": 64,
+    "debug_name": "window/root-element/content/selector-area/selected-content/search",
+    "definition_id": "9997209766279644838",
+    "definition_name": "Selector Search",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevSelectorSearch; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      64
+    ],
+    "first_child": 27,
+    "flags": 6,
+    "index": 26,
+    "instance_id": "13375217730530720596",
+    "next_sibling": 28,
+    "parent": 19,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 162,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectSelector::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 28
+  },
+  {
+    "clay_root": 65,
+    "debug_name": "window/root-element/content/selector-area/selected-content/search/search-input",
+    "definition_id": "6746871265834400667",
+    "definition_name": "FSEL TextInput",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::TextInput; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      65,
+      66,
+      527,
+      528,
+      529,
+      530
+    ],
+    "first_child": null,
+    "flags": 262,
+    "index": 27,
+    "instance_id": "430811815347399196",
+    "next_sibling": null,
+    "parent": 26,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 56,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevSelectorSearch::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 28
+  },
+  {
+    "clay_root": 67,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest",
+    "definition_id": "14881526280238317744",
+    "definition_name": "Inspect Selector Forest",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      67,
+      68
+    ],
+    "first_child": 29,
+    "flags": 6,
+    "index": 28,
+    "instance_id": "658049787002470389",
+    "next_sibling": 77,
+    "parent": 19,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 169,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectSelector::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 77
+  },
+  {
+    "clay_root": 69,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[16575558191337685993]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 29,
+    "instance_id": "9677046703618668806",
+    "next_sibling": 30,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 30
+  },
+  {
+    "clay_root": 78,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[6689905750795614148]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 30,
+    "instance_id": "5824141528795595969",
+    "next_sibling": 31,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 31
+  },
+  {
+    "clay_root": 87,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[3577766501448876426]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 31,
+    "instance_id": "3421554463550019555",
+    "next_sibling": 32,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 32
+  },
+  {
+    "clay_root": 95,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[7359845138051560644]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 32,
+    "instance_id": "6606890374676488426",
+    "next_sibling": 33,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 33
+  },
+  {
+    "clay_root": 103,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[9491935003105909851]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 33,
+    "instance_id": "14201060934317774876",
+    "next_sibling": 34,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 34
+  },
+  {
+    "clay_root": 111,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[17420925972375211814]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 34,
+    "instance_id": "10353465294003225730",
+    "next_sibling": 35,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 35
+  },
+  {
+    "clay_root": 120,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[13168658665967878079]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 35,
+    "instance_id": "8689174131462919890",
+    "next_sibling": 36,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 36
+  },
+  {
+    "clay_root": 129,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[1397222402029008453]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 36,
+    "instance_id": "18021645036196678562",
+    "next_sibling": 37,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 37
+  },
+  {
+    "clay_root": 137,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[291713529027582355]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 37,
+    "instance_id": "69869076169513641",
+    "next_sibling": 38,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 38
+  },
+  {
+    "clay_root": 145,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[3841856185284723657]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 38,
+    "instance_id": "9748158705174332149",
+    "next_sibling": 39,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 39
+  },
+  {
+    "clay_root": 153,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[14936471993340488785]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 39,
+    "instance_id": "12107649925355363533",
+    "next_sibling": 40,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 40
+  },
+  {
+    "clay_root": 162,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[10512037639948541129]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 40,
+    "instance_id": "8024130221774651136",
+    "next_sibling": 41,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 41
+  },
+  {
+    "clay_root": 170,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[17311898760374141469]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 41,
+    "instance_id": "1036724531298903372",
+    "next_sibling": 42,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 42
+  },
+  {
+    "clay_root": 178,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[15819997262489399578]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 42,
+    "instance_id": "15401439768779708567",
+    "next_sibling": 43,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 43
+  },
+  {
+    "clay_root": 186,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[8663633832106431615]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 43,
+    "instance_id": "3872745198811350887",
+    "next_sibling": 44,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 44
+  },
+  {
+    "clay_root": 194,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[1974154079162757456]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 44,
+    "instance_id": "2711303295479972737",
+    "next_sibling": 45,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 45
+  },
+  {
+    "clay_root": 203,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[11326061990663185286]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 45,
+    "instance_id": "2705276323137495532",
+    "next_sibling": 46,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 46
+  },
+  {
+    "clay_root": 211,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[12618626734922202362]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      211,
+      212,
+      213,
+      214,
+      215,
+      216,
+      217,
+      218,
+      219
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 46,
+    "instance_id": "1068835151724694976",
+    "next_sibling": 47,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 47
+  },
+  {
+    "clay_root": 220,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[7799384517883070620]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      220,
+      221,
+      222,
+      223,
+      224,
+      225,
+      226,
+      227,
+      228
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 47,
+    "instance_id": "1359895924627638691",
+    "next_sibling": 48,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 48
+  },
+  {
+    "clay_root": 229,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[11926896407246825615]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      229,
+      230,
+      231,
+      232,
+      233,
+      234,
+      235,
+      236
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 48,
+    "instance_id": "4108018330016622164",
+    "next_sibling": 49,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 49
+  },
+  {
+    "clay_root": 237,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[310067414705613579]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      237,
+      238,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 49,
+    "instance_id": "14438164413751938627",
+    "next_sibling": 50,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 50
+  },
+  {
+    "clay_root": 245,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[10049571026386897424]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252,
+      253
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 50,
+    "instance_id": "2998555564894501006",
+    "next_sibling": 51,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 51
+  },
+  {
+    "clay_root": 254,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[1243538398563800369]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      254,
+      255,
+      256,
+      257,
+      258,
+      259,
+      260,
+      261
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 51,
+    "instance_id": "3676497432866404117",
+    "next_sibling": 52,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 52
+  },
+  {
+    "clay_root": 262,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[15280093938138796655]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      262,
+      263,
+      264,
+      265,
+      266,
+      267,
+      268,
+      269
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 52,
+    "instance_id": "12008087666771888859",
+    "next_sibling": 53,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 53
+  },
+  {
+    "clay_root": 270,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[2817886839861023826]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      270,
+      271,
+      272,
+      273,
+      274,
+      275,
+      276,
+      277
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 53,
+    "instance_id": "7656652411786382149",
+    "next_sibling": 54,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 54
+  },
+  {
+    "clay_root": 278,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[2301499140195664901]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      278,
+      279,
+      280,
+      281,
+      282,
+      283,
+      284,
+      285,
+      286
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 54,
+    "instance_id": "8053691327143336363",
+    "next_sibling": 55,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 55
+  },
+  {
+    "clay_root": 287,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[12959483902872489695]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      287,
+      288,
+      289,
+      290,
+      291,
+      292,
+      293,
+      294
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 55,
+    "instance_id": "11882463077758361612",
+    "next_sibling": 56,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 56
+  },
+  {
+    "clay_root": 295,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[15073914890664268660]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      295,
+      296,
+      297,
+      298,
+      299,
+      300,
+      301,
+      302,
+      303
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 56,
+    "instance_id": "4007812183398975014",
+    "next_sibling": 57,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 57
+  },
+  {
+    "clay_root": 304,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[4564913692291830280]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      304,
+      305,
+      306,
+      307,
+      308,
+      309,
+      310,
+      311
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 57,
+    "instance_id": "828688617760662463",
+    "next_sibling": 58,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 58
+  },
+  {
+    "clay_root": 312,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[5172398794953275059]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      312,
+      313,
+      314,
+      315,
+      316,
+      317,
+      318,
+      319
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 58,
+    "instance_id": "17756897447536804454",
+    "next_sibling": 59,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 59
+  },
+  {
+    "clay_root": 320,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[16670777460623056069]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      320,
+      321,
+      322,
+      323,
+      324,
+      325,
+      326,
+      327
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 59,
+    "instance_id": "11765997210027937235",
+    "next_sibling": 60,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 60
+  },
+  {
+    "clay_root": 328,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[14029123806053089717]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      328,
+      329,
+      330,
+      331,
+      332,
+      333,
+      334,
+      335
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 60,
+    "instance_id": "5666817750128977728",
+    "next_sibling": 61,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 61
+  },
+  {
+    "clay_root": 336,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[6739418506964306702]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      336,
+      337,
+      338,
+      339,
+      340,
+      341,
+      342,
+      343,
+      344
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 61,
+    "instance_id": "5962454518470534987",
+    "next_sibling": 62,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 62
+  },
+  {
+    "clay_root": 345,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[934442808201337102]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      345,
+      346,
+      347,
+      348,
+      349,
+      350,
+      351,
+      352,
+      353
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 62,
+    "instance_id": "12596546005581205340",
+    "next_sibling": 63,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 63
+  },
+  {
+    "clay_root": 354,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[6386601918869361747]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      354,
+      355,
+      356,
+      357,
+      358,
+      359,
+      360,
+      361
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 63,
+    "instance_id": "1880753900755865636",
+    "next_sibling": 64,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 64
+  },
+  {
+    "clay_root": 362,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[17522984022716412959]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      362,
+      363,
+      364,
+      365,
+      366,
+      367,
+      368,
+      369
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 64,
+    "instance_id": "2362997853461685620",
+    "next_sibling": 65,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 65
+  },
+  {
+    "clay_root": 370,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[14014083103843776980]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      370,
+      371,
+      372,
+      373,
+      374,
+      375,
+      376,
+      377,
+      378
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 65,
+    "instance_id": "4596103531753589623",
+    "next_sibling": 66,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 66
+  },
+  {
+    "clay_root": 379,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[8192019233018015760]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      379,
+      380,
+      381,
+      382,
+      383,
+      384,
+      385,
+      386
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 66,
+    "instance_id": "18373674271837922685",
+    "next_sibling": 67,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 67
+  },
+  {
+    "clay_root": 387,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[17244363941929881587]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      387,
+      388,
+      389,
+      390,
+      391,
+      392,
+      393,
+      394
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 67,
+    "instance_id": "15989377302841646155",
+    "next_sibling": 68,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 68
+  },
+  {
+    "clay_root": 395,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[16945077266794823705]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      395,
+      396,
+      397,
+      398,
+      399,
+      400,
+      401,
+      402
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 68,
+    "instance_id": "15030927255902978873",
+    "next_sibling": 69,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 69
+  },
+  {
+    "clay_root": 403,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[13958359173134167291]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      403,
+      404,
+      405,
+      406,
+      407,
+      408,
+      409,
+      410,
+      411
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 69,
+    "instance_id": "10726795227465175495",
+    "next_sibling": 70,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 70
+  },
+  {
+    "clay_root": 412,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[15167411637973879339]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      412,
+      413,
+      414,
+      415,
+      416,
+      417,
+      418,
+      419
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 70,
+    "instance_id": "5508419107603744677",
+    "next_sibling": 71,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 71
+  },
+  {
+    "clay_root": 420,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[7794138932586863560]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      420,
+      421,
+      422,
+      423,
+      424,
+      425,
+      426,
+      427
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 71,
+    "instance_id": "1005740602439551891",
+    "next_sibling": 72,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 72
+  },
+  {
+    "clay_root": 428,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[11465592933617951449]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      428,
+      429,
+      430,
+      431,
+      432,
+      433,
+      434,
+      435,
+      436
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 72,
+    "instance_id": "13425352698717148473",
+    "next_sibling": 73,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 73
+  },
+  {
+    "clay_root": 437,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[3030634941450362967]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      437,
+      438,
+      439,
+      440,
+      441,
+      442,
+      443,
+      444
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 73,
+    "instance_id": "6906757952592253841",
+    "next_sibling": 74,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 74
+  },
+  {
+    "clay_root": 445,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[11140763330509342017]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      445,
+      446,
+      447,
+      448,
+      449,
+      450,
+      451,
+      452
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 74,
+    "instance_id": "507093927326127051",
+    "next_sibling": 75,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 75
+  },
+  {
+    "clay_root": 453,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[14086352009410410089]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      453,
+      454,
+      455,
+      456,
+      457,
+      458,
+      459,
+      460
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 75,
+    "instance_id": "17890126605520455292",
+    "next_sibling": 76,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 76
+  },
+  {
+    "clay_root": 461,
+    "debug_name": "window/root-element/content/selector-area/selected-content/forest/node[1465202096118773874]",
+    "definition_id": "232220953651112099",
+    "definition_name": "Inspect Tree Node",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevNode; std::string_view = std::basic_string_view<char>]",
+    "depth": 5,
+    "direct_clay_nodes": [
+      461,
+      462,
+      463,
+      464,
+      465,
+      466,
+      467,
+      468
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 76,
+    "instance_id": "4473089943468943096",
+    "next_sibling": null,
+    "parent": 28,
+    "source": {
+      "column": 38,
+      "file": null,
+      "line": 566,
+      "repository_id": "application_or_library",
+      "symbol": "FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)> [with auto:63 = FlowUi::devSystems::interface_elements::DevInterfaceSelectorForest::buildElement(BuildContext&)::<lambda(auto:63&&, FlowUi::devSystems::tooling::DevFlowNodeIndex)>&; FlowUi::devSystems::tooling::DevFlowNodeIndex = unsigned int]"
+    },
+    "subtree_end_exclusive": 77
+  },
+  {
+    "clay_root": 469,
+    "debug_name": "window/root-element/content/selector-area/selected-content/footer",
+    "definition_id": "4739344381240819144",
+    "definition_name": "Inspect Selector Footer",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceSelectorFooter; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      469,
+      470,
+      471,
+      472
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 77,
+    "instance_id": "5857587477862747067",
+    "next_sibling": null,
+    "parent": 19,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 177,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectSelector::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 78
+  },
+  {
+    "clay_root": 473,
+    "debug_name": "window/root-element/content/selector-splitter",
+    "definition_id": "5962843747457519749",
+    "definition_name": "FSEL SplitterHandle",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::SplitterHandle; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      473,
+      474,
+      475,
+      476
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 78,
+    "instance_id": "16321764288521132375",
+    "next_sibling": 79,
+    "parent": 17,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 252,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContent(BuildContext&)"
+    },
+    "subtree_end_exclusive": 79
+  },
+  {
+    "clay_root": 477,
+    "debug_name": "window/root-element/content/workbench-area",
+    "definition_id": "155289279602624317",
+    "definition_name": "Developer Interface Workbench Area",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevWorkbenchArea; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      477
+    ],
+    "first_child": 80,
+    "flags": 6,
+    "index": 79,
+    "instance_id": "3666302093542980064",
+    "next_sibling": 84,
+    "parent": 17,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 257,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContent(BuildContext&)"
+    },
+    "subtree_end_exclusive": 84
+  },
+  {
+    "clay_root": 478,
+    "debug_name": "window/root-element/content/workbench-area/selected-content",
+    "definition_id": "4436321950175793540",
+    "definition_name": "Inspect Workbench",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectWorkbench; std::string_view = std::basic_string_view<char>]",
+    "depth": 3,
+    "direct_clay_nodes": [
+      478
+    ],
+    "first_child": 81,
+    "flags": 6,
+    "index": 80,
+    "instance_id": "6187090845707449335",
+    "next_sibling": null,
+    "parent": 79,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 55,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawSelected(Context&, const Element&, Parameters) [with Context = FlowUi::ElementBuildContext<FlowUi::devSystems::interface_elements::DevWorkbenchArea>; Element = FlowUi::devSystems::interface_elements::DevInspectWorkbench; Parameters = FlowUi::devSystems::interface_elements::DevInspectContentParameters]"
+    },
+    "subtree_end_exclusive": 84
+  },
+  {
+    "clay_root": 479,
+    "debug_name": "window/root-element/content/workbench-area/selected-content/header",
+    "definition_id": "4826854472039577348",
+    "definition_name": "Inspect Workbench Header",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectWorkbenchHeader; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      479,
+      480,
+      481,
+      482,
+      483,
+      484,
+      485,
+      486,
+      487,
+      488,
+      489,
+      490,
+      491,
+      492
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 81,
+    "instance_id": "12018723078455206640",
+    "next_sibling": 82,
+    "parent": 80,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 3143,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectWorkbench::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 82
+  },
+  {
+    "clay_root": 493,
+    "debug_name": "window/root-element/content/workbench-area/selected-content/subtitle",
+    "definition_id": "3449183609432555017",
+    "definition_name": "Inspect Workbench Subtitle",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectWorkbenchSubtitle; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      493,
+      494,
+      495
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 82,
+    "instance_id": "7306926309959587716",
+    "next_sibling": 83,
+    "parent": 80,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 3151,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectWorkbench::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 83
+  },
+  {
+    "clay_root": 496,
+    "debug_name": "window/root-element/content/workbench-area/selected-content/content",
+    "definition_id": "16954723940228929648",
+    "definition_name": "Inspect Workbench Content",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectWorkbenchContent; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      496,
+      497,
+      498
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 83,
+    "instance_id": "15186830750453990132",
+    "next_sibling": null,
+    "parent": 80,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 3156,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectWorkbench::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 84
+  },
+  {
+    "clay_root": 499,
+    "debug_name": "window/root-element/content/inspector-splitter",
+    "definition_id": "5962843747457519749",
+    "definition_name": "FSEL SplitterHandle",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::FSEL::SplitterHandle; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      499,
+      500,
+      501,
+      502
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 84,
+    "instance_id": "5444208871102898529",
+    "next_sibling": 85,
+    "parent": 17,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 278,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContent(BuildContext&)"
+    },
+    "subtree_end_exclusive": 85
+  },
+  {
+    "clay_root": 503,
+    "debug_name": "window/root-element/content/inspector-area",
+    "definition_id": "13463469318278372823",
+    "definition_name": "Developer Interface Inspector Area",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectorArea; std::string_view = std::basic_string_view<char>]",
+    "depth": 2,
+    "direct_clay_nodes": [
+      503
+    ],
+    "first_child": 86,
+    "flags": 6,
+    "index": 85,
+    "instance_id": "15212124152280943246",
+    "next_sibling": null,
+    "parent": 17,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 283,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildContent(BuildContext&)"
+    },
+    "subtree_end_exclusive": 88
+  },
+  {
+    "clay_root": 504,
+    "debug_name": "window/root-element/content/inspector-area/selected-content",
+    "definition_id": "5576941950186485422",
+    "definition_name": "Inspect Inspector",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInspectInspector; std::string_view = std::basic_string_view<char>]",
+    "depth": 3,
+    "direct_clay_nodes": [
+      504,
+      507,
+      508
+    ],
+    "first_child": 87,
+    "flags": 6,
+    "index": 86,
+    "instance_id": "4999096081322767999",
+    "next_sibling": null,
+    "parent": 85,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 55,
+      "repository_id": "application_or_library",
+      "symbol": "void FlowUi::devSystems::interface_elements::{anonymous}::drawSelected(Context&, const Element&, Parameters) [with Context = FlowUi::ElementBuildContext<FlowUi::devSystems::interface_elements::DevInspectorArea>; Element = FlowUi::devSystems::interface_elements::DevInspectInspector; Parameters = FlowUi::devSystems::interface_elements::DevInspectContentParameters]"
+    },
+    "subtree_end_exclusive": 88
+  },
+  {
+    "clay_root": 505,
+    "debug_name": "window/root-element/content/inspector-area/selected-content/title",
+    "definition_id": "849658802187713447",
+    "definition_name": "Inspect Inspector Title",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceInspectorTitle; std::string_view = std::basic_string_view<char>]",
+    "depth": 4,
+    "direct_clay_nodes": [
+      505,
+      506
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 87,
+    "instance_id": "6092199116680254477",
+    "next_sibling": null,
+    "parent": 86,
+    "source": {
+      "column": 34,
+      "file": null,
+      "line": 94,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInspectInspector::buildElement(BuildContext&)"
+    },
+    "subtree_end_exclusive": 88
+  },
+  {
+    "clay_root": 509,
+    "debug_name": "window/root-element/permanent-footer",
+    "definition_id": "3102162644961990111",
+    "definition_name": "Developer Interface Footer",
+    "definition_type": "constexpr std::string_view FlowUi::detail::typeToken() [with T = FlowUi::devSystems::interface_elements::DevInterfaceFooter; std::string_view = std::basic_string_view<char>]",
+    "depth": 1,
+    "direct_clay_nodes": [
+      509,
+      510,
+      511,
+      512,
+      513,
+      514,
+      515,
+      516,
+      517,
+      518,
+      519,
+      520,
+      521,
+      522,
+      523,
+      524,
+      525,
+      526
+    ],
+    "first_child": null,
+    "flags": 6,
+    "index": 88,
+    "instance_id": "6355099956710925441",
+    "next_sibling": null,
+    "parent": 0,
+    "source": {
+      "column": 33,
+      "file": null,
+      "line": 296,
+      "repository_id": "application_or_library",
+      "symbol": "static void FlowUi::devSystems::interface_elements::DevInterface::buildPermanentFooter(BuildContext&)"
+    },
+    "subtree_end_exclusive": 89
+  }
+]

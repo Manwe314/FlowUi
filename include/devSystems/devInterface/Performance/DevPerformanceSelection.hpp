@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp"
 #include <array>
@@ -12,7 +12,7 @@ inline constexpr std::array<std::string_view, static_cast<size_t>(TimingCategory
 	performance_category_names{"Lifecycle",	   "Frame", "Input", "Element", "Layout", "Prepare",
 							   "Renderer CPU", "GPU",	"Wait",	 "User",	"DevTool"};
 
-/** One scope identity shared by the window and thread trees. Zero means all of its kind. */
+/* One scope identity shared by the window and thread trees. Zero means all of its kind. */
 enum class DevPerformanceScopeKind : uint8_t { Window, Thread };
 
 struct DevPerformanceScope {
@@ -22,7 +22,7 @@ struct DevPerformanceScope {
 	[[nodiscard]] bool operator==(const DevPerformanceScope&) const noexcept = default;
 };
 
-/** Persistent view filters; these never change the recorder's capture configuration.
+/* Persistent view filters; these never change the recorder's capture configuration.
  * Exactly one window or thread scope is active. Zone mode adds a descriptor filter
  * to that scope. An unselected zone means all zones; an empty category mask means none.
  */
@@ -37,7 +37,7 @@ struct DevPerformanceSelection {
 	bool windows_expanded = true;
 	bool threads_expanded = true;
 
-	/** Whether this descriptor and sample domain pass the active view filters. */
+	/* Whether this descriptor and sample domain pass the active view filters. */
 	[[nodiscard]] bool accepts_descriptor(const TimingZoneDescriptor& descriptor,
 										  TimingSampleDomain domain) const noexcept {
 		return (category_mask & timingCategoryBit(descriptor.category)) != 0 &&
@@ -47,7 +47,7 @@ struct DevPerformanceSelection {
 			   (selector_mode == 0 || selected_zone == 0 || selected_zone == descriptor.typeId);
 	}
 
-	/** Resolve CPU scope without copying or querying timing history. */
+	/* Resolve CPU scope without copying or querying timing history. */
 	[[nodiscard]] bool accepts(const CpuTimingRecord& record,
 							   const TimingZoneDescriptor& descriptor) const noexcept {
 		return record.typeId == descriptor.typeId &&
@@ -57,7 +57,7 @@ struct DevPerformanceSelection {
 											   : record.track == selected_scope.id));
 	}
 
-	/** GPU records have no CPU thread identity; thread filters apply only to CPU samples. */
+	/* GPU records have no CPU thread identity; thread filters apply only to CPU samples. */
 	[[nodiscard]] bool accepts(const GpuTimingRecord& record,
 							   const TimingZoneDescriptor& descriptor) const noexcept {
 		return record.typeId == descriptor.typeId &&
@@ -67,9 +67,9 @@ struct DevPerformanceSelection {
 	}
 };
 
-/** Human-readable timing name; preserves backend descriptor identities. */
+/* Human-readable timing name; preserves backend descriptor identities. */
 [[nodiscard]] std::string performance_zone_label(std::string_view name);
-/** Case-insensitive search accepts either backend names or their display labels. */
+/* Case-insensitive search accepts either backend names or their display labels. */
 [[nodiscard]] bool performance_zone_matches(std::string_view name, std::string_view label,
 											std::string_view query) noexcept;
 

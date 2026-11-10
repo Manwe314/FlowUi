@@ -1,7 +1,7 @@
 #define VMA_IMPLEMENTATION
-#include "internal/Vma.hpp"
+#include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 
-#include "Vulkan/Vk_Context.hpp"
+#include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
 
 void VulkanContext::destroy() {
 	if (device != VK_NULL_HANDLE) {

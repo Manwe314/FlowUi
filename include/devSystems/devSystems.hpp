@@ -1,6 +1,14 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+/** @namespace FlowUi::devSystems
+ * @brief Optional development monitoring, reporting and application extension APIs. Available when FLOW_UI_DEV_MODE is enabled.
+ */
+
+/** @file
+ * @brief Application integration declarations for the optional development services.
+ */
+
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Permanents/Backend/DevInterface.hpp"

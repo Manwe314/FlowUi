@@ -1,8 +1,8 @@
 #include "ElementResourceContractTestDriver.hpp"
 #include "TestHarness.hpp"
 
-#include "managers/ElementManager.hpp"
-#include "managers/structs/ElementManagerStructs.hpp"
+#include "FlowUi/Public/managers/ElementManager.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementSet.hpp"
 
 // Prospective Phase A compile-time API tests. The included headers are created
 // in later phases, so this file remains outside tests/CMakeLists.txt for now.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -19,25 +19,39 @@
 #include <utility>
 #include <vector>
 
-#include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/Public/identificationTypes/ElementID.hpp"
+#include "devSystems/DevConfig.hpp"
 #include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
 #include "devSystems/devTooling/schema/DevClayTypeAdapters.hpp"
 #include "devSystems/devTooling/schema/DevFlowUiTypeAdapters.hpp"
-#include "internal/TypeOperations.hpp"
-#include "managers/structs/FlowUiElementConcepts.hpp"
+#include "FlowUi/Private/TypeOperations.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementConcepts.hpp"
 
 namespace FlowUi {
 class UiManager;
 }
-namespace FlowUi::devMode {
+namespace FlowUi::devSystems::tooling {
 
+/** @brief Queues typed reflection roots and publishes immutable schema generations. Retained DevSchemaView values pin older generations across later publications. */
 class DevSchemaRegistry {
 public:
 	/** Typed, explicitly admitted passive defaults, independent of reflection coverage. */
 	struct ElementPreview {
+		/** @brief Owned catalogue-set membership name. */
 		std::string set_name{};
+		/** @brief Stable Flow definition represented by the adapter. */
 		FlowDefinitionID definition{};
+		/** @brief Typed drawing adapter; invocation requires explicit passive-default admission. */
 		void (*draw)(UiManager&, uint64_t, bool) = nullptr;
+		/** @var bool admitted
+		 * @brief Whether application author explicitly admitted passive default construction.
+		 */
+		/** @var bool has_draw
+		 * @brief Whether this definition provides a draw build path.
+		 */
+		/** @var bool has_construct
+		 * @brief Whether this definition provides a construct build path.
+		 */
 		bool admitted = false, has_draw = false, has_construct = false;
 	};
 	/** Discover an adapter without admitting arbitrary application code for execution. */
@@ -49,7 +63,9 @@ public:
 	}
 	/** Adapter admission and named memberships have their own refresh generation. */
 	[[nodiscard]] uint64_t previewRevision() const noexcept { return preview_revision_; }
+	/** @brief Construct an empty registry with copied schema capacity/depth limits. */
 	explicit DevSchemaRegistry(DevSchemaLimits limits = {});
+	/** @brief Release queued roots and this owner's generation references; retained DevSchemaView copies keep published generations alive. */
 	~DevSchemaRegistry();
 
 	DevSchemaRegistry(const DevSchemaRegistry&) = delete;
@@ -57,6 +73,7 @@ public:
 	DevSchemaRegistry(DevSchemaRegistry&&) = delete;
 	DevSchemaRegistry& operator=(DevSchemaRegistry&&) = delete;
 
+	/** @brief Queue this element definition and its parameter/state/resource types once; publishPendingAtSafePoint() performs ingestion. */
 	template <FlowElement Element>
 	void ensureElement() {
 		using E = std::remove_cvref_t<Element>;
@@ -65,6 +82,7 @@ public:
 			PendingRoot{&ingestElementRoot<E>});
 	}
 
+	/** @brief Queue this theme payload type once; no application theme value is instantiated or registered. */
 	template <typename Theme>
 	void ensureTheme() {
 		using T = std::remove_cvref_t<Theme>;
@@ -73,6 +91,7 @@ public:
 			PendingRoot{&ingestThemeRoot<T>});
 	}
 
+	/** @brief Queue this extra reflected struct type once for the next safe-point publication. */
 	template <typename Struct>
 	void ensureStruct() {
 		using T = std::remove_cvref_t<Struct>;
@@ -81,6 +100,7 @@ public:
 			PendingRoot{&ingestStructRoot<T>});
 	}
 
+	/** @brief Queue every root in a compile-time catalogue; duplicate type roots are coalesced. */
 	template <typename... Elements, typename... Themes, typename... Structs>
 	void ingest(const DevCatalogue<
 		DevElementCatalogue<Elements...>,
@@ -94,8 +114,11 @@ public:
 	/** Publish all queued roots. Returns true only when a new generation was made. */
 	bool publishPendingAtSafePoint();
 
+	/** @brief Return a shared immutable generation handle; retaining it keeps all referenced metadata alive across future publications. */
 	[[nodiscard]] DevSchemaView view() const noexcept;
+	/** @brief Return the number of distinct queued roots awaiting publication. */
 	[[nodiscard]] std::size_t pendingRootCount() const noexcept;
+	/** @brief Copy the immutable configured schema capacity/depth limits. */
 	[[nodiscard]] DevSchemaLimits limits() const noexcept { return limits_; }
 
 private:
@@ -884,6 +907,6 @@ private:
 	DevSchemaGenerationId nextGeneration_ = 1;
 };
 
-} // namespace FlowUi::devMode
+} // namespace FlowUi::devSystems::tooling
 
 #endif

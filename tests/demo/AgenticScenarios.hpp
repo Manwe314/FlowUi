@@ -5,7 +5,7 @@
 
 namespace agentic = FlowUi::devSystems::agentic;
 
-/** Application-owned scenario state; it outlives the App and its registered callbacks. */
+/* Application-owned scenario state; it outlives the App and its registered callbacks. */
 struct DemoAgenticHarness {
 	std::optional<DemoState> previous_state;
 	DemoParameters previous_parameters;

@@ -1,16 +1,16 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 #include <string>
 #include <string_view>
 namespace FlowUi::devSystems::interface_elements {
 struct DevSelectorSearchParameters {
 	std::string* query = nullptr;
 	std::string_view placeholder = "Filter nodes...";
-	/** Center text and caret in this search field without changing other selector defaults. */
+	/* Center text and caret in this search field without changing other selector defaults. */
 	bool center_text = false;
-	/** Fit a caller-owned horizontal filter section without adding a nested section border. */
+	/* Fit a caller-owned horizontal filter section without adding a nested section border. */
 	bool inline_control = false;
 };
 

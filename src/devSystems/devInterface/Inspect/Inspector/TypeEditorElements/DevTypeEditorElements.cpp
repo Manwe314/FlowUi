@@ -26,10 +26,11 @@
 #include "FSEL/TextInput.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevActionButton.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "managers/UiManager.hpp"
-#include "managers/ImageManager.hpp"
-#include "managers/IconManager.hpp"
+#include "FlowUi/Public/managers/IconManager.hpp"
+#include "FlowUi/Public/managers/ImageManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 namespace {
@@ -116,11 +117,6 @@ inline constexpr std::array<FSEL::ComboBoxOption, 4> kTextureFitOptions{{
 	{.value = static_cast<std::uint64_t>(TextureFitMode::None), .text = "None"},
 }};
 
-inline constexpr std::array<FSEL::ComboBoxOption, 2> kTextureSamplingOptions{{
-	{.value = static_cast<std::uint64_t>(TextureSamplingMode::Linear), .text = "Linear · Renderer owned"},
-	{.value = static_cast<std::uint64_t>(TextureSamplingMode::Nearest), .text = "Nearest · Renderer owned"},
-}};
-
 Clay_TextElementConfig textConfig(
 	Clay_Color color,
 	uint16_t size,
@@ -151,16 +147,16 @@ Clay_ElementDeclaration fixedSection(
 	return section;
 }
 
-const devMode::DevFieldSchema* fieldAt(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevFieldIndex index) {
+const tooling::DevFieldSchema* fieldAt(
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevFieldIndex index) {
 	if (!index || index.value > schema.fields.size()) return nullptr;
 	return &schema.fields[index.value - 1u];
 }
 
 std::string_view schemaTypeName(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevTypeSchema* type) {
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevTypeSchema* type) {
 	if (!type) return "Unknown";
 	std::string_view name = schema.string(type->displayName);
 	if (name.empty()) name = schema.string(type->cppTypeName);
@@ -168,19 +164,19 @@ std::string_view schemaTypeName(
 }
 
 std::string normalizedTypeName(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevTypeSchema* type) {
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevTypeSchema* type) {
 	if (!type) return "Unknown";
-	if (type->kind == devMode::DevTypeKind::Optional) {
+	if (type->kind == tooling::DevTypeKind::Optional) {
 		return "Optional " + normalizedTypeName(schema, schema.type(type->elementType));
 	}
 	switch (type->kind) {
-	case devMode::DevTypeKind::Boolean: return "Boolean";
-	case devMode::DevTypeKind::SignedInteger: return "Integer";
-	case devMode::DevTypeKind::UnsignedInteger: return "Unsigned Integer";
-	case devMode::DevTypeKind::FloatingPoint: return "Float";
-	case devMode::DevTypeKind::Text: return "Text";
-	case devMode::DevTypeKind::Sequence:
+	case tooling::DevTypeKind::Boolean: return "Boolean";
+	case tooling::DevTypeKind::SignedInteger: return "Integer";
+	case tooling::DevTypeKind::UnsignedInteger: return "Unsigned Integer";
+	case tooling::DevTypeKind::FloatingPoint: return "Float";
+	case tooling::DevTypeKind::Text: return "Text";
+	case tooling::DevTypeKind::Sequence:
 		return "Sequence of " + normalizedTypeName(schema, schema.type(type->elementType));
 	default: break;
 	}
@@ -190,60 +186,60 @@ std::string normalizedTypeName(
 	return name;
 }
 
-devMode::DevFieldIndex fieldIndex(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevFieldSchema& field) {
-	return devMode::DevFieldIndex{
+tooling::DevFieldIndex fieldIndex(
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevFieldSchema& field) {
+	return tooling::DevFieldIndex{
 		static_cast<uint32_t>(&field - schema.fields.data()) + 1u};
 }
 
-devMode::DevEditorKind editorKind(
-	const devMode::DevFieldSchema* field,
-	const devMode::DevTypeSchema* type) {
-	if (field && field->editor != devMode::DevEditorKind::None &&
-		!(field->editor == devMode::DevEditorKind::OptionalGroup && type &&
-			type->kind != devMode::DevTypeKind::Optional)) return field->editor;
-	if (!type) return devMode::DevEditorKind::None;
-	if (type->kind == devMode::DevTypeKind::Enumeration) {
-		return devMode::DevEditorKind::EnumChoice;
+tooling::DevEditorKind editorKind(
+	const tooling::DevFieldSchema* field,
+	const tooling::DevTypeSchema* type) {
+	if (field && field->editor != tooling::DevEditorKind::None &&
+		!(field->editor == tooling::DevEditorKind::OptionalGroup && type &&
+			type->kind != tooling::DevTypeKind::Optional)) return field->editor;
+	if (!type) return tooling::DevEditorKind::None;
+	if (type->kind == tooling::DevTypeKind::Enumeration) {
+		return tooling::DevEditorKind::EnumChoice;
 	}
-	if (type->kind == devMode::DevTypeKind::Optional) {
-		return devMode::DevEditorKind::OptionalGroup;
+	if (type->kind == tooling::DevTypeKind::Optional) {
+		return tooling::DevEditorKind::OptionalGroup;
 	}
 	return type->editor;
 }
 
-std::string_view editorName(devMode::DevEditorKind editor) {
+std::string_view editorName(tooling::DevEditorKind editor) {
 	switch (editor) {
-	case devMode::DevEditorKind::Toggle: return "Boolean";
-	case devMode::DevEditorKind::SignedNumber: return "Signed Number";
-	case devMode::DevEditorKind::UnsignedNumber: return "Unsigned Number";
-	case devMode::DevEditorKind::FloatingNumber: return "Floating Number";
-	case devMode::DevEditorKind::Text: return "Text";
-	case devMode::DevEditorKind::EnumChoice: return "Enum";
-	case devMode::DevEditorKind::Flags: return "Flags";
-	case devMode::DevEditorKind::Color: return "Clay Color";
-	case devMode::DevEditorKind::Vector: return "Clay Vector";
-	case devMode::DevEditorKind::Spacing: return "Clay Spacing";
-	case devMode::DevEditorKind::CornerRadius: return "Clay Corner Radius";
-	case devMode::DevEditorKind::Sizing: return "Clay Sizing";
-	case devMode::DevEditorKind::SizingAxis: return "Clay Sizing Axis";
-	case devMode::DevEditorKind::AttachmentPoints: return "Attachment Points";
-	case devMode::DevEditorKind::ObjectGroup: return "Object";
-	case devMode::DevEditorKind::OptionalGroup: return "Optional";
-	case devMode::DevEditorKind::Sequence: return "Sequence";
-	case devMode::DevEditorKind::FontChoice: return "Font";
-	case devMode::DevEditorKind::ActionChoice: return "Action";
-	case devMode::DevEditorKind::ResourceChoice: return "Resource";
-	case devMode::DevEditorKind::Custom: return "Custom";
-	case devMode::DevEditorKind::None: return "Unsupported";
+	case tooling::DevEditorKind::Toggle: return "Boolean";
+	case tooling::DevEditorKind::SignedNumber: return "Signed Number";
+	case tooling::DevEditorKind::UnsignedNumber: return "Unsigned Number";
+	case tooling::DevEditorKind::FloatingNumber: return "Floating Number";
+	case tooling::DevEditorKind::Text: return "Text";
+	case tooling::DevEditorKind::EnumChoice: return "Enum";
+	case tooling::DevEditorKind::Flags: return "Flags";
+	case tooling::DevEditorKind::Color: return "Clay Color";
+	case tooling::DevEditorKind::Vector: return "Clay Vector";
+	case tooling::DevEditorKind::Spacing: return "Clay Spacing";
+	case tooling::DevEditorKind::CornerRadius: return "Clay Corner Radius";
+	case tooling::DevEditorKind::Sizing: return "Clay Sizing";
+	case tooling::DevEditorKind::SizingAxis: return "Clay Sizing Axis";
+	case tooling::DevEditorKind::AttachmentPoints: return "Attachment Points";
+	case tooling::DevEditorKind::ObjectGroup: return "Object";
+	case tooling::DevEditorKind::OptionalGroup: return "Optional";
+	case tooling::DevEditorKind::Sequence: return "Sequence";
+	case tooling::DevEditorKind::FontChoice: return "Font";
+	case tooling::DevEditorKind::ActionChoice: return "Action";
+	case tooling::DevEditorKind::ResourceChoice: return "Resource";
+	case tooling::DevEditorKind::Custom: return "Custom";
+	case tooling::DevEditorKind::None: return "Unsupported";
 	}
 	return "Unsupported";
 }
 
 std::string_view claySemanticName(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevTypeSchema* type) {
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevTypeSchema* type) {
 	if (!type) return {};
 	std::string_view name = schema.string(type->displayName);
 	if (name.empty()) name = schema.string(type->cppTypeName);
@@ -268,24 +264,24 @@ std::string_view claySemanticName(
 }
 
 std::string semanticName(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevFieldSchema* field,
-	const devMode::DevTypeSchema* type) {
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevFieldSchema* field,
+	const tooling::DevTypeSchema* type) {
 	if (const std::string_view clayName = claySemanticName(schema, type);
 		!clayName.empty()) return std::string(clayName);
-	const devMode::DevEditorKind editor = editorKind(field, type);
-	if (editor != devMode::DevEditorKind::OptionalGroup || !type) {
+	const tooling::DevEditorKind editor = editorKind(field, type);
+	if (editor != tooling::DevEditorKind::OptionalGroup || !type) {
 		return std::string(editorName(editor));
 	}
-	const devMode::DevTypeSchema* valueType = schema.type(type->elementType);
+	const tooling::DevTypeSchema* valueType = schema.type(type->elementType);
 	if (!valueType) return "Optional";
 	return std::string("Optional · ") + semanticName(schema, nullptr, valueType);
 }
 
-bool editableCapability(devMode::DevEditCapability capability) noexcept {
-	return capability == devMode::DevEditCapability::Editable ||
-		capability == devMode::DevEditCapability::PartiallyEditable ||
-		capability == devMode::DevEditCapability::SemanticCommand;
+bool editableCapability(tooling::DevEditCapability capability) noexcept {
+	return capability == tooling::DevEditCapability::Editable ||
+		capability == tooling::DevEditCapability::PartiallyEditable ||
+		capability == tooling::DevEditCapability::SemanticCommand;
 }
 
 std::string boundedText(std::string text, std::size_t maximum = 56u) {
@@ -314,293 +310,15 @@ std::uint64_t catalogueNumericIdentity(std::uint8_t domain, std::uint64_t value)
 	return value == 0u ? static_cast<std::uint64_t>(domain) + 1u : value;
 }
 
-std::string_view resourceStatusName(devMode::DevResourceStatus status) noexcept {
+std::string_view resourceStatusName(tooling::DevResourceStatus status) noexcept {
 	switch (status) {
-	case devMode::DevResourceStatus::Unloaded: return "Unloaded";
-	case devMode::DevResourceStatus::Loading: return "Loading";
-	case devMode::DevResourceStatus::Ready: return "Ready";
-	case devMode::DevResourceStatus::Failed: return "Failed";
-	case devMode::DevResourceStatus::Retiring: return "Retiring";
+	case tooling::DevResourceStatus::Unloaded: return "Unloaded";
+	case tooling::DevResourceStatus::Loading: return "Loading";
+	case tooling::DevResourceStatus::Ready: return "Ready";
+	case tooling::DevResourceStatus::Failed: return "Failed";
+	case tooling::DevResourceStatus::Retiring: return "Retiring";
 	}
 	return "Unknown";
-}
-
-std::string escapedSingleLine(std::string_view text) {
-	std::string result;
-	result.reserve(std::min<std::size_t>(text.size(), 56u));
-	for (char character : text) {
-		if (result.size() >= 56u) break;
-		switch (character) {
-		case '\n': result += "\\n"; break;
-		case '\r': result += "\\r"; break;
-		case '\t': result += "\\t"; break;
-		default:
-			if (static_cast<unsigned char>(character) >= 0x20u) result.push_back(character);
-			break;
-		}
-	}
-	if (result.size() < text.size()) result += "...";
-	return boundedText(std::move(result));
-}
-
-std::string sizingAxisQuick(std::string_view prefix, const Clay_SizingAxis& axis) {
-	char buffer[64]{};
-	switch (axis.type) {
-	case CLAY__SIZING_TYPE_FIT:
-		std::snprintf(buffer, sizeof(buffer), "%.*s Fit %.0f-%.0f",
-			static_cast<int>(prefix.size()), prefix.data(), axis.size.minMax.min, axis.size.minMax.max);
-		break;
-	case CLAY__SIZING_TYPE_GROW:
-		std::snprintf(buffer, sizeof(buffer), "%.*s Grow %.0f-%.0f",
-			static_cast<int>(prefix.size()), prefix.data(), axis.size.minMax.min, axis.size.minMax.max);
-		break;
-	case CLAY__SIZING_TYPE_PERCENT:
-		std::snprintf(buffer, sizeof(buffer), "%.*s %.0f%%",
-			static_cast<int>(prefix.size()), prefix.data(), axis.size.percent * 100.0f);
-		break;
-	case CLAY__SIZING_TYPE_FIXED:
-		std::snprintf(buffer, sizeof(buffer), "%.*s %.0f px",
-			static_cast<int>(prefix.size()), prefix.data(), axis.size.minMax.min);
-		break;
-	default:
-		std::snprintf(buffer, sizeof(buffer), "%.*s Unknown",
-			static_cast<int>(prefix.size()), prefix.data());
-		break;
-	}
-	return buffer;
-}
-
-DevQuickView quickView(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevTypeSchema* type,
-	const void* value,
-	App* app = nullptr,
-	const devMode::DevFieldSchema* field = nullptr) {
-	if (!type) return DevQuickView{
-		.primary = "Unregistered · Unknown",
-		.kind = DevQuickView::Kind::Status,
-		.status = DevQuickStatus::Warning,};
-	if (!value) return DevQuickView{
-		.primary = "Value unavailable",
-		.kind = DevQuickView::Kind::Status,
-		.status = DevQuickStatus::Unavailable,};
-	const std::size_t typeIndex = static_cast<std::size_t>(type - schema.types.data());
-	const devMode::DevTypeOps* operations = typeIndex < schema.typeOperations.size()
-		? schema.typeOperations[typeIndex] : nullptr;
-	if (type->kind == devMode::DevTypeKind::Optional) {
-		if (!operations || !operations->optionalHasValue || !operations->optionalValueAddress) {
-			return DevQuickView{
-				.primary = "Value unavailable",.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Unavailable,};
-		}
-		if (!operations->optionalHasValue(value)) return DevQuickView{.primary = "NullOpt",};
-		return quickView(
-			schema, schema.type(type->elementType),
-			operations->optionalValueAddress(value), app, field);
-	}
-	const std::string_view name = schemaTypeName(schema, type);
-	char buffer[128]{};
-	if (name == "Clay_Padding") {
-		const auto& padding = *static_cast<const Clay_Padding*>(value);
-		if (padding.left == padding.right && padding.left == padding.top &&
-			padding.left == padding.bottom) {
-			std::snprintf(buffer, sizeof(buffer), "%u all", padding.left);
-			return DevQuickView{ .primary = buffer,.kind = DevQuickView::Kind::Spacing,};
-		}
-		std::snprintf(buffer, sizeof(buffer), "T %u · R %u", padding.top, padding.right);
-		char second[64]{};
-		std::snprintf(second, sizeof(second), "B %u · L %u", padding.bottom, padding.left);
-		return DevQuickView{
-			.primary = buffer, .secondary = second,.kind = DevQuickView::Kind::Spacing,};
-	}
-	if (name == "Clay_BorderWidth") {
-		const auto& width = *static_cast<const Clay_BorderWidth*>(value);
-		if (width.left == width.right && width.left == width.top &&
-			width.left == width.bottom) {
-			std::snprintf(buffer, sizeof(buffer), "%u all · Between %u",
-				width.left, width.betweenChildren);
-		} else {
-			std::snprintf(buffer, sizeof(buffer), "L%u R%u T%u B%u · Between %u",
-				width.left, width.right, width.top, width.bottom, width.betweenChildren);
-		}
-		return DevQuickView{ .primary = buffer,.kind = DevQuickView::Kind::Spacing,};
-	}
-	if (name == "Clay_Color") {
-		const auto& color = *static_cast<const Clay_Color*>(value);
-		std::snprintf(buffer, sizeof(buffer), "#%02X%02X%02X%02X",
-			static_cast<unsigned>(std::lround(std::clamp(color.r, 0.0f, 255.0f))),
-			static_cast<unsigned>(std::lround(std::clamp(color.g, 0.0f, 255.0f))),
-			static_cast<unsigned>(std::lround(std::clamp(color.b, 0.0f, 255.0f))),
-			static_cast<unsigned>(std::lround(std::clamp(color.a, 0.0f, 255.0f))));
-		return DevQuickView{
-			.primary = buffer, .swatch = color,.kind = DevQuickView::Kind::Color,};
-	}
-	if (type->kind == devMode::DevTypeKind::Boolean) {
-		long double numeric = 0.0L;
-		return DevQuickView{.primary = operations && operations->numericValue &&
-			operations->numericValue(value, numeric) ? (numeric == 0.0L ? "Off" : "On")
-			: "Value unavailable",};
-	}
-	if (field && field->choiceDomain != devMode::DevChoiceDomain::None &&
-		(field->choiceDomain == devMode::DevChoiceDomain::FontFace ||
-		 field->choiceDomain == devMode::DevChoiceDomain::FontFamily)) {
-		long double numeric = 0.0L;
-		if (operations && operations->numericValue && operations->numericValue(value, numeric)) {
-			const std::uint64_t identity = static_cast<std::uint64_t>(numeric);
-			if (app) for (const devMode::DevFontCatalogEntry& font :
-				app->devTooling().catalogues().queryFonts()) {
-				const std::uint64_t candidate = field->choiceDomain == devMode::DevChoiceDomain::FontFamily
-					? static_cast<std::uint64_t>(font.familyHandle)
-					: static_cast<std::uint64_t>(font.fontHandle);
-				if (candidate != identity) continue;
-				std::string label(font.familyName);
-				if (field->choiceDomain == devMode::DevChoiceDomain::FontFace) {
-					label += " · ";
-					label += font.faceName.empty() ? "Regular" : std::string(font.faceName);
-				}
-				return DevQuickView{.primary = std::move(label),};
-			}
-			return DevQuickView{
-				.primary = "Missing font · " + std::to_string(identity),.kind = DevQuickView::Kind::Status,
-				.status = DevQuickStatus::Missing,};
-		}
-	}
-	if (name == "ActionCall") {
-		const auto& call = *static_cast<const ActionCall*>(value);
-		if (!call) return DevQuickView{.primary = "None",};
-		if (app) {
-			if (const std::optional<ActionDebugInfo> info = app->actions().debugInfo(call)) {
-				return DevQuickView{.primary = std::string(
-					info->kind == ActionCallKind::App ? "APP " : "UI ") +
-					std::string(info->debugName),
-					.status = info->bound ? DevQuickStatus::Normal : DevQuickStatus::Missing,};
-			}
-		}
-		return DevQuickView{
-			.primary = "Missing action",.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Missing,};
-	}
-	if (name == "TextureRef") {
-		const auto& texture = *static_cast<const TextureRef*>(value);
-		if (!texture.handle && !texture.sourceKey.empty()) {
-			return DevQuickView{.primary = std::string(texture.sourceKey),};
-		}
-		if (!texture.handle) return DevQuickView{
-			.primary = "No texture",.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Missing,};
-		if (app) {
-			for (const devMode::DevImageCatalogEntry& image :
-				app->devTooling().catalogues().queryImages()) {
-				if (image.textureHandle != texture.handle) continue;
-				return DevQuickView{.primary = std::string(image.key.name),
-					.status = image.status == devMode::DevResourceStatus::Ready
-						? DevQuickStatus::Normal : DevQuickStatus::Warning,};
-			}
-			for (const devMode::DevIconCatalogEntry& icon :
-				app->devTooling().catalogues().queryIcons()) {
-				if (icon.atlasTexture != texture.handle ||
-					std::abs(icon.atlasUv.x - texture.uv0x) > 0.00001f ||
-					std::abs(icon.atlasUv.y - texture.uv0y) > 0.00001f) continue;
-				return DevQuickView{.primary = "Icon · " + std::string(icon.iconName),};
-			}
-		}
-		std::snprintf(buffer, sizeof(buffer), "Anonymous texture · %016llX",
-			static_cast<unsigned long long>(texture.handle.packed()));
-		return DevQuickView{
-			.primary = buffer,.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Warning,};
-	}
-	if (name == "Clay_CornerRadius") {
-		const auto& radius = *static_cast<const Clay_CornerRadius*>(value);
-		if (radius.topLeft == radius.topRight && radius.topLeft == radius.bottomRight &&
-			radius.topLeft == radius.bottomLeft) {
-			std::snprintf(buffer, sizeof(buffer), "%.0f all", radius.topLeft);
-		} else {
-			std::snprintf(buffer, sizeof(buffer), "TL%.0f TR%.0f BR%.0f BL%.0f",
-				radius.topLeft, radius.topRight, radius.bottomRight, radius.bottomLeft);
-		}
-		return DevQuickView{.primary = buffer,};
-	}
-	if (name == "Clay_Dimensions") {
-		const auto& dimensions = *static_cast<const Clay_Dimensions*>(value);
-		std::snprintf(buffer, sizeof(buffer), "%.2f × %.2f",
-			dimensions.width, dimensions.height);
-		return DevQuickView{.primary = buffer,};
-	}
-	if (name == "Clay_Vector2") {
-		const auto& vector = *static_cast<const Clay_Vector2*>(value);
-		std::snprintf(buffer, sizeof(buffer), "%.2f, %.2f", vector.x, vector.y);
-		return DevQuickView{.primary = buffer,};
-	}
-	if (name == "Clay_SizingMinMax") {
-		const auto& range = *static_cast<const Clay_SizingMinMax*>(value);
-		std::snprintf(buffer, sizeof(buffer), "%.2f – %.2f", range.min, range.max);
-		return DevQuickView{.primary = buffer,};
-	}
-	if (name == "Clay_SizingAxis") {
-		const auto& axis = *static_cast<const Clay_SizingAxis*>(value);
-		return DevQuickView{
-			.primary = sizingAxisQuick("", axis),.kind = DevQuickView::Kind::Sizing,};
-	}
-	if (name == "Clay_Sizing") {
-		const auto& sizing = *static_cast<const Clay_Sizing*>(value);
-		return DevQuickView{
-			.primary = sizingAxisQuick("W", sizing.width),
-			.secondary = sizingAxisQuick("H", sizing.height),.kind = DevQuickView::Kind::Sizing,};
-	}
-	if (type->kind == devMode::DevTypeKind::Enumeration &&
-		type->enumeration.values.first <= schema.enumValues.size() &&
-		type->enumeration.values.count <=
-			schema.enumValues.size() - type->enumeration.values.first) {
-		long double numeric = 0.0L;
-		if (operations && operations->numericValue && operations->numericValue(value, numeric)) {
-			const uint64_t bits = static_cast<uint64_t>(numeric);
-			for (uint32_t index = 0; index < type->enumeration.values.count; ++index) {
-				const devMode::DevEnumValueSchema& option =
-					schema.enumValues[type->enumeration.values.first + index];
-				if (option.bits == bits) return DevQuickView{
-					.primary = std::string(schema.string(option.name)),};
-			}
-			std::snprintf(buffer, sizeof(buffer), "Unknown · %llu",
-				static_cast<unsigned long long>(bits));
-			return DevQuickView{
-				.primary = buffer,.kind = DevQuickView::Kind::Status, .status = DevQuickStatus::Warning,};
-		}
-	}
-	if (type->kind == devMode::DevTypeKind::SignedInteger ||
-		type->kind == devMode::DevTypeKind::UnsignedInteger ||
-		type->kind == devMode::DevTypeKind::FloatingPoint) {
-		long double numeric = 0.0L;
-		if (operations && operations->numericValue && operations->numericValue(value, numeric)) {
-			std::ostringstream stream;
-			if (type->kind == devMode::DevTypeKind::FloatingPoint) {
-				stream << std::setprecision(6) << std::defaultfloat << numeric;
-			} else stream << std::fixed << std::setprecision(0) << numeric;
-			return DevQuickView{.primary = stream.str(),};
-		}
-	}
-	if (type->kind == devMode::DevTypeKind::Text && operations && operations->textView) {
-		return DevQuickView{.primary = escapedSingleLine(operations->textView(value)),};
-	}
-	if (type->kind == devMode::DevTypeKind::Sequence && operations && operations->sequenceSize) {
-		std::snprintf(buffer, sizeof(buffer), "%zu items", operations->sequenceSize(value));
-		return DevQuickView{.primary = buffer,};
-	}
-	if (type->kind == devMode::DevTypeKind::Object) {
-		std::snprintf(buffer, sizeof(buffer), "%u fields", type->fields.count);
-		return DevQuickView{.primary = buffer,};
-	}
-	if (type->kind == devMode::DevTypeKind::Pointer && operations && operations->pointerValue) {
-		const void* pointer = nullptr;
-		if (operations->pointerValue(value, pointer)) {
-			if (!pointer) return DevQuickView{.primary = "Null",};
-			std::snprintf(buffer, sizeof(buffer), "Address · %p", pointer);
-			return DevQuickView{.primary = buffer,};
-		}
-	}
-	if (type->kind == devMode::DevTypeKind::Opaque) {
-		std::snprintf(buffer, sizeof(buffer), "Opaque · %u bytes", type->size);
-		return DevQuickView{ .primary = buffer,.kind = DevQuickView::Kind::Status,};
-	}
-	return DevQuickView{
-		.primary = boundedText("Unregistered · " + normalizedTypeName(schema, type)),.kind = DevQuickView::Kind::Status,
-		.status = DevQuickStatus::Warning,};
 }
 
 std::string roleName(DevEditorRole role) {
@@ -614,11 +332,11 @@ std::string roleName(DevEditorRole role) {
 }
 
 tooling::DevOverrideCommand resolvedOverrideCommand(
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const DevEditorBinding& binding,
 	tooling::DevOverrideCommandKind kind,
 	tooling::DevOwnedValue value = {}) {
-	const devMode::DevFieldSchema* field = fieldAt(schema, binding.field);
+	const tooling::DevFieldSchema* field = fieldAt(schema, binding.field);
 	tooling::DevOverrideCommand command{};
 	command.kind = kind;
 	if (binding.theme_type != 0) {
@@ -647,7 +365,7 @@ tooling::DevOverrideCommand resolvedOverrideCommand(
 }
 
 tooling::DevOverrideCommand fieldCommand(
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const DevEditorCardState& card,
 	tooling::DevOverrideCommandKind kind,
 	tooling::DevOwnedValue value = {}) {
@@ -655,7 +373,7 @@ tooling::DevOverrideCommand fieldCommand(
 }
 
 tooling::DevOverrideCommand editorFieldCommand(
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const DevTypeEditorState& editor,
 	tooling::DevOverrideCommandKind kind,
 	tooling::DevOwnedValue value = {}) {
@@ -663,9 +381,10 @@ tooling::DevOverrideCommand editorFieldCommand(
 }
 
 bool updateEditorPreview(DevTypeEditorState& editor) {
+	if (editor.local_value) return editor.editable && editor.editValue;
 	if (!editor.app || !editor.interfaceState || !editor.editable ||
 		!editor.currentValue) return false;
-	const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
 	if (!schema) return false;
 	tooling::DevChangeSet changes{};
 	changes.transaction = editor.interfaceState->nextEditTransaction++;
@@ -683,7 +402,7 @@ bool updateEditorPreview(DevTypeEditorState& editor) {
 
 void cancelEditorPreview(DevTypeEditorState& editor) {
 	if (!editor.previewActive || !editor.app || !editor.interfaceState) return;
-	const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
 	if (!schema) return;
 	tooling::DevOverrideCommand clear = editorFieldCommand(
 		*schema, editor, tooling::DevOverrideCommandKind::ClearElementField);
@@ -697,7 +416,7 @@ void cancelEditorPreview(DevTypeEditorState& editor) {
 }
 
 const tooling::DevOwnedValue* currentEditorOverride(const App& app,
-													const devMode::DevSchemaGeneration& schema,
+													const tooling::DevSchemaGeneration& schema,
 													const DevTypeEditorState& editor) {
 	const tooling::DevOverrideCommand key = editorFieldCommand(
 		schema, editor, tooling::DevOverrideCommandKind::ClearElementField);
@@ -717,7 +436,7 @@ const tooling::DevOwnedValue* currentEditorOverride(const App& app,
 }
 
 const tooling::DevOwnedValue* currentOverride(const App& app,
-											  const devMode::DevSchemaGeneration& schema,
+											  const tooling::DevSchemaGeneration& schema,
 											  const DevEditorCardState& card) {
 	const tooling::DevOverrideCommand key = fieldCommand(
 		schema, card, tooling::DevOverrideCommandKind::ClearElementField);
@@ -760,7 +479,7 @@ OverrideRelation overrideRelation(
 
 DevOverridePresence overridePresence(
 	const App& app,
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const DevEditorCardState& card) {
 	const tooling::DevOverrideCommand key = fieldCommand(
 		schema, card, tooling::DevOverrideCommandKind::ClearElementField);
@@ -829,11 +548,12 @@ bool submitEditTransaction(
 }
 
 bool commitEditorValue(DevTypeEditorState& editor, std::string description) {
+	if (editor.local_value) return editor.editable && editor.editValue;
 	if (!editor.app || !editor.interfaceState || !editor.editable ||
 		!editor.currentValue) return false;
 	App& app = *editor.app;
 	DevInterfaceState& state = *editor.interfaceState;
-	const devMode::DevSchemaView schema = app.devTooling().schemas().view();
+	const tooling::DevSchemaView schema = app.devTooling().schemas().view();
 	if (!schema) return false;
 	DevInterfaceEditTransaction transaction{};
 	transaction.description = std::move(description);
@@ -857,22 +577,22 @@ bool commitEditorValue(DevTypeEditorState& editor, std::string description) {
 	return true;
 }
 
-const devMode::DevTypeOps* typeOperations(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevTypeIndex index) {
+const tooling::DevTypeOps* typeOperations(
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevTypeIndex index) {
 	return index.value < schema.typeOperations.size()
 		? schema.typeOperations[index.value] : nullptr;
 }
 
 std::string numericDraft(
-	const devMode::DevTypeSchema& type,
-	const devMode::DevTypeOps* operations,
+	const tooling::DevTypeSchema& type,
+	const tooling::DevTypeOps* operations,
 	const void* value) {
 	long double numeric = 0.0L;
 	if (!operations || !operations->numericValue ||
 		!operations->numericValue(value, numeric)) return {};
 	std::ostringstream stream;
-	if (type.kind == devMode::DevTypeKind::FloatingPoint) {
+	if (type.kind == tooling::DevTypeKind::FloatingPoint) {
 		stream << std::setprecision(std::numeric_limits<long double>::digits10) << numeric;
 	} else {
 		stream << std::fixed << std::setprecision(0) << numeric;
@@ -892,13 +612,13 @@ bool parseNumericDraft(std::string_view draft, long double& value) {
 
 bool applyEditorDraft(DevTypeEditorState& editor) {
 	if (!editor.app || !editor.currentValue || !editor.editValue) return false;
-	const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-	const devMode::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
-	const devMode::DevTypeOps* operations = schema
+	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
+	const tooling::DevTypeOps* operations = schema
 		? typeOperations(*schema, editor.operationType) : nullptr;
 	if (!type || !operations) return false;
-	devMode::DevValueOperationStatus status = devMode::DevValueOperationStatus::Unsupported;
-	if (type->kind == devMode::DevTypeKind::Text && operations->assignTextValue) {
+	tooling::DevValueOperationStatus status = tooling::DevValueOperationStatus::Unsupported;
+	if (type->kind == tooling::DevTypeKind::Text && operations->assignTextValue) {
 		status = operations->assignTextValue(editor.editValue, editor.draft);
 	} else if (operations->assignNumericValue) {
 		long double candidate = 0.0L;
@@ -906,7 +626,7 @@ bool applyEditorDraft(DevTypeEditorState& editor) {
 			status = operations->assignNumericValue(editor.editValue, candidate);
 		}
 	}
-	editor.draftValid = status == devMode::DevValueOperationStatus::Success;
+	editor.draftValid = status == tooling::DevValueOperationStatus::Success;
 	return editor.draftValid;
 }
 
@@ -928,28 +648,28 @@ constexpr auto kCommitEditorDraft = UiAction(
 
 bool applyEditorDragValue(DevTypeEditorState& editor) {
 	if (!editor.app || !editor.currentValue || !editor.editValue) return false;
-	const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-	const devMode::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
-	const devMode::DevTypeOps* operations = schema
+	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
+	const tooling::DevTypeOps* operations = schema
 		? typeOperations(*schema, editor.operationType) : nullptr;
 	if (!type || !operations || !operations->assignNumericValue) return false;
 
 	long double candidate = 0.0L;
 	switch (type->kind) {
-	case devMode::DevTypeKind::SignedInteger:
+	case tooling::DevTypeKind::SignedInteger:
 		candidate = static_cast<long double>(editor.dragSigned);
 		break;
-	case devMode::DevTypeKind::UnsignedInteger:
+	case tooling::DevTypeKind::UnsignedInteger:
 		candidate = static_cast<long double>(editor.dragUnsigned);
 		break;
-	case devMode::DevTypeKind::FloatingPoint:
+	case tooling::DevTypeKind::FloatingPoint:
 		candidate = static_cast<long double>(editor.dragFloat);
 		break;
 	default:
 		return false;
 	}
 	return operations->assignNumericValue(editor.editValue, candidate) ==
-		devMode::DevValueOperationStatus::Success;
+		tooling::DevValueOperationStatus::Success;
 }
 
 constexpr auto kPreviewEditorDragValue = UiAction(
@@ -977,14 +697,14 @@ constexpr auto kToggleEditorValue = UiAction(
 	"flowui.dev_interface.type-editor.toggle",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-		const devMode::DevTypeOps* operations = schema
+		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.operationType) : nullptr;
 		long double current = 0.0L;
 		if (!operations || !operations->numericValue || !operations->assignNumericValue ||
 			!operations->numericValue(editor.editValue, current)) return;
 		if (operations->assignNumericValue(editor.editValue, current == 0.0L ? 1.0L : 0.0L) ==
-			devMode::DevValueOperationStatus::Success) {
+			tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Toggle " + editor.fieldName);
 		}
 	});
@@ -993,13 +713,13 @@ constexpr auto kChooseEditorEnum = UiAction(
 	"flowui.dev_interface.type-editor.choose-enum",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-		const devMode::DevTypeOps* operations = schema
+		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.operationType) : nullptr;
 		if (operations && operations->assignNumericValue &&
 			operations->assignNumericValue(editor.editValue,
 				static_cast<long double>(editor.enumSelection)) ==
-				devMode::DevValueOperationStatus::Success) {
+				tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Choose " + editor.fieldName);
 		}
 	});
@@ -1008,13 +728,13 @@ constexpr auto kChooseCatalogueNumeric = UiAction(
 	"flowui.dev_interface.type-editor.choose-catalogue-numeric",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue || !editor.editValue) return;
-		const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-		const devMode::DevTypeOps* operations = schema
+		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.operationType) : nullptr;
 		if (operations && operations->assignNumericValue &&
 			operations->assignNumericValue(editor.editValue,
 				static_cast<long double>(editor.enumSelection)) ==
-				devMode::DevValueOperationStatus::Success) {
+				tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Choose " + editor.fieldName);
 		}
 	});
@@ -1030,7 +750,7 @@ constexpr auto kToggleEditorFlag = UiAction(
 			!operations->numericValue(editor.editValue, current)) return;
 		const uint64_t replacement = static_cast<uint64_t>(current) ^ mask;
 		if (operations->assignNumericValue(editor.editValue, static_cast<long double>(replacement)) ==
-			devMode::DevValueOperationStatus::Success) {
+			tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Toggle flag in " + editor.fieldName);
 		}
 	});
@@ -1039,13 +759,13 @@ constexpr auto kToggleOptional = UiAction(
 	"flowui.dev_interface.type-editor.toggle-optional",
 	[](DevTypeEditorState& editor) {
 		if (!editor.app || !editor.currentValue) return;
-		const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-		const devMode::DevTypeOps* operations = schema
+		const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+		const tooling::DevTypeOps* operations = schema
 			? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (!operations || !operations->optionalHasValue || !operations->setOptionalPresence) return;
 		const bool present = operations->optionalHasValue(editor.currentValue.data());
 		if (operations->setOptionalPresence(editor.currentValue.data(), !present) ==
-			devMode::DevValueOperationStatus::Success) {
+			tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, present ? "Clear " + editor.fieldName
 				: "Enable " + editor.fieldName);
 		}
@@ -1122,7 +842,7 @@ void updateColorHexDraft(DevTypeEditorState& editor) {
 }
 
 bool applyColorChannels(DevTypeEditorState& editor) {
-	if (!editor.currentValue || !editor.editValue) return false;
+	if ((!editor.currentValue && !editor.local_value) || !editor.editValue) return false;
 	auto& color = *static_cast<Clay_Color*>(editor.editValue);
 	color = Clay_Color{
 		std::clamp(editor.semanticChannels[0], 0.0f, 255.0f),
@@ -1163,7 +883,7 @@ constexpr auto kCloseColorPopup = UiAction(
 	[](DevColorTypeEditorState& state) { state.popupOpen = false; });
 
 bool applyColorHex(DevTypeEditorState& editor) {
-	if (!editor.currentValue || !editor.editValue) return false;
+	if ((!editor.currentValue && !editor.local_value) || !editor.editValue) return false;
 	std::string_view text = editor.semanticText;
 	if (!text.empty() && text.front() == '#') text.remove_prefix(1);
 	if (text.size() != 3u && text.size() != 6u && text.size() != 8u) {
@@ -1220,8 +940,8 @@ constexpr auto kCommitColorHex = UiAction(
 
 bool applySpatialValues(DevTypeEditorState& editor, std::uint64_t changedIndex) {
 	if (!editor.app || !editor.currentValue || !editor.editValue) return false;
-	const devMode::DevSchemaView schema = editor.app->devTooling().schemas().view();
-	const devMode::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
+	const tooling::DevSchemaView schema = editor.app->devTooling().schemas().view();
+	const tooling::DevTypeSchema* type = schema ? schema->type(editor.operationType) : nullptr;
 	const std::string_view name = schema && type ? schemaTypeName(*schema, type) : std::string_view{};
 	if (editor.semanticLinked && changedIndex < 4u) {
 		const unsigned int linked = editor.semanticUnsigned[changedIndex];
@@ -1351,7 +1071,6 @@ constexpr auto kChooseTextureResource = UiAction(
 			return;
 		}
 		replacement.fitMode = prior.fitMode;
-		replacement.samplingMode = prior.samplingMode;
 		replacement.tintEnabled = prior.tintEnabled;
 		*static_cast<TextureRef*>(editor.currentValue.data()) = replacement;
 		editor.localDiagnostic.clear();
@@ -1400,15 +1119,6 @@ constexpr auto kChooseTextureFit = UiAction(
 		(void)commitEditorValue(editor, "Choose texture fit for " + editor.fieldName);
 	});
 
-constexpr auto kChooseTextureSampling = UiAction(
-	"flowui.dev_interface.type-editor.choose-texture-sampling",
-	[](DevTypeEditorState& editor) {
-		if (!editor.currentValue) return;
-		auto& texture = *static_cast<TextureRef*>(editor.currentValue.data());
-		texture.samplingMode = static_cast<TextureSamplingMode>(editor.resourceSamplingSelection);
-		(void)commitEditorValue(editor, "Choose texture sampling for " + editor.fieldName);
-	});
-
 constexpr auto kToggleTextureTint = UiAction(
 	"flowui.dev_interface.type-editor.toggle-texture-tint",
 	[](DevTypeEditorState& editor) {
@@ -1427,7 +1137,7 @@ constexpr auto kAddSequenceItem = UiAction(
 		const auto* operations = schema ? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (operations && operations->sequenceAppendDefault &&
 			operations->sequenceAppendDefault(editor.currentValue.data()) ==
-				devMode::DevValueOperationStatus::Success) {
+				tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Add item to " + editor.fieldName);
 		}
 	});
@@ -1440,7 +1150,7 @@ constexpr auto kRemoveSequenceItem = UiAction(
 		const auto* operations = schema ? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (operations && operations->sequenceErase &&
 			operations->sequenceErase(editor.currentValue.data(), index) ==
-				devMode::DevValueOperationStatus::Success) {
+				tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Remove item from " + editor.fieldName);
 		}
 	});
@@ -1455,7 +1165,7 @@ constexpr auto kMoveSequenceItem = UiAction(
 		const auto* operations = schema ? typeOperations(*schema, editor.typeIndex) : nullptr;
 		if (operations && operations->sequenceMove &&
 			operations->sequenceMove(editor.currentValue.data(), from, to) ==
-				devMode::DevValueOperationStatus::Success) {
+				tooling::DevValueOperationStatus::Success) {
 			(void)commitEditorValue(editor, "Reorder " + editor.fieldName);
 		}
 	});
@@ -1493,7 +1203,7 @@ constexpr auto kPasteField = UiAction(
 		if (!card.app || !card.interfaceState) return;
 		App& app = *card.app;
 		DevInterfaceState& state = *card.interfaceState;
-		const devMode::DevSchemaView schema = app.devTooling().schemas().view();
+		const tooling::DevSchemaView schema = app.devTooling().schemas().view();
 		if (!schema || !card.editable || !state.editorClipboard ||
 			state.editorClipboard.type != card.fieldType) return;
 		DevInterfaceEditTransaction transaction{};
@@ -1521,7 +1231,7 @@ constexpr auto kResetField = UiAction(
 		if (!card.app || !card.interfaceState) return;
 		App& app = *card.app;
 		DevInterfaceState& state = *card.interfaceState;
-		const devMode::DevSchemaView schema = app.devTooling().schemas().view();
+		const tooling::DevSchemaView schema = app.devTooling().schemas().view();
 		if (!schema || !card.editable) return;
 		const tooling::DevOverrideCommand scope = fieldCommand(
 			*schema, card, tooling::DevOverrideCommandKind::ClearElementField);
@@ -1750,26 +1460,41 @@ constexpr auto kElevateAllChanges = UiAction(
 		}
 	});
 
-void drawHeaderButton(
-	DevEditorCardHeader::BuildContext& context,
-	FlowElementPart part,
-	std::string_view label,
-	ActionCall action,
-	bool enabled,
-	TextureRef icon = {}) {
+[[nodiscard]] TextureRef editor_action_icon([[maybe_unused]] App* app,
+											[[maybe_unused]] std::string_view key) {
+#if FLOWUI_INCLUDE_ICON_MANAGER
+	if (app) {
+		auto& icons = app->icons();
+		if (!icons.contains(key))
+			interface_icons::registerDevInterfaceIcons(icons);
+		if (icons.contains(key))
+			return icons.textureRef(key);
+	}
+#endif
+	return {};
+}
+
+void drawHeaderButton(DevEditorCardHeader::BuildContext& context, FlowElementPart part,
+					  std::string_view label, ActionCall action, bool enabled,
+					  TextureRef icon = {}) {
 	FSEL::ButtonParameters parameters{};
 	parameters.onActivate = action;
 	parameters.enabled = enabled;
-	parameters.contentMode = icon.handle
-		? FSEL::ButtonContentMode::IconOnly : FSEL::ButtonContentMode::TextOnly;
-	parameters.text = label;
+	parameters.contentMode =
+		icon.handle ? FSEL::ButtonContentMode::IconOnly : FSEL::ButtonContentMode::TextOnly;
+	parameters.text = icon.handle			? label
+					  : label == "Expand"	? "+"
+					  : label == "Collapse" ? "-"
+					  : label == "Copy"		? "C"
+					  : label == "Paste"	? "P"
+											: "R";
 	parameters.icon = icon;
 	parameters.tintIcon = true;
 	parameters.sizing = {
 		.width = CLAY_SIZING_FIXED(24),
 		.height = CLAY_SIZING_FIXED(24),
 	};
-	parameters.padding = Clay_Padding{0, 0, 0, 0};
+	parameters.padding = Clay_Padding{4, 4, 0, 0};
 	parameters.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 	parameters.cornerRadius = CLAY_CORNER_RADIUS(3);
 	parameters.idleOverrides.backgroundColor = interface_theme::kDepth3Elevated;
@@ -1794,45 +1519,52 @@ void drawHeaderButton(
 		.setParameters(std::move(parameters))
 		.setDevInternalCapture(true)
 		.draw();
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(
+						   context.uiManager.toClayEID(context.part(part)))) {
+		diagnostics_ui::pointer_tooltip(context, Keyed("action-tooltip", part.token), label);
+	}
 }
 
-void drawSmallEditorButton(
-	DevTypeEditor::BuildContext& context,
-	LocalElementName id,
-	uint64_t index,
-	std::string_view label,
-	ActionCall action) {
+void drawSmallEditorButton(DevTypeEditor::BuildContext& context, LocalElementName id,
+						   uint64_t index, std::string_view label, ActionCall action,
+						   std::string_view icon_key) {
 	FSEL::ButtonParameters parameters{};
 	parameters.onActivate = action;
 	parameters.enabled = static_cast<bool>(action);
 	parameters.text = label;
+	const TextureRef icon = editor_action_icon(context.state().app, icon_key);
+	action_button::set_icon(parameters, icon);
 	parameters.sizing = Clay_Sizing{
-		.width = CLAY_SIZING_FIXED(22),
+		.width = icon.handle ? CLAY_SIZING_FIXED(22) : CLAY_SIZING_FIT(0),
 		.height = CLAY_SIZING_FIXED(22),
 	};
 	parameters.padding = Clay_Padding{};
 	parameters.labelFontSize = 9;
 	context.uiManager.createElement(FSEL::kButton, Keyed(id, index))
-		.setParameters(std::move(parameters)).setDevInternalCapture(true).draw();
+		.setParameters(std::move(parameters))
+		.setDevInternalCapture(true)
+		.draw();
+	if (icon.handle)
+		action_button::tooltip(context, Keyed(id, index), label);
 }
 
 void drawSequenceRows(
 	DevTypeEditor::BuildContext& context,
 	DevTypeEditorState& state,
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevTypeSchema& type,
-	const devMode::DevTypeOps& operations) {
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevTypeSchema& type,
+	const tooling::DevTypeOps& operations) {
 	const std::size_t totalCount = operations.sequenceSize
 		? operations.sequenceSize(state.editValue) : 0u;
 	const std::size_t count = std::min(totalCount, kMaximumVisibleSequenceItems);
-	const devMode::DevTypeSchema* elementType = schema.type(type.elementType);
-	const devMode::DevTypeOps* elementOps = typeOperations(schema, type.elementType);
+	const tooling::DevTypeSchema* elementType = schema.type(type.elementType);
+	const tooling::DevTypeOps* elementOps = typeOperations(schema, type.elementType);
 	for (std::size_t index = 0; index < count; ++index) {
 		const void* item = operations.sequenceElementAddress
 			? operations.sequenceElementAddress(state.editValue, index) : nullptr;
 		std::string summary = std::to_string(index) + "  ";
 		if (elementType && item) {
-			if (elementType->kind == devMode::DevTypeKind::Text && elementOps && elementOps->textView) {
+			if (elementType->kind == tooling::DevTypeKind::Text && elementOps && elementOps->textView) {
 				summary += std::string(elementOps->textView(item));
 			} else {
 				summary += numericDraft(*elementType, elementOps, item);
@@ -1869,20 +1601,24 @@ void drawSequenceRows(
 				const auto style = textConfig(interface_theme::kTextSecondary, 9);
 				CLAY_TEXT(context.uiManager.toClayString(summary), CLAY_TEXT_CONFIG(style));
 			}
-			drawSmallEditorButton(context, kSequenceUp, index, "↑", up);
-			drawSmallEditorButton(context, kSequenceDown, index, "↓", down);
-			if (!type.sequenceFixed) drawSmallEditorButton(
-				context, kSequenceRemove, index, "×", remove);
+			drawSmallEditorButton(context, kSequenceUp, index, "Move up", up,
+								  interface_icons::kUpKey);
+			drawSmallEditorButton(context, kSequenceDown, index, "Move down", down,
+								  interface_icons::kDownKey);
+			if (!type.sequenceFixed)
+				drawSmallEditorButton(context, kSequenceRemove, index, "Remove item", remove,
+									  interface_icons::kRemoveKey);
 		}
 	}
 	if (totalCount > count) {
 		Clay_TextElementConfig style = textConfig(interface_theme::kTextMuted, 9);
 		style.wrapMode = CLAY_TEXT_WRAP_WORDS;
-		const std::string remainder = std::to_string(totalCount - count) +
-			" additional items are not rendered";
+		const std::string remainder =
+			std::to_string(totalCount - count) + " additional items are not rendered";
 		CLAY_TEXT(context.uiManager.toClayString(remainder), CLAY_TEXT_CONFIG(style));
 	}
-	if (type.sequenceFixed) return;
+	if (type.sequenceFixed)
+		return;
 	ActionCall add{};
 	if (state.app && state.interfaceState && state.editable && operations.sequenceAppendDefault) {
 		add = ActionCall{state.app->actions().uiActions().make(kAddSequenceItem, state)};
@@ -1891,9 +1627,17 @@ void drawSequenceRows(
 	parameters.onActivate = add;
 	parameters.enabled = static_cast<bool>(add);
 	parameters.text = "Add item";
-	parameters.sizing = Clay_Sizing{.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(26)};
+	const TextureRef add_icon = editor_action_icon(state.app, interface_icons::kAddKey);
+	action_button::set_icon(parameters, add_icon);
+	parameters.sizing =
+		Clay_Sizing{.width = add_icon.handle ? CLAY_SIZING_FIXED(26) : CLAY_SIZING_FIT(0),
+					.height = CLAY_SIZING_FIXED(26)};
 	context.uiManager.createElement(FSEL::kButton, "sequence-add")
-		.setParameters(std::move(parameters)).setDevInternalCapture(true).draw();
+		.setParameters(std::move(parameters))
+		.setDevInternalCapture(true)
+		.draw();
+	if (add_icon.handle)
+		action_button::tooltip(context, LocalElementName{"sequence-add"}, "Add item");
 }
 
 void drawMessage(
@@ -1901,7 +1645,7 @@ void drawMessage(
 	std::string_view message) {
 	Clay_ElementDeclaration empty{};
 	empty.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_GROW(0),
 	};
 	empty.layout.padding = Clay_Padding{16, 16, 16, 16};
@@ -1919,13 +1663,14 @@ void drawMessage(
 
 void drawCard(
 	DevInterfaceInspectorFields::BuildContext& context,
-	const devMode::DevSchemaView& schema,
-	const devMode::DevFieldSchema& field,
+	const tooling::DevSchemaView& schema,
+	const tooling::DevFieldSchema& field,
 	DevEditorRole role,
-	devMode::DevTypeId rootOwnerType,
+	tooling::DevTypeId rootOwnerType,
 	const void* value,
 	std::string_view labelOverride = {},
-	uint64_t cardKey = 0u) {
+	uint64_t cardKey = 0u,
+	DevSummaryAvailability availability = DevSummaryAvailability::NotCaptured) {
 	context.uiManager.createElement(
 		kDevEditorCard, Keyed(kEditorCard, cardKey == 0u ? field.id : cardKey))
 		.setParameters(DevEditorCardParameters{
@@ -1943,6 +1688,7 @@ void drawCard(
 			.interfaceState = context.params.interfaceState,
 			.value = value,
 			.labelOverride = labelOverride,
+			.availability = availability,
 		})
 		.setDevInternalCapture(true)
 		.draw();
@@ -2013,22 +1759,24 @@ void DevInterfaceInspectorTabs::buildElement(BuildContext& context) {
 		*context.params.selectedTab > static_cast<uint64_t>(DevInspectorTab::Changes)) {
 		*context.params.selectedTab = static_cast<uint64_t>(DevInspectorTab::Parameters);
 	}
-	Clay_ElementDeclaration strip = fixedSection(
-		kTabsHeight, interface_theme::kDepth2Ink);
+	Clay_ElementDeclaration strip = fixedSection(kTabsHeight, interface_theme::kDepth2Ink);
+	strip.layout.sizing.width = CLAY_SIZING_PERCENT(1);
 	strip.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+	const float available_width = Clay_GetElementData(context.clayID()).boundingBox.width;
+	const bool compact_labels = available_width < 360.0f;
 	CLAY(context.clayID(), strip) {
 		for (const TabSpec& tab : kTabs) {
 			const uint64_t value = static_cast<uint64_t>(tab.tab);
-			const bool selected = context.params.selectedTab &&
-				*context.params.selectedTab == value;
+			const bool selected =
+				context.params.selectedTab && *context.params.selectedTab == value;
 			FSEL::RadioChoiceParameters parameters{};
 			parameters.choiceValue = value;
 			parameters.selectedValue = context.params.selectedTab;
 			parameters.style.sizing = {
-				.width = CLAY_SIZING_GROW(0),
+				.width = CLAY_SIZING_PERCENT(0.25f),
 				.height = CLAY_SIZING_GROW(0),
 			};
-			parameters.style.padding = Clay_Padding{5, 5, 0, 0};
+			parameters.style.padding = Clay_Padding{3, 3, 0, 0};
 			parameters.style.childAlignment = {
 				.x = CLAY_ALIGN_X_CENTER,
 				.y = CLAY_ALIGN_Y_CENTER,
@@ -2048,24 +1796,31 @@ void DevInterfaceInspectorTabs::buildElement(BuildContext& context) {
 				.setParameters(std::move(parameters))
 				.setDevInternalCapture(true)
 				.construct();
-			const Clay_TextElementConfig labelStyle = textConfig(
+			Clay_TextElementConfig labelStyle = textConfig(
 				selected ? interface_theme::kTextCanvas : interface_theme::kTextSecondary,
-				10,
-				CLAY_TEXT_ALIGN_CENTER);
-			CLAY_TEXT(
-				context.uiManager.toClayString(tab.label),
-				CLAY_TEXT_CONFIG(labelStyle));
+				compact_labels ? 9 : 10, CLAY_TEXT_ALIGN_CENTER);
+			labelStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
+			const std::string_view label = compact_labels && tab.tab == DevInspectorTab::Parameters
+											   ? std::string_view{"Params"}
+										   : compact_labels && tab.tab == DevInspectorTab::Resources
+											   ? std::string_view{"Res."}
+											   : tab.label;
+			CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(labelStyle));
 			context.uiManager.drawConstructed();
+			if (context.uiManager.getPreviousFramesInteraction().isHovered(
+					context.clayID(Keyed(kTabCard, value))))
+				diagnostics_ui::pointer_tooltip(context, Keyed("tab-label-detail", value),
+												tab.label);
 		}
 	}
 }
 
 void DevEditorCard::buildElement(BuildContext& context) {
-	const devMode::DevSchemaGeneration* schema =
+	const tooling::DevSchemaGeneration* schema =
 		context.params.schema ? &*context.params.schema : nullptr;
-	const devMode::DevFieldSchema* field = schema
+	const tooling::DevFieldSchema* field = schema
 		? fieldAt(*schema, context.params.binding.field) : nullptr;
-	const devMode::DevTypeSchema* type = field && schema
+	const tooling::DevTypeSchema* type = field && schema
 		? schema->type(field->valueType) : nullptr;
 	std::string_view fieldName = context.params.labelOverride;
 	if (fieldName.empty() && field && schema) fieldName = schema->string(field->displayName);
@@ -2085,18 +1840,24 @@ void DevEditorCard::buildElement(BuildContext& context) {
 	state.currentValue.reset();
 	state.hasCurrentValue = false;
 	if (schema && field && type && context.params.value &&
-		devSystems::tooling::DevOwnedValue::copyFrom(
+		tooling::DevOwnedValue::copyFrom(
 			*schema, field->valueType, context.params.value, state.currentValue) ==
-			devMode::DevValueOperationStatus::Success) {
+			tooling::DevValueOperationStatus::Success) {
 		state.hasCurrentValue = true;
 	}
 	state.overridePresence = schema && context.params.app
 		? overridePresence(*context.params.app, *schema, state)
 		: DevOverridePresence{};
 	state.dirty = state.overridePresence.hasCommittedChange();
-	const DevQuickView collapsedView = state.collapsed && schema
-		? quickView(*schema, type, state.currentValue.data(), context.params.app, field)
-		: DevQuickView{};
+	const DevQuickView collapsedView =
+		state.collapsed && schema
+			? format_value_summary(*schema, type,
+								   state.hasCurrentValue ? context.params.value : nullptr,
+								   context.params.app, field,
+								   context.params.value && !state.hasCurrentValue
+									   ? DevSummaryAvailability::CopyFailed
+									   : context.params.availability)
+			: DevQuickView{};
 	ActionCall collapseAction{};
 	if (context.params.app && context.params.interfaceState) {
 		collapseAction = ActionCall{context.params.app->actions().uiActions().make(
@@ -2105,7 +1866,7 @@ void DevEditorCard::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration card{};
 	card.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_FIT(0),
 	};
 	card.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
@@ -2231,17 +1992,17 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 		resetAction = ActionCall{actions.make(kResetField, *card)};
 		canPaste = card->editable && interfaceState->editorClipboard &&
 			interfaceState->editorClipboard.type == card->fieldType;
-		const devMode::DevSchemaView schema = app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = app->devTooling().schemas().view();
 		canReset = card->editable && card->overridePresence.hasCommittedChange();
 	}
 
 	Clay_ElementDeclaration header{};
 	header.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
-		.height = CLAY_SIZING_FIXED(38),
+		.width = CLAY_SIZING_PERCENT(1),
+		.height = CLAY_SIZING_FIT(0),
 	};
-	header.layout.padding = Clay_Padding{9, 7, 0, 0};
-	header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+	header.layout.padding = Clay_Padding{9, 7, 6, 6};
+	header.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	header.layout.childGap = 5;
 	header.layout.childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT,
@@ -2252,8 +2013,8 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), header) {
 		Clay_ElementDeclaration labelArea{};
 		labelArea.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0),
-			.height = CLAY_SIZING_GROW(0),
+			.width = CLAY_SIZING_PERCENT(1),
+			.height = CLAY_SIZING_FIT(0),
 		};
 		labelArea.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		labelArea.layout.childGap = 1;
@@ -2264,7 +2025,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 		labelArea.clip = {.horizontal = true, .vertical = true};
 		CLAY(context.clayID(kFieldName), labelArea) {
 			Clay_TextElementConfig nameStyle = textConfig(interface_theme::kTextCanvas, 11);
-			nameStyle.wrapMode = CLAY_TEXT_WRAP_NONE;
+			nameStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
 			CLAY_TEXT(
 				context.uiManager.toClayString(card->fieldName),
 				CLAY_TEXT_CONFIG(nameStyle));
@@ -2272,8 +2033,8 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 				const DevQuickView& quick = context.params.quickView;
 				Clay_ElementDeclaration quickRow{};
 				quickRow.layout.sizing = {
-					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
-				quickRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+					.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
+				quickRow.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 				quickRow.layout.childGap = 4;
 				quickRow.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
@@ -2309,54 +2070,62 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 						? interface_theme::kTextMuted
 						: quick.status == DevQuickStatus::Unavailable
 							? interface_theme::kStatusRed : interface_theme::kStatusAmber;
-					const Clay_TextElementConfig quickStyle = textConfig(quickColor, 9);
+					Clay_TextElementConfig quickStyle = textConfig(quickColor, 10);
+					quickStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
 					CLAY_TEXT(context.uiManager.toClayString(quick.primary),
 						CLAY_TEXT_CONFIG(quickStyle));
 					if (!quick.secondary.empty()) {
-						const Clay_TextElementConfig secondaryStyle =
-							textConfig(interface_theme::kTextSecondary, 9);
+						Clay_TextElementConfig secondaryStyle =
+							textConfig(interface_theme::kTextSecondary, 10);
+						secondaryStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
 						CLAY_TEXT(context.uiManager.toClayString(quick.secondary),
 							CLAY_TEXT_CONFIG(secondaryStyle));
 					}
 				}
 			}
 		}
-		drawHeaderButton(
-			context, DevEditorCardHeader::Parts::collapse,
-			card->collapsed ? "↓" : "↑", collapseAction, true,
-			card->collapsed
-				? context.resources().expandIcon : context.resources().collapseIcon);
-		drawHeaderButton(
-			context, DevEditorCardHeader::Parts::copy,
-			"C", copyAction, card->hasCurrentValue,
-			context.resources().copyIcon);
-		drawHeaderButton(
-			context, DevEditorCardHeader::Parts::paste,
-			"P", pasteAction, canPaste,
-			context.resources().pasteIcon);
-		drawHeaderButton(
-			context, DevEditorCardHeader::Parts::reset,
-			"R", resetAction, canReset,
-			context.resources().revertIcon);
+		Clay_ElementDeclaration actions{};
+		actions.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_FIXED(24)};
+		actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+		actions.layout.childGap = 5;
+		actions.layout.childAlignment = {CLAY_ALIGN_X_RIGHT, CLAY_ALIGN_Y_CENTER};
+		CLAY(context.clayID("field-actions"), actions) {
+			drawHeaderButton(context, DevEditorCardHeader::Parts::collapse,
+							 card->collapsed ? "Expand" : "Collapse", collapseAction, true,
+							 card->collapsed ? context.resources().expandIcon
+											 : context.resources().collapseIcon);
+			drawHeaderButton(context, DevEditorCardHeader::Parts::copy, "Copy", copyAction,
+							 card->hasCurrentValue, context.resources().copyIcon);
+			drawHeaderButton(context, DevEditorCardHeader::Parts::paste, "Paste", pasteAction,
+							 canPaste, context.resources().pasteIcon);
+			drawHeaderButton(context, DevEditorCardHeader::Parts::reset, "Revert", resetAction,
+							 canReset, context.resources().revertIcon);
+		}
 	}
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(kFieldName)))
+		diagnostics_ui::pointer_tooltip(context, LocalElementName{"field-value-detail"},
+										card->fieldName +
+											(context.params.quickView.detail.empty()
+												 ? ""
+												 : "\n" + context.params.quickView.detail));
 }
 
 void DevEditingField::buildElement(BuildContext& context) {
-	const devMode::DevSchemaGeneration* schema =
+	const tooling::DevSchemaGeneration* schema =
 		context.params.schema ? &*context.params.schema : nullptr;
-	const devMode::DevFieldSchema* parentField = schema
+	const tooling::DevFieldSchema* parentField = schema
 		? fieldAt(*schema, context.params.binding.field) : nullptr;
-	const devMode::DevTypeSchema* type = parentField && schema
+	const tooling::DevTypeSchema* type = parentField && schema
 		? schema->type(parentField->valueType) : nullptr;
-	const bool arbitraryStruct = type && type->kind == devMode::DevTypeKind::Object &&
-		editorKind(parentField, type) == devMode::DevEditorKind::ObjectGroup &&
+	const bool arbitraryStruct = type && type->kind == tooling::DevTypeKind::Object &&
+		editorKind(parentField, type) == tooling::DevEditorKind::ObjectGroup &&
 		!schema->fieldsOf(parentField->valueType).empty();
 	const uint16_t inset = context.params.depth == 0u ? 8u
 		: context.params.depth == 1u ? 4u : 0u;
 
 	Clay_ElementDeclaration field{};
 	field.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_FIT(0),
 	};
 	field.layout.padding = Clay_Padding{inset, inset, inset, inset};
@@ -2386,11 +2155,11 @@ void DevEditingField::buildElement(BuildContext& context) {
 				.setDevInternalCapture(true)
 				.draw();
 		} else {
-			for (const devMode::DevFieldSchema& child : schema->fieldsOf(parentField->valueType)) {
-				const devMode::DevTypeSchema* childType = schema->type(child.valueType);
+			for (const tooling::DevFieldSchema& child : schema->fieldsOf(parentField->valueType)) {
+				const tooling::DevTypeSchema* childType = schema->type(child.valueType);
 				const void* childValue = nullptr;
 				if (context.params.value && child.operations < schema->fieldOperations.size()) {
-					const devMode::DevFieldOps* operations = schema->fieldOperations[child.operations];
+					const tooling::DevFieldOps* operations = schema->fieldOperations[child.operations];
 					if (operations && operations->constAddress) {
 						childValue = operations->constAddress(context.params.value);
 					}
@@ -2399,8 +2168,8 @@ void DevEditingField::buildElement(BuildContext& context) {
 				childBinding.nestedPath.push_back(parentField->id);
 				childBinding.field = fieldIndex(*schema, child);
 				const bool nestedStruct = childType &&
-					childType->kind == devMode::DevTypeKind::Object &&
-					editorKind(&child, childType) == devMode::DevEditorKind::ObjectGroup &&
+					childType->kind == tooling::DevTypeKind::Object &&
+					editorKind(&child, childType) == tooling::DevEditorKind::ObjectGroup &&
 					!schema->fieldsOf(child.valueType).empty();
 				if (nestedStruct) {
 					context.uiManager.createElement(kDevEditorCard, Keyed(kNestedCard, child.id))
@@ -2434,11 +2203,11 @@ void DevEditingField::buildElement(BuildContext& context) {
 }
 
 void DevEditor::buildElement(BuildContext& context) {
-	const devMode::DevSchemaGeneration* schema =
+	const tooling::DevSchemaGeneration* schema =
 		context.params.schema ? &*context.params.schema : nullptr;
-	const devMode::DevFieldSchema* field = schema
+	const tooling::DevFieldSchema* field = schema
 		? fieldAt(*schema, context.params.binding.field) : nullptr;
-	const devMode::DevTypeSchema* type = field && schema
+	const tooling::DevTypeSchema* type = field && schema
 		? schema->type(field->valueType) : nullptr;
 	std::string_view fieldName = field && schema ? schema->string(field->displayName) : std::string_view{};
 	if (fieldName.empty() && field && schema) fieldName = schema->string(field->name);
@@ -2447,7 +2216,7 @@ void DevEditor::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration row{};
 	row.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_FIT(32),
 	};
 	row.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
@@ -2458,7 +2227,7 @@ void DevEditor::buildElement(BuildContext& context) {
 	};
 	CLAY(context.clayID(), row) {
 		Clay_ElementDeclaration labels{};
-		labels.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+		labels.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		labels.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		labels.layout.childGap = 6;
 		labels.clip = {.horizontal = true, .vertical = true};
@@ -2517,14 +2286,14 @@ void DevCatalogueChoice::buildElement(BuildContext& context) {
 	}
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+		.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.layout.childGap = 4;
 	root.clip = {.horizontal = true, .vertical = false};
 	CLAY(context.clayID(), root) {
 		Clay_ElementDeclaration slot{};
 		slot.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(kTypeControlHeight)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(kTypeControlHeight)};
 		slot.clip = {.horizontal = true, .vertical = false};
 		CLAY(context.clayID("choice-slot"), slot) {
 		FSEL::ComboBoxParameters combo{};
@@ -2541,7 +2310,7 @@ void DevCatalogueChoice::buildElement(BuildContext& context) {
 		combo.popupSearchPlaceholder = context.params.placeholder;
 		combo.fontSize = kTypeControlFontSize;
 		combo.sizing = Clay_Sizing{
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_GROW(0)};
 		context.uiManager.createElement(FSEL::kComboBox, "combo")
 			.setParameters(std::move(combo)).setDevInternalCapture(true).draw();
 		}
@@ -2599,28 +2368,44 @@ void DevNineSplitEditor::buildElement(BuildContext& context) {
 							FSEL::ButtonParameters link{};
 							link.onActivate = context.params.centerAction;
 							link.enabled = context.params.enabled &&
-								static_cast<bool>(context.params.centerAction);
-							link.contentMode = FSEL::ButtonContentMode::IconOnly;
+										   static_cast<bool>(context.params.centerAction);
+							link.contentMode = context.resources().linkIcon.handle
+												   ? FSEL::ButtonContentMode::IconOnly
+												   : FSEL::ButtonContentMode::TextOnly;
+							link.text = context.params.centerSelected ? "Unlink" : "Link";
+							link.labelFontSize = 9;
 							link.icon = context.resources().linkIcon;
-							link.sizing = {.width = CLAY_SIZING_FIXED(26),
-								.height = CLAY_SIZING_FIXED(26)};
+							link.sizing = {.width = context.resources().linkIcon.handle
+														? CLAY_SIZING_FIXED(26)
+														: CLAY_SIZING_FIT(0),
+										   .height = CLAY_SIZING_FIXED(26)};
 							link.padding = Clay_Padding{4, 4, 4, 4};
 							link.iconSize = 14.0f;
 							link.borderWidth = Clay_BorderWidth{1, 1, 1, 1, 0};
 							link.cornerRadius = CLAY_CORNER_RADIUS(13);
-							link.idleOverrides.backgroundColor = context.params.centerSelected
-								? interface_theme::kSelectedRow : interface_theme::kDepth3Elevated;
+							link.idleOverrides.backgroundColor =
+								context.params.centerSelected ? interface_theme::kSelectedRow
+															  : interface_theme::kDepth3Elevated;
 							link.idleOverrides.iconColor = context.params.centerSelected
-								? interface_theme::kAccentCurrent : interface_theme::kTextMuted;
+															   ? interface_theme::kAccentCurrent
+															   : interface_theme::kTextMuted;
 							link.idleOverrides.borderColor = context.params.centerSelected
-								? interface_theme::kAccentCurrent : interface_theme::kBorderVisible;
+																 ? interface_theme::kAccentCurrent
+																 : interface_theme::kBorderVisible;
 							link.hoveredOverrides.backgroundColor = interface_theme::kHoverSurface;
 							link.hoveredOverrides.iconColor = interface_theme::kTextCanvas;
 							link.hoveredOverrides.borderColor = interface_theme::kAccentCurrent;
+							link.idleOverrides.labelColor = link.idleOverrides.iconColor;
+							link.hoveredOverrides.labelColor = link.hoveredOverrides.iconColor;
 							context.uiManager.createElement(FSEL::kButton, "link")
-								.setParameters(std::move(link)).setDevInternalCapture(true).draw();
+								.setParameters(std::move(link))
+								.setDevInternalCapture(true)
+								.draw();
+							action_button::tooltip(context, LocalElementName{"link"},
+												   context.params.centerSelected ? "Unlink values"
+																				 : "Link values");
 						} else if (context.params.mode == DevNineSplitMode::Numeric &&
-							cell.occupied && cell.numericValue) {
+								   cell.occupied && cell.numericValue) {
 							FSEL::DragValueParameters<unsigned int> drag{};
 							drag.value = cell.numericValue;
 							drag.minimum = 0u;
@@ -2638,7 +2423,7 @@ void DevNineSplitEditor::buildElement(BuildContext& context) {
 								FSEL::kDragValueUInt, Keyed("value", index))
 								.setParameters(std::move(drag)).setDevInternalCapture(true).draw();
 						} else if (context.params.mode == DevNineSplitMode::Numeric &&
-							cell.occupied && cell.floatingValue) {
+								   cell.occupied && cell.floatingValue) {
 							FSEL::DragValueParameters<float> drag{};
 							drag.value = cell.floatingValue;
 							drag.minimum = 0.0f;
@@ -2657,7 +2442,8 @@ void DevNineSplitEditor::buildElement(BuildContext& context) {
 							context.uiManager.createElement(
 								FSEL::kDragValueFloat, Keyed("value", index))
 								.setParameters(std::move(drag)).setDevInternalCapture(true).draw();
-						} else if (context.params.mode == DevNineSplitMode::Radio && cell.occupied) {
+						} else if (context.params.mode == DevNineSplitMode::Radio &&
+								   cell.occupied) {
 							FSEL::RadioChoiceParameters radio{};
 							radio.choiceValue = cell.choiceValue;
 							radio.selectedValue = context.params.selectedValue;
@@ -3075,11 +2861,11 @@ void DevNumericTypeEditor::buildElement(BuildContext& context) {
 		? typeOperations(*schema, editor->operationType) : nullptr;
 	const auto* field = schema ? fieldAt(*schema, editor->binding.field) : nullptr;
 	if (!schema || !type || !operations || !operations->numericValue || !field) return;
-	const bool signedValue = type->kind == devMode::DevTypeKind::SignedInteger &&
+	const bool signedValue = type->kind == tooling::DevTypeKind::SignedInteger &&
 		type->size <= sizeof(int);
-	const bool unsignedValue = type->kind == devMode::DevTypeKind::UnsignedInteger &&
+	const bool unsignedValue = type->kind == tooling::DevTypeKind::UnsignedInteger &&
 		type->size <= sizeof(unsigned int);
-	const bool floatValue = type->kind == devMode::DevTypeKind::FloatingPoint &&
+	const bool floatValue = type->kind == tooling::DevTypeKind::FloatingPoint &&
 		type->size <= sizeof(float);
 	if (!signedValue && !unsignedValue && !floatValue) return;
 
@@ -3231,7 +3017,7 @@ void DevEnumTypeEditor::buildElement(BuildContext& context) {
 	const auto kind = editorKind(field, type);
 	long double numeric = 0.0L;
 	if (operations->numericValue) operations->numericValue(editor->editValue, numeric);
-	if (kind == devMode::DevEditorKind::Flags) {
+	if (kind == tooling::DevEditorKind::Flags) {
 		const uint64_t bits = static_cast<uint64_t>(numeric);
 		for (uint32_t index = 0; index < type->enumeration.values.count; ++index) {
 			const auto& option = schema->enumValues[type->enumeration.values.first + index];
@@ -3298,11 +3084,11 @@ void DevEnumTypeEditor::buildElement(BuildContext& context) {
 }
 
 void DevTypeEditor::buildElement(BuildContext& context) {
-	const devMode::DevSchemaGeneration* schema =
+	const tooling::DevSchemaGeneration* schema =
 		context.params.schema ? &*context.params.schema : nullptr;
-	const devMode::DevFieldSchema* field = schema
+	const tooling::DevFieldSchema* field = schema
 		? fieldAt(*schema, context.params.binding.field) : nullptr;
-	const devMode::DevTypeSchema* declaredType = field && schema
+	const tooling::DevTypeSchema* declaredType = field && schema
 		? schema->type(field->valueType) : nullptr;
 	if (!schema || !field || !declaredType) return;
 
@@ -3321,7 +3107,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 	if (state.fieldName.empty()) state.fieldName = std::string(schema->string(field->name));
 	state.editable = context.params.binding.role == DevEditorRole::Parameters &&
 		editableCapability(field->effectiveEdit) &&
-		declaredType->edit != devMode::DevEditCapability::ViewOnly;
+		declaredType->edit != tooling::DevEditCapability::ViewOnly;
 	state.currentValue.reset();
 	if (context.params.value) {
 		(void)tooling::DevOwnedValue::copyFrom(
@@ -3329,10 +3115,10 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 	}
 	state.editValue = state.currentValue.data();
 
-	const devMode::DevTypeSchema* type = declaredType;
-	const devMode::DevTypeOps* operations = typeOperations(*schema, state.operationType);
+	const tooling::DevTypeSchema* type = declaredType;
+	const tooling::DevTypeOps* operations = typeOperations(*schema, state.operationType);
 	bool optionalPresent = false;
-	if (declaredType->kind == devMode::DevTypeKind::Optional && operations &&
+	if (state.currentValue && declaredType->kind == tooling::DevTypeKind::Optional && operations &&
 		operations->optionalHasValue) {
 		optionalPresent = operations->optionalHasValue(state.currentValue.data());
 		if (optionalPresent) {
@@ -3345,7 +3131,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 	}
 
 	if (!state.draftInitialized && type && state.editValue) {
-		if (type->kind == devMode::DevTypeKind::Text && operations && operations->textView) {
+		if (type->kind == tooling::DevTypeKind::Text && operations && operations->textView) {
 			state.draft = std::string(operations->textView(state.editValue));
 		} else {
 			state.draft = numericDraft(*type, operations, state.editValue);
@@ -3356,7 +3142,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration root{};
 	root.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_FIT(0),
 	};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
@@ -3376,7 +3162,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 
 	auto drawValueSurface = [&](std::string_view value, Clay_Color color) {
 		Clay_ElementDeclaration surface{};
-		surface.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(26)};
+		surface.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(26)};
 		surface.layout.padding = Clay_Padding{7, 7, 0, 0};
 		surface.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		surface.backgroundColor = interface_theme::kDepth3Elevated;
@@ -3398,7 +3184,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			return;
 		}
 
-		if (declaredType->kind == devMode::DevTypeKind::Optional) {
+		if (declaredType->kind == tooling::DevTypeKind::Optional) {
 			ActionCall toggle{};
 			if (state.app && state.interfaceState) {
 				toggle = ActionCall{state.app->actions().uiActions().make(kToggleOptional, state)};
@@ -3414,14 +3200,14 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			}
 		}
 
-		const devMode::DevEditorKind kind = editorKind(field, type);
-		if (kind == devMode::DevEditorKind::Color && state.editValue) {
+		const tooling::DevEditorKind kind = editorKind(field, type);
+		if (kind == tooling::DevEditorKind::Color && state.editValue) {
 			context.uiManager.createElement(kDevColorTypeEditor, "color")
 				.setParameters(DevColorTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (kind == devMode::DevEditorKind::Spacing && state.editValue) {
+		if (kind == tooling::DevEditorKind::Spacing && state.editValue) {
 			const bool border = schemaTypeName(*schema, type) == "Clay_BorderWidth";
 			if (border) {
 				context.uiManager.createElement(kDevBorderWidthTypeEditor, "border-width")
@@ -3434,54 +3220,54 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			}
 			return;
 		}
-		if (kind == devMode::DevEditorKind::CornerRadius && state.editValue) {
+		if (kind == tooling::DevEditorKind::CornerRadius && state.editValue) {
 			context.uiManager.createElement(kDevCornerRadiusTypeEditor, "corner-radius")
 				.setParameters(DevPaddingTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (kind == devMode::DevEditorKind::AttachmentPoints && state.editValue) {
+		if (kind == tooling::DevEditorKind::AttachmentPoints && state.editValue) {
 			context.uiManager.createElement(
 				kDevAttachmentPointsTypeEditor, "attachment-points")
 				.setParameters(DevPaddingTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (type && type->kind == devMode::DevTypeKind::Boolean) {
+		if (type && type->kind == tooling::DevTypeKind::Boolean) {
 			context.uiManager.createElement(kDevBooleanTypeEditor, "boolean")
 				.setParameters(DevPrimitiveTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
 		const bool nativeNumber = type && (
-			(type->kind == devMode::DevTypeKind::SignedInteger && type->size <= sizeof(int)) ||
-			(type->kind == devMode::DevTypeKind::UnsignedInteger &&
+			(type->kind == tooling::DevTypeKind::SignedInteger && type->size <= sizeof(int)) ||
+			(type->kind == tooling::DevTypeKind::UnsignedInteger &&
 				type->size <= sizeof(unsigned int)) ||
-			(type->kind == devMode::DevTypeKind::FloatingPoint && type->size <= sizeof(float)));
-		if (nativeNumber && (kind == devMode::DevEditorKind::SignedNumber ||
-			kind == devMode::DevEditorKind::UnsignedNumber ||
-			kind == devMode::DevEditorKind::FloatingNumber)) {
+			(type->kind == tooling::DevTypeKind::FloatingPoint && type->size <= sizeof(float)));
+		if (nativeNumber && (kind == tooling::DevEditorKind::SignedNumber ||
+			kind == tooling::DevEditorKind::UnsignedNumber ||
+			kind == tooling::DevEditorKind::FloatingNumber)) {
 			context.uiManager.createElement(kDevNumericTypeEditor, "number")
 				.setParameters(DevPrimitiveTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (type && type->kind == devMode::DevTypeKind::Text &&
-			kind == devMode::DevEditorKind::Text) {
+		if (type && type->kind == tooling::DevTypeKind::Text &&
+			kind == tooling::DevEditorKind::Text) {
 			context.uiManager.createElement(kDevTextTypeEditor, "text")
 				.setParameters(DevPrimitiveTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (type && type->kind == devMode::DevTypeKind::Enumeration &&
-			(kind == devMode::DevEditorKind::EnumChoice ||
-				kind == devMode::DevEditorKind::Flags)) {
+		if (type && type->kind == tooling::DevTypeKind::Enumeration &&
+			(kind == tooling::DevEditorKind::EnumChoice ||
+				kind == tooling::DevEditorKind::Flags)) {
 			context.uiManager.createElement(kDevEnumTypeEditor, "enum")
 				.setParameters(DevPrimitiveTypeEditorParameters{.editor = &state})
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (kind == devMode::DevEditorKind::FontChoice) {
+		if (kind == tooling::DevEditorKind::FontChoice) {
 			long double current = 0.0L;
 			if (!operations || !operations->numericValue ||
 				!operations->numericValue(state.editValue, current)) {
@@ -3489,9 +3275,9 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				return;
 			}
 			state.enumSelection = static_cast<std::uint64_t>(current);
-			const std::span<const devMode::DevFontCatalogEntry> fonts =
+			const std::span<const tooling::DevFontCatalogEntry> fonts =
 				state.app ? state.app->devTooling().catalogues().queryFonts()
-				: std::span<const devMode::DevFontCatalogEntry>{};
+				: std::span<const tooling::DevFontCatalogEntry>{};
 			const std::uint64_t revision = state.app
 				? state.app->devTooling().catalogues().revisions().fontRevision : 0u;
 			if (state.choiceType != type->id || state.choiceDomain != field->choiceDomain ||
@@ -3506,14 +3292,14 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				std::vector<std::uint64_t> identities;
 				identities.reserve(fonts.size());
 				bool currentFound = false;
-				for (const devMode::DevFontCatalogEntry& font : fonts) {
-					const std::uint64_t identity = field->choiceDomain == devMode::DevChoiceDomain::FontFamily
+				for (const tooling::DevFontCatalogEntry& font : fonts) {
+					const std::uint64_t identity = field->choiceDomain == tooling::DevChoiceDomain::FontFamily
 						? static_cast<std::uint64_t>(font.familyHandle)
 						: static_cast<std::uint64_t>(font.fontHandle);
 					if (std::ranges::find(identities, identity) != identities.end()) continue;
 					identities.push_back(identity);
 					currentFound = currentFound || identity == state.enumSelection;
-					if (field->choiceDomain == devMode::DevChoiceDomain::FontFamily) {
+					if (field->choiceDomain == tooling::DevChoiceDomain::FontFamily) {
 						state.choiceLabels.emplace_back(font.familyName);
 					} else {
 						std::string label(font.familyName);
@@ -3552,11 +3338,11 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				.setDevInternalCapture(true).draw();
 			return;
 		}
-		if (kind == devMode::DevEditorKind::ActionChoice) {
+		if (kind == tooling::DevEditorKind::ActionChoice) {
 			const ActionCall& action = *static_cast<const ActionCall*>(state.editValue);
-			const std::span<const devMode::DevActionCatalogEntry> actions = state.app
+			const std::span<const tooling::DevActionCatalogEntry> actions = state.app
 				? state.app->devTooling().catalogues().queryActions()
-				: std::span<const devMode::DevActionCatalogEntry>{};
+				: std::span<const tooling::DevActionCatalogEntry>{};
 			const std::uint64_t revision = state.app
 				? state.app->devTooling().catalogues().actionRevision() : 0u;
 			std::uint8_t currentDomain = 0u;
@@ -3570,10 +3356,10 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			}
 			const std::uint64_t currentIdentity = currentDomain == 0u ? 0u
 				: catalogueNumericIdentity(currentDomain, currentStableId);
-			if (state.choiceDomain != devMode::DevChoiceDomain::Action ||
+			if (state.choiceDomain != tooling::DevChoiceDomain::Action ||
 				state.choiceRevision != revision ||
 				state.choiceCurrentIdentity != currentIdentity) {
-				state.choiceDomain = devMode::DevChoiceDomain::Action;
+				state.choiceDomain = tooling::DevChoiceDomain::Action;
 				state.choiceRevision = revision;
 				state.choiceCurrentIdentity = currentIdentity;
 				state.choiceLabels.clear();
@@ -3591,8 +3377,8 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				state.choiceResourceDomains.push_back(0u);
 				state.choiceIdentities.push_back(0u);
 				bool currentFound = currentIdentity == 0u;
-				for (const devMode::DevActionCatalogEntry& entry : actions) {
-					const std::uint8_t domain = entry.kind == devMode::DevActionKind::AppActionBinding
+				for (const tooling::DevActionCatalogEntry& entry : actions) {
+					const std::uint8_t domain = entry.kind == tooling::DevActionKind::AppActionBinding
 						? 1u : 2u;
 					const std::uint64_t identity = catalogueNumericIdentity(domain, entry.stableId);
 					currentFound = currentFound || identity == currentIdentity;
@@ -3623,10 +3409,10 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 							encoded.data(), encoded.data() + encoded.size(), stableId);
 						if (parsed.ec == std::errc{} && parsed.ptr == encoded.data() + encoded.size()) {
 							const auto expectedKind = state.choiceResourceDomains[index] == 1u
-								? devMode::DevActionKind::AppActionBinding
-								: devMode::DevActionKind::UiActionRecipe;
+								? tooling::DevActionKind::AppActionBinding
+								: tooling::DevActionKind::UiActionRecipe;
 							const auto entry = std::ranges::find_if(actions,
-								[stableId, expectedKind](const devMode::DevActionCatalogEntry& candidate) {
+								[stableId, expectedKind](const tooling::DevActionCatalogEntry& candidate) {
 									return candidate.kind == expectedKind &&
 										candidate.stableId == stableId;
 								});
@@ -3654,20 +3440,20 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			}
 			return;
 		}
-		if (kind == devMode::DevEditorKind::ResourceChoice) {
+		if (kind == tooling::DevEditorKind::ResourceChoice) {
 			const TextureRef& texture = *static_cast<const TextureRef*>(state.editValue);
-			const std::span<const devMode::DevImageCatalogEntry> images = state.app
+			const std::span<const tooling::DevImageCatalogEntry> images = state.app
 				? state.app->devTooling().catalogues().queryImages()
-				: std::span<const devMode::DevImageCatalogEntry>{};
-			const std::span<const devMode::DevIconCatalogEntry> icons = state.app
+				: std::span<const tooling::DevImageCatalogEntry>{};
+			const std::span<const tooling::DevIconCatalogEntry> icons = state.app
 				? state.app->devTooling().catalogues().queryIcons()
-				: std::span<const devMode::DevIconCatalogEntry>{};
+				: std::span<const tooling::DevIconCatalogEntry>{};
 			const std::uint64_t revision = state.app
 				? state.app->devTooling().catalogues().imageRevision() ^
 					(state.app->devTooling().catalogues().iconRevision() << 1u) : 0u;
-			if (state.choiceDomain != devMode::DevChoiceDomain::TextureResource ||
+			if (state.choiceDomain != tooling::DevChoiceDomain::TextureResource ||
 				state.choiceRevision != revision) {
-				state.choiceDomain = devMode::DevChoiceDomain::TextureResource;
+				state.choiceDomain = tooling::DevChoiceDomain::TextureResource;
 				state.choiceRevision = revision;
 				state.choiceLabels.clear();
 				state.choiceOptions.clear();
@@ -3679,13 +3465,13 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				state.choiceKeys.reserve(count);
 				state.choiceResourceDomains.reserve(count);
 				state.choiceIdentities.reserve(count);
-				for (const devMode::DevImageCatalogEntry& image : images) {
+				for (const tooling::DevImageCatalogEntry& image : images) {
 					state.choiceKeys.emplace_back(image.key.name);
 					state.choiceResourceDomains.push_back(1u);
 					state.choiceIdentities.push_back(catalogueIdentity(1u, image.key.name));
 					state.choiceLabels.push_back(boundedText(std::string(image.key.name), 72u));
 				}
-				for (const devMode::DevIconCatalogEntry& icon : icons) {
+				for (const tooling::DevIconCatalogEntry& icon : icons) {
 					state.choiceKeys.emplace_back(icon.iconName);
 					state.choiceResourceDomains.push_back(2u);
 					state.choiceIdentities.push_back(catalogueIdentity(2u, icon.iconName));
@@ -3759,24 +3545,17 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 						.enabled = state.editable})
 					.setDevInternalCapture(true).draw();
 			state.resourceFitSelection = static_cast<std::uint64_t>(texture.fitMode);
-				state.resourceSamplingSelection = static_cast<std::uint64_t>(texture.samplingMode);
-				state.resourceTintEnabled = texture.tintEnabled;
-				ActionCall fitChanged{}, samplingChanged{}, tintChanged{};
-				if (state.app && state.interfaceState && state.editable) {
-					auto& actions = state.app->actions().uiActions();
-					fitChanged = ActionCall{actions.make(kChooseTextureFit, state)};
-					samplingChanged = ActionCall{actions.make(kChooseTextureSampling, state)};
-					tintChanged = ActionCall{actions.make(kToggleTextureTint, state)};
-				}
+			state.resourceTintEnabled = texture.tintEnabled;
+			ActionCall fitChanged{}, tintChanged{};
+			if (state.app && state.interfaceState && state.editable) {
+				auto& actions = state.app->actions().uiActions();
+				fitChanged = ActionCall{actions.make(kChooseTextureFit, state)};
+				tintChanged = ActionCall{actions.make(kToggleTextureTint, state)};
+			}
 				context.uiManager.createElement(kDevCatalogueChoice, "fit-mode")
 					.setParameters(DevCatalogueChoiceParameters{.options = kTextureFitOptions,
 						.selectedValue = &state.resourceFitSelection, .onChanged = fitChanged,
 						.placeholder = "Fit mode", .enabled = state.editable, .searchable = false})
-					.setDevInternalCapture(true).draw();
-				context.uiManager.createElement(kDevCatalogueChoice, "sampling-mode")
-					.setParameters(DevCatalogueChoiceParameters{.options = kTextureSamplingOptions,
-						.selectedValue = &state.resourceSamplingSelection, .onChanged = samplingChanged,
-						.placeholder = "Sampling mode", .enabled = state.editable, .searchable = false})
 					.setDevInternalCapture(true).draw();
 				Clay_ElementDeclaration tintRow{};
 				tintRow.layout.sizing = {
@@ -3801,7 +3580,7 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 				}
 			return;
 		}
-		if (kind == devMode::DevEditorKind::SizingAxis) {
+		if (kind == tooling::DevEditorKind::SizingAxis) {
 			const auto& axis = *static_cast<const Clay_SizingAxis*>(state.editValue);
 			state.enumSelection = static_cast<uint64_t>(axis.type);
 			if (state.semanticMode != state.enumSelection) {
@@ -3942,9 +3721,9 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 		}
 
 
-		if (type && (type->kind == devMode::DevTypeKind::SignedInteger ||
-			type->kind == devMode::DevTypeKind::UnsignedInteger ||
-			type->kind == devMode::DevTypeKind::FloatingPoint)) {
+		if (type && (type->kind == tooling::DevTypeKind::SignedInteger ||
+			type->kind == tooling::DevTypeKind::UnsignedInteger ||
+			type->kind == tooling::DevTypeKind::FloatingPoint)) {
 			ActionCall commit{};
 			ActionCall preview{};
 			if (state.app && state.interfaceState) {
@@ -3980,13 +3759,13 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			return;
 		}
 
-		const bool semanticObject = type && type->kind == devMode::DevTypeKind::Object &&
-			kind != devMode::DevEditorKind::ObjectGroup;
+		const bool semanticObject = type && type->kind == tooling::DevTypeKind::Object &&
+			kind != tooling::DevEditorKind::ObjectGroup;
 		if (semanticObject) {
-			for (const devMode::DevFieldSchema& child : schema->fieldsOf(state.operationType)) {
+			for (const tooling::DevFieldSchema& child : schema->fieldsOf(state.operationType)) {
 				const void* childValue = nullptr;
 				if (child.operations < schema->fieldOperations.size()) {
-					const devMode::DevFieldOps* childOps = schema->fieldOperations[child.operations];
+					const tooling::DevFieldOps* childOps = schema->fieldOperations[child.operations];
 					if (childOps && childOps->constAddress) childValue = childOps->constAddress(state.editValue);
 				}
 				DevEditorBinding childBinding = state.binding;
@@ -4002,35 +3781,33 @@ void DevTypeEditor::buildElement(BuildContext& context) {
 			return;
 		}
 
-		if (type && type->kind == devMode::DevTypeKind::Sequence) {
+		if (type && type->kind == tooling::DevTypeKind::Sequence) {
 			if (operations) drawSequenceRows(context, state, *schema, *type, *operations);
 			return;
 		}
 
 		std::string reason = state.editable ? "Unsupported: no editor adapter" : "View only";
-		if (field->reason == devMode::DevCapabilityReason::RawPointer) reason = "Unsupported: raw pointer";
-		else if (field->reason == devMode::DevCapabilityReason::CallableType) reason = "Unsupported: callable type";
-		else if (field->reason == devMode::DevCapabilityReason::NoEditAdapter) reason = "View only: no edit adapter";
+		if (field->reason == tooling::DevCapabilityReason::RawPointer) reason = "Unsupported: raw pointer";
+		else if (field->reason == tooling::DevCapabilityReason::CallableType) reason = "Unsupported: callable type";
+		else if (field->reason == tooling::DevCapabilityReason::NoEditAdapter) reason = "View only: no edit adapter";
 		drawValueSurface(reason, interface_theme::kTextMuted);
 		}();
 	}
 }
 
 template <typename Context>
-void drawChangeActionButton(
-	Context& context,
-	uint64_t key,
-	std::string_view label,
-	ActionCall action,
-	bool enabled,
-	float width) {
+void drawChangeActionButton(Context& context, uint64_t key, std::string_view label,
+							ActionCall action, bool enabled, float width) {
 	FSEL::ButtonParameters button{};
 	button.onActivate = action;
 	button.enabled = enabled;
-	button.contentMode = FSEL::ButtonContentMode::TextOnly;
+	const TextureRef icon =
+		label.starts_with("Revert")
+			? editor_action_icon(context.params.app, interface_icons::kRevertKey)
+			: TextureRef{};
 	button.text = label;
 	button.sizing = {
-		.width = CLAY_SIZING_FIXED(width),
+		.width = CLAY_SIZING_FIXED(icon.handle ? 24 : width),
 		.height = CLAY_SIZING_FIXED(24),
 	};
 	button.padding = Clay_Padding{4, 4, 0, 0};
@@ -4049,8 +3826,13 @@ void drawChangeActionButton(
 	button.disabledOverrides.backgroundColor = interface_theme::kDepth2Ink;
 	button.disabledOverrides.labelColor = interface_theme::kTextMuted;
 	button.disabledOverrides.borderColor = interface_theme::kBorderPrimary;
+	action_button::set_icon(button, icon);
 	context.uiManager.createElement(FSEL::kButton, Keyed(kChangeAction, key))
-		.setParameters(std::move(button)).setDevInternalCapture(true).draw();
+		.setParameters(std::move(button))
+		.setDevInternalCapture(true)
+		.draw();
+	if (icon.handle)
+		action_button::tooltip(context, Keyed(kChangeAction, key), label);
 }
 
 void DevChangesHeader::buildElement(BuildContext& context) {
@@ -4083,7 +3865,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration header{};
 	header.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+		.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 	header.layout.padding = Clay_Padding{7, 7, 7, 7};
 	header.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	header.layout.childGap = 6;
@@ -4095,7 +3877,7 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), header) {
 		Clay_ElementDeclaration titleRow{};
 		titleRow.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		titleRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		titleRow.layout.childGap = 5;
 		titleRow.layout.childAlignment = {
@@ -4120,8 +3902,8 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 		}
 		Clay_ElementDeclaration chain{};
 		chain.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
-		chain.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
+		chain.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		chain.layout.childGap = 2;
 		chain.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		chain.clip = {.horizontal = true, .vertical = true};
@@ -4182,12 +3964,12 @@ void DevChangeCard::buildElement(BuildContext& context) {
 
 	auto liveSummary = [&](const tooling::DevOverrideApply::Record* record) {
 		if (!record || !state.app || !record->value) return std::string{};
-		const devMode::DevSchemaView schema = state.app->devTooling().schemas().view();
+		const tooling::DevSchemaView schema = state.app->devTooling().schemas().view();
 		if (!schema) return std::string{"Value unavailable"};
-		const devMode::DevFieldSchema* field = fieldAt(*schema, record->fieldIndex);
-		const devMode::DevTypeSchema* type = field && schema
+		const tooling::DevFieldSchema* field = fieldAt(*schema, record->fieldIndex);
+		const tooling::DevTypeSchema* type = field && schema
 			? schema->type(field->valueType) : nullptr;
-		return quickView(*schema, type, record->value.data(), state.app, field).primary;
+		return format_value_summary(*schema, type, record->value.data(), state.app, field).detail;
 	};
 	struct Step { std::string_view name; std::string value; Clay_Color color; };
 	std::vector<Step> steps{};
@@ -4204,7 +3986,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 
 	Clay_ElementDeclaration card{};
 	card.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+		.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 	card.layout.padding = Clay_Padding{8, 8, 7, 7};
 	card.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	card.layout.childGap = 7;
@@ -4215,7 +3997,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 	CLAY(context.clayID(), card) {
 		Clay_ElementDeclaration title{};
 		title.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		title.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		title.layout.childGap = 1;
 		title.clip = {.horizontal = true, .vertical = true};
@@ -4227,7 +4009,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 		}
 		Clay_ElementDeclaration chain{};
 		chain.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		chain.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		chain.layout.childGap = 2;
 		CLAY(context.clayID("chain"), chain) {
@@ -4251,7 +4033,7 @@ void DevChangeCard::buildElement(BuildContext& context) {
 		}
 		Clay_ElementDeclaration actions{};
 		actions.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		actions.layout.childGap = 5;
 		actions.layout.childAlignment = {.x = CLAY_ALIGN_X_RIGHT, .y = CLAY_ALIGN_Y_CENTER};
@@ -4272,12 +4054,12 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 	const DevInspectorTab tab = state
 		? static_cast<DevInspectorTab>(state->inspectInspectorTab)
 		: DevInspectorTab::Parameters;
-	const devMode::DevSchemaView schema = app
-		? app->devTooling().schemas().view() : devMode::DevSchemaView{};
-	const devMode::DevElementSchema* element = schema
+	const tooling::DevSchemaView schema = app
+		? app->devTooling().schemas().view() : tooling::DevSchemaView{};
+	const tooling::DevElementSchema* element = schema
 		? schema->findElement(context.params.definition) : nullptr;
 
-	devMode::DevTypeIndex rootType{};
+	tooling::DevTypeIndex rootType{};
 	std::string_view emptyMessage{};
 	if (element) {
 		switch (tab) {
@@ -4294,19 +4076,22 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 			emptyMessage = "This element does not have resources";
 			break;
 		case DevInspectorTab::Changes:
+			rootType = element->parametersType;
 			break;
 		}
 	}
-	const std::span<const devMode::DevFieldSchema> fields = schema && rootType
-		? schema->fieldsOf(rootType) : std::span<const devMode::DevFieldSchema>{};
-	const devMode::DevTypeSchema* rootSchema = schema
+	const std::span<const tooling::DevFieldSchema> fields = schema && rootType
+		? schema->fieldsOf(rootType) : std::span<const tooling::DevFieldSchema>{};
+	const tooling::DevTypeSchema* rootSchema = schema
 		? schema->type(rootType) : nullptr;
-	const devMode::DevTypeId rootOwnerType = rootSchema ? rootSchema->id : 0u;
+	const tooling::DevTypeId rootOwnerType = rootSchema ? rootSchema->id : 0u;
 	const tooling::DevElementCaptureSnapshot* capture = app && state
 		? &app->devTooling().overrides().elementSnapshot(state->selectedWindowId)
 		: nullptr;
 	const tooling::DevCapturedElement* capturedElement = nullptr;
-	if (capture) {
+	const bool matching_schema =
+		capture && capture->schema && schema && capture->schema->generation == schema->generation;
+	if (matching_schema) {
 		const auto found = std::ranges::find_if(
 			capture->elements,
 			[&context](const tooling::DevCapturedElement& captured) {
@@ -4315,18 +4100,37 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 			});
 		if (found != capture->elements.end()) capturedElement = &*found;
 	}
-	const auto capturedValue = [&](const devMode::DevFieldSchema& field) -> const void* {
-		if (!schema || !capture || !capturedElement) return nullptr;
-		const devMode::DevFieldIndex wanted = fieldIndex(*schema, field);
-		const std::size_t begin = capturedElement->firstField;
-		const std::size_t end = std::min<std::size_t>(
-			capture->fields.size(), begin + capturedElement->fieldCount);
-		for (std::size_t index = begin; index < end; ++index) {
-			if (capture->fields[index].field == wanted) {
-				return capture->fields[index].value.data();
-			}
-		}
+	const auto capturedField =
+		[&](const tooling::DevFieldSchema& field) -> const tooling::DevCapturedField* {
+		if (!matching_schema || !capturedElement)
+			return nullptr;
+		const tooling::DevFieldIndex wanted = fieldIndex(*schema, field);
+		const std::size_t begin = tab == DevInspectorTab::State ? capturedElement->firstStateField
+								  : tab == DevInspectorTab::Resources
+									  ? capturedElement->firstResourceField
+									  : capturedElement->firstField;
+		const std::size_t count = tab == DevInspectorTab::State ? capturedElement->stateFieldCount
+								  : tab == DevInspectorTab::Resources
+									  ? capturedElement->resourceFieldCount
+									  : capturedElement->fieldCount;
+		const std::size_t end = std::min<std::size_t>(capture->fields.size(), begin + count);
+		for (std::size_t index = begin; index < end; ++index)
+			if (capture->fields[index].field == wanted)
+				return &capture->fields[index];
 		return nullptr;
+	};
+	const auto availability = [&](const tooling::DevCapturedField* field, bool authored = false) {
+		if (app && !app->devTooling().overrides().value_collection())
+			return DevSummaryAvailability::CollectionDisabled;
+		if (capture && capture->schema && !matching_schema)
+			return DevSummaryAvailability::SchemaChanged;
+		if (field && (authored ? field->authoredStatus : field->captureStatus) ==
+						 tooling::DevValueCaptureStatus::CopyFailed)
+			return DevSummaryAvailability::CopyFailed;
+		if (field && (authored ? field->authoredStatus : field->captureStatus) ==
+						 tooling::DevValueCaptureStatus::SchemaMismatch)
+			return DevSummaryAvailability::SchemaChanged;
+		return DevSummaryAvailability::NotCaptured;
 	};
 	const std::vector<tooling::DevBakeDiffEntry> changes =
 		app && tab == DevInspectorTab::Changes
@@ -4334,7 +4138,7 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 			: std::vector<tooling::DevBakeDiffEntry>{};
 	struct ChangeModel {
 		tooling::DevOverrideFieldKey field{};
-		devMode::DevFieldIndex fieldIndex{};
+		tooling::DevFieldIndex fieldIndex{};
 		std::string fieldName{};
 		std::string typeName{};
 		std::string authoredValue{};
@@ -4350,8 +4154,8 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 					state->selectedWindowId, context.params.instance)) continue;
 			if (std::ranges::any_of(changeModels,
 				[&](const ChangeModel& model) { return model.field == record.field; })) continue;
-			const devMode::DevFieldSchema* field = fieldAt(*schema, record.fieldIndex);
-			const devMode::DevTypeSchema* type = field ? schema->type(field->valueType) : nullptr;
+			const tooling::DevFieldSchema* field = fieldAt(*schema, record.fieldIndex);
+			const tooling::DevTypeSchema* type = field ? schema->type(field->valueType) : nullptr;
 			std::string name = field ? std::string(schema->string(field->displayName)) : std::string{};
 			if (name.empty() && field) name = std::string(schema->string(field->name));
 			if (name.empty()) name = "Changed field";
@@ -4372,9 +4176,9 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 				});
 			if (model == changeModels.end()) {
 				const auto found = std::ranges::find_if(schema->fields,
-					[&](const devMode::DevFieldSchema& field) { return field.id == change.fieldId; });
+					[&](const tooling::DevFieldSchema& field) { return field.id == change.fieldId; });
 				if (found == schema->fields.end()) continue;
-				const devMode::DevTypeSchema* type = schema->type(found->valueType);
+				const tooling::DevTypeSchema* type = schema->type(found->valueType);
 				std::string name = change.fieldPath;
 				if (name.empty()) name = std::string(schema->string(found->displayName));
 				if (name.empty()) name = std::string(schema->string(found->name));
@@ -4395,9 +4199,65 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 		}
 	}
 
+	// A definition override may affect instances with different authored inputs.
+	// Resolve the selected instance directly instead of presenting an aggregated baseline.
+	if (schema && tab == DevInspectorTab::Changes)
+		for (auto& model : changeModels) {
+			const auto* leaf = fieldAt(*schema, model.fieldIndex);
+			const tooling::DevCapturedField* original = nullptr;
+			const auto root_id =
+				model.field.nestedPath.empty() ? model.field.field : model.field.nestedPath.front();
+			if (matching_schema && capturedElement) {
+				const std::size_t end =
+					std::min<std::size_t>(capture->fields.size(), capturedElement->firstField +
+																	  capturedElement->fieldCount);
+				for (std::size_t index = capturedElement->firstField; index < end; ++index) {
+					const auto* candidate = fieldAt(*schema, capture->fields[index].field);
+					if (candidate && candidate->id == root_id) {
+						original = &capture->fields[index];
+						break;
+					}
+				}
+			}
+			const void* authored = original ? original->authoredValue.data() : nullptr;
+			if (authored && !model.field.nestedPath.empty()) {
+				for (std::size_t path_index = 1; path_index <= model.field.nestedPath.size();
+					 ++path_index) {
+					const auto field_id = path_index == model.field.nestedPath.size()
+											  ? model.field.field
+											  : model.field.nestedPath[path_index];
+					const auto found =
+						std::ranges::find_if(schema->fields, [&](const auto& candidate) {
+							return candidate.id == field_id;
+						});
+					if (found == schema->fields.end() ||
+						found->operations >= schema->fieldOperations.size()) {
+						authored = nullptr;
+						break;
+					}
+					const auto* operations = schema->fieldOperations[found->operations];
+					authored = operations && operations->constAddress
+								   ? operations->constAddress(authored)
+								   : nullptr;
+					if (!authored)
+						break;
+				}
+			}
+			if (authored && leaf)
+				model.authoredValue = format_value_summary(*schema, schema->type(leaf->valueType),
+														   authored, app, leaf)
+										  .detail;
+			else
+				model.authoredValue =
+					"Authored unavailable · " +
+					format_value_summary(*schema, leaf ? schema->type(leaf->valueType) : nullptr,
+										 nullptr, app, leaf, availability(original, true))
+						.primary;
+		}
+
 	Clay_ElementDeclaration surface{};
 	surface.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0),
+		.width = CLAY_SIZING_PERCENT(1),
 		.height = CLAY_SIZING_GROW(0),
 	};
 	surface.backgroundColor = interface_theme::kDepth1Panel;
@@ -4416,8 +4276,10 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 			drawMessage(context, "No schema exists for this element");
 		} else {
 			Clay_ElementDeclaration cards{};
+			// GROW inside a horizontally clipped viewport adopts unwrapped child width.
+			// Bind the content width so summaries wrap and actions remain reachable.
 			cards.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0),
+				.width = CLAY_SIZING_PERCENT(1),
 				.height = CLAY_SIZING_FIT(0),
 			};
 			cards.layout.padding = Clay_Padding{9, 9, 9, 9};
@@ -4456,17 +4318,23 @@ void DevInterfaceInspectorFields::buildElement(BuildContext& context) {
 						}
 					}
 				} else if (!rootType || fields.empty()) {
-					drawMessage(context, emptyMessage);
+					drawMessage(context,
+								rootSchema && rootSchema->reason ==
+												  tooling::DevCapabilityReason::NoSchemaDeclaration
+									? "Unregistered type · " +
+										  std::string(schemaTypeName(*schema, rootSchema)) +
+										  "; register its schema to inspect member values"
+									: std::string(emptyMessage));
 				} else {
 					const DevEditorRole role = tab == DevInspectorTab::Parameters
 						? DevEditorRole::Parameters
 						: tab == DevInspectorTab::State
 							? DevEditorRole::State : DevEditorRole::Resources;
-					for (const devMode::DevFieldSchema& field : fields) {
-						drawCard(
-							context, schema, field, role, rootOwnerType,
-							tab == DevInspectorTab::Parameters
-								? capturedValue(field) : nullptr);
+					for (const tooling::DevFieldSchema& field : fields) {
+						drawCard(context, schema, field, role, rootOwnerType,
+								 capturedField(field) ? capturedField(field)->value.data()
+													  : nullptr,
+								 {}, 0u, availability(capturedField(field)));
 					}
 				}
 			}

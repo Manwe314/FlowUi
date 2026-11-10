@@ -11,9 +11,10 @@
 #include <iostream>
 
 #include "DevChangesReviewTestSchema.hpp"
+#include "devSystems/devTooling/bake/DevBakeInternals.hpp"
 #include "devSystems/devTooling/bake/DevBakePipeline.hpp"
 #include "devSystems/devTooling/override/DevOverrideEngine.hpp"
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 
 namespace changes_review_test {
 FLOWUI_DEV_SCHEMA(SourceParameters, FLOWUI_DEV_FIELD(SourceParameters, amount))
@@ -50,7 +51,7 @@ void replace_once(std::string& contents, std::string_view original, std::string_
 }
 
 struct Fixture {
-	FlowUi::devMode::DevSchemaRegistry schemas{};
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas{};
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	FlowUi::ThemeManager themes{};
@@ -78,7 +79,7 @@ struct Fixture {
 			 std::uint64_t instance = 0) {
 		DevOwnedValue owned;
 		assert(overrides.copyValue(value, owned) ==
-			   FlowUi::devMode::DevValueOperationStatus::Success);
+			   FlowUi::devSystems::tooling::DevValueOperationStatus::Success);
 		DevChangeSet change{.transaction = ++transaction};
 		change.commands.emplace_back(DevOverrideCommand{
 			.kind = DevOverrideCommandKind::SetElementField,
@@ -107,7 +108,7 @@ struct Fixture {
 }
 
 void verify_owned_atomic_memory(const std::filesystem::path& directory) {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	const auto path = directory / "memory.flowchanges";
@@ -244,7 +245,36 @@ void verify_external_reconciliation_and_unresolved(const std::filesystem::path& 
 	// A saved type mismatch is retained visibly and can be removed without serializing its value.
 	fixture.overrides.appliedOverrides().clearAll();
 	fixture.overrides.appliedOverrides().clearBakeTombstones();
-	external = read_file(path);
+	const auto compatible_manifest = read_file(path);
+	external = compatible_manifest;
+	const auto field_position = external.find("\"fieldId\": \"");
+	assert(field_position != std::string::npos);
+	const auto field_start = field_position + std::string("\"fieldId\": \"").size();
+	external.replace(field_start, external.find('"', field_start) - field_start, "0x1");
+	write_file(path, external);
+	plan = fixture.pipeline.query_review();
+	assert(plan.counts.errors == 1 && !plan.can_commit);
+	const auto& identity_reason = amount_row(plan).reason;
+	assert(identity_reason.find("field 'amount' has ID 0x1") != std::string::npos);
+	char current_identity[32]{};
+	const auto formatted_identity =
+		std::to_chars(current_identity, current_identity + sizeof(current_identity),
+					  fixture.field("amount").field, 16);
+	assert(formatted_identity.ec == std::errc{});
+	assert(identity_reason.find("current field has ID 0x" +
+								std::string(current_identity, formatted_identity.ptr)) !=
+		   std::string::npos);
+
+	external = compatible_manifest;
+	replace_once(external, "\"fieldPath\": \"amount\"", "\"fieldPath\": \"missing_amount\"");
+	write_file(path, external);
+	plan = fixture.pipeline.query_review();
+	assert(plan.counts.errors == 1 && !plan.can_commit && plan.rows.size() == 1);
+	assert(plan.rows.front().reason.find("field 'missing_amount'") != std::string::npos);
+	assert(plan.rows.front().reason.find("'missing_amount' is missing from type '") !=
+		   std::string::npos);
+
+	external = compatible_manifest;
 	const auto type_position = external.find("\"valueTypeId\": \"");
 	assert(type_position != std::string::npos);
 	const auto value_start = type_position + std::string("\"valueTypeId\": \"").size();
@@ -252,6 +282,10 @@ void verify_external_reconciliation_and_unresolved(const std::filesystem::path& 
 	write_file(path, external);
 	plan = fixture.pipeline.query_review();
 	assert(plan.counts.errors == 1 && !plan.can_commit && amount_row(plan).disk_entry);
+	assert(amount_row(plan).reason.find("field 'amount' expects type 'float' (0x1)") !=
+		   std::string::npos);
+	assert(amount_row(plan).reason.find("current schema declares 'float' (0x") !=
+		   std::string::npos);
 	request = {};
 	request.decisions.emplace_back(
 		DevChangesDecisionEntry{amount_row(plan).key, DevChangesDecision::Remove});
@@ -262,7 +296,7 @@ void verify_external_reconciliation_and_unresolved(const std::filesystem::path& 
 }
 
 void verify_invalid_memory_omission(const std::filesystem::path& directory) {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	pipeline.setManifestPath(directory / "invalid-memory.flowchanges");
@@ -353,7 +387,7 @@ void verify_generated_value_and_metadata_repairs(const std::filesystem::path& di
 }
 
 void verify_adjacent_growth_factors(const std::filesystem::path& directory) {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	pipeline.setManifestPath(directory / "adjacent-growth.flowchanges");
@@ -433,7 +467,7 @@ void verify_explicit_entry_removal_rebase(const std::filesystem::path& directory
 }
 
 void verify_memory_removal_rebase(const std::filesystem::path& directory) {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	pipeline.setManifestPath(directory / "memory-removal-rebase.flowchanges");
@@ -481,7 +515,7 @@ void verify_memory_removal_rebase(const std::filesystem::path& directory) {
 }
 
 void verify_unknown_memory_members(const std::filesystem::path& directory) {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	const auto path = directory / "unknown-memory-metadata.flowchanges";
@@ -511,8 +545,7 @@ void verify_stable_semantic_values(const std::filesystem::path& directory) {
 	Fixture fixture(directory / "semantic-values.flowchanges");
 	fixture.set("action", FlowUi::ActionCall::fromStable(FlowUi::ActionCallKind::App, 55));
 	auto texture = FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::Icon, "review.\"icon\"",
-												  FlowUi::TextureFitMode::Contain,
-												  FlowUi::TextureSamplingMode::Nearest, false);
+												  FlowUi::TextureFitMode::Contain, false);
 	fixture.set("texture", texture);
 	auto plan = fixture.pipeline.query_review();
 	assert(plan.can_commit && plan.counts.errors == 0 && plan.counts.additions == 2);
@@ -527,12 +560,87 @@ void verify_stable_semantic_values(const std::filesystem::path& directory) {
 	});
 	assert(texture_row != plan.rows.end() &&
 		   texture_row->proposal.find("\"tintEnabled\":true") != std::string::npos);
+	assert(texture_row->proposal.find("samplingMode") == std::string::npos);
+	assert(texture_row->proposed_entry->cppValue ==
+		   "FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::Icon,\"review.\\\"icon\\\"\","
+		   "static_cast<FlowUi::TextureFitMode>(1),true)");
 	assert(fixture.pipeline.commit_review(plan).applied);
 	assert(fixture.pipeline.query_review().counts.pending() == 0);
 }
 
+void verify_texture_metadata_contract(const std::filesystem::path& directory) {
+	const auto path = directory / "texture-metadata.flowchanges";
+	Fixture fixture(path);
+	fixture.set("texture",
+				FlowUi::TextureRef::fromStable(FlowUi::ResourceDomain::Icon, "metadata.icon",
+											   FlowUi::TextureFitMode::Cover, true));
+	auto plan = fixture.pipeline.query_review();
+	assert(plan.can_commit && fixture.pipeline.commit_review(plan).applied);
+	const auto original = fixture.pipeline.manifest();
+	assert(original.entries.size() == 1);
+	fixture.overrides.appliedOverrides().clearAll();
+	fixture.overrides.appliedOverrides().clearBakeTombstones();
+	for (const std::string_view obsolete_sampling :
+		 {"0", "1", "-1", "2", "1.5", "true", "\"1\"", "null"}) {
+		auto invalid = original;
+		auto& value_json = invalid.entries.front().valueJson;
+		value_json.insert(value_json.size() - 1u,
+						  ",\"samplingMode\":" + std::string(obsolete_sampling));
+		write_file(path, bake_detail::encode_manifest(invalid));
+		plan = fixture.pipeline.query_review();
+		assert(plan.valid_disk && plan.counts.errors == 1 && !plan.can_commit);
+	}
+	for (const std::string_view missing_property : {",\"fitMode\":2", ",\"tintEnabled\":true"}) {
+		auto incomplete = original;
+		auto& value_json = incomplete.entries.front().valueJson;
+		const auto property_position = value_json.find(missing_property);
+		assert(property_position != std::string::npos);
+		value_json.erase(property_position, missing_property.size());
+		write_file(path, bake_detail::encode_manifest(incomplete));
+		plan = fixture.pipeline.query_review();
+		assert(plan.valid_disk && plan.counts.errors == 1 && !plan.can_commit);
+	}
+	for (const auto invalid_json :
+		 {"{\"domain\":2.0,\"key\":\"metadata.icon\",\"fitMode\":2,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"metadata.icon\",\"fitMode\":2.0,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"\",\"fitMode\":2,\"tintEnabled\":true}"}) {
+		auto invalid = original;
+		invalid.entries.front().valueJson = invalid_json;
+		if (std::string_view(invalid_json).find("\"key\":\"\"") != std::string_view::npos)
+			replace_once(invalid.entries.front().cppValue, "\"metadata.icon\"", "\"\"");
+		write_file(path, bake_detail::encode_manifest(invalid));
+		plan = fixture.pipeline.query_review();
+		assert(plan.valid_disk && plan.counts.errors == 1 && !plan.can_commit);
+	}
+	for (const auto malformed_json :
+		 {"{\"domain\":02,\"key\":\"metadata.icon\",\"fitMode\":2,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"metadata.icon\",\"fitMode\":02,\"tintEnabled\":true}",
+		  "{\"domain\":2,\"key\":\"metadata.icon\",\"fitMode\":00,\"tintEnabled\":true}"}) {
+		auto malformed = original;
+		malformed.entries.front().valueJson = malformed_json;
+		// The codec also emits the reflected value as raw JSON in the manifest.
+		write_file(path, bake_detail::encode_manifest(malformed));
+		plan = fixture.pipeline.query_review();
+		assert(!plan.valid_disk && plan.counts.errors == 1 && !plan.can_commit);
+	}
+	auto obsolete = original;
+	auto& expression = obsolete.entries.front().cppValue;
+	expression.insert(expression.rfind(",true)"), ",1");
+	write_file(path, bake_detail::encode_manifest(obsolete));
+	plan = fixture.pipeline.query_review();
+	assert(plan.valid_disk && plan.counts.errors == 1 && !plan.can_commit);
+	assert(plan.rows.front().validity == DevChangesValidity::Invalid);
+	DevChangesReviewRequest removal;
+	removal.decisions.emplace_back(
+		DevChangesDecisionEntry{plan.rows.front().key, DevChangesDecision::Remove});
+	plan = fixture.pipeline.query_review(removal);
+	assert(plan.can_commit && plan.counts.removals == 1);
+	assert(fixture.pipeline.commit_review(plan).applied);
+	assert(fixture.pipeline.manifest().entries.empty());
+}
+
 void verify_saved_header_with_source_reflection(const std::filesystem::path& directory) {
-	FlowUi::devMode::DevSchemaRegistry schemas;
+	FlowUi::devSystems::tooling::DevSchemaRegistry schemas;
 	DevOverrideEngine overrides{schemas};
 	DevBakePipeline pipeline{schemas, overrides};
 	schemas.ensureElement<changes_review_test::SourceElement>();
@@ -595,6 +703,7 @@ int main(int argument_count, char** arguments) {
 	verify_memory_removal_rebase(directory);
 	verify_unknown_memory_members(directory);
 	verify_stable_semantic_values(directory);
+	verify_texture_metadata_contract(directory);
 	verify_saved_header_with_source_reflection(directory);
 	std::cout << "Changes review retention, decisions, conflicts, revisions, atomic writes and "
 				 "memory passed.\n";

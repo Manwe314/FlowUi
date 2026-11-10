@@ -1,9 +1,9 @@
 #pragma once
 #include "devSystems/devInterface/Memory/DevMemoryContentParameters.hpp"
 #if FLOW_UI_DEV_MODE
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Dataset selection and recording controls shared by the complete Memory surface. */
+/* Dataset selection and recording controls shared by the complete Memory surface. */
 struct DevMemoryContextControls {
 	using Parameters = DevMemoryContentParameters;
 	using BuildContext = ElementBuildContext<DevMemoryContextControls>;

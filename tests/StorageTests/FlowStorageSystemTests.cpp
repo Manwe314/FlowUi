@@ -19,9 +19,9 @@
 #include <utility>
 #include <vector>
 
-#include "internal/StorageSystem/FlowStorageSystem.hpp"
-#include "internal/StorageSystem/PersistentRecord.hpp"
-#include "Ui/Vk_UiRenderer.hpp"
+#include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
+#include "FlowUi/Private/storageSystem/PersistentRecord.hpp"
+#include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 
 namespace {
 
@@ -86,7 +86,6 @@ struct ManagerRecordTestArgs { int value = 0; int* destroyed = nullptr; };
 ManagerRecordDesc managerRecordDesc(ResourceKey key, ManagerRecordTestArgs& args) {
 	return ManagerRecordDesc{
 		.key = key,
-		.kind = ResourceKind::ManagerRoot,
 		.bytes = sizeof(ManagerRecordTestState),
 		.alignment = alignof(ManagerRecordTestState),
 		.construct = +[](void* destination, void* userData) {
@@ -95,6 +94,7 @@ ManagerRecordDesc managerRecordDesc(ResourceKey key, ManagerRecordTestArgs& args
 		},
 		.destroy = +[](void* object) noexcept { static_cast<ManagerRecordTestState*>(object)->~ManagerRecordTestState(); },
 		.userData = &args,
+		.kind = ResourceKind::ManagerRoot,
 	};
 }
 

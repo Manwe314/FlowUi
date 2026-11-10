@@ -54,7 +54,7 @@ This target naturally touches the full image and icon path:
 - Large thumbnails and avatars are normal image files handled by `ImageManager`.
 - Toolbar/status symbols are SVG icons handled by `IconManager`.
 - UI drawing receives `TextureRef` values from those managers.
-- `UiManager::storeTexture()` copies each `TextureRef` into frame-local storage for Clay image commands.
+- `UiManager::imageData()` copies each `TextureRef` into frame-local storage for Clay image commands.
 
 ### Asset Discovery
 
@@ -103,22 +103,22 @@ FlowUi::TextureRef ref{};
 
 The manager-owned fields identify the texture:
 
-- `id`
+- `handle`
 - `uv0x`, `uv0y`, `uv1x`, `uv1y`
 - `sourceWidth`, `sourceHeight`
 
 Application code should normally leave those alone. The app-facing options are:
 
 - `fitMode`: `Stretch`, `Contain`, `Cover`, or `None`.
-- `samplingMode`: `Linear` or `Nearest`.
 - `tintEnabled`: whether the image command color should multiply the texture.
 
 ```cpp
 FlowUi::TextureRef thumbnail = app.images().getTexture("thumbnail/tree");
 thumbnail.fitMode = FlowUi::TextureFitMode::Cover;
-thumbnail.samplingMode = FlowUi::TextureSamplingMode::Linear;
 thumbnail.tintEnabled = false;
 ```
+
+Filtering comes from the sampler owned by the logical texture.
 
 For icons, tinting is often useful:
 
@@ -180,20 +180,25 @@ Register discovered image files with application-defined keys.
 
 ```cpp
 for (const ProjectImageAsset& image : images) {
-    const bool inserted = imageManager.registerImage(image.key, image.path.string());
-    (void)inserted;
+    const auto registered = imageManager.register_image_file(image.key, image.path);
+    if (!registered) {
+        throw FlowUi::FlowUiException(registered.error());
+    }
 }
 ```
 
-`registerImage()` decodes the file, uploads it as a Vulkan texture, and registers it under the key. It returns `true` for a new key and `false` when an existing key was replaced.
+`registerImage()` decodes the file, uploads it as a Vulkan texture, and registers it under the key. A successful result contains `true` for a new key or `false` when an existing key was replaced. Check the result before dereferencing it; `.error()` describes a registration failure.
 
 ### Check Existing Images
 
-Use `contains()` for non-throwing lookup.
+Use `contains()` to check registration. Resource-key normalization may allocate.
 
 ```cpp
 if (!imageManager.contains("avatar/lee")) {
-    (void)imageManager.registerImage("avatar/lee", "assets/images/avatars/lee.png");
+    const auto registered = imageManager.registerImage("avatar/lee", "assets/images/avatars/lee.png");
+    if (!registered) {
+        throw FlowUi::FlowUiException(registered.error());
+    }
 }
 ```
 
@@ -204,11 +209,14 @@ This does not perform file IO or GPU work. It only checks the current registrati
 Registering an existing image key replaces the texture while keeping the key active.
 
 ```cpp
-const bool inserted = imageManager.registerImage(
+const auto registered = imageManager.registerImage(
     "thumbnail/tree",
     "assets/images/tree_updated.png");
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 
-if (!inserted) {
+if (!*registered) {
     // Existing key was replaced.
 }
 ```
@@ -216,7 +224,11 @@ if (!inserted) {
 Use `removeImage()` when an asset is no longer valid.
 
 ```cpp
-const bool removed = imageManager.removeImage("thumbnail/house");
+const auto removal = imageManager.removeImage("thumbnail/house");
+if (!removal) {
+    throw FlowUi::FlowUiException(removal.error());
+}
+const bool removed = *removal;
 ```
 
 Removed GPU resources are retired safely through FlowUi's frame cleanup path. Any old `TextureRef` values for that image key should be discarded.
@@ -247,8 +259,10 @@ Register discovered SVG files with application-defined keys.
 
 ```cpp
 for (const ProjectIconAsset& icon : icons) {
-    const bool inserted = iconManager.registerFromFile(icon.key, icon.path.string());
-    (void)inserted;
+    const auto registered = iconManager.register_file(icon.key, icon.path);
+    if (!registered) {
+        throw FlowUi::FlowUiException(registered.error());
+    }
 }
 ```
 
@@ -265,8 +279,10 @@ constexpr std::string_view kCheckSvg = R"(
 </svg>
 )";
 
-const bool inserted = iconManager.registerSvg("status/check", kCheckSvg);
-(void)inserted;
+const auto registered = iconManager.registerSvg("status/check", kCheckSvg);
+if (!registered) {
+    throw FlowUi::FlowUiException(registered.error());
+}
 ```
 
 Like file registration, this parses the document immediately and delays rasterization until the icon is actually drawn.
@@ -277,14 +293,21 @@ Use `contains()` to test whether an SVG document key is registered.
 
 ```cpp
 if (!iconManager.contains("toolbar/save")) {
-    (void)iconManager.registerFromFile("toolbar/save", "assets/icons/save.svg");
+    const auto registered = iconManager.registerFromFile("toolbar/save", "assets/icons/save.svg");
+    if (!registered) {
+        throw FlowUi::FlowUiException(registered.error());
+    }
 }
 ```
 
 Use `remove()` to remove the SVG document and its cached atlas variants.
 
 ```cpp
-const bool removed = iconManager.remove("status/warning");
+const auto removal = iconManager.remove("status/warning");
+if (!removal) {
+    throw FlowUi::FlowUiException(removal.error());
+}
+const bool removed = *removal;
 ```
 
 After removal, previously returned `TextureRef` values for that icon key should be discarded.
@@ -309,10 +332,10 @@ Clay image commands carry opaque image data. In FlowUi, pass a frame-stored `Tex
 
 ```cpp
 Clay_ImageElementConfig image{};
-image.imageData = app.ui().storeTexture(treeThumbnail);
+image.imageData = app.ui().imageData(treeThumbnail);
 ```
 
-Do not pass the address of a temporary or local `TextureRef`. `storeTexture()` copies the ref into `UiManager` frame storage and returns a pointer that stays valid until the frame ends.
+Do not pass the address of a temporary or local `TextureRef`. `imageData()` copies the ref into `UiManager` frame storage and returns a pointer that stays valid until the frame ends.
 
 ### Draw Image Cards
 
@@ -327,10 +350,10 @@ status.fitMode = FlowUi::TextureFitMode::Contain;
 status.tintEnabled = true;
 
 Clay_ImageElementConfig thumbnailImage{};
-thumbnailImage.imageData = app.ui().storeTexture(thumbnail);
+thumbnailImage.imageData = app.ui().imageData(thumbnail);
 
 Clay_ImageElementConfig statusImage{};
-statusImage.imageData = app.ui().storeTexture(status);
+statusImage.imageData = app.ui().imageData(status);
 ```
 
 Then emit the image nodes:
@@ -372,7 +395,7 @@ openIcon.fitMode = FlowUi::TextureFitMode::Contain;
 openIcon.tintEnabled = true;
 
 Clay_ImageElementConfig openImage{};
-openImage.imageData = app.ui().storeTexture(openIcon);
+openImage.imageData = app.ui().imageData(openIcon);
 
 Clay_ElementDeclaration button{};
 button.layout.sizing = {.width = CLAY_SIZING_FIXED(32.0f), .height = CLAY_SIZING_FIXED(32.0f)};
@@ -397,7 +420,7 @@ That is important because SVG icons are size-dependent. A save icon drawn at `16
 
 ### Frame Preparation Resolves Requests
 
-During UI construction, `textureRef("toolbar/save")` returns a request id. The request is stored in the Clay image command through `storeTexture()`.
+During UI construction, `textureRef("toolbar/save")` returns a request id. The request is stored in the Clay image command through `imageData()`.
 
 After `endFrame()`, Clay has final bounding boxes for image nodes. FlowUi's icon manager then scans image render commands. For each icon request, it:
 
@@ -469,7 +492,7 @@ for (const ProjectIconAsset& icon : discoverProjectIcons()) {
 (void)icons.registerSvg("status/check", kCheckSvg);
 ```
 
-The frame loop draws with `TextureRef` and `storeTexture()`:
+The frame loop draws with `TextureRef` and `imageData()`:
 
 ```cpp
 while (!app.shouldClose()) {
@@ -483,10 +506,10 @@ while (!app.shouldClose()) {
     icon.tintEnabled = true;
 
     Clay_ImageElementConfig thumbnailImage{};
-    thumbnailImage.imageData = app.ui().storeTexture(thumbnail);
+    thumbnailImage.imageData = app.ui().imageData(thumbnail);
 
     Clay_ImageElementConfig iconImage{};
-    iconImage.imageData = app.ui().storeTexture(icon);
+    iconImage.imageData = app.ui().imageData(icon);
 
     CLAY(app.ui().toClayEID("asset/thumbnail"), {.layout = {.sizing = {.width = CLAY_SIZING_FIXED(220.0f), .height = CLAY_SIZING_FIXED(130.0f)}}}) {
         CLAY_IMAGE(thumbnailImage);

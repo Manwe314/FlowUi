@@ -1,11 +1,11 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Theme workbench surface. */
+/* Theme workbench surface. */
 struct DevThemeWorkbench {
 	using Parameters = DevInspectContentParameters;
 	struct State {
@@ -21,7 +21,7 @@ struct DevThemeWorkbench {
 		std::vector<FilteredChange> changed_fields{};
 		std::string filter_query{}, filter_token_query{}, filter_variant{};
 		uint64_t filter_generation = 0, filter_type = 0;
-		devMode::DevFieldId filter_group = 0;
+		tooling::DevFieldId filter_group = 0;
 		bool filter_all_variants = false;
 		std::size_t live_count = 0, startup_count = 0;
 		uint64_t code_generation = 0, code_type = 0;

@@ -23,8 +23,10 @@ void DevContiguousTimelineStrip::buildElement(BuildContext& context) {
 										   ? "Thread " + std::to_string(scope.id)
 									   : scope.id ? "Window " + std::to_string(scope.id)
 												  : "All Windows · App Ticks");
-			timeline_ui::button(context, 1, "Fit history", {{}, TimelineAction::Zoom, 0, 1});
-			timeline_ui::button(context, 2, "Fit selected", {{}, TimelineAction::FitSelected});
+			timeline_ui::button(context, 1, "Fit history", {{}, TimelineAction::Zoom, 0, 1},
+								interface_icons::kFitKey);
+			timeline_ui::button(context, 2, "Fit selected", {{}, TimelineAction::FitSelected},
+								interface_icons::kInspectKey);
 			if (context.params.selection->selector_mode == 1 &&
 				context.params.selection->selected_zone) {
 				const auto count =

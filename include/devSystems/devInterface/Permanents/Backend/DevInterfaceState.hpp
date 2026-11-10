@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "FlowUi/App.hpp"
-#include "FlowUi/ElementID.hpp"
-#include "FlowUi/WindowId.hpp"
+#include "FlowUi/Public/App.hpp"
+#include "FlowUi/Public/identificationTypes/ElementID.hpp"
+#include "FlowUi/Public/identificationTypes/WindowId.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsModel.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
@@ -39,7 +39,7 @@ enum class DevApplicationState : uint8_t {
 };
 
 struct DevInterfaceEditorClipboard {
-	devMode::DevTypeId type = 0u;
+	tooling::DevTypeId type = 0u;
 	std::string typeName{};
 	tooling::DevOwnedValue value{};
 
@@ -57,7 +57,7 @@ struct DevInterfaceEditTransaction {
 	bool changesClipboard = false;
 };
 
-/** Persistent orchestration state owned by the singleton interface element. */
+/* Persistent orchestration state owned by the singleton interface element. */
 struct DevInterfaceState {
 	uint64_t capture_start_mode = 0, capture_end_mode = 2, capture_budget_window = 0;
 	uint64_t capture_key = 297, capture_modifiers = 3;
@@ -85,15 +85,17 @@ struct DevInterfaceState {
 	// valid DevInterfaceTab by DevContentHeader on every build.
 	uint64_t activeTab = static_cast<uint64_t>(DevInterfaceTab::Inspect);
 	WindowId selectedWindowId = MainWindowId;
+	WindowId validated_window_id = InvalidWindowId;
+	WindowId interface_window_id = InvalidWindowId;
 	// Inspect selector controls use unsigned values to bind directly to FSEL.
 	// Forest: 0 = Flow, 1 = Clay. Definition 0 means no filter.
 	uint64_t inspectForest = 0u;
-	devMode::DevTypeId inspect_theme_type = 0;
+	tooling::DevTypeId inspect_theme_type = 0;
 	std::string inspect_theme_variant{};
 	uint64_t inspect_theme_key = 0;
 	uint64_t inspect_theme_filter = 0;
 	uint64_t inspect_theme_tab = 0;
-	devMode::DevFieldId inspect_theme_group = 0;
+	tooling::DevFieldId inspect_theme_group = 0;
 	bool inspect_theme_all_variants = false;
 	uint64_t inspectDefinitionFilter = 0u;
 	// Selection is intentionally independent from the active tab. A key of zero

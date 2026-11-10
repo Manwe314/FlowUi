@@ -5,24 +5,26 @@
 #include <string_view>
 #include <vector>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "FSEL/ComboBox.hpp"
 #include "devSystems/devInterface/Changes/DevChangesContentParameters.hpp"
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
 struct DevChangesWorkbench {
-	/** Retained widget drafts never substitute for the serviced review model. */
+	/* Retained widget drafts never substitute for the serviced review model. */
 	struct State {
 		std::array<std::string, 5> decision_labels{};
 		std::array<FSEL::ComboBoxOption, 5> decision_options{};
 		std::array<uint32_t, 40> submitted_queue_ids{};
 		std::vector<std::string> metadata_expanded{};
+		std::vector<std::string> expanded_reviews{};
+		std::string decision_target_key{};
 		std::string previous_selection{};
 		UiManager* ui_manager = nullptr;
 		DevChangesState* changes = nullptr;

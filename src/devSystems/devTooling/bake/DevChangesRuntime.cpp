@@ -1,6 +1,7 @@
 #include "devSystems/devTooling/bake/DevChangesRuntime.hpp"
+#include "devSystems/devTooling/bake/DevBakePipeline.hpp"
 #if FLOW_UI_DEV_MODE
-#include "managers/ThemeManager.hpp"
+#include "FlowUi/Public/managers/ThemeManager.hpp"
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -8,14 +9,14 @@
 namespace FlowUi::devSystems::tooling {
 namespace {
 struct ResolvedRuntimeField {
-	std::vector<const devMode::DevFieldSchema*> path{};
+	std::vector<const tooling::DevFieldSchema*> path{};
 	DevOverrideFieldKey key{};
-	devMode::DevTypeIndex type{};
+	tooling::DevTypeIndex type{};
 };
-[[nodiscard]] ResolvedRuntimeField resolve_runtime_field(const devMode::DevSchemaGeneration& schema,
+[[nodiscard]] ResolvedRuntimeField resolve_runtime_field(const tooling::DevSchemaGeneration& schema,
 														 const DevBakeEntry& entry) {
 	ResolvedRuntimeField result;
-	devMode::DevTypeIndex owner{};
+	tooling::DevTypeIndex owner{};
 	if (entry.targetKind == DevBakeTargetKind::Element) {
 		const auto* element = schema.findElement(entry.definition);
 		if (!element)
@@ -58,7 +59,7 @@ struct ResolvedRuntimeField {
 	}
 	return {};
 }
-[[nodiscard]] const void* field_address(const devMode::DevSchemaGeneration& schema,
+[[nodiscard]] const void* field_address(const tooling::DevSchemaGeneration& schema,
 										const ResolvedRuntimeField& field, const void* owner,
 										std::size_t begin = 0) noexcept {
 	for (std::size_t index = begin; owner && index < field.path.size(); ++index) {
@@ -68,15 +69,15 @@ struct ResolvedRuntimeField {
 	return owner;
 }
 
-/** The manifest codec emits numeric scalars and complete reflected objects. Parse into an owned
+/* The manifest codec emits numeric scalars and complete reflected objects. Parse into an owned
  * typed clone so padding, constructors and assignment semantics remain the type's responsibility.
  */
 class ReflectedJsonReader {
 public:
-	ReflectedJsonReader(const devMode::DevSchemaGeneration& schema, std::string_view input,
+	ReflectedJsonReader(const tooling::DevSchemaGeneration& schema, std::string_view input,
 						DevOwnedValue& owner)
 		: schema_(schema), input_(input), owner_(owner) {}
-	[[nodiscard]] bool decode(devMode::DevTypeIndex type, void* destination) {
+	[[nodiscard]] bool decode(tooling::DevTypeIndex type, void* destination) {
 		if (!value(type, destination, 0))
 			return false;
 		space();
@@ -84,10 +85,8 @@ public:
 	}
 	[[nodiscard]] std::string_view diagnostic() const noexcept {
 		return incomplete_texture_
-				   ? "Saved texture metadata needs domain, key, fitMode, samplingMode and "
-					 "tintEnabled; rebake a retained typed proposal to refresh legacy resource "
-					 "metadata."
-				   : "Saved value cannot be materialized by the reflected "
+				   ? "Baked texture metadata must contain domain, key, fitMode and tintEnabled."
+				   : "Already baked value cannot be materialized by the reflected "
 					 "numeric/object/action/resource codec; retained live values remain usable.";
 	}
 
@@ -142,7 +141,7 @@ private:
 		if (!consume('{'))
 			return false;
 		std::string key;
-		std::uint64_t domain = 0, fit = 0, sampling = 0;
+		std::uint64_t domain = 0, fit = 0;
 		std::uint32_t members = 0;
 		bool tint = false;
 		for (;;) {
@@ -156,10 +155,8 @@ private:
 				flag = 2;
 			else if (member == "fitMode")
 				flag = 4;
-			else if (member == "samplingMode")
-				flag = 8;
 			else if (member == "tintEnabled")
-				flag = 16;
+				flag = 8;
 			else
 				return false;
 			if (members & flag)
@@ -171,9 +168,7 @@ private:
 				return false;
 			if (flag == 4 && !unsigned_value(fit))
 				return false;
-			if (flag == 8 && !unsigned_value(sampling))
-				return false;
-			if (flag == 16) {
+			if (flag == 8) {
 				space();
 				if (input_.substr(position_, 4) == "true") {
 					tint = true;
@@ -188,27 +183,26 @@ private:
 			if (!consume(','))
 				return false;
 		}
-		if (members != 31) {
+		if (members != 15u) {
 			incomplete_texture_ = true;
 			return false;
 		}
 		if (key.empty() ||
 			(domain != static_cast<std::uint64_t>(ResourceDomain::Image) &&
 			 domain != static_cast<std::uint64_t>(ResourceDomain::Icon)) ||
-			fit > static_cast<std::uint64_t>(TextureFitMode::None) ||
-			sampling > static_cast<std::uint64_t>(TextureSamplingMode::Nearest))
+			fit > static_cast<std::uint64_t>(TextureFitMode::None))
 			return false;
 		auto& texture = *static_cast<TextureRef*>(destination);
 		texture = TextureRef::fromStable(static_cast<ResourceDomain>(domain), {},
-										 static_cast<TextureFitMode>(fit),
-										 static_cast<TextureSamplingMode>(sampling), tint);
+										 static_cast<TextureFitMode>(fit), tint);
 		return owner_.retain_text_reference(texture.sourceKey, std::move(key));
 	}
 	[[nodiscard]] bool unsigned_value(std::uint64_t& output) noexcept {
 		space();
-		const auto parsed =
-			std::from_chars(input_.data() + position_, input_.data() + input_.size(), output);
-		if (parsed.ec != std::errc{} || parsed.ptr == input_.data() + position_)
+		const auto* begin = input_.data() + position_;
+		const auto parsed = std::from_chars(begin, input_.data() + input_.size(), output);
+		if (parsed.ec != std::errc{} || parsed.ptr == begin ||
+			(*begin == '0' && parsed.ptr - begin > 1))
 			return false;
 		position_ = static_cast<std::size_t>(parsed.ptr - input_.data());
 		return true;
@@ -276,7 +270,7 @@ private:
 		++position_;
 		return true;
 	}
-	[[nodiscard]] bool value(devMode::DevTypeIndex index, void* destination, uint32_t depth) {
+	[[nodiscard]] bool value(tooling::DevTypeIndex index, void* destination, uint32_t depth) {
 		const auto* type = schema_.type(index);
 		if (!type || !destination || depth > 12 || index.value >= schema_.typeOperations.size())
 			return false;
@@ -289,11 +283,11 @@ private:
 		if (type->id == ::FlowUi::detail::typeHash<TextureRef>()) {
 			return texture_value(destination);
 		}
-		if (type->kind == devMode::DevTypeKind::Object) {
+		if (type->kind == tooling::DevTypeKind::Object) {
 			if (!consume('{'))
 				return false;
 			const auto fields = schema_.fieldsOf(index);
-			std::vector<devMode::DevFieldId> decoded;
+			std::vector<tooling::DevFieldId> decoded;
 			decoded.reserve(fields.size());
 			if (!consume('}')) {
 				for (;;) {
@@ -323,7 +317,7 @@ private:
 		if (!operations->assignNumericValue)
 			return false;
 		long double numeric = 0;
-		if (type->kind == devMode::DevTypeKind::Boolean) {
+		if (type->kind == tooling::DevTypeKind::Boolean) {
 			if (input_.substr(position_, 4) == "true") {
 				numeric = 1;
 				position_ += 4;
@@ -332,10 +326,10 @@ private:
 			else
 				return false;
 		} else {
-			if (type->kind != devMode::DevTypeKind::SignedInteger &&
-				type->kind != devMode::DevTypeKind::UnsignedInteger &&
-				type->kind != devMode::DevTypeKind::FloatingPoint &&
-				type->kind != devMode::DevTypeKind::Enumeration)
+			if (type->kind != tooling::DevTypeKind::SignedInteger &&
+				type->kind != tooling::DevTypeKind::UnsignedInteger &&
+				type->kind != tooling::DevTypeKind::FloatingPoint &&
+				type->kind != tooling::DevTypeKind::Enumeration)
 				return false;
 			const auto parsed =
 				std::from_chars(input_.data() + position_, input_.data() + input_.size(), numeric);
@@ -344,9 +338,9 @@ private:
 			position_ = static_cast<std::size_t>(parsed.ptr - input_.data());
 		}
 		return operations->assignNumericValue(destination, numeric) ==
-			   devMode::DevValueOperationStatus::Success;
+			   tooling::DevValueOperationStatus::Success;
 	}
-	const devMode::DevSchemaGeneration& schema_;
+	const tooling::DevSchemaGeneration& schema_;
 	std::string_view input_;
 	DevOwnedValue& owner_;
 	std::size_t position_ = 0;
@@ -354,7 +348,7 @@ private:
 };
 } // namespace
 
-DevChangesRuntimeEdit prepare_changes_runtime_edit(const devMode::DevSchemaGeneration& schema,
+DevChangesRuntimeEdit prepare_changes_runtime_edit(const tooling::DevSchemaGeneration& schema,
 												   const DevOverrideEngine& engine,
 												   const ThemeManager& themes,
 												   const DevChangesReviewRow& row, WindowId window,
@@ -379,7 +373,8 @@ DevChangesRuntimeEdit prepare_changes_runtime_edit(const devMode::DevSchemaGener
 		}
 		const auto field = resolve_runtime_field(schema, *entry);
 		if (!field.type) {
-			result.error = "The saved field identity or type does not resolve in this executable.";
+			result.error =
+				"The already baked field identity or type does not resolve in this executable.";
 			return result;
 		}
 		DevOverrideCommand command;
@@ -409,6 +404,17 @@ DevChangesRuntimeEdit prepare_changes_runtime_edit(const devMode::DevSchemaGener
 				previous = record.value;
 				retained = true;
 				break;
+			}
+			auto authored_target = command.element;
+			if (authored_target.scope == DevOverrideScope::Definition)
+				authored_target.window = InvalidWindowId;
+			const auto authored_status = query_authored_element_value(
+				engine, schema, authored_target, field.key, authored);
+			if (action == DevChangesRuntimeAction::ResetAuthored &&
+				authored_status == DevValueCaptureStatus::Ambiguous) {
+				result.error = "Authored inputs differ between observed instances; select an exact "
+					"instance before resetting to its application-supplied value.";
+				return result;
 			}
 			const auto& capture = engine.elementSnapshot(window);
 			if (capture.schema && capture.schema->generation == schema.generation)
@@ -440,7 +446,7 @@ DevChangesRuntimeEdit prepare_changes_runtime_edit(const devMode::DevSchemaGener
 					break;
 				}
 			struct ThemeContext {
-				const devMode::DevSchemaGeneration* schema;
+				const tooling::DevSchemaGeneration* schema;
 				const ResolvedRuntimeField* field;
 				const DevThemeOverrideTarget* target;
 				DevOwnedValue* observed;
@@ -495,7 +501,7 @@ DevChangesRuntimeEdit prepare_changes_runtime_edit(const devMode::DevSchemaGener
 			command.value = observed ? observed : previous;
 			if (!command.value) {
 				result.error = "Typed value unavailable: observe this element in the selected "
-							   "window before applying a saved value.";
+							   "window before applying an already baked value.";
 				return result;
 			}
 			ReflectedJsonReader reader(schema, entry->valueJson, command.value);

@@ -1,5 +1,18 @@
 #pragma once
 
+/** @namespace FlowUi::FSEL
+ * @brief Standard FlowUi elements, parameter models and theme customizations.
+ */
+
+/**
+ * @file FSEL.hpp
+ * Public umbrella header for the FlowUi standard element library.
+ *
+ * Register FSELTheme with the app's ThemeManager before using themed controls.
+ * Definition tags such as kButton create typed ElementBuilder instances through
+ * UiManager::createElement(); parameter models remain application-owned.
+ */
+
 #include "FSEL/Theme.hpp"
 #include "FSEL/Box.hpp"
 #include "FSEL/Button.hpp"

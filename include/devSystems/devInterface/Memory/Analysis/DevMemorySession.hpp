@@ -2,9 +2,9 @@
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryPlanner.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/ComboBox.hpp"
-#include "internal/MemoryCapacityManifest.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityManifest.hpp"
 namespace FlowUi::devSystems::interface_elements {
-/** Immutable window-owned dataset, bounded independently of reporting's live ring. */
+/* Immutable window-owned dataset, bounded independently of reporting's live ring. */
 struct MemoryDataset {
 	MemoryLiveRead live{};
 	std::vector<MemorySampleSegment> segments{};
@@ -13,7 +13,7 @@ struct MemoryDataset {
 	uint32_t sample_every_ticks = 1;
 	bool snapshot = false, complete = false;
 };
-/** One staged public configuration target and the evidence used to reevaluate a shared factor. */
+/* One staged public configuration target and the evidence used to reevaluate a shared factor. */
 struct MemorySettingDraft {
 	FlowUi::detail::MemoryCapacityEvidence export_evidence{};
 	std::string selection_policy{"manual"};
@@ -30,7 +30,7 @@ struct MemorySettingDraft {
 	bool maximum_only = false;
 	bool complete = false;
 };
-/** Scope recipe; evidence selection travels with the policy, independently of plot navigation. */
+/* Scope recipe; evidence selection travels with the policy, independently of plot navigation. */
 struct MemoryCapacityRecipe {
 	MemoryPlannerSettings planner = [] {
 		MemoryPlannerSettings settings;
@@ -41,28 +41,28 @@ struct MemoryCapacityRecipe {
 	uint64_t evidence_mode = 1, dataset = 0, begin_ns = 0, end_ns = 0;
 	[[nodiscard]] bool operator==(const MemoryCapacityRecipe&) const noexcept = default;
 };
-/** Explicit scope/target specialization and the exact target set covered by a lock. */
+/* Explicit scope/target specialization and the exact target set covered by a lock. */
 struct MemoryCapacityRule {
 	std::vector<MemoryCapacityTargetId> locked_targets{};
 	MemoryCapacityRecipe recipe{};
 	uint64_t scope = 0, target = 0;
 	bool locked = false;
 };
-/** Bounded undo snapshot; running allocations are never changed by authoring. */
+/* Bounded undo snapshot; running allocations are never changed by authoring. */
 struct MemoryCapacityUndo {
 	std::vector<MemoryCapacityRule> pending_editors{};
 	std::vector<MemoryCapacityRule> rules{};
 	std::vector<MemorySettingDraft> staged{};
 	double shared_factor = 1.5;
 };
-/** One canonical target's preview, including excluded/locked descendants. */
+/* One canonical target's preview, including excluded/locked descendants. */
 struct MemoryCapacityProposal {
 	MemorySettingDraft draft{};
 	std::string label{}, message{};
 	uint64_t current = 0;
 	bool available = false, protected_rule = false, locked = false, exceeded = false;
 };
-/** Shared authoring model for the five-stage capacity tool and its scope ledger. */
+/* Shared authoring model for the five-stage capacity tool and its scope ledger. */
 struct MemoryCapacityToolState {
 	std::vector<MemoryCapacityRule> pending_editors{};
 	std::vector<MemoryCapacityRule> rules{};
@@ -78,7 +78,7 @@ struct MemoryCapacityToolState {
 	bool runtime_growth = true;
 	bool advanced = false, show_targets = false, show_ledger = true, show_diagnostics = false;
 };
-/** Surface-owned dataset, planner and settings-review state. No production configuration writes. */
+/* Surface-owned dataset, planner and settings-review state. No production configuration writes. */
 struct MemoryAnalysisState {
 	MemoryCapacityToolState capacity_tool{};
 	std::vector<MemoryDataset> datasets{};
@@ -104,22 +104,22 @@ struct MemoryAnalysisState {
 	bool include_recent = true, record_shortcut = false;
 	bool replace_pending = false, shared_factor_pending = false;
 };
-/** Convert staged selections to a validated payload. Staging/export never changes live allocations.
+/* Convert staged selections to a validated payload. Staging/export never changes live allocations.
  */
 [[nodiscard]] Result<FlowUi::detail::MemoryCapacityManifest>
 export_staged_memory_capacities(const MemoryAnalysisState& state,
 								bool acknowledge_incomplete = false) noexcept;
-/** Find the selected immutable dataset; null selects live reporting. */
+/* Find the selected immutable dataset; null selects live reporting. */
 [[nodiscard]] const MemoryDataset*
 selected_memory_dataset(const MemoryAnalysisState& state) noexcept;
-/** Update recording/dataset transitions and rebuild stable combobox options. */
+/* Update recording/dataset transitions and rebuild stable combobox options. */
 void update_memory_session(MemoryAnalysisState& state, DevMemoryReporting& reporting);
-/** Preserve recent history or one coherent instant reading; records are explicitly bounded. */
+/* Preserve recent history or one coherent instant reading; records are explicitly bounded. */
 [[nodiscard]] Status save_memory_dataset(MemoryAnalysisState& state, DevMemoryReporting& reporting,
 										 bool snapshot, uint64_t begin_ns = 0, uint64_t end_ns = 0);
-/** Remove selected saved data, preserving live collection and staged settings. */
+/* Remove selected saved data, preserving live collection and staged settings. */
 void delete_memory_dataset(MemoryAnalysisState& state);
-/** Confirm one common factor and reevaluate every staged target before changing it. */
+/* Confirm one common factor and reevaluate every staged target before changing it. */
 [[nodiscard]] Status stage_memory_setting(MemoryAnalysisState& state,
 										  const MemoryTuningTargetDescriptor& target,
 										  bool confirm_replace = false,

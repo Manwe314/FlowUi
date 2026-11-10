@@ -12,7 +12,7 @@ struct ThumbGeometry {
 	float offset = 0.0f;
 };
 
-/** Pure axis math shared by scrollable FSEL surfaces and indicators. */
+/* Pure axis math shared by scrollable FSEL surfaces and indicators. */
 [[nodiscard]] inline ThumbGeometry calculate(
 	float viewportExtent,
 	float contentExtent,

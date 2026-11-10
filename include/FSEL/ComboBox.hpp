@@ -10,35 +10,56 @@
 #include "FSEL/StandardIcons.hpp"
 #include "FSEL/TextInput.hpp"
 #include "FSEL/Theme.hpp"
+#include "FSEL/internal/ComboBoxLayout.hpp"
 #include "FSEL/internal/ScrollIndicatorMath.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
-#include "managers/PopupManager.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
+#include "FlowUi/Public/managers/PopupManager.hpp"
 
 namespace FlowUi::FSEL {
 
+/** One borrowed display option with a stable unique selection value. */
 struct ComboBoxOption {
 	/** Stable identity and selected value. Values must be unique within options. */
 	uint64_t value = 0;
+	/** Borrowed UTF-8 display text; keep its storage valid through the frame. */
 	std::string_view text{};
+	/** Borrowed texture reference for content artwork; an empty reference draws no icon. */
 	TextureRef icon{};
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
 };
 
+/** How ComboBox resolves its option popup width. */
 enum class ComboBoxPopupWidthPolicy : uint8_t {
+	/** Match the measured trigger width. */
 	MatchTrigger,
+	/** Fit option content while keeping at least the trigger width. */
 	ContentAtLeastTrigger,
+	/** Use popupWidth, falling back to the measured trigger width. */
 	Fixed,
 };
 
+/**
+ * Per-invocation ComboBox configuration. Borrowed models and text must remain valid through the
+ * frame; empty visual overrides inherit the active FSELTheme.
+ */
 struct ComboBoxParameters {
+	/** Optional notification after the bound value changes. */
 	ActionCall onChanged{};
+	/** Optional notification after the option popup opens. */
 	ActionCall onOpened{};
+	/** Optional notification after the option popup closes. */
 	ActionCall onClosed{};
 
+	/** Disclosure artwork when closed; the cached standard icon is used when omitted. */
 	std::optional<TextureRef> closedIcon = std::nullopt;
+	/** Disclosure artwork when open; the cached standard icon is used when omitted. */
 	std::optional<TextureRef> openIcon = std::nullopt;
+	/** Borrowed option array; keep the array and its text storage valid through the frame. */
 	std::span<const ComboBoxOption> options{};
+	/** Borrowed UTF-8 text shown when no value is displayed. */
 	std::string_view placeholder = "Select...";
+	/** Borrowed UTF-8 placeholder for the optional search editor. */
 	std::string_view popupSearchPlaceholder = "Filter options...";
 	/** Borrowed authoritative selection. Null disables the control. */
 	uint64_t* selectedValue = nullptr;
@@ -48,51 +69,86 @@ struct ComboBoxParameters {
 	 * rendered above the independently scrollable option viewport. Filtering is
 	 * owned by the caller so catalogue-specific matching remains possible. */
 	std::string* popupSearchValue = nullptr;
+	/** Clay pointer capture rule for popup content. */
 	Clay_PointerCaptureMode pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_CAPTURE;
 
+	/** Clay width and height sizing rules for the root element. Empty inherits the active theme. */
 	std::optional<Clay_Sizing> sizing = std::nullopt;
 
+	/** Popup attachment points and offset relative to the trigger. */
 	PopupPlacement placement = {
 		.anchorPoint = PopupAttachmentPoint::BottomLeft,
 		.popupPoint = PopupAttachmentPoint::TopLeft,
 		.offset = Clay_Vector2{0.0f, 4.0f},
 	};
+	/** Optional fixed search header height in layout pixels. */
 	std::optional<float> popupSearchHeight = std::nullopt;
+	/** Explicit popup width in layout pixels; interpreted by popupWidthPolicy. */
 	std::optional<float> popupWidth = std::nullopt;
+	/** Maximum popup viewport height in layout pixels. Empty inherits the active theme. */
 	std::optional<float> popupMaxHeight = std::nullopt;
+	/** Option row height in layout pixels. Empty inherits the active theme. */
 	std::optional<float> optionHeight = std::nullopt;
+	/** Rendered icon side length in layout pixels. Empty inherits the active theme. */
 	std::optional<float> iconSize = std::nullopt;
+	/** Registered font family used for field or label text. Empty inherits the active theme. */
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
+	/** Font weight requested for text, such as 400 for normal. Empty inherits the active theme. */
 	std::optional<uint32_t> fontWeight = std::nullopt;
+	/** Rule for resolving popup width from trigger, content and popupWidth. */
 	ComboBoxPopupWidthPolicy popupWidthPolicy = ComboBoxPopupWidthPolicy::MatchTrigger;
+	/** Popup stacking category. */
 	PopupLayer layer = PopupLayer::CasualPopup;
+	/** Dismissal and anchor-blocking behavior for outside pointer presses. */
 	PopupOutsidePressPolicy outsidePress =
 		PopupOutsidePressPolicy::DismissAndBlockAnchor;
+	/** Text font size in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> fontSize = std::nullopt;
+	/** Viewport edge correction policy passed to PopupManager. */
 	PopupOverflowPolicy overflow{};
+	/** Font style requested for text. Empty inherits the active theme. */
 	std::optional<FontStyle> fontStyle = std::nullopt;
+	/** Cursor requested while this enabled control is hovered. Empty inherits the active theme. */
 	std::optional<CursorType> cursor = std::nullopt;
+	/** Priority used to arbitrate this control's cursor request. Empty inherits the active theme. */
 	std::optional<uint8_t> cursorPriority = std::nullopt;
 	/** Alignment of the trigger label; popup options retain their normal alignment. */
 	Clay_TextAlignment labelAlignment = CLAY_TEXT_ALIGN_LEFT;
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
+	/** Draw the popup scroll indicator when its content overflows. */
 	bool showScrollIndicator = true;
 };
 
+/** Per-instance interaction state maintained by the element and retained by ElementManager. */
 struct ComboBoxState {
+	/** Retained popup visibility used when no application open model is supplied. */
 	bool open = false;
+	/** Whether an enabled trigger press is waiting for release. */
 	bool triggerArmed = false;
+	/** Whether mouse-up was observed for the armed trigger. */
 	bool triggerMouseUpObserved = false;
+	/** Whether an option press is waiting for release. */
 	bool optionArmed = false;
+	/** Whether mouse-up was observed for the armed option. */
 	bool optionMouseUpObserved = false;
+	/** Stable value of the option captured by the current press. */
 	uint64_t armedOptionValue = 0;
 };
 
+/** App-wide borrowed icon references resolved once for this element definition. */
 struct ComboBoxResources {
+	/** Borrowed cached open icon texture; empty if the semantic key was unavailable. */
 	TextureRef openIcon{};
+	/** Borrowed cached closed icon texture; empty if the semantic key was unavailable. */
 	TextureRef closedIcon{};
 
+	/** Construct empty icon references. */
 	ComboBoxResources() = default;
+	/**
+	 * Resolve available standard icons from the app; missing icons remain empty. @param app Owning
+	 * application whose icon resources outlive these references.
+	 */
 	explicit ComboBoxResources(App& app) {
 #if FLOWUI_INCLUDE_ICON_MANAGER
 		IconManager& icons = app.icons();
@@ -110,19 +166,32 @@ struct ComboBoxResources {
 
 /** Build-only text/icon combo box. Custom option content is intentionally composed separately. */
 struct ComboBox {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = ComboBoxParameters;
+	/** Per-instance state owned and retained by ElementManager. */
 	using State = ComboBoxState;
+	/** Immutable app-wide resources shared by this element definition. */
 	using Resources = ComboBoxResources;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<ComboBox>;
+	/** Frame-scoped context supplied to pointer and logic hooks. */
 	using InteractionContext = ElementInteractionContext<ComboBox>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId = DefinitionID("FSEL.combo-box");
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL ComboBox";
 
+	/** Definition-time semantic parts used to address child surfaces and interaction targets. */
 	struct Parts {
+		/** Semantic identity of the popup part relative to its owner instance. */
 		static constexpr FlowElementPart popup = Part("popup");
 	};
 
+	/**
+	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onHovered(InteractionContext& context) {
 		if (!isEnabled(context.params)) return;
 		const auto& theme = context.uiManager.theme<FSELTheme>().comboBoxTheme;
@@ -131,6 +200,10 @@ struct ComboBox {
 			context.params.cursorPriority.value_or(theme.cursorPriority));
 	}
 
+	/**
+	 * ElementBuilder press hook; begins the enabled control interaction. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onPressed(InteractionContext& context) {
 		if (!isEnabled(context.params)) {
 			clearTrigger(context.state());
@@ -140,6 +213,10 @@ struct ComboBox {
 		context.state().triggerMouseUpObserved = false;
 	}
 
+	/**
+	 * ElementBuilder release hook; completes or cancels the pending interaction. @param context
+	 * Borrowed context valid for this callback only.
+	 */
 	static void onReleased(InteractionContext& context) {
 		if (!context.state().triggerArmed) return;
 		clearTrigger(context.state());
@@ -148,6 +225,10 @@ struct ComboBox {
 		}
 	}
 
+	/**
+	 * ElementBuilder logic hook; reconciles retained interaction state with the current input.
+	 * @param context Borrowed context valid for this callback only.
+	 */
 	static void runLogic(InteractionContext& context) {
 		auto& state = context.state();
 		if (context.params.open) state.open = *context.params.open;
@@ -189,21 +270,35 @@ struct ComboBox {
 		maintainArm(pointerDown, state.optionArmed, state.optionMouseUpObserved);
 	}
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const auto& theme = context.uiManager.theme<FSELTheme>().comboBoxTheme;
 		const bool enabled = isEnabled(context.params);
 		const bool open = context.params.open ? *context.params.open : context.state().open;
 		const ComboBoxOption* selected = selectedOption(context.params);
-		const FSELComboBoxStateTheme appearance = resolveTriggerAppearance(
-			context, enabled, open);
+		const FSELComboBoxStateTheme appearance = resolveTriggerAppearance(context, enabled, open);
 
 		Clay_ElementDeclaration trigger{};
 		trigger.layout.sizing = context.params.sizing.value_or(Clay_Sizing{
 			.width = CLAY_SIZING_FIXED(theme.width),
 			.height = CLAY_SIZING_FIXED(theme.height),
 		});
-		trigger.layout.padding = theme.triggerPadding;
-		trigger.layout.childGap = theme.contentGap;
+		const auto retained = Clay_GetElementData(context.clayID());
+		const auto content_layout = detail::combo_box::fit_content(
+			detail::combo_box::resolved_extent(trigger.layout.sizing.width,
+											   retained.found ? retained.boundingBox.width : 0.0f,
+											   theme.width),
+			detail::combo_box::resolved_extent(trigger.layout.sizing.height,
+											   retained.found ? retained.boundingBox.height : 0.0f,
+											   theme.height),
+			theme.triggerPadding, context.params.iconSize.value_or(theme.iconSize),
+			theme.contentGap, selected && selected->icon.handle, true,
+			context.params.fontSize.value_or(theme.fontSize));
+		trigger.layout.padding = content_layout.padding;
+		trigger.layout.childGap = content_layout.gap;
 		trigger.layout.childAlignment = {
 			.x = CLAY_ALIGN_X_LEFT,
 			.y = CLAY_ALIGN_Y_CENTER,
@@ -220,15 +315,18 @@ struct ComboBox {
 
 		Clay_TextElementConfig textConfig =
 			makeTextConfig(context, selected ? appearance.textColor : theme.placeholderColor);
+		textConfig.fontSize = static_cast<uint16_t>(
+			std::max(1.0f, std::min<float>(textConfig.fontSize, content_layout.content_height)));
 		textConfig.textAlignment = context.params.labelAlignment;
 		CLAY(context.clayID(), trigger) {
-			if (selected && selected->icon.handle) {
+			if (selected && content_layout.show_leading_icon) {
 				drawIcon(context, context.clayID("selected-icon"), selected->icon,
-						 appearance.iconColor, resolvedIconSize(context, theme));
+						 appearance.iconColor, content_layout.icon_size);
 			}
 			Clay_ElementDeclaration labelRoot{};
 			labelRoot.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0),
+				.width = content_layout.label_width > 0.0f
+					? CLAY_SIZING_GROW(0, content_layout.label_width) : CLAY_SIZING_FIXED(0),
 				.height = CLAY_SIZING_FIT(0),
 			};
 			labelRoot.layout.childAlignment.x =
@@ -241,14 +339,15 @@ struct ComboBox {
 				.scrollInputDisabled = true,
 			};
 			CLAY(context.clayID("label"), labelRoot) {
-				CLAY_TEXT(
-					context.uiManager.toClayString(selected ? selected->text : context.params.placeholder),
-					CLAY_TEXT_CONFIG(textConfig));
+				CLAY_TEXT(context.uiManager.toClayString(selected ? selected->text
+																  : context.params.placeholder),
+						  CLAY_TEXT_CONFIG(textConfig));
 			}
-			drawDisclosure(context, open, appearance.iconColor, theme);
+			drawDisclosure(context, open, appearance.iconColor, content_layout.icon_size);
 		}
 
-		if (open) drawPopup(context, theme);
+		if (open)
+			drawPopup(context, theme);
 	}
 
 private:
@@ -304,10 +403,6 @@ private:
 		}
 	}
 
-	static float resolvedIconSize(const BuildContext& context, const FSELComboBoxTheme& theme) {
-		return std::max(context.params.iconSize.value_or(theme.iconSize), 1.0f);
-	}
-
 	static Clay_TextElementConfig makeTextConfig(
 		BuildContext& context,
 		Clay_Color color) {
@@ -352,12 +447,9 @@ private:
 		CLAY(id, declaration);
 	}
 
-	static void drawDisclosure(
-		BuildContext& context,
-		bool open,
-		Clay_Color color,
-		const FSELComboBoxTheme& theme) {
-		const float iconSize = resolvedIconSize(context, theme);
+	static void drawDisclosure(BuildContext& context, bool open, Clay_Color color, float iconSize) {
+		if (iconSize <= 0.0f)
+			return;
 		Clay_ElementDeclaration slot{};
 		slot.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(iconSize),
@@ -368,34 +460,36 @@ private:
 			.y = CLAY_ALIGN_Y_CENTER,
 		};
 		CLAY(context.clayID("disclosure-slot"), slot) {
-			const TextureRef icon = open
-				? context.params.openIcon.value_or(context.resources().openIcon)
-				: context.params.closedIcon.value_or(context.resources().closedIcon);
+			const TextureRef icon =
+				open ? context.params.openIcon.value_or(context.resources().openIcon)
+					 : context.params.closedIcon.value_or(context.resources().closedIcon);
 			if (icon.handle) {
-				drawIcon(context, context.clayID("disclosure-icon"), icon, color,
-					iconSize);
+				drawIcon(context, context.clayID("disclosure-icon"), icon, color, iconSize);
 			} else {
 				Clay_TextElementConfig fallback = makeTextConfig(context, color);
+				fallback.fontSize = static_cast<uint16_t>(
+					std::max(1.0f, std::min<float>(fallback.fontSize, iconSize)));
 				fallback.textAlignment = CLAY_TEXT_ALIGN_CENTER;
 				CLAY_TEXT(context.uiManager.toClayString(open ? "^" : "v"),
-					CLAY_TEXT_CONFIG(fallback));
+						  CLAY_TEXT_CONFIG(fallback));
 			}
 		}
 	}
 
 	static void drawPopup(BuildContext& context, const FSELComboBoxTheme& theme) {
-		const float optionHeight = std::max(
-			context.params.optionHeight.value_or(theme.optionHeight), 1.0f);
+		const float optionHeight =
+			std::max(context.params.optionHeight.value_or(theme.optionHeight), 1.0f);
 		const auto& surface = context.uiManager.theme<FSELTheme>().popupSurfaceTheme;
-		const float minimumPopupHeight = optionHeight +
-			static_cast<float>(surface.padding.top + surface.padding.bottom);
+		const float minimumPopupHeight =
+			optionHeight + static_cast<float>(surface.padding.top + surface.padding.bottom);
 		const float maximumHeight = std::max(
-			context.params.popupMaxHeight.value_or(theme.popupMaxHeight),
-			minimumPopupHeight);
-		const float contentHeight = context.params.options.empty() ? optionHeight :
-			optionHeight * static_cast<float>(context.params.options.size()) +
-			static_cast<float>(theme.optionGap) *
-				static_cast<float>(context.params.options.size() - 1u);
+			context.params.popupMaxHeight.value_or(theme.popupMaxHeight), minimumPopupHeight);
+		const float contentHeight =
+			context.params.options.empty()
+				? optionHeight
+				: optionHeight * static_cast<float>(context.params.options.size()) +
+					  static_cast<float>(theme.optionGap) *
+						  static_cast<float>(context.params.options.size() - 1u);
 		const float searchHeight = context.params.popupSearchValue
 			? std::max(context.params.popupSearchHeight.value_or(30.0f), 1.0f) : 0.0f;
 		const float searchGap = context.params.popupSearchValue
@@ -546,13 +640,12 @@ private:
 		if (!option.enabled) {
 			appearance = theme.optionDisabled;
 		} else if (context.state().optionArmed &&
-			context.state().armedOptionValue == option.value &&
-			context.uiManager.getCurrentFrameInput().mouseDown[0]) {
+				   context.state().armedOptionValue == option.value &&
+				   context.uiManager.getCurrentFrameInput().mouseDown[0]) {
 			appearance = theme.optionPressed;
 		} else if (interaction.isHovered(id)) {
 			appearance = theme.optionHovered;
-		} else if (context.params.selectedValue &&
-			*context.params.selectedValue == option.value) {
+		} else if (context.params.selectedValue && *context.params.selectedValue == option.value) {
 			appearance = theme.optionSelected;
 		}
 
@@ -561,33 +654,45 @@ private:
 			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_FIXED(height),
 		};
-		row.layout.padding = theme.optionPadding;
-		row.layout.childGap = theme.contentGap;
+		const auto retained = Clay_GetElementData(id);
+		const auto content_layout = detail::combo_box::fit_content(
+			retained.found && retained.boundingBox.width > 0.0f
+				? retained.boundingBox.width
+				: context.params.popupWidth.value_or(theme.width),
+			height, theme.optionPadding, context.params.iconSize.value_or(theme.iconSize),
+			theme.contentGap, static_cast<bool>(option.icon.handle), false,
+			context.params.fontSize.value_or(theme.fontSize));
+		row.layout.padding = content_layout.padding;
+		row.layout.childGap = content_layout.gap;
 		row.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		row.backgroundColor = appearance.backgroundColor;
 		row.cornerRadius = theme.cornerRadius;
+		row.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 		CLAY(id, row) {
-			if (option.icon.handle) {
-				drawIcon(context, context.clayID(Keyed("option-icon", option.value)),
-					option.icon, appearance.iconColor, resolvedIconSize(context, theme));
+			if (content_layout.show_leading_icon) {
+				drawIcon(context, context.clayID(Keyed("option-icon", option.value)), option.icon,
+						 appearance.iconColor, content_layout.icon_size);
 			}
 			Clay_ElementDeclaration labelSlot{};
 			labelSlot.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+				.width = content_layout.label_width > 0.0f
+					? CLAY_SIZING_GROW(0, content_layout.label_width) : CLAY_SIZING_FIXED(0),
+				.height = CLAY_SIZING_FIT(0)};
 			labelSlot.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 			CLAY(context.clayID(Keyed("option-label", option.value)), labelSlot) {
+				auto text_config = makeTextConfig(context, appearance.textColor);
+				text_config.fontSize = static_cast<uint16_t>(std::max(
+					1.0f, std::min<float>(text_config.fontSize, content_layout.content_height)));
 				CLAY_TEXT(context.uiManager.toClayString(option.text),
-					CLAY_TEXT_CONFIG(makeTextConfig(context, appearance.textColor)));
+						  CLAY_TEXT_CONFIG(text_config));
 			}
 		}
 	}
 
-	static void drawScrollIndicator(
-		BuildContext& context,
-		const detail::scroll_indicator::ThumbGeometry& thumb,
-		float trackHeight,
-		const FSELComboBoxTheme& theme) {
+	static void drawScrollIndicator(BuildContext& context,
+									const detail::scroll_indicator::ThumbGeometry& thumb,
+									float trackHeight, const FSELComboBoxTheme& theme) {
 		Clay_ElementDeclaration track{};
 		track.layout.sizing = {
 			.width = CLAY_SIZING_FIXED(theme.scrollTrackWidth),
@@ -614,6 +719,10 @@ private:
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr ComboBox kComboBox{};
 static_assert(FlowElement<ComboBox>);
 static_assert(DrawableFlowElement<ComboBox>);

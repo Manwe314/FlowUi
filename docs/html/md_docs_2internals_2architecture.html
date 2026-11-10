@@ -112,7 +112,7 @@ $(function() {
 <div class="line">|                   FlowUi::App / Window Loops                      |</div>
 <div class="line">+-------------------------------------------------------------------+</div>
 <div class="line">|                         Manager Layer                             |</div>
-<div class="line">|  ThemeManager | UiManager | FontManager | ImageManager | Icons    |</div>
+<div class="line">| ThemeManager | UiManager | PopupManager | Fonts | Images | Icons |</div>
 <div class="line">+-------------------------------------------------------------------+</div>
 <div class="line">|                      Clay Layout Engine                           |</div>
 <div class="line">|         Immediate-Mode Element System &amp; Command Generation        |</div>
@@ -123,7 +123,42 @@ $(function() {
 <div class="line">|                     Vulkan Render Backend                         |</div>
 <div class="line">|   Vk_Context | Vk_Frames | Vk_Swapchain | Vk_UiRenderer           |</div>
 <div class="line">+-------------------------------------------------------------------+</div>
-</div><!-- fragment --><h1>Subsystems</h1>
+</div><!-- fragment --><h1>Repository layout</h1>
+<p>Core headers and source files use the following layout:</p>
+<div class="fragment"><div class="line">include/</div>
+<div class="line">├── FlowUi.hpp                         # Application umbrella</div>
+<div class="line">├── FlowUi/</div>
+<div class="line">│   ├── Public/</div>
+<div class="line">│   │   ├── configurationStructs/</div>
+<div class="line">│   │   ├── elementAuthoring/</div>
+<div class="line">│   │   ├── elements/</div>
+<div class="line">│   │   ├── errorManagement/</div>
+<div class="line">│   │   ├── identificationTypes/</div>
+<div class="line">│   │   ├── interop/vulkan/</div>
+<div class="line">│   │   ├── managerStructs/</div>
+<div class="line">│   │   ├── managers/</div>
+<div class="line">│   │   └── App.hpp, Flow.hpp, Color.hpp, Resources.hpp, ...</div>
+<div class="line">│   └── Private/</div>
+<div class="line">│       ├── actionService/</div>
+<div class="line">│       ├── elementSystem/</div>
+<div class="line">│       ├── inputService/</div>
+<div class="line">│       ├── layoutService/</div>
+<div class="line">│       ├── renderer/vulkan/</div>
+<div class="line">│       ├── resourceService/</div>
+<div class="line">│       ├── storageSystem/</div>
+<div class="line">│       ├── textLayoutService/</div>
+<div class="line">│       ├── windowService/</div>
+<div class="line">│       └── AppRuntime.hpp, shared support headers</div>
+<div class="line">├── FSEL/                              # Standard element library</div>
+<div class="line">└── devSystems/                        # Developer services and interface</div>
+<div class="line">src/</div>
+<div class="line">├── FlowUi/</div>
+<div class="line">│   ├── Public/                        # App, shared values, manager facades</div>
+<div class="line">│   └── Private/                       # Runtime and service implementations</div>
+<div class="line">└── devSystems/                        # Developer implementations</div>
+</div><!-- fragment --><p><a href="../../include/FlowUi/Public/">Public headers</a> define the supported application API. <a href="../../include/FlowUi/Private/">Private headers</a> hold runtime state, controllers, backends, and template support; the subset required by public templates is installed with the library. <span class="tt">Private</span> identifies implementation ownership, including headers that consumers need to compile supported APIs.</p>
+<p><a href="../../src/FlowUi/Public/">Public sources</a> implement the application and manager facades. <a href="../../src/FlowUi/Private/">Private sources</a> implement the runtime and services in their owning domains. Source directories exist where out-of-line implementations are needed; header-only concepts, values, and templates do not require matching <span class="tt">.cpp</span> files. FSEL stays under <a href="../../include/FSEL/">include/FSEL</a>, while developer headers and sources stay under <a href="../../include/devSystems/">include/devSystems</a> and <a href="../../src/devSystems/">src/devSystems</a>.</p>
+<h1>Subsystems</h1>
 <ol type="1">
 <li><b>Application Lifecycle &amp; Window Backend</b><ul>
 <li>Managed by <span class="tt"><a class="el" href="classFlowUi_1_1App.html" title="Main FlowUi application object and owner of runtime managers.">FlowUi::App</a></span> and GLFW native window wrapper <span class="tt">AppWindow</span>.</li>
@@ -141,6 +176,7 @@ $(function() {
 <li><b><span class="tt">FontManager</span></b>: Manages font families, MSDF font atlas baking, and <span class="tt">FontId</span> resolution.</li>
 <li><b><span class="tt">ImageManager</span> / <span class="tt">IconManager</span></b>: Asset texture loading, SVG rasterization, and <span class="tt">TextureRef</span> lookup.</li>
 <li><b><span class="tt">ShortcutManager</span> / <span class="tt">InputFieldManager</span></b>: Input chord matching and text field state tracking.</li>
+<li><b><span class="tt">PopupManager</span></b>: Floating placement, measurement, stacking, overflow correction, and dismissal.</li>
 <li><b><span class="tt">ViewPortManager</span></b>: Offscreen render target management and custom Vulkan rendering callbacks.</li>
 </ul>
 </li>

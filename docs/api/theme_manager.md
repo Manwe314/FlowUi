@@ -18,10 +18,10 @@ Standard design system tokens for built-in FlowUi elements and application compo
 
 ### **registerTheme**
 
-#### `template <typename T> void registerTheme(std::string_view variantName, T themeData, bool makeActive = true)`
-#### `template <typename T> void registerTheme(T themeData, bool makeActive = true)`
+#### `template <typename T> Status registerTheme(std::string_view variantName, T themeData, bool makeActive = true)`
+#### `template <typename T> Status registerTheme(T themeData, bool makeActive = true)`
 
-- **Returns:** `void`
+- **Returns:** `Status`; check success and use `.error()` on failure.
 - **Arguments:** `variantName` logical variant name (e.g. `"dark"`, `"light"`), `themeData` instance of custom theme struct `T`, `makeActive` whether to set this variant active immediately.
 
 Registers a theme variant struct with `ThemeManager` in persistent storage. If `variantName` is omitted, variant name `"default"` is used.
@@ -34,17 +34,21 @@ struct AppTheme {
     float cardRadius = 6.0f;
 };
 
-app.themes().registerTheme<AppTheme>("default", AppTheme{});
-app.themes().registerTheme<AppTheme>("light", AppTheme{.brandAccent = Flow_Color("#e05d00ff")});
+if (const auto status = app.themes().registerTheme<AppTheme>("default", AppTheme{}); !status) {
+    throw FlowUi::FlowUiException(status.error());
+}
+if (const auto status = app.themes().registerTheme<AppTheme>("light", AppTheme{.brandAccent = Flow_Color("#e05d00ff")}); !status) {
+    throw FlowUi::FlowUiException(status.error());
+}
 ```
 
 ---
 
 ### **setActiveVariant**
 
-#### `template <typename T> bool setActiveVariant(std::string_view variantName)`
+#### `template <typename T> Status setActiveVariant(std::string_view variantName)`
 
-- **Returns:** `bool` (`true` if variant was found and set active, `false` otherwise)
+- **Returns:** `Status`; check success and use `.error()` on failure.
 - **Arguments:** `variantName` name of the registered variant.
 
 Activates a named variant for theme type `T`. Immediate-mode elements querying `ui.theme<T>()` will observe the new variant on subsequent frames.
@@ -52,7 +56,9 @@ Activates a named variant for theme type `T`. Immediate-mode elements querying `
 **Example:**
 
 ```cpp
-app.themes().setActiveVariant<AppTheme>("light");
+if (const auto status = app.themes().setActiveVariant<AppTheme>("light"); !status) {
+    throw FlowUi::FlowUiException(status.error());
+}
 ```
 
 ---
@@ -93,9 +99,9 @@ const auto& lightTheme = app.themes().getTheme<AppTheme>("light");
 
 ### **updateTheme**
 
-#### `template <typename T> void updateTheme(std::string_view variantName, std::function<void(T&)> mutator)`
+#### `template <typename T> Status updateTheme(std::string_view variantName, std::function<void(T&)> mutator)`
 
-- **Returns:** `void`
+- **Returns:** `Status`; check success and use `.error()` on failure.
 - **Arguments:** `variantName` target variant name, `mutator` callback mutating the theme payload reference.
 
 Queues a staged theme mutation function for a named variant. Mutations take effect atomically during `app.pollEvents()` / `beginFrame()` to prevent intra-frame tearing across rendering windows.
@@ -103,18 +109,20 @@ Queues a staged theme mutation function for a named variant. Mutations take effe
 **Example:**
 
 ```cpp
-app.themes().updateTheme<AppTheme>("default", [](AppTheme& theme) {
+if (const auto status = app.themes().updateTheme<AppTheme>("default", [](AppTheme& theme) {
     theme.cardRadius = 12.0f;
-});
+}); !status) {
+    throw FlowUi::FlowUiException(status.error());
+}
 ```
 
 ---
 
 ### **updateActiveTheme**
 
-#### `template <typename T> void updateActiveTheme(std::function<void(T&)> mutator)`
+#### `template <typename T> Status updateActiveTheme(std::function<void(T&)> mutator)`
 
-- **Returns:** `void`
+- **Returns:** `Status`; check success and use `.error()` on failure.
 - **Arguments:** `mutator` callback mutating the active theme payload reference.
 
 Queues a staged theme mutation function for the currently active variant of type `T`.
@@ -122,9 +130,11 @@ Queues a staged theme mutation function for the currently active variant of type
 **Example:**
 
 ```cpp
-app.themes().updateActiveTheme<AppTheme>([](AppTheme& theme) {
+if (const auto status = app.themes().updateActiveTheme<AppTheme>([](AppTheme& theme) {
     theme.brandAccent = Flow_Color("#007accff");
-});
+}); !status) {
+    throw FlowUi::FlowUiException(status.error());
+}
 ```
 
 

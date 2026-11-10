@@ -1,0 +1,14 @@
+[0/2] Re-checking globbed directories...
+[1/14] cd /home/lkukhale/kodi/FlowUi/build-msdf && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -E make_directory /home/lkukhale/kodi/FlowUi/build-msdf/share/flowui/shaders /home/lkukhale/kodi/FlowUi/build-msdf/share/flowui/fonts && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -E copy_if_different /home/lkukhale/kodi/FlowUi/build-msdf/shaders/flowui_ui_solid.vert.spv /home/lkukhale/kodi/FlowUi/build-msdf/shaders/flowui_ui_msdf.vert.spv /home/lkukhale/kodi/FlowUi/build-msdf/shaders/flowui_ui_textured.vert.spv /home/lkukhale/kodi/FlowUi/build-msdf/shaders/flowui_ui_solid.frag.spv /home/lkukhale/kodi/FlowUi/build-msdf/shaders/flowui_ui_msdf.frag.spv /home/lkukhale/kodi/FlowUi/build-msdf/shaders/flowui_ui_textured.frag.spv /home/lkukhale/kodi/FlowUi/build-msdf/share/flowui/shaders && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -E copy_if_different /home/lkukhale/kodi/FlowUi/assets/fonts/Inter.arfont /home/lkukhale/kodi/FlowUi/build-msdf/share/flowui/fonts/Inter.arfont
+[2/14] cd /home/lkukhale/kodi/FlowUi/build-msdf/tests && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -DSOURCE_DIRECTORY=/home/lkukhale/kodi/FlowUi/build-msdf/share/flowui -DDESTINATION_DIRECTORY=/home/lkukhale/kodi/FlowUi/build-msdf/tests/../share/flowui -DEXTRA_DIRECTORY= -P /home/lkukhale/kodi/FlowUi/cmake/FlowUiCopyResources.cmake
+[3/14] cd /home/lkukhale/kodi/FlowUi/build-msdf/tests && /sgoinfre/lkukhale/cmake-3.30.5-linux-x86_64/bin/cmake -DSOURCE_DIRECTORY=/home/lkukhale/kodi/FlowUi/build-msdf/share/flowui -DDESTINATION_DIRECTORY=/home/lkukhale/kodi/FlowUi/build-msdf/tests/../share/flowui -DEXTRA_DIRECTORY= -P /home/lkukhale/kodi/FlowUi/cmake/FlowUiCopyResources.cmake
+[4/14] Linking CXX executable tests/flowui_dev_timeline_tests
+[5/14] Linking CXX executable tests/flowui_dev_baked_internal_isolation_tests
+[6/14] Linking CXX executable tests/flowui_dev_timeline_layout_tests
+[7/14] Linking CXX executable tests/flowui_fsel_combo_box_contract_tests
+[8/14] Linking CXX executable tests/flowui_dev_timeline_interaction_tests
+[9/14] Linking CXX executable tests/flowui_dev_value_summary_tests
+[10/14] Linking CXX executable tests/flowui_dev_override_engine_tests
+[11/14] Linking CXX executable tests/flowui_dev_changes_review_tests
+[12/14] Linking CXX executable tests/flowui_dev_changes_runtime_tests
+[13/14] Linking CXX executable tests/flowui_dev_theme_editor_interaction_tests

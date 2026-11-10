@@ -3,14 +3,14 @@
 // Included beside the demo's private application and scenario state definitions.
 #if FLOW_UI_AGENTIC_WORKFLOW
 
-/** One stable application alias; its owned registration changes only with identity/geometry. */
+/* One stable application alias; its owned registration changes only with identity/geometry. */
 struct DemoAgenticInteractionAlias {
 	std::string_view target_id, flow_suffix, alternate_flow_suffix, label;
 	FlowDefinitionID definition{};
 	std::optional<agentic::AgenticResolvedInteractionTarget> previous;
 	std::uint64_t revision = 0;
 };
-/** Borrowed callbacks are destroyed with App before these application-owned resources. */
+/* Borrowed callbacks are destroyed with App before these application-owned resources. */
 struct DemoAgenticInteractionHarness {
 	std::array<DemoAgenticInteractionAlias, 5> aliases{
 		{{"demo.navigate", "/gallery/navigate", "/writing/navigate",
@@ -54,7 +54,7 @@ void reset_demo_agentic_state(App* application, DemoAgenticHarness* harness) {
 	*state = DemoState{};
 }
 
-/** Explicit application exports, independent from development catalogue discovery. */
+/* Explicit application exports, independent from development catalogue discovery. */
 [[nodiscard]] Status
 register_demo_agentic_interactions(App& application, DemoAgenticHarness& scenario_harness,
 								   DemoAgenticInteractionHarness& interaction_harness,
@@ -210,7 +210,7 @@ same_demo_agentic_geometry(const agentic::AgenticResolvedInteractionTarget& prev
 		   previous.floating == current.floating;
 }
 
-/** Publish after drawFrame releases the sealed storage lease; read genuine completed Clay facts. */
+/* Publish after drawFrame releases the sealed storage lease; read genuine completed Clay facts. */
 [[nodiscard]] Status
 publish_demo_agentic_targets(App& application, DemoAgenticHarness& scenario_harness,
 							 DemoAgenticInteractionHarness& interaction_harness,

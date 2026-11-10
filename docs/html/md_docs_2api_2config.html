@@ -106,13 +106,11 @@ $(function() {
   <div class="headertitle"><div class="title">Configuration API </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1>Enums</h1>
+<div class="textblock"><p>Configuration headers live under <a href="../../include/FlowUi/Public/configurationStructs/">FlowUi/Public/configurationStructs</a>. Include <a href="../../include/FlowUi/Public/configurationStructs/AppConfig.hpp">AppConfig.hpp</a> for startup configuration, or the focused owner header for a leaf type. Cursor/frame-input values live in <a href="../../include/FlowUi/Public/managerStructs/InputTypes.hpp">InputTypes.hpp</a>; texture references and shared styling live in <a href="../../include/FlowUi/Public/TextureRef.hpp">TextureRef.hpp</a> and <a href="../../include/FlowUi/Public/FlowUiTheme.hpp">FlowUiTheme.hpp</a>. The former broad configuration/value header is retired.</p>
+<h1>Enums</h1>
 <h2><b>PresentMode</b></h2>
-<h3><span class="tt">enum class PresentMode</span></h3>
+<h3><span class="tt">enum class PresentMode : std::uint8_t</span></h3>
 <p>Requested Vulkan swapchain presentation mode. Use it to choose FIFO, mailbox, or immediate presentation behavior.</p>
-<h2><b>MSAA</b></h2>
-<h3><span class="tt">enum class MSAA</span></h3>
-<p>Requested multisample anti-aliasing sample count. The value is retained for renderer configuration even where current support is limited.</p>
 <h2><b>CursorMode</b></h2>
 <h3><span class="tt">enum class CursorMode : uint8_t</span></h3>
 <p>Native cursor visibility and capture mode. It controls whether the cursor is normal, hidden, or disabled/captured.</p>
@@ -125,9 +123,6 @@ $(function() {
 <h2><b>TextureFitMode</b></h2>
 <h3><span class="tt">enum class TextureFitMode : uint8_t</span></h3>
 <p>Texture layout mode inside a target rectangle. It controls stretch, contain, cover, or source-size drawing behavior.</p>
-<h2><b>TextureSamplingMode</b></h2>
-<h3><span class="tt">enum class TextureSamplingMode : uint8_t</span></h3>
-<p>Texture filtering preference stored on TextureRef. It distinguishes smooth linear sampling from nearest-neighbor sampling.</p>
 <h1>Public Structs</h1>
 <h2><b>WindowInputConfig</b></h2>
 <h3><span class="tt">struct WindowInputConfig</span></h3>
@@ -137,7 +132,7 @@ $(function() {
 <p>Describes the native window created for the app. It owns initial size, title, resize/fullscreen behavior, high-DPI preference, and input defaults.</p>
 <h2><b>VulkanConfig</b></h2>
 <h3><span class="tt">struct VulkanConfig</span></h3>
-<p>Configures Vulkan device, swapchain, validation, and frame scheduling defaults. These values are consumed during renderer initialization.</p>
+<p>Configures Vulkan device, swapchain, validation, and frame scheduling defaults. These values are consumed during renderer initialization. Rendering uses a fixed sample count of one (x1); MSAA is not configurable.</p>
 <h2><b>InputManagerConfig</b></h2>
 <h3><span class="tt">struct InputManagerConfig</span></h3>
 <p>Configures caret and selection rendering for text input fields. It affects editing visuals, not low-level window input.</p>
@@ -152,13 +147,13 @@ $(function() {
 <p>Keyboard chord used by developer tooling. The default chord is intended to toggle the developer panel.</p>
 <h2><b>DevToolsConfig</b></h2>
 <h3><span class="tt">struct DevToolsConfig</span></h3>
-<p>Configures developer tooling, capture behavior, panel defaults, and export paths. These settings are used only when developer mode support is compiled in.</p>
+<p>Configures modern developer monitoring, schema/override/tree capacities, runtime activation, and the dedicated developer-window shortcut. These settings are used only when <span class="tt">FLOW_UI_DEV_MODE</span> is compiled in. Durable developer changes use <span class="tt">.flowui/changes/active.flowchanges</span> through the modern bake pipeline.</p>
 <h2><b>AppConfig</b></h2>
 <h3><span class="tt">struct AppConfig</span></h3>
 <p>Top-level app configuration. It groups all subsystem-specific configuration blocks passed through startup.</p>
 <h2><b>TextureRef</b></h2>
 <h3><span class="tt">struct TextureRef</span></h3>
-<p>Texture handle and render options returned by resource managers. Manager-owned fields identify the texture, while app code may tune fit, sampling, and tint options.</p>
+<p>Texture handle and render options returned by resource managers. Manager-owned fields identify the texture, while app code may tune fit and tint options. Filtering comes from the logical texture's sampler.</p>
 <h2><b>FrameInput</b></h2>
 <h3><span class="tt">struct FrameInput</span></h3>
 <p>Normalized per-frame input snapshot consumed by managers and custom elements. It stores timing, pointer, scroll, key, modifier, and text input state.</p>
@@ -167,13 +162,13 @@ $(function() {
 <h3><span class="tt">Clay_Color Flow_Color(std::string_view hexRgba)</span></h3>
 <ul>
 <li><b>Returns:</b> <span class="tt">Clay_Color</span></li>
-<li><b>Arguments:</b> <span class="tt">hexRgba</span> color string in <span class="tt">#RRGGBBAA</span> form.</li>
+<li><b>Arguments:</b> <span class="tt">hexRgba</span> color string in <span class="tt">#RRGGBB</span> or <span class="tt">#RRGGBBAA</span> form.</li>
 </ul>
-<p>Converts a hex RGBA string into a Clay color. The input must include the leading <span class="tt">#</span> and eight hex digits; invalid input throws <span class="tt">std::invalid_argument</span>.</p>
+<p>Converts a hex RGB/RGBA string into a Clay color. Six-digit RGB receives an implicit <span class="tt">ff</span> alpha channel. The leading <span class="tt">#</span> is required; invalid input throws <span class="tt">std::invalid_argument</span>.</p>
 <p><b>Example:</b></p>
-<div class="fragment"><div class="line">Clay_Color panelColor = <a class="code hl_function" href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a>(<span class="stringliteral">&quot;#20242cff&quot;</span>);</div>
-<div class="ttc" id="agroup__flowui__app_html_ga159d45f9b2b4441d66c814c58f809919"><div class="ttname"><a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">FlowUi::Flow_Color</a></div><div class="ttdeci">Clay_Color Flow_Color(std::string_view hexRgba)</div><div class="ttdoc">Convert a #RRGGBBAA color string into a Clay_Color.</div><div class="ttdef"><b>Definition</b> App.hpp:147</div></div>
-</div><!-- fragment --><p>See: <a href="group__flowui__app.html#ga159d45f9b2b4441d66c814c58f809919">Full Doxygen reference</a>. </p>
+<div class="fragment"><div class="line">Clay_Color panelColor = FlowUi::Flow_Color(<span class="stringliteral">&quot;#20242cff&quot;</span>);</div>
+<div class="line">Clay_Color opaquePanelColor = FlowUi::Flow_Color(<span class="stringliteral">&quot;#20242c&quot;</span>);</div>
+</div><!-- fragment --><p>See: <a href="../../include/FlowUi/Public/configurationStructs/AppConfig.hpp">Owning header</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

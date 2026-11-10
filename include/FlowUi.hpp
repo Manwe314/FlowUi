@@ -60,6 +60,6 @@
  * @brief Public offscreen viewport rendering API.
  */
 
-#include "FlowUi/ElementID.hpp"
-#include "FlowUi/AppActionID.hpp"
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/identificationTypes/ElementID.hpp"
+#include "FlowUi/Public/identificationTypes/AppActionID.hpp"
+#include "FlowUi/Public/App.hpp"

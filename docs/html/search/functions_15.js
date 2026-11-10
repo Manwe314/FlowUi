@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['_7eapp_0',['~App',['../classFlowUi_1_1App.html#aaad78bc0186f550641ae5959d54f2e2c',1,'FlowUi::App']]]
+  ['windowid_0',['windowId',['../classFlowUi_1_1UiManager.html#a8b358e6e96602f764b75782489aee371',1,'FlowUi::UiManager']]],
+  ['windowinputconfig_1',['windowInputConfig',['../classFlowUi_1_1App.html#a9796415e95b720977162b8758e66f757',1,'FlowUi::App::windowInputConfig() const'],['../classFlowUi_1_1App.html#aa3f1b5d7cf1e701d7bbea5ca58b7a504',1,'FlowUi::App::windowInputConfig(WindowId id) const']]],
+  ['windowsize_2',['windowSize',['../classFlowUi_1_1App.html#add8511c39a52e3d2bc9f5afedddf3228',1,'FlowUi::App::windowSize() const'],['../classFlowUi_1_1App.html#af82f5edfbcd85cbdfdb10b442f9e1080',1,'FlowUi::App::windowSize(WindowId id) const']]],
+  ['withid_3',['withID',['../classFlowUi_1_1ElementBuilder.html#a82d2357e9b125b91fd9fc70479c4c048',1,'FlowUi::ElementBuilder::withID(LocalElementName name)'],['../classFlowUi_1_1ElementBuilder.html#ae9a2b3127395432f6343c91529a65179',1,'FlowUi::ElementBuilder::withID(RuntimeElementName name)'],['../classFlowUi_1_1ElementBuilder.html#afdcd7a81ba5f3f09133f5f6fb52725b5',1,'FlowUi::ElementBuilder::withID(IndexedElementName name)'],['../classFlowUi_1_1ElementBuilder.html#a46984410a745294759c0faac732c2b2a',1,'FlowUi::ElementBuilder::withID(AutoElementName name)'],['../classFlowUi_1_1ElementBuilder.html#ab4f1c7efd4737928b0f1b261cc52f9ce',1,'FlowUi::ElementBuilder::withID(FlowElementID id)'],['../classFlowUi_1_1ElementBuilder.html#aafbb8ff6751ed00d788248a3593b7fca',1,'FlowUi::ElementBuilder::withID(GlobalFlowID id)'],['../classFlowUi_1_1ElementBuilder.html#ae72dee5579a19a1a5796d78b527d8d8a',1,'FlowUi::ElementBuilder::withID(FlowElementPartID id)']]]
 ];

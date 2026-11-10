@@ -6,79 +6,146 @@
 #include <string_view>
 
 #include "FSEL/Theme.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::FSEL {
 
+/**
+ * Automatic child content emitted by Button::buildElement(); constructElement() ignores this
+ * setting.
+ */
 enum class ButtonContentMode : uint8_t {
+	/** Emit no automatic text or icon children. */
 	None,
+	/** Emit only the text label. */
 	TextOnly,
+	/** Emit only the icon. */
 	IconOnly,
+	/** Emit icon followed by text. */
 	IconThenText,
+	/** Emit text followed by icon. */
 	TextThenIcon,
 };
 
+/** Optional appearance overrides for one interaction state; empty values inherit the active theme. */
 struct ButtonStateOverrides {
+	/** Surface background color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> backgroundColor = std::nullopt;
+	/** Button label color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> labelColor = std::nullopt;
+	/** Icon tint color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> iconColor = std::nullopt;
+	/** Border color in Clay RGBA channels. Empty inherits the active theme. */
 	std::optional<Clay_Color> borderColor = std::nullopt;
 };
 
+/**
+ * Per-invocation Button configuration. Borrowed models and text must remain valid through the
+ * frame; empty visual overrides inherit the active FSELTheme.
+ */
 struct ButtonParameters {
+	/** Action invoked for an enabled activation gesture. */
 	ActionCall onActivate{};
+	/** Borrowed texture reference for content artwork; an empty reference draws no icon. */
 	TextureRef icon{};
+	/** Borrowed UTF-8 display text; keep its storage valid through the frame. */
 	std::string_view text{};
 
+	/** Appearance when enabled and idle. Empty colors inherit the theme. */
 	ButtonStateOverrides idleOverrides{};
+	/** Appearance while hovered. Empty colors inherit the theme. */
 	ButtonStateOverrides hoveredOverrides{};
+	/** Appearance during an armed pointer press. Empty colors inherit the theme. */
 	ButtonStateOverrides pressedOverrides{};
+	/** Appearance when interaction is disabled. Empty colors inherit the theme. */
 	ButtonStateOverrides disabledOverrides{};
 
+	/** Clay width and height sizing rules for the root element. */
 	Clay_Sizing sizing = {
 		.width = CLAY_SIZING_FIT(0),
 		.height = CLAY_SIZING_FIT(0),
 	};
+	/** Corner radii in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
 
+	/** Registered font family used for the button label. Empty inherits the active theme. */
 	std::optional<FontFamilyId> labelFontFamily = std::nullopt;
+	/**
+	 * Font weight requested for the button label, such as 400 for normal. Empty inherits the active
+	 * theme.
+	 */
 	std::optional<uint32_t> labelFontWeight = std::nullopt;
+	/** Rendered icon side length in layout pixels. Empty inherits the active theme. */
 	std::optional<float> iconSize = std::nullopt;
 
 	// Used by buildElement and ignored by constructElement.
+	/** Content emitted by draw(); construct() leaves child composition to the caller. */
 	ButtonContentMode contentMode = ButtonContentMode::None;
+	/** Per-edge border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
 
 	// Optional theme overrides
+	/**
+	 * Inset between the root border and its children, in layout pixels. Empty inherits the active
+	 * theme.
+	 */
 	std::optional<Clay_Padding> padding = std::nullopt;
+	/** Space between adjacent content items, in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> contentGap = std::nullopt;
+	/** Button label font size in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> labelFontSize = std::nullopt;
+	/** Alignment of children inside the available content area. Empty inherits the active theme. */
 	std::optional<Clay_ChildAlignment> childAlignment = std::nullopt;
+	/** Axis and order used to arrange children. Empty inherits the active theme. */
 	std::optional<Clay_LayoutDirection> layoutDirection = std::nullopt;
+	/** Font style requested for the button label. Empty inherits the active theme. */
 	std::optional<FontStyle> labelFontStyle = std::nullopt;
+	/** Wrapping rule for the button label. Empty inherits the active theme. */
 	std::optional<Clay_TextElementConfigWrapMode> labelWrapMode = std::nullopt;
+	/** Horizontal alignment of the trigger or button label. Empty inherits the active theme. */
 	std::optional<Clay_TextAlignment> labelAlignment = std::nullopt;
 
+	/** Cursor requested while this enabled control is hovered. Empty inherits the active theme. */
 	std::optional<CursorType> cursor = std::nullopt;
+	/** Priority used to arbitrate this control's cursor request. Empty inherits the active theme. */
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
+	/** Tint icon artwork using the resolved state color when true. */
 	bool tintIcon = true;
 };
 
+/** Per-instance interaction state maintained by the element and retained by ElementManager. */
 struct ButtonState {
+	/** Whether an enabled press is waiting for a matching release. */
 	bool isArmed = false;
+	/** Whether a mouse-up frame has been seen while the press is armed. */
 	bool mouseUpObserved = false;
 };
 
+/**
+ * Action-driven button supporting draw() content modes or construct() with caller-authored
+ * children. Activation occurs after a completed enabled click.
+ */
 struct Button {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = ButtonParameters;
+	/** Per-instance state owned and retained by ElementManager. */
 	using State = ButtonState;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<Button>;
+	/** Frame-scoped context supplied to pointer and logic hooks. */
 	using InteractionContext = ElementInteractionContext<Button>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId = DefinitionID("FSEL.button");
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL Button";
 
+	/**
+	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onHovered(InteractionContext& context) {
 		if (!isEnabled(context)) {
 			return;
@@ -90,6 +157,10 @@ struct Button {
 			context.params.cursorPriority.value_or(theme.cursorPriority));
 	}
 
+	/**
+	 * ElementBuilder press hook; begins the enabled control interaction. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onPressed(InteractionContext& context) {
 		auto& state = context.state();
 		if (!isEnabled(context)) {
@@ -101,6 +172,10 @@ struct Button {
 		state.mouseUpObserved = false;
 	}
 
+	/**
+	 * ElementBuilder release hook; completes or cancels the pending interaction. @param context
+	 * Borrowed context valid for this callback only.
+	 */
 	static void onReleased(InteractionContext& context) {
 		auto& state = context.state();
 		if (!state.isArmed) {
@@ -114,6 +189,10 @@ struct Button {
 		}
 	}
 
+	/**
+	 * ElementBuilder logic hook; reconciles retained interaction state with the current input.
+	 * @param context Borrowed context valid for this callback only.
+	 */
 	static void runLogic(InteractionContext& context) {
 		auto& state = context.state();
 		if (!state.isArmed) {
@@ -140,11 +219,20 @@ struct Button {
 		}
 	}
 
+	/**
+	 * ElementBuilder construct hook; returns the themed root declaration for caller-authored
+	 * children. @param context Borrowed context valid for this callback only. @return Root Clay
+	 * declaration; the builder opens it for child composition.
+	 */
 	static Clay_ElementDeclaration constructElement(BuildContext& context) {
 		const FSELButtonStateTheme appearance = resolveAppearance(context);
 		return makeRootDeclaration(context, appearance);
 	}
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const auto& theme = context.uiManager.theme<FSELTheme>().buttonTheme;
 		const FSELButtonStateTheme appearance = resolveAppearance(context);
@@ -314,6 +402,10 @@ private:
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr Button kButton{};
 static_assert(FlowElement<Button>);
 static_assert(DrawableFlowElement<Button>);

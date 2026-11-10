@@ -1,8 +1,12 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+
+/** @file
+ * @brief Public AgenticJson declarations for optional development services.
+ */
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 
-#include "FlowUi/Error.hpp"
+#include "FlowUi/Public/errorManagement/Error.hpp"
 
 #include <cstdint>
 #include <initializer_list>
@@ -15,18 +19,44 @@ namespace FlowUi::devSystems::agentic {
 
 /** Owned JSON value. Number tokens remain decimal text, avoiding lossy integer conversion. */
 struct Json {
-	enum class Kind : std::uint8_t { null, boolean, number, string, array, object };
+	/**
+	 * @brief Active JSON representation; only its associated payload member is interpreted.
+	 */
+	enum class Kind : std::uint8_t {
+		null, /**< JSON null, with no active payload. */
+		boolean, /**< Use the boolean payload. */
+		number, /**< Use an exact decimal numeric token stored in text. */
+		string, /**< Use the owned UTF-8 text payload. */
+		array, /**< Use the owned array elements. */
+		object /**< Use the owned object key/value entries. */
+	};
+	/** @brief Owned key/value entries, used when kind is Kind::object. */
 	std::vector<std::pair<std::string, Json>> object;
+	/** @brief Owned array elements, used when kind is Kind::array. */
 	std::vector<Json> array;
+	/**
+	 * @brief Owned text payload; JSON number tokens also remain exact decimal text in this
+	 * member.
+	 */
 	std::string text;
+	/** @brief Active JSON payload representation. */
 	Kind kind = Kind::null;
+	/** @brief Boolean payload, used when kind is Kind::boolean. */
 	bool boolean = false;
 
+	/** @brief Construct JSON null with empty owned storage. */
 	Json() = default;
+	/** @brief Move a string into owned JSON string storage. */
 	Json(std::string value) : text(std::move(value)), kind(Kind::string) {}
+	/** @brief Copy a string view into owned JSON string storage. */
 	Json(std::string_view value) : text(value), kind(Kind::string) {}
+	/** @brief Copy a non-null NUL-terminated string into owned JSON string storage. */
 	Json(const char* value) : text(value), kind(Kind::string) {}
+	/** @brief Construct a JSON boolean. */
 	Json(bool value) : kind(Kind::boolean), boolean(value) {}
+	/**
+	 * @brief Encode a finite double as a JSON number; non-finite input produces JSON null.
+	 */
 	explicit Json(double value);
 	/** Build an owned object, replacing no fields implicitly. */
 	[[nodiscard]] static Json
@@ -37,12 +67,28 @@ struct Json {
 	[[nodiscard]] static Json number(std::uint64_t value);
 	/** Look up an object member without allocating. */
 	[[nodiscard]] const Json* find(std::string_view key) const noexcept;
+	/**
+	 * @brief Borrow the first matching member from object storage, or return nullptr when no key
+	 * matches.
+	 */
 	[[nodiscard]] Json* find(std::string_view key) noexcept;
 	/** Insert or replace one member. */
 	void set(std::string key, Json value);
+	/**
+	 * @brief Borrow the string payload or fallback when kind is not Kind::string; the selected
+	 * storage must outlive the view.
+	 */
 	[[nodiscard]] std::string_view string_or(std::string_view fallback = {}) const noexcept;
+	/**
+	 * @brief Return the numeric payload as double, or fallback when it cannot be decoded.
+	 */
 	[[nodiscard]] double number_or(double fallback = 0.0) const noexcept;
+	/**
+	 * @brief Decode an unsigned 64-bit value from number or string text, or return fallback when
+	 * decoding fails.
+	 */
 	[[nodiscard]] std::uint64_t uint64_or(std::uint64_t fallback = 0) const noexcept;
+	/** @brief Return the boolean payload, or fallback when kind is not Kind::boolean. */
 	[[nodiscard]] bool bool_or(bool fallback = false) const noexcept;
 };
 

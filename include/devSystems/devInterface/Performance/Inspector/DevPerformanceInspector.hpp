@@ -3,18 +3,19 @@
 #include "FSEL/ComboBox.hpp"
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "FSEL/internal/SelectableSurfaceBehavior.hpp"
 #include "devSystems/devInterface/Performance/DevPerformanceContentParameters.hpp"
 #include "devSystems/devInterface/Performance/Inspector/DevPerformanceAnalysis.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "devSystems/devInterface/Performance/Workbench/DevTimelineControls.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
-/** Inspector navigation/clipboard control with owned payload and revision validation. */
+/* Inspector navigation/clipboard control with owned payload and revision validation. */
 struct DevPerformanceInspectorActionParameters {
 	TimelineCommand command{};
 	std::string label{}, clipboard_text{};
@@ -27,6 +28,7 @@ struct DevPerformanceInspectorActionParameters {
 struct DevPerformanceInspectorAction {
 	using Parameters = DevPerformanceInspectorActionParameters;
 	using State = FSEL::detail::selectable_surface::State;
+	using Resources = DevTimelineButtonResources;
 	using BuildContext = ElementBuildContext<DevPerformanceInspectorAction>;
 	using InteractionContext = ElementInteractionContext<DevPerformanceInspectorAction>;
 	static constexpr FlowDefinitionID definitionId =

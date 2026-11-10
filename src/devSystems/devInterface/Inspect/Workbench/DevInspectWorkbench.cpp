@@ -2,6 +2,7 @@
 
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Inspect/Workbench/DevThemeWorkbench.hpp"
+#include "devSystems/devInterface/Inspect/DevValueSummary.hpp"
 
 #include "devSystems/devInterface/Inspect/Workbench/DevClayWorkbench.hpp"
 
@@ -19,17 +20,18 @@
 #include "devSystems/devInterface/Inspect/Selector/DevInspectSelectorElements.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
+#include "devSystems/devInterface/Permanents/Elements/DevActionButton.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevErrorReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevTimingReporting.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #include "devSystems/devTooling/tree/DevTreeTypes.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-#include "Ui/Vk_UiRenderer.hpp"
+#include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 #include "devSystems/devInterface/Inspect/Workbench/DevPreviewViewPortRendering.hpp"
-#include "managers/ViewPortManager.hpp"
+#include "FlowUi/Public/managers/ViewPortManager.hpp"
 #endif
 
 namespace FlowUi::devSystems::interface_elements {
@@ -39,7 +41,7 @@ inline constexpr LocalElementName kHeader{"header"};
 inline constexpr LocalElementName kSubtitle{"subtitle"};
 inline constexpr LocalElementName kContent{"content"};
 inline constexpr LocalElementName kHeaderName{"instance-name"};
-inline constexpr LocalElementName kHeaderSpacer{"spacer"};
+inline constexpr LocalElementName kHeaderTelemetry{"telemetry"};
 inline constexpr LocalElementName kConstructedStamp{"constructed"};
 inline constexpr LocalElementName kDrawnStamp{"drawn"};
 inline constexpr LocalElementName kClayCount{"clay-count"};
@@ -184,11 +186,12 @@ void drawStub(Context& context, std::string_view label) {
 void drawWorkbenchCard(
 	DevInspectWorkbenchContent::BuildContext& context,
 	LocalElementName id,
-	DevWorkbenchSection section) {
+	DevWorkbenchSection section, bool stacked = false) {
 	context.uiManager.createElement(kDevWorkbenchCard, id)
 		.setParameters(DevWorkbenchCardParameters{
 			.inspect = context.params.inspect,
 			.section = section,
+			.stacked = stacked,
 		})
 		.setDevInternalCapture(true)
 		.draw();
@@ -663,20 +666,20 @@ void populateFrameStatistics(
 }
 
 uint64_t definitionSchemaBytes(const App& app, FlowDefinitionID definition) {
-	const devMode::DevSchemaView schema = app.devTooling().schemas().view();
+	const tooling::DevSchemaView schema = app.devTooling().schemas().view();
 	if (!schema) return 0u;
-	const devMode::DevElementSchema* element = schema->findElement(definition);
+	const tooling::DevElementSchema* element = schema->findElement(definition);
 	if (!element) return 0u;
-	uint64_t bytes = sizeof(devMode::DevElementSchema);
+	uint64_t bytes = sizeof(tooling::DevElementSchema);
 	const std::array roles{
 		element->definitionType, element->parametersType,
 		element->stateType, element->resourcesType};
-	for (const devMode::DevTypeIndex typeIndex : roles) {
-		const devMode::DevTypeSchema* type = schema->type(typeIndex);
+	for (const tooling::DevTypeIndex typeIndex : roles) {
+		const tooling::DevTypeSchema* type = schema->type(typeIndex);
 		if (!type) continue;
-		bytes += sizeof(devMode::DevTypeSchema);
+		bytes += sizeof(tooling::DevTypeSchema);
 		bytes += static_cast<uint64_t>(schema->fieldsOf(typeIndex).size()) *
-			sizeof(devMode::DevFieldSchema);
+			sizeof(tooling::DevFieldSchema);
 	}
 	return bytes;
 }
@@ -695,25 +698,22 @@ OverviewTelemetry collectOverviewTelemetry(
 #endif
 	const tooling::DevFlowNode& flow = *selection.flow;
 	const tooling::DevTreeSnapshot& snapshot = *selection.snapshot;
-	telemetry.definition = compactMiddle(snapshot.string(flow.definitionName), 30u);
+	telemetry.definition = std::string(snapshot.string(flow.definitionName));
 	if (telemetry.definition.empty()) telemetry.definition = "Unnamed definition";
 	telemetry.definitionId = formatHex(flow.definition.value);
 	telemetry.flowNode = "#" + formatCount(selection.flowIndex);
-	telemetry.path = compactMiddle(ancestryPath(snapshot, selection.flowIndex), 56u);
+	telemetry.path = ancestryPath(snapshot, selection.flowIndex);
 	telemetry.flowChildren = formatCount(directFlowChildCount(snapshot, flow));
 	telemetry.flowSubtree = formatCount(
 		flow.subtreeEnd >= selection.flowIndex
 			? flow.subtreeEnd - selection.flowIndex : 0u);
 	telemetry.depth = formatCount(flow.depth);
-	std::string sourceFile = basename(snapshot.string(flow.sourceFile));
+	std::string sourceFile(snapshot.string(flow.sourceFile));
 	if (sourceFile.empty()) sourceFile = "Unknown source";
 	const std::string_view sourceFunction = snapshot.string(flow.sourceFunction);
-	char source[256]{};
-	std::snprintf(source, sizeof(source), "%s:%u:%u  %.*s",
-		sourceFile.empty() ? "Unknown source" : sourceFile.c_str(),
-		flow.sourceLine, flow.sourceColumn, static_cast<int>(sourceFunction.size()),
-		sourceFunction.empty() ? "" : sourceFunction.data());
-	telemetry.source = compactMiddle(source, 56u);
+	telemetry.source = sourceFile + ":" + std::to_string(flow.sourceLine) + ":" +
+		std::to_string(flow.sourceColumn);
+	if (!sourceFunction.empty()) telemetry.source += " · " + std::string(sourceFunction);
 	std::vector<std::string_view> activeFlags{};
 	if (tooling::hasFlag(flow.flags, tooling::DevFlowNodeFlag::Constructed)) {
 		activeFlags.emplace_back("Constructed");
@@ -923,7 +923,7 @@ OverviewTelemetry collectOverviewTelemetry(
 Clay_ElementDeclaration overviewPanel() {
 	Clay_ElementDeclaration panel{};
 	panel.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+		.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 	panel.layout.padding = Clay_Padding{9, 9, 7, 7};
 	panel.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	panel.layout.childGap = 5;
@@ -936,35 +936,35 @@ Clay_ElementDeclaration overviewPanel() {
 }
 
 template <typename Context>
-void drawOverviewMetric(
-	Context& context,
-	IndexedElementName id,
-	std::string_view label,
-	std::string_view value,
-	Clay_Color valueColor = interface_theme::kTextCanvas,
-	Clay_SizingAxis widthSizing = CLAY_SIZING_GROW(0)) {
+void drawOverviewMetric(Context& context, IndexedElementName id, std::string_view label,
+						std::string_view value,
+						Clay_Color valueColor = interface_theme::kTextCanvas,
+						Clay_SizingAxis widthSizing = CLAY_SIZING_PERCENT(1)) {
+	const bool compact_identity =
+		label == "Definition" || label == "Nodes" || label == "Source" || label == "Path";
 	Clay_ElementDeclaration row{};
-	row.layout.sizing = {
-		.width = widthSizing, .height = CLAY_SIZING_FIXED(14)};
-	row.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-	row.layout.childGap = 6;
-	row.layout.childAlignment = {
-		.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-	row.clip = {.horizontal = true, .vertical = true};
+	row.layout.sizing = {widthSizing, CLAY_SIZING_FIT(0)};
+	row.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+	row.layout.childGap = 1;
+	row.layout.padding = {0, 0, 2, 3};
+	row.clip = {.horizontal = compact_identity, .vertical = false, .scrollInputDisabled = true};
 	CLAY(context.clayID(id), row) {
-		CLAY_TEXT(context.uiManager.toClayString(label),
-			CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextSecondary, 8)));
-		Clay_ElementDeclaration valueBox{};
-		valueBox.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
-		valueBox.layout.childAlignment = {
-			.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-		valueBox.clip = {.horizontal = true, .vertical = true};
-		CLAY(context.clayID("val-box"), valueBox) {
-			CLAY_TEXT(context.uiManager.toClayString(value),
-				CLAY_TEXT_CONFIG(textConfig(valueColor, 9)));
+		auto label_style = textConfig(interface_theme::kTextSecondary, 9);
+		label_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
+		CLAY_TEXT(context.uiManager.toClayString(label), CLAY_TEXT_CONFIG(label_style));
+		Clay_ElementDeclaration value_box{};
+		value_box.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_FIT(0)};
+		value_box.clip = {
+			.horizontal = compact_identity, .vertical = false, .scrollInputDisabled = true};
+		CLAY(context.clayID(Keyed("metric-value", id.token)), value_box) {
+			auto value_style = textConfig(valueColor, 11);
+			value_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
+			CLAY_TEXT(context.uiManager.toClayString(value), CLAY_TEXT_CONFIG(value_style));
 		}
 	}
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(id)))
+		diagnostics_ui::pointer_tooltip(context, Keyed("metric-detail", id.token),
+										std::string(label) + ": " + std::string(value));
 }
 
 template <typename Context>
@@ -1010,16 +1010,16 @@ void drawPercentileChoice(
 	context.uiManager.drawConstructed();
 }
 
-const devMode::DevFieldSchema* overrideField(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevFieldIndex index) noexcept {
+const tooling::DevFieldSchema* overrideField(
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevFieldIndex index) noexcept {
 	if (!index || index.value > schema.fields.size()) return nullptr;
 	return &schema.fields[index.value - 1u];
 }
 
 std::string schemaName(
-	const devMode::DevSchemaGeneration& schema,
-	const devMode::DevTypeSchema* type) {
+	const tooling::DevSchemaGeneration& schema,
+	const tooling::DevTypeSchema* type) {
 	if (!type) return "Unknown";
 	std::string_view name = schema.string(type->displayName);
 	if (name.empty()) name = schema.string(type->cppTypeName);
@@ -1027,13 +1027,13 @@ std::string schemaName(
 }
 
 std::string overrideFieldPath(
-	const devMode::DevSchemaGeneration& schema,
+	const tooling::DevSchemaGeneration& schema,
 	const tooling::DevOverrideApply::Record& record) {
 	std::string result{};
-	for (const devMode::DevFieldId pathId : record.field.nestedPath) {
+	for (const tooling::DevFieldId pathId : record.field.nestedPath) {
 		const auto found = std::ranges::find_if(
 			schema.fields,
-			[pathId](const devMode::DevFieldSchema& field) {
+			[pathId](const tooling::DevFieldSchema& field) {
 				return field.id == pathId;
 			});
 		if (found == schema.fields.end()) continue;
@@ -1042,7 +1042,7 @@ std::string overrideFieldPath(
 		if (!result.empty()) result += ".";
 		result.append(name);
 	}
-	if (const devMode::DevFieldSchema* field = overrideField(schema, record.fieldIndex)) {
+	if (const tooling::DevFieldSchema* field = overrideField(schema, record.fieldIndex)) {
 		std::string_view name = schema.string(field->displayName);
 		if (name.empty()) name = schema.string(field->name);
 		if (!result.empty()) result += ".";
@@ -1051,74 +1051,11 @@ std::string overrideFieldPath(
 	return result.empty() ? "Unknown field" : compactMiddle(result, 34u);
 }
 
-std::string overrideValueSummary(
-	const devMode::DevSchemaGeneration& schema,
-	const tooling::DevOverrideApply::Record& record) {
-	const devMode::DevFieldSchema* field = overrideField(schema, record.fieldIndex);
-	const devMode::DevTypeSchema* type = field ? schema.type(field->valueType) : nullptr;
-	const void* value = record.value.data();
-	if (!type || !value) return "Value unavailable";
-	const devMode::DevTypeOps* operations = field->valueType.value < schema.typeOperations.size()
-		? schema.typeOperations[field->valueType.value] : nullptr;
-	const std::string typeName = schemaName(schema, type);
-	char buffer[128]{};
-	if (typeName == "Clay_Color") {
-		const auto& color = *static_cast<const Clay_Color*>(value);
-		std::snprintf(buffer, sizeof(buffer), "#%02X%02X%02X%02X",
-			static_cast<unsigned>(std::lround(std::clamp(color.r, 0.0f, 255.0f))),
-			static_cast<unsigned>(std::lround(std::clamp(color.g, 0.0f, 255.0f))),
-			static_cast<unsigned>(std::lround(std::clamp(color.b, 0.0f, 255.0f))),
-			static_cast<unsigned>(std::lround(std::clamp(color.a, 0.0f, 255.0f))));
-		return buffer;
-	}
-	if (typeName == "Clay_Padding") {
-		const auto& padding = *static_cast<const Clay_Padding*>(value);
-		std::snprintf(buffer, sizeof(buffer), "T%u R%u B%u L%u",
-			padding.top, padding.right, padding.bottom, padding.left);
-		return buffer;
-	}
-	if (type->kind == devMode::DevTypeKind::Boolean && operations &&
-		operations->numericValue) {
-		long double numeric = 0.0L;
-		if (operations->numericValue(value, numeric)) return numeric == 0.0L ? "Off" : "On";
-	}
-	if ((type->kind == devMode::DevTypeKind::SignedInteger ||
-		type->kind == devMode::DevTypeKind::UnsignedInteger ||
-		type->kind == devMode::DevTypeKind::FloatingPoint) && operations &&
-		operations->numericValue) {
-		long double numeric = 0.0L;
-		if (operations->numericValue(value, numeric)) {
-			std::snprintf(buffer, sizeof(buffer), "%.6Lg", numeric);
-			return buffer;
-		}
-	}
-	if (type->kind == devMode::DevTypeKind::Enumeration && operations &&
-		operations->numericValue) {
-		long double numeric = 0.0L;
-		if (operations->numericValue(value, numeric)) {
-			const uint64_t bits = static_cast<uint64_t>(numeric);
-			const uint32_t begin = type->enumeration.values.first;
-			const uint32_t count = type->enumeration.values.count;
-			if (begin <= schema.enumValues.size() && count <= schema.enumValues.size() - begin) {
-				for (uint32_t index = 0u; index < count; ++index) {
-					const devMode::DevEnumValueSchema& option = schema.enumValues[begin + index];
-					if (option.bits == bits) return std::string(schema.string(option.name));
-				}
-			}
-			return std::to_string(bits);
-		}
-	}
-	if (type->kind == devMode::DevTypeKind::Text && operations && operations->textView) {
-		return compactMiddle(operations->textView(value), 36u);
-	}
-	if (type->kind == devMode::DevTypeKind::Sequence && operations &&
-		operations->sequenceSize) {
-		return std::to_string(operations->sequenceSize(value)) + " items";
-	}
-	if (type->kind == devMode::DevTypeKind::Object) {
-		return std::to_string(type->fields.count) + " fields";
-	}
-	return compactMiddle(typeName + " / " + std::to_string(type->size) + " B", 36u);
+std::string overrideValueSummary(const tooling::DevSchemaGeneration& schema,
+								 const tooling::DevOverrideApply::Record& record, App* app) {
+	const tooling::DevFieldSchema* field = overrideField(schema, record.fieldIndex);
+	const tooling::DevTypeSchema* type = field ? schema.type(field->valueType) : nullptr;
+	return format_value_summary(schema, type, record.value.data(), app, field).detail;
 }
 
 struct TreeIssueDescription {
@@ -1257,7 +1194,7 @@ DevChangeAndIssuePanelData queryChangeAndIssueData(
 	const tooling::DevFlowNode& flow = *selection.flow;
 	const WindowId window = parameters.interfaceState->selectedWindowId;
 	const auto& apply = parameters.app->devTooling().overrides().appliedOverrides();
-	const devMode::DevSchemaView schema = parameters.app->devTooling().schemas().view();
+	const tooling::DevSchemaView schema = parameters.app->devTooling().schemas().view();
 	if (schema) {
 		for (const tooling::DevOverrideApply::Record& record : apply.records()) {
 			if (!record.schemaValid || !record.value ||
@@ -1268,11 +1205,11 @@ DevChangeAndIssuePanelData queryChangeAndIssueData(
 			if (!apply.winningLayer(
 					flow.definition, window, flow.instance, record.field.field, winning) ||
 				winning != record.layer) continue;
-			const devMode::DevFieldSchema* field = overrideField(*schema, record.fieldIndex);
+			const tooling::DevFieldSchema* field = overrideField(*schema, record.fieldIndex);
 			result.activeChanges.push_back(DevMinimalChangeItem{
 				.fieldId = field ? field->id : record.field.field,
 				.fieldPath = overrideFieldPath(*schema, record),
-				.valueSummary = overrideValueSummary(*schema, record),
+				.valueSummary = overrideValueSummary(*schema, record, parameters.app),
 				.scope = record.target.scope,
 			});
 		}
@@ -1505,6 +1442,9 @@ DevPreview::Resources::Resources(App& app) {
 	panIcon = resolve(interface_icons::kPreviewPanKey);
 	resetIcon = resolve(interface_icons::kPreviewResetKey);
 	rulerIcon = resolve(interface_icons::kPreviewRulerKey);
+	zoom_in_icon = resolve(interface_icons::kZoomInKey);
+	zoom_out_icon = resolve(interface_icons::kZoomOutKey);
+	fit_icon = resolve(interface_icons::kFitKey);
 #else
 	(void)app;
 #endif
@@ -1512,50 +1452,54 @@ DevPreview::Resources::Resources(App& app) {
 
 void DevInspectWorkbenchHeader::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration header{};
-	header.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(44)};
-	header.layout.padding = Clay_Padding{14, 14, 0, 0};
-	header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-	header.layout.childGap = 7;
+	header.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
+	header.layout.padding = Clay_Padding{14, 14, 7, 7};
+	header.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+	header.layout.childGap = 5;
 	header.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 	header.backgroundColor = interface_theme::kDepth1Panel;
 	header.border = {
 		.color = interface_theme::kBorderPrimary,
 		.width = Clay_BorderWidth{0, 0, 0, 1, 0},
 	};
-	header.clip = {.horizontal = true, .vertical = true};
+	header.clip = {.horizontal = true, .vertical = false};
 	CLAY(context.clayID(), header) {
 		Clay_ElementDeclaration nameArea{};
-		nameArea.layout.sizing = {
-			.width = CLAY_SIZING_FIT(0, 0), .height = CLAY_SIZING_GROW(0)};
+		nameArea.layout.sizing = {.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 		nameArea.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
-		nameArea.clip = {.horizontal = true, .vertical = true};
+		nameArea.clip = {.horizontal = true, .vertical = false};
 		CLAY(context.clayID(kHeaderName), nameArea) {
-			CLAY_TEXT(context.uiManager.toClayString(
-				context.params.instanceName.empty()
-					? std::string_view{"No element selected"}
-					: context.params.instanceName),
-				CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 14)));
+			auto name_style = textConfig(interface_theme::kTextCanvas, 14);
+			name_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
+			CLAY_TEXT(context.uiManager.toClayString(context.params.instanceName.empty()
+														 ? std::string_view{"No element selected"}
+														 : context.params.instanceName),
+					  CLAY_TEXT_CONFIG(name_style));
 		}
-		CLAY(context.clayID(kHeaderSpacer), {
-			.layout = {.sizing = {
-				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)}}}) {}
-		drawStateStamp(context, kConstructedStamp, "CONSTRUCTED",
-			context.params.constructed, interface_theme::kStatusGreen);
-		drawStateStamp(context, kDrawnStamp, "DRAWN",
-			context.params.drawn, interface_theme::kAccentCurrent);
-		drawTelemetry(context, kClayCount, "CLAY", context.params.directClayNodeCount,
-			interface_theme::kTextSecondary);
-		drawTelemetry(context, kOverrideCount, "OVERRIDES", context.params.overrideCount,
-			context.params.overrideCount == 0u
-				? interface_theme::kTextMuted : interface_theme::kAccentSignalCoral);
+		Clay_ElementDeclaration telemetry{};
+		telemetry.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_FIXED(22)};
+		telemetry.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+		telemetry.layout.childGap = 7;
+		CLAY(context.clayID(kHeaderTelemetry), telemetry) {
+			drawStateStamp(context, kConstructedStamp, "CONSTRUCTED", context.params.constructed,
+						   interface_theme::kStatusGreen);
+			drawStateStamp(context, kDrawnStamp, "DRAWN", context.params.drawn,
+						   interface_theme::kAccentCurrent);
+			drawTelemetry(context, kClayCount, "CLAY", context.params.directClayNodeCount,
+						  interface_theme::kTextSecondary);
+			drawTelemetry(context, kOverrideCount, "OVERRIDES", context.params.overrideCount,
+						  context.params.overrideCount == 0u ? interface_theme::kTextMuted
+															 : interface_theme::kAccentSignalCoral);
+		}
 	}
+	if (context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID(kHeaderName)))
+		diagnostics_ui::pointer_tooltip(context, LocalElementName{"instance-name-detail"},
+										context.params.instanceName);
 }
 
 void DevInspectWorkbenchSubtitle::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration subtitle{};
-	subtitle.layout.sizing = {
-		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
+	subtitle.layout.sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
 	subtitle.layout.padding = Clay_Padding{14, 14, 7, 7};
 	subtitle.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	subtitle.layout.childGap = 3;
@@ -1566,11 +1510,10 @@ void DevInspectWorkbenchSubtitle::buildElement(BuildContext& context) {
 	};
 	subtitle.clip = {.horizontal = true, .vertical = true};
 	CLAY(context.clayID(), subtitle) {
-		CLAY_TEXT(context.uiManager.toClayString(
-			context.params.definitionName.empty()
-				? std::string_view{"Definition unavailable"}
-				: context.params.definitionName),
-			CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextSecondary, 11)));
+		CLAY_TEXT(context.uiManager.toClayString(context.params.definitionName.empty()
+													 ? std::string_view{"Definition unavailable"}
+													 : context.params.definitionName),
+				  CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextSecondary, 11)));
 		CLAY_TEXT(context.uiManager.toClayString(
 			context.params.instancePath.empty()
 				? std::string_view{"Select an element to inspect its instance path"}
@@ -1673,8 +1616,12 @@ void DevPreviewControl::buildElement(BuildContext& context) {
 			CLAY(context.clayID("icon"), image) {}
 		} else {
 			CLAY_TEXT(context.uiManager.toClayString(context.params.label),
-				CLAY_TEXT_CONFIG(textConfig(foreground, 8)));
+					  CLAY_TEXT_CONFIG(textConfig(foreground, 8)));
 		}
+	}
+	if (context.params.icon.handle && hovered) {
+		diagnostics_ui::pointer_tooltip(context, LocalElementName{"action-tooltip"},
+										context.params.label);
 	}
 }
 
@@ -2221,13 +2168,13 @@ void DevPreview::buildElement(BuildContext& context) {
 			const Clay_ElementDeclaration group = previewToolbarGroup();
 			CLAY(context.clayID(kPreviewCameraGroup), group) {
 				drawPreviewControl(context, controls.next(), state,
-					DevPreviewControlCommand::ZoomOut, "-");
+					DevPreviewControlCommand::ZoomOut, "Zoom out", false,
+					context.resources().zoom_out_icon);
 				Clay_ElementDeclaration readout{};
-				readout.layout.sizing = {
-					.width = CLAY_SIZING_FIXED(52), .height = CLAY_SIZING_FIXED(22)};
+				readout.layout.sizing = {.width = CLAY_SIZING_FIXED(52),
+										 .height = CLAY_SIZING_FIXED(22)};
 				readout.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
-				readout.layout.childAlignment = {
-					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
+				readout.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				readout.backgroundColor = interface_theme::kDepth2Ink;
 				readout.cornerRadius = CLAY_CORNER_RADIUS(3);
 				readout.clip = {
@@ -2260,12 +2207,12 @@ void DevPreview::buildElement(BuildContext& context) {
 					}
 				}
 				drawPreviewControl(context, controls.next(), state,
-					DevPreviewControlCommand::ZoomIn, "+");
-				drawPreviewControl(context, controls.next(), state,
-					DevPreviewControlCommand::Fit, "Fit");
-				drawPreviewControl(context, controls.next(), state,
-					DevPreviewControlCommand::Reset, "1:1", false,
-					context.resources().resetIcon);
+					DevPreviewControlCommand::ZoomIn, "Zoom in", false,
+					context.resources().zoom_in_icon);
+				drawPreviewControl(context, controls.next(), state, DevPreviewControlCommand::Fit,
+								   "Fit", false, context.resources().fit_icon);
+				drawPreviewControl(context, controls.next(), state, DevPreviewControlCommand::Reset,
+								   "1:1", false, context.resources().resetIcon);
 			}
 
 			drawPreviewToolbarSeparator(context, separators.next());
@@ -2336,11 +2283,13 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 		.width = CLAY_SIZING_PERCENT(1.0f), .height = CLAY_SIZING_PERCENT(1.0f)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth1Panel;
-	root.clip = {.horizontal = true, .vertical = true};
+	// The enclosing card clips the viewport. Vertical clipping here would let
+	// its GROW body adopt the entire content height instead of the remaining space.
+	root.clip = {.horizontal = true, .vertical = false, .scrollInputDisabled = true};
 	CLAY(context.clayID(), root) {
 		Clay_ElementDeclaration header{};
 		header.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(34)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(34)};
 		header.layout.padding = Clay_Padding{10, 10, 0, 0};
 		header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		header.layout.childGap = 8;
@@ -2368,7 +2317,7 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 
 		Clay_ElementDeclaration body{};
 		body.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_GROW(0)};
 		body.layout.padding = Clay_Padding{8, 8, 8, 8};
 		body.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		body.layout.childGap = 7;
@@ -2381,16 +2330,16 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				? *scroll.scrollPosition : Clay_Vector2{},
 		};
 		CLAY(context.clayID(kOverviewBody), body) {
-			IndexedElementIDSequence identityMetrics{kOverviewMetric};
+			IndexedElementIDSequence metrics{kOverviewMetric};
 			CLAY(context.clayID(kOverviewIdentity), overviewPanel()) {
 				drawOverviewPanelTitle(context, "ELEMENT IDENTITY & ANCESTRY");
-				drawOverviewMetric(context, identityMetrics.next(), "Definition",
+				drawOverviewMetric(context, metrics.next(), "Definition",
 					telemetry.definition + "  /  " + telemetry.definitionId,
 					interface_theme::kAccentSeaGlass);
-				drawOverviewMetric(context, identityMetrics.next(), "Nodes",
+				drawOverviewMetric(context, metrics.next(), "Nodes",
 					"Flow " + telemetry.flowNode + "  /  " + telemetry.clayNode);
-				drawOverviewMetric(context, identityMetrics.next(), "Source", telemetry.source);
-				drawOverviewMetric(context, identityMetrics.next(), "Path", telemetry.path,
+				drawOverviewMetric(context, metrics.next(), "Source", telemetry.source);
+				drawOverviewMetric(context, metrics.next(), "Path", telemetry.path,
 					interface_theme::kTextSecondary);
 			}
 
@@ -2398,15 +2347,14 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				drawOverviewPanelTitle(context, "TREE STRUCTURE & SOLVED GEOMETRY");
 				Clay_ElementDeclaration columns{};
 				columns.layout.sizing = {
-					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIT(0)};
-				columns.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+					.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
+				columns.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 				columns.layout.childGap = 10;
 				IndexedElementIDSequence columnIds{kOverviewColumn};
-				IndexedElementIDSequence metrics{kOverviewMetric};
 				CLAY(context.clayID("structure-columns"), columns) {
 					Clay_ElementDeclaration column{};
 					column.layout.sizing = {
-						.width = CLAY_SIZING_PERCENT(0.5f), .height = CLAY_SIZING_FIT(0)};
+						.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 					column.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 					column.layout.childGap = 2;
 					column.clip = {.horizontal = true, .vertical = true};
@@ -2425,8 +2373,8 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 						drawOverviewMetric(context, metrics.next(), "Dimensions", telemetry.dimensions);
 						drawOverviewMetric(context, metrics.next(), "Layout", telemetry.layout);
 						drawOverviewMetric(context, metrics.next(), "Padding", telemetry.padding);
-						drawOverviewMetric(context, metrics.next(), "Sizing / clip",
-							telemetry.sizing + "  /  " + telemetry.clip);
+						drawOverviewMetric(context, metrics.next(), "Sizing", telemetry.sizing);
+						drawOverviewMetric(context, metrics.next(), "Clip / overflow", telemetry.clip);
 					}
 				}
 			}
@@ -2469,7 +2417,6 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 					drawPercentileChoice(context, choices.next(), state, 100u, "MAX", choice5Sizing);
 				}
 
-				IndexedElementIDSequence metrics{kOverviewMetric};
 				const std::string percentileLabel = state.selectedPercentile == 100u
 					? "Max" : "P" + std::to_string(state.selectedPercentile);
 
@@ -2510,7 +2457,6 @@ void DevOverviewAndPerformance::buildElement(BuildContext& context) {
 				memoryRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				memoryRow.layout.childGap = 8;
 				memoryRow.clip = {.horizontal = true, .vertical = true};
-				IndexedElementIDSequence metrics{kOverviewMetric};
 				const Clay_SizingAxis col3Sizing = CLAY_SIZING_PERCENT(1.0f / 3.0f);
 				CLAY(context.clayID("memory-row-local"), memoryRow) {
 					drawOverviewMetric(context, metrics.next(), "Instance structures",
@@ -2567,11 +2513,13 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 		.width = CLAY_SIZING_PERCENT(1.0f), .height = CLAY_SIZING_PERCENT(1.0f)};
 	root.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	root.backgroundColor = interface_theme::kDepth1Panel;
-	root.clip = {.horizontal = true, .vertical = true};
+	// The enclosing card clips the viewport. Vertical clipping here would let
+	// its GROW body adopt the entire content height instead of the remaining space.
+	root.clip = {.horizontal = true, .vertical = false, .scrollInputDisabled = true};
 	CLAY(context.clayID(), root) {
 		Clay_ElementDeclaration header{};
 		header.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(34)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(34)};
 		header.layout.padding = Clay_Padding{10, 10, 0, 0};
 		header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		header.layout.childGap = 8;
@@ -2602,7 +2550,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 
 		Clay_ElementDeclaration body{};
 		body.layout.sizing = {
-			.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_GROW(0)};
 		body.layout.padding = Clay_Padding{8, 8, 8, 8};
 		body.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 		body.layout.childGap = 7;
@@ -2617,7 +2565,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 		CLAY(context.clayID(kChangesBody), body) {
 			Clay_ElementDeclaration changes{};
 			changes.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(124)};
+				.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
 			changes.layout.padding = Clay_Padding{8, 8, 7, 7};
 			changes.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 			changes.layout.childGap = 3;
@@ -2630,8 +2578,8 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 			CLAY(context.clayID(kChangesSummary), changes) {
 				Clay_ElementDeclaration summaryRow{};
 				summaryRow.layout.sizing = {
-					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(14)};
-				summaryRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+					.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
+				summaryRow.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 				summaryRow.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 				CLAY(context.clayID("change-summary-title"), summaryRow) {
@@ -2650,7 +2598,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 
 				Clay_ElementDeclaration tableRow{};
 				tableRow.layout.sizing = {
-					.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(19)};
+					.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIXED(19)};
 				tableRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				tableRow.layout.childGap = 6;
 				tableRow.layout.padding = Clay_Padding{5, 5, 0, 0};
@@ -2665,7 +2613,7 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 						.layout = {.sizing = {
 							.width = CLAY_SIZING_GROW(0),
 							.height = CLAY_SIZING_GROW(0)}}}) {}
-					CLAY_TEXT(context.uiManager.toClayString("WINNING VALUE        SCOPE"),
+					CLAY_TEXT(context.uiManager.toClayString("WINNING VALUE / SCOPE"),
 						CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 8)));
 				}
 				if (data.activeChanges.empty()) {
@@ -2681,38 +2629,45 @@ void DevChangesAndDiagnostics::buildElement(BuildContext& context) {
 				} else {
 					IndexedElementIDSequence rows{kChangesRow};
 					const std::size_t visibleChangeCount =
-						std::min<std::size_t>(3u, data.activeChanges.size());
+						data.activeChanges.size();
 					for (std::size_t index = 0u; index < visibleChangeCount; ++index) {
 						const DevMinimalChangeItem& item = data.activeChanges[index];
 						Clay_ElementDeclaration row = tableRow;
-						row.backgroundColor = index % 2u == 0u
-							? interface_theme::kDepth1Panel : interface_theme::kDepth2Ink;
-						CLAY(context.clayID(rows.next()), row) {
+						row.layout.sizing.height = CLAY_SIZING_FIT(0);
+						row.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+						row.layout.padding = {5, 5, 4, 4};
+						row.layout.childGap = 2;
+						row.backgroundColor = index % 2u == 0u ? interface_theme::kDepth1Panel
+															   : interface_theme::kDepth2Ink;
+						const auto row_id = rows.next();
+						CLAY(context.clayID(row_id), row) {
+							auto path_style = textConfig(interface_theme::kTextCanvas, 10);
+							path_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
 							CLAY_TEXT(context.uiManager.toClayString(item.fieldPath),
-								CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextCanvas, 8)));
-							CLAY(context.clayID(rows.next()), {
-								.layout = {.sizing = {
-									.width = CLAY_SIZING_GROW(0),
-									.height = CLAY_SIZING_GROW(0)}}}) {}
-							CLAY_TEXT(context.uiManager.toClayString(
-								compactMiddle(item.valueSummary, 28u)),
-								CLAY_TEXT_CONFIG(textConfig(interface_theme::kAccentSeaGlass, 8)));
-							CLAY_TEXT(context.uiManager.toClayString(
-								item.scope == tooling::DevOverrideScope::ExactInstance
-									? "[INST]" : "[DEF]"),
-								CLAY_TEXT_CONFIG(textConfig(
+									  CLAY_TEXT_CONFIG(path_style));
+							auto value_style = textConfig(interface_theme::kAccentSeaGlass, 11);
+							value_style.wrapMode = CLAY_TEXT_WRAP_WORDS;
+							CLAY_TEXT(context.uiManager.toClayString(item.valueSummary),
+									  CLAY_TEXT_CONFIG(value_style));
+							CLAY_TEXT(
+								context.uiManager.toClayString(
 									item.scope == tooling::DevOverrideScope::ExactInstance
-										? interface_theme::kAccentSignalCoral
-										: interface_theme::kAccentSeaGlass,
-									8)));
+										? "Instance override"
+										: "Definition override"),
+								CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextSecondary, 9)));
 						}
+						if (context.uiManager.getPreviousFramesInteraction().isHovered(
+								context.clayID(row_id)))
+							diagnostics_ui::pointer_tooltip(
+								context, Keyed("winning-value-detail", row_id.token),
+								item.fieldPath + "\n" + item.valueSummary);
 					}
 				}
 			}
 
 			Clay_ElementDeclaration issues{};
 			issues.layout.sizing = {
-				.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
+				.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(80)};
 			issues.layout.padding = Clay_Padding{8, 8, 7, 7};
 			issues.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 			issues.layout.childGap = 5;
@@ -3004,8 +2959,8 @@ void DevClaySubTree::buildElement(BuildContext& context) {
 void DevWorkbenchCard::buildElement(BuildContext& context) {
 	Clay_ElementDeclaration card{};
 	card.layout.sizing = {
-		.width = CLAY_SIZING_PERCENT(0.5f),
-		.height = CLAY_SIZING_PERCENT(1.0f),
+		.width = context.params.stacked ? CLAY_SIZING_PERCENT(1) : CLAY_SIZING_GROW(0),
+		.height = context.params.stacked ? CLAY_SIZING_FIXED(340) : CLAY_SIZING_PERCENT(1.0f),
 	};
 	card.backgroundColor = interface_theme::kDepth1Panel;
 	card.cornerRadius = CLAY_CORNER_RADIUS(5);
@@ -3043,6 +2998,13 @@ void DevWorkbenchCard::buildElement(BuildContext& context) {
 }
 
 void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
+	const auto previous = Clay_GetElementData(context.clayID());
+	const auto* session = context.params.inspect.interfaceState;
+	const float fallback_width =
+		Clay_GetLayoutDimensions().width -
+		(session ? session->selectorWidth + session->inspectorWidth + 20 : 620);
+	const float available_width = previous.found ? previous.boundingBox.width : fallback_width;
+	const bool stacked = available_width < 640;
 	Clay_ElementDeclaration content{};
 	content.layout.sizing = {
 		.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)};
@@ -3051,6 +3013,13 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 	content.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
 	content.layout.childGap = kWorkbenchGap;
 	content.backgroundColor = interface_theme::kDepth0Keel;
+	const auto scroll = Clay_GetScrollContainerData(context.clayID());
+	content.clip = {.horizontal = true,
+					.vertical = true,
+					.scrollInputDisabled = !stacked,
+					.childOffset = stacked && scroll.found && scroll.scrollPosition
+									   ? *scroll.scrollPosition
+									   : Clay_Vector2{}};
 	CLAY(context.clayID(), content) {
 		if (!context.params.hasSelectedFlowElement) {
 			Clay_ElementDeclaration empty{};
@@ -3063,6 +3032,13 @@ void DevInspectWorkbenchContent::buildElement(BuildContext& context) {
 					"Select a Flow element to open its workbench"),
 					CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 12)));
 			}
+		} else if (stacked) {
+			drawWorkbenchCard(context, kPreview, DevWorkbenchSection::Preview, true);
+			drawWorkbenchCard(context, kOverviewAndPerformance,
+							  DevWorkbenchSection::OverviewAndPerformance, true);
+			drawWorkbenchCard(context, kChangesAndDiagnostics,
+							  DevWorkbenchSection::ChangesAndDiagnostics, true);
+			drawWorkbenchCard(context, kClaySubTree, DevWorkbenchSection::ClaySubTree, true);
 		} else {
 			Clay_ElementDeclaration row{};
 			row.layout.sizing = {

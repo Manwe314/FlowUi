@@ -8,8 +8,8 @@
 #include <unordered_map>
 
 #include "CppCodeGenerator.hpp"
-#include "internal/MemoryCapacityManifest.hpp"
-#include "internal/MemoryCapacityProfile.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityManifest.hpp"
+#include "FlowUi/Private/storageSystem/capacity/MemoryCapacityProfile.hpp"
 #include "ManifestParser.hpp"
 #include "devSystems/devInterface/Memory/Analysis/DevMemorySession.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -17,7 +17,7 @@
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
 #include "devSystems/devMonitoringAndReporting/reporting/DevMemoryReporting.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
-#include "internal/InitialMemoryCapacity.hpp"
+#include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 
 using namespace FlowUi;
 using namespace FlowUi::devSystems;
@@ -171,7 +171,7 @@ void check_manifest_and_pipeline(const std::filesystem::path& directory) {
 	std::filesystem::create_directories(directory);
 	const auto active = directory / "active.flowchanges", review = directory / "review.flowchanges";
 	const std::string initial =
-		R"({"manifestVersion":1,"schemaFingerprint":"0x42","bakedChanges":[{"targetKind":"Element","targetScope":"Definition","definitionId":"0x1","fieldId":"0x2","fieldPath":"width","valueTypeId":"0x3","ownerCppType":"FlowUi::WindowConfig","sourceHeader":"FlowUi/PublicStructs.hpp","cppValue":"9","valueJson":"9"}]})";
+		R"({"manifestVersion":1,"schemaFingerprint":"0x42","bakedChanges":[{"targetKind":"Element","targetScope":"Definition","definitionId":"0x1","fieldId":"0x2","fieldPath":"width","valueTypeId":"0x3","ownerCppType":"FlowUi::WindowConfig","sourceHeader":"FlowUi/Public/configurationStructs/WindowConfig.hpp","cppValue":"9","valueJson":"9"}]})";
 	{
 		std::ofstream output(active);
 		output << initial;
@@ -201,7 +201,7 @@ void check_manifest_and_pipeline(const std::filesystem::path& directory) {
 	assert(pipeline.manifest().memoryCapacity->targets.size() == 2);
 	assert(flowui::bake_tool::parseManifest(active, parsed, error));
 	assert(flowui::bake_tool::generateCpp(parsed, directory / "generated", error));
-	const auto generated = directory / "generated" / "FlowUiBakedChanges.cpp";
+	const auto generated = directory / "generated" / "src/FlowUi/Private/BakedChanges.cpp";
 	const auto timestamp = std::filesystem::last_write_time(generated);
 	assert(flowui::bake_tool::generateCpp(parsed, directory / "generated", error));
 	assert(std::filesystem::last_write_time(generated) == timestamp);

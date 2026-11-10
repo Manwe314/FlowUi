@@ -6,11 +6,11 @@
 #include <type_traits>
 
 #include "FlowUi.hpp"
-#include "managers/FontManager.hpp"
-#include "managers/ImageManager.hpp"
-#include "managers/InputFieldManager.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
+#include "FlowUi/Public/managers/ImageManager.hpp"
+#include "FlowUi/Public/managers/InputFieldManager.hpp"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
-#include "managers/ViewPortManager.hpp"
+#include "FlowUi/Public/managers/ViewPortManager.hpp"
 #endif
 
 namespace {

@@ -1,4 +1,4 @@
-#include "FlowUi/Flow.hpp"
+#include "FlowUi/Public/Flow.hpp"
 #include "TestHarness.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticWorkflow.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
@@ -85,7 +85,7 @@ Json finish(App& application, Fixture& fixture, std::string_view job_id) {
 	FLOWUI_CHECK(false);
 	return {};
 }
-/** Drive the existing backend callback, retaining its ordinary InputQueue assessment semantics. */
+/* Drive the existing backend callback, retaining its ordinary InputQueue assessment semantics. */
 void assess_native_key(App& application, int key, bool down) {
 	auto* window = static_cast<GLFWwindow*>(application.nativeWindowHandle());
 	FLOWUI_CHECK(window);

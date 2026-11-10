@@ -1,11 +1,12 @@
 var searchData=
 [
-  ['icon_20manager_20api_0',['Icon Manager API',['../md_docs_2api_2icon__manager.html',1,'flowui_api_cheat_sheet']]],
-  ['icons_20and_20texture_20references_1',['Images, Icons, and Texture References',['../md_docs_2tutorials_2images__icons__textures.html',1,'flowui_tutorials']]],
-  ['image_20manager_20api_2',['Image Manager API',['../md_docs_2api_2image__manager.html',1,'flowui_api_cheat_sheet']]],
-  ['images_20icons_20and_20texture_20references_3',['Images, Icons, and Texture References',['../md_docs_2tutorials_2images__icons__textures.html',1,'flowui_tutorials']]],
-  ['input_20field_20manager_20api_4',['Input Field Manager API',['../md_docs_2api_2input__field__manager.html',1,'flowui_api_cheat_sheet']]],
-  ['input_20fields_20and_20shortcuts_5',['Input Fields and Shortcuts',['../md_docs_2tutorials_2input__fields__and__shortcuts.html',1,'flowui_tutorials']]],
-  ['internal_20details_6',['Internal Details',['../flowui_internal_details.html',1,'flowui_concepts_details']]],
-  ['interop_7',['Viewports and Vulkan Interop',['../md_docs_2tutorials_2viewports__vulkan__interop.html',1,'flowui_tutorials']]]
+  ['data_20to_20display_20at_20targeted_20points_0',['3. Suggested Data to Display at Targeted Points',['../md_docs_2architecture_2inspectorpanel.html',1,'']]],
+  ['definition_20timing_20redesign_1',['Inspect Workbench: Element Instance &amp;amp; Definition Timing Redesign',['../md_docs_2architecture_2InspectElementTimingRedesign.html',1,'']]],
+  ['design_2',['Design',['../md_docs_2architecture_2DevInspectWorkbenchScrollingDesign.html',1,'DevInspectWorkbench Vertical Bounding &amp; Scrolling Design'],['../md_docs_2architecture_2OverviewPerformanceTimingFixDesign.html',1,'Frame &amp; Construct Timing Width Stability Design']]],
+  ['details_3',['Details',['../flowui_concepts_details.html',1,'Concepts &amp; Details'],['../flowui_internal_details.html',1,'Internal Details']]],
+  ['developer_20systems_4',['Developer Systems',['../md_docs_2internals_2dev__runtime.html',1,'Developer Systems'],['../md_docs_2tutorials_2developer__mode.html',1,'Developer Systems']]],
+  ['devinspectworkbench_20vertical_20bounding_20scrolling_20design_5',['DevInspectWorkbench Vertical Bounding &amp;amp; Scrolling Design',['../md_docs_2architecture_2DevInspectWorkbenchScrollingDesign.html',1,'']]],
+  ['diagnosis_6',['Diagnosis',['../md_docs_2architecture_2viewport__compounding__flicker__diagnosis.html',1,'Viewport Multi-Selection Compounding &amp; Stale Packet Diagnosis'],['../md_docs_2architecture_2viewport__element__flicker__diagnosis.html',1,'Viewport Render Element Flickering &amp; Extent Change Diagnosis']]],
+  ['diagnostic_5fcleanup_7',['diagnostic_cleanup',['../md_include_2devSystems_2devAgenticWorkflow_2knowledge_2workflows_2diagnostic__cleanup.html',1,'']]],
+  ['display_20at_20targeted_20points_8',['3. Suggested Data to Display at Targeted Points',['../md_docs_2architecture_2inspectorpanel.html',1,'']]]
 ];

@@ -2,13 +2,13 @@
 
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/App.hpp"
+#include "FlowUi/Public/App.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevInterfaceState.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -21,12 +21,14 @@ struct DevInterfaceHeaderParameters {
 struct DevInterfaceHeaderResources {
 	TextureRef undoIcon{};
 	TextureRef redoIcon{};
+	TextureRef history_icon{};
+	TextureRef settings_icon{};
 
 	DevInterfaceHeaderResources() = default;
 	explicit DevInterfaceHeaderResources(App& app);
 };
 
-/** Closed, build-only owner of the permanent developer-interface header. */
+/* Closed, build-only owner of the permanent developer-interface header. */
 struct DevInterfaceHeader {
 	using Parameters = DevInterfaceHeaderParameters;
 	using Resources = DevInterfaceHeaderResources;

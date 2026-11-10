@@ -23,11 +23,11 @@ bool sameStoredKey(
 	return record.target == target && record.field == field && record.layer == layer;
 }
 
-const devMode::DevFieldSchema* findField(
-	const devMode::DevSchemaGeneration& schema,
-	devMode::DevTypeIndex owner,
-	devMode::DevFieldId id) noexcept {
-	for (const devMode::DevFieldSchema& field : schema.fieldsOf(owner)) {
+const tooling::DevFieldSchema* findField(
+	const tooling::DevSchemaGeneration& schema,
+	tooling::DevTypeIndex owner,
+	tooling::DevFieldId id) noexcept {
+	for (const tooling::DevFieldSchema& field : schema.fieldsOf(owner)) {
 		if (field.id == id) return std::addressof(field);
 	}
 	return nullptr;
@@ -39,7 +39,7 @@ std::size_t DevOverrideApply::InstanceKeyHash::operator()(InstanceKey key) const
 	return mixHash(key.window, key.instance.value);
 }
 
-void DevOverrideApply::bindSchema(devMode::DevSchemaView schema) {
+void DevOverrideApply::bindSchema(tooling::DevSchemaView schema) {
 	schema_ = std::move(schema);
 	if (!schema_) {
 		for (Record& record : records_) record.schemaValid = false;
@@ -50,25 +50,25 @@ void DevOverrideApply::bindSchema(devMode::DevSchemaView schema) {
 	for (Record& record : records_) {
 		record.schemaValid = false;
 		record.ownerPath.clear();
-		const devMode::DevElementSchema* element =
+		const tooling::DevElementSchema* element =
 			schema_->findElement(record.target.definition);
-		const devMode::DevTypeSchema* owner = schema_->findType(record.field.ownerType);
+		const tooling::DevTypeSchema* owner = schema_->findType(record.field.ownerType);
 		if (!element || !owner || element->parametersType.value == 0 ||
 			schema_->type(element->parametersType) != owner) continue;
-		devMode::DevTypeIndex leafOwner = element->parametersType;
+		tooling::DevTypeIndex leafOwner = element->parametersType;
 		bool pathValid = true;
-		for (const devMode::DevFieldId pathFieldId : record.field.nestedPath) {
-			const devMode::DevFieldSchema* pathField = findField(*schema_, leafOwner, pathFieldId);
+		for (const tooling::DevFieldId pathFieldId : record.field.nestedPath) {
+			const tooling::DevFieldSchema* pathField = findField(*schema_, leafOwner, pathFieldId);
 			if (!pathField || pathField->operations >= schema_->fieldOperations.size()) {
 				pathValid = false;
 				break;
 			}
-			if (pathField->effectiveEdit != devMode::DevEditCapability::Editable &&
-				pathField->effectiveEdit != devMode::DevEditCapability::PartiallyEditable) {
+			if (pathField->effectiveEdit != tooling::DevEditCapability::Editable &&
+				pathField->effectiveEdit != tooling::DevEditCapability::PartiallyEditable) {
 				pathValid = false;
 				break;
 			}
-			const devMode::DevFieldOps* pathOps =
+			const tooling::DevFieldOps* pathOps =
 				schema_->fieldOperations[pathField->operations];
 			if (!pathOps || !pathOps->mutableAddress) {
 				pathValid = false;
@@ -78,14 +78,14 @@ void DevOverrideApply::bindSchema(devMode::DevSchemaView schema) {
 			leafOwner = pathField->valueType;
 		}
 		if (!pathValid) continue;
-		if (const devMode::DevFieldSchema* candidate =
+		if (const tooling::DevFieldSchema* candidate =
 			findField(*schema_, leafOwner, record.field.field)) {
-			if (candidate->effectiveEdit != devMode::DevEditCapability::Editable) continue;
+			if (candidate->effectiveEdit != tooling::DevEditCapability::Editable) continue;
 			const std::size_t index = static_cast<std::size_t>(
 				candidate - schema_->fields.data());
-			record.fieldIndex = devMode::DevFieldIndex{
+			record.fieldIndex = tooling::DevFieldIndex{
 				static_cast<std::uint32_t>(index + 1u)};
-			const devMode::DevTypeSchema* valueType = schema_->type(candidate->valueType);
+			const tooling::DevTypeSchema* valueType = schema_->type(candidate->valueType);
 			record.schemaValid = valueType && valueType->id == record.value.type();
 		}
 	}
@@ -99,8 +99,8 @@ void DevOverrideApply::reserveAdditional(std::size_t count) {
 void DevOverrideApply::set(
 	const DevElementOverrideTarget& target,
 	DevOverrideFieldKey field,
-	devMode::DevFieldIndex fieldIndex,
-	std::vector<const devMode::DevFieldOps*> ownerPath,
+	tooling::DevFieldIndex fieldIndex,
+	std::vector<const tooling::DevFieldOps*> ownerPath,
 	DevOverrideLayer layer,
 	DevOwnedValue value,
 	std::uint64_t transaction) {
@@ -227,7 +227,7 @@ bool DevOverrideApply::winningLayer(
 	FlowDefinitionID definition,
 	WindowId window,
 	::FlowUi::detail::element::ElementInstanceKey instance,
-	devMode::DevFieldId field,
+	tooling::DevFieldId field,
 	DevOverrideLayer& result) const noexcept {
 	const auto found = compiled_.find(definition.value);
 	if (found == compiled_.end()) return false;
@@ -261,13 +261,13 @@ std::size_t DevOverrideApply::memoryFootprintBytes() const noexcept {
 		compiled_.bucket_count() * sizeof(void*);
 	for (const Record& record : records_) {
 		bytes += record.value.heapBytes() +
-			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
-			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);
+			record.field.nestedPath.capacity() * sizeof(tooling::DevFieldId) +
+			record.ownerPath.capacity() * sizeof(const tooling::DevFieldOps*);
 	}
 	for (const Record& record : bakeTombstones_) {
 		bytes += record.value.heapBytes() +
-			record.field.nestedPath.capacity() * sizeof(devMode::DevFieldId) +
-			record.ownerPath.capacity() * sizeof(const devMode::DevFieldOps*);
+			record.field.nestedPath.capacity() * sizeof(tooling::DevFieldId) +
+			record.ownerPath.capacity() * sizeof(const tooling::DevFieldOps*);
 	}
 	for (const auto& definitionEntry : compiled_) {
 		const CompiledDefinition& definition = definitionEntry.second;
@@ -295,17 +295,17 @@ void DevOverrideApply::applyLayer(
 		if (!record.schemaValid || !record.fieldIndex || !record.value) continue;
 		const std::uint32_t fieldIndex = record.fieldIndex.value - 1u;
 		if (fieldIndex >= schema_->fields.size()) continue;
-		const devMode::DevFieldSchema& field = schema_->fields[fieldIndex];
+		const tooling::DevFieldSchema& field = schema_->fields[fieldIndex];
 		if (field.operations >= schema_->fieldOperations.size()) continue;
-		const devMode::DevFieldOps* operations = schema_->fieldOperations[field.operations];
+		const tooling::DevFieldOps* operations = schema_->fieldOperations[field.operations];
 		if (!operations || !operations->assignMemberFromCopy) continue;
 		void* owner = draftParameters;
-		for (const devMode::DevFieldOps* path : record.ownerPath) {
+		for (const tooling::DevFieldOps* path : record.ownerPath) {
 			owner = path && path->mutableAddress ? path->mutableAddress(owner) : nullptr;
 			if (!owner) break;
 		}
 		if (owner && operations->assignMemberFromCopy(owner, record.value.data()) ==
-			devMode::DevValueOperationStatus::Success) {
+			tooling::DevValueOperationStatus::Success) {
 			++appliedFieldCount_;
 		}
 	}

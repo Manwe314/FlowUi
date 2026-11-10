@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <string_view>
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
 #include "devSystems/devInterface/Inspect/DevInspectContentParameters.hpp"
-#include "managers/FlowUiElementBuilder.hpp"
+#include "FlowUi/Public/elementAuthoring/ElementBuilder.hpp"
 
 namespace FlowUi::devSystems::interface_elements {
 
@@ -17,8 +17,8 @@ struct DevClayWorkbenchParameters {
 	uint64_t selectionKey = 0;
 };
 
-/**
- * @brief Root Workbench layout coordinator for a selected Clay node.
+/*
+ * Root Workbench layout coordinator for a selected Clay node.
  *
  * Renders a two-row responsive layout:
  * - Row 1: Viewport preview (left) and full scrollable struct dump (right).

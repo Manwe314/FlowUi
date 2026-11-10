@@ -1,18 +1,22 @@
 #pragma once
 
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include "FlowUi/PublicStructs.hpp"
+#include "FlowUi/Public/FlowUiTheme.hpp"
+#include "FlowUi/Public/TextureRef.hpp"
 #include "devSystems/devTooling/schema/DevSchemaDescriptor.hpp"
-#include "managers/structs/ActionManagerStructs.hpp"
+#include "FlowUi/Public/managerStructs/ActionTypes.hpp"
 
-namespace FlowUi::devMode {
+namespace FlowUi::devSystems::tooling {
 
 template <>
+/** @brief Built-in reflection adapter for ActionCall. */
 struct DevTypeAdapter<ActionCall> {
+	/** @brief Enables this built-in specialization during schema discovery. */
 	static constexpr bool enabled = true;
+	/** @brief Return the static typed descriptor used to publish this type's editor and field metadata. */
 	static consteval auto schema() {
 		return devSemanticLeaf(
 			"ActionCall",
@@ -23,8 +27,11 @@ struct DevTypeAdapter<ActionCall> {
 };
 
 template <>
+/** @brief Built-in reflection adapter for TextureFitMode. */
 struct DevEnumAdapter<TextureFitMode> {
+	/** @brief Enables this built-in specialization during schema discovery. */
 	static constexpr bool enabled = true;
+	/** @brief Return the static typed descriptor used to publish this type's editor and field metadata. */
 	static consteval auto schema() {
 		return devEnum<TextureFitMode>(
 			"TextureFitMode",
@@ -36,19 +43,11 @@ struct DevEnumAdapter<TextureFitMode> {
 };
 
 template <>
-struct DevEnumAdapter<TextureSamplingMode> {
-	static constexpr bool enabled = true;
-	static consteval auto schema() {
-		return devEnum<TextureSamplingMode>(
-			"TextureSamplingMode",
-			devEnumValue("Linear", TextureSamplingMode::Linear),
-			devEnumValue("Nearest", TextureSamplingMode::Nearest));
-	}
-};
-
-template <>
+/** @brief Built-in reflection adapter for TextureRef. */
 struct DevTypeAdapter<TextureRef> {
+	/** @brief Enables this built-in specialization during schema discovery. */
 	static constexpr bool enabled = true;
+	/** @brief Return the static typed descriptor used to publish this type's editor and field metadata. */
 	static consteval auto schema() {
 		return devSemanticStruct(
 			"TextureRef", DevEditorKind::ResourceChoice,
@@ -58,18 +57,20 @@ struct DevTypeAdapter<TextureRef> {
 			devField<&TextureRef::uv1x>("uv1x", DevFieldOptions{}.readOnly()),
 			devField<&TextureRef::uv1y>("uv1y", DevFieldOptions{}.readOnly()),
 			devField<&TextureRef::fitMode>("fitMode"),
-			devField<&TextureRef::samplingMode>("samplingMode"),
 			devField<&TextureRef::tintEnabled>("tintEnabled"),
-			devField<&TextureRef::skipIfUnavailable>(
-				"skipIfUnavailable", DevFieldOptions{}.readOnly()),
+			devField<&TextureRef::skipIfUnavailable>("skipIfUnavailable",
+													 DevFieldOptions{}.readOnly()),
 			devField<&TextureRef::sourceWidth>("sourceWidth", DevFieldOptions{}.readOnly()),
 			devField<&TextureRef::sourceHeight>("sourceHeight", DevFieldOptions{}.readOnly()));
 	}
 };
 
 template <>
+/** @brief Built-in reflection adapter for FlowUiTheme. */
 struct DevTypeAdapter<FlowUiTheme> {
+	/** @brief Enables this built-in specialization during schema discovery. */
 	static constexpr bool enabled = true;
+	/** @brief Return the static typed descriptor used to publish this type's editor and field metadata. */
 	static consteval auto schema() {
 		return devStruct(
 			"FlowUiTheme",
@@ -109,6 +110,6 @@ struct DevTypeAdapter<FlowUiTheme> {
 	}
 };
 
-} // namespace FlowUi::devMode
+} // namespace FlowUi::devSystems::tooling
 
 #endif

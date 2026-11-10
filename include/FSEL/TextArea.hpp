@@ -9,62 +9,118 @@
 
 namespace FlowUi::FSEL {
 
+/**
+ * Per-invocation TextArea configuration. Borrowed models and text must remain valid through the
+ * frame; empty visual overrides inherit the active FSELTheme.
+ */
 struct TextAreaParameters {
+	/** Optional edit, commit, submit and focus notifications. */
 	TextFieldActions actions{};
+	/** Per-instance caret and text selection overrides. */
 	TextFieldCaretOverrides caret{};
+	/** Borrowed UTF-8 text shown when no value is displayed. */
 	std::string_view placeholder{};
+	/**
+	 * Borrowed authoritative application value; null disables interaction. Keep the model alive
+	 * through the frame.
+	 */
 	std::string* value = nullptr;
+	/** Maximum UTF-8 byte length accepted by the editor buffer. */
 	size_t maxBytes = std::numeric_limits<size_t>::max();
 
+	/** Appearance when enabled and idle. Empty colors inherit the theme. */
 	TextFieldStateOverrides idleOverrides{};
+	/** Appearance while hovered. Empty colors inherit the theme. */
 	TextFieldStateOverrides hoveredOverrides{};
+	/** Appearance while the editor is focused. Empty colors inherit the theme. */
 	TextFieldStateOverrides focusedOverrides{};
+	/** Appearance while the editor is read-only. Empty colors inherit the theme. */
 	TextFieldStateOverrides readOnlyOverrides{};
+	/** Appearance for an invalid value. Empty colors inherit the theme. */
 	TextFieldStateOverrides invalidOverrides{};
+	/** Appearance when interaction is disabled. Empty colors inherit the theme. */
 	TextFieldStateOverrides disabledOverrides{};
 
+	/** Clay width and height sizing rules for the root element. Empty inherits the active theme. */
 	std::optional<Clay_Sizing> sizing = std::nullopt;
+	/** Corner radii in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_CornerRadius> cornerRadius = std::nullopt;
+	/** Explicit content viewport width in layout pixels; empty uses measured layout. */
 	std::optional<float> viewportWidth = std::nullopt;
+	/** Explicit content viewport height in layout pixels; empty uses measured layout. */
 	std::optional<float> viewportHeight = std::nullopt;
 
+	/** Registered font family used for field or label text. Empty inherits the active theme. */
 	std::optional<FontFamilyId> fontFamily = std::nullopt;
+	/** Font weight requested for text, such as 400 for normal. Empty inherits the active theme. */
 	std::optional<uint32_t> fontWeight = std::nullopt;
+	/** When editor text is published to the borrowed application value. */
 	TextFieldSyncPolicy syncPolicy = TextFieldSyncPolicy::Live;
+	/** Amount of edit transaction detail requested from InputFieldManager. */
 	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
+	/** Per-edge border widths in layout pixels. Empty inherits the active theme. */
 	std::optional<Clay_BorderWidth> borderWidth = std::nullopt;
+	/**
+	 * Inset between the root border and its children, in layout pixels. Empty inherits the active
+	 * theme.
+	 */
 	std::optional<Clay_Padding> padding = std::nullopt;
+	/** Text font size in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> fontSize = std::nullopt;
+	/** Additional spacing between glyphs in layout pixels. Empty inherits the active theme. */
 	std::optional<uint16_t> letterSpacing = std::nullopt;
+	/** Font style requested for text. Empty inherits the active theme. */
 	std::optional<FontStyle> fontStyle = std::nullopt;
+	/** Width of a tab in space columns. Empty inherits the active theme. */
 	std::optional<uint8_t> tabWidth = std::nullopt;
+	/** Cursor requested while this enabled control is hovered. Empty inherits the active theme. */
 	std::optional<CursorType> cursor = std::nullopt;
+	/** Priority used to arbitrate this control's cursor request. Empty inherits the active theme. */
 	std::optional<uint8_t> cursorPriority = std::nullopt;
+	/** Allow interaction; false also selects disabled styling. */
 	bool enabled = true;
+	/** Allow display and text selection while preventing value edits. */
 	bool readOnly = false;
+	/** Application validation result used for invalid styling. */
 	bool valid = true;
+	/** Wrap long lines to the text area viewport width when true. */
 	bool softWrap = true;
 };
 
+/** Retained interaction state used by this standard element. */
 using TextAreaState = detail::text_field::State;
 
 /** Multiline, virtualized editor backed entirely by InputFieldManager. */
 struct TextArea {
+	/** Per-invocation configuration copied into ElementBuilder. */
 	using Parameters = TextAreaParameters;
+	/** Per-instance state owned and retained by ElementManager. */
 	using State = TextAreaState;
+	/** Frame-scoped context supplied to the element build hooks. */
 	using BuildContext = ElementBuildContext<TextArea>;
+	/** Frame-scoped context supplied to pointer and logic hooks. */
 	using InteractionContext = ElementInteractionContext<TextArea>;
 
+	/** Stable definition identity used for registration, state and semantic parts. */
 	static constexpr FlowDefinitionID definitionId =
 		DefinitionID("FSEL.text-area");
+	/** Human-readable element name used by development tools. */
 	static constexpr std::string_view debugName = "FSEL TextArea";
 
+	/** Definition-time semantic parts used to address child surfaces and interaction targets. */
 	struct Parts {
+		/** Semantic identity of the content part relative to its owner instance. */
 		static constexpr FlowElementPart content = Part("content");
+		/** Semantic identity of the text part relative to its owner instance. */
 		static constexpr FlowElementPart text = Part("text");
+		/** Semantic identity of the placeholder part relative to its owner instance. */
 		static constexpr FlowElementPart placeholder = Part("placeholder");
 	};
 
+	/**
+	 * ElementBuilder hover hook; requests the enabled control cursor. @param context Borrowed
+	 * context valid for this callback only.
+	 */
 	static void onHovered(InteractionContext& context) {
 		if (!context.params.enabled || context.params.value == nullptr) {
 			return;
@@ -76,6 +132,10 @@ struct TextArea {
 			context.params.cursorPriority.value_or(theme.cursorPriority));
 	}
 
+	/**
+	 * ElementBuilder draw hook; emits this control and its children for the active frame. @param
+	 * context Borrowed context valid for this callback only.
+	 */
 	static void buildElement(BuildContext& context) {
 		const FSELTextFieldTheme& theme =
 			context.uiManager.theme<FSELTheme>().textAreaTheme;
@@ -194,6 +254,10 @@ struct TextArea {
 	}
 };
 
+/**
+ * Reusable empty definition tag passed to UiManager::createElement(); no per-instance state is
+ * stored in this object.
+ */
 inline constexpr TextArea kTextArea{};
 static_assert(FlowElement<TextArea>);
 static_assert(DrawableFlowElement<TextArea>);

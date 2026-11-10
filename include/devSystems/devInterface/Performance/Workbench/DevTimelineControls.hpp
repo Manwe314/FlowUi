@@ -1,14 +1,16 @@
 #pragma once
-#include "FlowUi/BuildConfig.hpp"
+#include "FlowUi/Public/BuildConfig.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/internal/SelectableSurfaceBehavior.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineData.hpp"
+#include "devSystems/devInterface/Permanents/Backend/DevInterfaceIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
-#include "managers/UiManager.hpp"
+#include "FlowUi/Public/managers/UiManager.hpp"
+#include <array>
 #include <cstdio>
 
 namespace FlowUi::devSystems::interface_elements {
-/** Shared state reference for the pinned header and two timeline card types. */
+/* Shared state reference for the pinned header and two timeline card types. */
 struct DevTimelineParameters {
 	DevTimelineState* timeline = nullptr;
 	DevPerformanceSelection* selection = nullptr;
@@ -16,15 +18,35 @@ struct DevTimelineParameters {
 	Clay_ElementId canvas_clip{};
 	Clay_ElementId column_clip{};
 };
-/** Transport, depth and breadcrumb controls queue commands for the next Workbench build. */
+/* Transport, depth and breadcrumb controls queue commands for the next Workbench build. */
 struct DevTimelineButtonParameters {
 	TimelineCommand command{};
 	std::string label{};
 	DevTimelineState* timeline = nullptr;
+	std::string_view icon_key{};
+};
+/* Cached conventional action icons shared by timeline and inspector controls. */
+struct DevTimelineButtonResources {
+	static constexpr auto keys = std::to_array<std::string_view>(
+		{interface_icons::kPreviousKey, interface_icons::kNextKey, interface_icons::kFitKey,
+		 interface_icons::kExpandKey, interface_icons::kCollapseKey, interface_icons::kSettingsKey,
+		 interface_icons::kShowKey, interface_icons::kHideKey, interface_icons::kPinKey,
+		 interface_icons::kUnpinKey, interface_icons::kMoveUpKey, interface_icons::kMoveDownKey,
+		 interface_icons::kCopyKey, interface_icons::kInspectKey});
+	std::array<TextureRef, keys.size()> textures{};
+	explicit DevTimelineButtonResources(App& app);
+	/* Resolve a registered action without exposing the backing icon manager. */
+	[[nodiscard]] TextureRef texture(std::string_view key) const noexcept {
+		for (size_t key_index = 0; key_index < keys.size(); ++key_index)
+			if (keys[key_index] == key)
+				return textures[key_index];
+		return {};
+	}
 };
 struct DevTimelineButton {
 	using Parameters = DevTimelineButtonParameters;
 	using State = FSEL::detail::selectable_surface::State;
+	using Resources = DevTimelineButtonResources;
 	using BuildContext = ElementBuildContext<DevTimelineButton>;
 	using InteractionContext = ElementInteractionContext<DevTimelineButton>;
 	static constexpr FlowDefinitionID definitionId =
@@ -62,10 +84,11 @@ void text(Context& context, std::string_view value,
 	CLAY_TEXT(context.uiManager.toClayString(value), CLAY_TEXT_CONFIG(config));
 }
 template <class Context>
-void button(Context& context, uint64_t key, std::string label, TimelineCommand command) {
+void button(Context& context, uint64_t key, std::string label, TimelineCommand command,
+			std::string_view icon_key = {}) {
 	context.uiManager.createElement(kDevTimelineButton, Keyed("control", key))
 		.setParameters(DevTimelineButtonParameters{std::move(command), std::move(label),
-												   context.params.timeline})
+												   context.params.timeline, icon_key})
 		.setDevInternalCapture(true)
 		.draw();
 }

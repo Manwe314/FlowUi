@@ -541,7 +541,7 @@ struct StoreLock {
 			return false;
 	return true;
 }
-/** A false result requests authoritative repair; an error leaves this advisory cache deferred. */
+/* A false result requests authoritative repair; an error leaves this advisory cache deferred. */
 [[nodiscard]] Result<bool> update_capture_index(const std::filesystem::path& root,
 												const AgenticManifest& manifest) noexcept {
 	try {
