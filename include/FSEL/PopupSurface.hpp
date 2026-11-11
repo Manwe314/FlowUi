@@ -138,7 +138,7 @@ private:
  * stored in this object.
  */
 inline constexpr PopupSurface kPopupSurface{};
-static_assert(FlowElement<PopupSurface>);
+static_assert(validate_flow_element<PopupSurface>());
 static_assert(ConstructibleFlowElement<PopupSurface>);
 static_assert(!DrawableFlowElement<PopupSurface>);
 

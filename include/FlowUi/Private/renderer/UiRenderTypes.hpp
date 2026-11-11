@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
@@ -54,3 +55,22 @@ static_assert(std::is_trivially_copyable_v<UiInstance>);
 static_assert(sizeof(UiInstance) == 88);
 static_assert(alignof(UiInstance) == 4);
 
+namespace FlowUi::detail {
+
+struct UiPushConstants {
+	float viewport_width = 0.0f;
+	float viewport_height = 0.0f;
+	uint32_t instance_base_index = 0;
+	// Zero disables primitive AA; positive values select linear coverage width.
+	float primitive_coverage_width_scale = 1.0f;
+};
+
+static_assert(std::is_trivially_copyable_v<UiPushConstants>);
+static_assert(sizeof(UiPushConstants) == 16);
+static_assert(alignof(UiPushConstants) == 4);
+static_assert(offsetof(UiPushConstants, viewport_width) == 0);
+static_assert(offsetof(UiPushConstants, viewport_height) == 4);
+static_assert(offsetof(UiPushConstants, instance_base_index) == 8);
+static_assert(offsetof(UiPushConstants, primitive_coverage_width_scale) == 12);
+
+} // namespace FlowUi::detail

@@ -16,13 +16,11 @@ enum class PresentMode : std::uint8_t {
 };
 
 /**
- * @brief Configures Vulkan device, swapchain, and frame scheduling defaults.
- *
- * These options are consumed during renderer initialization.
- * Rendering uses a fixed sample count of one (x1).
+ * Device, swapchain, and frame scheduling defaults consumed at renderer initialization.
+ * Availability-dependent preferences may fall back; rendering uses one sample per pixel.
  */
 struct VulkanConfig {
-	/** @brief Preferred swapchain presentation mode. */
+	/** Preferred presentation mode; unsupported modes fall back to FIFO (vertical synchronization). */
 	PresentMode presentMode = PresentMode::Fifo;
 
 	/** @brief Number of frame resource slots; app initialization clamps zero to one. */
@@ -39,5 +37,7 @@ struct VulkanConfig {
 	/** @brief Prefer an sRGB swapchain format when the surface supports one. */
 	bool srgbBackbuffer = true;
 };
+
+/** @} */
 
 } // namespace FlowUi

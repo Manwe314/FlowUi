@@ -51,9 +51,12 @@ void testConsolidatedStorageSnapshot(FlowUi::test::HeadlessVulkanFixture& vulkan
 		.detail = storage::StorageMemoryDetail::IndividualResources,
 	}, snapshot);
 	FLOWUI_CHECK(snapshot.mutationSequence != 0u);
-	FLOWUI_CHECK(snapshot.includesResourceKinds);
-	FLOWUI_CHECK(snapshot.includesWindows);
-	FLOWUI_CHECK(snapshot.includesIndividualResources);
+	FLOWUI_CHECK(
+		snapshot.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_resource_kinds));
+	FLOWUI_CHECK(
+		snapshot.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_windows));
+	FLOWUI_CHECK(
+		snapshot.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_individual_resources));
 	FLOWUI_CHECK(snapshot.resourceMetadataBytes >= snapshot.resourceMetadataLiveBytes);
 	FLOWUI_CHECK(snapshot.windows.size() == 1u);
 	FLOWUI_CHECK(snapshot.totals.cpu[static_cast<size_t>(storage::MemoryClass::Persistent)].liveBytes >= 40u);
@@ -68,6 +71,25 @@ void testConsolidatedStorageSnapshot(FlowUi::test::HeadlessVulkanFixture& vulkan
 	const uint64_t firstSequence = snapshot.mutationSequence;
 	system.appendMemorySnapshot(storage::StorageMemorySnapshotRequest{}, snapshot);
 	FLOWUI_CHECK(snapshot.mutationSequence == firstSequence);
+	FLOWUI_CHECK(
+		!snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_individual_resources));
+	system.appendMemorySnapshot(storage::StorageMemorySnapshotRequest{
+		.includeResourceKinds = false,
+		.includeWindows = false,
+	}, snapshot);
+	FLOWUI_CHECK(!snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_resource_kinds));
+	FLOWUI_CHECK(!snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_windows));
+	FLOWUI_CHECK(
+		!snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_individual_resources));
+	FLOWUI_CHECK(snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::resource_metadata_estimated));
+	system.appendMemorySnapshot(storage::StorageMemorySnapshotRequest{
+		.detail = storage::StorageMemoryDetail::IndividualResources,
+	}, snapshot);
+	FLOWUI_CHECK(snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_resource_kinds));
+	FLOWUI_CHECK(snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_windows));
+	FLOWUI_CHECK(
+		snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::includes_individual_resources));
+	FLOWUI_CHECK(snapshot.flags.has_flag(storage::StorageMemorySnapshot::Flag::resource_metadata_estimated));
 	system.cancelFrame(frame);
 	system.releasePersistent(persistent);
 	system.appendMemorySnapshot(storage::StorageMemorySnapshotRequest{}, snapshot);

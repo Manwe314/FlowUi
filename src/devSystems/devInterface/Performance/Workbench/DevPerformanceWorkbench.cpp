@@ -25,8 +25,9 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 							   state.selection.selector_mode != selection.selector_mode ||
 							   state.selection.hardware_domain != selection.hardware_domain ||
 							   state.selection.category_mask != selection.category_mask;
+	const bool cpu_detail_changed = state.selection.cpu_detail_level != selection.cpu_detail_level;
 	const bool generation_changed = capture.generation != state.capture_generation;
-	if (capture.generation && (generation_changed || scope_changed)) {
+	if (capture.generation && (generation_changed || scope_changed || cpu_detail_changed)) {
 		++state.snapshot_revision;
 		state.snapshot = extract_timeline(capture, selection);
 		state.capture_generation = capture.generation;
@@ -53,10 +54,12 @@ void DevPerformanceWorkbench::buildElement(BuildContext& context) {
 					}
 		}
 		reset_timeline_minimap_scale(state, selection);
-		if (generation_changed) {
+		if (generation_changed || cpu_detail_changed) {
 			state.cards.clear();
 			state.pending = {};
 			state.inspected_sample = timeline_no_parent;
+		}
+		if (generation_changed) {
 			state.origin_ns = state.snapshot.start_ns;
 			state.selected_frame =
 				state.snapshot.frames.empty() ? 0 : state.snapshot.frames.size() - 1;

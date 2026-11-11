@@ -1,6 +1,13 @@
 #version 460
 #extension GL_EXT_nonuniform_qualifier : require
 
+layout(push_constant) uniform UiPushConstants {
+	float viewportW;
+	float viewportH;
+	uint instanceBaseIndex;
+	float primitive_coverage_width_scale;
+} pushData;
+
 layout(location = 0) in vec2 vLocal;
 layout(location = 1) in vec2 vHalf;
 layout(location = 2) in vec4 vColor;
@@ -43,7 +50,10 @@ float roundedRectSdf(vec2 localPoint, vec2 halfExtent, vec4 radii) {
 }
 
 float aaCoverage(float signedDistance) {
-	float aa = max(fwidth(signedDistance), 1e-4);
+	float aa = max(fwidth(signedDistance) * pushData.primitive_coverage_width_scale, 1e-4);
+	if (pushData.primitive_coverage_width_scale <= 0.0) {
+		return signedDistance <= 0.0 ? 1.0 : 0.0;
+	}
 	return clamp(0.5 - signedDistance / aa, 0.0, 1.0);
 }
 

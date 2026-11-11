@@ -134,6 +134,10 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 	std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> parent_keys;
 	parent_keys.reserve(record_count);
 	std::map<std::tuple<uint64_t, uint64_t, uint64_t>, size_t> identities;
+	std::vector<std::pair<std::tuple<uint64_t, uint64_t, uint64_t>,
+						  std::tuple<uint64_t, uint64_t, uint64_t>>>
+		filtered_parents;
+	filtered_parents.reserve(record_count);
 	const auto label_block = [&](TimelineBlockSlice& block) {
 		if (const auto found = descriptor_map.find(block.type_id); found != descriptor_map.end()) {
 			block.label = labels.at(block.type_id);
@@ -152,7 +156,28 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 		block.selected = selection.selector_mode == 1 && selection.selected_zone != 0 &&
 						 selection.selected_zone == block.type_id;
 	};
-	const auto add_cpu = [&](const CpuTimingRecord& record) {
+	const auto add_cpu = [&](const CpuTimingRecord& record, const DevTimingConfig& configuration) {
+		if (selection.cpu_detail_level != CpuTimingLevel::Deep) {
+			const auto descriptor = descriptor_map.find(record.typeId);
+			bool retained = descriptor != descriptor_map.end() &&
+							descriptor->second->minimumCpuLevel <= selection.cpu_detail_level;
+			if (record.typeId == timing_zones::kElementInvoke.typeId) {
+				const bool selected =
+					(configuration.selectedElementDefinition.value &&
+					 configuration.selectedElementDefinition.value == record.secondaryEntityId) ||
+					(configuration.selectedElementInstance.value &&
+					 configuration.selectedElementInstance.value == record.primaryEntityId);
+				retained = retained && selection.cpu_detail_level == CpuTimingLevel::Balanced &&
+						   (selected ||
+							record.durationNs >= configuration.balancedElementRetentionThresholdNs);
+			}
+			if (!retained) {
+				filtered_parents.emplace_back(
+					std::tuple{uint64_t{0}, uint64_t(record.track), record.invocationId},
+					std::tuple{uint64_t{0}, uint64_t(record.track), record.parentInvocationId});
+				return;
+			}
+		}
 		TimelineBlockSlice block;
 		block.cpu_sample = {&record, 1};
 		block.scope_visible =
@@ -181,7 +206,7 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 		};
 		for (const auto& record : report.applicationCpuZones) {
 			note_time(record);
-			add_cpu(record);
+			add_cpu(record, report.captureConfig);
 		}
 		for (const auto& window : report.windows) {
 			if (!window.occupied)
@@ -191,7 +216,7 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 					continue;
 				for (const auto& record : frame.cpuZones) {
 					note_time(record);
-					add_cpu(record);
+					add_cpu(record, report.captureConfig);
 					if (record.typeId == timing_zones::kWindowFrameTotal.typeId &&
 						(!selection.selected_scope.id ||
 						 (selection.selected_scope.kind == DevPerformanceScopeKind::Window
@@ -282,13 +307,26 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 			result.ticks.emplace_back(tick);
 		}
 	}
+	std::ranges::sort(filtered_parents, [](const auto& first, const auto& second) {
+		return first.first < second.first;
+	});
 	for (size_t block_index = 0; block_index < result.blocks.size(); ++block_index) {
 		auto& block = result.blocks[block_index];
 		if (block.domain != TimingSampleDomain::Cpu)
 			continue;
-		const auto parent = identities.find(parent_keys[block_index]);
-		if (std::get<2>(parent_keys[block_index]) && parent != identities.end() &&
-			parent->second != block_index)
+		auto parent_key = parent_keys[block_index];
+		for (size_t filtered_ancestors = 0; filtered_ancestors < filtered_parents.size();
+			 ++filtered_ancestors) {
+			const auto omitted = std::lower_bound(
+				filtered_parents.begin(), filtered_parents.end(), parent_key,
+				[](const auto& entry, const auto& key) { return entry.first < key; });
+			if (omitted == filtered_parents.end() || omitted->first != parent_key)
+				break;
+			block.filtered_parent = true;
+			parent_key = omitted->second;
+		}
+		const auto parent = identities.find(parent_key);
+		if (std::get<2>(parent_key) && parent != identities.end() && parent->second != block_index)
 			if (const auto& ancestor = result.blocks[parent->second];
 				ancestor.track == block.track && ancestor.start_ns <= block.start_ns &&
 				timeline_end(block.start_ns, block.duration_ns) <=
@@ -299,7 +337,8 @@ static TimelineSnapshot extract_timeline_segments(ReportSegments reports,
 	}
 	for (auto& block : result.blocks)
 		if (block.domain == TimingSampleDomain::Cpu && block.details().parent_invocation_id &&
-			block.parent == timeline_no_parent && block.hierarchy_note.empty())
+			block.parent == timeline_no_parent && !block.filtered_parent &&
+			block.hierarchy_note.empty())
 			block.hierarchy_note = "Parent unavailable or invalid containment";
 	std::vector<uint8_t> ancestry_state(result.blocks.size(), 0);
 	std::vector<size_t> ancestry_path;
@@ -534,9 +573,9 @@ timeline_major_lanes(const TimelineSnapshot& snapshot, const DevPerformanceSelec
 		groups;
 	for (size_t block_index = 0; block_index < snapshot.blocks.size(); ++block_index) {
 		const auto& block = snapshot.blocks[block_index];
-		bool candidate =
-			block.parent == timeline_no_parent &&
-			(block.domain != TimingSampleDomain::Cpu || !block.details().parent_invocation_id);
+		bool candidate = block.parent == timeline_no_parent &&
+						 (block.domain != TimingSampleDomain::Cpu ||
+						  !block.details().parent_invocation_id || block.filtered_parent);
 		if (selection.selector_mode == 1 && selection.selected_zone) {
 			candidate = block.selected;
 			size_t parent = block.parent, guard = 0;

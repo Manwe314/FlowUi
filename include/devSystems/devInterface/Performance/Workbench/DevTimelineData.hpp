@@ -37,6 +37,7 @@ struct TimelineBlockSlice {
 	TimingZoneRole role = TimingZoneRole::Work;
 	bool selected = false, scope_visible = true, cpu_clock_aligned = true;
 	bool synthetic_tick = false, measured_cadence = false;
+	bool filtered_parent = false;
 	/* Read original CPU/GPU detail while the containing sealed generation is leased. */
 	[[nodiscard]] TimelineSampleDetails details() const noexcept;
 	/* Recorded exclusive CPU duration; synthetic/GPU groupings have none. */

@@ -64,10 +64,12 @@ struct ChannelRow {
 };
 
 inline constexpr ChannelRow kChannelRow{};
-static_assert(FlowUi::FlowElement<ChannelRow>);
+static_assert(FlowUi::validate_flow_element<ChannelRow>());
 
 } // namespace color_tutorial
 ```
+
+`validate_flow_element<Element>()` reports contract mistakes at compile time with stable `FE` identifiers, the required declaration, and a correction. A constant `debugName` appears in the compiler's template instantiation trace when supported; assertion messages remain literal text for C++20/23 portability. Keep `FlowElement<Element>` for query-only checks and overload constraints. Hook detection cannot enumerate inaccessible members or arbitrary wrong overload sets; a missing valid build/construct hook still receives an entry-hook diagnostic. Runtime registration and resource failures use the existing error system.
 
 `ChannelRow` is stateless because the channel value belongs to the model. FSEL's slider keeps only interaction state internally and updates the borrowed `double` value. Its `onBegin`, `onChanged`, and `onCommit` parameters can carry typed `ActionCall` values when the application needs notifications or transaction boundaries. A null value pointer disables interaction.
 

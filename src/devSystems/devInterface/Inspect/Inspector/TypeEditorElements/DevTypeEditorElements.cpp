@@ -2002,18 +2002,18 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 		.height = CLAY_SIZING_FIT(0),
 	};
 	header.layout.padding = Clay_Padding{9, 7, 6, 6};
-	header.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+	header.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 	header.layout.childGap = 5;
 	header.layout.childAlignment = {
 		.x = CLAY_ALIGN_X_LEFT,
 		.y = CLAY_ALIGN_Y_CENTER,
 	};
 	header.backgroundColor = interface_theme::kDepth2Ink;
-	header.clip = {.horizontal = true, .vertical = true};
+	header.clip = {.vertical = true};
 	CLAY(context.clayID(), header) {
 		Clay_ElementDeclaration labelArea{};
 		labelArea.layout.sizing = {
-			.width = CLAY_SIZING_PERCENT(1),
+			.width = CLAY_SIZING_GROW(0),
 			.height = CLAY_SIZING_FIT(0),
 		};
 		labelArea.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
@@ -2025,7 +2025,6 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 		labelArea.clip = {.horizontal = true, .vertical = true};
 		CLAY(context.clayID(kFieldName), labelArea) {
 			Clay_TextElementConfig nameStyle = textConfig(interface_theme::kTextCanvas, 11);
-			nameStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
 			CLAY_TEXT(
 				context.uiManager.toClayString(card->fieldName),
 				CLAY_TEXT_CONFIG(nameStyle));
@@ -2034,7 +2033,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 				Clay_ElementDeclaration quickRow{};
 				quickRow.layout.sizing = {
 					.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
-				quickRow.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
+				quickRow.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 				quickRow.layout.childGap = 4;
 				quickRow.layout.childAlignment = {
 					.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
@@ -2071,13 +2070,11 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 						: quick.status == DevQuickStatus::Unavailable
 							? interface_theme::kStatusRed : interface_theme::kStatusAmber;
 					Clay_TextElementConfig quickStyle = textConfig(quickColor, 10);
-					quickStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
 					CLAY_TEXT(context.uiManager.toClayString(quick.primary),
 						CLAY_TEXT_CONFIG(quickStyle));
 					if (!quick.secondary.empty()) {
 						Clay_TextElementConfig secondaryStyle =
 							textConfig(interface_theme::kTextSecondary, 10);
-						secondaryStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
 						CLAY_TEXT(context.uiManager.toClayString(quick.secondary),
 							CLAY_TEXT_CONFIG(secondaryStyle));
 					}
@@ -2085,7 +2082,7 @@ void DevEditorCardHeader::buildElement(BuildContext& context) {
 			}
 		}
 		Clay_ElementDeclaration actions{};
-		actions.layout.sizing = {CLAY_SIZING_PERCENT(1), CLAY_SIZING_FIXED(24)};
+		actions.layout.sizing = {CLAY_SIZING_FIXED(4 * 24 + 3 * 5), CLAY_SIZING_FIXED(24)};
 		actions.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		actions.layout.childGap = 5;
 		actions.layout.childAlignment = {CLAY_ALIGN_X_RIGHT, CLAY_ALIGN_Y_CENTER};
@@ -3862,6 +3859,9 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 		elevate = ActionCall{actions.make(kElevateAllChanges, state)};
 		revert = ActionCall{actions.make(kRevertAllChanges, state)};
 	}
+	const float available_width = Clay_GetElementData(context.clayID()).boundingBox.width;
+	const bool compact_labels = available_width < 360.0f;
+	const uint16_t legend_font_size = available_width < 260.0f ? 7 : 8;
 
 	Clay_ElementDeclaration header{};
 	header.layout.sizing = {
@@ -3903,27 +3903,39 @@ void DevChangesHeader::buildElement(BuildContext& context) {
 		Clay_ElementDeclaration chain{};
 		chain.layout.sizing = {
 			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
-		chain.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-		chain.layout.childGap = 2;
+		chain.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+		chain.layout.childGap = compact_labels ? 2 : 4;
 		chain.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
 		chain.clip = {.horizontal = true, .vertical = true};
 		CLAY(context.clayID("precedence"), chain) {
-			struct Legend { std::string_view text; Clay_Color color; };
+			struct Legend {
+				std::string_view text;
+				std::string_view compact_text;
+				Clay_Color color;
+			};
 			const std::array<Legend, 4> layers{{
-				{"Authored Code", interface_theme::kTextMuted},
-				{"Baked Layer", interface_theme::kAccentSeaGlass},
-				{"Live Definition", interface_theme::kAccentSignalBlue},
-				{"Live Instance", interface_theme::kAccentSignalCoral},
+				{"Authored Value", "Authored", interface_theme::kTextMuted},
+				{"Baked Layer", "Baked", interface_theme::kAccentSeaGlass},
+				{"Live Definition", "Definition", interface_theme::kAccentSignalBlue},
+				{"Live Instance", "Instance", interface_theme::kAccentSignalCoral},
 			}};
 			for (std::size_t index = 0; index < layers.size(); ++index) {
-				if (index != 0u) CLAY_TEXT(
-					context.uiManager.toClayString(R"(>)"),
-					CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 8)));
-				CLAY_TEXT(context.uiManager.toClayString(layers[index].text),
-					CLAY_TEXT_CONFIG(textConfig(layers[index].color, 8)));
+				if (index != 0u)
+					CLAY_TEXT(context.uiManager.toClayString(R"(>)"),
+							  CLAY_TEXT_CONFIG(
+								  textConfig(interface_theme::kTextMuted, legend_font_size)));
+				const std::string_view label =
+					compact_labels ? layers[index].compact_text : layers[index].text;
+				CLAY_TEXT(context.uiManager.toClayString(label),
+						  CLAY_TEXT_CONFIG(textConfig(layers[index].color, legend_font_size)));
 			}
 		}
 	}
+	if (compact_labels &&
+		context.uiManager.getPreviousFramesInteraction().isHovered(context.clayID("precedence")))
+		diagnostics_ui::pointer_tooltip(
+			context, LocalElementName{"precedence-detail"},
+			"Authored Value > Baked Layer > Live Definition > Live Instance");
 }
 
 void DevChangeCard::buildElement(BuildContext& context) {
@@ -3971,16 +3983,20 @@ void DevChangeCard::buildElement(BuildContext& context) {
 			? schema->type(field->valueType) : nullptr;
 		return format_value_summary(*schema, type, record->value.data(), state.app, field).detail;
 	};
-	struct Step { std::string_view name; std::string value; Clay_Color color; };
+	struct Step {
+		std::string value;
+		Clay_Color color;
+	};
 	std::vector<Step> steps{};
-	if (!state.authoredValue.empty()) steps.push_back({"Authored Code",
-		state.authoredValue, interface_theme::kTextMuted});
-	if (!state.bakedValue.empty()) steps.push_back({"Baked Layer",
-		state.bakedValue, interface_theme::kAccentSeaGlass});
-	if (liveDefinition) steps.push_back({"Live Definition",
-		liveSummary(liveDefinition), interface_theme::kAccentSignalBlue});
-	if (liveInstance) steps.push_back({"Live Instance",
-		liveSummary(liveInstance), interface_theme::kAccentSignalCoral});
+	steps.reserve(4);
+	if (!state.authoredValue.empty())
+		steps.emplace_back(state.authoredValue, interface_theme::kTextMuted);
+	if (!state.bakedValue.empty())
+		steps.emplace_back(state.bakedValue, interface_theme::kAccentSeaGlass);
+	if (liveDefinition)
+		steps.emplace_back(liveSummary(liveDefinition), interface_theme::kAccentSignalBlue);
+	if (liveInstance)
+		steps.emplace_back(liveSummary(liveInstance), interface_theme::kAccentSignalCoral);
 	const Clay_Color winningColor = steps.empty()
 		? interface_theme::kBorderVisible : steps.back().color;
 
@@ -4010,24 +4026,22 @@ void DevChangeCard::buildElement(BuildContext& context) {
 		Clay_ElementDeclaration chain{};
 		chain.layout.sizing = {
 			.width = CLAY_SIZING_PERCENT(1), .height = CLAY_SIZING_FIT(0)};
-		chain.layout.layoutDirection = CLAY_TOP_TO_BOTTOM;
-		chain.layout.childGap = 2;
+		chain.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
+		chain.layout.childGap = 5;
+		chain.layout.childAlignment = {.x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER};
+		chain.clip = {.vertical = true};
 		CLAY(context.clayID("chain"), chain) {
 			for (std::size_t index = 0; index < steps.size(); ++index) {
-				Clay_Color color = steps[index].color;
-				if (index + 1u != steps.size()) color.a *= 0.42f;
-				std::string line;
-				if (index != 0u) line = R"(> )";
-				line += steps[index].name;
-				line += "  ";
-				line += steps[index].value;
-				Clay_TextElementConfig valueStyle = textConfig(color, 9);
-				valueStyle.wrapMode = CLAY_TEXT_WRAP_WORDS;
-				CLAY(context.clayID(Keyed(kChangeStep, index)), {
-					.layout = {.sizing = {.width = CLAY_SIZING_GROW(0),
-						.height = CLAY_SIZING_FIT(0)}}}) {
-					CLAY_TEXT(context.uiManager.toClayString(line),
-						CLAY_TEXT_CONFIG(valueStyle));
+				if (index != 0u)
+					CLAY_TEXT(context.uiManager.toClayString(">"),
+							  CLAY_TEXT_CONFIG(textConfig(interface_theme::kTextMuted, 9)));
+				Clay_TextElementConfig valueStyle = textConfig(steps[index].color, 9);
+				CLAY(context.clayID(Keyed(kChangeStep, index)),
+					 {.layout = {.sizing = {.width = CLAY_SIZING_FIT(0),
+											.height = CLAY_SIZING_FIT(0)}},
+					  .clip = {.horizontal = true, .vertical = true}}) {
+					CLAY_TEXT(context.uiManager.toClayString(steps[index].value),
+							  CLAY_TEXT_CONFIG(valueStyle));
 				}
 			}
 		}

@@ -196,6 +196,7 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 - [All Public API](api/all_public_api.md)
 - [App API](api/app.md)
 - [Configuration API](api/config.md)
+- [Configuration glossary](api/configuration-glossary.md)
 - [Element API](api/elements.md)
 - [UI Manager API](api/ui_manager.md)
 - [Theme Manager API](api/theme_manager.md)
@@ -236,3 +237,10 @@ FlowUi is intended to keep the core application loop explicit while making UI co
 ### Troubleshooting
 
 - [Troubleshooting](concepts/troubleshooting.md)
+
+## Documentation and generated evidence
+
+Keep authored Markdown documentation and generated Doxygen output in `docs/`.
+Store agentic screenshots, capture files, logs, coverage data and verification
+matrices (including Markdown results) in `.flowui/agentic/`. See the
+[verification guide](agentic-verification.md) for collection and reproduction.

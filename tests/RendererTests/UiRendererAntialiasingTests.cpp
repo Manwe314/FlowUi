@@ -36,11 +36,11 @@ struct ShaderDevice {
 		VkPhysicalDeviceProperties properties{};
 		vkGetPhysicalDeviceProperties(context.phys, &properties);
 		const auto& limits = properties.limits;
-		if (limits.maxPerStageDescriptorSamplers < 256 ||
-			limits.maxPerStageDescriptorSampledImages < 256 ||
-			limits.maxDescriptorSetSamplers < 256 || limits.maxDescriptorSetSampledImages < 256) {
+		if (limits.maxPerStageDescriptorSamplers < 257 ||
+			limits.maxPerStageDescriptorSampledImages < 257 ||
+			limits.maxDescriptorSetSamplers < 257 || limits.maxDescriptorSetSampledImages < 257) {
 			throw FlowUi::test::VulkanUnavailable(
-				"quad shader test requires 256 ordinary sampled-image descriptors");
+				"quad shader test requires 257 ordinary sampled-image descriptors");
 		}
 		features = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
 		features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
@@ -143,11 +143,12 @@ public:
 		vertex_buffer_.upload(vertices.data(), sizeof(vertices));
 		readback_.create(target_size * target_size * sizeof(Pixel),
 						 VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+		// The constant blue channel supplies an exact UNORM midpoint for MSDF median tests.
 		std::array<Pixel, 16> texture_pixels{};
 		for (uint32_t row = 0; row < 4; ++row) {
 			for (uint32_t column = 0; column < 4; ++column) {
 				texture_pixels[row * 4 + column] = {static_cast<uint8_t>(column * 85),
-													static_cast<uint8_t>(row * 85), 0, 255};
+													static_cast<uint8_t>(row * 85), 128, 255};
 			}
 		}
 		texture_upload_.create(sizeof(texture_pixels), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -157,7 +158,9 @@ public:
 		texture_.create(4, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
 		create_render_pass();
 		create_descriptors();
-		VkPushConstantRange push_range{VK_SHADER_STAGE_VERTEX_BIT, 0, 16};
+		VkPushConstantRange push_range{
+			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+			sizeof(FlowUi::detail::UiPushConstants)};
 		VkPipelineLayoutCreateInfo layout_info{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
 		layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts_.size());
 		layout_info.pSetLayouts = set_layouts_.data();
@@ -167,6 +170,7 @@ public:
 											&pipeline_layout_) == VK_SUCCESS);
 		solid_pipeline_ = create_pipeline(shader_directory, "solid");
 		textured_pipeline_ = create_pipeline(shader_directory, "textured");
+		msdf_pipeline_ = create_pipeline(shader_directory, "msdf");
 		VkCommandPoolCreateInfo pool_info{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
 		pool_info.queueFamilyIndex = context.graphicsQFamily;
 		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -188,6 +192,10 @@ public:
 			vkDestroyPipeline(context_.device, solid_pipeline_, nullptr);
 		if (textured_pipeline_)
 			vkDestroyPipeline(context_.device, textured_pipeline_, nullptr);
+		if (msdf_pipeline_)
+			vkDestroyPipeline(context_.device, msdf_pipeline_, nullptr);
+		if (font_array_view_)
+			vkDestroyImageView(context_.device, font_array_view_, nullptr);
 		if (pipeline_layout_)
 			vkDestroyPipelineLayout(context_.device, pipeline_layout_, nullptr);
 		if (descriptor_pool_)
@@ -206,7 +214,9 @@ public:
 
 	[[nodiscard]] std::span<const Pixel> render(const UiInstance& instance, bool textured = false,
 												VkRect2D scissor = {{0, 0},
-																	{target_size, target_size}}) {
+																	{target_size, target_size}},
+												const FlowUi::PrimitiveAntialiasingConfig& antialiasing = {},
+		bool msdf = false) {
 		instance_buffer_.upload(&instance, sizeof(instance));
 		begin_commands();
 		VkClearValue clear{};
@@ -218,22 +228,20 @@ public:
 		begin.pClearValues = &clear;
 		vkCmdBeginRenderPass(command_buffer_, &begin, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS,
-						  textured ? textured_pipeline_ : solid_pipeline_);
+						  msdf ? msdf_pipeline_ : (textured ? textured_pipeline_ : solid_pipeline_));
 		vkCmdBindDescriptorSets(command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_,
 								0, static_cast<uint32_t>(descriptor_sets_.size()),
 								descriptor_sets_.data(), 0, nullptr);
 		VkDeviceSize offset = 0;
 		vkCmdBindVertexBuffers(command_buffer_, 0, 1, &vertex_buffer_.buffer, &offset);
 		vkCmdSetScissor(command_buffer_, 0, 1, &scissor);
-		struct PushConstants {
-			float width;
-			float height;
-			uint32_t first;
-			uint32_t padding;
-		};
-		const PushConstants push{target_size, target_size, 0, 0};
-		vkCmdPushConstants(command_buffer_, pipeline_layout_, VK_SHADER_STAGE_VERTEX_BIT, 0,
-						   sizeof(push), &push);
+		const auto coverage_width_scale =
+			FlowUi::detail::resolve_primitive_coverage_width_scale(antialiasing);
+		FLOWUI_CHECK(coverage_width_scale.has_value());
+		const FlowUi::detail::UiPushConstants push{
+			target_size, target_size, 0, *coverage_width_scale};
+		vkCmdPushConstants(command_buffer_, pipeline_layout_,
+			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(push), &push);
 		vkCmdDraw(command_buffer_, 4, 1, 0, 0);
 		vkCmdEndRenderPass(command_buffer_);
 		VkBufferImageCopy copy{};
@@ -305,14 +313,16 @@ private:
 		info.pBindings = &storage_binding;
 		FLOWUI_CHECK(vkCreateDescriptorSetLayout(context_.device, &info, nullptr,
 												 &set_layouts_[0]) == VK_SUCCESS);
-		VkDescriptorSetLayoutBinding texture_binding{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-													 256, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
-		info.pBindings = &texture_binding;
+		std::array<VkDescriptorSetLayoutBinding, 2> texture_bindings{{
+			{0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}}};
+		info.bindingCount = static_cast<uint32_t>(texture_bindings.size());
+		info.pBindings = texture_bindings.data();
 		FLOWUI_CHECK(vkCreateDescriptorSetLayout(context_.device, &info, nullptr,
 												 &set_layouts_[1]) == VK_SUCCESS);
 		std::array<VkDescriptorPoolSize, 2> pool_sizes{
 			{{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
-			 {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256}}};
+			 {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 257}}};
 		VkDescriptorPoolCreateInfo pool_info{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
 		pool_info.maxSets = 2;
 		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
@@ -336,7 +346,14 @@ private:
 		VkDescriptorBufferInfo buffer_info{instance_buffer_.buffer, 0, sizeof(UiInstance)};
 		std::array<VkDescriptorImageInfo, 256> image_infos{};
 		image_infos.fill({sampler_, texture_.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
-		std::array<VkWriteDescriptorSet, 2> writes{};
+		VkImageViewCreateInfo font_view_info{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+		font_view_info.image = texture_.image;
+		font_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		font_view_info.format = target_format;
+		font_view_info.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+		FLOWUI_CHECK(vkCreateImageView(context_.device, &font_view_info, nullptr, &font_array_view_) == VK_SUCCESS);
+		const VkDescriptorImageInfo font_info{sampler_, font_array_view_, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+		std::array<VkWriteDescriptorSet, 3> writes{};
 		writes[0] = {VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 		writes[0].dstSet = descriptor_sets_[0];
 		writes[0].dstBinding = 0;
@@ -349,6 +366,12 @@ private:
 		writes[1].descriptorCount = static_cast<uint32_t>(image_infos.size());
 		writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writes[1].pImageInfo = image_infos.data();
+		writes[2] = {VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+		writes[2].dstSet = descriptor_sets_[1];
+		writes[2].dstBinding = 0;
+		writes[2].descriptorCount = 1;
+		writes[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writes[2].pImageInfo = &font_info;
 		vkUpdateDescriptorSets(context_.device, static_cast<uint32_t>(writes.size()), writes.data(),
 							   0, nullptr);
 	}
@@ -502,6 +525,8 @@ private:
 	VkPipelineLayout pipeline_layout_{};
 	VkPipeline solid_pipeline_{};
 	VkPipeline textured_pipeline_{};
+	VkPipeline msdf_pipeline_{};
+	VkImageView font_array_view_{};
 	VkCommandPool command_pool_{};
 	VkCommandBuffer command_buffer_{};
 };
@@ -553,14 +578,15 @@ void check_outer_feather(QuadFixture& fixture, bool textured, bool border, bool 
 		check_alpha(pixels, 8, 8, 0);
 }
 
-void check_texture_mapping(QuadFixture& fixture, bool flipped) {
+void check_texture_mapping(QuadFixture& fixture, bool flipped,
+	const FlowUi::PrimitiveAntialiasingConfig& antialiasing = {}) {
 	UiInstance instance = rectangle();
 	instance.w = instance.h = 12;
 	if (flipped) {
 		instance.uv0x = instance.uv0y = 1;
 		instance.uv1x = instance.uv1y = 0;
 	}
-	const auto pixels = fixture.render(instance, true);
+	const auto pixels = fixture.render(instance, true, {{0, 0}, {target_size, target_size}}, antialiasing);
 	for (uint32_t row = 10; row <= 18; row += 4) {
 		for (uint32_t column = 10; column <= 18; column += 4) {
 			float horizontal = (static_cast<float>(column) + 0.5f - instance.x) / instance.w;
@@ -595,6 +621,149 @@ void check_cropped_texture(QuadFixture& fixture) {
 	FLOWUI_CHECK(pixels[13 * target_size + 10][1] == 170);
 }
 
+void check_configurable_coverage(QuadFixture& fixture, bool textured) {
+	constexpr VkRect2D full_scissor{{0, 0}, {target_size, target_size}};
+	const UiInstance instance = rectangle();
+	const auto default_pixels = fixture.render(instance, textured);
+	const std::vector<Pixel> default_copy(default_pixels.begin(), default_pixels.end());
+	const auto explicit_defaults = fixture.render(instance, textured, full_scissor,
+		{.coverage_width_scale = 1.0f, .enabled = true});
+	FLOWUI_CHECK(std::equal(default_copy.begin(), default_copy.end(), explicit_defaults.begin()));
+
+	int previous_outer_alpha = -1;
+	for (const float width_scale : {0.5f, 1.0f, 2.0f, 4.0f}) {
+		const auto pixels = fixture.render(instance, textured, full_scissor,
+			{.coverage_width_scale = width_scale});
+		const int expected_alpha = static_cast<int>(std::lround(
+			std::clamp(0.5f - 0.25f / width_scale, 0.0f, 1.0f) * 255.0f));
+		check_alpha(pixels, 8, 15, expected_alpha);
+		check_alpha(pixels, 21, 15, expected_alpha);
+		check_alpha(pixels, 15, 8, expected_alpha);
+		check_alpha(pixels, 15, 21, expected_alpha);
+		const int outer_alpha = pixels[15 * target_size + 8][3];
+		FLOWUI_CHECK(outer_alpha > previous_outer_alpha);
+		previous_outer_alpha = outer_alpha;
+		check_alpha(pixels, 15, 15, 255);
+	}
+
+	const auto wide_pixels = fixture.render(instance, textured, full_scissor,
+		{.coverage_width_scale = 4.0f});
+	check_alpha(wide_pixels, 7, 15, 48);
+	check_alpha(wide_pixels, 22, 15, 48);
+	check_alpha(wide_pixels, 15, 7, 48);
+	check_alpha(wide_pixels, 15, 22, 48);
+	check_alpha(wide_pixels, 6, 15, 0);
+
+	for (const bool rounded : {false, true}) {
+		UiInstance hard_instance = instance;
+		if (rounded) {
+			hard_instance.r0 = 1.0f;
+			hard_instance.r1 = 2.0f;
+			hard_instance.r2 = 3.0f;
+			hard_instance.r3 = 4.0f;
+		}
+		const auto hard_pixels = fixture.render(hard_instance, textured, full_scissor,
+			{.coverage_width_scale = 4.0f, .enabled = false});
+		FLOWUI_CHECK(std::all_of(hard_pixels.begin(), hard_pixels.end(),
+			[](const Pixel& pixel) { return pixel[3] == 0 || pixel[3] == 255; }));
+		check_alpha(hard_pixels, 8, 15, 0);
+		check_alpha(hard_pixels, 9, 15, 255);
+	}
+}
+
+void check_wide_border(QuadFixture& fixture) {
+	UiInstance instance = rectangle();
+	instance.solidMode = 1;
+	instance.borderL = 2;
+	instance.borderT = 3;
+	instance.borderR = 1;
+	instance.borderB = 2;
+	const auto pixels = fixture.render(instance, false, {{0, 0}, {target_size, target_size}},
+		{.coverage_width_scale = 2.0f});
+	check_alpha(pixels, 8, 15, 96);
+	check_alpha(pixels, 10, 15, 159);
+	check_alpha(pixels, 11, 15, 32);
+	check_alpha(pixels, 15, 15, 0);
+}
+
+void check_framebuffer_scaling(QuadFixture& fixture, bool textured) {
+	for (const float width : {6.5f, 12.5f, 16.5f}) {
+		UiInstance instance = rectangle();
+		instance.w = width;
+		instance.h = 8.5f;
+		const auto pixels = fixture.render(instance, textured, {{0, 0}, {target_size, target_size}},
+			{.coverage_width_scale = 2.0f});
+		check_alpha(pixels, 8, 12, 96);
+		check_alpha(pixels, 10, 8, 96);
+		check_alpha(pixels, 10, 17, 96);
+	}
+}
+
+void check_unchanged_glyph_coverage(QuadFixture& fixture) {
+	constexpr VkRect2D full_scissor{{0, 0}, {target_size, target_size}};
+	UiInstance glyph = rectangle();
+	// Put the atlas midpoint on pixel centers so the MSDF transition is sampled.
+	glyph.x = glyph.y = 8.25f;
+	glyph.r0 = 4.0f;
+	const auto baseline = fixture.render(glyph, false, full_scissor, {}, true);
+	const std::vector<Pixel> baseline_copy(baseline.begin(), baseline.end());
+	// UNORM encodes the midpoint as 128/255, whose distance from 0.5 is
+	// amplified by the glyph reconstruction range before target quantization.
+	constexpr float encoded_midpoint = 128.0f / 255.0f;
+	constexpr float atlas_side = 4.0f;
+	const float screen_pixel_range =
+		std::max(0.5f * glyph.r0 / atlas_side * (glyph.w + glyph.h), 1.0f);
+	const int midpoint_alpha = static_cast<int>(std::lround(
+		std::clamp(screen_pixel_range * (encoded_midpoint - 0.5f) + 0.5f, 0.0f, 1.0f) * 255.0f));
+	check_alpha(baseline_copy, 10, 10, 0);
+	check_alpha(baseline_copy, 14, 17, midpoint_alpha);
+	check_alpha(baseline_copy, 17, 14, midpoint_alpha);
+	check_alpha(baseline_copy, 17, 17, 255);
+	FLOWUI_CHECK(std::any_of(baseline_copy.begin(), baseline_copy.end(),
+		[](const Pixel& pixel) { return pixel[3] > 0 && pixel[3] < 255; }));
+	for (const float width_scale : {0.0f, 0.5f, 2.0f, 4.0f}) {
+		const auto pixels = fixture.render(glyph, false, full_scissor,
+			{.coverage_width_scale = std::max(0.5f, width_scale), .enabled = width_scale > 0.0f}, true);
+		FLOWUI_CHECK(std::equal(baseline_copy.begin(), baseline_copy.end(), pixels.begin()));
+	}
+}
+
+void check_reference_equivalence(QuadFixture& fixture, QuadFixture& reference) {
+	constexpr VkRect2D full_scissor{{0, 0}, {target_size, target_size}};
+	for (const bool textured : {false, true}) {
+		for (const bool border : {false, true}) {
+			for (const bool rounded : {false, true}) {
+				UiInstance instance = rectangle();
+				instance.colorRGBA = 0xA0C08040u;
+				instance.solidMode = border ? 1u : 0u;
+				instance.borderL = 1.25f;
+				instance.borderT = 2.5f;
+				instance.borderR = 3.75f;
+				instance.borderB = 0.5f;
+				if (rounded) {
+					instance.r0 = 1.5f;
+					instance.r1 = 2.5f;
+					instance.r2 = 4.5f;
+					instance.r3 = 3.5f;
+				}
+				const auto expected = reference.render(instance, textured);
+				const auto actual = fixture.render(instance, textured);
+				FLOWUI_CHECK(std::equal(expected.begin(), expected.end(), actual.begin()));
+			}
+		}
+	}
+	UiInstance glyph = rectangle();
+	// Put the atlas midpoint on pixel centers so the MSDF transition is sampled.
+	glyph.x = glyph.y = 8.25f;
+	glyph.r0 = 4.0f;
+	const auto expected = reference.render(glyph, false, full_scissor, {}, true);
+	for (const float width_scale : {0.0f, 0.5f, 1.0f, 2.0f, 4.0f}) {
+		const auto actual = fixture.render(glyph, false, full_scissor,
+			{.coverage_width_scale = std::max(0.5f, width_scale), .enabled = width_scale > 0.0f}, true);
+		FLOWUI_CHECK(std::equal(expected.begin(), expected.end(), actual.begin()));
+	}
+}
+
 } // namespace
 
 int main(int argument_count, char** arguments) {
@@ -623,6 +792,35 @@ int main(int argument_count, char** arguments) {
 		runner.run("flipped texture coordinates retain mapping",
 				   [&] { check_texture_mapping(fixture, true); });
 		runner.run("feather samples cropped texture edge", [&] { check_cropped_texture(fixture); });
+		runner.run("solid configurable linear coverage", [&] { check_configurable_coverage(fixture, false); });
+		runner.run("textured configurable linear coverage", [&] { check_configurable_coverage(fixture, true); });
+		runner.run("wide asymmetric border keeps hollow interior", [&] { check_wide_border(fixture); });
+		runner.run("solid coverage is measured in framebuffer pixels", [&] { check_framebuffer_scaling(fixture, false); });
+		runner.run("textured coverage is measured in framebuffer pixels", [&] { check_framebuffer_scaling(fixture, true); });
+		runner.run("texture mapping survives changed and disabled coverage", [&] {
+			for (const float width_scale : {0.0f, 0.5f, 2.0f, 4.0f}) {
+				const FlowUi::PrimitiveAntialiasingConfig config{
+					.coverage_width_scale = std::max(0.5f, width_scale), .enabled = width_scale > 0.0f};
+				check_texture_mapping(fixture, false, config);
+				check_texture_mapping(fixture, true, config);
+			}
+		});
+		runner.run("wider coverage respects explicit scissors", [&] {
+			const auto pixels = fixture.render(rectangle(), false, {{9, 9}, {12, 12}},
+				{.coverage_width_scale = 4.0f});
+			check_alpha(pixels, 7, 15, 0);
+			check_alpha(pixels, 8, 15, 0);
+			check_alpha(pixels, 21, 15, 0);
+			check_alpha(pixels, 9, 15, 175);
+		});
+		runner.run("translucent wide edges retain source alpha", [&] {
+			UiInstance instance = rectangle();
+			instance.colorRGBA = 0x80FFFFFFu;
+			const auto pixels = fixture.render(instance, false, {{0, 0}, {target_size, target_size}},
+				{.coverage_width_scale = 2.0f});
+			check_alpha(pixels, 8, 15, 48);
+			check_alpha(pixels, 15, 15, 128);
+		});
 		runner.run("explicit scissor still clips feather", [&] {
 			const auto pixels = fixture.render(rectangle(), false, {{9, 9}, {12, 12}});
 			check_alpha(pixels, 8, 15, 0);
@@ -641,6 +839,15 @@ int main(int argument_count, char** arguments) {
 										 [](const Pixel& pixel) { return pixel[3] == 0; }));
 			}
 		});
+		runner.run("primitive coverage settings leave glyph output unchanged", [&] {
+			check_unchanged_glyph_coverage(fixture);
+		});
+		if (argument_count > 2) {
+			QuadFixture reference(shader_device.context, arguments[2]);
+			runner.run("default primitives and glyphs match reference shaders pixel for pixel", [&] {
+				check_reference_equivalence(fixture, reference);
+			});
+		}
 		return runner.finish();
 	} catch (const FlowUi::test::VulkanUnavailable& error) {
 		std::cerr << "Vulkan unavailable: " << error.what() << '\n';

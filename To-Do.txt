@@ -101,77 +101,92 @@ things i want to do:
 		[Done] - Remove Doxy comments on internals and update doxy comments on new API
 		[Done] - Clean up legacy error functions that (void) strings and literals
 	- Lock in Configuration Structs
-		- Move internal Config Structs to Public config Structs
-		- Give concrete shape and single AppConfig umbrela
-		- double check for no-Op's and add useful configs
-	- Based on new Dev Reporting optimize
-		- Double check where most time is Spent.
-		- optimize lookups
-		- Implement level 1 and 2 Multi threading (single thread / internal Worker threads)
+		[Done] - Move internal Config Structs to Public config Structs
+		[Done] - Give concrete shape and single AppConfig umbrela
+		[Done] - double check for no-Op's and add useful configs
 	- Window APIs
 		[Done]- API to make a window with auto copied AppConfig + local overrides.
 		[Done]- API to define "window Operation" from another windows Build code and have it run after this windows execution
 		[Done]- API to provide a single FlowElement with Build callback as the entire UI tree and be serviced in another window automatically
-    - App bundles
-		- Define AppConfig a single Element + provide Variables to Bind and a single call is the entire application
     - Complete defaults
-		[Done]- Complete Input Field Operations (ctrl / home / end / delete / ...)
-		- Make a standart Set of Shortcuts (opt in with configuration)
-		[Done]- Elements Standart library
-	[Done]- Move shortcut Manager to be App shared
-	- Make element Assers Descriptive maybe.
-	- Interactions Upgrade
+		[Done] - Complete Input Field Operations (ctrl / home / end / delete / ...)
+		[Done] - Make a standart Set of Shortcuts (opt in with configuration)
+		[Done] - Elements Standart library
+	[Done] - Move shortcut Manager to be App shared
+	[Done] - Make element Assers Descriptive maybe.
+	[Done] - change internal Bools into bit packed words.
+	[Done] - Hard code in Fallback/Default Textures / fonts?
+	[Done] - Default Icons For Dev Interface
+	- CancelFrame silently catches. cleanUp Falure operations need strengthening.
+	[Done]- Upgrade Flow_Color
+	- AA Pass
+		[Done] - Configurations for Primitives AA
+		[Done] - correct SDF AA qued edge boundry collision
+	- DevInterface visual
+		[Done] - Combo Box Icon Overflow
+		[Done] - Permanent Header text jitter and Window Name instead of Target number.
+		- Match Sepperator border side colors to left right Areas
+		[Done] - DevInspectInspectors Main content Width overflow issues As always.
+		[Done] - Hover Text Box is too large for small text
+		[Done] - inspect inspector functional buttons are on 3rd layer making height to much needlesly.
+		[Done] - Changes on inspect inspector legend is vertical instead of horizontal.
+	- DevInterface functionality
+		[Done] - Authored Code value capture should be made explicit
+	- DevInspectInspectors
+		[Done] - Window Targeting migh be better to be on the Inspector tab rather than the overall header.
+		[Done] - CLAY element Selection Needs its own ENTIRE DevInspectInspector area element.
+		[Done] - enum chociec for Fonts 
+		[Done] - Quick View Value not configured on every Parameter including unregistered/unddefineds
+		[Done] - Definition changes on FSEL elements alters the DevIntefrace As well.
+	- DevInspect Workbench
+		[Done] - wining value in changes section display std::optional badly
+		[Done] - tree struct and gerometry reporting is not fiting in width nicely .
+	- DevTimelines
+		[Done] - dynamic controls probe level selection does not alter displayed timeline data also reported compilation level had missmatch
+	- DevMonitoring and DevTooling
+		[Done] - move Memory capacity targets and json orchestration from FlowUi namespace to internal or detail
+
+
+~~~~~~~~~~~~~~~~~
+
+	- Code Optimization:
+		- Based on new Dev Reporting optimize
+		- Double check where most time is Spent.
+		- optimize lookups
+	
+	- Existing Systems Upgrades:
+		- Interactions Upgrade
 		- Overlapping interaction Resolution Needs care 
 			- Event bubling / interaction consumption / interaction flaging
 		- better Onpressed Semantic of elements
 			- full trigger on press -> release
 			- just press or just release
 			- cancalble release or not 
-	- Change single/multi line distinction to short/long text distinction.
-		- application wide byte boundry for "size of text"
-		- remove enforcement of newline characters from InputfieldManager
-		- TextInput and TextArea should be the Newlines boundry
-	- change internal Bools into bit packed words.
-	- FSEL extention
-		- Tabs and TAb bar elements
-		- Menu items a Menu elements
-		- Dedicated Scrolling Area with scroll indicator
-	- Hard code in Fallback/Default Textures / fonts?
-	- Default Icons For Dev Interface
-	- Dev Mode Tooling to auto Train PGO.
-	- CancelFrame silently catches. cleanUp Falure operations need strengthening.
-	[Done]- Upgrade Flow_Color
-	- Add Pre Rasterized Icon Atlas Export For immediate recompile and re use.
-	- AA Pass
-		- Configurations for Primitives AA
-		[Done] - correct SDF AA qued edge boundry collision
-	- DevInterface visual
-		- Combo Box Icon Overflow
-		- Permanent Header Button Visual hardening.
-		- Match Sepperator border side colors to left right Areas
-		- DevInspectInspectors Main content Width overflow issues As always.
-	- DevInterface functionality
-		- Authored Code value capture should be made explicit
-	- DevInspectInspectors
-		- Window Targeting migh be better to be on the Inspector tab rather than the overall header.
-		[Done] - CLAY element Selection Needs its own ENTIRE DevInspectInspector area element.
-		- enum chociec for Fonts 
-		- Quick View Value not configured on every Parameter including unregistered/unddefineds
-		- Definition changes on FSEL elements alters the DevIntefrace As well.
-	- DevInspect Workbench
-		- wining value in changes section display std::optional badly
-		- tree struct and gerometry reporting is not fiting in width nicely .
-	- DevTooling
-		- Overlay service:
-			-	Text is usually over the eleent instead of it beeing outside it
-			-	distance ruler lines can be placed better
-			-	bettter highlighting legend?
-	- DevTimelines
-		- double check probe level selection and compilation.
-	- DevMonitoring and DevTooling
-		[Done] - move Memory capacity targets and json orchestration from FlowUi namespace to internal or detail
-	- Asset Loader Concept manager?
-	- Introduction of dedicated Input Manager
+		- Change single/multi line distinction to short/long text distinction.
+			- application wide byte boundry for "size of text"
+			- remove enforcement of newline characters from InputfieldManager
+			- TextInput and TextArea should be the Newlines boundry
+		- FSEL extention
+			- Tabs and TAb bar elements
+			- Menu items a Menu elements
+			- Dedicated Scrolling Area with scroll indicator
+	
+	- Adding New systems:
+		- Asset Loader Concept manager?
+		- Introduction of dedicated Input Manager
+		- App bundles
+			- Define AppConfig a single Element + provide Variables to Bind and a single call is the entire application
+		- Implement level 1 and 2 Multi threading (single thread / internal Worker threads)
+
+	- More DevSystems additions & changes:
+		- Ofline font Baker UI interface
+		- Dev Mode Tooling to auto Train PGO.
+		- Add Pre Rasterized Icon Atlas Export For immediate recompile and re use.
+		- DevTooling
+			- Overlay service:
+				-	Text is usually over the eleent instead of it beeing outside it
+				-	distance ruler lines can be placed better
+				-	bettter highlighting legend?
 
 
 

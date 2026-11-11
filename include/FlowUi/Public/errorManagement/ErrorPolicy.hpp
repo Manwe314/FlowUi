@@ -85,7 +85,10 @@ enum class InputQueueOverflowPolicy : std::uint8_t {
 	DropOldest,
 };
 
-/** Error resolutions and reporting behavior selected for the App lifetime. */
+/**
+ * Recovery choices copied at app creation; reporting destinations are in ErrorObserverConfig.
+ * Storage growth also requires MemoryCapacityProfile::allowRuntimeGrowth and available budget.
+ */
 struct ErrorPolicy {
 	/** Default-font startup recovery policy. */
 	DefaultFontFailurePolicy defaultFont = DefaultFontFailurePolicy::TryFallbackThenDisableText;
@@ -99,7 +102,7 @@ struct ErrorPolicy {
 	StorageCapacityPolicy transientCapacity = StorageCapacityPolicy::GrowWithinBudget;
 	/** Persistent storage growth policy. */
 	StorageCapacityPolicy persistentCapacity = StorageCapacityPolicy::GrowWithinBudget;
-	/** Texture descriptor-cache exhaustion policy. */
+	/** Texture descriptor-cache exhaustion response; does not increase the cache capacity. */
 	CacheCapacityPolicy descriptorCapacity = CacheCapacityPolicy::RejectOperation;
 	/** Duplicate popup-submission policy. */
 	PopupDuplicatePolicy duplicatePopup = PopupDuplicatePolicy::FirstSubmissionWins;
@@ -109,7 +112,7 @@ struct ErrorPolicy {
 	PopupCapacityPolicy popupCapacity = PopupCapacityPolicy::ClampLayer;
 	/** Unicode text queue overflow policy. */
 	InputQueueOverflowPolicy inputQueueOverflow = InputQueueOverflowPolicy::DropNewest;
-	/** Maximum queued Unicode input codepoints, measured in codepoints rather than UTF-8 bytes. */
+	/** Per-window Unicode input queue capacity in codepoints, rather than UTF-8 bytes. */
 	std::uint32_t inputTextQueueCapacity = 4096;
 };
 

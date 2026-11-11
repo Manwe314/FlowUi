@@ -200,13 +200,13 @@ void ViewportStorageController::collect_dev_captures() noexcept {
 		iterator = retired_dev_captures.erase(iterator);
 	}
 	for (auto& [name, record] : records) {
-		if (record.capture_release_requested) {
+		if (record.flags.has_flag(ViewportRecordFlag::capture_release_requested)) {
 			const bool pending_retired =
 				!record.pending_capture.texture ||
 				(record.pending_capture.submission && retire_dev_capture(record.pending_capture));
 			const bool published_retired = retire_dev_capture(record.published_capture);
 			if (pending_retired && published_retired)
-				record.capture_release_requested = false;
+				record.flags.set_flag(ViewportRecordFlag::capture_release_requested, false);
 			continue;
 		}
 		auto& pending = record.pending_capture;

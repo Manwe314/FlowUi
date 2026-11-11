@@ -171,7 +171,8 @@ def main() -> int:
     parser.add_argument("--cli", type=Path, required=True)
     parser.add_argument("--demo", type=Path, required=True)
     parser.add_argument("--workspace", type=Path, default=REPOSITORY)
-    parser.add_argument("--output-directory", type=Path, required=True)
+    parser.add_argument("--output-directory", type=Path,
+        default=REPOSITORY / ".flowui/agentic/verification/dev-interface-geometry")
     parser.add_argument("--reference-directory", type=Path, required=True)
     parser.set_defaults(stage="complete", fixture=True)
     return asyncio.run(GeometryStressVerification(parser.parse_args()).run())

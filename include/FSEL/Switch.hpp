@@ -243,7 +243,7 @@ private:
  * stored in this object.
  */
 inline constexpr Switch kSwitch{};
-static_assert(FlowElement<Switch>);
+static_assert(validate_flow_element<Switch>());
 static_assert(DrawableFlowElement<Switch>);
 
 } // namespace FlowUi::FSEL

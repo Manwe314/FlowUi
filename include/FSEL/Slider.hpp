@@ -628,7 +628,7 @@ private:
  * stored in this object.
  */
 inline constexpr Slider kSlider{};
-static_assert(FlowElement<Slider>);
+static_assert(validate_flow_element<Slider>());
 static_assert(DrawableFlowElement<Slider>);
 
 } // namespace FlowUi::FSEL

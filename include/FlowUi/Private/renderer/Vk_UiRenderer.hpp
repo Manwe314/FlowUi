@@ -17,6 +17,7 @@
 #include "FlowUi/Public/configurationStructs/ResourceConfig.hpp"
 #include "FlowUi/Public/configurationStructs/UiConfig.hpp"
 #include "FlowUi/Public/configurationStructs/VulkanConfig.hpp"
+#include "FlowUi/Public/errorManagement/Result.hpp"
 #include "FlowUi/Private/inputService/InputFieldRenderOverrides.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
 #include "FlowUi/Private/storageSystem/IStorageSystem.hpp"
@@ -38,6 +39,7 @@ struct SharedUiByteResources {
 	FlowUi::detail::storage::ImageHandle placeholderUiImage{};
 	FlowUi::detail::storage::ImageViewHandle placeholderUiView{};
 	FlowUi::detail::storage::SamplerHandle linearSampler{};
+	FlowUi::detail::storage::SamplerHandle missing_texture_sampler{};
 
 	VkBuffer nativeQuadBuffer = VK_NULL_HANDLE;
 	VkImageView nativePlaceholderFontView = VK_NULL_HANDLE;
@@ -53,6 +55,9 @@ struct PreparedUiFrame {
 };
 
 namespace FlowUi::detail {
+
+[[nodiscard]] Result<float> resolve_primitive_coverage_width_scale(
+	const PrimitiveAntialiasingConfig& config) noexcept;
 
 struct UiConversionCapacity {
 	size_t instances = 0;
@@ -145,6 +150,7 @@ struct VulkanUiRenderer {
 	uint32_t maxUiImageDescriptors_ = 256;
 	uint32_t frameResourceCount_ = 1u;
 	float pointsToPixelsScale_ = 96.0f / 72.0f;
+	float primitive_coverage_width_scale_ = 1.0f;
 	std::vector<uint32_t> boundFontAtlasRevisionByFrame_{};
 	FlowUi::detail::text::TextLayoutService textLayoutService_{};
 

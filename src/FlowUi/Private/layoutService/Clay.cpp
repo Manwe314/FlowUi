@@ -67,9 +67,9 @@ ClayDevVisitResult clayDevVisitTrees(
 				.id = element.id,
 				.dimensions = element.dimensions,
 				.minDimensions = element.minDimensions,
-				.isText = element.isTextElement,
-				.exiting = element.exiting,
 			};
+			view.flags.set_flag(ClayDevElementFlag::is_text, element.isTextElement);
+			view.flags.set_flag(ClayDevElementFlag::exiting, element.exiting);
 			if (entry.layoutElementIndex < context.layoutElementIdStrings.length) {
 				view.idString = context.layoutElementIdStrings.internalArray[entry.layoutElementIndex];
 			}
@@ -80,7 +80,7 @@ ClayDevVisitResult clayDevVisitTrees(
 			Clay_LayoutElementHashMapItem* hashItem = Clay__GetHashMapItem(element.id);
 			if (hashItem && hashItem->layoutElement) {
 				view.bounds = hashItem->boundingBox;
-				view.boundsAvailable = true;
+				view.flags.set_flag(ClayDevElementFlag::bounds_available, true);
 			}
 			if (element.isTextElement) {
 				view.textConfig = element.textConfig;

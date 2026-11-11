@@ -16,12 +16,47 @@
 
 namespace {
 
-constexpr double kDefaultPixelSize = 32.0;
-constexpr double kDefaultPxRange = 6.0;
+constexpr double kDefaultPixelSize = 64.0;
+constexpr double kDefaultPxRange = 8.0;
 constexpr double kDefaultAngleThreshold = 3.0;
 constexpr double kDefaultMiterLimit = 1.0;
+constexpr int default_atlas_spacing = 2;
 constexpr unsigned long long kLcgMultiplier = 6364136223846793005ull;
 constexpr unsigned long long kLcgIncrement = 1442695040888963407ull;
+
+constexpr msdf_atlas::unicode_t default_extended_ui_codepoints[] = {
+    0x2013u, // EN DASH
+    0x2014u, // EM DASH
+    0x2018u, // LEFT SINGLE QUOTATION MARK
+    0x2019u, // RIGHT SINGLE QUOTATION MARK
+    0x201Cu, // LEFT DOUBLE QUOTATION MARK
+    0x201Du, // RIGHT DOUBLE QUOTATION MARK
+    0x2022u, // BULLET
+    0x2026u, // HORIZONTAL ELLIPSIS
+    0x20ACu, // EURO SIGN
+    0x2122u, // TRADE MARK SIGN
+    0x2190u, // LEFTWARDS ARROW
+    0x2191u, // UPWARDS ARROW
+    0x2192u, // RIGHTWARDS ARROW
+    0x2193u, // DOWNWARDS ARROW
+    0x2194u, // LEFT RIGHT ARROW
+    0x2195u, // UP DOWN ARROW
+    0x2212u, // MINUS SIGN
+    0x2260u, // NOT EQUAL TO
+    0x2264u, // LESS-THAN OR EQUAL TO
+    0x2265u, // GREATER-THAN OR EQUAL TO
+    0x25A1u, // WHITE SQUARE
+    0x25B2u, // BLACK UP-POINTING TRIANGLE
+    0x25B6u, // BLACK RIGHT-POINTING TRIANGLE
+    0x25BCu, // BLACK DOWN-POINTING TRIANGLE
+    0x25C0u, // BLACK LEFT-POINTING TRIANGLE
+    0x25C6u, // BLACK DIAMOND
+    0x25CBu, // WHITE CIRCLE
+    0x25CFu, // BLACK CIRCLE
+    0x2713u, // CHECK MARK
+    0x2717u, // BALLOT X
+    0xFFFDu, // REPLACEMENT CHARACTER
+};
 
 struct Options {
     std::string inputPath;
@@ -30,9 +65,10 @@ struct Options {
     std::string charsetFilePath;
     double pixelSize = kDefaultPixelSize;
     double pxRange = kDefaultPxRange;
+    double angle_threshold = kDefaultAngleThreshold;
+    double miter_limit = kDefaultMiterLimit;
     int threadCount = 0; // 0 = auto
     bool showHelp = false;
-    bool hasPixelSize = false;
 };
 
 struct FreetypeGuard {
@@ -55,22 +91,26 @@ struct FontGuard {
 
 void printUsage(const char *argv0) {
     std::cout
-        << "FlowUi Offline Font Baker (MSDF -> .arfont)\n"
+        << "FlowUi Offline Font Baker (MTSDF -> .arfont)\n"
         << "Usage:\n"
-        << "  " << argv0 << " --input <font.ttf> --output <font.arfont> --pixel-size <size>\n"
+        << "  " << argv0 << " --input <font.ttf> --output <font.arfont> [--pixel-size <size>]\n"
         << "          [--charset <inline charset>] [--charset-file <charset.txt>]\n"
-        << "          [--px-range <pixels>] [--threads <count>]\n\n"
+        << "          [--px-range <pixels>] [--angle-threshold <radians>]\n"
+        << "          [--miter-limit <limit>] [--threads <count>]\n\n"
         << "Required:\n"
         << "  --input, -i        Path to source .ttf/.otf font\n"
-        << "  --output, -o       Destination .arfont file path\n"
-        << "  --pixel-size, -s   Glyph size in pixels per em (must be > 0)\n\n"
+        << "  --output, -o       Destination .arfont file path\n\n"
         << "Optional:\n"
+        << "  --pixel-size, -s   Glyph size in pixels per em (default: 64)\n"
         << "  --charset, -c      Inline charset specification (msdf-atlas syntax)\n"
         << "  --charset-file     Charset file path (msdf-atlas syntax)\n"
-        << "  --px-range         Distance field pixel range (default: 6)\n"
+        << "  --px-range         Distance field pixel range (default: 8)\n"
+        << "  --angle-threshold  Corner angle threshold in radians (default: 3.0)\n"
+        << "  --miter-limit      Bounding box miter limit (default: 1.0)\n"
         << "  --threads, -t      Worker threads (0 = auto)\n"
         << "  --help, -h         Show this help\n\n"
-        << "If charset is omitted, printable ASCII is used.\n";
+        << "If charset is omitted, printable ASCII + Latin-1 Supplement + common UI symbols\n"
+        << "supported by the font are baked.\n";
 }
 
 bool parsePositiveDouble(const char *input, double &value) {
@@ -139,7 +179,6 @@ bool parseArgs(int argc, char **argv, Options &options, std::string &error) {
                 error = "Invalid --pixel-size value (must be a positive number)";
                 return false;
             }
-            options.hasPixelSize = true;
             continue;
         }
         if (arg == "--px-range") {
@@ -148,6 +187,26 @@ bool parseArgs(int argc, char **argv, Options &options, std::string &error) {
                 return false;
             if (!parsePositiveDouble(value.c_str(), options.pxRange)) {
                 error = "Invalid --px-range value (must be a positive number)";
+                return false;
+            }
+            continue;
+        }
+        if (arg == "--angle-threshold") {
+            std::string value;
+            if (!consumeValue(argc, argv, i, "--angle-threshold", value, error))
+                return false;
+            if (!parsePositiveDouble(value.c_str(), options.angle_threshold)) {
+                error = "Invalid --angle-threshold value (must be a positive number)";
+                return false;
+            }
+            continue;
+        }
+        if (arg == "--miter-limit") {
+            std::string value;
+            if (!consumeValue(argc, argv, i, "--miter-limit", value, error))
+                return false;
+            if (!parsePositiveDouble(value.c_str(), options.miter_limit)) {
+                error = "Invalid --miter-limit value (must be a positive number)";
                 return false;
             }
             continue;
@@ -175,10 +234,6 @@ bool parseArgs(int argc, char **argv, Options &options, std::string &error) {
         error = "Missing required --output argument";
         return false;
     }
-    if (!options.hasPixelSize) {
-        error = "Missing required --pixel-size argument";
-        return false;
-    }
     if (!options.charsetSpec.empty() && !options.charsetFilePath.empty()) {
         error = "Use either --charset or --charset-file, not both";
         return false;
@@ -201,7 +256,21 @@ bool prepareOutputPath(const std::string &outputPath, std::string &error) {
     return true;
 }
 
-bool buildCharset(const Options &options, msdf_atlas::Charset &charset, std::string &error) {
+void add_supported_codepoint(msdfgen::FontHandle *font_handle, msdf_atlas::Charset &charset, msdf_atlas::unicode_t codepoint) {
+    msdfgen::GlyphIndex glyph_index;
+    if (msdfgen::getGlyphIndex(glyph_index, font_handle, codepoint) && glyph_index.getIndex() != 0)
+        charset.add(codepoint);
+}
+
+void build_default_ui_charset(msdfgen::FontHandle *font_handle, msdf_atlas::Charset &charset) {
+    charset = msdf_atlas::Charset::ASCII;
+    for (msdf_atlas::unicode_t codepoint = 0x00A0u; codepoint <= 0x00FFu; ++codepoint)
+        add_supported_codepoint(font_handle, charset, codepoint);
+    for (msdf_atlas::unicode_t codepoint : default_extended_ui_codepoints)
+        add_supported_codepoint(font_handle, charset, codepoint);
+}
+
+[[nodiscard]] bool buildCharset(const Options &options, msdfgen::FontHandle *font_handle, msdf_atlas::Charset &charset, std::string &error) {
     if (!options.charsetFilePath.empty()) {
         if (!charset.load(options.charsetFilePath.c_str(), false)) {
             error = "Failed to parse charset file: " + options.charsetFilePath;
@@ -227,7 +296,7 @@ bool buildCharset(const Options &options, msdf_atlas::Charset &charset, std::str
         return true;
     }
 
-    charset = msdf_atlas::Charset::ASCII;
+    build_default_ui_charset(font_handle, charset);
     return true;
 }
 
@@ -271,13 +340,17 @@ int main(int argc, char **argv) {
     }
 
     msdf_atlas::Charset charset;
-    if (!buildCharset(options, charset, error)) {
+    if (!buildCharset(options, font.handle, charset, error)) {
         std::cerr << "Error: " << error << '\n';
         return 1;
     }
 
     std::vector<msdf_atlas::GlyphGeometry> glyphs;
     msdf_atlas::FontGeometry fontGeometry(&glyphs);
+    const std::string font_name = flowui::tools::utf8_text(flowui::tools::utf8_path(options.outputPath).stem());
+    if (!font_name.empty())
+        fontGeometry.setName(font_name.c_str());
+
     const int glyphsLoaded = fontGeometry.loadCharset(
         font.handle,
         1.0,
@@ -302,15 +375,15 @@ int main(int argc, char **argv) {
     unsigned long long glyphSeed = 0;
     for (msdf_atlas::GlyphGeometry &glyph : glyphs) {
         glyphSeed = glyphSeed * kLcgMultiplier + kLcgIncrement;
-        glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, kDefaultAngleThreshold, glyphSeed);
+        glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, options.angle_threshold, glyphSeed);
     }
 
     msdf_atlas::TightAtlasPacker packer;
     packer.setDimensionsConstraint(msdf_atlas::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
-    packer.setSpacing(2);
+    packer.setSpacing(default_atlas_spacing);
     packer.setScale(options.pixelSize);
     packer.setPixelRange(options.pxRange);
-    packer.setMiterLimit(kDefaultMiterLimit);
+    packer.setMiterLimit(options.miter_limit);
     packer.setOriginPixelAlignment(false, true);
 
     const int remaining = packer.pack(glyphs.data(), glyphs.size());

@@ -165,6 +165,19 @@ namespace {
 	return static_cast<int>(stream.gcount());
 }
 
+struct BakedFontMemoryReader {
+	std::span<const std::byte> remaining{};
+};
+
+[[nodiscard]] int read_artery_font_memory(void* destination, int length, void* user) noexcept {
+	if (length <= 0) return 0;
+	auto& reader = *static_cast<BakedFontMemoryReader*>(user);
+	const size_t byte_count = std::min(static_cast<size_t>(length), reader.remaining.size());
+	if (byte_count != 0) std::memcpy(destination, reader.remaining.data(), byte_count);
+	reader.remaining = reader.remaining.subspan(byte_count);
+	return static_cast<int>(byte_count);
+}
+
 #if defined(FLOWUI_RUNTIME_FONT_BAKING)
 constexpr double kDefaultRuntimeFontPxRange = 6.0;
 constexpr double kDefaultRuntimeFontAngleThreshold = 3.0;
@@ -628,6 +641,9 @@ FontManager::FontId FontManager::resolveFont(ResourceKey key, uint32_t weight, F
 }
 
 FontManager::FontId FontManager::loadFontFace(const FontFaceCreateInfo& createInfo) {
+	if (!createInfo.baked_data.empty()) {
+		return registerBakedFont({}, createInfo.name, createInfo.baked_data);
+	}
 	if (createInfo.path.empty()) {
 		throw FlowUiException(makeError(ErrorCode::AssetPathEmpty, ErrorSite::FontLoad));
 	}
@@ -910,26 +926,35 @@ FontManager::FontId FontManager::registerRuntimeFont(const FontFaceCreateInfo& c
 #endif
 }
 
-FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& arfontPath, std::string_view requestedName) {
+FontManager::FontId FontManager::registerBakedFont(const std::filesystem::path& arfontPath,
+												std::string_view requestedName,
+												std::span<const std::byte> baked_data) {
 	if (!controller_) {
 		throw FlowUiException(makeError(ErrorCode::ObjectNotInitialized, ErrorSite::FontParse));
 	}
 
 	const std::filesystem::path path(arfontPath);
-	if (!isArfontPath(path)) {
+	if (baked_data.empty() && !isArfontPath(path)) {
 		throw FlowUiException(makeError(ErrorCode::AssetFormatUnsupported, ErrorSite::FontParse));
-	}
-	std::error_code pathError;
-	if (!std::filesystem::is_regular_file(path, pathError)) {
-		throw FlowUiException(makeError(
-			pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound,
-			ErrorSite::FontLoad));
 	}
 
 	artery_font::StdArteryFont<float> arteryFont{};
-	std::ifstream input(path, std::ios::binary);
-	if (!input || !artery_font::decode<read_artery_font_bytes>(arteryFont, &input)) {
-		throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontParse));
+	if (!baked_data.empty()) {
+		BakedFontMemoryReader reader{baked_data};
+		if (!artery_font::decode<read_artery_font_memory>(arteryFont, &reader)) {
+			throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontParse));
+		}
+	} else {
+		std::error_code pathError;
+		if (!std::filesystem::is_regular_file(path, pathError)) {
+			throw FlowUiException(makeError(
+				pathError ? ErrorCode::AssetOpenFailed : ErrorCode::AssetNotFound,
+				ErrorSite::FontLoad));
+		}
+		std::ifstream input(path, std::ios::binary);
+		if (!input || !artery_font::decode<read_artery_font_bytes>(arteryFont, &input)) {
+			throw FlowUiException(makeError(ErrorCode::AssetReadFailed, ErrorSite::FontParse));
+		}
 	}
 	if (arteryFont.variants.length() <= 0) {
 		throw FlowUiException(makeError(ErrorCode::AssetPayloadInvalid, ErrorSite::FontParse));

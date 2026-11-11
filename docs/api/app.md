@@ -25,6 +25,42 @@ Renderer texture handle and draw options returned by image, icon, and viewport m
 
 ## Public API
 
+### Runtime window operations
+
+`window_operation_capabilities(window_id)` returns a
+`Result<WindowOperationCapabilities>` with `close_window`, `minimize`,
+`maximize_restore`, and `toggle_fullscreen` support flags for that live window.
+The checked operations `request_window_close(window_id)`,
+`minimize_window(window_id)`, `toggle_window_maximized(window_id)`, and
+`toggle_window_fullscreen(window_id)` return `Status`. Call them on the platform
+thread and check the result; unavailable applications, stale IDs, unsupported
+operations, and backend failures return structured errors.
+
+Close sets the selected window's existing close flag. It preserves managed-window
+close handling and does not destroy the window inline. Resize-related operations
+requested during a UI frame are accepted into a window-ID queue and run at the
+next event-poll boundary. Deferred failures use the application's error observer;
+destroying a window discards its pending operations.
+
+Maximize/restore follows the native window's observed state and rejects a
+fullscreen target. Fullscreen chooses the monitor with the greatest window
+overlap, falling back to the primary monitor, and retains the previous windowed
+position, size, and maximized state. Initially fullscreen windows restore a
+centered window using their configured windowed size. If a retained monitor is
+removed, restoration uses an available monitor and recenters offscreen geometry;
+missing monitors or modes return an error. Extent changes use the existing
+swapchain resize path.
+
+Native state changes can settle during later event polls. FlowUi reapplies saved
+geometry after asynchronous unmaximization completes, including for windows
+created fullscreen. A competing maximize/fullscreen request returns an error
+while that restoration is still pending.
+
+These operations also power the opt-in
+[default window shortcuts](shortcut_manager.md). See the
+[App declarations](../../include/FlowUi/Public/App.hpp) and
+[capability values](../../include/FlowUi/Public/managerStructs/WindowOperationTypes.hpp).
+
 ### **makeApplication**
 
 

@@ -304,6 +304,11 @@ int main() {
 		auto& input = const_cast<FrameInput&>(app.ui().getCurrentFrameInput());
 		input.mouseX = wheel || control ? 600 : -10;
 		input.mouseY = control ? pointer_y : -10;
+		if (control && pointer_y < 0) {
+			const auto control_bounds = bounds(app, control);
+			input.mouseX = control_bounds.x + control_bounds.width * .5f;
+			input.mouseY = control_bounds.y + control_bounds.height * .5f;
+		}
 		if (wheel) {
 			const auto major_identity = ::FlowUi::detail::element_id::resolveLocal(
 				FlowElementID{workbench_id.value}, DevContiguousTimelineStrip::definitionId,
@@ -381,6 +386,36 @@ int main() {
 			"Pinned header remains fixed while canvas reveals cards");
 	require(app.ui().timeline_controller()->stats().surfaces == 3,
 			"Navigation history renders exactly minimap, major and one minor viewport");
+	const auto major_id = ::FlowUi::detail::element_id::resolveLocal(
+		FlowElementID{.value = workbench_id.value}, DevContiguousTimelineStrip::definitionId,
+		LocalElementName{"macro"}.token);
+	const auto retained_minor_id = ::FlowUi::detail::element_id::resolveLocal(
+		FlowElementID{.value = workbench_id.value}, DevDrillDownTimelineCard::definitionId,
+		LocalElementName{"minor"}.token);
+	for (const auto hovered_control :
+		 {control_id(GlobalFlowID{major_id.value}, 1), control_id(GlobalFlowID{major_id.value}, 2),
+		  control_id(GlobalFlowID{retained_minor_id.value}, 1),
+		  control_id(GlobalFlowID{pinned_id.value}, 32)}) {
+		for (int hover_frame = 0; hover_frame < 4; ++hover_frame) {
+			draw_workbench(0, hovered_control);
+			require(app.ui().timeline_controller()->stats().surfaces == 3,
+					"Hovering timeline controls keeps every timeline rendered");
+			for (const auto panel : {major_id, retained_minor_id}) {
+				const auto definition = panel == major_id ? DevContiguousTimelineStrip::definitionId
+														  : DevDrillDownTimelineCard::definitionId;
+				const auto plot = ::FlowUi::detail::element_id::resolveLocal(
+					panel, definition, LocalElementName{"plot-scroll"}.token);
+				const auto& nodes = app.ui().devTreeSnapshot().clay.nodes;
+				const auto found = std::ranges::find(nodes, app.ui().toClayEID(plot).id,
+													 &tooling::DevClayNode::clayId);
+				require(found != nodes.end() && found->clipClayId == app.ui().toClayEID(panel).id,
+						"Hover tooltips preserve major and minor timeline clipping ancestry");
+			}
+			draw_workbench();
+			require(app.ui().timeline_controller()->stats().surfaces == 3,
+					"Leaving timeline controls keeps every timeline rendered");
+		}
+	}
 	require(retained && retained->snapshot.frames.front().frame.frameNumber == 100 &&
 				retained->cards.size() == 7,
 			"Paused snapshot survives new live reports");

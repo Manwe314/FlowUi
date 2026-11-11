@@ -55,6 +55,7 @@ enum class ErrorSite : std::uint16_t {
 	WindowReadClipboard = 0x020a, /**< Window Read Clipboard operation; subject kind Window. */
 	WindowWriteClipboard = 0x020b, /**< Window Write Clipboard operation; subject kind Window. */
 	WindowBackendDiagnostic = 0x020c, /**< Window Backend Diagnostic operation; subject kind None. */
+	WindowOperation = 0x020d, /**< Runtime native-window operation; subject kind Window. */
 
 	VulkanContextInitialize = 0x0301, /**< Vulkan Context Initialize operation; subject kind App. */
 	VulkanInstanceCreate = 0x0302, /**< Vulkan Instance Create operation; subject kind App. */
@@ -346,6 +347,7 @@ struct ErrorSiteDescriptor {
 		FLOWUI_ERROR_SITE_CASE(WindowReadClipboard, Window);
 		FLOWUI_ERROR_SITE_CASE(WindowWriteClipboard, Window);
 		FLOWUI_ERROR_SITE_CASE(WindowBackendDiagnostic, None);
+		FLOWUI_ERROR_SITE_CASE(WindowOperation, Window);
 
 		FLOWUI_ERROR_SITE_CASE(VulkanContextInitialize, App);
 		FLOWUI_ERROR_SITE_CASE(VulkanInstanceCreate, App);

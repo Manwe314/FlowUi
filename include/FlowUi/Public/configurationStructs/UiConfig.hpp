@@ -8,80 +8,51 @@
 
 namespace FlowUi {
 
+/** Startup analytic coverage for solid primitives, borders, and image silhouettes. */
+struct PrimitiveAntialiasingConfig {
+	/** Positive finite multiplier for derivative-based linear coverage, measured in framebuffer pixels. */
+	float coverage_width_scale = 1.0f;
+	/** Disable analytic coverage and its raster fringe to use hard primitive edges. Glyph AA is separate. */
+	bool enabled = true;
+};
+
 /**
- * @brief Configures FlowUi layout, text, and UI resource defaults.
- *
- * These values are consumed during app and UI manager initialization. They affect
- * Clay layout memory, transient per-frame UI storage, text scaling, and the
- * default font resources used by text rendering.
+ * Layout, font, and text-editing defaults shared by application windows at startup.
+ * Temporary UI storage is sized by StorageMemoryCapacities::transientBytesPerFramePerWindow.
  */
 struct UiConfig {
 	/**
-	 * @brief Logical dots-per-inch used for point-to-pixel conversion.
-	 *
-	 * Text sizes are specified in points and converted to pixels as dpi / 72.
-	 * Values below 1 are clamped to 1 during initialization.
-	 *
-	 * For example, a 12 pt text size at the default 96 dpi is laid out as
-	 * 12 * (96 / 72) = 16 px before fontScale is applied.
+	 * Logical dots per inch for text: pixels = points * dpi / 72 * fontScale.
+	 * Initialization clamps dpi to at least one; 12 points at 96 dpi and scale one is 16 pixels.
 	 */
 	float dpi = 96.0f;
 
 	/**
-	 * @brief Global layout scale applied to UI coordinates and input.
-	 *
-	 * Values above 1 make the logical layout space smaller relative to the
-	 * native window size, producing larger rendered UI.
+	 * Layout scale applied to UI coordinates and input; use a positive value.
+	 * Values above one produce larger UI within the same native window.
 	 */
 	float uiScale = 1.0f;
 
 	/**
-	 * @brief Global multiplier applied after DPI font scaling.
-	 *
-	 * If the configured value is zero or negative, FlowUi falls back to the
-	 * DPI-derived point-to-pixel scale.
+	 * Multiplier applied after DPI font scaling; zero or negative values use the DPI scale alone.
 	 */
 	float fontScale = 1.0f;
 
 	/**
-	 * @brief Byte capacity of each transient UI arena.
-	 *
-	 * FlowUi creates one arena per frame in flight and resets the active arena at
-	 * the beginning of each UI frame. These arenas store temporary Clay strings,
-	 * element ids, and texture references created during UI construction.
-	 *
-	 * @note The Size set here is for ONE arena. Total Size used will be stringArenaSize *
-	 * framesInFlight
-	 *
-	 * @see FlowUi::VulkanConfig::framesInFlight
-	 */
-	size_t stringArenaSize = 256 * 1024;
-
-	/**
-	 * @brief Byte capacity of the persistent Clay layout arena.
-	 *
-	 * A value of 0 uses Clay_MinMemorySize(). Non-zero values are clamped up to
-	 * at least Clay_MinMemorySize() before Clay_Initialize is called.
+	 * Persistent Clay layout arena bytes; zero selects Clay_MinMemorySize().
+	 * Nonzero values below that minimum are raised to it.
 	 */
 	size_t clayArenaCapacityBytes = 0;
 
 	/**
-	 * @brief Default font family loaded during app startup.
-	 *
-	 * This family is registered first, so family id 0 is the fallback family used
-	 * by default text rendering. If loading fails, FlowUi attempts built-in
-	 * fallback font candidates.
-	 *
-	 * @see FlowUi::FontFamilyCreateInfo
+	 * Startup fallback font family, registered as family zero.
+	 * Loading failures follow ErrorPolicy::defaultFont, which can try built-in fallback fonts.
 	 */
 	FontFamilyCreateInfo defaultFontFamily{};
 
 	/**
-	 * @brief Width and height in pixels of each font atlas page.
-	 *
-	 * The font manager uploads each loaded font face into square atlas layers of
-	 * this size. The value must be non-zero and large enough for the source
-	 * .arfont atlas or runtime-baked glyph atlas.
+	 * Square font atlas page size in pixels; must fit the source or runtime-baked glyph atlas.
+	 * Use a nonzero value supported by the GPU.
 	 */
 	uint32_t fontAtlasSize = 2048;
 
@@ -94,6 +65,9 @@ struct UiConfig {
 
 	/** @brief Built-in shortcut registrations installed for this UI manager. */
 	ShortcutManagerConfig shortcuts{};
+
+	/** Copied at renderer startup; changing the caller's config does not affect existing windows. */
+	PrimitiveAntialiasingConfig primitive_antialiasing{};
 };
 
 } // namespace FlowUi

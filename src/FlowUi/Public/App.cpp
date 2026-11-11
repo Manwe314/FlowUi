@@ -161,13 +161,16 @@ Status App::dispatchManagedWindows() {
 	}
 
 	std::vector<WindowId> recursive_dispatch_order;
-	const bool recursive = impl_->dispatching_managed_windows;
+	const bool recursive =
+		impl_->dispatch_flags.has_flag(Impl::DispatchFlag::dispatching_managed_windows);
 	struct DispatchScope {
-		bool& active;
+		detail::EnumFlags<Impl::DispatchFlag>& flags;
 		bool previous;
-		~DispatchScope() { active = previous; }
-	} dispatch_scope{impl_->dispatching_managed_windows,
-					 std::exchange(impl_->dispatching_managed_windows, true)};
+		~DispatchScope() {
+			flags.set_flag(Impl::DispatchFlag::dispatching_managed_windows, previous);
+		}
+	} dispatch_scope{impl_->dispatch_flags, recursive};
+	impl_->dispatch_flags.set_flag(Impl::DispatchFlag::dispatching_managed_windows);
 	auto& dispatchOrder = recursive ? recursive_dispatch_order : impl_->dispatch_order;
 	FLOWUI_MEMORY_DEMAND_RECORD(impl_->capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::app_dispatch,
@@ -393,12 +396,12 @@ Status App::advance_dev_capture() {
 									 window->frames.frames[frame_slot].inFlight) == VK_SUCCESS)
 					devSystems::agentic::frame_capture::complete_slot(impl_->vk, window_id,
 																	  frame_slot);
-		impl_->advancing_agentic = true;
+		impl_->dispatch_flags.set_flag(Impl::DispatchFlag::advancing_agentic, true);
 		impl_->agentic_service->advance_safe_point(
 			{tick, impl_->devMonitoring.timingReporting().current_boundary_ns(),
 			 devSystems::agentic::frame_capture::pending_bytes(impl_->vk),
 			 devSystems::agentic::frame_capture::failure_count(impl_->vk)});
-		impl_->advancing_agentic = false;
+		impl_->dispatch_flags.set_flag(Impl::DispatchFlag::advancing_agentic, false);
 	}
 #endif
 	if (capture.status().phase == devSystems::PerformanceCapturePhase::Sealed)
@@ -445,6 +448,37 @@ void App::setShouldClose(WindowId id, int value) {
 	AppWindow& window = impl_->requireWindow(id);
 	if (window.backend)
 		window.backend->setShouldClose(value);
+}
+
+Result<WindowOperationCapabilities>
+App::window_operation_capabilities(WindowId window_id) const noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return impl_->window_operation_capabilities(window_id);
+}
+
+Status App::request_window_close(WindowId window_id) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::Close);
+}
+
+Status App::minimize_window(WindowId window_id) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::Minimize);
+}
+
+Status App::toggle_window_maximized(WindowId window_id) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::MaximizeRestore);
+}
+
+Status App::toggle_window_fullscreen(WindowId window_id) noexcept {
+	if (!impl_)
+		return unexpectedError(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	return impl_->request_window_operation(window_id, Impl::NativeWindowOperation::Fullscreen);
 }
 
 Status App::beginFrame() {

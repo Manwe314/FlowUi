@@ -355,6 +355,11 @@ target_sources(flowui
         src/FlowUi/Private/AppRuntime.cpp
         src/FlowUi/Public/Color.cpp
         src/FlowUi/Public/Resources.cpp
+        src/FlowUi/Public/defaults/FontDefaults.cpp
+        src/FlowUi/Public/defaults/InputDefaults.cpp
+        src/FlowUi/Public/defaults/ShortcutDefaults.cpp
+        src/FlowUi/Public/defaults/TextureDefaults.cpp
+        src/FlowUi/Public/defaults/ThemeDefaults.cpp
         src/FlowUi/Private/resourceService/ResourceDiscovery.cpp
         src/FlowUi/Public/managers/FontManager.cpp
         src/FlowUi/Private/resourceService/FontCatalogController.cpp
@@ -667,7 +672,7 @@ if(FLOWUI_COMPILE_FSELI_ENABLED)
 endif()
 
 if(FLOWUI_INCLUDE_ICON_MANAGER)
-    target_sources(flowui PRIVATE src/FlowUi/Public/managers/IconManager.cpp src/FlowUi/Private/resourceService/IconCacheController.cpp)
+    target_sources(flowui PRIVATE src/FlowUi/Public/managers/IconManager.cpp src/FlowUi/Private/resourceService/IconCacheController.cpp src/FlowUi/Public/defaults/FselIcons.cpp)
 endif()
 
 target_include_directories(flowui

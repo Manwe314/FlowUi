@@ -69,7 +69,7 @@ DevGpuTiming::~DevGpuTiming() = default;
 void DevGpuTiming::initialize(const VulkanContext& vk) noexcept {
 	supported_ = false;
 	capabilityChecked_ = false;
-	synchronization2Available_ = vk.synchronization2Enabled;
+	synchronization2Available_ = vk.flags.has_flag(VulkanContext::Flag::synchronization2_enabled);
 	timestampValidBits_ = 0u;
 	timestampPeriodNs_ = 0.0;
 	calibratedTimestampsAvailable_ = false;
@@ -97,7 +97,8 @@ void DevGpuTiming::initialize(const VulkanContext& vk) noexcept {
 	timestampPeriodNs_ = static_cast<double>(properties.limits.timestampPeriod);
 	supported_ = timestampPeriodNs_ > 0.0;
 
-	if (!supported_ || !vk.calibratedTimestampsEnabled || !vk.getCalibratedTimestampsEXT) return;
+	if (!supported_ || !vk.flags.has_flag(VulkanContext::Flag::calibrated_timestamps_enabled) ||
+		!vk.getCalibratedTimestampsEXT) return;
 	const auto getTimeDomains = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT>(
 		vkGetInstanceProcAddr(vk.instance, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT"));
 	if (!getTimeDomains) return;

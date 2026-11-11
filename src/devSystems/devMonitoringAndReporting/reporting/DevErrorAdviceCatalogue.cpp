@@ -317,7 +317,7 @@ constexpr auto kNoGuidance = std::to_array<DevErrorNoGuidanceAnnotation>({
 		"Application lifecycle wording is deferred to a dedicated advice pass; fatal evidence is preserved by the completed capsule path."},
 	{ErrorCode::PlatformInitializationFailed, ErrorCode::PlatformInputQueueOverflow,
 		"Platform-specific remediation depends on backend evidence and is not yet catalogued."},
-	{ErrorCode::InvalidWindowId, ErrorCode::WindowRecreationFailed,
+	{ErrorCode::InvalidWindowId, ErrorCode::WindowOperationFailed,
 		"Window contracts are currently explained by lifecycle evidence without additional advice prose."},
 	{ErrorCode::FrameAlreadyActive, ErrorCode::FrameCapacityExceeded,
 		"Covered frame contracts coexist with an explicit annotation for the remaining frame codes."},

@@ -9,6 +9,11 @@ set(FLOWUI_PUBLIC_HEADERS
     FlowUi/Public/FlowUiTheme.hpp
     FlowUi/Public/Resources.hpp
     FlowUi/Public/TextureRef.hpp
+    FlowUi/Public/defaults/FontDefaults.hpp
+    FlowUi/Public/defaults/FselIcons.hpp
+    FlowUi/Public/defaults/InputDefaults.hpp
+    FlowUi/Public/defaults/ShortcutDefaults.hpp
+    FlowUi/Public/defaults/TextureDefaults.hpp
     FlowUi/Public/configurationStructs/AppConfig.hpp
     FlowUi/Public/configurationStructs/DevToolsConfig.hpp
     FlowUi/Public/configurationStructs/IconManagerConfig.hpp
@@ -75,6 +80,7 @@ set(FLOWUI_PRIVATE_SUPPORT_HEADERS
     FlowUi/Private/IdentityHash.hpp
     FlowUi/Private/ResultSupport.hpp
     FlowUi/Private/TypeOperations.hpp
+    FlowUi/Private/utility/EnumFlags.hpp
     FlowUi/Private/actionService/ActionBinding.hpp
     FlowUi/Private/actionService/AppActionIdentity.hpp
     FlowUi/Private/actionService/UiActionBinding.hpp

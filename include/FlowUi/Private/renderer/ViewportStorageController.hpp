@@ -1,5 +1,6 @@
 #pragma once
 #include "FlowUi/Private/storageSystem/capacity/MemoryDemandPeaks.hpp"
+#include "FlowUi/Private/utility/EnumFlags.hpp"
 
 #include <algorithm>
 #include <array>
@@ -73,13 +74,21 @@ struct ViewportDevCapture {
 };
 #endif
 
+enum class ViewportRecordFlag : uint8_t {
+	referenced_this_frame = 1u << 0,
+#if FLOW_UI_DEV_MODE
+	capture_requested = 1u << 1,
+	capture_failed = 1u << 2,
+	capture_release_requested = 1u << 3,
+#endif
+};
+
 struct ViewportRecord {
 	ViewportFacadeState state{};
 	ViewPort* facadeAddress = nullptr;
 	ViewportTargetGeneration active{};
 #if FLOW_UI_DEV_MODE
 	ViewportDevCapture pending_capture{}, published_capture{};
-	bool capture_requested = false, capture_failed = false, capture_release_requested = false;
 #endif
 #if FLOW_UI_AGENTIC_WORKFLOW
 	uint64_t agentic_next_content_revision = 1;
@@ -87,7 +96,7 @@ struct ViewportRecord {
 	uint32_t desiredWidth = 1;
 	uint32_t desiredHeight = 1;
 	uint32_t resizeHysteresisPixels = 4u;
-	bool referencedThisFrame = false;
+	EnumFlags<ViewportRecordFlag> flags{};
 };
 
 struct RetiredViewportGeneration {

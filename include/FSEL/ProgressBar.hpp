@@ -175,7 +175,7 @@ private:
  * stored in this object.
  */
 inline constexpr ProgressBar kProgressBar{};
-static_assert(FlowElement<ProgressBar>);
+static_assert(validate_flow_element<ProgressBar>());
 static_assert(DrawableFlowElement<ProgressBar>);
 
 } // namespace FlowUi::FSEL

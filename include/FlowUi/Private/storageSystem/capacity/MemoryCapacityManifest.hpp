@@ -280,12 +280,29 @@ template <class Json>
 	}
 	return output + '"';
 }
-/* Deterministic JSON; all strings are validated registry/policy/evidence tokens. */
+/** Deterministic JSON; an indentation offset requests two-space pretty formatting. */
 [[nodiscard]] inline std::string
-encode_memory_capacity_manifest(const MemoryCapacityManifest& section) {
-	std::string output =
-		"{\"version\":1,\"enabled\":" + std::string(section.enabled ? "true" : "false") +
-		",\"targets\":[";
+encode_memory_capacity_manifest(const MemoryCapacityManifest& section,
+								std::optional<size_t> indentation = std::nullopt) {
+	std::string output = "{";
+	const auto append_line = [&](size_t depth) {
+		if (indentation) {
+			output += '\n';
+			output.append(*indentation + depth * 2, ' ');
+		}
+	};
+	const auto append_member = [&](size_t depth, std::string_view name, std::string_view value,
+								   bool first = false) {
+		if (!first)
+			output += ',';
+		append_line(depth);
+		output += quote_capacity_json(name);
+		output += indentation ? ": " : ":";
+		output += value;
+	};
+	append_member(1, "version", "1", true);
+	append_member(1, "enabled", section.enabled ? "true" : "false");
+	append_member(1, "targets", "[");
 	auto selections = section.targets;
 	std::sort(selections.begin(), selections.end(),
 			  [](const auto& left, const auto& right) { return left.key < right.key; });
@@ -294,35 +311,47 @@ encode_memory_capacity_manifest(const MemoryCapacityManifest& section) {
 		const auto& evidence = selection.evidence;
 		if (index)
 			output += ',';
+		append_line(2);
+		output += '{';
 		const auto* definition = find_initial_capacity(memory_capacity_target_id(selection.key));
-		output +=
-			"{\"key\":\"" + selection.key + "\",\"unit\":\"" +
-			(definition->unit == InitialCapacityUnit::Bytes ? "bytes" : "entries") +
-			"\",\"value\":\"" + std::to_string(selection.value) + "\",\"policy\":\"" +
-			selection.policy + "\",\"observedMaximum\":\"" +
-			std::to_string(selection.observed_maximum) + "\",\"headroom\":\"" +
-			std::to_string(selection.headroom) +
-			"\",\"percentile\":" + std::to_string(selection.percentile) +
-			",\"evidence\":{\"kind\":\"" + evidence.kind +
-			"\",\"complete\":" + (evidence.complete ? "true" : "false") +
-			",\"acknowledgeIncomplete\":" + (evidence.acknowledge_incomplete ? "true" : "false") +
-			",\"sampleEveryTicks\":" + std::to_string(evidence.sample_every_ticks) +
-			",\"sourceName\":" + quote_capacity_json(evidence.source_name) + ",\"datasetId\":\"" +
-			std::to_string(evidence.dataset_id) + "\",\"beginNs\":\"" +
-			std::to_string(evidence.begin_ns) + "\",\"endNs\":\"" +
-			std::to_string(evidence.end_ns) + "\",\"beginTick\":\"" +
-			std::to_string(evidence.begin_tick) + "\",\"endTickExclusive\":\"" +
-			std::to_string(evidence.end_tick_exclusive) + "\"}}";
+		append_member(3, "key", quote_capacity_json(selection.key), true);
+		append_member(3, "unit",
+					  definition->unit == InitialCapacityUnit::Bytes ? "\"bytes\"" : "\"entries\"");
+		append_member(3, "value", quote_capacity_json(std::to_string(selection.value)));
+		append_member(3, "policy", quote_capacity_json(selection.policy));
+		append_member(3, "observedMaximum",
+					  quote_capacity_json(std::to_string(selection.observed_maximum)));
+		append_member(3, "headroom", quote_capacity_json(std::to_string(selection.headroom)));
+		append_member(3, "percentile", std::to_string(selection.percentile));
+		append_member(3, "evidence", "{");
+		append_member(4, "kind", quote_capacity_json(evidence.kind), true);
+		append_member(4, "complete", evidence.complete ? "true" : "false");
+		append_member(4, "acknowledgeIncomplete",
+					  evidence.acknowledge_incomplete ? "true" : "false");
+		append_member(4, "sampleEveryTicks", std::to_string(evidence.sample_every_ticks));
+		append_member(4, "sourceName", quote_capacity_json(evidence.source_name));
+		append_member(4, "datasetId", quote_capacity_json(std::to_string(evidence.dataset_id)));
+		append_member(4, "beginNs", quote_capacity_json(std::to_string(evidence.begin_ns)));
+		append_member(4, "endNs", quote_capacity_json(std::to_string(evidence.end_ns)));
+		append_member(4, "beginTick", quote_capacity_json(std::to_string(evidence.begin_tick)));
+		append_member(4, "endTickExclusive",
+					  quote_capacity_json(std::to_string(evidence.end_tick_exclusive)));
+		append_line(3);
+		output += '}';
+		append_line(2);
+		output += '}';
 	}
+	if (!selections.empty())
+		append_line(1);
 	output += ']';
 	if (section.growth_factor) {
 		char number[64]{};
 		const auto written = std::to_chars(number, number + sizeof(number), *section.growth_factor);
-		output += ",\"growthFactor\":" + std::string(number, written.ptr);
+		append_member(1, "growthFactor", std::string_view(number, written.ptr));
 	}
 	if (section.allow_runtime_growth)
-		output += ",\"allowRuntimeGrowth\":" +
-				  std::string(*section.allow_runtime_growth ? "true" : "false");
+		append_member(1, "allowRuntimeGrowth", *section.allow_runtime_growth ? "true" : "false");
+	append_line(0);
 	return output + '}';
 }
 } // namespace FlowUi::detail

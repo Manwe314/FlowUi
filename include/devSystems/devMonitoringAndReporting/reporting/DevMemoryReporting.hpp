@@ -215,9 +215,33 @@ struct MemoryCapacityRecommendation {
 	FlowUi::detail::MemoryGrowthSimulation simulation{}; /**< Predicted growth behavior across retained demand observations. */
 	MemoryReportFlag flags = MemoryReportFlag::None; /**< Completeness, overlap, and analysis-quality flags. */
 };
+/**
+ * Aggregate manager demand recorded by profiling tools. These summaries do not reserve individual
+ * runtime containers; use MemoryCapacityPreview::profile settings for startup targets. Values are
+ * target-specific counts or byte sizes.
+ */
+struct ManagerMemoryCapacities {
+	uint64_t elements = 0u, /**< Element manager aggregate demand. */
+		inputFields = 0u, /**< Input-field registry aggregate demand. */
+		inputTextBytes = 0u, /**< Input text payload bytes. */
+		fonts = 0u, /**< Font manager aggregate demand. */
+		fontAtlasCpuPixelBytes = 0u, /**< Legacy font_atlas_layers aggregate in producer-defined units. */
+		icons = 0u, /**< Icon manager aggregate demand. */
+		iconDocuments = 0u, /**< Retained SVG document aggregate demand. */
+		iconAtlasMetadata = 0u, /**< Icon atlas metadata aggregate demand. */
+		viewports = 0u, /**< Viewport manager aggregate demand. */
+		popups = 0u, /**< Popup manager aggregate demand. */
+		shortcuts = 0u, /**< Shortcut manager aggregate demand. */
+		actions = 0u, /**< Action manager aggregate demand. */
+		themes = 0u, /**< Theme manager aggregate demand. */
+		uiLayout = 0u, /**< UI layout aggregate demand. */
+		renderer = 0u; /**< Renderer aggregate demand. */
+};
+
 /** Owned proposed profile and per-target evidence; previewing does not apply or bake the recommendations. */
 struct MemoryCapacityPreview {
 	MemoryCapacityProfile profile{}; /**< Owned startup profile proposed by the preview. */
+	ManagerMemoryCapacities managers{}; /**< Aggregate demand summaries; do not configure allocations. */
 	std::vector<MemoryCapacityRecommendation> recommendations{}; /**< Owned recommendations and evidence for each measured target. */
 	MemoryReportFlag flags = MemoryReportFlag::None; /**< Completeness, overlap, and analysis-quality flags. */
 	uint64_t predictedStartupBytes = 0u; /**< Estimated startup bytes where target units permit a byte estimate. */

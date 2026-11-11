@@ -5,11 +5,14 @@
 
 namespace FlowUi {
 
-/** Resource roots contain shaders/, fonts/, and optional application assets. */
+/**
+ * Resource lookup roots containing shaders/, fonts/, and optional application assets.
+ * Explicit roots are searched before enabled discovery paths; paths are owned by the configuration.
+ */
 struct ResourceConfig {
 	/** Caller-supplied roots searched in order before enabled default discovery paths. */
 	std::vector<std::filesystem::path> roots;
-	/** Override executable discovery, for embedding hosts and tests. */
+	/** Executable-directory override for hosts/tests; empty uses automatic executable discovery. */
 	std::filesystem::path executable_directory;
 	/** Search platform installation and executable-relative resource locations. */
 	bool use_platform_defaults = true;

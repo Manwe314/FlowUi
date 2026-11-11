@@ -157,7 +157,7 @@ enum class PopupFirstFramePolicy : uint8_t {
 	PlaceImmediately,
 };
 
-/** Viewport-fit policy applied to candidate popup placements. */
+/** Placement adjustments allowed when a popup would extend beyond its window viewport. */
 struct PopupOverflowPolicy {
 	/** Try horizontally mirrored attachment points when placement overflows. */
 	bool flipX = true;
@@ -179,7 +179,7 @@ enum class PopupOutsidePressPolicy : uint8_t {
 
 /**
  * Per-frame popup anchor, geometry, stacking, and dismissal request. Submit once per popup ID during
- * the active UI build.
+ * the active UI build. Geometry uses logical layout pixels; placement is resolved after layout.
  */
 struct PopupRequest {
 	/** Anchor source; parent by default. */

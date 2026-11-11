@@ -215,7 +215,10 @@ struct SectionCoverage {
 	/** @brief Whether the producer explicitly reports uncertainty in section coverage. */
 	bool uncertain = false;
 };
-/** Hard bounds reserved before admitting collection. */
+/**
+ * @brief Hard capture admission and evidence-store bounds; sizes are bytes and times nanoseconds.
+ * Requests exceeding a bound fail explicitly before collection is admitted.
+ */
 struct AgenticLimits {
 	/** @brief Maximum owned capture snapshot storage, in bytes. */
 	std::uint64_t maximum_snapshot_bytes = 128u * 1024u * 1024u;
@@ -236,11 +239,15 @@ struct AgenticLimits {
 	/** @brief Maximum pending jobs admitted by the service. */
 	std::uint32_t maximum_queued_jobs = 8;
 };
-/** Only explicitly enabled services create directories, threads or endpoints. */
+/**
+ * @brief Agentic service startup policy, available with FLOW_UI_AGENTIC_WORKFLOW.
+ * Unset enablement accepts launch handoff; explicit false keeps the service dormant.
+ * Directories, worker threads and endpoints are created only when the service is enabled.
+ */
 struct AgenticWorkflowConfig {
 	/**
-	 * @brief Requested immutable evidence store root; directories are created only after explicit
-	 * enablement.
+	 * @brief Evidence-store root; use .flowui/agentic for repository-local runtime outputs.
+	 * Empty accepts an enabled launch handoff path; enabled services require a resolved path.
 	 */
 	std::filesystem::path store_path;
 	/** @brief Application identity recorded in run provenance. */
@@ -257,15 +264,15 @@ struct AgenticWorkflowConfig {
 	 * @brief Hard admission and retention bounds; exceeding them returns an explicit failure.
 	 */
 	AgenticLimits limits;
-	/** Unset accepts launch handoff; false explicitly keeps the service dormant. */
+	/** @brief Unset accepts launch handoff; false explicitly keeps the service dormant. */
 	std::optional<bool> enabled;
-	/** Unset accepts launch handoff; false explicitly disables the endpoint. */
+	/** @brief Unset accepts launch handoff; false explicitly disables the local endpoint. */
 	std::optional<bool> local_attachment_enabled;
 	/** @brief Whether image capture resources may be enabled before window creation. */
 	bool visual_capture_enabled = false;
-	/** Permit frame-bound input replacement; collection alone never grants input control. */
+	/** @brief Permit frame-bound input replacement; evidence collection alone grants no control. */
 	bool input_control_enabled = false;
-	/** Permit invocation of application-declared exported actions. */
+	/** @brief Permit invocation of application-declared exported actions. */
 	bool action_control_enabled = false;
 };
 /**

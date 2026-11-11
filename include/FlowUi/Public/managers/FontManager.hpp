@@ -176,6 +176,7 @@ struct FontManager {
 	 * immediately. If createInfo.name is empty, the family is named "Default".
 	 * Family ids are stable until FlowUi::FontManager is destroyed.
 	 *
+	 * Nonempty FontFaceCreateInfo::baked_data loads borrowed .arfont bytes synchronously.
 	 * Face paths ending in .arfont load baked font assets. Paths to .ttf files
 	 * only work when FlowUi is built with runtime font baking enabled.
 	 *
@@ -240,6 +241,7 @@ struct FontManager {
 	 * the provided weight and style. Use this overload when the caller already
 	 * cached a FontFamilyId.
 	 *
+	 * Nonempty FontFaceCreateInfo::baked_data loads borrowed .arfont bytes synchronously.
 	 * Paths ending in .arfont load baked font assets. Paths to .ttf files only
 	 * work when FlowUi is built with runtime font baking enabled.
 	 *
@@ -419,7 +421,9 @@ private:
 
 	FontId loadFontFace(const FontFaceCreateInfo& createInfo);
 	FontId loadFont(const std::filesystem::path& path, float px);
-	FontId registerBakedFont(const std::filesystem::path& arfontPath, std::string_view requestedName = {});
+	FontId registerBakedFont(const std::filesystem::path& arfontPath,
+							std::string_view requestedName = {},
+							std::span<const std::byte> baked_data = {});
 	FontId registerRuntimeFont(const FontFaceCreateInfo& createInfo);
 
 	detail::storage::IStorageSystem* storage_ = nullptr;

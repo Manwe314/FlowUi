@@ -78,6 +78,8 @@
 #include <vector>
 
 #include "FlowUi/Private/AppRuntime.hpp"
+#include "FlowUi/Public/defaults/FontDefaults.hpp"
+#include "FlowUi/Public/defaults/TextureDefaults.hpp"
 
 namespace {
 
@@ -929,7 +931,8 @@ void App::Impl::initializeDefaultFont() {
 	{
 		auto default_family = config.ui.defaultFontFamily;
 		for (auto& face : default_family.faces) {
-			if (face.path == "assets/fonts/Inter.arfont" || face.path.empty()) {
+			if (face.baked_data.empty() &&
+				(face.path == "assets/fonts/Inter.arfont" || face.path.empty())) {
 				const auto path = locate_resource("fonts/Inter.arfont", config.resources);
 				face.path = path ? *path : std::filesystem::path{};
 			}
@@ -983,6 +986,18 @@ void App::Impl::initializeDefaultFont() {
 			defaultFontLoaded = true;
 			break;
 		}
+		if (!defaultFontLoaded) {
+			const auto added = fonts.addFamilyFace(fallbackFamilyName, defaults::missing_font());
+			if (added) {
+				defaultFontLoaded = true;
+				detail::reportErrorEvent(ErrorEventView{
+					.error = makeError(ErrorCode::DefaultFontUnavailable,
+									   ErrorSite::FontManagerInitialize),
+					.kind = ErrorEventKind::Resolved,
+					.resolution = ErrorResolution::UsedFallback,
+				});
+			}
+		}
 	}
 
 	if (!defaultFontLoaded && fonts.getFontById(0) == nullptr) {
@@ -1031,9 +1046,11 @@ void App::Impl::init(App& owner) {
 			makeError(ErrorCode::WindowPresentationUnsupported, ErrorSite::AppInitialize));
 	}
 #if FLOW_UI_DEV_MODE
-	vk.devGpuTimingRequested = devMonitoring.timing().config().gpuTimingEnabled;
+	vk.flags.set_flag(VulkanContext::Flag::dev_gpu_timing_requested,
+		devMonitoring.timing().config().gpuTimingEnabled);
 #if FLOWUI_DEV_MEMORY_LEVEL >= 1
-	vk.devGpuMemoryRequested = devMonitoring.memory().config().gpuMemory;
+	vk.flags.set_flag(VulkanContext::Flag::dev_gpu_memory_requested,
+		devMonitoring.memory().config().gpuMemory);
 #endif
 #endif
 	vk.createDevice(config);
@@ -1099,6 +1116,7 @@ void App::Impl::init(App& owner) {
 	capacity_demand.bind(storageConfig.memory_demand_control);
 #endif
 	storageSystem->initialize(storageConfig);
+	pending_window_operations.reserve(16u);
 	detail::reserve_initial_capacity(
 		windows,
 		storageSystem->initial_memory_capacity(FlowUi::detail::InitialCapacityTarget::app_windows));
@@ -1141,7 +1159,7 @@ void App::Impl::init(App& owner) {
 	mainPointer->storageSystem = storageSystem.get();
 	storageSystem->registerWindow(
 		mainPointer->id, makeWindowStorageDesc(*storageSystem, storageConfig, mainPointer->config));
-	mainPointer->storageRegistered = true;
+	mainPointer->flags.set_flag(AppWindow::Flag::storage_registered, true);
 	elementManager.registerWindow(mainPointer->id);
 	mainPointer->ui.initStorage(*storageSystem, mainPointer->id,
 								makeUiManagerConfig(config, mainPointer->config));
@@ -1157,6 +1175,9 @@ void App::Impl::init(App& owner) {
 #endif
 	actionManager.attachTo(mainPointer->ui);
 	elementManager.attachTo(mainPointer->ui);
+	const auto window_shortcut_status = install_default_window_shortcuts(*mainPointer);
+	if (!window_shortcut_status)
+		throw FlowUiException(window_shortcut_status.error());
 	initSharedUiByteResources(*storageSystem, sharedUiByteResources);
 	const storage::TextureHandle fallbackTexture = storageSystem->publishTexture(
 		storage::ResourceKey{
@@ -1166,9 +1187,9 @@ void App::Impl::init(App& owner) {
 		},
 		storage::TextureViewDesc{
 			.imageView = sharedUiByteResources.placeholderUiView,
-			.sampler = sharedUiByteResources.linearSampler,
-			.sourceWidth = 1,
-			.sourceHeight = 1,
+			.sampler = sharedUiByteResources.missing_texture_sampler,
+			.sourceWidth = static_cast<int32_t>(defaults::missing_texture().width),
+			.sourceHeight = static_cast<int32_t>(defaults::missing_texture().height),
 		});
 	storageSystem->setFallbackTexture(fallbackTexture);
 
@@ -1187,15 +1208,15 @@ void App::Impl::init(App& owner) {
 		mainPointer->config.uiTextureDescriptorCapacity,
 		config.errors.policy.transientCapacity == StorageCapacityPolicy::GrowWithinBudget,
 		config.resources);
-	imagesInitialized = true;
+	lifecycle_flags.set_flag(LifecycleFlag::images_initialized, true);
 	imageManager.init(*storageSystem, config.errors.policy.missingImage);
 	mainPointer->viewPorts.init(*storageSystem, vk, mainPointer->id,
 								mainPointer->config.vulkan.framesInFlight,
 								config.errors.policy.missingViewport);
-	fontsInitialized = true;
+	lifecycle_flags.set_flag(LifecycleFlag::fonts_initialized, true);
 	fonts.init(*storageSystem, config.ui.fontAtlasSize);
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	iconsInitialized = true;
+	lifecycle_flags.set_flag(LifecycleFlag::icons_initialized, true);
 	icons.init(*storageSystem, config.iconManager, config.errors.policy.iconGeneration,
 			   config.errors.policy.descriptorCapacity);
 #if COMPILE_FSELI
@@ -1256,6 +1277,200 @@ void App::Impl::attachBackendAccessors(AppWindow& window) {
 	});
 }
 
+Result<WindowOperationCapabilities>
+App::Impl::window_operation_capabilities(WindowId window_id) const noexcept {
+	if (std::this_thread::get_id() != platformThread)
+		return unexpectedError(
+			makeError(ErrorCode::WrongThread, ErrorSite::AppRequirePlatformThread));
+	const auto window_entry = windows.find(window_id);
+	if (window_entry == windows.end() || !window_entry->second->backend)
+		return unexpectedError(
+			makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, window_id));
+	return window_entry->second->backend->window_operation_capabilities();
+}
+
+Status App::Impl::execute_window_operation(WindowId window_id,
+										   NativeWindowOperation operation) noexcept {
+	const auto window_entry = windows.find(window_id);
+	if (window_entry == windows.end() || !window_entry->second->backend)
+		return unexpectedError(
+			makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, window_id));
+	auto& backend = *window_entry->second->backend;
+	Status status = unexpectedError(
+		makeError(ErrorCode::WindowOperationUnsupported, ErrorSite::AppAccessWindow, window_id));
+	switch (operation) {
+	case NativeWindowOperation::Close:
+		status = backend.request_window_close();
+		break;
+	case NativeWindowOperation::Minimize:
+		status = backend.minimize_window();
+		break;
+	case NativeWindowOperation::MaximizeRestore:
+		status = backend.toggle_window_maximized();
+		break;
+	case NativeWindowOperation::Fullscreen:
+		status = backend.toggle_window_fullscreen();
+		break;
+	}
+	if (!status) {
+		auto error = status.error();
+		if (error.subjectKind() == ErrorSubjectKind::Window)
+			error.subject = window_id;
+		return unexpectedError(error);
+	}
+	return {};
+}
+
+Status App::Impl::request_window_operation(WindowId window_id,
+										   NativeWindowOperation operation) noexcept {
+	const auto capabilities = window_operation_capabilities(window_id);
+	if (!capabilities)
+		return unexpectedError(capabilities.error());
+	const bool supported = operation == NativeWindowOperation::Close ? capabilities->close_window
+						   : operation == NativeWindowOperation::Minimize ? capabilities->minimize
+						   : operation == NativeWindowOperation::MaximizeRestore
+							   ? capabilities->maximize_restore
+							   : capabilities->toggle_fullscreen;
+	if (!supported)
+		return unexpectedError(makeError(ErrorCode::WindowOperationUnsupported,
+										 ErrorSite::AppAccessWindow, window_id));
+	if (operation == NativeWindowOperation::Close || activeWindowFrame == InvalidWindowId)
+		return execute_window_operation(window_id, operation);
+	try {
+		pending_window_operations.emplace_back(PendingWindowOperation{window_id, operation});
+		return {};
+	} catch (const std::exception&) {
+		return unexpectedError(
+			makeError(ErrorCode::AllocationFailed, ErrorSite::AppAccessWindow, window_id));
+	}
+}
+
+void App::Impl::drain_window_operations() noexcept {
+	while (!pending_window_operations.empty() && activeWindowFrame == InvalidWindowId) {
+		// Error observers can destroy a window and cancel its remaining requests.
+		// Keep no queue references alive across execution or error reporting.
+		const auto pending = pending_window_operations.front();
+		pending_window_operations.erase(pending_window_operations.begin());
+		const auto status = execute_window_operation(pending.window_id, pending.operation);
+		if (!status)
+			detail::reportErrorEvent(
+				ErrorEventView{.error = status.error(), .kind = ErrorEventKind::Reported});
+	}
+}
+
+Status App::Impl::install_default_window_shortcuts(AppWindow& window) {
+	const auto& settings = window.config.ui.shortcuts.window;
+	if (!settings.enabled)
+		return {};
+	struct PlannedShortcut {
+		ShortcutChord chord{};
+		NativeWindowOperation operation = NativeWindowOperation::Close;
+		bool supported = false;
+	};
+	std::array<PlannedShortcut, 4> plan{};
+	size_t plan_size = 0u;
+	const auto capabilities = window.backend->window_operation_capabilities();
+	const auto append = [&](const DefaultWindowShortcutBinding& binding,
+							NativeWindowOperation operation, bool supported,
+							std::optional<ShortcutChord> platform_chord) {
+		if (binding.enabled) {
+			const auto chord = binding.chord ? binding.chord : platform_chord;
+			if (chord)
+				plan[plan_size++] = PlannedShortcut{*chord, operation, supported};
+		}
+	};
+#if defined(__APPLE__)
+	append(settings.close_window, NativeWindowOperation::Close, capabilities.close_window,
+		   ShortcutChord{.key = GLFW_KEY_W, .super = true});
+	append(settings.minimize, NativeWindowOperation::Minimize, capabilities.minimize,
+		   ShortcutChord{.key = GLFW_KEY_M, .super = true});
+	const ShortcutChord fullscreen_chord{.key = GLFW_KEY_F, .ctrl = true, .super = true};
+#else
+	append(settings.close_window, NativeWindowOperation::Close, capabilities.close_window,
+		   std::nullopt);
+	append(settings.minimize, NativeWindowOperation::Minimize, capabilities.minimize, std::nullopt);
+	const ShortcutChord fullscreen_chord{.key = GLFW_KEY_F11};
+#endif
+	append(settings.maximize_restore, NativeWindowOperation::MaximizeRestore,
+		   capabilities.maximize_restore, std::nullopt);
+	append(settings.toggle_fullscreen, NativeWindowOperation::Fullscreen,
+		   capabilities.toggle_fullscreen, fullscreen_chord);
+	const auto valid_key = [](int key) noexcept {
+		return key == GLFW_KEY_SPACE || key == GLFW_KEY_APOSTROPHE ||
+			   (key >= GLFW_KEY_COMMA && key <= GLFW_KEY_9) || key == GLFW_KEY_SEMICOLON ||
+			   key == GLFW_KEY_EQUAL || (key >= GLFW_KEY_A && key <= GLFW_KEY_RIGHT_BRACKET) ||
+			   key == GLFW_KEY_GRAVE_ACCENT || key == GLFW_KEY_WORLD_1 || key == GLFW_KEY_WORLD_2 ||
+			   (key >= GLFW_KEY_ESCAPE && key <= GLFW_KEY_END) ||
+			   (key >= GLFW_KEY_CAPS_LOCK && key <= GLFW_KEY_PAUSE) ||
+			   (key >= GLFW_KEY_F1 && key <= GLFW_KEY_F25) ||
+			   (key >= GLFW_KEY_KP_0 && key <= GLFW_KEY_KP_EQUAL) ||
+			   (key >= GLFW_KEY_LEFT_SHIFT && key <= GLFW_KEY_MENU);
+	};
+	for (size_t candidate_index = 0u; candidate_index < plan_size; ++candidate_index) {
+		const auto& chord = plan[candidate_index].chord;
+		if (!valid_key(chord.key) || chord.trigger != ShortcutTrigger::Press)
+			return unexpectedError(
+				makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
+		for (size_t previous_index = 0u; previous_index < candidate_index; ++previous_index) {
+			const auto& previous = plan[previous_index].chord;
+			if (chord.key == previous.key && chord.ctrl == previous.ctrl &&
+				chord.shift == previous.shift && chord.alt == previous.alt &&
+				chord.super == previous.super)
+				return unexpectedError(
+					makeError(ErrorCode::ShortcutInvalid, ErrorSite::ShortcutRegister));
+		}
+	}
+	std::array<ShortcutId, 4> installed{};
+	size_t installed_count = 0u;
+	const auto rollback = [&] {
+		for (size_t installed_index = 0u; installed_index < installed_count; ++installed_index)
+			if (!window.ui.shortcuts().unregisterShortcut(installed[installed_index]))
+				detail::reportErrorEvent(ErrorEventView{
+					.error = makeError(ErrorCode::ShortcutNotFound, ErrorSite::ShortcutRemove,
+									   installed[installed_index]),
+					.kind = ErrorEventKind::Reported});
+	};
+	try {
+		for (size_t plan_index = 0u; plan_index < plan_size; ++plan_index) {
+			const auto& entry = plan[plan_index];
+			if (!entry.supported)
+				continue;
+			const auto registered = window.ui.shortcuts().registerShortcut(
+				entry.chord, ShortcutScope::Global, settings.priority,
+				[this, operation = entry.operation](ShortcutContext& context) noexcept {
+					const auto capabilities = window_operation_capabilities(context.ui.windowId());
+					if (!capabilities && capabilities.error().code == ErrorCode::InvalidWindowId)
+						return false;
+					if (capabilities) {
+						const bool supported =
+							operation == NativeWindowOperation::Close ? capabilities->close_window
+							: operation == NativeWindowOperation::Minimize ? capabilities->minimize
+							: operation == NativeWindowOperation::MaximizeRestore
+								? capabilities->maximize_restore
+								: capabilities->toggle_fullscreen;
+						if (!supported)
+							return false;
+					}
+					const auto status = request_window_operation(context.ui.windowId(), operation);
+					if (status)
+						return true;
+					detail::reportErrorEvent(
+						ErrorEventView{.error = status.error(), .kind = ErrorEventKind::Reported});
+					return true;
+				});
+			if (!registered) {
+				rollback();
+				return unexpectedError(registered.error());
+			}
+			installed[installed_count++] = *registered;
+		}
+	} catch (...) {
+		rollback();
+		throw;
+	}
+	return {};
+}
+
 void App::Impl::destroyUnsubmittedWindow(AppWindow& window) noexcept {
 	if (window.backend)
 		window.backend->detachCallbacks();
@@ -1274,11 +1489,11 @@ void App::Impl::destroyUnsubmittedWindow(AppWindow& window) noexcept {
 	window.swapchain.destroy(vk);
 	elementManager.destroyWindow(window.id);
 	window.ui.destroyStorage();
-	if (storageSystem && window.storageRegistered) {
+	if (storageSystem && window.flags.has_flag(AppWindow::Flag::storage_registered)) {
 		try {
 			storageSystem->unregisterWindow(window.id, window.lastSubmissionSerial);
 		} catch (...) {}
-		window.storageRegistered = false;
+		window.flags.set_flag(AppWindow::Flag::storage_registered, false);
 		try {
 			storageSystem->collect();
 		} catch (...) {}
@@ -1291,7 +1506,7 @@ void App::Impl::destroyUnsubmittedWindow(AppWindow& window) noexcept {
 }
 
 WindowId App::Impl::reserveWindowId() {
-	if (windowIdsExhausted) {
+	if (lifecycle_flags.has_flag(LifecycleFlag::window_ids_exhausted)) {
 		detail::terminateForFatalError(
 			makeError(ErrorCode::WindowIdSpaceExhausted, ErrorSite::AppCreateWindow));
 	}
@@ -1301,7 +1516,7 @@ WindowId App::Impl::reserveWindowId() {
 			makeError(ErrorCode::WindowIdSpaceExhausted, ErrorSite::AppCreateWindow));
 	}
 	if (id == std::numeric_limits<WindowId>::max()) {
-		windowIdsExhausted = true;
+		lifecycle_flags.set_flag(LifecycleFlag::window_ids_exhausted, true);
 	} else {
 		++nextWindowId;
 	}
@@ -1341,7 +1556,7 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 		pending->storageSystem = storageSystem.get();
 		storageSystem->registerWindow(
 			id, makeWindowStorageDesc(*storageSystem, storageConfig, pending->config));
-		pending->storageRegistered = true;
+		pending->flags.set_flag(AppWindow::Flag::storage_registered, true);
 		elementManager.registerWindow(id);
 		pending->ui.initStorage(*storageSystem, id, makeUiManagerConfig(config, pending->config));
 #if FLOW_UI_DEV_MODE
@@ -1356,6 +1571,9 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 #endif
 		actionManager.attachTo(pending->ui);
 		elementManager.attachTo(pending->ui);
+		const auto window_shortcut_status = install_default_window_shortcuts(*pending);
+		if (!window_shortcut_status)
+			throw FlowUiException(window_shortcut_status.error());
 #if FLOW_UI_DEV_MODE
 
 #endif
@@ -1400,10 +1618,11 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 void App::Impl::pollEventsAndAdvanceSharedManagers() {
 	requirePlatformThread();
 #if FLOW_UI_AGENTIC_WORKFLOW
-	if (advancing_agentic)
+	if (dispatch_flags.has_flag(DispatchFlag::advancing_agentic))
 		throw FlowUiException(makeError(ErrorCode::AgenticBusy, ErrorSite::AgenticScenario));
 #endif
 	requireQuiescent();
+	drain_window_operations();
 #if FLOW_UI_DEV_MODE
 	{
 		// Reporting closes the previous cadence interval, after its window frames.
@@ -1465,7 +1684,7 @@ void App::Impl::pollEventsAndAdvanceSharedManagers() {
 	if (storageSystem)
 		storageSystem->collect();
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	if (iconsInitialized)
+	if (lifecycle_flags.has_flag(LifecycleFlag::icons_initialized))
 		icons.beginAppTick();
 #endif
 }
@@ -1564,7 +1783,7 @@ void App::Impl::collectRetiredSwapchains(AppWindow& window) {
 void App::Impl::beginFrame(WindowId id) {
 	requirePlatformThread();
 #if FLOW_UI_AGENTIC_WORKFLOW
-	if (advancing_agentic)
+	if (dispatch_flags.has_flag(DispatchFlag::advancing_agentic))
 		throw FlowUiException(makeError(ErrorCode::AgenticBusy, ErrorSite::AgenticScenario));
 #endif
 	AppWindow& window = requireWindow(id);
@@ -1593,7 +1812,7 @@ void App::Impl::beginFrame(WindowId id) {
 	window.agentic_frame.width = window.swapchain.swapchain.extent.width;
 	window.agentic_frame.height = window.swapchain.swapchain.extent.height;
 	window.agentic_frame.internal_window = window.id == devInterface.windowId();
-	window.agentic_frame.interrupted = window.framebufferResized;
+	window.agentic_frame.interrupted = window.flags.has_flag(AppWindow::Flag::framebuffer_resized);
 	if (auto* native = static_cast<GLFWwindow*>(window.backend->nativeHandle()))
 		window.agentic_frame.interrupted = window.agentic_frame.interrupted ||
 										   glfwGetWindowAttrib(native, GLFW_VISIBLE) != GLFW_TRUE ||
@@ -1630,13 +1849,13 @@ void App::Impl::beginFrame(WindowId id) {
 		}
 		const auto now = std::chrono::steady_clock::now();
 		double deltaTimeSeconds = 0.0;
-		if (window.hasPreviousBeginFrameTimestamp) {
+		if (window.flags.has_flag(AppWindow::Flag::has_previous_begin_frame_timestamp)) {
 			deltaTimeSeconds = std::max(
 				0.0,
 				std::chrono::duration<double>(now - window.previousBeginFrameTimestamp).count());
 		}
 		window.previousBeginFrameTimestamp = now;
-		window.hasPreviousBeginFrameTimestamp = true;
+		window.flags.set_flag(AppWindow::Flag::has_previous_begin_frame_timestamp, true);
 
 		FrameVk::Frame& frame = window.frames.getCurrentFrame();
 		{
@@ -1747,7 +1966,7 @@ void App::Impl::beginFrame(WindowId id) {
 		const VkExtent2D framebufferExtent = window.backend->framebufferExtent();
 		if (framebufferExtent.width != window.observedFramebufferExtent.width ||
 			framebufferExtent.height != window.observedFramebufferExtent.height) {
-			window.framebufferResized = true;
+			window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
 			window.observedFramebufferExtent = framebufferExtent;
 		}
 		const float logicalWidth = static_cast<float>(std::max(1u, windowExtent.width));
@@ -2065,11 +2284,11 @@ void App::Impl::drawFrame(WindowId id) {
 			window.backend ? window.backend->framebufferExtent() : VkExtent2D{};
 		if (framebufferExtent.width != window.observedFramebufferExtent.width ||
 			framebufferExtent.height != window.observedFramebufferExtent.height) {
-			window.framebufferResized = true;
+			window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
 			window.observedFramebufferExtent = framebufferExtent;
 		}
 	}
-	if (window.framebufferResized) {
+	if (window.flags.has_flag(AppWindow::Flag::framebuffer_resized)) {
 #if FLOW_UI_DEV_MODE
 		const auto result =
 			devSystems::TimingRecordFlag::Canceled | devSystems::TimingRecordFlag::OutOfDate;
@@ -2104,7 +2323,7 @@ void App::Impl::drawFrame(WindowId id) {
 								  frame.imageAvailable, VK_NULL_HANDLE, &swapchainImageIndex);
 	}
 	if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
-		window.framebufferResized = true;
+		window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
 #if FLOW_UI_DEV_MODE
 		const auto result =
 			devSystems::TimingRecordFlag::Canceled | devSystems::TimingRecordFlag::OutOfDate;
@@ -2343,8 +2562,8 @@ void App::Impl::drawFrame(WindowId id) {
 		window.swapchain.presentPending[swapchainImageIndex] = 1u;
 	}
 	if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR ||
-		acquiredSuboptimalSwapchain || window.framebufferResized) {
-		window.framebufferResized = true;
+		acquiredSuboptimalSwapchain || window.flags.has_flag(AppWindow::Flag::framebuffer_resized)) {
+		window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
 		const bool recreated = recreateSwapchainIfNeeded(window);
 		const VkResult observedResult = presentResult != VK_SUCCESS ? presentResult : acquireResult;
 		detail::reportErrorEvent(ErrorEventView{
@@ -2374,7 +2593,7 @@ bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
 	const VkExtent2D framebufferExtent = window.backend->framebufferExtent();
 	window.observedFramebufferExtent = framebufferExtent;
 	if (framebufferExtent.width == 0 || framebufferExtent.height == 0) {
-		window.framebufferResized = true;
+		window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
 		return false;
 	}
 #if FLOW_UI_DEV_MODE
@@ -2437,7 +2656,7 @@ bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
 		if (!window.storageFrame)
 			storageSystem->collect();
 	}
-	window.framebufferResized = false;
+	window.flags.set_flag(AppWindow::Flag::framebuffer_resized, false);
 	return true;
 }
 
@@ -2457,6 +2676,8 @@ void App::Impl::destroyWindow(WindowId id) {
 	}
 	if (activeWindowFrame == id)
 		cancelStorageFrame(window);
+	std::erase_if(pending_window_operations,
+				  [id](const PendingWindowOperation& pending) { return pending.window_id == id; });
 #if FLOW_UI_DEV_MODE
 	FLOWUI_DEV_TIMING_ZONE_ENTITY(timingRecorder(), devSystems::TimingCategory::Lifecycle,
 								  devSystems::TimingZoneRole::Work, "flowui.window.destroy",
@@ -2489,9 +2710,9 @@ void App::Impl::destroyWindow(WindowId id) {
 	window.swapchain.destroy(vk);
 	elementManager.destroyWindow(id);
 	window.ui.destroyStorage();
-	if (window.storageRegistered) {
+	if (window.flags.has_flag(AppWindow::Flag::storage_registered)) {
 		storageSystem->unregisterWindow(id, window.lastSubmissionSerial);
-		window.storageRegistered = false;
+		window.flags.set_flag(AppWindow::Flag::storage_registered, false);
 	}
 	storageSystem->collect();
 	if (window.surface != VK_NULL_HANDLE) {
@@ -2508,9 +2729,9 @@ void App::Impl::destroyWindow(WindowId id) {
 }
 
 void App::Impl::cleanup() noexcept {
-	if (cleanedUp)
+	if (lifecycle_flags.has_flag(LifecycleFlag::cleaned_up))
 		return;
-	cleanedUp = true;
+	lifecycle_flags.set_flag(LifecycleFlag::cleaned_up, true);
 #if FLOW_UI_AGENTIC_WORKFLOW
 	if (agentic_service)
 		agentic_service->stop_admission();
@@ -2566,13 +2787,13 @@ void App::Impl::cleanup() noexcept {
 	actionManager.destroy();
 	themeManager.destroy();
 
-	if (imagesInitialized)
+	if (lifecycle_flags.has_flag(LifecycleFlag::images_initialized))
 		imageManager.destroy();
 #if FLOWUI_INCLUDE_ICON_MANAGER
-	if (iconsInitialized)
+	if (lifecycle_flags.has_flag(LifecycleFlag::icons_initialized))
 		icons.destroy();
 #endif
-	if (fontsInitialized)
+	if (lifecycle_flags.has_flag(LifecycleFlag::fonts_initialized))
 		fonts.destroy();
 
 	for (auto& [_, window] : windows) {
@@ -2594,11 +2815,11 @@ void App::Impl::cleanup() noexcept {
 		window->retiredSwapchains.clear();
 		window->swapchain.destroy(vk);
 		window->ui.destroyStorage();
-		if (storageSystem && window->storageRegistered) {
+		if (storageSystem && window->flags.has_flag(AppWindow::Flag::storage_registered)) {
 			try {
 				storageSystem->unregisterWindow(window->id, storageSystem->completedSerial());
 			} catch (...) {}
-			window->storageRegistered = false;
+			window->flags.set_flag(AppWindow::Flag::storage_registered, false);
 		}
 		if (window->surface != VK_NULL_HANDLE && vk.instance != VK_NULL_HANDLE) {
 			vkDestroySurfaceKHR(vk.instance, window->surface, nullptr);

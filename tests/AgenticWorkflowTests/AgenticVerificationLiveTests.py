@@ -324,29 +324,31 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("cli", type=Path)
     parser.add_argument("demo", type=Path)
-    parser.add_argument("--output-directory", type=Path)
+    parser.add_argument("--output-directory", type=Path,
+        default=Path(__file__).resolve().parents[2] / ".flowui/agentic/verification/suites")
     parser.add_argument("--soak-count", type=int, default=4)
     arguments = parser.parse_args()
+    if arguments.output_directory.resolve().is_relative_to(
+            Path(__file__).resolve().parents[2] / "docs"):
+        parser.error("Verification outputs belong under .flowui/agentic, outside docs")
     if os.name != "nt" and not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
         return 77
     if arguments.soak_count < 0:
         parser.error("--soak-count must be nonnegative")
-    with tempfile.TemporaryDirectory(prefix="flowui-verification-") as temporary:
-        workspace = (arguments.output_directory.resolve() / ("run_" + uuid.uuid4().hex[:12])) \
-            if arguments.output_directory else Path(temporary)
-        workspace.mkdir(parents=True, exist_ok=True)
-        suite = VerificationSuite(arguments, workspace)
-        try:
-            suite.start()
-            suite.execute(arguments.soak_count)
-            suite.close()
-            offline = suite.command("verification.report", {"job_id": suite.results["offline_job_id"]})["result"]
-            assert offline["verdict"] == "pass" and offline["job_id"] == suite.results["offline_job_id"], offline
-            suite.results["checks"].append({"name": "sealed report recovery after instance exit", "passed": True})
-        finally:
-            suite.close()
-            (workspace / "verification-live-results.json").write_text(json.dumps(suite.results, indent=2) + "\n")
-        print(f"FSEL verification suite passed ({len(suite.results['checks'])} checks); evidence: {workspace}")
+    workspace = arguments.output_directory.resolve() / ("run_" + uuid.uuid4().hex[:12])
+    workspace.mkdir(parents=True, exist_ok=True)
+    suite = VerificationSuite(arguments, workspace)
+    try:
+        suite.start()
+        suite.execute(arguments.soak_count)
+        suite.close()
+        offline = suite.command("verification.report", {"job_id": suite.results["offline_job_id"]})["result"]
+        assert offline["verdict"] == "pass" and offline["job_id"] == suite.results["offline_job_id"], offline
+        suite.results["checks"].append({"name": "sealed report recovery after instance exit", "passed": True})
+    finally:
+        suite.close()
+        (workspace / "verification-live-results.json").write_text(json.dumps(suite.results, indent=2) + "\n")
+    print(f"FSEL verification suite passed ({len(suite.results['checks'])} checks); evidence: {workspace}")
     return 0
 
 

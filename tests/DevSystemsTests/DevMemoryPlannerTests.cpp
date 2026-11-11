@@ -92,8 +92,8 @@ int main() {
 	state.plan = *replay_memory_plan(evidence, other, 9, 2.25);
 	assert(stage_memory_setting(state, other, true, true));
 	assert(state.staged.size() == 2);
-	assert(memory_public_config_key("managers.inputFieldsReserve") ==
-		   "AppConfig.memoryCapacityProfile.managers.inputFields");
+	assert(memory_public_config_key("flowui.tuning.input_fields.registry_entries") ==
+		   "AppConfig.memoryCapacityProfile.settings[flowui.tuning.input_fields.registry_entries]");
 	assert(memory_target_value(5, MemoryCapacityUnit::Entries, false) == "5 entries");
 	DevMemoryWorkbenchState chart;
 	chart.retained_begin_ns = 100;

@@ -32,9 +32,7 @@ public:
 		UiManager& uiManager,
 		WindowId window,
 		FlowElementID elementId) {
-		static_assert(
-			FlowElement<ElementType>,
-			"FlowUi: ElementInvocation requires an element satisfying FlowElement.");
+		static_assert(validate_flow_element<ElementType>());
 		return ElementInvocation(elements, uiManager, window, elementId);
 	}
 

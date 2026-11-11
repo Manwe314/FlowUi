@@ -6,59 +6,44 @@
 namespace FlowUi {
 
 /**
- * @brief Configures low-level window input behavior.
- *
- * These options are forwarded to the window backend during window creation and
- * whenever the input configuration is updated at runtime.
+ * Window input modes applied at creation or by App::setWindowInputConfig().
+ * Backend support can limit raw motion and lock-key reporting.
  */
 struct WindowInputConfig {
 	/** @brief Cursor visibility and capture mode applied to the window. */
 	CursorMode cursorMode = CursorMode::Normal;
 
 	/**
-	 * @brief Keep key press events available until they are polled.
-	 *
-	 * Useful when the app wants to avoid missing short key presses between
-	 * input polling points.
+	 * Retain short key presses until polled, including presses released between polls.
 	 */
 	bool stickyKeys = false;
 
 	/**
-	 * @brief Keep mouse button press events available until they are polled.
-	 *
-	 * Useful when the app wants to avoid missing short mouse clicks between
-	 * input polling points.
+	 * Retain short mouse-button presses until polled, including clicks between polls.
 	 */
 	bool stickyMouseButtons = false;
 
 	/**
-	 * @brief Preserve lock-key modifier state in reported input events.
-	 *
-	 * When supported by the backend, events include Caps Lock and Num Lock
-	 * modifier bits while those locks are active.
+	 * Include active Caps Lock and Num Lock modifier bits when supported by the backend.
 	 */
 	bool lockKeyMods = false;
 
 	/**
-	 * @brief Request unaccelerated mouse motion when the backend supports it.
-	 *
-	 * Unsupported backends or platforms disable this option automatically.
+	 * Request unaccelerated mouse motion where supported; cursor/backend mode may limit its effect.
 	 */
 	bool rawMouseMotion = false;
 };
 
 /**
- * @brief Configures input field editing visuals.
- *
- * These values control caret and selection rendering for FlowUi text input
- * fields; they do not affect low-level window input behavior.
+ * Text-field caret and selection appearance; dimensions are pixels and colors are RGBA, 0–255.
+ * Window event behavior is configured separately by WindowInputConfig.
  */
 struct InputManagerConfig {
 	/** @brief Caret width in pixels. */
 	float caretWidthPx = 2.0f;
-	/** @brief Extra caret height above the text bounds. */
+	/** Extra caret height above the text bounds, in pixels. */
 	float caretHeightOverflowTopPx = 1.0f;
-	/** @brief Extra caret height below the text bounds. */
+	/** Extra caret height below the text bounds, in pixels. */
 	float caretHeightOverflowBottomPx = 1.0f;
 	/** @brief Caret color. */
 	Clay_Color caretColor = Clay_Color{255.0f, 255.0f, 255.0f, 255.0f};

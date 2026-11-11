@@ -216,6 +216,28 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 	int window_width = 0, window_height = 0;
 	glfwGetWindowSize(static_cast<GLFWwindow*>(app.nativeWindowHandle(fixture.interface_window)),
 					  &window_width, &window_height);
+	const auto& timeline = fixture.session.performance_timeline;
+	std::array<std::uint64_t, 4> cpu_level_counts{};
+	std::uint64_t cpu_block_count = 0, gpu_block_count = 0;
+	for (const auto& block : timeline.snapshot.blocks) {
+		if (!block.scope_visible)
+			continue;
+		if (!block.cpu_sample.empty()) {
+			++cpu_block_count;
+			const auto level =
+				block.type_id == timing_zones::kElementInvoke.typeId ? CpuTimingLevel::Balanced
+				: block.descriptor.empty() ? CpuTimingLevel::OnlyFrameTime
+										   : block.descriptor.front().minimumCpuLevel;
+			++cpu_level_counts[std::min(static_cast<std::size_t>(level),
+										cpu_level_counts.size() - 1)];
+		}
+		if (!block.gpu_sample.empty())
+			++gpu_block_count;
+	}
+	auto projected_cpu_levels = agentic::Json::make_array();
+	projected_cpu_levels.array.reserve(cpu_level_counts.size());
+	for (const auto count : cpu_level_counts)
+		projected_cpu_levels.array.emplace_back(agentic::Json::number(count));
 	return agentic::Json::make_object(
 		{{"interface_window_id", agentic::decimal(fixture.interface_window)},
 		 {"main_window_id", agentic::decimal(app.mainWindowId())},
@@ -238,6 +260,18 @@ void draw_application(App& app, WindowId window, Fixture& fixture) {
 		 {"optional_present", fixture.parameters.winning_value.has_value()},
 		 {"recording_cpu_level", agentic::Json::number(static_cast<std::uint64_t>(
 									 app.devMonitoring().timing().config().cpuLevel))},
+		 {"compiled_cpu_level", agentic::Json::number(FLOWUI_DEV_TIMING_LEVEL)},
+		 {"timeline_snapshot_revision", agentic::decimal(timeline.snapshot_revision)},
+		 {"timeline_capture_generation", agentic::decimal(timeline.capture_generation)},
+		 {"timeline_view_cpu_level",
+		  agentic::Json::number(static_cast<std::uint64_t>(timeline.selection.cpu_detail_level))},
+		 {"timeline_recorded_min_cpu_level", agentic::Json::number(static_cast<std::uint64_t>(
+												 timeline.snapshot.minimum_recorded_cpu_level))},
+		 {"timeline_recorded_max_cpu_level", agentic::Json::number(static_cast<std::uint64_t>(
+												 timeline.snapshot.maximum_recorded_cpu_level))},
+		 {"timeline_cpu_block_count", agentic::decimal(cpu_block_count)},
+		 {"timeline_gpu_block_count", agentic::decimal(gpu_block_count)},
+		 {"timeline_cpu_level_counts", std::move(projected_cpu_levels)},
 		 {"combo_height", agentic::Json(fixture.combo_height)},
 		 {"combo_selection", agentic::decimal(fixture.combo_selection)},
 		 {"requested_icon_size", agentic::Json(fixture.requested_icon_size)},

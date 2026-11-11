@@ -1,4 +1,5 @@
 #include "FlowUi/Public/managers/ShortcutManager.hpp"
+#include "FlowUi/Public/defaults/ShortcutDefaults.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -7,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <span>
 #include <stdexcept>
 #include <utility>
 #include <array>
@@ -171,62 +173,36 @@ void ShortcutManager::init(storage::IStorageSystem& storageSystem, WindowId wind
 										 FlowUi::detail::InitialCapacityTarget::shortcuts_keys));
 }
 
-void ShortcutManager::installDefaultTextShortcuts(const DefaultTextShortcutConfig& config) {
-	if (!config.enabled) return;
-	PlatformShortcutStyle platform = config.platform;
-	if (platform == PlatformShortcutStyle::Auto) {
-#if defined(__APPLE__)
-		platform = PlatformShortcutStyle::Command;
-#else
-		platform = PlatformShortcutStyle::Control;
-#endif
-	}
-	const auto chord = [platform](int key, bool shift = false, bool wordModifier = false) {
-		ShortcutChord result{.key = key, .shift = shift};
-		if (wordModifier && platform == PlatformShortcutStyle::Command) result.alt = true;
-		else if (platform == PlatformShortcutStyle::Command) result.super = true;
-		else result.ctrl = true;
-		return result;
-	};
-	const auto add = [this, &config](ShortcutChord value, TextCommand command) {
-		(void)registerShortcut(
-			value,
-			ShortcutScope::FocusedInput,
-			config.priority,
-			[command](ShortcutContext& context) {
-				return context.ui.inputFields().enqueueCommand(command);
-			});
-	};
-	if (config.selectAll) add(chord(GLFW_KEY_A), TextCommand::SelectAll);
-	if (config.clipboard) {
-		add(chord(GLFW_KEY_C), TextCommand::Copy);
-		add(chord(GLFW_KEY_X), TextCommand::Cut);
-		add(chord(GLFW_KEY_V), TextCommand::Paste);
-	}
-	if (config.undoRedoRequests) {
-		add(chord(GLFW_KEY_Z), TextCommand::RequestUndo);
-		add(chord(GLFW_KEY_Z, true), TextCommand::RequestRedo);
-		if (platform == PlatformShortcutStyle::Control) add(chord(GLFW_KEY_Y), TextCommand::RequestRedo);
-	}
-	if (config.wordNavigation) {
-		add(chord(GLFW_KEY_LEFT, false, true), TextCommand::MoveWordLeft);
-		add(chord(GLFW_KEY_RIGHT, false, true), TextCommand::MoveWordRight);
-		add(chord(GLFW_KEY_LEFT, true, true), TextCommand::MoveWordLeft);
-		add(chord(GLFW_KEY_RIGHT, true, true), TextCommand::MoveWordRight);
-		add(chord(GLFW_KEY_BACKSPACE, false, true), TextCommand::DeleteWordBackward);
-		add(chord(GLFW_KEY_DELETE, false, true), TextCommand::DeleteWordForward);
-		if (platform == PlatformShortcutStyle::Control) {
-			add(chord(GLFW_KEY_HOME), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_END), TextCommand::MoveDocumentEnd);
-			add(chord(GLFW_KEY_HOME, true), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_END, true), TextCommand::MoveDocumentEnd);
-		} else {
-			add(chord(GLFW_KEY_LEFT), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_RIGHT), TextCommand::MoveDocumentEnd);
-			add(chord(GLFW_KEY_LEFT, true), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_RIGHT, true), TextCommand::MoveDocumentEnd);
+Status ShortcutManager::installDefaultTextShortcuts(const DefaultTextShortcutConfig& config) {
+	const auto registration_plan = defaults::text_shortcuts(config);
+	if (!registration_plan)
+		return unexpectedError(registration_plan.error());
+	std::array<ShortcutId, defaults::TextShortcutDefaults::capacity> installed_ids{};
+	size_t installed_count = 0;
+	const auto rollback = [this, &installed_ids, &installed_count] {
+		while (installed_count != 0) {
+			unregisterShortcut(installed_ids[--installed_count]);
 		}
+	};
+	try {
+		for (const auto& binding :
+			 std::span{registration_plan->bindings}.first(registration_plan->binding_count)) {
+			const auto registration =
+				registerShortcut(binding.chord, ShortcutScope::FocusedInput, config.priority,
+								 [command = binding.command](ShortcutContext& context) {
+									 return context.ui.inputFields().enqueueCommand(command);
+								 });
+			if (!registration) {
+				rollback();
+				return unexpectedError(registration.error());
+			}
+			installed_ids[installed_count++] = *registration;
+		}
+	} catch (...) {
+		rollback();
+		throw;
 	}
+	return {};
 }
 
 void ShortcutManager::destroy() noexcept {

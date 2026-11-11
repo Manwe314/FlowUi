@@ -1,5 +1,44 @@
 # Shortcut Manager API
 
+## Default registrations and migration
+
+`AppConfig::ui.shortcuts.textEditing` enables FlowUi's complete focused-input
+operations: select all, clipboard editing, word navigation/deletion, and movement
+to the beginning/end of field text. Read-only fields retain selection, copy, and
+navigation while rejecting text mutations. Disable individual families or the
+whole text group to supply different bindings through `registerShortcut()`.
+
+Automatic Undo/Redo registrations have been removed because history belongs to
+the application. `DefaultTextShortcutConfig::undoRedoRequests` no longer exists;
+remove assignments to it and review positional aggregate initializers. This is a
+source/ABI change, so rebuild callers. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, and Ctrl+Y
+remain available for explicit application registrations. Low-level
+`TextCommand::RequestUndo` and `RequestRedo` remain available for those handlers.
+
+`AppConfig::ui.shortcuts.window` separately enables native-window operations and
+is disabled by default. Each entry has an `enabled` flag and optional `chord`;
+an absent chord inherits the target platform's binding. Supported enabled
+operations run for the window receiving the press. Close/minimize inherit Cmd+W
+and Cmd+M on macOS; Windows/Linux use native desktop handling without extra
+bindings. Maximize/restore requires an explicit mapping. Fullscreen separately
+requires opt-in and inherits F11 on Windows/Linux or Ctrl+Cmd+F on macOS. Enabled
+replacement chords must use valid keys and Press transitions; duplicate window
+chords reject initialization. Unsupported backend operations install nothing.
+
+```cpp
+FlowUi::AppConfig config{};
+config.ui.shortcuts.window.enabled = true;
+config.ui.shortcuts.window.toggle_fullscreen.enabled = true;
+config.ui.shortcuts.window.maximize_restore.enabled = true;
+config.ui.shortcuts.window.maximize_restore.chord = FlowUi::ShortcutChord{
+    .key = GLFW_KEY_F10,
+    .ctrl = true,
+    .shift = true,
+};
+```
+
+See the [configuration header](../../include/FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp).
+
 ## Aliases
 
 ### **ShortcutCallback**

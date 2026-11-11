@@ -210,9 +210,10 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	};
 
 	VkInstanceCreateFlags createFlags = 0;
-	surfaceMaintenanceEnabled = hasExtension("VK_EXT_surface_maintenance1", availableExts) &&
-		hasExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, availableExts);
-	if (surfaceMaintenanceEnabled) {
+	flags.set_flag(VulkanContext::Flag::surface_maintenance_enabled,
+		hasExtension("VK_EXT_surface_maintenance1", availableExts) &&
+		hasExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, availableExts));
+	if (flags.has_flag(VulkanContext::Flag::surface_maintenance_enabled)) {
 		appendUnique(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
 		appendUnique("VK_EXT_surface_maintenance1");
 	}
@@ -427,17 +428,17 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 
 	std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 #if FLOW_UI_DEV_MODE
-	const bool enableCalibratedTimestamps = devGpuTimingRequested &&
+	const bool enableCalibratedTimestamps = flags.has_flag(VulkanContext::Flag::dev_gpu_timing_requested) &&
 		deviceHasExtension(phys, VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
 	if (enableCalibratedTimestamps) {
 		deviceExtensions.push_back(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
 	}
-	const bool enableMemoryBudget = devGpuMemoryRequested &&
+	const bool enableMemoryBudget = flags.has_flag(VulkanContext::Flag::dev_gpu_memory_requested) &&
 		deviceHasExtension(phys, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 	if (enableMemoryBudget) deviceExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 #endif
 	const bool hasSwapchainMaintenance1 =
-		surfaceMaintenanceEnabled && deviceHasExtension(phys, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+		flags.has_flag(VulkanContext::Flag::surface_maintenance_enabled) && deviceHasExtension(phys, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
 	const bool hasPresentId = deviceHasExtension(phys, VK_KHR_PRESENT_ID_EXTENSION_NAME);
 	const bool hasPresentWait = deviceHasExtension(phys, VK_KHR_PRESENT_WAIT_EXTENSION_NAME);
 #ifdef VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
@@ -540,12 +541,13 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	vkCheck(vkCreateDevice(phys, &createInfo, nullptr, &device),
 		FlowUi::ErrorSite::VulkanLogicalDeviceCreate);
 #if FLOW_UI_DEV_MODE
-	synchronization2Enabled = enabled13.synchronization2 == VK_TRUE;
+	flags.set_flag(VulkanContext::Flag::synchronization2_enabled, enabled13.synchronization2 == VK_TRUE);
 	if (enableCalibratedTimestamps) {
 		getCalibratedTimestampsEXT = reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(
 			vkGetDeviceProcAddr(device, "vkGetCalibratedTimestampsEXT"));
 	}
-	calibratedTimestampsEnabled = getCalibratedTimestampsEXT != nullptr;
+	flags.set_flag(VulkanContext::Flag::calibrated_timestamps_enabled,
+		getCalibratedTimestampsEXT != nullptr);
 #endif
 
 	vkGetDeviceQueue(device, graphicsQFamily, 0, &graphicsQ);
@@ -565,7 +567,7 @@ void VulkanContext::createDevice(const FlowUi::AppConfig& config) {
 	allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 #if FLOW_UI_DEV_MODE
 	if (enableMemoryBudget) allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-	memoryBudgetEnabled = enableMemoryBudget;
+	flags.set_flag(VulkanContext::Flag::memory_budget_enabled, enableMemoryBudget);
 #endif
 	vkCheck(vmaCreateAllocator(&allocatorInfo, &allocator),
 		FlowUi::ErrorSite::VulkanAllocatorCreate);
@@ -596,7 +598,7 @@ void VulkanContext::destroy() {
 			allocator = nullptr;
 		}
 #if FLOW_UI_DEV_MODE
-		memoryBudgetEnabled = false;
+		flags.set_flag(VulkanContext::Flag::memory_budget_enabled, false);
 #endif
 		vkDestroyDevice(device, nullptr);
 		device = VK_NULL_HANDLE;
@@ -613,11 +615,11 @@ void VulkanContext::destroy() {
 	}
 
 	phys = VK_NULL_HANDLE;
-	surfaceMaintenanceEnabled = false;
+	flags.set_flag(VulkanContext::Flag::surface_maintenance_enabled, false);
 #if FLOW_UI_DEV_MODE
-	devGpuTimingRequested = true;
-	synchronization2Enabled = false;
-	calibratedTimestampsEnabled = false;
+	flags.set_flag(VulkanContext::Flag::dev_gpu_timing_requested, true);
+	flags.set_flag(VulkanContext::Flag::synchronization2_enabled, false);
+	flags.set_flag(VulkanContext::Flag::calibrated_timestamps_enabled, false);
 	getCalibratedTimestampsEXT = nullptr;
 #endif
 	graphicsQFamily = UINT32_MAX;

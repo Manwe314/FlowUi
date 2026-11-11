@@ -187,7 +187,7 @@ MemoryEnvironmentSnapshot DevEnvironmentMemoryProbe::sample(
 				? detailedStats.memoryHeap[heap].statistics : budgets[heap].statistics;
 			const GpuHeapClass classification = classifyHeap(heap, properties);
 			MemorySampleFlag flags = MemorySampleFlag::None;
-			if (!impl_->vk->memoryBudgetEnabled) flags = flags | MemorySampleFlag::Estimate;
+			if (!impl_->vk->flags.has_flag(VulkanContext::Flag::memory_budget_enabled)) flags = flags | MemorySampleFlag::Estimate;
 			if (classification == GpuHeapClass::SharedLike) {
 				flags = flags | MemorySampleFlag::SharedPhysicalMemory |
 					MemorySampleFlag::OverlapsProcessResident;
@@ -209,7 +209,7 @@ MemoryEnvironmentSnapshot DevEnvironmentMemoryProbe::sample(
 		impl_->gpu.capturedAtNs = nowNs;
 		impl_->gpu.sampleDurationNs = steadyNowNs() - begin;
 		impl_->gpu.sampleSequence++;
-		impl_->gpu.memoryBudgetExtensionEnabled = impl_->vk->memoryBudgetEnabled;
+		impl_->gpu.memoryBudgetExtensionEnabled = impl_->vk->flags.has_flag(VulkanContext::Flag::memory_budget_enabled);
 		impl_->gpu.detailedStatisticsIncluded = detailed;
 		impl_->gpu.available = true;
 		impl_->lastGpuNs = nowNs;

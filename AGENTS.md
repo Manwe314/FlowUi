@@ -33,7 +33,7 @@
 - Format changed file: `clang-format -i <file_path>`
 
 ## Document Generation & Path Linking Standards
-- Output Location: Always place generated Markdown reports, design docs, and implementation plans in the repository tree (either `./` or `./docs/architecture/`). Never write documents to `.gemini/`, hidden scratchpads, or `brain/` folders unless specifically commanded.
+- Output Location: Place authored Markdown documentation, design docs, and implementation plans in the repository tree (`./` or `./docs/architecture/`). Reserve `docs/` for Markdown documentation and generated Doxygen output. Store all agentic screenshots, captures, logs, coverage data, verification matrices, and verification reports (including Markdown) under `.flowui/agentic/`; use `.flowui/agentic/verification/<suite>/` for harness exports. Never place runtime or verification artifacts in `docs/`. Never write documents to `.gemini/`, hidden scratchpads, or `brain/` folders unless specifically commanded.
 - Link Formatting: 
   - Strictly use repo-relative Markdown links: `[Target](path/to/file.cpp)` or `[Header](include/module/header.hpp)`.
   - With line numbers: `[Target](path/to/file.cpp#L42)`.

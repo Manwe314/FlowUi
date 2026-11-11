@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/utility/EnumFlags.hpp"
+
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #define FLOWUI_INTERNAL_VIEWPORT_MANAGER 1
@@ -253,9 +255,12 @@ struct AppWindow {
 	float uiToFramebufferScaleX = 1.0f;
 	float uiToFramebufferScaleY = 1.0f;
 	Phase phase = Phase::Idle;
-	bool storageRegistered = false;
-	bool hasPreviousBeginFrameTimestamp = false;
-	bool framebufferResized = false;
+	enum class Flag : std::uint8_t {
+		storage_registered = 1u << 0u,
+		has_previous_begin_frame_timestamp = 1u << 1u,
+		framebuffer_resized = 1u << 2u,
+	};
+	detail::EnumFlags<Flag> flags{};
 };
 
 namespace detail::app_runtime {
@@ -315,19 +320,31 @@ struct App::Impl {
 	};
 	std::vector<ManagedWindowEntry> managedWindows;
 	std::vector<WindowId> dispatch_order;
-	bool dispatching_managed_windows = false;
+	enum class NativeWindowOperation : uint8_t { Close, Minimize, MaximizeRestore, Fullscreen };
+	struct PendingWindowOperation {
+		WindowId window_id = InvalidWindowId;
+		NativeWindowOperation operation = NativeWindowOperation::Close;
+	};
+	std::vector<PendingWindowOperation> pending_window_operations;
+	enum class DispatchFlag : std::uint8_t {
+		dispatching_managed_windows = 1u << 0u,
 #if FLOW_UI_AGENTIC_WORKFLOW
-	bool advancing_agentic = false;
+		advancing_agentic = 1u << 1u,
 #endif
+	};
+	detail::EnumFlags<DispatchFlag> dispatch_flags{};
 	::FlowUi::detail::MemoryDemandPeaks capacity_demand{};
 	WindowId mainWindowId = MainWindowId;
 	WindowId nextWindowId = MainWindowId + 1;
 	WindowId activeWindowFrame = InvalidWindowId;
-	bool windowIdsExhausted = false;
-	bool fontsInitialized = false;
-	bool imagesInitialized = false;
-	bool iconsInitialized = false;
-	bool cleanedUp = false;
+	enum class LifecycleFlag : std::uint8_t {
+		window_ids_exhausted = 1u << 0u,
+		fonts_initialized = 1u << 1u,
+		images_initialized = 1u << 2u,
+		icons_initialized = 1u << 3u,
+		cleaned_up = 1u << 4u,
+	};
+	detail::EnumFlags<LifecycleFlag> lifecycle_flags{};
 	std::thread::id platformThread = std::this_thread::get_id();
 
 	explicit Impl(const AppConfig& initialConfig);
@@ -385,6 +402,15 @@ struct App::Impl {
 	void requirePlatformThread() const;
 
 	void attachBackendAccessors(AppWindow& window);
+
+	[[nodiscard]] Result<WindowOperationCapabilities>
+	window_operation_capabilities(WindowId window_id) const noexcept;
+	[[nodiscard]] Status request_window_operation(WindowId window_id,
+												  NativeWindowOperation operation) noexcept;
+	[[nodiscard]] Status execute_window_operation(WindowId window_id,
+												  NativeWindowOperation operation) noexcept;
+	[[nodiscard]] Status install_default_window_shortcuts(AppWindow& window);
+	void drain_window_operations() noexcept;
 
 	void destroyUnsubmittedWindow(AppWindow& window) noexcept;
 

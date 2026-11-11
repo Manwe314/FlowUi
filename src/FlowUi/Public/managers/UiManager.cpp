@@ -203,7 +203,10 @@ namespace FlowUi
 		}
 		try {
 			shortcutManager_.init(storageSystem, window);
-			shortcutManager_.installDefaultTextShortcuts(config.ui.shortcuts.textEditing);
+			const auto shortcut_status =
+				shortcutManager_.installDefaultTextShortcuts(config.ui.shortcuts.textEditing);
+			if (!shortcut_status)
+				throw FlowUiException(shortcut_status.error());
 		} catch (...) {
 			destroyStorage();
 			throw;

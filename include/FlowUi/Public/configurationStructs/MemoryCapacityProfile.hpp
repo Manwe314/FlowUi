@@ -43,43 +43,26 @@ struct MemoryCapacityProfileMetadata {
 };
 
 /**
- * Aggregate manager demand recorded by profiling tools. These summaries do not reserve individual
- * runtime containers; use MemoryCapacityProfile::settings for registered startup targets. Values are
- * target-specific counts or byte sizes.
- */
-struct ManagerMemoryCapacities {
-	uint64_t elements = 0u, /**< Element manager aggregate demand. */
-		inputFields = 0u, /**< Input-field registry aggregate demand. */
-		inputTextBytes = 0u, /**< Input text payload bytes. */
-		fonts = 0u, /**< Font manager aggregate demand. */
-		fontAtlasCpuPixelBytes = 0u, /**< Retained CPU font atlas pixels in bytes. */
-		icons = 0u, /**< Icon manager aggregate demand. */
-		iconDocuments = 0u, /**< Retained SVG document aggregate demand. */
-		iconAtlasMetadata = 0u, /**< Icon atlas metadata aggregate demand. */
-		viewports = 0u, /**< Viewport manager aggregate demand. */
-		popups = 0u, /**< Popup manager aggregate demand. */
-		shortcuts = 0u, /**< Shortcut manager aggregate demand. */
-		actions = 0u, /**< Action manager aggregate demand. */
-		themes = 0u, /**< Theme manager aggregate demand. */
-		uiLayout = 0u, /**< UI layout aggregate demand. */
-		renderer = 0u; /**< Renderer aggregate demand. */
-};
-
-/**
  * Startup storage capacities, explicit container reserves, growth policy, and profiling provenance.
- * Zero storage hints preserve library defaults. Explicit settings override typed storage hints;
- * enabled baked capacities take precedence over both.
+ * storage provides typed byte-capacity hints for storage pools and buffers. settings addresses
+ * individual registered targets by stable ID, including storage byte capacities and manager
+ * container capacities in each target's registered units (bytes or entries).
+ * Nonzero storage hints are converted to settings during startup resolution; zero storage hints
+ * preserve library defaults. Explicit settings override storage hints for the same target, and a
+ * zero setting selects that target's default. Enabled baked capacities take precedence over both.
  */
 struct MemoryCapacityProfile {
-	/** Typed startup storage hints in bytes. */
+	/** Typed startup byte-capacity hints for storage pools and buffers; zero preserves defaults. */
 	StorageMemoryCapacities storage{};
-	/** Aggregate profiling summaries; use settings to tune individual runtime containers. */
-	ManagerMemoryCapacities managers{};
-	/** Owned target hints; identical duplicates are accepted, conflicting duplicates are rejected. */
+	/**
+	 * Owned per-target startup hints in registered units; override matching storage hints.
+	 * Zero selects the target default. Unknown targets and conflicting duplicates reject app
+	 * creation; identical duplicates are accepted.
+	 */
 	std::vector<MemoryCapacitySetting> settings{};
 	/** Storage growth multiplier; must be finite and greater than one. */
 	float growthFactor = 1.5f;
-	/** Permit storage growth subject to the configured capacity error policies. */
+	/** Permit storage growth subject to error policies and budgets; does not cap manager containers. */
 	bool allowRuntimeGrowth = true;
 	/** Optional evidence provenance retained with the profile. */
 	MemoryCapacityProfileMetadata metadata{};

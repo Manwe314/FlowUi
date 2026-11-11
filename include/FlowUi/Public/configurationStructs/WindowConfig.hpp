@@ -7,24 +7,15 @@
 namespace FlowUi {
 
 /**
- * @brief Describes a native application window.
- *
- * Width, height, title, and input settings also provide the initial runtime
- * defaults used by FlowUi managers. AppConfig::window configures the semantic
- * main window. Explicit secondary windows inherit the application's Vulkan and
- * UI configuration and supply only this native-window configuration.
+ * Native window creation settings. AppConfig::window supplies the main-window defaults;
+ * secondary windows supply a complete WindowConfig or inherit through WindowConfigOverrides.
+ * Vulkan and UI defaults always come from the application configuration.
  */
 struct WindowConfig {
-	/** @brief Initial window width in screen coordinates.
-	 *
-	 * Must be a positive integer greater than 0.
-	 */
+	/** Initial width in screen coordinates; must be positive. */
 	int width = 1280;
 
-	/** @brief Initial window height in screen coordinates.
-	 *
-	 * Must be a positive integer greater than 0.
-	 */
+	/** Initial height in screen coordinates; must be positive. */
 	int height = 720;
 
 	/** @brief Initial native window title. */
@@ -39,29 +30,26 @@ struct WindowConfig {
 	/** @brief Create the window in a maximized state when supported. */
 	bool maximized = false;
 
-	/** @brief Create the window on the primary monitor in fullscreen mode.
-	 *
-	 * @warning The GLFW backend creates a true fullscreen window without
-	 * normal title-bar controls, so users may not have a visible close or
-	 * minimize button. Provide an app-level exit path, such as a key chord
-	 * or menu action, before enabling fullscreen by default.
-	 */
+	/** Request fullscreen mode on the primary monitor. */
 	bool fullscreen = false;
 
-	/** @brief Prefer high-DPI framebuffer behavior for capable backends. */
+	/** Prefer high-DPI framebuffer behavior where the window platform supports it. */
 	bool highDPI = true;
 
 	/** @brief Initial low-level input behavior for the window. */
 	WindowInputConfig input{};
 };
 
-/** Partial overrides for a secondary window cloned from AppConfig::window. */
+/**
+ * Partial overrides for a secondary window cloned from AppConfig::window.
+ * Absent values inherit; present false values override true. An absent title adds a window suffix.
+ */
 struct WindowConfigOverrides {
 	/** Replacement width in screen coordinates; absent preserves the main-window default. */
 	std::optional<int> width;
 	/** Replacement height in screen coordinates; absent preserves the main-window default. */
 	std::optional<int> height;
-	/** Replacement title; absent preserves the main-window default. */
+	/** Replacement title; absent uses the main-window title with a generated window suffix. */
 	std::optional<std::string> title;
 	/** Replacement user-resize policy. */
 	std::optional<bool> resizable;

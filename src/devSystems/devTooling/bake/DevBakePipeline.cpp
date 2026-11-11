@@ -815,7 +815,7 @@ std::string encodeManifest(const DevBakeManifest& manifest) {
 	output += "  ]";
 	if (manifest.memoryCapacity)
 		output += ",\n  \"memoryCapacity\": " +
-				  FlowUi::detail::encode_memory_capacity_manifest(*manifest.memoryCapacity);
+				  FlowUi::detail::encode_memory_capacity_manifest(*manifest.memoryCapacity, 2);
 	for (const auto& member : manifest.preserved_metadata) {
 		output += ",\n  ";
 		appendEscaped(output, member.first);

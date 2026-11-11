@@ -1,5 +1,6 @@
 #pragma once
 #include "FlowUi/Private/storageSystem/capacity/MemoryDemandPeaks.hpp"
+#include "FlowUi/Private/utility/EnumFlags.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -73,6 +74,12 @@ struct InputSubmittedTextSpan {
 	uint32_t visualLineIndex = 0;
 };
 
+enum class InputFieldFlag : uint8_t {
+	initialized = 1u << 0,
+	caret_reveal_pending = 1u << 1,
+	mode_change_rejected = 1u << 2,
+};
+
 struct InputFieldState {
 	InputFieldOverlayStyle overlayStyle{};
 	text::FieldStorage storage{text::SingleLineStorage{}};
@@ -97,9 +104,7 @@ struct InputFieldState {
 	Clay_Vector2 scrollOffset{};
 	float maximumScrollX = 0.0f;
 	float maximumScrollY = 0.0f;
-	bool initialized = false;
-	bool caretRevealPending = true;
-	bool modeChangeRejected = false;
+	EnumFlags<InputFieldFlag> flags{InputFieldFlag::caret_reveal_pending};
 };
 
 struct InputSelectionRange {
@@ -116,6 +121,12 @@ struct InputPointerDragState {
 	bool active = false;
 	input_field::InputFieldKey fieldId{};
 	size_t anchorByteOffset = 0;
+};
+
+enum class InputFieldManagerFlag : uint8_t {
+	caret_blink_reset_pending = 1u << 0,
+	emit_carets_this_frame = 1u << 1,
+	dirty = 1u << 2,
 };
 
 struct InputFieldManagerState {
@@ -149,9 +160,9 @@ struct InputFieldManagerState {
 	InputManagerConfig config{};
 	uint32_t suppressedPrimaryPressClayId = 0;
 	float pointsToPixelsScale = 96.0f / 72.0f;
-	bool caretBlinkResetPending = true;
-	bool emitCaretsThisFrame = true;
-	bool dirty = false;
+	EnumFlags<InputFieldManagerFlag> flags{
+		InputFieldManagerFlag::caret_blink_reset_pending,
+		InputFieldManagerFlag::emit_carets_this_frame};
 };
 
 } // namespace detail::manager_storage

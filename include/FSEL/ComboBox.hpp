@@ -724,7 +724,7 @@ private:
  * stored in this object.
  */
 inline constexpr ComboBox kComboBox{};
-static_assert(FlowElement<ComboBox>);
+static_assert(validate_flow_element<ComboBox>());
 static_assert(DrawableFlowElement<ComboBox>);
 static_assert(!ConstructibleFlowElement<ComboBox>);
 

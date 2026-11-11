@@ -40,9 +40,8 @@ struct DevShortcutChord {
 };
 
 /**
- * @brief Configures FlowUi developer tooling and capture behavior.
- *
- * These options are only used when developer mode support is compiled in.
+ * Developer-interface startup options; require FLOW_UI_DEV_MODE.
+ * Monitoring/tooling configurations stay in devSystems; compiled capture levels limit runtime detail.
  */
 struct DevToolsConfig {
 #if FLOW_UI_DEV_MODE
@@ -57,31 +56,22 @@ struct DevToolsConfig {
 
 	/** @brief Keyboard chord used to toggle the developer-interface window. */
 	DevShortcutChord panelToggleChord{};
-	/** @brief Enable developer tooling at runtime. */
+	/** Enable the developer interface; monitoring has separate capture controls. */
 	bool enabled = false;
 
 	/**
-	 * @brief Capture timing from the first application tick until the timing ring is full
-	 * or the developer interface is opened. Requires enabled developer tooling.
-	 *
-	 * The completed startup snapshot is preserved for the first investigation; filling
-	 * the ring does not automatically open the developer interface. Defaults to off.
+	 * Capture startup timing until the ring fills or the developer interface opens; requires enabled.
+	 * Preserve the snapshot for inspection without automatically opening the interface.
 	 */
 	bool capture_timing_on_startup = false;
 
 	/**
-	 * @brief Register the developer-interface toggle chord with ShortcutManager.
-	 *
-	 * Disable this when the application wants to own panel toggling itself.
+	 * Register panelToggleChord with ShortcutManager; disable for application-controlled toggling.
 	 */
 	bool useShortcutManagerForPanelToggle = true;
 
 	/**
-	 * @brief Hide FlowUi's internal developer elements from captured UI data.
-	 *
-	 * @note Keeping this enabled is strongly recommended. Capturing the developer
-	 * panel itself can add noisy internal elements to inspection/export data and
-	 * make user-authored UI harder to reason about.
+	 * Exclude internal developer elements from inspection/export captures to focus on application UI.
 	 */
 	bool excludeInternalDevElementsFromCapture = true;
 };

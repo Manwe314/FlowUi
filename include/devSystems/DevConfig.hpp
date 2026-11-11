@@ -1,7 +1,7 @@
 #pragma once
 
 /** @file
- * @brief Public DevConfig declarations for optional development services.
+ * @brief Development monitoring and tooling configuration; available with FLOW_UI_DEV_MODE.
  */
 
 #include "FlowUi/Public/BuildConfig.hpp"
@@ -19,8 +19,7 @@ namespace FlowUi {
 namespace devSystems::tooling {
 
 /**
- * @brief Upper bounds for copied development reflection metadata; registration rejects exhausted
- * limits.
+ * @brief Hard limits for copied reflection metadata; registration fails when a limit is exhausted.
  */
 struct DevSchemaLimits {
 	/** @brief Maximum reflected field nesting depth. */
@@ -52,7 +51,8 @@ enum class CpuTimingLevel : uint8_t {
 };
 
 /**
- * @brief Runtime timing collection policy; record and query capacities size producer buffers.
+ * @brief CPU/GPU timing collection and producer buffer sizes in development builds.
+ * Requested detail is capped by FLOWUI_DEV_TIMING_LEVEL; capacities count records or query slots.
  */
 struct DevTimingConfig {
 	/**
@@ -65,7 +65,7 @@ struct DevTimingConfig {
 	 * @brief Optional definition selected for detailed timing; zero selects no definition.
 	 */
 	FlowDefinitionID selectedElementDefinition{};
-	/** @brief Requested CPU timing detail. */
+	/** @brief CPU detail requested up to the compiled FLOWUI_DEV_TIMING_LEVEL. */
 	CpuTimingLevel cpuLevel = CpuTimingLevel::Summary;
 	/** @brief Bitmask of timing categories admitted by collection. */
 	uint32_t enabledCategoryMask = 0xFFFFFFFFu;
@@ -78,7 +78,7 @@ struct DevTimingConfig {
 };
 
 /**
- * @brief Bounds and percentiles for retained timing history derived from producer records.
+ * @brief Timing history retention and rolling statistics; independent of producer detail.
  */
 struct TimingReportingConfig {
 	/** @brief Maximum application ticks retained in timing history. */
@@ -104,34 +104,38 @@ enum class MemoryMonitoringLevel : uint8_t {
 	DeepAllocations = 4, /**< Collect detailed allocation evidence supported by the build. */
 };
 
-/** @brief Memory collection detail and environment probe sampling intervals. */
+/**
+ * @brief Memory collection and environment sampling in development builds.
+ * Requested detail is capped by FLOWUI_DEV_MEMORY_LEVEL; probes also require platform support.
+ */
 struct DevMemoryConfig {
 	/** @brief Minimum interval between process-memory probes, in nanoseconds. */
 	uint64_t processSampleIntervalNs = 500'000'000ull;
 	/** @brief Minimum interval between GPU-budget probes, in nanoseconds. */
 	uint64_t gpuBudgetSampleIntervalNs = 250'000'000ull;
-	/** @brief Requested memory collection detail. */
+	/** @brief Memory detail requested up to the compiled FLOWUI_DEV_MEMORY_LEVEL. */
 	MemoryMonitoringLevel level = MemoryMonitoringLevel::SubsystemCapacity;
 	/** @brief Maximum memory lifetime events buffered by the producer before draining. */
 	uint32_t producerEventCapacity = 8192u;
 	/**
-	 * @brief GPU sampling cadence for detailed allocator statistics; zero disables periodic
-	 * detail.
+	 * @brief GPU samples between detailed allocator queries; zero disables periodic detail.
+	 * detailedVmaStatistics still requests detail on every sample.
 	 */
 	uint32_t detailedGpuStatsEverySamples = 0u;
 	/** @brief Whether to sample GPU memory when supported. */
 	bool gpuMemory = true;
 	/** @brief Whether to sample process memory when supported. */
 	bool processMemory = true;
-	/** @brief Whether detailed Vulkan allocator statistics are requested. */
+	/** @brief Collect detailed Vulkan allocator statistics on every GPU sample. */
 	bool detailedVmaStatistics = false;
-	/** @brief Whether temporary-resource lifetime evidence is collected. */
-	bool trackTemporaryResources = true;
 };
 
-/** @brief Retention and processing bounds for derived memory history. */
+/**
+ * @brief Retention and sampling policy for derived memory history.
+ * Lifetime-event retention requires producer detail that supplies those events.
+ */
 struct MemoryReportingConfig {
-	/** @brief Byte budget for the retained memory event ring. */
+	/** @brief Retained event-ring budget in bytes; used when retainLifetimeEvents is true. */
 	uint64_t eventByteCapacity = 16ull * 1024ull * 1024ull;
 	/**
 	 * @brief Processing duration above which memory consumption is reported as slow, in
@@ -165,11 +169,11 @@ enum class DevErrorCaptureLevel : uint8_t {
 inline constexpr size_t kDevErrorNativeTextCapacity = 160u;
 
 /**
- * @brief Bounded producer-side error evidence collection; borrowed providers must outlive
- * monitoring.
+ * @brief Error producer buffers and evidence detail in development builds.
+ * Detail is capped by FLOWUI_DEV_ERROR_LEVEL; borrowed providers must outlive monitoring.
  */
 struct DevErrorConfig {
-	/** @brief Requested error evidence detail. */
+	/** @brief Error detail requested up to the compiled FLOWUI_DEV_ERROR_LEVEL. */
 	DevErrorCaptureLevel level = DevErrorCaptureLevel::Causal;
 	/** @brief Maximum records buffered by each producer before draining. */
 	uint32_t producerRecordCapacity = 256u;
@@ -205,7 +209,7 @@ struct DevErrorConfig {
 };
 
 /**
- * @brief Error predicate and application-tick window for a triggered evidence capture.
+ * @brief Error predicate and capture window in application ticks; active criteria must all match.
  */
 struct DevErrorTrigger {
 	/** @brief Error code to match; None leaves the code unconstrained. */
@@ -225,7 +229,7 @@ struct DevErrorTrigger {
 };
 
 /**
- * @brief Retention limits and automatic correlation policy for owned error investigations.
+ * @brief Owned error-report retention, capture triggers and bounded timing/memory correlation.
  */
 struct DevErrorReportingConfig {
 	/**
@@ -256,7 +260,7 @@ struct DevErrorReportingConfig {
 namespace tooling {
 
 /**
- * @brief Queue bounds for live editing transactions applied at application safe points.
+ * @brief Hard queue limits for live edits; accepted transactions apply at application safe points.
  */
 struct DevOverrideEngineConfig {
 	/** @brief Maximum live-edit transactions awaiting a safe point. */
@@ -268,7 +272,9 @@ struct DevOverrideEngineConfig {
 };
 
 /**
- * @brief Initial reserves and maximum retained node/text counts for captured UI trees.
+ * @brief Initial UI-tree reserves and hard capture limits in development builds.
+ * Reserves reduce startup growth; maximum counts bound retained evidence. Clay fields require
+ * FLOW_UI_DEV_CAPTURE_CLAY.
  */
 struct DevTreeCaptureConfig {
 	/** @brief Initial Flow element node reserve, in nodes. */
@@ -296,7 +302,8 @@ struct DevTreeCaptureConfig {
 } // namespace tooling
 
 /**
- * @brief Independent producer and reporting policies for development timing, memory and errors.
+ * @brief Development-only timing, memory and error collection with separate reporting policies.
+ * Runtime detail cannot enable instrumentation omitted by the compiled monitoring levels.
  */
 struct DevMonitoringConfig {
 	/** @brief CPU and GPU timing producer policy. */
@@ -313,7 +320,7 @@ struct DevMonitoringConfig {
 	DevErrorReportingConfig errorReporting{};
 };
 
-/** @brief Development reflection, editing and UI tree capture limits. */
+/** @brief Development-only reflection, safe-point editing and copied UI-tree limits. */
 struct DevToolingConfig {
 	/** @brief Reflection metadata registration limits. */
 	tooling::DevSchemaLimits schema{};

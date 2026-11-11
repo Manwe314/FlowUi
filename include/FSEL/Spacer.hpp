@@ -46,6 +46,6 @@ struct Spacer {
  * stored in this object.
  */
 inline constexpr Spacer kSpacer{};
-static_assert(FlowElement<Spacer>);
+static_assert(validate_flow_element<Spacer>());
 
 } // namespace FlowUi::FSEL

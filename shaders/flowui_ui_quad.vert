@@ -4,7 +4,7 @@ layout(push_constant) uniform UiPushConstants {
     float viewportW;
     float viewportH;
     uint instanceBaseIndex;
-    uint _pad;
+    float primitive_coverage_width_scale;
 } pushData;
 
 struct UiInstance {

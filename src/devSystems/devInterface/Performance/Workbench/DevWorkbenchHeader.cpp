@@ -64,6 +64,8 @@ void DevWorkbenchHeader::buildElement(BuildContext& context) {
 			} else {
 				label += "unavailable";
 			}
+			label += " · View CPU: ";
+			label += recording_level_name(context.params.selection->cpu_detail_level);
 			label += " · Depth controls change display only";
 			timeline_ui::text(context, label, interface_theme::kAccentSeaGlass);
 		}

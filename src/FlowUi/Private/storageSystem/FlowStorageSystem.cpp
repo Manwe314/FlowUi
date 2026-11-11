@@ -5042,11 +5042,14 @@ void FlowStorageSystem::appendMemorySnapshot(
 #endif
 	destination.individualResources.clear();
 	destination.resources.fill({});
-	destination.includesResourceKinds = request.includeResourceKinds;
-	destination.includesWindows = request.includeWindows;
-	destination.includesIndividualResources =
-		request.detail == StorageMemoryDetail::IndividualResources;
-	destination.resourceMetadataEstimated = true;
+	destination.flags.set_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_resource_kinds,
+		request.includeResourceKinds);
+	destination.flags.set_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_windows,
+		request.includeWindows);
+	destination.flags.set_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_individual_resources,
+		request.detail == StorageMemoryDetail::IndividualResources);
+	destination.flags.set_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::resource_metadata_estimated,
+		true);
 	destination.totals = stats();
 	destination.resourceMetadataBytes = impl_->resourceMetadataCapacityBytes();
 	destination.resourceMetadataLiveBytes = impl_->resourceMetadataLiveBytes();
@@ -5236,7 +5239,7 @@ void FlowStorageSystem::appendMemorySnapshot(
 	mix(destination.totals.gpuRetireCount);
 	mix(destination.totals.gpuDestroyCount);
 	mix(destination.resourceMetadataBytes);
-	if (destination.includesResourceKinds) {
+	if (destination.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_resource_kinds)) {
 		for (const ResourceStats& values : destination.resources) {
 			mix(values.liveBytes);
 			mix(values.retiredBytes);

@@ -38,21 +38,26 @@ concept RequestContainsFieldID = requires(Request request) {
 	request.fieldId;
 };
 
+template <typename Configuration>
+concept ConfigurationContainsHistoryDefaults =
+	requires(Configuration configuration) { configuration.undoRedoRequests; };
+
 template <typename ID>
-concept AcceptsCompleteFieldSurface = requires(
-	FlowUi::InputFieldManager& manager,
-	ID id,
-	const FlowUi::FieldRequest& request,
-	std::string_view text) {
-	{ manager.requestField(id, request) } -> std::same_as<FlowUi::FieldQueryResult>;
-	{ manager.requestCaret(id, FlowUi::CaretRequestKind::SetPrimary) } -> std::same_as<void>;
-	{ manager.removeField(id) } -> std::same_as<bool>;
-	{ manager.replaceText(id, text) } -> std::same_as<bool>;
-	{ manager.applyEdits(id, std::span<const FlowUi::TextReplacement>{}, FlowUi::EditOrigin::Programmatic) }
-		-> std::same_as<FlowUi::EditResult>;
-};
+concept AcceptsCompleteFieldSurface =
+	requires(FlowUi::InputFieldManager& manager, ID id, const FlowUi::FieldRequest& request,
+			 std::string_view text) {
+		{ manager.requestField(id, request) } -> std::same_as<FlowUi::FieldQueryResult>;
+		{ manager.requestCaret(id, FlowUi::CaretRequestKind::SetPrimary) } -> std::same_as<void>;
+		{ manager.removeField(id) } -> std::same_as<bool>;
+		{ manager.replaceText(id, text) } -> std::same_as<bool>;
+		{
+			manager.applyEdits(id, std::span<const FlowUi::TextReplacement>{},
+							   FlowUi::EditOrigin::Programmatic)
+		} -> std::same_as<FlowUi::EditResult>;
+	};
 
 static_assert(!RequestContainsFieldID<FlowUi::FieldRequest>);
+static_assert(!ConfigurationContainsHistoryDefaults<FlowUi::DefaultTextShortcutConfig>);
 static_assert(AcceptsCompleteFieldSurface<FlowUi::FlowElementID>);
 static_assert(AcceptsCompleteFieldSurface<FlowUi::GlobalFlowID>);
 static_assert(AcceptsCompleteFieldSurface<FlowUi::FlowElementPartID>);
@@ -86,14 +91,22 @@ void testEditingAndShortcutDefaults() {
 	FLOWUI_CHECK(shortcuts.textEditing.enabled);
 	FLOWUI_CHECK(shortcuts.textEditing.selectAll);
 	FLOWUI_CHECK(shortcuts.textEditing.clipboard);
-	FLOWUI_CHECK(shortcuts.textEditing.undoRedoRequests);
 	FLOWUI_CHECK(shortcuts.textEditing.wordNavigation);
 	FLOWUI_CHECK(shortcuts.textEditing.platform == FlowUi::PlatformShortcutStyle::Auto);
+	FLOWUI_CHECK(!shortcuts.window.enabled);
+	FLOWUI_CHECK(shortcuts.window.close_window.enabled);
+	FLOWUI_CHECK(shortcuts.window.minimize.enabled);
+	FLOWUI_CHECK(!shortcuts.window.maximize_restore.enabled);
+	FLOWUI_CHECK(!shortcuts.window.toggle_fullscreen.enabled);
+	FLOWUI_CHECK(!shortcuts.window.close_window.chord);
+	FLOWUI_CHECK(!shortcuts.window.minimize.chord);
+	FLOWUI_CHECK(!shortcuts.window.maximize_restore.chord);
+	FLOWUI_CHECK(!shortcuts.window.toggle_fullscreen.chord);
 
 	static_assert(std::is_same_v<decltype(FlowUi::FieldQueryResult{}.transactions),
-		std::span<const FlowUi::FieldEditTransaction>>);
+								 std::span<const FlowUi::FieldEditTransaction>>);
 	static_assert(std::is_same_v<decltype(FlowUi::FieldQueryResult{}.commandRequests),
-		std::span<const FlowUi::FieldCommandRequest>>);
+								 std::span<const FlowUi::FieldCommandRequest>>);
 }
 
 } // namespace

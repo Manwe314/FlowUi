@@ -498,7 +498,7 @@ int main() {
 	expectCoveredRange(ErrorCode::InternalInvariantBroken, ErrorCode::ForeignExceptionObserved);
 	expectCoveredRange(ErrorCode::AppUnavailable, ErrorCode::AppTickSpaceExhausted);
 	expectCoveredRange(ErrorCode::PlatformInitializationFailed, ErrorCode::PlatformInputQueueOverflow);
-	expectCoveredRange(ErrorCode::InvalidWindowId, ErrorCode::WindowRecreationFailed);
+	expectCoveredRange(ErrorCode::InvalidWindowId, ErrorCode::WindowOperationFailed);
 	expectCoveredRange(ErrorCode::FrameAlreadyActive, ErrorCode::FrameCapacityExceeded);
 	expectCoveredRange(ErrorCode::VulkanVersionUnsupported, ErrorCode::PresentIdSpaceExhausted);
 	expectCoveredRange(ErrorCode::ShaderUnavailable, ErrorCode::RendererNativeResourceInvalid);

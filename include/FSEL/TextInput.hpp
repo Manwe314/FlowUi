@@ -281,7 +281,7 @@ struct TextInput {
  * stored in this object.
  */
 inline constexpr TextInput kTextInput{};
-static_assert(FlowElement<TextInput>);
+static_assert(validate_flow_element<TextInput>());
 static_assert(DrawableFlowElement<TextInput>);
 static_assert(!ConstructibleFlowElement<TextInput>);
 

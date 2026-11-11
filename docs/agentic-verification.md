@@ -1,5 +1,11 @@
 # Agentic verification suites
 
+Keep runtime evidence, screenshots, logs, coverage reports and verification matrices
+(including Markdown reports) under `.flowui/agentic/`. The `docs/` tree is reserved
+for authored Markdown documentation and generated Doxygen output. Use
+`.flowui/agentic/verification/<suite>/` for harness exports and
+`.flowui/agentic/v1/` for the versioned runtime store.
+
 Verification groups registered scenarios, finite pointer/keyboard plans, assertions,
 and selected screenshots into one sequential job. CLI, authenticated local IPC,
 and MCP use the same five operations. See the

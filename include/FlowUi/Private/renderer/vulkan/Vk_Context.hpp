@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FlowUi/Private/utility/EnumFlags.hpp"
+
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -64,10 +66,14 @@ struct VulkanContext {
 	uint32_t graphicsQFamily = UINT32_MAX;
 	uint32_t presentQFamily  = UINT32_MAX;
 	WsiRetirementMode wsiRetirementMode = WsiRetirementMode::LegacyDeviceIdle;
-	bool surfaceMaintenanceEnabled = false;
-	bool devGpuTimingRequested = true;
-	bool devGpuMemoryRequested = true;
-	bool memoryBudgetEnabled = false;
-	bool synchronization2Enabled = false;
-	bool calibratedTimestampsEnabled = false;
+	enum class Flag : std::uint8_t {
+		surface_maintenance_enabled = 1u << 0u,
+		dev_gpu_timing_requested = 1u << 1u,
+		dev_gpu_memory_requested = 1u << 2u,
+		memory_budget_enabled = 1u << 3u,
+		synchronization2_enabled = 1u << 4u,
+		calibrated_timestamps_enabled = 1u << 5u,
+	};
+	FlowUi::detail::EnumFlags<Flag> flags{Flag::dev_gpu_timing_requested,
+										   Flag::dev_gpu_memory_requested};
 };

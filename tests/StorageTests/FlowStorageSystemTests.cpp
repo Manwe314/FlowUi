@@ -452,7 +452,6 @@ StorageConfig testConfig() {
 	config.expectedWorkerCount = 2;
 	config.growthFactor = 1.5f;
 	config.allowRuntimeGrowth = true;
-	config.detailedTracking = true;
 	return config;
 }
 
@@ -771,15 +770,28 @@ void testSharedUiByteResourceLifecycle(FlowUi::test::HeadlessVulkanFixture& vulk
 	FLOWUI_CHECK(resources.placeholderUiImage);
 	FLOWUI_CHECK(resources.placeholderUiView);
 	FLOWUI_CHECK(resources.linearSampler);
+	FLOWUI_CHECK(resources.missing_texture_sampler);
 	FLOWUI_CHECK(resources.nativeQuadBuffer != VK_NULL_HANDLE);
 	FLOWUI_CHECK(resources.nativePlaceholderFontView != VK_NULL_HANDLE);
 	FLOWUI_CHECK(resources.nativePlaceholderUiView != VK_NULL_HANDLE);
 	FLOWUI_CHECK(resources.nativeLinearSampler != VK_NULL_HANDLE);
+	const auto missing_texture = storage.nativeImage(resources.placeholderUiImage);
+	FLOWUI_CHECK(missing_texture.width == 2);
+	FLOWUI_CHECK(missing_texture.height == 2);
+	FLOWUI_CHECK(missing_texture.format == PixelFormat::Rgba8Unorm);
+	const auto font_placeholder = storage.nativeImage(resources.placeholderFontImage);
+	FLOWUI_CHECK(font_placeholder.width == 1);
+	FLOWUI_CHECK(font_placeholder.height == 1);
+	FLOWUI_CHECK(storage.nativeSampler(resources.missing_texture_sampler).nativeSampler != 0);
+	FLOWUI_CHECK(resources.missing_texture_sampler != resources.linearSampler);
 
 	const BufferHandle quad = resources.quadBuffer;
 	const ImageHandle fontImage = resources.placeholderFontImage;
 	const ImageViewHandle fontView = resources.placeholderFontView;
 	const SamplerHandle sampler = resources.linearSampler;
+	const ImageHandle missing_texture_image = resources.placeholderUiImage;
+	const ImageViewHandle missing_texture_view = resources.placeholderUiView;
+	const SamplerHandle missing_texture_sampler = resources.missing_texture_sampler;
 	destroySharedUiByteResources(storage, resources);
 	storage.collect();
 	FLOWUI_CHECK(!resources.quadBuffer);
@@ -787,6 +799,12 @@ void testSharedUiByteResourceLifecycle(FlowUi::test::HeadlessVulkanFixture& vulk
 	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::GpuImage, fontImage.index, fontImage.generation));
 	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::ImageView, fontView.index, fontView.generation));
 	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::Sampler, sampler.index, sampler.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::GpuImage, missing_texture_image.index,
+										missing_texture_image.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::ImageView, missing_texture_view.index,
+										missing_texture_view.generation));
+	FLOWUI_CHECK(!storage.validateHandle(ResourceKind::Sampler, missing_texture_sampler.index,
+										missing_texture_sampler.generation));
 }
 
 BufferDesc trackedBufferDesc(FlowUi::detail::storage::WindowId window) {
@@ -1722,9 +1740,12 @@ void testTelemetryConfiguration(FlowUi::test::HeadlessVulkanFixture& vulkan) {
 		},
 		memorySnapshot);
 	FLOWUI_CHECK(memorySnapshot.mutationSequence != 0u);
-	FLOWUI_CHECK(memorySnapshot.includesResourceKinds);
-	FLOWUI_CHECK(memorySnapshot.includesWindows);
-	FLOWUI_CHECK(memorySnapshot.includesIndividualResources);
+	FLOWUI_CHECK(
+		memorySnapshot.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_resource_kinds));
+	FLOWUI_CHECK(
+		memorySnapshot.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_windows));
+	FLOWUI_CHECK(
+		memorySnapshot.flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_individual_resources));
 	FLOWUI_CHECK(memorySnapshot.resourceMetadataBytes >= memorySnapshot.resourceMetadataLiveBytes);
 	FLOWUI_CHECK(!memorySnapshot.allocators.empty());
 	FLOWUI_CHECK(std::any_of(

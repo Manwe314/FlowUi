@@ -24,6 +24,8 @@
 
 namespace {
 
+using FlowUi::detail::manager_storage::ViewportRecordFlag;
+
 void vkCheck(VkResult result) {
 	if (result == VK_SUCCESS) return;
 	FlowUi::ErrorCode code = result == VK_ERROR_DEVICE_LOST
@@ -108,7 +110,8 @@ void ViewPortManager::visitDevViewports(void* target, DevViewportVisitor visitor
 			pending.submission && pending.submission <= storage_->completedSerial()
 				? pending
 				: record.published_capture;
-		const bool available = capture.texture && !record.capture_release_requested;
+		const bool available = capture.texture &&
+			!record.flags.has_flag(ViewportRecordFlag::capture_release_requested);
 		const DevViewportView view{
 			.key = key,
 			.capture_texture = available ? capture.texture : TextureHandle{},
@@ -126,10 +129,10 @@ void ViewPortManager::visitDevViewports(void* target, DevViewportVisitor visitor
 			.clear_every_frame = record.state.clearEveryFrame,
 			.capture_supported = controller_->supports_dev_capture(record.state.colorFormat),
 			.capture_pending =
-				record.capture_requested ||
+				record.flags.has_flag(ViewportRecordFlag::capture_requested) ||
 				(pending.texture &&
 				 (!pending.submission || pending.submission > storage_->completedSerial())),
-			.capture_failed = record.capture_failed};
+			.capture_failed = record.flags.has_flag(ViewportRecordFlag::capture_failed)};
 		if (!visitor(target, view))
 			break;
 	}
@@ -147,25 +150,27 @@ Status ViewPortManager::request_dev_capture(std::string_view key) noexcept {
 				makeError(ErrorCode::ViewportNotFound, ErrorSite::ViewportPrepare));
 		auto& record = found->second;
 		if (!controller_->supports_dev_capture(record.state.colorFormat)) {
-			record.capture_failed = true;
+			record.flags.set_flag(ViewportRecordFlag::capture_failed, true);
 			return unexpectedError(
 				makeError(ErrorCode::ViewportConfigurationInvalid, ErrorSite::ViewportPrepare));
 		}
 		const auto active_count = std::ranges::count_if(controller_->records, [](const auto& item) {
 			const auto& candidate = item.second;
-			return candidate.capture_requested || candidate.pending_capture.texture ||
+			return candidate.flags.has_flag(ViewportRecordFlag::capture_requested) ||
+				   candidate.pending_capture.texture ||
 				   candidate.published_capture.texture;
 		});
-		if (active_count >= 16 && !record.capture_requested && !record.pending_capture.texture &&
+		if (active_count >= 16 && !record.flags.has_flag(ViewportRecordFlag::capture_requested) &&
+			!record.pending_capture.texture &&
 			!record.published_capture.texture)
 			return unexpectedError(
 				makeError(ErrorCode::StorageCapacityExceeded, ErrorSite::ViewportPrepare));
 		if (controller_->retired_dev_captures.capacity() < 64)
 			controller_->retired_dev_captures.reserve(64);
-		record.capture_release_requested = false;
-		record.capture_failed = false;
+		record.flags.set_flag(ViewportRecordFlag::capture_release_requested, false);
+		record.flags.set_flag(ViewportRecordFlag::capture_failed, false);
 		if (!record.pending_capture.texture)
-			record.capture_requested = true;
+			record.flags.set_flag(ViewportRecordFlag::capture_requested, true);
 		return {};
 	} catch (const FlowUiException& exception) {
 		return unexpectedError(exception.error());
@@ -181,8 +186,8 @@ void ViewPortManager::release_dev_capture(std::string_view key) noexcept {
 		const auto found = controller_->records.find(std::string(key));
 		if (found == controller_->records.end())
 			return;
-		found->second.capture_requested = false;
-		found->second.capture_release_requested = true;
+		found->second.flags.set_flag(ViewportRecordFlag::capture_requested, false);
+		found->second.flags.set_flag(ViewportRecordFlag::capture_release_requested, true);
 		controller_->collect_dev_captures();
 	} catch (...) {}
 }
@@ -221,7 +226,8 @@ void ViewPortManager::prepare_dev_captures(const detail::storage::FrameToken& fr
 	if (!controller_)
 		return;
 	for (auto& [key, record] : controller_->records) {
-		if (!record.capture_requested || !record.referencedThisFrame ||
+		if (!record.flags.has_flag(ViewportRecordFlag::capture_requested) ||
+			!record.flags.has_flag(ViewportRecordFlag::referenced_this_frame) ||
 			record.pending_capture.texture)
 			continue;
 		try {
@@ -238,10 +244,10 @@ void ViewPortManager::prepare_dev_captures(const detail::storage::FrameToken& fr
 				throw;
 			}
 			record.pending_capture = capture;
-			record.capture_requested = false;
+			record.flags.set_flag(ViewportRecordFlag::capture_requested, false);
 		} catch (...) {
-			record.capture_failed = true;
-			record.capture_requested = false;
+			record.flags.set_flag(ViewportRecordFlag::capture_failed, true);
+			record.flags.set_flag(ViewportRecordFlag::capture_requested, false);
 		}
 	}
 }
@@ -575,7 +581,7 @@ void ViewPortManager::onFrameStart(VulkanContext&, uint32_t frameIndex) {
 
 void ViewPortManager::resetFrameTracking() {
 	for (auto& [_, record] : controller_->records) {
-		record.referencedThisFrame = false;
+		record.flags.set_flag(ViewportRecordFlag::referenced_this_frame, false);
 		record.desiredWidth = 1;
 		record.desiredHeight = 1;
 	}
@@ -605,8 +611,8 @@ void ViewPortManager::prepareFrameTargets(
 		const auto record = controller_->records.find(owner->second.key);
 		if (record == controller_->records.end()) continue;
 
-		if (!record->second.referencedThisFrame) {
-			record->second.referencedThisFrame = true;
+		if (!record->second.flags.has_flag(ViewportRecordFlag::referenced_this_frame)) {
+			record->second.flags.set_flag(ViewportRecordFlag::referenced_this_frame, true);
 			record->second.desiredWidth = 0;
 			record->second.desiredHeight = 0;
 		}
@@ -623,7 +629,9 @@ void ViewPortManager::prepareFrameTargets(
 		referencedCommands.emplace_back(ReferencedCommand{ref, &record->second});
 	}
 
-	for (auto& [_, record] : controller_->records) if (record.referencedThisFrame) {
+	for (auto& [_, record] : controller_->records) {
+		if (!record.flags.has_flag(ViewportRecordFlag::referenced_this_frame))
+			continue;
 		if (!record.active.images.empty()) {
 			constexpr uint32_t kDefaultHysteresisPixels = 4u;
 			const uint32_t hysteresis = std::max(record.resizeHysteresisPixels, kDefaultHysteresisPixels);
@@ -670,7 +678,9 @@ void ViewPortManager::remapRenderCommandsForFrame(Clay_RenderCommandArray& comma
 
 bool ViewPortManager::resizeRequired() const {
 	if (!controller_) return false;
-	for (const auto& [_, record] : controller_->records) if (record.referencedThisFrame) {
+	for (const auto& [_, record] : controller_->records) {
+		if (!record.flags.has_flag(ViewportRecordFlag::referenced_this_frame))
+			continue;
 		if (record.active.images.empty() || record.active.images.front().width != record.desiredWidth ||
 			record.active.images.front().height != record.desiredHeight) return true;
 	}
@@ -749,7 +759,7 @@ void ViewPortManager::recordFramePasses(
 	if (!controller_ || !primary || !vk.device) return;
 	const uint32_t slot = frameIndex % controller_->framesInFlight;
 	for (auto& [key, record] : controller_->records) {
-		if (!record.referencedThisFrame) continue;
+		if (!record.flags.has_flag(ViewportRecordFlag::referenced_this_frame)) continue;
 #if FLOW_UI_DEV_MODE
 		devSystems::GpuCommandTimingZone gpuZone(
 			gpuTiming, primary, devSystems::gpu_timing_zones::kViewportPass,

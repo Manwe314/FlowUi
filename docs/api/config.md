@@ -1,6 +1,8 @@
 # Configuration API
 
-Configuration headers live under [FlowUi/Public/configurationStructs](../../include/FlowUi/Public/configurationStructs/). Include [AppConfig.hpp](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp) for startup configuration, or the focused owner header for a leaf type. Cursor/frame-input values live in [InputTypes.hpp](../../include/FlowUi/Public/managerStructs/InputTypes.hpp); texture references and shared styling live in [TextureRef.hpp](../../include/FlowUi/Public/TextureRef.hpp) and [FlowUiTheme.hpp](../../include/FlowUi/Public/FlowUiTheme.hpp). The former broad configuration/value header is retired.
+See the [configuration glossary](configuration-glossary.md) for member defaults, units, build conditions, capacity keys, and examples.
+
+Configuration headers live under [FlowUi/Public/configurationStructs](../../include/FlowUi/Public/configurationStructs/). Include [AppConfig.hpp](../../include/FlowUi/Public/configurationStructs/AppConfig.hpp) for startup configuration, or the focused owner header for a leaf type. Cursor/frame-input values live in [InputTypes.hpp](../../include/FlowUi/Public/managerStructs/InputTypes.hpp); texture references and shared styling live in [TextureRef.hpp](../../include/FlowUi/Public/TextureRef.hpp) and [FlowUiTheme.hpp](../../include/FlowUi/Public/FlowUiTheme.hpp). Development configuration stays under [devSystems](../../include/devSystems/DevConfig.hpp), and agentic configuration under [devAgenticWorkflow](../../include/devSystems/devAgenticWorkflow/AgenticTypes.hpp), with their existing namespaces and build gates.
 
 ## Enums
 
@@ -74,7 +76,19 @@ Configures caret and selection rendering for text input fields. It affects editi
 
 #### `struct UiConfig`
 
-Configures layout, text scaling, transient UI storage, Clay memory, and default font resources. These values are consumed during app and UI manager initialization.
+Configures layout, text scaling, Clay memory, default font resources, and primitive anti-aliasing. Temporary UI storage is configured through `AppConfig::memoryCapacityProfile.storage.transientBytesPerFramePerWindow`. These values are consumed during app and UI manager initialization.
+
+`primitive_antialiasing` controls the existing linear analytic coverage of solid primitives, borders, and image silhouettes. Defaults preserve the existing appearance. Set a finite positive `coverage_width_scale` to soften or sharpen coverage; setting `enabled = false` produces hard shape edges. The renderer derives the raster fringe from that width in framebuffer pixels. Glyph reconstruction, texture filtering, layout, hit testing, and strict scissor clipping retain their existing behavior.
+
+Set these startup values before `makeApplication()`; existing windows keep their copied settings:
+
+```cpp
+FlowUi::AppConfig config{};
+config.ui.primitive_antialiasing.coverage_width_scale = 1.5f;
+config.ui.primitive_antialiasing.enabled = true;
+```
+
+Invalid width values (zero, negative, infinity, or NaN) fail startup with `RendererConfigurationInvalid`, including when primitive AA is disabled.
 
 ### **IconManagerConfig**
 

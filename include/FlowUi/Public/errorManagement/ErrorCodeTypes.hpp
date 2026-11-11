@@ -45,6 +45,8 @@ enum class ErrorCode : std::uint16_t {
 	MainWindowDestructionForbidden = 0x0406, /**< The semantic main window cannot be destroyed explicitly. */
 	WindowPresentationUnsupported = 0x0407, /**< The selected device cannot present to this window. */
 	WindowRecreationFailed = 0x0408, /**< The FlowUi window rendering resources could not be recreated. */
+	WindowOperationUnsupported = 0x0409, /**< The window backend does not support this native operation. */
+	WindowOperationFailed = 0x040a, /**< The native window operation could not be completed. */
 
 	FrameAlreadyActive = 0x0501, /**< Another FlowUi window frame is already active. */
 	FramePhaseViolation = 0x0502, /**< The frame operation is invalid in the current phase. */

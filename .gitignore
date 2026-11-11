@@ -1,7 +1,7 @@
 # -----------------------------
 # Build output directories
 # -----------------------------
-/Build/
+/Build
 /Build-*/
 /Build_*/
 **/Build/
@@ -17,6 +17,7 @@
 **/build/
 **/build-*/
 # Keep project configuration, scenarios and durable .flowchanges eligible for version control.
+.flowui/agentic/verification/
 .flowui/agentic/v1/runs/
 .flowui/agentic/v1/runtime/
 .flowui/agentic/v1/index.json

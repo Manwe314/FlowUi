@@ -1,8 +1,0 @@
-{
-  "run_id": "run_34faf546fe88dfc40a0f2d14be94ef9d",
-  "executable": "flowui_dev_interface_notes_fixture",
-  "bytes": 47213752,
-  "sha256": "47499683fa009299c5f7e6928ae4e3164d38f457c7d9d0fe2967f46c6faee80e",
-  "source": "Offline hash of the fixture executable, verified unchanged since before the first verification report. Runtime provenance uses a smaller bounded digest budget.",
-  "scope": "Complete developer-notes suite with the 200px CPU selector; long-metric wrapping has a separate supplementary geometry suite."
-}

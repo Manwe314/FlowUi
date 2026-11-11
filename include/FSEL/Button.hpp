@@ -407,7 +407,7 @@ private:
  * stored in this object.
  */
 inline constexpr Button kButton{};
-static_assert(FlowElement<Button>);
+static_assert(validate_flow_element<Button>());
 static_assert(DrawableFlowElement<Button>);
 static_assert(ConstructibleFlowElement<Button>);
 

@@ -3,6 +3,42 @@ target_link_libraries(flowui_resource_tests PRIVATE FlowUi::FlowUi)
 target_compile_definitions(flowui_resource_tests PRIVATE FLOWUI_TEST_RESOURCE_SUBDIRECTORY="${FLOWUI_RESOURCE_SUBDIRECTORY}")
 add_test(NAME flowui.resources COMMAND flowui_resource_tests)
 
+add_executable(flowui_default_value_tests Defaults/DefaultValueTests.cpp)
+target_include_directories(flowui_default_value_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_default_value_tests PRIVATE FlowUi::FlowUi)
+if(FLOWUI_INCLUDE_ICON_MANAGER)
+    target_link_libraries(flowui_default_value_tests PRIVATE plutosvg::plutosvg)
+endif()
+add_test(NAME flowui.defaults.values COMMAND flowui_default_value_tests)
+
+add_executable(flowui_default_shortcut_tests Defaults/DefaultShortcutTests.cpp)
+target_include_directories(flowui_default_shortcut_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_default_shortcut_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.defaults.shortcuts COMMAND flowui_default_shortcut_tests)
+
+add_executable(flowui_default_font_tests Defaults/DefaultFontTests.cpp)
+target_include_directories(flowui_default_font_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_default_font_tests PRIVATE FlowUi::FlowUi FlowUi::artery)
+add_test(NAME flowui.defaults.font_payload COMMAND flowui_default_font_tests --payload)
+add_test(NAME flowui.defaults.font_recovery COMMAND flowui_default_font_tests)
+add_test(NAME flowui.defaults.font_strict_recovery COMMAND flowui_default_font_tests --strict)
+add_test(NAME flowui.defaults.font_immediate_failure COMMAND flowui_default_font_tests --immediate)
+add_test(NAME flowui.defaults.font_configured_memory COMMAND flowui_default_font_tests --configured-memory)
+set_tests_properties(
+    flowui.defaults.font_recovery flowui.defaults.font_strict_recovery
+    flowui.defaults.font_immediate_failure
+    flowui.defaults.font_configured_memory
+    PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60 RUN_SERIAL TRUE
+)
+
+add_executable(flowui_internal_flags_tests InternalFlagsTests.cpp)
+target_compile_features(flowui_internal_flags_tests PRIVATE cxx_std_23)
+target_compile_definitions(flowui_internal_flags_tests PRIVATE FLOWUI_INTERNAL_VIEWPORT_MANAGER=1)
+target_include_directories(flowui_internal_flags_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_internal_flags_tests PRIVATE FlowUi::FlowUi)
+add_test(NAME flowui.internal.flags COMMAND flowui_internal_flags_tests)
+set_tests_properties(flowui.internal.flags PROPERTIES LABELS "flowui;flags;unit" TIMEOUT 30)
+
 add_executable(flowui_storage_types_tests
     StorageTests/StorageTypesTests.cpp
 )
@@ -441,6 +477,49 @@ set_tests_properties(flowui.elements.concept_contracts PROPERTIES
 	LABELS "flowui;elements;unit"
 	TIMEOUT 30
 )
+
+# Expected compiler failures must match a targeted contract identifier, while
+# the same malformed types remain valid negative concept queries.
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_test(NAME flowui.elements.diagnostics.current
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/ElementResourceTests/ElementDiagnosticCompileTests.py
+            --compiler ${CMAKE_CXX_COMPILER}
+            --standard c++23
+            --source-root ${PROJECT_SOURCE_DIR}
+            --generated-include ${FLOWUI_GENERATED_INCLUDE_DIR}
+            --output-dir ${PROJECT_SOURCE_DIR}/.flowui/agentic/verification/element-diagnostics/current
+    )
+    set_tests_properties(flowui.elements.diagnostics.current PROPERTIES
+        LABELS "flowui;elements;compile" TIMEOUT 180)
+    foreach(diagnostic_compiler IN ITEMS gcc clang)
+        if(diagnostic_compiler STREQUAL "gcc")
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                set(diagnostic_compiler_path ${CMAKE_CXX_COMPILER})
+            else()
+                find_program(FLOWUI_DIAGNOSTIC_GCC NAMES g++-15 g++-14 g++-13 g++-12 g++)
+                set(diagnostic_compiler_path ${FLOWUI_DIAGNOSTIC_GCC})
+            endif()
+        else()
+            find_program(FLOWUI_DIAGNOSTIC_CLANG NAMES clang++ clang++-19 clang++-18 clang++-17 clang++-16 clang++-15 clang++-14 clang++-13 clang++-12)
+            set(diagnostic_compiler_path ${FLOWUI_DIAGNOSTIC_CLANG})
+        endif()
+        if(diagnostic_compiler_path)
+            add_test(NAME flowui.elements.diagnostics.${diagnostic_compiler}_cxx20
+                COMMAND ${Python3_EXECUTABLE}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/ElementResourceTests/ElementDiagnosticCompileTests.py
+                    --compiler ${diagnostic_compiler_path}
+                    --standard c++20
+                    --source-root ${PROJECT_SOURCE_DIR}
+                    --generated-include ${FLOWUI_GENERATED_INCLUDE_DIR}
+                    --output-dir ${PROJECT_SOURCE_DIR}/.flowui/agentic/verification/element-diagnostics/${diagnostic_compiler}_cxx20
+            )
+            set_tests_properties(flowui.elements.diagnostics.${diagnostic_compiler}_cxx20 PROPERTIES
+                LABELS "flowui;elements;compile" TIMEOUT 180)
+        endif()
+    endforeach()
+endif()
 
 if(FLOWUI_COMPILE_FSELI_ENABLED)
 	add_executable(flowui_fsel_button_contract_tests
@@ -1002,6 +1081,29 @@ set_tests_properties(flowui.phase4.two_window PROPERTIES
 	TIMEOUT 60
 )
 
+add_executable(flowui_window_operation_backend_tests WindowTests/WindowOperationBackendTests.cpp)
+target_compile_features(flowui_window_operation_backend_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_window_operation_backend_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_window_operation_backend_tests PRIVATE FlowUi::FlowUi ${FLOWUI_GLFW_TARGET})
+add_test(NAME flowui.window.backend_operations COMMAND flowui_window_operation_backend_tests)
+set_tests_properties(flowui.window.backend_operations PROPERTIES
+	LABELS "flowui;window;integration"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
+add_executable(flowui_window_shortcut_tests WindowTests/WindowShortcutTests.cpp)
+target_compile_features(flowui_window_shortcut_tests PRIVATE cxx_std_23)
+target_include_directories(flowui_window_shortcut_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(flowui_window_shortcut_tests PRIVATE FlowUi::FlowUi ${FLOWUI_GLFW_TARGET})
+flowui_package_resources(flowui_window_shortcut_tests)
+add_test(NAME flowui.window.shortcuts COMMAND flowui_window_shortcut_tests)
+set_tests_properties(flowui.window.shortcuts PROPERTIES
+	LABELS "flowui;window;shortcuts;integration;vulkan"
+	SKIP_RETURN_CODE 77
+	TIMEOUT 60
+)
+
 if(AGENTIC_WORKFLOW)
     add_executable(flowui_agentic_command_tests AgenticWorkflowTests/AgenticCommandTests.cpp)
     target_link_libraries(flowui_agentic_command_tests PRIVATE flowui_agentic_format)
@@ -1424,7 +1526,7 @@ if(AGENTIC_WORKFLOW)
             add_test(NAME flowui.agentic.verification_live COMMAND ${Python3_EXECUTABLE}
                 ${PROJECT_SOURCE_DIR}/tests/AgenticWorkflowTests/AgenticVerificationLiveTests.py
                 $<TARGET_FILE:flowui-agent> $<TARGET_FILE:flowui_fsel_demo>
-                --output-directory ${CMAKE_BINARY_DIR}/verification-live)
+                --output-directory ${PROJECT_SOURCE_DIR}/.flowui/agentic/verification/ctest-live)
             set_tests_properties(flowui.agentic.verification_live PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 180 LABELS "flowui;agentic;window;vulkan;cli;verification")
             option(FLOWUI_AGENTIC_MCP_LIVE_TESTS "Enable real MCP SDK/App integration tests (requires the optional pinned MCP dependencies)." OFF)
             if(FLOWUI_AGENTIC_MCP_LIVE_TESTS)
@@ -1432,7 +1534,7 @@ if(AGENTIC_WORKFLOW)
                     ${PROJECT_SOURCE_DIR}/tests/AgenticWorkflowTests/AgenticLiveMcpTests.py
                     --cli $<TARGET_FILE:flowui-agent> --demo $<TARGET_FILE:flowui_fsel_demo>
                     --workspace ${PROJECT_SOURCE_DIR}
-                    --output-directory ${CMAKE_BINARY_DIR}/mcp-live-verification)
+                    --output-directory ${PROJECT_SOURCE_DIR}/.flowui/agentic/verification/ctest-mcp)
                 set_tests_properties(flowui.agentic.live_mcp PROPERTIES TIMEOUT 300 LABELS "flowui;agentic;window;vulkan;mcp;integration")
             endif()
         endif()

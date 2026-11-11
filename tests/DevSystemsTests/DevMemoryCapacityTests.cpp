@@ -185,6 +185,18 @@ void check_manifest_and_pipeline(const std::filesystem::path& directory) {
 	section.targets.front().evidence.source_name = "capture \"label\"\nrange";
 	assert(pipeline.save_memory_capacities(section).applied); // no published schema
 	assert(pipeline.manifest().manifestVersion == 2 && pipeline.manifest().entries.size() == 1);
+	{
+		std::ifstream input(active);
+		const std::string contents((std::istreambuf_iterator<char>(input)), {});
+		assert(contents.find("\"memoryCapacity\": {\n    \"version\": 1,") != std::string::npos);
+		assert(contents.find("\n    \"targets\": [\n      {\n        \"key\": ") !=
+			   std::string::npos);
+		assert(contents.find("\n        \"evidence\": {\n          \"kind\": ") !=
+			   std::string::npos);
+		assert(
+			contents.find("\n    \"growthFactor\": 2,\n    \"allowRuntimeGrowth\": false\n  }") !=
+			std::string::npos);
+	}
 	flowui::bake_tool::Manifest parsed;
 	std::string error;
 	assert(flowui::bake_tool::parseManifest(active, parsed, error));

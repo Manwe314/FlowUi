@@ -27,6 +27,8 @@ using FlowUi::PopupOverflowPolicy;
 using FlowUi::PopupPlacement;
 using FlowUi::detail::manager_storage::PopupManagerState;
 using FlowUi::detail::manager_storage::PopupRecord;
+using FlowUi::detail::manager_storage::PopupRecordFlag;
+using FlowUi::detail::manager_storage::PopupManagerFlag;
 
 constexpr size_t kEscapeKey = 256u;
 constexpr uint32_t kPopupLayerCapacity = 1000u;
@@ -203,9 +205,9 @@ struct ResolvedAnchor {
 }
 
 bool markDismissed(PopupRecord& record) noexcept {
-	if (record.dismissed) return false;
-	record.dismissed = true;
-	record.dismissalPending = true;
+	if (record.flags.has_flag(PopupRecordFlag::dismissed)) return false;
+	record.flags.set_flag(PopupRecordFlag::dismissed, true);
+	record.flags.set_flag(PopupRecordFlag::dismissal_pending, true);
 	return true;
 }
 
@@ -246,9 +248,9 @@ ResolvedAnchor resolveAnchor(
 		break;
 	}
 	case PopupAnchorKind::PointerSnapshot:
-		if (!record.hasPointerSnapshot) {
+		if (!record.flags.has_flag(PopupRecordFlag::has_pointer_snapshot)) {
 			record.pointerSnapshot = state.pointerPosition;
-			record.hasPointerSnapshot = true;
+			record.flags.set_flag(PopupRecordFlag::has_pointer_snapshot, true);
 		}
 		result.attachTo = CLAY_ATTACH_TO_ROOT;
 		result.bounds = Clay_BoundingBox{
@@ -439,8 +441,9 @@ bool PopupManager::has_open_popups() const noexcept {
 		const auto& records = state();
 		return std::ranges::any_of(records.committedStack, [&](uint64_t key) {
 			const auto found = records.committedRecords.find(key);
-			return found != records.committedRecords.end() && found->second.visibleLastCommitted &&
-				   !found->second.dismissed;
+			return found != records.committedRecords.end() &&
+				   found->second.flags.has_flag(PopupRecordFlag::visible_last_committed) &&
+				   !found->second.flags.has_flag(PopupRecordFlag::dismissed);
 		});
 	} catch (...) {
 		return false;
@@ -470,7 +473,7 @@ void PopupManager::beginFrame(
 	float viewportWidth,
 	float viewportHeight) {
 	auto& current = state();
-	if (current.frameActive) {
+	if (current.flags.has_flag(PopupManagerFlag::frame_active)) {
 		throw FlowUiException(makeError(ErrorCode::FrameAlreadyActive, ErrorSite::PopupBeginFrame));
 	}
 	FLOWUI_MEMORY_DEMAND_RECORD(current.capacity_demand,
@@ -492,10 +495,10 @@ void PopupManager::beginFrame(
 		.height = std::max(1.0f, viewportHeight),
 	};
 	current.nextPopupOffset = 0;
-	current.capacityWarningIssued = false;
-	current.suppressAllPrimaryPointerThisFrame = false;
+	current.flags.set_flag(PopupManagerFlag::capacity_warning_issued, false);
+	current.flags.set_flag(PopupManagerFlag::suppress_all_primary_pointer_this_frame, false);
 	current.suppressedAnchorClayIdThisFrame = 0;
-	current.frameActive = true;
+	current.flags.set_flag(PopupManagerFlag::frame_active, true);
 
 	bool dismissedAutomatically = false;
 	const bool escapePressed = kEscapeKey < currentInput.keyDown.size() &&
@@ -504,20 +507,22 @@ void PopupManager::beginFrame(
 		for (auto it = current.committedStack.rbegin(); it != current.committedStack.rend(); ++it) {
 			auto recordIt = current.workingRecords.find(*it);
 			if (recordIt == current.workingRecords.end() ||
-				!recordIt->second.visibleLastCommitted ||
-				!recordIt->second.dismissOnEscape) continue;
+				!recordIt->second.flags.has_flag(PopupRecordFlag::visible_last_committed) ||
+				!recordIt->second.flags.has_flag(PopupRecordFlag::dismiss_on_escape)) continue;
 			dismissedAutomatically = markDismissed(recordIt->second);
 			if (dismissedAutomatically) break;
 		}
 	}
 
-	const bool pointerPressed = currentInput.mouseDown[0] && !current.rawPrimaryPointerDownLastFrame;
-	current.rawPrimaryPointerDownLastFrame = currentInput.mouseDown[0];
-	if (current.consumePrimaryPointerUntilRelease) {
+	const bool pointerPressed = currentInput.mouseDown[0] &&
+		!current.flags.has_flag(PopupManagerFlag::raw_primary_pointer_down_last_frame);
+	current.flags.set_flag(PopupManagerFlag::raw_primary_pointer_down_last_frame,
+						   currentInput.mouseDown[0]);
+	if (current.flags.has_flag(PopupManagerFlag::consume_primary_pointer_until_release)) {
 		if (currentInput.mouseDown[0]) {
-			current.suppressAllPrimaryPointerThisFrame = true;
+			current.flags.set_flag(PopupManagerFlag::suppress_all_primary_pointer_this_frame, true);
 		} else {
-			current.consumePrimaryPointerUntilRelease = false;
+			current.flags.set_flag(PopupManagerFlag::consume_primary_pointer_until_release, false);
 		}
 	}
 	if (!dismissedAutomatically && pointerPressed) {
@@ -525,7 +530,9 @@ void PopupManager::beginFrame(
 			auto recordIt = current.workingRecords.find(*it);
 			if (recordIt == current.workingRecords.end()) continue;
 			PopupRecord& record = recordIt->second;
-			if (!record.visibleLastCommitted || !record.hasBounds) continue;
+			if (!record.flags.has_flag(PopupRecordFlag::visible_last_committed) ||
+				!record.flags.has_flag(PopupRecordFlag::has_bounds))
+				continue;
 			if (containsPoint(record.bounds, currentInput.mouseX, currentInput.mouseY)) break;
 			switch (record.outsidePress) {
 			case PopupOutsidePressPolicy::Ignore:
@@ -533,8 +540,10 @@ void PopupManager::beginFrame(
 				return;
 			case PopupOutsidePressPolicy::DismissAndConsume:
 				if (markDismissed(record)) {
-					current.consumePrimaryPointerUntilRelease = true;
-					current.suppressAllPrimaryPointerThisFrame = true;
+					current.flags.set_flag(
+						PopupManagerFlag::consume_primary_pointer_until_release, true);
+					current.flags.set_flag(
+						PopupManagerFlag::suppress_all_primary_pointer_this_frame, true);
 				}
 				return;
 			case PopupOutsidePressPolicy::DismissAndBlockAnchor:
@@ -548,7 +557,7 @@ void PopupManager::beginFrame(
 }
 
 bool PopupManager::suppressesAllPrimaryPointerInput() const {
-	return state().suppressAllPrimaryPointerThisFrame;
+	return state().flags.has_flag(PopupManagerFlag::suppress_all_primary_pointer_this_frame);
 }
 
 uint32_t PopupManager::suppressedAnchorClayId() const {
@@ -569,7 +578,7 @@ Result<PopupFrame> PopupManager::request(FlowElementPartID popupId, const PopupR
 
 Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupRequest& requestValue) {
 	auto& current = state();
-	if (!current.frameActive) {
+	if (!current.flags.has_flag(PopupManagerFlag::frame_active)) {
 		return unexpectedError(makeError(ErrorCode::PopupFrameInactive, ErrorSite::PopupRequest));
 	}
 	if (popupKey == 0) return {};
@@ -595,11 +604,11 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 	PopupRecord& record = recordIt->second;
 	record.rootId = clayElementId(popupKey);
 	record.outsidePress = requestValue.outsidePress;
-	record.dismissOnEscape = requestValue.dismissOnEscape;
+	record.flags.set_flag(PopupRecordFlag::dismiss_on_escape, requestValue.dismissOnEscape);
 	record.submissionOrder = current.nextSubmissionOrder++;
 
 	PopupFrame frame{};
-	if (!record.dismissed) {
+	if (!record.flags.has_flag(PopupRecordFlag::dismissed)) {
 		ResolvedAnchor anchor = resolveAnchor(requestValue.anchor, record, current);
 		if (!anchor.valid && missingAnchorPolicy_ == PopupMissingAnchorPolicy::AnchorToViewport) {
 			anchor = resolveAnchor(PopupAnchor::viewport(), record, current);
@@ -607,7 +616,7 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 		if (anchor.valid) {
 			if (current.nextPopupOffset >= kPopupLayerCapacity &&
 				capacityPolicy_ == PopupCapacityPolicy::SkipOverflowingPopup) {
-				if (!current.capacityWarningIssued) {
+				if (!current.flags.has_flag(PopupManagerFlag::capacity_warning_issued)) {
 					detail::reportErrorEvent(ErrorEventView{
 						.error = makeError(
 							ErrorCode::PopupCapacityExceeded, ErrorSite::PopupRequest,
@@ -616,7 +625,7 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 						.resolution = ErrorResolution::Skipped,
 					});
 				}
-				current.capacityWarningIssued = true;
+				current.flags.set_flag(PopupManagerFlag::capacity_warning_issued, true);
 			} else {
 				record.anchorClayId = anchor.parentId.id;
 				const uint32_t offset = std::min(current.nextPopupOffset, kPopupLayerCapacity - 1u);
@@ -624,7 +633,8 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 					++current.nextPopupOffset;
 				}
 				if (offset == kPopupLayerCapacity - 1u &&
-					current.nextPopupOffset > kPopupLayerCapacity && !current.capacityWarningIssued) {
+					current.nextPopupOffset > kPopupLayerCapacity &&
+					!current.flags.has_flag(PopupManagerFlag::capacity_warning_issued)) {
 					detail::reportErrorEvent(ErrorEventView{
 						.error = makeError(
 							ErrorCode::PopupCapacityExceeded, ErrorSite::PopupRequest,
@@ -632,12 +642,12 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 						.kind = ErrorEventKind::Resolved,
 						.resolution = ErrorResolution::UsedFallback,
 					});
-					current.capacityWarningIssued = true;
+					current.flags.set_flag(PopupManagerFlag::capacity_warning_issued, true);
 				}
 				record.zIndex = static_cast<int16_t>(
 					kPopupLayerBase[layerIndex(requestValue.layer)] + offset);
 
-				const bool hasMeasuredSize = record.measured;
+				const bool hasMeasuredSize = record.flags.has_flag(PopupRecordFlag::measured);
 				const bool hasExpectedSize = validExpectedSize(requestValue.expectedSize);
 				const bool hasKnownSize = hasMeasuredSize || hasExpectedSize;
 				const Clay_Dimensions knownSize = hasMeasuredSize
@@ -671,8 +681,8 @@ Result<PopupFrame> PopupManager::requestImpl(uint64_t popupKey, const PopupReque
 				}
 			}
 		} else if (missingAnchorPolicy_ == PopupMissingAnchorPolicy::SkipPopup) {
-			record.measured = false;
-			record.hasBounds = false;
+			record.flags.set_flag(PopupRecordFlag::measured, false);
+			record.flags.set_flag(PopupRecordFlag::has_bounds, false);
 			detail::reportErrorEvent(ErrorEventView{
 				.error = makeError(
 					ErrorCode::PopupAnchorNotFound, ErrorSite::PopupResolveAnchor,
@@ -707,11 +717,12 @@ void PopupManager::dismiss(FlowElementPartID popupId) { dismissImpl(popupId.valu
 void PopupManager::dismissImpl(uint64_t popupKey) {
 	if (popupKey == 0) return;
 	auto& current = state();
-	auto& records = current.frameActive ? current.workingRecords : current.committedRecords;
+	auto& records = current.flags.has_flag(PopupManagerFlag::frame_active)
+		? current.workingRecords : current.committedRecords;
 	PopupRecord& record = records[popupKey];
 	if (!markDismissed(record)) return;
 
-	if (current.frameActive) {
+	if (current.flags.has_flag(PopupManagerFlag::frame_active)) {
 		if (const auto submission = current.currentSubmissionByKey.find(popupKey);
 			submission != current.currentSubmissionByKey.end()) {
 			PopupFrame& frame = current.currentSubmissions[submission->second].frame;
@@ -738,17 +749,21 @@ bool PopupManager::consumeDismissed(FlowElementPartID popupId) {
 bool PopupManager::consumeDismissedImpl(uint64_t popupKey) {
 	if (popupKey == 0) return false;
 	auto& current = state();
-	auto& records = current.frameActive ? current.workingRecords : current.committedRecords;
+	auto& records = current.flags.has_flag(PopupManagerFlag::frame_active)
+		? current.workingRecords : current.committedRecords;
 	const auto record = records.find(popupKey);
-	if (record == records.end() || !record->second.dismissalPending) return false;
-	record->second.dismissalPending = false;
-	if (!current.frameActive) storage_->noteManagerMutation(window_);
+	if (record == records.end() ||
+		!record->second.flags.has_flag(PopupRecordFlag::dismissal_pending))
+		return false;
+	record->second.flags.set_flag(PopupRecordFlag::dismissal_pending, false);
+	if (!current.flags.has_flag(PopupManagerFlag::frame_active))
+		storage_->noteManagerMutation(window_);
 	return true;
 }
 
 void PopupManager::endFrame() {
 	auto& current = state();
-	if (!current.frameActive) return;
+	if (!current.flags.has_flag(PopupManagerFlag::frame_active)) return;
 
 	auto& nextStack = current.nextStack;
 	nextStack.clear();
@@ -756,8 +771,8 @@ void PopupManager::endFrame() {
 		auto recordIt = current.workingRecords.find(submission.key);
 		if (recordIt == current.workingRecords.end()) continue;
 		PopupRecord& record = recordIt->second;
-		record.visibleLastCommitted = false;
-		record.hasBounds = false;
+		record.flags.set_flag(PopupRecordFlag::visible_last_committed, false);
+		record.flags.set_flag(PopupRecordFlag::has_bounds, false);
 		if (!submission.frame.visible && !submission.frame.measureOnly) continue;
 
 		const Clay_ElementData elementData = Clay_GetElementData(record.rootId);
@@ -766,11 +781,11 @@ void PopupManager::endFrame() {
 			.width = std::max(0.0f, elementData.boundingBox.width),
 			.height = std::max(0.0f, elementData.boundingBox.height),
 		};
-		record.measured = true;
+		record.flags.set_flag(PopupRecordFlag::measured, true);
 		if (!submission.frame.visible) continue;
 		record.bounds = elementData.boundingBox;
-		record.hasBounds = true;
-		record.visibleLastCommitted = true;
+		record.flags.set_flag(PopupRecordFlag::has_bounds, true);
+		record.flags.set_flag(PopupRecordFlag::visible_last_committed, true);
 		nextStack.push_back(submission.key);
 	}
 
@@ -812,7 +827,7 @@ void PopupManager::endFrame() {
 								FlowUi::detail::InitialCapacityTarget::popups_submission_lookup,
 								current.currentSubmissionByKey.size());
 	current.currentSubmissionByKey.clear();
-	current.frameActive = false;
+	current.flags.set_flag(PopupManagerFlag::frame_active, false);
 	storage_->noteManagerMutation(window_);
 }
 
@@ -832,9 +847,9 @@ void PopupManager::cancelFrame() noexcept {
 									FlowUi::detail::InitialCapacityTarget::popups_submission_lookup,
 									current.currentSubmissionByKey.size());
 		current.currentSubmissionByKey.clear();
-		current.frameActive = false;
+		current.flags.set_flag(PopupManagerFlag::frame_active, false);
 		current.nextPopupOffset = 0;
-		current.capacityWarningIssued = false;
+		current.flags.set_flag(PopupManagerFlag::capacity_warning_issued, false);
 	} catch (...) {
 	}
 }

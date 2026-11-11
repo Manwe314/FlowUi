@@ -361,54 +361,26 @@ enum class CaretRequestKind : uint8_t {
 };
 
 /**
- * @brief Behavior configuration for a requested input field.
- *
- * FieldConfig is submitted with FieldRequest every frame the field is present.
- * The values control editing behavior only; visual styling is provided by the
- * element that draws the Clay nodes and by FieldRequest::overlayStyle (falling
- * back to InputManagerConfig) for caret and selection presentation.
+ * Editing behavior submitted with FieldRequest each frame. FieldRequest::overlayStyle or the
+ * window's InputManagerConfig supplies caret and selection appearance.
  */
 struct FieldConfig {
 
-	/**
-	 * @brief Maximum stored UTF-8 byte count.
-	 *
-	 * Insertions that would make the field text exceed this byte limit are
-	 * ignored. The limit is measured in bytes, not Unicode codepoints or visible
-	 * glyphs.
-	 */
+	/** Stored UTF-8 byte limit; reject insertions that exceed it. The default has no explicit cap. */
 	size_t maxBytes = std::numeric_limits<size_t>::max();
-	/**
-	 * @brief Selects compact single-line or chunked multiline behavior.
-	 *
-	 * Multiline mode normalizes inserted line endings to newline characters.
-	 * Single-line mode rejects edits containing line endings.
-	 */
+	/** Single-line rejects line endings; multiline stores chunks and normalizes newlines. */
 	TextFieldMode mode = TextFieldMode::SingleLine;
 
-	/** @brief Amount of byte content retained in frame-scoped edit reports. */
+	/** Frame-scoped edit-report detail; reversible reports retain inserted and removed bytes. */
 	TransactionReportDetail transactionDetail = TransactionReportDetail::Summary;
 
-	/**
-	 * @brief Whether the field rejects text edits.
-	 *
-	 * When true, the field can still be registered and queried, but keyboard
-	 * text input, delete, backspace, and programmatic insertion are ignored.
-	 * When false, the focused field may edit its stored text subject to the
-	 * other FieldConfig options.
-	 */
+	/** Reject text mutations while retaining field queries, caret movement, and selection. */
 	bool readOnly = false;
 
-	/** @brief Wrap multiline hard lines into manager-owned visual slices. */
+	/** Wrap multiline hard lines into visual slices using TextLayoutDescriptor::viewportWidth. */
 	bool softWrap = false;
 
-	/**
-	 * @brief Whether arrow keys move the caret within the field.
-	 *
-	 * When true, left and right arrow keys move carets, and Shift extends or
-	 * contracts the selection. When false, FlowUi leaves arrow key handling to
-	 * surrounding UI or application shortcuts.
-	 */
+	/** Handle arrow-key caret movement and Shift selection; false leaves handling to the app. */
 	bool allowArrowNavigation = true;
 };
 

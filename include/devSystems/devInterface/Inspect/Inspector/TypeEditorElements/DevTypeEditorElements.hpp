@@ -563,7 +563,7 @@ struct DevChangeCardState {
 	std::string bakedValue{};
 };
 
-/* One compact, vertically composed provenance/action row in the Changes tab. */
+/* One compact provenance/action card with a horizontal value chain in the Changes tab. */
 struct DevChangeCard {
 	using Parameters = DevChangeCardParameters;
 	using State = DevChangeCardState;

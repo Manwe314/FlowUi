@@ -782,10 +782,10 @@ inline constexpr DragValue<unsigned int> kDragValueUInt{};
  */
 inline constexpr DragValue<float> kDragValueFloat{};
 
-static_assert(FlowElement<DragValue<int>>);
+static_assert(validate_flow_element<DragValue<int>>());
 static_assert(DrawableFlowElement<DragValue<int>>);
 static_assert(!ConstructibleFlowElement<DragValue<int>>);
-static_assert(FlowElement<DragValue<unsigned int>>);
-static_assert(FlowElement<DragValue<float>>);
+static_assert(validate_flow_element<DragValue<unsigned int>>());
+static_assert(validate_flow_element<DragValue<float>>());
 
 } // namespace FlowUi::FSEL

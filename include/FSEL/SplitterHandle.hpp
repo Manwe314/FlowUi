@@ -263,6 +263,6 @@ private:
  * stored in this object.
  */
 inline constexpr SplitterHandle kSplitterHandle{};
-static_assert(FlowElement<SplitterHandle>);
+static_assert(validate_flow_element<SplitterHandle>());
 
 } // namespace FlowUi::FSEL

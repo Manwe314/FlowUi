@@ -87,19 +87,9 @@ struct FlowUiTheme {
 	uint16_t spacingLg = 24;
 
 	/** @brief Factory returning default dark theme instance. */
-	static FlowUiTheme dark() { return FlowUiTheme{}; }
+	[[nodiscard]] static FlowUiTheme dark() noexcept;
 	/** @brief Factory returning default light theme instance. */
-	static FlowUiTheme light() {
-		FlowUiTheme t{};
-		t.background = {1.0f, 1.0f, 1.0f, 1.0f};
-		t.surface = {243.0f / 255.0f, 243.0f / 255.0f, 243.0f / 255.0f, 1.0f};
-		t.surfaceHeader = {229.0f / 255.0f, 229.0f / 255.0f, 229.0f / 255.0f, 1.0f};
-		t.surfaceHover = {232.0f / 255.0f, 232.0f / 255.0f, 232.0f / 255.0f, 1.0f};
-		t.textPrimary = {0.0f, 0.0f, 0.0f, 1.0f};
-		t.textSecondary = {51.0f / 255.0f, 51.0f / 255.0f, 51.0f / 255.0f, 1.0f};
-		t.border = {204.0f / 255.0f, 204.0f / 255.0f, 204.0f / 255.0f, 1.0f};
-		return t;
-	}
+	[[nodiscard]] static FlowUiTheme light() noexcept;
 };
 
 } // namespace FlowUi

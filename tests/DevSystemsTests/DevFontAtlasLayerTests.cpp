@@ -258,7 +258,6 @@ private:
 	config.initialInstanceBytesPerFrame = 4096;
 	config.cpuSoftBudgetBytes = 4 * 1024 * 1024;
 	config.gpuSoftBudgetBytes = 4 * 1024 * 1024;
-	config.detailedTracking = true;
 	return config;
 }
 [[nodiscard]] FlowUi::TextureHandle create_fallback(storage::FlowStorageSystem& resources) {

@@ -94,7 +94,7 @@ struct Label {
  * stored in this object.
  */
 inline constexpr Label kLabel{};
-static_assert(FlowElement<Label>);
+static_assert(validate_flow_element<Label>());
 static_assert(DrawableFlowElement<Label>);
 
 } // namespace FlowUi::FSEL

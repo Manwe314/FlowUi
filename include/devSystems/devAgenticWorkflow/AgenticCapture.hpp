@@ -9,7 +9,10 @@
 
 namespace FlowUi::devSystems::agentic {
 
-/** Objective verdict is independent of transport/execution success. */
+/**
+ * @brief Acceptance criteria for measured evidence; verdict is separate from execution success.
+ * The selected metric defines threshold units; duration and interval limits use nanoseconds.
+ */
 struct AgenticObjective {
 	/** @brief Named cadence metric evaluated by the objective. */
 	std::string metric = "window_present_call_cadence_fps";
@@ -33,7 +36,7 @@ struct AgenticObjective {
 	 */
 	std::optional<double> maximum_p95_interval_ns;
 };
-/** Explicit data selection; applied to owned evidence before asynchronous publication. */
+/** @brief Persisted payload selection, applied to copied evidence before artifact publication. */
 struct AgenticContentPolicy {
 	/** @brief Whether copied UI tree text may be persisted. */
 	bool include_tree_text = false;
@@ -49,7 +52,11 @@ struct AgenticContentPolicy {
 	 */
 	bool include_interaction_outcomes = false;
 };
-/** Fully owned request, copied and capability-checked before queue admission. */
+/**
+ * @brief Per-operation capture request, copied and capability-checked before queue admission.
+ * Durations use nanoseconds; tick counts refer to application ticks. Section requirements control
+ * admission, while limits bound reserved evidence and content controls persisted payloads.
+ */
 struct AgenticCaptureRequest {
 	/** @brief Explicit application windows included in this capture. */
 	std::vector<std::uint64_t> window_ids;

@@ -123,21 +123,21 @@ constexpr auto kBackToChanges =
 	});
 
 constexpr auto kApplyCpuReportingLevel = UiAction(
-	"flowui.dev_interface.apply-cpu-reporting-level",
-	[](App& app, DevInterfaceState& state) {
-		state.cpuReportingLevel = std::min<uint64_t>(
-			state.cpuReportingLevel, FLOWUI_DEV_TIMING_LEVEL);
+	"flowui.dev_interface.apply-cpu-reporting-level", [](App& app, DevInterfaceState& state) {
+		state.cpuReportingLevel =
+			std::min<uint64_t>(state.cpuReportingLevel, FLOWUI_DEV_TIMING_LEVEL);
 		DevTimingConfig config = app.devMonitoring().timing().config();
 		config.cpuLevel = static_cast<CpuTimingLevel>(state.cpuReportingLevel);
 		app.devMonitoring().timing().setConfig(config);
-		state.lastActionMessage = "CPU reporting detail changed";
+		state.performance_selection.cpu_detail_level = config.cpuLevel;
+		state.lastActionMessage = "CPU timeline and recording detail changed";
 	});
 
 inline constexpr std::array<FSEL::ComboBoxOption, 4> kCpuReportingOptions{{
-	{.value = 0u, .text = "Record: Frame Only"},
-	{.value = 1u, .text = "Record: Summary"},
-	{.value = 2u, .text = "Record: Balanced"},
-	{.value = 3u, .text = "Record: Deep"},
+	{.value = 0u, .text = "CPU: Frame Only"},
+	{.value = 1u, .text = "CPU: Summary"},
+	{.value = 2u, .text = "CPU: Balanced"},
+	{.value = 3u, .text = "CPU: Deep"},
 }};
 
 uint64_t tabValue(DevInterfaceTab tab) {
@@ -359,8 +359,9 @@ void drawCpuReportingSelector(DevContentHeader::BuildContext& context, App* app,
 					  compiled_labels[FLOWUI_DEV_TIMING_LEVEL]);
 	action_button::tooltip(
 		context, kCpuReportingLevel,
-		"CPU recording detail for future captures. The build label is the compiled ceiling. "
-		"Timeline depth only changes the display of already captured records.",
+		"CPU detail filters the displayed snapshot and sets future recording detail. "
+		"Build is the maximum compiled CPU level. Recorded CPU shows the capture's original "
+		"level. Balanced retains slow or selected element invocations; GPU detail is separate.",
 		FSEL::ComboBox::definitionId);
 }
 
@@ -462,9 +463,10 @@ void DevContentHeader::buildElement(BuildContext& context) {
 	const DevInterfaceTab activeTab = normalizedTab(*state);
 	if (context.params.app) {
 		state->cpuReportingLevel = std::min<uint64_t>(
-			static_cast<uint64_t>(
-				context.params.app->devMonitoring().timing().config().cpuLevel),
+			static_cast<uint64_t>(context.params.app->devMonitoring().timing().config().cpuLevel),
 			static_cast<uint64_t>(FLOWUI_DEV_TIMING_LEVEL));
+		state->performance_selection.cpu_detail_level =
+			static_cast<CpuTimingLevel>(state->cpuReportingLevel);
 	}
 
 	Clay_ElementDeclaration header{};

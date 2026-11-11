@@ -1,5 +1,0 @@
-{
-  "kind": "diagnostic_earlier_implementation",
-  "source_run": "run_d33296531a15",
-  "description": "A 320px Inspector contained an action row wider than its column. This capture preceded the explicit card/action width fix and is excluded from final passing-suite totals."
-}

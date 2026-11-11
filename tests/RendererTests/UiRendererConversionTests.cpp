@@ -238,6 +238,28 @@ void testRendererHasNoVmaOwnership() {
 	}
 }
 
+void test_primitive_antialiasing_configuration() {
+	using FlowUi::detail::resolve_primitive_coverage_width_scale;
+	const FlowUi::UiConfig defaults{};
+	FLOWUI_CHECK(defaults.primitive_antialiasing.enabled);
+	FLOWUI_CHECK(resolve_primitive_coverage_width_scale(defaults.primitive_antialiasing).value() == 1.0f);
+	for (const float width_scale : {0.125f, 0.5f, 2.0f, 4.0f}) {
+		FLOWUI_CHECK(resolve_primitive_coverage_width_scale({.coverage_width_scale = width_scale}).value() == width_scale);
+		FLOWUI_CHECK(resolve_primitive_coverage_width_scale({.coverage_width_scale = width_scale, .enabled = false}).value() == 0.0f);
+	}
+	for (const bool enabled : {false, true}) {
+		for (const float invalid_width : {0.0f, -0.0f, -1.0f,
+			std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(),
+			std::numeric_limits<float>::quiet_NaN()}) {
+			const auto result = resolve_primitive_coverage_width_scale({
+				.coverage_width_scale = invalid_width, .enabled = enabled});
+			FLOWUI_CHECK(!result.has_value());
+			FLOWUI_CHECK(result.error().code == FlowUi::ErrorCode::RendererConfigurationInvalid);
+			FLOWUI_CHECK(result.error().site == FlowUi::ErrorSite::RendererInitialize);
+		}
+	}
+}
+
 } // namespace
 
 int main() {
@@ -248,5 +270,6 @@ int main() {
 	runner.run("logical texture binding direct conversion", testLogicalTextureBindingConversion);
 	runner.run("bounded text input overflow policies", testBoundedTextInputPolicies);
 	runner.run("renderer has no direct VMA ownership", testRendererHasNoVmaOwnership);
+	runner.run("startup primitive antialiasing configuration", test_primitive_antialiasing_configuration);
 	return runner.finish();
 }

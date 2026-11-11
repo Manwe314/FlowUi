@@ -18,7 +18,10 @@ struct VulkanContext;
 
 namespace FlowUi::devSystems::agentic::frame_capture {
 
-/** Explicit per-frame capture selection; copied before any GPU commands are recorded. */
+/**
+ * @brief Per-frame image selection and readback bounds, copied before recording GPU commands.
+ * Completion callbacks run after fence retirement; their borrowed owner must remain valid.
+ */
 struct AgenticFrameCaptureRequest {
 	/** @brief Copied exact producer/frame metadata to attach to completed image readback. */
 	AgenticCompletedImage stamp;

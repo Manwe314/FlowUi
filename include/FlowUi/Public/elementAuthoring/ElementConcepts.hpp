@@ -58,6 +58,20 @@ using ResourcesOf = typename decltype(
 template <typename Element>
 concept FlowElement = detail::element::FinalFlowElementContract<Element>;
 
+/**
+ * Validate a FlowElement contract with descriptive compile-time assertions.
+ * Use static_assert(FlowUi::validate_flow_element<MyElement>()) after defining
+ * the complete element and payloads. Successful validation returns true.
+ * The instantiation trace includes a constant debugName when its characters
+ * can be evaluated at compile time; assertion text uses portable literals.
+ * FlowElement remains a query-only concept for overload resolution.
+ */
+template <typename Element>
+[[nodiscard]] consteval bool validate_flow_element() noexcept {
+	return detail::element::validate_flow_element_contract<
+		Element, detail::element::element_diagnostic_name<Element>()>();
+}
+
 /** Flow element that supports ElementBuilder::draw(). */
 template <typename Element>
 concept DrawableFlowElement =

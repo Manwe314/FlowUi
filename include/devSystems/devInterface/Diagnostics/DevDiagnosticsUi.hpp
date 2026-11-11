@@ -64,24 +64,37 @@ void pointer_tooltip(Context& context, const Identity& identity, std::string_vie
 		return;
 	const auto dimensions = Clay_GetLayoutDimensions();
 	const auto previous = Clay_GetElementData(context.clayID(identity));
-	const float width = std::min(300.0f, std::max(80.0f, dimensions.width - 16));
-	const float height = previous.found ? previous.boundingBox.height : 160;
+	const float maximum_width = std::max(1.0f, std::min(300.0f, dimensions.width - 16));
+	const float maximum_height = std::max(1.0f, std::min(200.0f, dimensions.height - 16));
+	const float width = previous.found ? previous.boundingBox.width : maximum_width;
+	const float height = previous.found ? previous.boundingBox.height : maximum_height;
 	constexpr float gap = 12;
 	const bool above = input.mouseY >= height + gap + 8;
 	auto tooltip = card();
-	tooltip.layout.sizing.width = CLAY_SIZING_FIXED(width);
+	tooltip.layout.sizing.width = CLAY_SIZING_FIT(0, maximum_width);
+	tooltip.layout.sizing.height = CLAY_SIZING_FIT(0, maximum_height);
 	tooltip.floating.attachTo = CLAY_ATTACH_TO_ROOT;
 	tooltip.floating.attachPoints = {above ? CLAY_ATTACH_POINT_LEFT_BOTTOM
 										   : CLAY_ATTACH_POINT_LEFT_TOP,
 									 CLAY_ATTACH_POINT_LEFT_TOP};
 	tooltip.floating.offset = {
 		std::clamp(input.mouseX + gap, 8.0f, std::max(8.0f, dimensions.width - width - 8)),
-		above ? input.mouseY - gap : input.mouseY + gap};
+		above
+			? input.mouseY - gap
+			: std::clamp(input.mouseY + gap, 8.0f, std::max(8.0f, dimensions.height - height - 8))};
 	tooltip.floating.zIndex = 140;
 	tooltip.floating.clipTo = CLAY_CLIP_TO_NONE;
 	tooltip.floating.pointerCaptureMode = CLAY_POINTER_CAPTURE_MODE_PASSTHROUGH;
-	CLAY(context.clayID(identity), tooltip)
-	text(context, description, interface_theme::kTextCanvas, 11);
+	CLAY(context.clayID(identity), tooltip) {
+		Clay_ElementDeclaration content{};
+		content.layout.sizing = {CLAY_SIZING_FIT(0, std::max(1.0f, maximum_width - 22)),
+								 CLAY_SIZING_FIT(0, std::max(1.0f, maximum_height - 20))};
+		// Clay's floating and clip scopes must close independently so following
+		// timeline surfaces keep their own clipping ancestors while help is visible.
+		content.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+		CLAY(context.clayID(Keyed("tooltip-content", identity.token)), content)
+		text(context, description, interface_theme::kTextCanvas, 11);
+	}
 }
 
 /* Render registered SVG artwork with the surface's semantic tint. */

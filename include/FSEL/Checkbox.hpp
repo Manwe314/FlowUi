@@ -229,7 +229,7 @@ private:
  * stored in this object.
  */
 inline constexpr Checkbox kCheckbox{};
-static_assert(FlowElement<Checkbox>);
+static_assert(validate_flow_element<Checkbox>());
 static_assert(DrawableFlowElement<Checkbox>);
 
 } // namespace FlowUi::FSEL

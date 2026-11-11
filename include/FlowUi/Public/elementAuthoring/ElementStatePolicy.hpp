@@ -16,11 +16,15 @@ enum class ElementStateRetention : uint8_t {
 	WindowLifetime,
 };
 
-/** @brief Definition-level retention policy applied whenever an element is invoked. */
+/**
+ * State lifetime for an element definition. Transient state tolerates graceFrames committed
+ * absent frames and expires on the next absent frame; WindowLifetime retains it until the window
+ * closes or state is explicitly erased.
+ */
 struct ElementStatePolicy {
 	/** Retention mode; transient state is the default. */
 	ElementStateRetention retention = ElementStateRetention::Transient;
-	/** Successfully committed absent frames tolerated by transient state. */
+	/** Absent committed frames tolerated by transient state; ignored for WindowLifetime. */
 	uint32_t graceFrames = DefaultElementStateGraceFrames;
 
 	/**

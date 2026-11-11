@@ -1,4 +1,5 @@
 #pragma once
+#include "FlowUi/Private/utility/EnumFlags.hpp"
 #include "FlowUi/Private/storageSystem/capacity/MemoryDemandPeaks.hpp"
 
 #include <algorithm>
@@ -491,48 +492,89 @@ enum class BufferWriteMode : uint8_t {
 	HostScratchThenCopy,
 };
 
+/**
+ * @brief Internal storage startup capacities, byte budgets and growth controls.
+ * makeStorageConfig applies the public MemoryCapacityProfile before initialization; expected
+ * counts reserve tables, while initial byte sizes initialize their backing pools and buffers.
+ */
 struct StorageConfig {
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+	/** Borrowed demand recorder control; available with development memory level two or higher. */
 	const ::FlowUi::detail::MemoryDemandControl* memory_demand_control = nullptr;
 #endif
+	/** Resolved per-target reserves indexed by internal target; zero selects its registered default. */
 	FlowUi::detail::InitialMemoryCapacities initial_capacities{};
+	/** Initial persistent CPU pool backing, in bytes. */
 	uint64_t initialPersistentCpuBytes = 4ull * 1024ull * 1024ull;
+	/** Initial interned-string pool backing, in bytes. */
 	uint64_t initialStringBytes = 1ull * 1024ull * 1024ull;
+	/** Initial decode scratch backing, in bytes. */
 	uint64_t initialDecodeScratchBytes = 8ull * 1024ull * 1024ull;
+	/** Initial upload staging backing, in bytes. */
 	uint64_t initialUploadStagingBytes = 16ull * 1024ull * 1024ull;
+	/** Initial transient arena bytes for each window frame slot. */
 	uint64_t transientBytesPerFramePerWindow = 1ull * 1024ull * 1024ull;
+	/** Initial transient arena bytes for each worker in a frame slot. */
 	uint64_t transientBytesPerWorker = 1ull * 1024ull * 1024ull;
+	/** Initial renderer instance-stream bytes per frame; app startup defaults to 1 MiB. */
 	uint64_t initialInstanceBytesPerFrame = 256ull * 1024ull;
+	/** CPU storage allocation budget, in bytes; must be nonzero. */
 	uint64_t cpuSoftBudgetBytes = 256ull * 1024ull * 1024ull;
+	/** GPU storage allocation budget, in bytes; must be nonzero. */
 	uint64_t gpuSoftBudgetBytes = 512ull * 1024ull * 1024ull;
+	/** Initial blob-record reserve, excluding the invalid-handle sentinel. */
 	uint32_t expectedBlobs = 128;
+	/** Initial buffer-record reserve, excluding the invalid-handle sentinel. */
 	uint32_t expectedBuffers = 64;
+	/** Initial image-record reserve, excluding the invalid-handle sentinel. */
 	uint32_t expectedImages = 256;
+	/** Initial image-view record reserve, excluding the invalid-handle sentinel. */
 	uint32_t expectedImageViews = 384;
+	/** Initial sampler-record reserve, excluding the invalid-handle sentinel. */
 	uint32_t expectedSamplers = 16;
+	/** Initial texture-view record reserve, excluding the invalid-handle sentinel. */
 	uint32_t expectedTextureViews = 512;
+	/** Initial reserve for each renderer layout, pipeline and descriptor-bundle table. */
 	uint32_t expectedRendererObjects = 32;
+	/** Initial manager-record and lookup reserves. */
 	uint32_t expectedManagerRecords = 128;
+	/** Initial persistent-allocation record reserve, excluding the invalid sentinel. */
 	uint32_t expectedPersistentRecords = 1024;
+	/** Initial storage window-record reserve. */
 	uint32_t expectedWindows = 2;
+	/** Initial texture-binding lookup reserve for each window. */
 	uint32_t expectedBindingsPerWindow = 512;
+	/** Storage frame slots; initialization clamps this to at least one. */
 	uint32_t framesInFlight = 2;
+	/** Initial worker metadata count; initialization clamps this to at least one. */
 	uint32_t expectedWorkerCount = 1;
+	/** Backing-pool growth multiplier; must exceed one. */
 	float growthFactor = 1.5f;
+	/** Write strategy used when a buffer operation requests BufferWriteMode::Default. */
 	BufferWriteMode defaultBufferWriteMode = BufferWriteMode::DirectMapped;
+	/** Master storage growth input used by app configuration to derive pool growth permissions. */
 	bool allowRuntimeGrowth = true;
+	/** Allow persistent pools to grow subject to byte budgets. */
 	bool allowPersistentGrowth = true;
+	/** Allow frame and worker arenas to grow subject to capacity handling. */
 	bool allowTransientGrowth = true;
-	bool detailedTracking = false;
 };
 
+/** @brief Per-window frame arenas and descriptor bounds, applied when storage registers a window. */
 struct WindowStorageDesc {
+	/** Frame slots for this window; clamped to at least one. */
 	uint32_t framesInFlight = 2;
+	/** Worker arenas per frame slot; clamped to at least one. */
 	uint32_t workerCount = 1;
+	/** Initial texture-binding reserve; must not exceed maxTextureBindings. */
 	uint32_t initialTextureBindings = 512;
+	/** Hard descriptor binding limit for this window; clamped to at least one. */
 	uint32_t maxTextureBindings = 4096;
+	/** Initial transient arena bytes for each frame slot. */
 	uint64_t transientBytesPerFrame = 1ull * 1024ull * 1024ull;
+	/** Initial transient arena bytes for each worker in a frame slot. */
 	uint64_t transientBytesPerWorker = 1ull * 1024ull * 1024ull;
+	/** Optional interned diagnostic label; zero leaves the window unnamed. */
 	StringId debugName = 0;
 };
 
@@ -1044,10 +1086,13 @@ struct StorageMemorySnapshot {
 	uint64_t mutationSequence = 0;
 	uint64_t snapshotLockWaitNs = 0;
 	uint64_t snapshotBuildNs = 0;
-	bool includesResourceKinds = false;
-	bool includesWindows = false;
-	bool includesIndividualResources = false;
-	bool resourceMetadataEstimated = true;
+	enum class Flag : std::uint8_t {
+		includes_resource_kinds = 1u << 0u,
+		includes_windows = 1u << 1u,
+		includes_individual_resources = 1u << 2u,
+		resource_metadata_estimated = 1u << 3u,
+	};
+	EnumFlags<Flag> flags{Flag::resource_metadata_estimated};
 };
 
 #endif

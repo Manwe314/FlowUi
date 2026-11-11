@@ -91,6 +91,6 @@ struct Box {
  * stored in this object.
  */
 inline constexpr Box kBox{};
-static_assert(FlowElement<Box>);
+static_assert(validate_flow_element<Box>());
 
 } // namespace FlowUi::FSEL

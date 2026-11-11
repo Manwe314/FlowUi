@@ -355,16 +355,16 @@ uint64_t alignedProposal(uint64_t value, const MemoryTuningTargetDescriptor& tar
 	value = FlowUi::detail::alignMemoryCapacity(value, std::max<uint64_t>(1u, target.alignment));
 	return std::clamp(value, target.minimum, target.maximum);
 }
-bool assignTypedCapacity(MemoryCapacityProfile& profile, MemoryTuningTargetId id, uint64_t value) noexcept {
+bool assignTypedCapacity(MemoryCapacityPreview& preview, MemoryTuningTargetId id, uint64_t value) noexcept {
 #define FLOWUI_ASSIGN_CAPACITY(Stable, Field) \
-	if (id == makeMemorySourceId(Stable)) { profile.Field = value; return true; }
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_persistent_cpu_bytes", storage.initialPersistentCpuBytes)
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_string_bytes", storage.initialStringBytes)
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.transient_bytes_per_frame_per_window", storage.transientBytesPerFramePerWindow)
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.transient_bytes_per_worker", storage.transientBytesPerWorker)
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_decode_scratch_bytes", storage.initialDecodeScratchBytes)
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_upload_staging_bytes", storage.initialUploadStagingBytes)
-	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_instance_bytes_per_frame", storage.initialInstanceBytesPerFrame)
+	if (id == makeMemorySourceId(Stable)) { preview.Field = value; return true; }
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_persistent_cpu_bytes", profile.storage.initialPersistentCpuBytes)
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_string_bytes", profile.storage.initialStringBytes)
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.transient_bytes_per_frame_per_window", profile.storage.transientBytesPerFramePerWindow)
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.transient_bytes_per_worker", profile.storage.transientBytesPerWorker)
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_decode_scratch_bytes", profile.storage.initialDecodeScratchBytes)
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_upload_staging_bytes", profile.storage.initialUploadStagingBytes)
+	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.storage.initial_instance_bytes_per_frame", profile.storage.initialInstanceBytesPerFrame)
 	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.elements", managers.elements)
 	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.input_fields", managers.inputFields)
 	FLOWUI_ASSIGN_CAPACITY("flowui.tuning.input_text_bytes", managers.inputTextBytes)
@@ -1536,7 +1536,7 @@ MemoryCapacityPreview DevMemoryReporting::previewCapacityProfile(const CapacityP
 		if (recommendation.simulation.growthCount) recommendation.flags |= MemoryReportFlag::GrewDuringCapture;
 		preview.predictedStartupBytes = saturatedAdd(preview.predictedStartupBytes,
 			target.unit == MemoryCapacityUnit::Bytes ? proposed : 0u);
-		if (!assignTypedCapacity(preview.profile, target.id, proposed))
+		if (!assignTypedCapacity(preview, target.id, proposed))
 			preview.profile.settings.push_back({target.id, proposed});
 		preview.flags |= recommendation.flags;
 		preview.recommendations.push_back(std::move(recommendation));

@@ -1,5 +1,11 @@
 # Agentic Workflow frame evidence
 
+Keep runtime evidence, screenshots, logs, coverage reports and verification matrices
+(including Markdown reports) under `.flowui/agentic/`. The `docs/` tree is reserved
+for authored Markdown documentation and generated Doxygen output. Use
+`.flowui/agentic/verification/<suite>/` for harness exports and
+`.flowui/agentic/v1/` for the versioned runtime store.
+
 For batched test cases, click sequences, assertions, and selected screenshots, start
 with [verification suites](agentic-verification.md).
 

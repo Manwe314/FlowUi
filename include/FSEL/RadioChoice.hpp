@@ -110,7 +110,7 @@ private:
  * stored in this object.
  */
 inline constexpr RadioChoice kRadioChoice{};
-static_assert(FlowElement<RadioChoice>);
+static_assert(validate_flow_element<RadioChoice>());
 static_assert(ConstructibleFlowElement<RadioChoice>);
 
 } // namespace FlowUi::FSEL

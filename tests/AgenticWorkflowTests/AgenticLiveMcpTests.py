@@ -53,7 +53,10 @@ class LiveMcpSuite:
         self.cli = arguments.cli.resolve(strict=True)
         self.demo = arguments.demo.resolve(strict=True)
         self.repository = arguments.workspace.resolve(strict=True)
-        output = arguments.output_directory.resolve()
+        output = (arguments.output_directory or
+            self.repository / ".flowui/agentic/verification/live-mcp").resolve()
+        if output.is_relative_to(self.repository / "docs"):
+            raise ValueError("Verification outputs belong under .flowui/agentic, outside docs")
         output.mkdir(parents=True, exist_ok=True)
         identifier = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ_") + uuid.uuid4().hex[:8]
         self.output = output / ("run_" + identifier)
@@ -741,7 +744,8 @@ def main() -> int:
     parser.add_argument("--cli", required=True, type=Path)
     parser.add_argument("--demo", required=True, type=Path)
     parser.add_argument("--workspace", required=True, type=Path)
-    parser.add_argument("--output-directory", required=True, type=Path)
+    parser.add_argument("--output-directory", type=Path,
+        help="Evidence destination; defaults to WORKSPACE/.flowui/agentic/verification/live-mcp")
     parser.add_argument("--timeout", type=float, default=90)
     arguments = parser.parse_args()
     if not 0 < arguments.timeout <= 240:

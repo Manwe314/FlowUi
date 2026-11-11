@@ -337,7 +337,10 @@ struct AgenticInteractionSpan {
 	/** @brief Whether this span keeps the prior effective pointer position. */
 	bool preserve_pointer = false;
 };
-/** Hard limits apply to decoded and compiled storage, independently of transport bounds. */
+/**
+ * @brief Per-plan interaction limits for decoded and compiled storage, separate from transport bounds.
+ * Counts bound frames, spans, steps and observations; artifact sizes are bytes and times nanoseconds.
+ */
 struct AgenticInteractionLimits {
 	/** @brief Maximum selected input frames admitted by a plan. */
 	std::uint64_t maximum_frames = 4096;

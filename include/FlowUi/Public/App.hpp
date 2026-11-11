@@ -19,6 +19,7 @@
 #include "FlowUi/Public/identificationTypes/ElementID.hpp"
 #include "FlowUi/Public/identificationTypes/ResourceKey.hpp"
 #include "FlowUi/Public/managerStructs/DevSnapshotTypes.hpp"
+#include "FlowUi/Public/managerStructs/WindowOperationTypes.hpp"
 #include "FlowUi/Public/managerStructs/WindowTypes.hpp"
 #include "clay.h"
 #include "devSystems/DevAppIntegration.hpp"
@@ -288,6 +289,18 @@ public:
 	 * @param value Zero clears the request; a non-zero value sets it.
 	 */
 	void setShouldClose(WindowId id, int value);
+
+	/** Report native operations supported by a live window on the platform thread. */
+	[[nodiscard]] Result<WindowOperationCapabilities>
+	window_operation_capabilities(WindowId window_id) const noexcept;
+	/** Request closure of this window without destroying it during input dispatch. */
+	[[nodiscard]] Status request_window_close(WindowId window_id) noexcept;
+	/** Minimize this window; requests during a frame run at the next event-poll boundary. */
+	[[nodiscard]] Status minimize_window(WindowId window_id) noexcept;
+	/** Toggle observed maximized state; rejected while fullscreen. Frame requests are deferred. */
+	[[nodiscard]] Status toggle_window_maximized(WindowId window_id) noexcept;
+	/** Toggle fullscreen and restore windowed geometry/state. Frame requests are deferred. */
+	[[nodiscard]] Status toggle_window_fullscreen(WindowId window_id) noexcept;
 
 	/** @brief Poll events and begin a frame for the semantic main window.
 	 *

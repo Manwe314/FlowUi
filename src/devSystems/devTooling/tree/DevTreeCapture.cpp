@@ -409,7 +409,7 @@ bool DevTreeCapture::copyElement(const ::FlowUi::detail::ClayDevElementView& vie
 		node.idString = copyString({view.idString.chars, static_cast<size_t>(view.idString.length)});
 	}
 	node.bounds = view.bounds;
-	if (!view.boundsAvailable) node.flags |= DevClayNodeFlag::BoundsUnavailable;
+	if (!view.flags.has_flag(FlowUi::detail::ClayDevElementFlag::bounds_available)) node.flags |= DevClayNodeFlag::BoundsUnavailable;
 	node.dimensions = view.dimensions;
 	node.minDimensions = view.minDimensions;
 	node.clipClayId = view.clipElementId;
@@ -426,7 +426,7 @@ bool DevTreeCapture::copyElement(const ::FlowUi::detail::ClayDevElementView& vie
 	node.declaration.transition.handler = nullptr;
 	node.declaration.transition.enter.setInitialState = nullptr;
 	node.declaration.transition.exit.setFinalState = nullptr;
-	if (view.isText) {
+	if (view.flags.has_flag(FlowUi::detail::ClayDevElementFlag::is_text)) {
 		node.flags |= DevClayNodeFlag::Text;
 		node.textConfig = view.textConfig;
 		node.pointerPresence.textUserData = node.textConfig.userData != nullptr;
@@ -437,7 +437,7 @@ bool DevTreeCapture::copyElement(const ::FlowUi::detail::ClayDevElementView& vie
 		node.unwrappedTextDimensions = view.unwrappedTextDimensions;
 		node.wrappedLineCount = view.wrappedLineCount;
 	}
-	if (view.exiting) node.flags |= DevClayNodeFlag::Exiting;
+	if (view.flags.has_flag(FlowUi::detail::ClayDevElementFlag::exiting)) node.flags |= DevClayNodeFlag::Exiting;
 	if (node.declaration.floating.attachTo != CLAY_ATTACH_TO_NONE) node.flags |= DevClayNodeFlag::Floating;
 	if (node.layoutElementIndex >= building_.authoredClayElementCount) {
 		node.flags |= DevClayNodeFlag::SyntheticAfterBuild;

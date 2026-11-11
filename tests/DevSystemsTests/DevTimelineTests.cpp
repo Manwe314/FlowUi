@@ -11,7 +11,116 @@ using namespace FlowUi;
 using namespace FlowUi::devSystems;
 using namespace FlowUi::devSystems::interface_elements;
 
+namespace {
+void check_cpu_detail_projection() {
+	const std::array descriptors{
+		timing_zones::kWindowFrameTotal, timing_zones::kElementInvoke,
+		makeBuiltinTimingDescriptor(1001, TimingCategory::User, TimingZoneRole::Work,
+									CpuTimingLevel::Summary, "test.summary"),
+		makeBuiltinTimingDescriptor(1002, TimingCategory::User, TimingZoneRole::Work,
+									CpuTimingLevel::Balanced, "test.balanced"),
+		makeBuiltinTimingDescriptor(1003, TimingCategory::User, TimingZoneRole::Work,
+									CpuTimingLevel::Deep, "test.deep")};
+	TimingAppTickReport report{};
+	report.occupied = true;
+	report.appTick = 1;
+	report.captureConfig.cpuLevel = CpuTimingLevel::Deep;
+	report.captureConfig.balancedElementRetentionThresholdNs = 1000;
+	report.captureConfig.selectedElementInstance = FlowElementID{123};
+	report.captureConfig.selectedElementDefinition = FlowDefinitionID{456};
+	report.windows.resize(1);
+	auto& window = report.windows.front();
+	window.occupied = true;
+	window.window = 1;
+	window.frames.resize(1);
+	auto& frame = window.frames.front();
+	frame.occupied = true;
+	frame.key = {1, 1};
+	frame.cpuZones.reserve(9);
+	const auto append_cpu = [&](uint64_t invocation, uint64_t parent, uint64_t type,
+								uint64_t duration, uint64_t instance = 0, uint64_t definition = 0) {
+		frame.cpuZones.emplace_back(CpuTimingRecord{
+			.startNs = 100,
+			.durationNs = duration,
+			.invocationId = invocation,
+			.parentInvocationId = parent,
+			.typeId = type,
+			.frame = frame.key,
+			.appTick = 1,
+			.primaryEntityId = instance,
+			.secondaryEntityId = definition,
+			.track = 7,
+			.entityKind = instance ? TimingEntityKind::ElementInstance : TimingEntityKind::None});
+	};
+	append_cpu(1, 0, timing_zones::kWindowFrameTotal.typeId, 10000);
+	append_cpu(2, 1, 1001, 9000);
+	append_cpu(3, 2, 1003, 8000);
+	append_cpu(4, 3, 1001, 100);
+	append_cpu(5, 2, 1002, 500);
+	append_cpu(6, 2, timing_zones::kElementInvoke.typeId, 200, 99, 77);
+	append_cpu(7, 2, timing_zones::kElementInvoke.typeId, 1000, 99, 77);
+	append_cpu(8, 2, timing_zones::kElementInvoke.typeId, 20, 123, 77);
+	append_cpu(9, 2, timing_zones::kElementInvoke.typeId, 20, 99, 456);
+	frame.gpuZones.emplace_back(
+		GpuTimingRecord{.durationNs = 500,
+						.cpuAlignedStartNs = 100,
+						.typeId = 2000,
+						.frame = frame.key,
+						.appTick = 1,
+						.flags = gpuTimingRecordFlags(GpuTimingRecordFlag::Completed)});
+	report.applicationCpuZones = {
+		{.startNs = 100, .durationNs = 1000, .invocationId = 100, .typeId = 1003, .track = 9},
+		{.startNs = 100,
+		 .durationNs = 100,
+		 .invocationId = 101,
+		 .parentInvocationId = 100,
+		 .typeId = 1001,
+		 .track = 9}};
+	const std::span reports{&report, 1};
+	DevPerformanceSelection selection{};
+	const auto deep = extract_timeline(reports, descriptors, selection);
+	assert(deep.blocks.size() == 13);
+	selection.cpu_detail_level = CpuTimingLevel::Summary;
+	const auto summary = extract_timeline(reports, descriptors, selection);
+	assert(summary.blocks.size() == 6);
+	assert(summary.minimum_recorded_cpu_level == CpuTimingLevel::Deep &&
+		   summary.maximum_recorded_cpu_level == CpuTimingLevel::Deep);
+	assert(summary.frames.size() == 1 && summary.frames.front().duration_ns == 10000);
+	const auto projected_child =
+		std::ranges::find(summary.blocks, uint64_t{4}, &TimelineBlockSlice::invocation_id);
+	assert(projected_child != summary.blocks.end() && projected_child->filtered_parent);
+	assert(summary.blocks[projected_child->parent].invocation_id == 2);
+	selection.selected_scope = {9, DevPerformanceScopeKind::Thread};
+	const auto scoped_summary = extract_timeline(reports, descriptors, selection);
+	const auto summary_lanes = timeline_major_lanes(scoped_summary, selection);
+	assert(summary_lanes.size() == 1 && summary_lanes.front().blocks.size() == 1);
+	assert(scoped_summary.blocks[summary_lanes.front().blocks.front()].invocation_id == 101);
+	selection.selected_scope = {};
+	selection.cpu_detail_level = CpuTimingLevel::Balanced;
+	const auto balanced = extract_timeline(reports, descriptors, selection);
+	assert(balanced.blocks.size() == 10);
+	assert(std::ranges::none_of(balanced.blocks, [](const auto& block) {
+		return block.invocation_id == 3 || block.invocation_id == 6 || block.invocation_id == 100;
+	}));
+	for (const auto invocation : {7u, 8u, 9u})
+		assert(std::ranges::any_of(
+			balanced.blocks, [&](const auto& block) { return block.invocation_id == invocation; }));
+	selection.cpu_detail_level = CpuTimingLevel::OnlyFrameTime;
+	const auto frame_only = extract_timeline(reports, descriptors, selection);
+	assert(frame_only.blocks.size() == 3 && frame_only.frames.size() == 1);
+	assert(std::ranges::any_of(frame_only.blocks, [](const auto& block) {
+		return block.domain == TimingSampleDomain::Gpu;
+	}));
+	selection.cpu_detail_level = CpuTimingLevel::Deep;
+	const auto restored = extract_timeline(reports, descriptors, selection);
+	assert(restored.blocks.size() == deep.blocks.size());
+	assert(frame.cpuZones.size() == 9 && report.applicationCpuZones.size() == 2);
+	assert(frame.cpuZones[3].parentInvocationId == 3);
+}
+} // namespace
+
 int main() {
+	check_cpu_detail_projection();
 	const std::array descriptors{timing_zones::kWindowFrameTotal,
 								 timing_zones::kWindowFrameUserBuild, timing_zones::kElementInvoke};
 	std::vector<TimingAppTickReport> reports(2);

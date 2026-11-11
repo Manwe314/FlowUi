@@ -1,4 +1,5 @@
 #include "FlowUi/Public/managers/InputFieldManager.hpp"
+#include "FlowUi/Public/defaults/InputDefaults.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
@@ -23,6 +24,9 @@
 #include "FlowUi/Private/storageSystem/ResourceKeyNormalization.hpp"
 
 namespace {
+
+using FlowUi::detail::manager_storage::InputFieldFlag;
+using FlowUi::detail::manager_storage::InputFieldManagerFlag;
 
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 /* Retain one field's final demand before replacement or removal. */
@@ -62,20 +66,6 @@ bool boundsContains(const Clay_BoundingBox& outer, const Clay_BoundingBox& inner
 bool boundsContainsPoint(const Clay_BoundingBox& bounds, float x, float y) {
 	return x >= bounds.x && x <= (bounds.x + bounds.width) &&
 		y >= bounds.y && y <= (bounds.y + bounds.height);
-}
-
-FlowUi::InputFieldOverlayStyle defaultOverlayStyle(
-	const FlowUi::InputManagerConfig& config) {
-	return {
-		.caretShape = FlowUi::InputCaretShape::Bar,
-		.caretThicknessPx = config.caretWidthPx,
-		.caretBlockWidthPx = std::max(config.caretWidthPx, 8.0f),
-		.caretHeightOverflowTopPx = config.caretHeightOverflowTopPx,
-		.caretHeightOverflowBottomPx = config.caretHeightOverflowBottomPx,
-		.caretColor = config.caretColor,
-		.selectionBoxColor = config.highlightBoxColor,
-		.selectedTextColor = config.highlightedTextColor,
-	};
 }
 
 FlowUi::InputFieldOverlayStyle normalizeOverlayStyle(
@@ -430,8 +420,8 @@ void InputFieldManager::setFontFrameView(
 }
 
 void InputFieldManager::markCaretBlinkReset() {
-	state_->caretBlinkResetPending = true;
-	state_->emitCaretsThisFrame = true;
+	state_->flags.set_flag(InputFieldManagerFlag::caret_blink_reset_pending, true);
+	state_->flags.set_flag(InputFieldManagerFlag::emit_carets_this_frame, true);
 }
 
 void InputFieldManager::updateCaretBlinkVisibility(
@@ -439,22 +429,22 @@ void InputFieldManager::updateCaretBlinkVisibility(
 	const InputFieldOverlayStyle* style) {
 	if (!hasAnyActiveCaret) {
 		state_->caretBlinkElapsedSeconds = 0.0;
-		state_->caretBlinkResetPending = false;
-		state_->emitCaretsThisFrame = true;
+		state_->flags.set_flag(InputFieldManagerFlag::caret_blink_reset_pending, false);
+		state_->flags.set_flag(InputFieldManagerFlag::emit_carets_this_frame, true);
 		return;
 	}
 
-	if (state_->caretBlinkResetPending) {
+	if (state_->flags.has_flag(InputFieldManagerFlag::caret_blink_reset_pending)) {
 		state_->caretBlinkElapsedSeconds = 0.0;
-		state_->caretBlinkResetPending = false;
-		state_->emitCaretsThisFrame = true;
+		state_->flags.set_flag(InputFieldManagerFlag::caret_blink_reset_pending, false);
+		state_->flags.set_flag(InputFieldManagerFlag::emit_carets_this_frame, true);
 		return;
 	}
 
 	const double dt = std::max(0.0, state_->currentInput.dt);
 	state_->caretBlinkElapsedSeconds += dt;
 
-	const InputFieldOverlayStyle fallback = defaultOverlayStyle(state_->config);
+	const InputFieldOverlayStyle fallback = defaults::input_field_overlay_style(state_->config);
 	const InputFieldOverlayStyle& resolved = style ? *style : fallback;
 	const double period = std::max(resolved.caretBlinkPeriodSeconds, 1.0e-6);
 	const double visibleDuration = std::clamp(
@@ -462,7 +452,7 @@ void InputFieldManager::updateCaretBlinkVisibility(
 		0.0,
 		period);
 	const double phase = std::fmod(state_->caretBlinkElapsedSeconds, period);
-	state_->emitCaretsThisFrame = phase < visibleDuration;
+	state_->flags.set_flag(InputFieldManagerFlag::emit_carets_this_frame, phase < visibleDuration);
 }
 
 bool InputFieldManager::shouldTriggerActionWithRepeat(int key, KeyRepeatState& state) {
@@ -542,7 +532,7 @@ void InputFieldManager::beginFrame(
 		state_->backspaceKeyRepeat = KeyRepeatState{};
 		state_->deleteKeyRepeat = KeyRepeatState{};
 	}
-	state_->dirty = true;
+	state_->flags.set_flag(InputFieldManagerFlag::dirty, true);
 }
 
 void InputFieldManager::setClipboardAccess(
@@ -554,9 +544,9 @@ void InputFieldManager::setClipboardAccess(
 
 Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArray& renderCommands) {
 	const auto publishMutation = [this] {
-		if (!state_->dirty) return;
+		if (!state_->flags.has_flag(InputFieldManagerFlag::dirty)) return;
 		storage_->noteManagerMutation(window_);
-		state_->dirty = false;
+		state_->flags.set_flag(InputFieldManagerFlag::dirty, false);
 	};
 	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::input_fields_rect_override,
@@ -702,7 +692,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 			0.0f,
 			field.maximumScrollY);
 		if (field.scrollOffset.x != previousX || field.scrollOffset.y != previousY) {
-			state_->dirty = true;
+			state_->flags.set_flag(InputFieldManagerFlag::dirty, true);
 		}
 	}
 
@@ -952,7 +942,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				candidate.carets.clear();
 			}
 			field.carets = { CaretState{hitOffset, hitOffset} };
-			field.caretRevealPending = true;
+			field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 			state_->primaryFieldId = targetRuntime->fieldId;
 			state_->pointerDrag.active = true;
 			state_->pointerDrag.fieldId = targetRuntime->fieldId;
@@ -978,7 +968,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				if (caret.anchorByteOffset != clampedAnchor || caret.headByteOffset != hitOffset) {
 					caret.anchorByteOffset = clampedAnchor;
 					caret.headByteOffset = hitOffset;
-					dragField.caretRevealPending = true;
+					dragField.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 					markCaretBlinkReset();
 				}
 				if (dragField.carets.size() > 1u) {
@@ -1205,7 +1195,8 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 				}
 			}
 
-			if (state_->emitCaretsThisFrame && !field.config.readOnly) {
+			if (state_->flags.has_flag(InputFieldManagerFlag::emit_carets_this_frame) &&
+				!field.config.readOnly) {
 				const float caretY = command.boundingBox.y - overlayStyle.caretHeightOverflowTopPx;
 				const float caretH = command.boundingBox.height +
 					overlayStyle.caretHeightOverflowTopPx +
@@ -1241,7 +1232,7 @@ Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArra
 		}
 	}
 
-	if (!state_->emitCaretsThisFrame) {
+	if (!state_->flags.has_flag(InputFieldManagerFlag::emit_carets_this_frame)) {
 		std::stable_sort(
 			state_->frameOverrides.rects.begin(),
 			state_->frameOverrides.rects.end(),
@@ -1431,19 +1422,21 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 				FlowUi::detail::InitialCapacityTarget::field_wrap_cache_by_hard_line));
 	}
 	FieldConfig normalizedConfig = request.config;
-	if (inserted || !field.initialized) {
-		field.modeChangeRejected = normalizedConfig.mode == TextFieldMode::SingleLine &&
-			containsNewline(request.initialText);
-		if (field.modeChangeRejected) {
+	if (inserted || !field.flags.has_flag(InputFieldFlag::initialized)) {
+		field.flags.set_flag(InputFieldFlag::mode_change_rejected,
+						 normalizedConfig.mode == TextFieldMode::SingleLine &&
+							 containsNewline(request.initialText));
+		if (field.flags.has_flag(InputFieldFlag::mode_change_rejected)) {
 			normalizedConfig.mode = TextFieldMode::MultiLine;
 		}
 		field.storage = text_storage::makeFieldStorage(normalizedConfig.mode, request.initialText);
 		field.handleValue = state_->nextFieldHandle++;
 		if (field.handleValue == 0) field.handleValue = state_->nextFieldHandle++;
-		field.initialized = true;
+		field.flags.set_flag(InputFieldFlag::initialized, true);
 	} else if (text_storage::storageMode(field.storage) != normalizedConfig.mode) {
-		field.modeChangeRejected = !text_storage::migrate(field.storage, normalizedConfig.mode);
-		if (field.modeChangeRejected) {
+		field.flags.set_flag(InputFieldFlag::mode_change_rejected,
+						 !text_storage::migrate(field.storage, normalizedConfig.mode));
+		if (field.flags.has_flag(InputFieldFlag::mode_change_rejected)) {
 			normalizedConfig.mode = text_storage::storageMode(field.storage);
 		} else {
 			FLOWUI_MEMORY_DEMAND_RECORD(
@@ -1454,7 +1447,7 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 			field.scrollOffset = {};
 		}
 	} else {
-		field.modeChangeRejected = false;
+		field.flags.set_flag(InputFieldFlag::mode_change_rejected, false);
 	}
 	if (!sameLayoutDescriptor(field.layout, request.layout)) {
 		FLOWUI_MEMORY_DEMAND_RECORD(
@@ -1466,7 +1459,7 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 	field.config = normalizedConfig;
 	field.layout = request.layout;
 	field.overlayStyle = normalizeOverlayStyle(request.overlayStyle.value_or(
-		defaultOverlayStyle(state_->config)));
+		defaults::input_field_overlay_style(state_->config)));
 	field.textElementId = request.textElementId;
 	field.contentElementId = request.contentElementId;
 	field.focusRetentionElementIds.assign(
@@ -1494,7 +1487,7 @@ FieldQueryResult InputFieldManager::requestFieldByKey(
 		fieldTextForEachChunk,
 	};
 	result.mode = text_storage::storageMode(field.storage);
-	result.modeChangeRejected = field.modeChangeRejected;
+	result.modeChangeRejected = field.flags.has_flag(InputFieldFlag::mode_change_rejected);
 	result.visibleLines = field.visibleLines;
 	result.scrollOffset = field.scrollOffset;
 	result.hasPrimaryCaret =
@@ -1708,7 +1701,7 @@ EditResult InputFieldManager::applyEditsByKey(
 	const EditResult result = commitEdits(it->second, edits, origin, enforceReadOnly);
 	if (result == EditResult::Applied) {
 		markCaretBlinkReset();
-		state_->dirty = true;
+		state_->flags.set_flag(InputFieldManagerFlag::dirty, true);
 	}
 	return result;
 }
@@ -1838,7 +1831,7 @@ EditResult InputFieldManager::commitEdits(
 		});
 	}
 	field.revision = transaction.revisionAfter;
-	field.caretRevealPending = true;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 	field.frameTransactions.push_back(std::move(transaction));
 	refreshTransactionViews(field);
 	return EditResult::Applied;
@@ -1875,9 +1868,14 @@ void InputFieldManager::refreshTransactionViews(FieldState& field) {
 	}
 }
 
-void InputFieldManager::requestCaretByKey(
-	field_key::InputFieldKey fieldId,
-	CaretRequestKind kind) {
+void InputFieldManager::requestCaretByKey(field_key::InputFieldKey fieldId, CaretRequestKind kind) {
+	if (!state_->pendingCommands.empty() &&
+		(kind == CaretRequestKind::ClearAll || (kind == CaretRequestKind::SetPrimary && fieldId))) {
+		const auto previous_primary = state_->fieldsById.find(state_->primaryFieldId);
+		if (previous_primary != state_->fieldsById.end()) {
+			applyPendingCommands(previous_primary->first, previous_primary->second);
+		}
+	}
 	if (kind == CaretRequestKind::ClearAll) {
 		for (auto& [_, field] : state_->fieldsById) {
 			FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
@@ -1926,7 +1924,7 @@ void InputFieldManager::requestCaretByKey(
 		}
 
 		if (!primaryWasSameField || !hadExistingCaret) {
-			field.caretRevealPending = true;
+			field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 			markCaretBlinkReset();
 		}
 		return;
@@ -1937,7 +1935,7 @@ void InputFieldManager::requestCaretByKey(
 		offset = field.carets.back().headByteOffset;
 	}
 	field.carets.push_back(CaretState{offset, offset});
-	field.caretRevealPending = true;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 	if (!state_->primaryFieldId) {
 		state_->primaryFieldId = fieldId;
 	}
@@ -2101,7 +2099,7 @@ bool InputFieldManager::replaceTextByKey(
 	}
 
 	markCaretBlinkReset();
-	state_->dirty = true;
+	state_->flags.set_flag(InputFieldManagerFlag::dirty, true);
 	return true;
 }
 
@@ -2131,8 +2129,8 @@ void InputFieldManager::clear() {
 	state_->deleteKeyRepeat = KeyRepeatState{};
 	state_->pointerDrag = PointerDragState{};
 	state_->caretBlinkElapsedSeconds = 0.0;
-	state_->caretBlinkResetPending = true;
-	state_->emitCaretsThisFrame = true;
+	state_->flags.set_flag(InputFieldManagerFlag::caret_blink_reset_pending, true);
+	state_->flags.set_flag(InputFieldManagerFlag::emit_carets_this_frame, true);
 	FLOWUI_MEMORY_DEMAND_RECORD(state_->capacity_demand,
 								FlowUi::detail::InitialCapacityTarget::input_fields_rect_override,
 								state_->frameOverrides.rects.size());
@@ -2242,7 +2240,7 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 										FlowUi::detail::InitialCapacityTarget::field_carets,
 										field.carets.size());
 			field.carets = {CaretState{0, text_storage::byteCount(field.storage)}};
-			field.caretRevealPending = true;
+			field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 			markCaretBlinkReset();
 			break;
 		case TextCommand::Copy: {
@@ -2295,7 +2293,7 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 				else caret.anchorByteOffset = caret.headByteOffset = target;
 				caret.hasPreferredX = false;
 			}
-			field.caretRevealPending = true;
+			field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 			markCaretBlinkReset();
 			break;
 		}
@@ -2307,6 +2305,12 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 			break;
 		}
 	}
+	FLOWUI_MEMORY_DEMAND_RECORD(
+		state_->capacity_demand,
+		FlowUi::detail::InitialCapacityTarget::input_fields_pending_commands,
+		state_->pendingCommands.size());
+	std::erase_if(state_->pendingCommands,
+				  [fieldId](const auto& pending) { return pending.fieldId == fieldId; });
 	refreshTransactionViews(field);
 }
 
@@ -2401,7 +2405,7 @@ void InputFieldManager::moveCaretsHorizontal(FieldState& field, int direction, b
 		}
 		caret.hasPreferredX = false;
 	}
-	field.caretRevealPending = true;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 }
 
 void InputFieldManager::moveCaretsByWord(FieldState& field, int direction, bool selecting) {
@@ -2442,7 +2446,7 @@ void InputFieldManager::moveCaretsByWord(FieldState& field, int direction, bool 
 		caret.hasPreferredX = false;
 	}
 	markCaretBlinkReset();
-	field.caretRevealPending = true;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 }
 
 void InputFieldManager::applyWordDelete(FieldState& field, bool backspace) {
@@ -2620,7 +2624,7 @@ void InputFieldManager::moveCaretsVertical(
 		if (selecting) caret.headByteOffset = target;
 		else caret.anchorByteOffset = caret.headByteOffset = target;
 	}
-	field.caretRevealPending = true;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 }
 
 void InputFieldManager::moveCaretsToLineBoundary(
@@ -2644,13 +2648,13 @@ void InputFieldManager::moveCaretsToLineBoundary(
 		else caret.anchorByteOffset = caret.headByteOffset = target;
 		caret.hasPreferredX = false;
 	}
-	field.caretRevealPending = true;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, true);
 }
 
 void InputFieldManager::revealPrimaryCaret(FieldState& field) {
-	if (!field.caretRevealPending || field.carets.empty() ||
+	if (!field.flags.has_flag(InputFieldFlag::caret_reveal_pending) || field.carets.empty() ||
 		field.layout.viewportHeight <= 0.0f) return;
-	field.caretRevealPending = false;
+	field.flags.set_flag(InputFieldFlag::caret_reveal_pending, false);
 	const float lineHeight = fieldLineHeight(field);
 	const size_t hardLine = text_storage::lineFromByte(
 		field.storage, field.carets.front().headByteOffset);

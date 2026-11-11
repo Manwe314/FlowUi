@@ -255,6 +255,45 @@ struct RuntimeMetadataElement {
 	static void buildElement(BuildContext&) {}
 };
 
+struct IncompleteState;
+struct IncompleteStateElement {
+	using State = IncompleteState;
+	using BuildContext = FlowUi::ElementBuildContext<IncompleteStateElement>;
+	static constexpr auto definitionId = FlowUi::DefinitionID("tests/concepts/incomplete-state");
+	static void buildElement(BuildContext&);
+};
+
+struct OverloadedHooksElement {
+	using BuildContext = FlowUi::ElementBuildContext<OverloadedHooksElement>;
+	using InteractionContext = FlowUi::ElementInteractionContext<OverloadedHooksElement>;
+	static constexpr auto definitionId = FlowUi::DefinitionID("tests/concepts/overloaded-hooks");
+	static void buildElement(BuildContext&);
+	static void buildElement(int);
+	static void onPressed(InteractionContext&);
+	static void onPressed(int);
+};
+
+// A constexpr view can point to mutable text: querying and validating must not
+// introduce a stricter requirement that its individual characters be constexpr.
+inline char runtime_debug_characters[] = "Runtime characters";
+struct RuntimeDebugCharactersElement {
+	using BuildContext = FlowUi::ElementBuildContext<RuntimeDebugCharactersElement>;
+	static constexpr auto definitionId = FlowUi::DefinitionID("tests/concepts/debug-characters");
+	static constexpr std::string_view debugName{
+		runtime_debug_characters, sizeof(runtime_debug_characters) - 1};
+	static void buildElement(BuildContext&);
+};
+
+static_assert(!FlowUi::FlowElement<IncompleteStateElement>);
+static_assert(FlowUi::validate_flow_element<OverloadedHooksElement>());
+static_assert(FlowUi::validate_flow_element<RuntimeDebugCharactersElement>());
+static_assert(FlowUi::validate_flow_element<DrawableElement>());
+static_assert(FlowUi::validate_flow_element<const DrawableElement&>());
+static_assert(FlowUi::validate_flow_element<ConstructibleElement>());
+static_assert(FlowUi::validate_flow_element<DualOutputElement>());
+static_assert(FlowUi::validate_flow_element<CyclicParameterElement>());
+static_assert(noexcept(FlowUi::validate_flow_element<DrawableElement>()));
+
 static_assert(FlowUi::FlowElement<DrawableElement>);
 static_assert(FlowUi::DrawableFlowElement<DrawableElement>);
 static_assert(!FlowUi::ConstructibleFlowElement<DrawableElement>);

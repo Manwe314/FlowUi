@@ -34,6 +34,9 @@ struct DevPerformanceSelection {
 	TimingZoneTypeId selected_zone = 0;
 	uint32_t category_mask = (1u << static_cast<uint32_t>(TimingCategory::Count)) - 1u;
 	std::array<bool, static_cast<size_t>(TimingCategory::Count)> expanded_categories{};
+	/** Maximum CPU detail projected from retained capture records; recording metadata is unchanged.
+	 */
+	CpuTimingLevel cpu_detail_level = CpuTimingLevel::Deep;
 	bool windows_expanded = true;
 	bool threads_expanded = true;
 

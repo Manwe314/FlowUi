@@ -109,7 +109,7 @@ private:
  * stored in this object.
  */
 inline constexpr SelectableSurface kSelectableSurface{};
-static_assert(FlowElement<SelectableSurface>);
+static_assert(validate_flow_element<SelectableSurface>());
 static_assert(ConstructibleFlowElement<SelectableSurface>);
 
 } // namespace FlowUi::FSEL

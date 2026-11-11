@@ -8,6 +8,7 @@
 #include <span>
 
 #include <clay.h>
+#include "FlowUi/Private/utility/EnumFlags.hpp"
 
 namespace FlowUi::detail {
 
@@ -26,6 +27,12 @@ struct ClayDevRootView {
 	uint32_t paintOrder = 0;
 };
 
+enum class ClayDevElementFlag : uint8_t {
+	bounds_available = 1u << 0,
+	is_text = 1u << 1,
+	exiting = 1u << 2,
+};
+
 struct ClayDevElementView {
 	int32_t layoutElementIndex = -1;
 	int32_t parentLayoutElementIndex = -1;
@@ -42,9 +49,7 @@ struct ClayDevElementView {
 	Clay_String text{};
 	Clay_Dimensions unwrappedTextDimensions{};
 	uint32_t wrappedLineCount = 0;
-	bool boundsAvailable = false;
-	bool isText = false;
-	bool exiting = false;
+	EnumFlags<ClayDevElementFlag> flags{};
 };
 
 enum class ClayDevVisitResult : uint8_t {

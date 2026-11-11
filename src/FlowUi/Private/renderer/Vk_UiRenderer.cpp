@@ -1,6 +1,7 @@
 #include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 #include "FlowUi/Public/Resources.hpp"
 #include "FlowUi/Public/TextureRef.hpp"
+#include "FlowUi/Public/defaults/TextureDefaults.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devTooling/overlay/DevOverlayCommandBuffer.hpp"
 #endif
@@ -99,12 +100,7 @@ struct GlyphQuad {
 	int byteEndOffset = 0;
 };
 
-struct UiPushConstants {
-	float viewportW = 0.0f;
-	float viewportH = 0.0f;
-	uint32_t instanceBaseIndex = 0;
-	uint32_t _pad = 0;
-};
+using FlowUi::detail::UiPushConstants;
 
 constexpr uint32_t kDefaultMaxUiImageDescriptors = 256;
 
@@ -137,12 +133,12 @@ static uint64_t NativeHandleBits(NativeHandle value) noexcept {
 
 constexpr storage::RendererLayoutKey kUiRendererLayoutKey{
 	.textureDescriptorCapacity = kDefaultMaxUiImageDescriptors,
-	.shaderInterfaceRevision = 1u,
+	.shaderInterfaceRevision = 2u,
 	.pushConstantBytes = sizeof(UiPushConstants),
 	.descriptorFeatureFlags = 0x3u,
 };
-constexpr uint32_t kUiPipelineStateRevision = 1u;
-constexpr uint64_t kUiShaderSetFingerprint = 0x464c4f5755490003ull;
+constexpr uint32_t kUiPipelineStateRevision = 2u;
+constexpr uint64_t kUiShaderSetFingerprint = 0x464c4f5755490004ull;
 
 static void vkCheck(VkResult result, FlowUi::ErrorSite site) {
 	if (result != VK_SUCCESS) {
@@ -1311,9 +1307,10 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	UiPushConstants push{};
-	push.viewportW = static_cast<float>(extent.width);
-	push.viewportH = static_cast<float>(extent.height);
-	push.instanceBaseIndex = run.firstInstance;
+	push.viewport_width = static_cast<float>(extent.width);
+	push.viewport_height = static_cast<float>(extent.height);
+	push.instance_base_index = run.firstInstance;
+	push.primitive_coverage_width_scale = renderer.primitive_coverage_width_scale_;
 	vkCmdPushConstants(
 		commandBuffer,
 		renderer.pipelines_.layout,
@@ -1326,6 +1323,15 @@ static void FlushRun(VkCommandBuffer commandBuffer, const VulkanUiRenderer& rend
 }
 
 } // namespace
+
+FlowUi::Result<float> FlowUi::detail::resolve_primitive_coverage_width_scale(
+	const PrimitiveAntialiasingConfig& config) noexcept {
+	if (!std::isfinite(config.coverage_width_scale) || config.coverage_width_scale <= 0.0f) {
+		return unexpectedError(makeError(ErrorCode::RendererConfigurationInvalid,
+			ErrorSite::RendererInitialize));
+	}
+	return config.enabled ? config.coverage_width_scale : 0.0f;
+}
 
 FlowUi::detail::UiConversionCapacity
 FlowUi::detail::measureUiConversionCapacity(const Clay_RenderCommandArray& commands,
@@ -1394,6 +1400,7 @@ void destroySharedUiByteResources(
 	try { if (resources.placeholderFontImage) storageSystem.releaseImage(resources.placeholderFontImage); } catch (...) {}
 	try { if (resources.placeholderUiImage) storageSystem.releaseImage(resources.placeholderUiImage); } catch (...) {}
 	try { if (resources.linearSampler) storageSystem.releaseSampler(resources.linearSampler); } catch (...) {}
+	try { if (resources.missing_texture_sampler) storageSystem.releaseSampler(resources.missing_texture_sampler); } catch (...) {}
 	try { if (resources.quadBuffer) storageSystem.releaseBuffer(resources.quadBuffer); } catch (...) {}
 	resources = {};
 }
@@ -1430,6 +1437,9 @@ void initSharedUiByteResources(
 		resources.placeholderFontView = storageSystem.createImageView(resources.placeholderFontImage, fontViewDesc);
 
 		storage::ImageDesc uiImageDesc{};
+		const auto missing_texture = FlowUi::defaults::missing_texture();
+		uiImageDesc.width = missing_texture.width;
+		uiImageDesc.height = missing_texture.height;
 		uiImageDesc.format = storage::PixelFormat::Rgba8Unorm;
 		uiImageDesc.usage = storage::ImageUsage::Sampled | storage::ImageUsage::TransferDestination;
 		uiImageDesc.memory = storage::MemoryPreference::DeviceLocal;
@@ -1442,13 +1452,18 @@ void initSharedUiByteResources(
 		storage::SamplerDesc samplerDesc{};
 		samplerDesc.debugName = storageSystem.intern("FlowUi shared linear sampler");
 		resources.linearSampler = storageSystem.acquireSampler(samplerDesc);
+		storage::SamplerDesc missing_texture_sampler_desc{};
+		missing_texture_sampler_desc.debugName = storageSystem.intern("FlowUi missing texture sampler");
+		missing_texture_sampler_desc.minFilter = storage::FilterMode::Nearest;
+		missing_texture_sampler_desc.magFilter = storage::FilterMode::Nearest;
+		resources.missing_texture_sampler = storageSystem.acquireSampler(missing_texture_sampler_desc);
 
 		uploadBlobs[0] = storageSystem.createBlob(
 			std::as_bytes(std::span<const UiQuadVertex>(quadVertices)),
 			storageSystem.intern("FlowUi quad upload"));
 		const std::array<std::byte, 4> transparentPixel{};
 		uploadBlobs[1] = storageSystem.createBlob(transparentPixel, storageSystem.intern("FlowUi font placeholder upload"));
-		uploadBlobs[2] = storageSystem.createBlob(transparentPixel, storageSystem.intern("FlowUi UI placeholder upload"));
+		uploadBlobs[2] = storageSystem.createBlob(missing_texture.bytes, storageSystem.intern("FlowUi missing texture upload"));
 
 		(void)storageSystem.enqueueUpload(storage::UploadRequest{
 			.byteCount = sizeof(quadVertices),
@@ -1462,7 +1477,8 @@ void initSharedUiByteResources(
 			.destination = storage::UploadDestination::Image,
 		});
 		(void)storageSystem.enqueueUpload(storage::UploadRequest{
-			.byteCount = transparentPixel.size(),
+			.byteCount = missing_texture.bytes.size(),
+			.imageRegion = {.width = missing_texture.width, .height = missing_texture.height},
 			.source = uploadBlobs[2],
 			.destinationImage = resources.placeholderUiImage,
 			.destination = storage::UploadDestination::Image,
@@ -1476,8 +1492,10 @@ void initSharedUiByteResources(
 		const storage::NativeImageViewInfo fontViewNative = storageSystem.nativeImageView(resources.placeholderFontView);
 		const storage::NativeImageViewInfo uiViewNative = storageSystem.nativeImageView(resources.placeholderUiView);
 		const storage::NativeSamplerInfo samplerNative = storageSystem.nativeSampler(resources.linearSampler);
+		const auto missing_texture_sampler_native = storageSystem.nativeSampler(resources.missing_texture_sampler);
 		if (quadNative.nativeBuffer == 0 || fontViewNative.nativeImageView == 0 ||
-			uiViewNative.nativeImageView == 0 || samplerNative.nativeSampler == 0) {
+			uiViewNative.nativeImageView == 0 || samplerNative.nativeSampler == 0 ||
+			missing_texture_sampler_native.nativeSampler == 0) {
 			FlowUi::detail::terminateForFatalError(
 				FlowUi::makeError(FlowUi::ErrorCode::RendererNativeResourceInvalid, FlowUi::ErrorSite::RendererConvertCommands));
 		}
@@ -1506,6 +1524,11 @@ void VulkanUiRenderer::init(
 	uint64_t initialInstanceBytes,
 	uint32_t textureDescriptorCapacity,
 	bool allowInstanceGrowth, const FlowUi::ResourceConfig& resources) {
+	const auto coverage_width_scale =
+		FlowUi::detail::resolve_primitive_coverage_width_scale(uiConfig.primitive_antialiasing);
+	if (!coverage_width_scale) {
+		throw FlowUi::FlowUiException(coverage_width_scale.error());
+	}
 	if (vk.device == VK_NULL_HANDLE || vk.allocator == nullptr) {
 		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::RendererInitialize));
 	}
@@ -1517,6 +1540,7 @@ void VulkanUiRenderer::init(
 
 	try {
 		resources_ = resources;
+		primitive_coverage_width_scale_ = *coverage_width_scale;
 		storage_ = &storageSystem;
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
 		textLayoutService_.bind_memory_demand(storageSystem.memory_demand_control());
@@ -1736,6 +1760,7 @@ void VulkanUiRenderer::destroy(
 	windowId_ = FlowUi::InvalidWindowId;
 	allowInstanceGrowth_ = true;
 	pointsToPixelsScale_ = 96.0f / 72.0f;
+	primitive_coverage_width_scale_ = 1.0f;
 }
 
 void VulkanUiRenderer::onSwapchainFormatChanged(
@@ -2047,6 +2072,7 @@ PreparedUiFrame VulkanUiRenderer::prepareFrame(
 			storage::ResourceUse{storage::ResourceKind::GpuImage, sharedByteResources_->placeholderUiImage.packed()},
 			storage::ResourceUse{storage::ResourceKind::ImageView, sharedByteResources_->placeholderUiView.packed()},
 			storage::ResourceUse{storage::ResourceKind::Sampler, sharedByteResources_->linearSampler.packed()},
+			storage::ResourceUse{storage::ResourceKind::Sampler, sharedByteResources_->missing_texture_sampler.packed()},
 		};
 		storageSystem.trackUses(frame, sharedUses);
 	}

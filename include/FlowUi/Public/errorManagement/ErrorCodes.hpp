@@ -211,6 +211,13 @@ namespace FlowUi {
 				"WindowRecreationFailed",
 				"The FlowUi window rendering resources could not be recreated."};
 
+	case ErrorCode::WindowOperationUnsupported:
+		return localDescriptor(code, "WindowOperationUnsupported",
+							   "The window backend does not support this native operation.");
+	case ErrorCode::WindowOperationFailed:
+		return localDescriptor(code, "WindowOperationFailed",
+							   "The native window operation could not be completed.");
+
 	case ErrorCode::FrameAlreadyActive:
 		return localDescriptor(code, "FrameAlreadyActive",
 							   "Another FlowUi window frame is already active.");

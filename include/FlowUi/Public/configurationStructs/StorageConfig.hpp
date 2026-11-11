@@ -5,8 +5,9 @@
 namespace FlowUi {
 
 /**
- * Typed initial storage capacities in bytes. Zero hints preserve defaults; these are startup reserves
- * rather than hard memory limits.
+ * Typed startup capacities for storage pools and buffers, measured in bytes. Zero preserves defaults.
+ * MemoryCapacityProfile::settings overrides matching hints; enabled baked capacities override both.
+ * Later storage growth follows the profile and error policy; these values set initial reserves.
  */
 struct StorageMemoryCapacities {
 	/** Initial persistent CPU pool size in bytes; zero uses the library default. */

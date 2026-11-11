@@ -15,7 +15,7 @@ import subprocess
 from DevInterfaceNotesPressedState import verify_header_pressed
 
 REPOSITORY = Path(__file__).resolve().parents[2]
-HELPER_PATH = REPOSITORY / "docs/catalogue-verification/verify_catalogue.py"
+HELPER_PATH = Path(__file__).with_name("verify_catalogue.py")
 SPECIFICATION = importlib.util.spec_from_file_location("flowui_catalogue_verification", HELPER_PATH)
 HELPER = importlib.util.module_from_spec(SPECIFICATION)
 SPECIFICATION.loader.exec_module(HELPER)
@@ -751,7 +751,8 @@ def main() -> int:
     parser.add_argument("--cli", type=Path, required=True)
     parser.add_argument("--demo", type=Path, required=True)
     parser.add_argument("--workspace", type=Path, default=REPOSITORY)
-    parser.add_argument("--output-directory", type=Path, required=True)
+    parser.add_argument("--output-directory", type=Path,
+        default=REPOSITORY / ".flowui/agentic/verification/dev-interface-notes")
     parser.add_argument("--stage", choices=["baseline", "complete"], default="complete")
     parser.add_argument("--fixture", action="store_true", help="Use the configurable notes fixture")
     return asyncio.run(DevInterfaceNotesVerification(parser.parse_args()).run())

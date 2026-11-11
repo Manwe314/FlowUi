@@ -4,7 +4,7 @@ layout(push_constant) uniform UiPushConstants {
 	float viewportW;
 	float viewportH;
 	uint instanceBaseIndex;
-	uint _pad;
+	float primitive_coverage_width_scale;
 } pushData;
 
 struct UiInstance {
@@ -73,7 +73,8 @@ void main() {
 	UiInstance instance = instanceBuffer.instances[instanceIndex];
 
 	vec2 size = vec2(instance.w, instance.h);
-	float aa_padding = all(greaterThan(size, vec2(0.0))) ? 1.0 : 0.0;
+	float aa_padding = all(greaterThan(size, vec2(0.0))) && pushData.primitive_coverage_width_scale > 0.0
+		? max(1.0, pushData.primitive_coverage_width_scale) : 0.0;
 	vec2 aa_offset = (inPos * 2.0 - vec2(1.0)) * aa_padding;
 	vec2 pixelPosition = vec2(instance.x, instance.y) + inPos * size + aa_offset;
 

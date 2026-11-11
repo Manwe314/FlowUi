@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -22,8 +24,8 @@ enum class FontStyle : uint8_t {
 };
 
 /**
- * Owned description of a baked .arfont face or a runtime-baked source font. Runtime baking requires
- * the corresponding build feature.
+ * Font-face registration request for a baked .arfont asset or a source font.
+ * Source fonts require runtime font baking support; baked assets use their authored metrics.
  */
 struct FontFaceCreateInfo {
 	/** Source font asset path resolved by the resource configuration. */
@@ -36,9 +38,18 @@ struct FontFaceCreateInfo {
 	FontStyle style = FontStyle::Normal;
 	/** Optional explicit face name; empty lets loading derive one. */
 	std::string name{};
+	/**
+	 * Optional borrowed .arfont bytes, consumed synchronously during family/face registration.
+	 * Nonempty data takes precedence over path; its storage need only outlive the registration call.
+	 * If retained in UiConfig, keep the bytes alive until application initialization completes.
+	 */
+	std::span<const std::byte> baked_data{};
 };
 
-/** Owned family name and face list passed to FontManager during registration. */
+/**
+ * Owned family registration request containing named faces selected by weight/style.
+ * UiConfig::defaultFontFamily supplies the startup fallback; other families use FontManager APIs.
+ */
 struct FontFamilyCreateInfo {
 	/** Unique family registration name. */
 	std::string name = "Default";

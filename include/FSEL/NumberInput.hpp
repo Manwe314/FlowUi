@@ -850,10 +850,10 @@ inline constexpr NumberInput<unsigned int> kNumberInputUInt{};
  */
 inline constexpr NumberInput<float> kNumberInputFloat{};
 
-static_assert(FlowElement<NumberInput<int>>);
+static_assert(validate_flow_element<NumberInput<int>>());
 static_assert(DrawableFlowElement<NumberInput<int>>);
 static_assert(!ConstructibleFlowElement<NumberInput<int>>);
-static_assert(FlowElement<NumberInput<unsigned int>>);
-static_assert(FlowElement<NumberInput<float>>);
+static_assert(validate_flow_element<NumberInput<unsigned int>>());
+static_assert(validate_flow_element<NumberInput<float>>());
 
 } // namespace FlowUi::FSEL

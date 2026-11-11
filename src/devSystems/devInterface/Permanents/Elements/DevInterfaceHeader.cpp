@@ -173,6 +173,19 @@ void drawActionButton(DevInterfaceHeader::BuildContext& context, LocalElementNam
 		action_button::tooltip(context, id, label);
 }
 
+void draw_telemetry_section(DevInterfaceHeader::BuildContext& context, LocalElementName identity,
+							std::string_view text, float width) {
+	Clay_ElementDeclaration section{};
+	section.layout.sizing = {CLAY_SIZING_FIXED(width), CLAY_SIZING_GROW(0)};
+	section.layout.padding = Clay_Padding{6, 6, 0, 0};
+	section.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
+	section.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
+	const Clay_TextElementConfig style = textConfig(interface_theme::kTextSecondary, 11);
+	CLAY(context.clayID(identity), section) {
+		CLAY_TEXT(context.uiManager.toClayString(text), CLAY_TEXT_CONFIG(style));
+	}
+}
+
 void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 						DevInterfaceState* state, const std::vector<DevWindowInfo>& windows) {
 	const float available_width = Clay_GetLayoutDimensions().width;
@@ -186,11 +199,15 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 
 	uint32_t framesInFlight = 0u;
 	double frames_per_second = 0.0;
+	std::string target_title = "No application windows";
 	if (app && state && state->selectedWindowId != InvalidWindowId) {
 		const auto selected =
 			std::ranges::find(windows, state->selectedWindowId, &DevWindowInfo::id);
-		if (selected != windows.end())
+		if (selected != windows.end()) {
 			framesInFlight = selected->framesInFlight;
+			target_title = selected->title.empty() ? "Window " + std::to_string(selected->id)
+												   : selected->title;
+		}
 		if (app->hasWindow(state->selectedWindowId)) {
 			const double frame_delta_seconds =
 				app->ui(state->selectedWindowId).getCurrentFrameInput().dt;
@@ -199,25 +216,25 @@ void drawHeaderContents(DevInterfaceHeader::BuildContext& context, App* app,
 	}
 
 	if (available_width >= 700.0f) {
-		char telemetryBuffer[160]{};
+		char fps_text[32]{};
+		char frames_text[32]{};
 		const std::string memoryText =
 			app ? formatBytes(currentMemoryBytes(*app)) : std::string{"Unavailable"};
-		std::snprintf(
-			telemetryBuffer, sizeof(telemetryBuffer),
-			"Target #%llu · FPS %.0f · Max frames %u · %s",
-			static_cast<unsigned long long>(state ? state->selectedWindowId : InvalidWindowId),
-			frames_per_second, framesInFlight, memoryText.c_str());
-		const Clay_TextElementConfig telemetryStyle =
-			textConfig(interface_theme::kTextSecondary, 11);
+		std::snprintf(fps_text, sizeof(fps_text), "FPS %.0f", frames_per_second);
+		std::snprintf(frames_text, sizeof(frames_text), "Max frames %u", framesInFlight);
 		Clay_ElementDeclaration telemetry{};
-		telemetry.layout.sizing = {
-			CLAY_SIZING_GROW(0, std::max(1.0f, available_width - 480.0f)),
-			CLAY_SIZING_GROW(0)};
+		telemetry.layout.sizing = {CLAY_SIZING_FIT(0), CLAY_SIZING_GROW(0)};
 		telemetry.layout.childAlignment.y = CLAY_ALIGN_Y_CENTER;
+		telemetry.layout.layoutDirection = CLAY_LEFT_TO_RIGHT;
 		telemetry.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
 		CLAY(context.clayID("telemetry"), telemetry) {
-			CLAY_TEXT(context.uiManager.toClayString(telemetryBuffer),
-					  CLAY_TEXT_CONFIG(telemetryStyle));
+			draw_telemetry_section(context, LocalElementName{"telemetry-target"}, target_title,
+								   std::clamp(available_width - 660.0f, 40.0f, 300.0f));
+			draw_telemetry_section(context, LocalElementName{"telemetry-fps"}, fps_text, 72.0f);
+			draw_telemetry_section(context, LocalElementName{"telemetry-frames"}, frames_text,
+								   100.0f);
+			draw_telemetry_section(context, LocalElementName{"telemetry-memory"}, memoryText,
+								   84.0f);
 		}
 	}
 

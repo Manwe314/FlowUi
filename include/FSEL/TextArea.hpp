@@ -259,7 +259,7 @@ struct TextArea {
  * stored in this object.
  */
 inline constexpr TextArea kTextArea{};
-static_assert(FlowElement<TextArea>);
+static_assert(validate_flow_element<TextArea>());
 static_assert(DrawableFlowElement<TextArea>);
 static_assert(!ConstructibleFlowElement<TextArea>);
 

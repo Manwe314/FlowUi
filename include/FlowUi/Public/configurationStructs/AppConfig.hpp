@@ -16,10 +16,9 @@
 namespace FlowUi {
 
 /**
- * @brief Top-level configuration used to initialize a FlowUi app.
- *
- * This struct groups the subsystem-specific configuration blocks passed through
- * app startup.
+ * Startup configuration copied by makeApplication(). Change these values before app creation;
+ * editing the caller's copy later does not reconfigure a running app. Secondary windows inherit
+ * the app's Vulkan and UI defaults and supply their own native-window settings.
  */
 struct AppConfig {
 	/** Packaged shader/font and application resource lookup policy. */
@@ -52,9 +51,9 @@ struct AppConfig {
 	 */
 	IconManagerConfig iconManager{};
 
-	/** Optional profiled startup capacities; zero fields preserve library defaults. */
+	/** Startup storage/container reserves and storage growth policy; may be handwritten or profiled. */
 	MemoryCapacityProfile memoryCapacityProfile{};
-	/** Present compiled capacities override caller hints before any owner is created. */
+	/** Let available baked capacities override caller hints before storage and managers are created. */
 	bool prefer_baked_capacities = true;
 
 	/** Resolution and centralized reporting choices used for the App lifetime. */

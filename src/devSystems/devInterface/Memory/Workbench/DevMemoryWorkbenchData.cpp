@@ -284,7 +284,7 @@ void append_gpu(DevMemoryWorkbenchState& state, Node node, const MemoryLiveRead&
 	track.title = node == Node::GpuImages ? "GPU Images" : "GPU Buffers";
 	track.recipe = Recipe::Resource;
 	track.note = "GPU allocation bytes: active / awaiting release (images use reported byte size)";
-	if (read.storage && read.storage->includesResourceKinds) {
+	if (read.storage && read.storage->flags.has_flag(FlowUi::detail::storage::StorageMemorySnapshot::Flag::includes_resource_kinds)) {
 		using Kind = ::FlowUi::detail::storage::ResourceKind;
 		const auto kind = node == Node::GpuImages ? Kind::GpuImage : Kind::GpuBuffer;
 		const auto& resource = read.storage->resources[size_t(kind)];

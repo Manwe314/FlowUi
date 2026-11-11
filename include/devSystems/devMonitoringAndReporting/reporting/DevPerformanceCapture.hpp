@@ -50,15 +50,19 @@ enum class PerformanceCaptureStopReason : uint8_t {
 	/** Startup capture reached its effective ring capacity. */
 	CapacityReached
 };
-/** Immutable recording policy, independent of investigation filters. */
+/**
+ * @brief Per-operation performance capture policy copied when capture is armed.
+ * Requires FLOW_UI_DEV_MODE. Durations are nanoseconds; warmup counts clean application ticks.
+ * The selected start/end modes determine which trigger fields apply.
+ */
 struct PerformanceCaptureSettings {
 	/** Keyboard chord used when start_mode selects shortcut triggering. */
 	DevShortcutChord start_chord{.key = 297, .ctrl = true, .shift = true};
 	/** Recording duration in nanoseconds for duration-based captures. */
 	uint64_t duration_ns = 5'000'000'000;
-	/** Window frame duration threshold in nanoseconds for a budget event. */
+	/** Window frame threshold in nanoseconds when end_mode is BudgetEvent. */
 	uint64_t budget_ns = 16'600'000;
-	/** Duration in nanoseconds collected after a budget event. */
+	/** Nanoseconds collected after the first budget event when end_mode is BudgetEvent. */
 	uint64_t post_event_ns = 500'000'000;
 	/** Maximum nanoseconds to wait for pending measurements before sealing incomplete. */
 	uint64_t finalization_timeout_ns = 2'000'000'000;

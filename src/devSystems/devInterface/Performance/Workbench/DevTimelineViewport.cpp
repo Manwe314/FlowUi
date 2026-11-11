@@ -720,8 +720,11 @@ void DevTimelineController::draw(UiManager& manager, Clay_ElementId id, Clay_Ele
 		surface->key = key;
 		surface->identity = impl_->next_identity++;
 		surface->format = impl_->renderer->devReplayTargetFormat();
+		// Successful recordings paint an opaque background. If preparation or upload
+		// is temporarily unavailable, keep the last complete image in this frame slot.
 		const auto created = impl_->viewports->create(
-			key, {.colorFormat = surface->format, .clearColor = {0, 0, 0, 0}});
+			key,
+			{.colorFormat = surface->format, .clearColor = {0, 0, 0, 0}, .clearEveryFrame = false});
 		if (!created) {
 			Clay_TextElementConfig text{};
 			text.fontSize = 11;
