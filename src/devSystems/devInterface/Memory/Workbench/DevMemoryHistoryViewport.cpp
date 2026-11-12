@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 #include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
@@ -7,7 +8,6 @@
 #include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
 #include "FlowUi/Private/storageSystem/vulkan/Vma.hpp"
 #include "FlowUi/Public/managers/ViewPortManager.hpp"
-#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -484,20 +484,22 @@ void DevMemoryHistoryController::draw(UiManager& manager, Clay_ElementId image,
 		const auto pressed = [&](int key) {
 			return input.keyDown[size_t(key)] && !previous.keyDown[size_t(key)];
 		};
-		if (pressed(GLFW_KEY_LEFT) || pressed(GLFW_KEY_RIGHT)) {
+		if (pressed(FlowUi::keyCode(FlowUi::Key::Left)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Right))) {
 			controller.pause();
-			pan_memory_view(state, pressed(GLFW_KEY_LEFT) ? -1 : 1);
+			pan_memory_view(state, pressed(FlowUi::keyCode(FlowUi::Key::Left)) ? -1 : 1);
 		}
-		if (pressed(GLFW_KEY_EQUAL) || pressed(GLFW_KEY_MINUS)) {
+		if (pressed(FlowUi::keyCode(FlowUi::Key::Equal)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Minus))) {
 			controller.pause();
-			zoom_memory_view(state, pressed(GLFW_KEY_EQUAL) ? .5 : 2);
+			zoom_memory_view(state, pressed(FlowUi::keyCode(FlowUi::Key::Equal)) ? .5 : 2);
 		}
-		if (pressed(GLFW_KEY_HOME)) {
+		if (pressed(FlowUi::keyCode(FlowUi::Key::Home))) {
 			controller.pause();
 			state.fit_pending = true;
 			state.next_history_ns = 0;
 		}
-		if (pressed(GLFW_KEY_ESCAPE)) {
+		if (pressed(FlowUi::keyCode(FlowUi::Key::Escape))) {
 			state.selected_ns = state.range_begin_ns = state.range_end_ns = 0;
 			state.next_live_ns = state.next_history_ns = 0;
 		}

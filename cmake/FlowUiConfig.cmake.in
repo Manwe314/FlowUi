@@ -4,7 +4,7 @@ include(CMakeFindDependencyMacro)
 set(_flowui_package_prefix "${PACKAGE_PREFIX_DIR}")
 
 find_dependency(Vulkan)
-find_dependency(glfw3)
+@FLOWUI_PLATFORM_PACKAGE_REQUIREMENTS@
 if(@FLOW_UI_AGENTIC_WORKFLOW_VALUE@)
     find_dependency(Threads)
 endif()

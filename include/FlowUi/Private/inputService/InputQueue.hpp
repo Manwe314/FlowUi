@@ -29,6 +29,7 @@ struct InputQueue {
 	void setMousePos(float x, float y) noexcept;
 	/* Update native pointer presence independently of stale cursor coordinates. */
 	void setPointerInside(bool inside) noexcept { pointer_inside_ = inside; }
+	[[nodiscard]] bool pointerInside() const noexcept { return pointer_inside_; }
 	/* Preserve native focus independently of pointer presence. */
 	void setWindowFocused(bool focused) noexcept { window_focused_ = focused; }
 	void clearKeyboardState() noexcept;

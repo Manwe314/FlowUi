@@ -269,7 +269,7 @@ public:
 
 	/** @brief Set whether the window backend should request shutdown.
 	 *
-	 * The `value` argument is passed to the GLFW built-in window backend. Zero
+	 * The `value` argument updates the selected platform provider close flag. Zero
 	 * clears the window close flag; a non-zero value sets it.
 	 *
 	 * Example:

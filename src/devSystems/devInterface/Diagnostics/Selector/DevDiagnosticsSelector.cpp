@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Diagnostics/Selector/DevDiagnosticsSelector.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -304,21 +305,22 @@ void keyboard(Context& context, DevDiagnosticsState& state, std::span<const Navi
 				   : row.identity == navigation.focused_identity;
 	});
 	std::size_t index = found == rows.end() ? 0 : static_cast<std::size_t>(found - rows.begin());
-	if (pressed(GLFW_KEY_UP) && index > 0)
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Up)) && index > 0)
 		--index;
-	if (pressed(GLFW_KEY_DOWN) && index + 1 < rows.size())
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Down)) && index + 1 < rows.size())
 		++index;
 	navigation.focused_domain = rows[index].domain;
 	navigation.focused_identity = rows[index].identity;
 	navigation.domain_focus = rows[index].identity == 0;
-	if (pressed(GLFW_KEY_LEFT)) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Left))) {
 		state.domain_expanded[navigation.focused_domain] = false;
 		navigation.domain_focus = true;
 	}
-	if (pressed(GLFW_KEY_RIGHT))
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Right)))
 		state.domain_expanded[navigation.focused_domain] = true;
-	if (pressed(GLFW_KEY_UP) || pressed(GLFW_KEY_DOWN) || pressed(GLFW_KEY_LEFT) ||
-		pressed(GLFW_KEY_RIGHT)) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Up)) || pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
+		pressed(FlowUi::keyCode(FlowUi::Key::Left)) ||
+		pressed(FlowUi::keyCode(FlowUi::Key::Right))) {
 		context.uiManager.shortcuts().setFocusedElement(context.clayID());
 		const auto target_id = navigation.domain_focus
 								   ? context.clayID(Keyed("domain", navigation.focused_domain))
@@ -335,7 +337,7 @@ void keyboard(Context& context, DevDiagnosticsState& state, std::span<const Navi
 											viewport.boundingBox.y - viewport.boundingBox.height;
 		}
 	}
-	if (pressed(GLFW_KEY_ENTER))
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Enter)))
 		activate(&navigation, navigation.domain_focus ? Domain : Group,
 				 navigation.domain_focus ? navigation.focused_domain : navigation.focused_identity);
 }

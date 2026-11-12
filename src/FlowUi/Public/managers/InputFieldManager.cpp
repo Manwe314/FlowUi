@@ -1,6 +1,7 @@
 #include "FlowUi/Public/managers/InputFieldManager.hpp"
-#include "FlowUi/Public/defaults/InputDefaults.hpp"
+#include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
 #include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
+#include "FlowUi/Public/defaults/InputDefaults.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devMonitoringAndReporting/memory/DevContainerMemory.hpp"
 #include "devSystems/devMonitoringAndReporting/memory/DevMemorySources.hpp"
@@ -14,7 +15,7 @@
 #include <optional>
 #include <utility>
 
-#include <GLFW/glfw3.h>
+#include "FlowUi/Public/input/Key.hpp"
 
 #include "FlowUi/Private/textLayoutService/TextLayoutService.hpp"
 #include "FlowUi/Private/textLayoutService/TextLineBreaker.hpp"
@@ -535,11 +536,10 @@ void InputFieldManager::beginFrame(
 	state_->flags.set_flag(InputFieldManagerFlag::dirty, true);
 }
 
-void InputFieldManager::setClipboardAccess(
-	std::function<void(std::string_view)> setClipboardText,
-	std::function<std::string()> getClipboardText) {
-	state_->setClipboardText = std::move(setClipboardText);
-	state_->getClipboardText = std::move(getClipboardText);
+void InputFieldManager::setPlatformServices(
+	detail::platform::WindowPlatformServices* services) noexcept {
+	if (state_)
+		state_->platformServices = services;
 }
 
 Clay_RenderCommandArray InputFieldManager::endFrame(const Clay_RenderCommandArray& renderCommands) {
@@ -2156,10 +2156,7 @@ void InputFieldManager::clear() {
 
 void InputFieldManager::applyCapturedEdits(field_key::InputFieldKey fieldId, FieldState& field) {
 	if (state_->primaryFieldId != fieldId || field.carets.empty()) return;
-	if (keyPressedThisFrame(
-		state_->currentInput,
-		state_->previousInput,
-		GLFW_KEY_ESCAPE)) {
+	if (keyPressedThisFrame(state_->currentInput, state_->previousInput, keyCode(Key::Escape))) {
 		field.frameCommandRequests.push_back(FieldCommandRequest::Cancel);
 		return;
 	}
@@ -2177,40 +2174,43 @@ void InputFieldManager::applyCapturedEdits(field_key::InputFieldKey fieldId, Fie
 		state_->deleteKeyRepeat = KeyRepeatState{};
 	}
 	if (!modified && field.config.allowArrowNavigation) {
-		if (shouldTriggerActionWithRepeat(GLFW_KEY_LEFT, state_->leftKeyRepeat)) {
+		if (shouldTriggerActionWithRepeat(keyCode(Key::Left), state_->leftKeyRepeat)) {
 			moveCaretsHorizontal(field, -1, selecting);
 			caretMoved = true;
 		}
-		if (shouldTriggerActionWithRepeat(GLFW_KEY_RIGHT, state_->rightKeyRepeat)) {
+		if (shouldTriggerActionWithRepeat(keyCode(Key::Right), state_->rightKeyRepeat)) {
 			moveCaretsHorizontal(field, +1, selecting);
 			caretMoved = true;
 		}
 		if (text_storage::storageMode(field.storage) == TextFieldMode::MultiLine) {
-			if (shouldTriggerActionWithRepeat(GLFW_KEY_UP, state_->upKeyRepeat)) {
+			if (shouldTriggerActionWithRepeat(keyCode(Key::Up), state_->upKeyRepeat)) {
 				moveCaretsVertical(field, -1, selecting);
 				caretMoved = true;
 			}
-			if (shouldTriggerActionWithRepeat(GLFW_KEY_DOWN, state_->downKeyRepeat)) {
+			if (shouldTriggerActionWithRepeat(keyCode(Key::Down), state_->downKeyRepeat)) {
 				moveCaretsVertical(field, +1, selecting);
 				caretMoved = true;
 			}
 		}
-		if (shouldTriggerActionWithRepeat(GLFW_KEY_HOME, state_->homeKeyRepeat)) {
+		if (shouldTriggerActionWithRepeat(keyCode(Key::Home), state_->homeKeyRepeat)) {
 			moveCaretsToLineBoundary(field, false, selecting);
 			caretMoved = true;
 		}
-		if (shouldTriggerActionWithRepeat(GLFW_KEY_END, state_->endKeyRepeat)) {
+		if (shouldTriggerActionWithRepeat(keyCode(Key::End), state_->endKeyRepeat)) {
 			moveCaretsToLineBoundary(field, true, selecting);
 			caretMoved = true;
 		}
 	}
 	if (!modified && !field.config.readOnly) {
-		if (shouldTriggerActionWithRepeat(GLFW_KEY_BACKSPACE, state_->backspaceKeyRepeat)) applyDelete(field, true);
-		if (shouldTriggerActionWithRepeat(GLFW_KEY_DELETE, state_->deleteKeyRepeat)) applyDelete(field, false);
+		if (shouldTriggerActionWithRepeat(keyCode(Key::Backspace), state_->backspaceKeyRepeat))
+			applyDelete(field, true);
+		if (shouldTriggerActionWithRepeat(keyCode(Key::Delete), state_->deleteKeyRepeat))
+			applyDelete(field, false);
 		std::string textInput = encodeTextInput(state_->currentInput, field.config.mode);
 		const bool enterPressed =
-			keyPressedThisFrame(state_->currentInput, state_->previousInput, GLFW_KEY_ENTER) ||
-			keyPressedThisFrame(state_->currentInput, state_->previousInput, GLFW_KEY_KP_ENTER);
+			keyPressedThisFrame(state_->currentInput, state_->previousInput, keyCode(Key::Enter)) ||
+			keyPressedThisFrame(state_->currentInput, state_->previousInput,
+								keyCode(Key::KeypadEnter));
 		if (enterPressed) {
 			if (text_storage::storageMode(field.storage) == TextFieldMode::SingleLine) {
 				field.frameCommandRequests.push_back(FieldCommandRequest::Submit);
@@ -2245,11 +2245,15 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 			break;
 		case TextCommand::Copy: {
 			const std::string selected = clipboardSelection();
-			if (!selected.empty() && state_->setClipboardText) state_->setClipboardText(selected);
+			if (!selected.empty() && state_->platformServices &&
+				state_->platformServices->hasClipboardAccess())
+				state_->platformServices->setClipboardText(selected);
 			break;
 		}
 		case TextCommand::Cut: {
-			if (field.config.readOnly || !state_->setClipboardText) break;
+			if (field.config.readOnly || !state_->platformServices ||
+				!state_->platformServices->hasClipboardAccess())
+				break;
 			const std::string selected = clipboardSelection();
 			if (selected.empty()) break;
 			std::vector<TextReplacement> cuts;
@@ -2257,14 +2261,16 @@ void InputFieldManager::applyPendingCommands(field_key::InputFieldKey fieldId, F
 				cuts.push_back(TextReplacement{TextRange{range.start, range.end}, {}});
 			}
 			if (commitEdits(field, cuts, EditOrigin::Cut, true) == EditResult::Applied) {
-				state_->setClipboardText(selected);
+				state_->platformServices->setClipboardText(selected);
 			}
 			break;
 		}
 		case TextCommand::Paste: {
-			const std::string pasted = !pending.payload.empty()
-				? pending.payload
-				: (state_->getClipboardText ? state_->getClipboardText() : std::string{});
+			const std::string pasted =
+				!pending.payload.empty()
+					? pending.payload
+					: (state_->platformServices ? state_->platformServices->clipboardText()
+												: std::string{});
 			if (!pasted.empty() && !field.config.readOnly) {
 				applyTextInsertion(field, pasted, EditOrigin::Paste);
 			}

@@ -1,9 +1,10 @@
 #pragma once
+
 #include "FlowUi/Public/BuildConfig.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Catalogue/DevCatalogueModel.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
-#include <GLFW/glfw3.h>
 #include <algorithm>
 
 namespace FlowUi::devSystems::interface_elements::catalogue_focus {
@@ -59,8 +60,8 @@ template <class Context>
 void begin_frame(Context& context, DevCatalogueState& state) {
 	const auto& current = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
-	if (current.windowFocused && current.keyDown[GLFW_KEY_ESCAPE] &&
-		!previous.keyDown[GLFW_KEY_ESCAPE] &&
+	if (current.windowFocused && current.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
+		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
 		!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 		!context.uiManager.popups().has_open_popups()) {
 		const auto focused = context.uiManager.shortcuts().focusedElement().id;
@@ -72,13 +73,14 @@ void begin_frame(Context& context, DevCatalogueState& state) {
 			state.dirty = true;
 		}
 	}
-	if (current.windowFocused && current.keyDown[GLFW_KEY_TAB] && !previous.keyDown[GLFW_KEY_TAB] &&
-		!state.focus_targets.empty() && !context.uiManager.popups().has_open_popups()) {
+	if (current.windowFocused && current.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
+		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] && !state.focus_targets.empty() &&
+		!context.uiManager.popups().has_open_popups()) {
 		const auto focused = context.uiManager.shortcuts().focusedElement().id;
 		const auto found = std::ranges::find(state.focus_targets, focused,
 											 [](const auto& target) { return target.identity.id; });
-		const bool reverse =
-			current.keyDown[GLFW_KEY_LEFT_SHIFT] || current.keyDown[GLFW_KEY_RIGHT_SHIFT];
+		const bool reverse = current.keyDown[FlowUi::keyCode(FlowUi::Key::LeftShift)] ||
+							 current.keyDown[FlowUi::keyCode(FlowUi::Key::RightShift)];
 		const auto count = state.focus_targets.size();
 		const auto position = found == state.focus_targets.end()
 								  ? (reverse ? 0 : count - 1)

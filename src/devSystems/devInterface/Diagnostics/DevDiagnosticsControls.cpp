@@ -1,8 +1,8 @@
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsControls.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <array>
 
@@ -452,7 +452,8 @@ void DevDiagnosticsControls::buildElement(BuildContext& context) {
 	const bool available = context.params.app != nullptr;
 	const auto& input = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
-	if (input.keyDown[GLFW_KEY_ESCAPE] && !previous.keyDown[GLFW_KEY_ESCAPE]) {
+	if (input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
+		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)]) {
 		state.show_trigger = false;
 		state.show_export = false;
 		context.state().compact_open = false;

@@ -1,8 +1,8 @@
 #include "devSystems/devInterface/Diagnostics/Inspector/DevDiagnosticsInspector.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #if FLOW_UI_DEV_MODE
 
-#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -881,8 +881,10 @@ void DevDiagnosticsCopy::runLogic(InteractionContext& context) {
 	if (context.params.app &&
 		context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
 		!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
-		((current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) ||
-		 (current.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE])))
+		((current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
+		  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
+		 (current.keyDown[FlowUi::keyCode(FlowUi::Key::Space)] &&
+		  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Space)])))
 		context.params.app->setClipboardText(context.params.value);
 }
 void DevDiagnosticsCopy::onHovered(InteractionContext& context) {

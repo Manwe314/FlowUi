@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Changes/Selector/DevChangesSelector.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
 #include "devSystems/devInterface/Permanents/Elements/DevSelectorSearch.hpp"
@@ -109,11 +110,11 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 							   ? 0
 							   : static_cast<std::size_t>(found - state.visible_nodes.begin());
 	bool moved = false;
-	if (pressed(GLFW_KEY_UP) && position > 0) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Up)) && position > 0) {
 		--position;
 		moved = true;
 	}
-	if (pressed(GLFW_KEY_DOWN) && position + 1 < state.visible_nodes.size()) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Down)) && position + 1 < state.visible_nodes.size()) {
 		++position;
 		moved = true;
 	}
@@ -123,7 +124,7 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 			context.id, DevChangesSelectorNode::definitionId, Keyed("node", identity).token);
 		context.uiManager.shortcuts().setFocusedElement(context.uiManager.toClayEID(element));
 	};
-	if (pressed(GLFW_KEY_LEFT)) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Left))) {
 		if (!node.leaf && node.expanded)
 			node.expanded = false;
 		else if (!node.parent.empty()) {
@@ -135,7 +136,7 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 		rebuild_changes_model(state);
 		return;
 	}
-	if (pressed(GLFW_KEY_RIGHT) && !node.leaf) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Right)) && !node.leaf) {
 		node.expanded = true;
 		focus_node(node.identity);
 		rebuild_changes_model(state);
@@ -145,7 +146,7 @@ void keyboard(DevChangesSelector::BuildContext& context, DevChangesState& state)
 		state.focused_identity = node.identity;
 		focus_node(node.identity);
 	}
-	if (pressed(GLFW_KEY_ENTER)) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Enter))) {
 		const auto element = ::FlowUi::detail::element_id::resolveLocal(
 			context.id, DevChangesSelectorNode::definitionId, Keyed("node", node.identity).token);
 		if (context.uiManager.shortcuts().focusedElement().id != FlowIDToClayID(element))

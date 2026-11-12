@@ -13,7 +13,6 @@
 #include <utility>
 #include <array>
 
-#include <GLFW/glfw3.h>
 
 #include "FlowUi/Private/storageSystem/ManagerStateAccess.hpp"
 #include "FlowUi/Private/inputService/ShortcutManagerState.hpp"

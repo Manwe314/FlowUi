@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "FlowUi/Public/configurationStructs/AppConfig.hpp"
-#include "FlowUi/Private/windowService/IWindow.hpp"
 
 #ifndef VK_EXT_swapchain_maintenance1
 #define VK_EXT_swapchain_maintenance1 1
@@ -41,7 +40,6 @@ struct VulkanContext {
 
 	void createInstance(const FlowUi::AppConfig& config, const std::vector<const char*>& requiredExts);
 
-	[[nodiscard]] VkSurfaceKHR createSurface(FlowUi::detail::IWindowBackend& window) const;
 
 	void pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfaceKHR mainSurface);
 	void createDevice(const FlowUi::AppConfig& config);

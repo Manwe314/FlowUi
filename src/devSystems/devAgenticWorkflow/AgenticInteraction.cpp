@@ -1,4 +1,5 @@
 #include "devSystems/devAgenticWorkflow/AgenticInteraction.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "devSystems/devAgenticWorkflow/AgenticManifest.hpp"
 
@@ -35,11 +36,7 @@ add_checked(std::uint64_t& value, std::uint64_t increment,
 	return value <= 0x10ffff && !(value >= 0xd800 && value <= 0xdfff);
 }
 [[nodiscard]] bool known_key(std::uint16_t value) noexcept {
-	return value == 32 || value == 39 || (value >= 44 && value <= 57) || value == 59 ||
-		   value == 61 || (value >= 65 && value <= 93) || value == 96 || value == 161 ||
-		   value == 162 || (value >= 256 && value <= 269) || (value >= 280 && value <= 284) ||
-		   (value >= 290 && value <= 314) || (value >= 320 && value <= 336) ||
-		   (value >= 340 && value <= 348);
+	return FlowUi::keyFromCode(value).has_value();
 }
 [[nodiscard]] bool object_fields(const Json& value,
 								 std::initializer_list<std::string_view> allowed) noexcept {
@@ -1225,10 +1222,14 @@ Result<FrameInput> materialize_interaction_input(const AgenticInputSnapshot& sna
 			result.keyDown[key] = true;
 		for (const auto button : snapshot.buttons_down)
 			result.mouseDown[button] = true;
-		result.shift = result.keyDown[340] || result.keyDown[344];
-		result.ctrl = result.keyDown[341] || result.keyDown[345];
-		result.alt = result.keyDown[342] || result.keyDown[346];
-		result.super = result.keyDown[343] || result.keyDown[347];
+		result.shift = result.keyDown[FlowUi::keyCode(FlowUi::Key::LeftShift)] ||
+					   result.keyDown[FlowUi::keyCode(FlowUi::Key::RightShift)];
+		result.ctrl = result.keyDown[FlowUi::keyCode(FlowUi::Key::LeftControl)] ||
+					  result.keyDown[FlowUi::keyCode(FlowUi::Key::RightControl)];
+		result.alt = result.keyDown[FlowUi::keyCode(FlowUi::Key::LeftAlt)] ||
+					 result.keyDown[FlowUi::keyCode(FlowUi::Key::RightAlt)];
+		result.super = result.keyDown[FlowUi::keyCode(FlowUi::Key::LeftSuper)] ||
+					   result.keyDown[FlowUi::keyCode(FlowUi::Key::RightSuper)];
 		result.text = snapshot.text;
 		return result;
 	} catch (...) {

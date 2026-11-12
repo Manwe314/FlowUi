@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Performance/Workbench/DevWorkbenchHeader.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
 #if FLOW_UI_DEV_MODE
 #include <algorithm>
@@ -24,18 +25,22 @@ void DevWorkbenchHeader::runLogic(InteractionContext& context) {
 	if (!input.windowFocused || context.uiManager.inputFields().hasPrimaryFieldFocus())
 		return;
 	if (!input.ctrl && !input.alt && !input.super) {
-		if (input.keyDown[257] && !previous.keyDown[257] &&
+		if (input.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
+			!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
 			state.inspected_sample < state.snapshot.blocks.size())
 			state.pending = {{state.inspected_sample},
 							 TimelineAction::Open,
 							 state.cards.size(),
 							 0,
 							 state.snapshot_revision};
-		if (input.keyDown[256] && !previous.keyDown[256] && !state.cards.empty())
+		if (input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
+			!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] && !state.cards.empty())
 			state.pending = {{}, TimelineAction::Close, state.cards.size() - 1};
-		if (input.keyDown[263] && !previous.keyDown[263])
+		if (input.keyDown[FlowUi::keyCode(FlowUi::Key::Left)] &&
+			!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Left)])
 			state.pending.action = TimelineAction::Previous;
-		if (input.keyDown[262] && !previous.keyDown[262])
+		if (input.keyDown[FlowUi::keyCode(FlowUi::Key::Right)] &&
+			!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Right)])
 			state.pending.action = input.shift ? TimelineAction::Spike : TimelineAction::Next;
 	}
 }

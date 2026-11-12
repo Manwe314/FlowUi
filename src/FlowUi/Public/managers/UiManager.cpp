@@ -1,7 +1,8 @@
 #include "FlowUi/Public/managers/UiManager.hpp"
+#include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
+#include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #include "devSystems/devInterface/Memory/Workbench/DevMemoryHistoryViewport.hpp"
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
-#include "FlowUi/Private/storageSystem/capacity/InitialMemoryCapacity.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -188,9 +189,7 @@ namespace FlowUi
 			inputFieldManager_.init(
 				storageSystem, window, state_->inputManagerConfig,
 				state_->pointsToPixelsScale, state_->textLayoutService);
-			inputFieldManager_.setClipboardAccess(
-				setClipboardTextAccessor_,
-				getClipboardTextAccessor_);
+			inputFieldManager_.setPlatformServices(platformServices_);
 		} catch (...) {
 			destroyStorage();
 			throw;
@@ -214,6 +213,7 @@ namespace FlowUi
 	}
 
 	void UiManager::destroyStorage() noexcept {
+		setPlatformServices(nullptr);
 		shortcutManager_.destroy();
 		popupManager_.destroy();
 		inputFieldManager_.destroy();
@@ -272,21 +272,16 @@ namespace FlowUi
 	}
 
 		void UiManager::setClipboardText(std::string_view text) const {
-			if (!setClipboardTextAccessor_) {
-				return;
-			}
-			setClipboardTextAccessor_(text);
+			if (platformServices_)
+				platformServices_->setClipboardText(text);
 		}
 
 		std::string UiManager::clipboardText() const {
-			if (!getClipboardTextAccessor_) {
-				return {};
-			}
-			return getClipboardTextAccessor_();
+			return platformServices_ ? platformServices_->clipboardText() : std::string{};
 		}
 
 		bool UiManager::hasClipboardAccess() const {
-			return static_cast<bool>(setClipboardTextAccessor_) && static_cast<bool>(getClipboardTextAccessor_);
+			return platformServices_ && platformServices_->hasClipboardAccess();
 		}
 
 		Clay_ElementDeclaration UiManager::inputContentElement(const Clay_TextElementConfig& textConfig) const {
@@ -309,20 +304,11 @@ namespace FlowUi
 			return declaration;
 		}
 
-		void UiManager::setClipboardAccessors(
-			std::function<void(std::string_view)> setClipboardTextAccessor,
-			std::function<std::string()> getClipboardTextAccessor) {
-			setClipboardTextAccessor_ = std::move(setClipboardTextAccessor);
-			getClipboardTextAccessor_ = std::move(getClipboardTextAccessor);
-			if (state_) {
-				inputFieldManager_.setClipboardAccess(
-					setClipboardTextAccessor_,
-					getClipboardTextAccessor_);
-			}
-		}
-
-		void UiManager::setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor) {
-			setCursorTypeAccessor_ = std::move(setCursorTypeAccessor);
+		void UiManager::setPlatformServices(
+			detail::platform::WindowPlatformServices* services) noexcept {
+			platformServices_ = services;
+			if (state_)
+				inputFieldManager_.setPlatformServices(services);
 		}
 
 		void UiManager::requestCursor(CursorType cursorType, uint8_t priority) {
@@ -373,13 +359,9 @@ namespace FlowUi
 		return Clay_Dimensions{ layoutResult.measuredWidth, layoutResult.lineHeight };
 	}
 
-	void UiManager::beginFrame(
-		const storage::FrameToken& frame,
-		const FrameInput& frameInput,
-		const manager_storage::FontFrameView& fontView,
-		float screenWidth,
-		float screenHeight)
-	{
+	void UiManager::beginFrame(const storage::FrameToken& frame, const FrameInput& frameInput,
+							   const manager_storage::FontFrameView& fontView, float screenWidth,
+							   float screenHeight, bool primaryPointerCanceled) {
 #if FLOW_UI_DEV_MODE
 		FLOWUI_DEV_TIMING_ZONE_IF(
 			devTimingRecorder_, devSystems::TimingCategory::Frame,
@@ -403,6 +385,14 @@ namespace FlowUi
 				devSystems::TimingZoneRole::Work, "flowui.ui.interaction_advance");
 #endif
 			advanceFrameInteractionSnapshots();
+		}
+		if (primaryPointerCanceled) {
+			// Cancellation releases capture without synthesizing an activation on release.
+			state_->previousInteractionSnapshot.pressedElementIds.clear();
+			state_->previousInteractionSnapshot.heldElementIds.clear();
+			state_->previousInteractionSnapshot.releasedElementIds.clear();
+			state_->wasPrimaryPointerDownLastFrame = false;
+			state_->frameInputForCurrentLayout.mouseDown[0] = false;
 		}
 		state_->previousFrameInputForCurrentLayout = state_->frameInputForCurrentLayout;
 		state_->frameInputForCurrentLayout = frameInput;
@@ -598,8 +588,8 @@ namespace FlowUi
 		}
 		storage_->noteManagerMutation(window_);
 		if (state_->cursor != state_->previousCursor) {
-			if (setCursorTypeAccessor_) {
-				setCursorTypeAccessor_(state_->cursor);
+			if (platformServices_) {
+				platformServices_->setCursor(state_->cursor);
 			}
 			state_->previousCursor = state_->cursor;
 		}

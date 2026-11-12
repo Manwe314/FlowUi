@@ -1,4 +1,5 @@
 #include "devSystems/devTooling/inspect/DevInspectInteractionController.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #if FLOW_UI_DEV_MODE
 #include <cmath>
@@ -291,9 +292,9 @@ void DevInspectInteractionController::filter_input(WindowId window, const DevTre
 	pointer.pointer_y = input.mouseY;
 	pointer.pointer_inside = input.pointerInside;
 	if (eligible_window(window)) {
-		if (picking() && input.keyDown[256]) {
+		if (picking() && input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)]) {
 			cancel_pick();
-			input.keyDown[256] = false;
+			input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] = false;
 		}
 		if (!input.pointerInside && hover_target_.window == window)
 			hover_target_ = {};

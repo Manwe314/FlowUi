@@ -58,12 +58,11 @@ enum class CursorType : uint8_t {
  * @brief Per-frame input snapshot consumed by FlowUi managers and elements.
  *
  * FrameInput is the normalized input state for one FlowUi frame. App builds it
- * from the active window backend, scales pointer and scroll values into FlowUi
- * layout space, and then passes it through UiManager to input fields,
- * shortcuts, and custom element interaction callbacks.
+ * from the platform provider and semantic input engine, scales pointer and scroll values into
+ * FlowUi layout space, and then passes it through UiManager to input fields, shortcuts, and custom
+ * element interaction callbacks.
  *
- * Keyboard state is stored as backend key slots. In the default backend those
- * slots are GLFW-compatible key codes. Text input is stored separately as
+ * Keyboard state uses stable FlowUi Key slots. Text input is stored separately as
  * Unicode codepoints received during the frame.
  */
 struct FrameInput {
@@ -78,7 +77,7 @@ struct FrameInput {
 	/**
 	 * @brief Number of tracked keyboard key slots.
 	 *
-	 * Key indices are backend key codes. Code that reads keyDown should bounds
+	 * Key indices are FlowUi keyCode(Key) values. Code that reads keyDown should bounds
 	 * check against this value before indexing.
 	 */
 	static constexpr std::size_t kKeyboardKeyCount = 512;
@@ -138,7 +137,7 @@ struct FrameInput {
 	/**
 	 * @brief Keyboard key down states for the current frame.
 	 *
-	 * Each entry is true while the corresponding backend key slot is held. For
+	 * Each entry is true while the corresponding FlowUi key slot is held. For
 	 * command shortcuts, prefer ShortcutManager unless the element needs direct
 	 * low-level key state.
 	 */

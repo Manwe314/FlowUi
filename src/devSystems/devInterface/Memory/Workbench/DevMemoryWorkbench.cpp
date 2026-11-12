@@ -7,7 +7,6 @@
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
-#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <array>
 #include <cstdio>

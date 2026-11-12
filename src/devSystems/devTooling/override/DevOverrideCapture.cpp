@@ -175,7 +175,6 @@ void DevOverrideCapture::captureElement(
 	FLOWUI_DEV_TIMING_ZONE_BALANCED_IF(
 		timing, TimingCategory::DevTool, TimingZoneRole::DevToolWork,
 		"flowui.dev_override.capture_element");
-
 	const auto first_field = snapshot.fields.size();
 	try {
 		std::vector<DevCapturedField> parameter_fields, state_fields, resource_fields;

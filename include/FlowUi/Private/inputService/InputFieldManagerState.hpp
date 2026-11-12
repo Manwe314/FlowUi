@@ -3,7 +3,6 @@
 #include "FlowUi/Private/utility/EnumFlags.hpp"
 
 #include <cstddef>
-#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -19,6 +18,9 @@
 #include "FlowUi/Public/managerStructs/InputTypes.hpp"
 
 namespace FlowUi {
+namespace detail::platform {
+class WindowPlatformServices;
+}
 namespace detail::manager_storage {
 
 struct InputCaretState {
@@ -141,8 +143,7 @@ struct InputFieldManagerState {
 		input_field::InputFieldKeyHash> fieldsById{};
 	InputPointerDragState pointerDrag{};
 	std::string selectedTextScratch{};
-	std::function<void(std::string_view)> setClipboardText{};
-	std::function<std::string()> getClipboardText{};
+	platform::WindowPlatformServices* platformServices = nullptr;
 	std::vector<InputPendingCommand> pendingCommands{};
 	input_field::InputFieldKey primaryFieldId{};
 	InputKeyRepeatState leftKeyRepeat{};

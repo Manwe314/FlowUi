@@ -21,9 +21,9 @@ struct AgenticInputSnapshot {
 	 * frame of a span.
 	 */
 	std::vector<char32_t> text;
-	/** @brief Sorted unique GLFW-compatible key slots held during this input frame. */
+	/** @brief Sorted unique FlowUi key slots held during this input frame. */
 	std::vector<std::uint16_t> keys_down;
-	/** @brief Sorted unique GLFW-compatible mouse button slots held during this frame. */
+	/** @brief Sorted unique FlowUi mouse button slots held during this frame. */
 	std::vector<std::uint8_t> buttons_down;
 	/** @brief Horizontal pointer coordinate in window logical units. */
 	double pointer_x = 0.0;
@@ -253,7 +253,7 @@ struct AgenticClickRecipe {
 	std::uint64_t repeat = 1;
 	/** @brief Released input frames separating repeated clicks. */
 	std::uint64_t inter_click_gap_frames = 1;
-	/** @brief GLFW-compatible mouse button slot used by the operation. */
+	/** @brief FlowUi mouse button slot used by the operation. */
 	std::uint8_t button = 0;
 };
 /** Mechanical operation, optional geometry targets and independently checked observations. */
@@ -263,7 +263,7 @@ struct AgenticInteractionStep {
 	 * target.
 	 */
 	std::vector<AgenticInteractionPoint> path;
-	/** @brief GLFW-compatible key slots participating in the mechanical operation. */
+	/** @brief FlowUi key slots participating in the mechanical operation. */
 	std::vector<std::uint16_t> keys;
 	/**
 	 * @brief Owned Unicode scalar input payload; text is delivered once on the first selected
@@ -295,7 +295,7 @@ struct AgenticInteractionStep {
 	AgenticInteractionExpectation expect = AgenticInteractionExpectation::none;
 	/** @brief Mechanical input action or consumer-observation assertion to compile. */
 	AgenticInteractionOperation operation = AgenticInteractionOperation::pointer_move;
-	/** @brief GLFW-compatible mouse button slot used by the operation. */
+	/** @brief FlowUi mouse button slot used by the operation. */
 	std::uint8_t button = 0;
 	/** @brief Whether pressing requires a genuine completed hover observation first. */
 	bool require_hover_before_down = true;
@@ -723,7 +723,7 @@ interaction_plan_digest(const AgenticInteractionPlan& plan) noexcept;
 /** Return complete state at an offset; repeated spans clear first-frame text/scroll transients. */
 [[nodiscard]] Result<AgenticInputSnapshot>
 interaction_input_at(const AgenticCompiledInteraction& plan, std::uint64_t offset) noexcept;
-/** Preserve real clock/loss counters and derive modifiers from GLFW-compatible effective key slots.
+/** Preserve real clock/loss counters and derive modifiers from FlowUi effective key slots.
  */
 [[nodiscard]] Result<FrameInput>
 materialize_interaction_input(const AgenticInputSnapshot& snapshot,
@@ -731,7 +731,8 @@ materialize_interaction_input(const AgenticInputSnapshot& snapshot,
 /** Own an assessed native snapshot before asynchronous recording. */
 [[nodiscard]] Result<AgenticInputSnapshot>
 snapshot_interaction_input(const FrameInput& input) noexcept;
-/** Validate typed complete state, including sorted unique supported GLFW key slots and Unicode. */
+/** Validate typed complete state, including sorted unique supported FlowUi key slots and Unicode.
+ */
 [[nodiscard]] Status
 validate_interaction_input(const AgenticInputSnapshot& input,
 						   std::uint64_t maximum_text_codepoints = 16384) noexcept;

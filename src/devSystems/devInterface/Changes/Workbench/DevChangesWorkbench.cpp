@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Changes/Workbench/DevChangesWorkbench.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
 #include "FlowUi/Private/storageSystem/capacity/MemoryCapacityTargets.hpp"
@@ -220,17 +221,21 @@ struct QueueRow {
 		const auto& previous = context.uiManager.getPreviousFrameInput();
 		if ((!context.state().isArmed &&
 			 context.uiManager.shortcuts().focusedElement().id != context.clayID().id) ||
-			(current.keyDown[GLFW_KEY_TAB] && !previous.keyDown[GLFW_KEY_TAB]))
+			(current.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
+			 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)]))
 			context.state().pointer_focused = false;
 		if (context.uiManager.shortcuts().focusedElement().id != context.clayID().id ||
 			context.uiManager.inputFields().hasPrimaryFieldFocus())
 			return;
-		if (current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) {
+		if (current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
+			!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) {
 			context.state().pointer_focused = false;
 			toggle_review(context.params.workbench, 0, context.params.identity);
 		}
-		const bool down = current.keyDown[GLFW_KEY_DOWN] && !previous.keyDown[GLFW_KEY_DOWN];
-		const bool up = current.keyDown[GLFW_KEY_UP] && !previous.keyDown[GLFW_KEY_UP];
+		const bool down = current.keyDown[FlowUi::keyCode(FlowUi::Key::Down)] &&
+						  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Down)];
+		const bool up = current.keyDown[FlowUi::keyCode(FlowUi::Key::Up)] &&
+						!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Up)];
 		if ((!down && !up) || !context.params.changes || !context.params.workbench ||
 			context.params.workbench->queue_navigation_handled)
 			return;
@@ -532,16 +537,19 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 		}
 	if (!context.uiManager.inputFields().hasPrimaryFieldFocus()) {
 		if (!local.decision_open && focused == trigger.id &&
-			(pressed(GLFW_KEY_ENTER) || pressed(GLFW_KEY_SPACE))) {
+			(pressed(FlowUi::keyCode(FlowUi::Key::Enter)) ||
+			 pressed(FlowUi::keyCode(FlowUi::Key::Space)))) {
 			local.decision_open = true;
 			local.decision_highlight = initial_highlight();
 			focus_highlight();
-		} else if (local.decision_open && owns_focus && pressed(GLFW_KEY_ESCAPE)) {
+		} else if (local.decision_open && owns_focus &&
+				   pressed(FlowUi::keyCode(FlowUi::Key::Escape))) {
 			local.decision_open = false;
 			context.uiManager.shortcuts().setFocusedElement(trigger);
 		} else if (local.decision_open && owns_focus &&
-				   (pressed(GLFW_KEY_DOWN) || pressed(GLFW_KEY_UP))) {
-			const bool down = pressed(GLFW_KEY_DOWN);
+				   (pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
+					pressed(FlowUi::keyCode(FlowUi::Key::Up)))) {
+			const bool down = pressed(FlowUi::keyCode(FlowUi::Key::Down));
 			uint64_t destination = local.decision_highlight < 4 ? local.decision_highlight
 								   : down						? 3
 																: 0;
@@ -555,7 +563,8 @@ void decision_control(Context& context, DevChangesState& state, const ReviewRow&
 			}
 		} else if (local.decision_open && owns_focus && local.decision_highlight < 4 &&
 				   local.decision_options[local.decision_highlight].enabled &&
-				   (pressed(GLFW_KEY_ENTER) || pressed(GLFW_KEY_SPACE))) {
+				   (pressed(FlowUi::keyCode(FlowUi::Key::Enter)) ||
+					pressed(FlowUi::keyCode(FlowUi::Key::Space)))) {
 			queue_changes_scope_decision(state, row.key,
 										 static_cast<Decision>(local.decision_highlight));
 			local.decision_open = false;
@@ -874,8 +883,10 @@ void batch_menu(Context& context, DevChangesState& state, std::span<const std::s
 			context.id, diagnostics_ui::Control::definitionId, menu_controls[index].token));
 	const auto& current = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
-	const bool down = current.keyDown[GLFW_KEY_DOWN] && !previous.keyDown[GLFW_KEY_DOWN];
-	const bool up = current.keyDown[GLFW_KEY_UP] && !previous.keyDown[GLFW_KEY_UP];
+	const bool down = current.keyDown[FlowUi::keyCode(FlowUi::Key::Down)] &&
+					  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Down)];
+	const bool up = current.keyDown[FlowUi::keyCode(FlowUi::Key::Up)] &&
+					!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Up)];
 	if ((down || up) && !context.uiManager.inputFields().hasPrimaryFieldFocus()) {
 		const auto focused = context.uiManager.shortcuts().focusedElement().id;
 		const auto selected = std::ranges::find(menu_ids, focused, &Clay_ElementId::id);
@@ -1598,8 +1609,8 @@ void DevChangesWorkbench::buildElement(BuildContext& context) {
 	local.submitted_pinned = false;
 	const auto& input = context.uiManager.getCurrentFrameInput();
 	const auto& previous_input = context.uiManager.getPreviousFrameInput();
-	if (state.group_decisions_open && input.keyDown[GLFW_KEY_ESCAPE] &&
-		!previous_input.keyDown[GLFW_KEY_ESCAPE]) {
+	if (state.group_decisions_open && input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
+		!previous_input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)]) {
 		state.group_decisions_open = false;
 		const auto trigger = ::FlowUi::detail::element_id::resolveLocal(
 			context.id, diagnostics_ui::Control::definitionId,

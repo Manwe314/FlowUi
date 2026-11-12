@@ -7,7 +7,7 @@
 
 ## C++ Standards & Semantics
 - Dialect: Modern C++20/C++23 with CMake 3.25+ (Ninja generator).
-- Naming: Full descriptive snake_case names (`spatial_index`, `worker_thread_count`). No single-letter variables (`i`, `j` permitted only in trivial loop counters).
+- Naming: Full descriptive camelCase names (`spatialIndex`, `workerThreadCount`). No single-letter variables (`i`, `j` permitted only in trivial loop counters).
 - Ownership: Sole ownership via `std::unique_ptr`. Non-owning views via `std::span` or `std::string_view`. No raw `new`/`delete`.
 - Layout: Enforce Data-Oriented Design (DOD). Keep hot data contiguous; place largest struct members first to minimize padding.
 - Memory: Contiguous containers (`std::vector`, `std::array`). Use `emplace_back` and pre-reserve outside loops.

@@ -1,3 +1,4 @@
+#include <GLFW/glfw3.h>
 #ifdef NDEBUG
 #undef NDEBUG
 #endif

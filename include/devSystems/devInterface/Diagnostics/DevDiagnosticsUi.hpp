@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlowUi/Public/BuildConfig.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #if FLOW_UI_DEV_MODE
 
@@ -10,7 +11,6 @@
 #include "devSystems/devInterface/Diagnostics/DevDiagnosticsIcons.hpp"
 #include "devSystems/devInterface/Permanents/Backend/DevTheme.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
-#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <string>
 
@@ -92,8 +92,15 @@ void pointer_tooltip(Context& context, const Identity& identity, std::string_vie
 		// Clay's floating and clip scopes must close independently so following
 		// timeline surfaces keep their own clipping ancestors while help is visible.
 		content.clip = {.horizontal = true, .vertical = true, .scrollInputDisabled = true};
-		CLAY(context.clayID(Keyed("tooltip-content", identity.token)), content)
-		text(context, description, interface_theme::kTextCanvas, 11);
+		CLAY(context.clayID(Keyed("tooltip-content", identity.token)), content) {
+			// Clay leaves clipped children at their intrinsic width. Constrain an
+			// unclipped parent so prose wraps before the outer viewport clips it.
+			Clay_ElementDeclaration textContainer{};
+			textContainer.layout.sizing = {CLAY_SIZING_GROW(0, std::max(1.0f, maximum_width - 22)),
+										   CLAY_SIZING_FIT(0)};
+			CLAY(context.clayID(Keyed("tooltip-text", identity.token)), textContainer)
+			text(context, description, interface_theme::kTextCanvas, 11);
+		}
 	}
 }
 
@@ -176,13 +183,16 @@ struct Control {
 		const auto& previous = context.uiManager.getPreviousFrameInput();
 		if ((!context.state().isArmed &&
 			 context.uiManager.shortcuts().focusedElement().id != context.clayID().id) ||
-			(current.keyDown[GLFW_KEY_TAB] && !previous.keyDown[GLFW_KEY_TAB]))
+			(current.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
+			 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)]))
 			context.state().pointer_focused = false;
 		if (context.params.keyboard_activation &&
 			context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
 			!context.uiManager.inputFields().hasPrimaryFieldFocus() &&
-			((current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) ||
-			 (current.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE]))) {
+			((current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
+			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
+			 (current.keyDown[FlowUi::keyCode(FlowUi::Key::Space)] &&
+			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Space)]))) {
 			context.state().pointer_focused = false;
 			activate(context);
 		}

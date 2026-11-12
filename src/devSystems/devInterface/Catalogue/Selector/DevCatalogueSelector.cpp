@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Catalogue/Selector/DevCatalogueSelector.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
@@ -226,20 +227,26 @@ void keyboard(Context& context) {
 		context.uiManager.popups().has_open_popups())
 		return;
 	const auto pressed = [&](int key) { return input.keyDown[key] && !previous.keyDown[key]; };
-	if (pressed(GLFW_KEY_ESCAPE)) {
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Escape))) {
 		state.selected_identity = 0;
 		state.selected_missing = false;
 		state.dirty = true;
 	}
 	if (state.domain_focus) {
-		if (pressed(GLFW_KEY_DOWN) || pressed(GLFW_KEY_RIGHT) || pressed(GLFW_KEY_UP) ||
-			pressed(GLFW_KEY_LEFT)) {
-			const bool backwards = pressed(GLFW_KEY_UP) || pressed(GLFW_KEY_LEFT);
+		if (pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Right)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Up)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Left))) {
+			const bool backwards = pressed(FlowUi::keyCode(FlowUi::Key::Up)) ||
+								   pressed(FlowUi::keyCode(FlowUi::Key::Left));
 			activate(&context.state(), Domain, (state.focused_domain + (backwards ? 8 : 1)) % 9);
-		} else if (pressed(GLFW_KEY_SPACE) || pressed(GLFW_KEY_ENTER))
+		} else if (pressed(FlowUi::keyCode(FlowUi::Key::Space)) ||
+				   pressed(FlowUi::keyCode(FlowUi::Key::Enter)))
 			activate(&context.state(), Domain, state.focused_domain);
-		if (pressed(GLFW_KEY_DOWN) || pressed(GLFW_KEY_RIGHT) || pressed(GLFW_KEY_UP) ||
-			pressed(GLFW_KEY_LEFT)) {
+		if (pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Right)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Up)) ||
+			pressed(FlowUi::keyCode(FlowUi::Key::Left))) {
 			const auto scroll = Clay_GetScrollContainerData(context.state().domains_id);
 			if (scroll.found && scroll.scrollPosition) {
 				const float top = 30 + static_cast<float>(state.focused_domain) * 25;
@@ -258,37 +265,42 @@ void keyboard(Context& context) {
 	const auto found = std::ranges::find(rows, state.focused_identity,
 										 &DevCatalogueSelector::BrowserRow::identity);
 	std::size_t position = found == rows.end() ? 0 : static_cast<std::size_t>(found - rows.begin());
-	if (pressed(GLFW_KEY_HOME))
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Home)))
 		position = 0;
-	else if (pressed(GLFW_KEY_END))
+	else if (pressed(FlowUi::keyCode(FlowUi::Key::End)))
 		position = rows.size() - 1;
-	else if (pressed(GLFW_KEY_DOWN))
+	else if (pressed(FlowUi::keyCode(FlowUi::Key::Down)))
 		position = std::min(position + 1, rows.size() - 1);
-	else if (pressed(GLFW_KEY_UP))
+	else if (pressed(FlowUi::keyCode(FlowUi::Key::Up)))
 		position = position ? position - 1 : 0;
 	state.focused_identity = rows[position].identity;
-	if (pressed(GLFW_KEY_ENTER) || pressed(GLFW_KEY_SPACE))
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Enter)) ||
+		pressed(FlowUi::keyCode(FlowUi::Key::Space)))
 		activate(&context.state(),
 				 rows[position].group	 ? Group
 				 : rows[position].raster ? SelectRaster
 										 : Select,
 				 rows[position].identity);
-	if (rows[position].group && (pressed(GLFW_KEY_LEFT) || pressed(GLFW_KEY_RIGHT))) {
+	if (rows[position].group && (pressed(FlowUi::keyCode(FlowUi::Key::Left)) ||
+								 pressed(FlowUi::keyCode(FlowUi::Key::Right)))) {
 		const auto& collapsed = state.domains[state.domain].collapsed_groups;
 		const bool expanded = std::ranges::find(collapsed, rows[position].name) == collapsed.end();
-		if ((pressed(GLFW_KEY_LEFT) && expanded) || (pressed(GLFW_KEY_RIGHT) && !expanded))
+		if ((pressed(FlowUi::keyCode(FlowUi::Key::Left)) && expanded) ||
+			(pressed(FlowUi::keyCode(FlowUi::Key::Right)) && !expanded))
 			activate(&context.state(), Expand, rows[position].identity);
 	}
 	if (!rows[position].group && !rows[position].raster &&
 		state.domain == static_cast<uint64_t>(DevCatalogueDomain::Icons) &&
-		(pressed(GLFW_KEY_LEFT) || pressed(GLFW_KEY_RIGHT))) {
+		(pressed(FlowUi::keyCode(FlowUi::Key::Left)) ||
+		 pressed(FlowUi::keyCode(FlowUi::Key::Right)))) {
 		const auto& expanded = state.domains[state.domain].expanded_icons;
 		const bool open = std::ranges::find(expanded, rows[position].identity) != expanded.end();
-		if ((pressed(GLFW_KEY_LEFT) && open) || (pressed(GLFW_KEY_RIGHT) && !open))
+		if ((pressed(FlowUi::keyCode(FlowUi::Key::Left)) && open) ||
+			(pressed(FlowUi::keyCode(FlowUi::Key::Right)) && !open))
 			activate(&context.state(), ExpandIcon, rows[position].identity);
 	}
-	if (pressed(GLFW_KEY_UP) || pressed(GLFW_KEY_DOWN) || pressed(GLFW_KEY_HOME) ||
-		pressed(GLFW_KEY_END))
+	if (pressed(FlowUi::keyCode(FlowUi::Key::Up)) || pressed(FlowUi::keyCode(FlowUi::Key::Down)) ||
+		pressed(FlowUi::keyCode(FlowUi::Key::Home)) || pressed(FlowUi::keyCode(FlowUi::Key::End)))
 		state.reveal_selection = true;
 }
 

@@ -1,9 +1,9 @@
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryContextControls.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Memory/Analysis/DevMemoryUi.hpp"
 #include "devSystems/devMonitoringAndReporting/DevMonitoringAndReporting.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
-#include <GLFW/glfw3.h>
 #include <utility>
 namespace FlowUi::devSystems::interface_elements {
 void DevMemoryContextControls::buildElement(BuildContext& context) {
@@ -29,8 +29,9 @@ void DevMemoryContextControls::buildElement(BuildContext& context) {
 		state.record_shortcut = !state.record_shortcut;
 	const auto& input = context.uiManager.getCurrentFrameInput();
 	const auto& previous = context.uiManager.getPreviousFrameInput();
-	if (state.record_shortcut && input.ctrl && input.shift && input.keyDown[GLFW_KEY_M] &&
-		!previous.keyDown[GLFW_KEY_M])
+	if (state.record_shortcut && input.ctrl && input.shift &&
+		input.keyDown[FlowUi::keyCode(FlowUi::Key::M)] &&
+		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::M)])
 		state.pending_action = 1;
 	update_memory_session(state, reporting);
 	auto root = row(28);

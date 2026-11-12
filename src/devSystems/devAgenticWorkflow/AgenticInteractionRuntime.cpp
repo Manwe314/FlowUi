@@ -1,4 +1,5 @@
 #include "devSystems/devAgenticWorkflow/AgenticInteractionRuntime.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_AGENTIC_WORKFLOW
 #include "FlowUi/Public/App.hpp"
 #include "devSystems/devAgenticWorkflow/AgenticAction.hpp"
@@ -899,8 +900,11 @@ Status AgenticInteractionRuntime::select_input(const EvidenceFrameKey& supplied,
 		} else
 			scale->second = ui_scale;
 		// Assessment and emergency cancellation remain physical facts, before handoff filtering.
-		const bool emergency = input.keyDown[256] && (input.keyDown[341] || input.keyDown[345]) &&
-							   (input.keyDown[342] || input.keyDown[346]);
+		const bool emergency = input.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
+							   (input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftControl)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::RightControl)]) &&
+							   (input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftAlt)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::RightAlt)]);
 		const auto apply_native_handoff = [&]() noexcept {
 			for (auto& handoff : impl_->handoffs)
 				if (handoff.window_id == supplied.window_id) {
@@ -915,10 +919,14 @@ Status AgenticInteractionRuntime::select_input(const EvidenceFrameKey& supplied,
 						if (handoff.buttons[button])
 							input.mouseDown[button] = false;
 					}
-					input.shift = input.keyDown[340] || input.keyDown[344];
-					input.ctrl = input.keyDown[341] || input.keyDown[345];
-					input.alt = input.keyDown[342] || input.keyDown[346];
-					input.super = input.keyDown[343] || input.keyDown[347];
+					input.shift = input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftShift)] ||
+								  input.keyDown[FlowUi::keyCode(FlowUi::Key::RightShift)];
+					input.ctrl = input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftControl)] ||
+								 input.keyDown[FlowUi::keyCode(FlowUi::Key::RightControl)];
+					input.alt = input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftAlt)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::RightAlt)];
+					input.super = input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftSuper)] ||
+								  input.keyDown[FlowUi::keyCode(FlowUi::Key::RightSuper)];
 				}
 		};
 		auto* execution = impl_->active();

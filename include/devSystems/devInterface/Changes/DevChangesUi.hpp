@@ -1,5 +1,7 @@
 #pragma once
+
 #include "FlowUi/Public/BuildConfig.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/RadioChoice.hpp"
 #include "devSystems/devInterface/Changes/DevChangesModel.hpp"
@@ -75,10 +77,11 @@ void begin_focus_frame(Context& context, DevChangesState& changes) {
 	const auto focused = context.uiManager.shortcuts().focusedElement().id;
 	const auto found = std::ranges::find(changes.focus_targets, focused,
 										 [](const auto& target) { return target.identity.id; });
-	if (input.windowFocused && !changes.focus_targets.empty() && input.keyDown[GLFW_KEY_TAB] &&
-		!previous.keyDown[GLFW_KEY_TAB]) {
-		const bool reverse =
-			input.keyDown[GLFW_KEY_LEFT_SHIFT] || input.keyDown[GLFW_KEY_RIGHT_SHIFT];
+	if (input.windowFocused && !changes.focus_targets.empty() &&
+		input.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] &&
+		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)]) {
+		const bool reverse = input.keyDown[FlowUi::keyCode(FlowUi::Key::LeftShift)] ||
+							 input.keyDown[FlowUi::keyCode(FlowUi::Key::RightShift)];
 		const auto count = changes.focus_targets.size();
 		const auto position = found == changes.focus_targets.end()
 								  ? (reverse ? 0 : count - 1)
@@ -106,8 +109,10 @@ void begin_focus_frame(Context& context, DevChangesState& changes) {
 		}
 	} else if (input.windowFocused && found != changes.focus_targets.end() &&
 			   found->radio_selection && !context.uiManager.inputFields().hasPrimaryFieldFocus() &&
-			   ((input.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) ||
-				(input.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE]))) {
+			   ((input.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
+				 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
+				(input.keyDown[FlowUi::keyCode(FlowUi::Key::Space)] &&
+				 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Space)]))) {
 		*found->radio_selection = found->radio_value;
 		changes.model_dirty = true;
 	}
@@ -612,11 +617,15 @@ template <class Context>
 			std::abs(scroll.scrollPosition->y - restoration->requested_offset) > 0.5f &&
 			std::abs(scroll.scrollPosition->y - lower_bound) > 0.5f;
 		const bool navigating = input.mouseDown[0] || input.scrollY != 0 || input.scrollX != 0 ||
-								input.keyDown[GLFW_KEY_TAB] || input.keyDown[GLFW_KEY_UP] ||
-								input.keyDown[GLFW_KEY_DOWN] || input.keyDown[GLFW_KEY_PAGE_UP] ||
-								input.keyDown[GLFW_KEY_PAGE_DOWN] || input.keyDown[GLFW_KEY_HOME] ||
-								input.keyDown[GLFW_KEY_END] || input.keyDown[GLFW_KEY_ENTER] ||
-								input.keyDown[GLFW_KEY_SPACE];
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::Tab)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::Up)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::Down)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::PageUp)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::PageDown)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::Home)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::End)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] ||
+								input.keyDown[FlowUi::keyCode(FlowUi::Key::Space)];
 		if (navigating || moved_without_clamping)
 			restoration->settling_frames = 0;
 	}

@@ -58,6 +58,27 @@ set(FLOWUI_INCLUDE_ICON_MANAGER "${FLOWUI_INCLUDE_ICON_MANAGER}")
 set(FLOWUI_GLFW_PROVIDER "auto" CACHE STRING "GLFW provider: auto, system, vendored")
 set_property(CACHE FLOWUI_GLFW_PROVIDER PROPERTY STRINGS auto system vendored)
 
+set(FLOWUI_PLATFORM_PROVIDER_HEADER "" CACHE STRING "Custom complete platform provider header; empty selects GLFW")
+set(FLOWUI_PLATFORM_PROVIDER_TYPE "" CACHE STRING "Fully qualified custom platform provider type")
+set(FLOWUI_ADDITIONAL_TRANSLATORS_HEADER "" CACHE STRING "Header defining an additional input translator pack")
+set(FLOWUI_ADDITIONAL_TRANSLATORS_TYPE "" CACHE STRING "Fully qualified additional input translator pack type")
+foreach(selection IN ITEMS PLATFORM_PROVIDER ADDITIONAL_TRANSLATORS)
+    if((FLOWUI_${selection}_HEADER STREQUAL "" AND NOT FLOWUI_${selection}_TYPE STREQUAL "") OR
+       (FLOWUI_${selection}_TYPE STREQUAL "" AND NOT FLOWUI_${selection}_HEADER STREQUAL ""))
+        message(FATAL_ERROR "FLOWUI_${selection}_HEADER and FLOWUI_${selection}_TYPE must both be set or both be empty.")
+    endif()
+    if(NOT FLOWUI_${selection}_HEADER STREQUAL "")
+        if(FLOWUI_${selection}_HEADER MATCHES "[\";\n\r]" OR
+           NOT FLOWUI_${selection}_TYPE MATCHES "^(::)?[A-Za-z_][A-Za-z_0-9]*(::[A-Za-z_][A-Za-z_0-9]*)*$")
+            message(FATAL_ERROR "FLOWUI_${selection} requires a header spelling and a qualified C++ type name.")
+        endif()
+        set(FLOWUI_CONFIG_CUSTOM_${selection} 1)
+    else()
+        set(FLOWUI_CONFIG_CUSTOM_${selection} 0)
+    endif()
+endforeach()
+include(cmake/FlowUiPlatformProvider.cmake)
+
 include(GNUInstallDirs)
 set(FLOWUI_RESOURCE_SUBDIRECTORY "flowui" CACHE STRING "Resource pack directory name")
 if(WIN32)
@@ -299,6 +320,7 @@ if(FLOW_UI_ENABLE_BAKED_CHANGES)
     endif()
 endif()
 
+if(NOT FLOWUI_CONFIG_CUSTOM_PLATFORM_PROVIDER)
 if(FLOWUI_GLFW_PROVIDER STREQUAL "vendored" OR
    (FLOWUI_GLFW_PROVIDER STREQUAL "auto" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/CMakeLists.txt"))
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -318,13 +340,34 @@ else()
         set(FLOWUI_GLFW_TARGET glfw)
     elseif(TARGET glfw3)
         set(FLOWUI_GLFW_TARGET glfw3)
-    elseif(GLFW3_LIBRARY OR GLFW3_LIBRARIES OR GLFW_LIBRARIES)
-        add_library(flowui_glfw INTERFACE)
-        target_link_libraries(flowui_glfw INTERFACE ${GLFW3_LIBRARY} ${GLFW3_LIBRARIES} ${GLFW_LIBRARIES})
-        target_include_directories(flowui_glfw INTERFACE ${GLFW3_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS})
-        set(FLOWUI_GLFW_TARGET flowui_glfw)
     else()
-        message(FATAL_ERROR "glfw3 was not found. Install it or set GLFW3_DIR.")
+        message(FATAL_ERROR "The glfw3 package must provide the glfw or glfw3 target for relocatable FlowUi exports.")
+    endif()
+endif()
+flowui_register_platform_dependencies(TARGETS ${FLOWUI_GLFW_TARGET} PACKAGES glfw3)
+endif()
+get_property(FLOWUI_PLATFORM_DEPENDENCY_TARGETS GLOBAL PROPERTY FLOWUI_PLATFORM_DEPENDENCY_TARGETS)
+get_property(FLOWUI_PLATFORM_DEPENDENCY_PACKAGES GLOBAL PROPERTY FLOWUI_PLATFORM_DEPENDENCY_PACKAGES)
+list(REMOVE_DUPLICATES FLOWUI_PLATFORM_DEPENDENCY_TARGETS)
+list(REMOVE_DUPLICATES FLOWUI_PLATFORM_DEPENDENCY_PACKAGES)
+set(FLOWUI_PLATFORM_PACKAGE_REQUIREMENTS "")
+foreach(package IN LISTS FLOWUI_PLATFORM_DEPENDENCY_PACKAGES)
+    string(APPEND FLOWUI_PLATFORM_PACKAGE_REQUIREMENTS "find_dependency(${package})\n")
+endforeach()
+foreach(dependency IN LISTS FLOWUI_PLATFORM_DEPENDENCY_TARGETS)
+    if(NOT TARGET ${dependency})
+        message(FATAL_ERROR "Registered platform dependency target does not exist: ${dependency}")
+    endif()
+endforeach()
+set(FLOWUI_HAS_GLFW_PROVIDER OFF)
+if("glfw3" IN_LIST FLOWUI_PLATFORM_DEPENDENCY_PACKAGES)
+    set(FLOWUI_HAS_GLFW_PROVIDER ON)
+    if(NOT FLOWUI_GLFW_TARGET)
+        if(TARGET glfw)
+            set(FLOWUI_GLFW_TARGET glfw)
+        elseif(TARGET glfw3)
+            set(FLOWUI_GLFW_TARGET glfw3)
+        endif()
     endif()
 endif()
 
@@ -384,6 +427,9 @@ target_sources(flowui
         src/FlowUi/Private/renderer/Vk_UiRenderer.cpp
         src/FlowUi/Private/storageSystem/FlowStorageSystem.cpp
         src/FlowUi/Private/inputService/InputQueue.cpp
+        src/FlowUi/Private/inputService/InputState.cpp
+        src/FlowUi/Private/inputService/InputService.cpp
+        src/FlowUi/Private/platformProviderService/WindowPlatformServices.cpp
         src/FlowUi/Private/renderer/vulkan/Vk_Context.cpp
         src/FlowUi/Private/renderer/vulkan/Vk_Frames.cpp
         src/FlowUi/Private/renderer/vulkan/Vk_Swapchain.cpp
@@ -691,9 +737,9 @@ target_include_directories(flowui
 target_link_libraries(flowui
     PUBLIC
         Vulkan::Vulkan
-        ${FLOWUI_GLFW_TARGET}
         FlowUi::artery
 )
+target_link_libraries(flowui PRIVATE ${FLOWUI_PLATFORM_DEPENDENCY_TARGETS})
 
 if(FLOWUI_INCLUDE_ICON_MANAGER)
     target_link_libraries(flowui PRIVATE plutosvg::plutosvg)
@@ -769,7 +815,7 @@ if(FLOWUI_INSTALL)
     endforeach()
     install(DIRECTORY include/FSEL include/devSystems DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(DIRECTORY "${FLOWUI_RESOURCE_DIRECTORY}/" DESTINATION "${FLOWUI_INSTALL_RESOURCE_DIRECTORY}")
-    install(FILES cmake/FlowUiResources.cmake cmake/FlowUiCopyResources.cmake cmake/FlowUiCopyRuntime.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
+    install(FILES cmake/FlowUiResources.cmake cmake/FlowUiCopyResources.cmake cmake/FlowUiCopyRuntime.cmake cmake/FlowUiPlatformProvider.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FlowUi)
     install(FILES external/clay.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/external)
     install(FILES
         "${FLOWUI_GENERATED_INCLUDE_DIR}/FlowUi/Public/BuildConfig.hpp"

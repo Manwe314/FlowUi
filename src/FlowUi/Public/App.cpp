@@ -4,6 +4,7 @@
 
 namespace FlowUi {
 
+using detail::app_runtime::requireSuccess;
 using detail::app_runtime::runLocalOperation;
 
 App::App() = default;
@@ -212,7 +213,7 @@ Status App::dispatchManagedWindows() {
 		if (windowIt->second->dev_suspended)
 			continue;
 #endif
-		if (!windowIt->second->backend || windowIt->second->backend->shouldClose()) {
+		if (impl_->platformService.shouldClose(windowIt->second->platformState)) {
 			if (flags.autoDestroyOnClose) {
 				try {
 					impl_->destroyWindow(id);
@@ -298,18 +299,14 @@ Status App::set_dev_window_suspended(WindowId window_id, bool suspended) {
 		impl_->requirePlatformThread();
 		impl_->requireQuiescent();
 		auto& window = impl_->requireWindow(window_id);
-		window.dev_suspended = suspended;
-		window.backend->setShouldClose(0);
-		auto* native = static_cast<GLFWwindow*>(window.backend->nativeHandle());
-		if (suspended) {
+		if (suspended)
 			impl_->drainWindowGraphics(window);
-			glfwHideWindow(native);
-			window.inputQueue.clearKeyboardState();
-			window.inputQueue.clearMouseButtonsState();
-		} else {
-			glfwShowWindow(native);
-			glfwFocusWindow(native);
-		}
+		impl_->platformService.setShouldClose(window.platformState, false);
+		requireSuccess(impl_->platformService.setVisible(window.platformState, !suspended));
+		window.dev_suspended = suspended;
+		impl_->inputService.setTargetEnabled(window.id, !suspended);
+		if (!suspended)
+			requireSuccess(impl_->platformService.requestFocus(window.platformState));
 	});
 }
 bool App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept {
@@ -323,7 +320,7 @@ bool App::dev_shortcut_pressed(const DevShortcutChord& chord) const noexcept {
 			!(impl_->agentic_service &&
 			  impl_->agentic_service->interaction_controls_window(window_id)) &&
 #endif
-			(window->inputQueue.dev_shortcut_presses[static_cast<size_t>(chord.key)] &
+			(window->inputState.queue().dev_shortcut_presses[static_cast<size_t>(chord.key)] &
 			 (1u << modifiers)))
 			return true;
 	return false;
@@ -337,17 +334,19 @@ bool App::dev_shortcut_down(const DevShortcutChord& chord) const noexcept {
 			impl_->agentic_service->interaction_controls_window(window_id))
 			continue;
 #endif
-		if (!window->backend || window->dev_suspended)
+		if (window->dev_suspended)
 			continue;
-		auto* native = static_cast<GLFWwindow*>(window->backend->nativeHandle());
-		if (!native || glfwGetWindowAttrib(native, GLFW_FOCUSED) != GLFW_TRUE)
+		if (!impl_->platformService.isFocused(window->platformState))
 			continue;
-		const auto down = [&](int key) { return glfwGetKey(native, key) == GLFW_PRESS; };
+		const auto down = [&](int key) noexcept {
+			const auto semanticKey = keyFromCode(key);
+			return semanticKey && impl_->inputService.keyDown(window->inputState, *semanticKey);
+		};
 		if (down(chord.key) &&
-			(down(GLFW_KEY_LEFT_CONTROL) || down(GLFW_KEY_RIGHT_CONTROL)) == chord.ctrl &&
-			(down(GLFW_KEY_LEFT_SHIFT) || down(GLFW_KEY_RIGHT_SHIFT)) == chord.shift &&
-			(down(GLFW_KEY_LEFT_ALT) || down(GLFW_KEY_RIGHT_ALT)) == chord.alt &&
-			(down(GLFW_KEY_LEFT_SUPER) || down(GLFW_KEY_RIGHT_SUPER)) == chord.super)
+			(down(keyCode(Key::LeftControl)) || down(keyCode(Key::RightControl))) == chord.ctrl &&
+			(down(keyCode(Key::LeftShift)) || down(keyCode(Key::RightShift))) == chord.shift &&
+			(down(keyCode(Key::LeftAlt)) || down(keyCode(Key::RightAlt))) == chord.alt &&
+			(down(keyCode(Key::LeftSuper)) || down(keyCode(Key::RightSuper))) == chord.super)
 			return true;
 	}
 	return false;
@@ -433,7 +432,7 @@ bool App::shouldClose(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
-	return !window.backend || window.backend->shouldClose();
+	return impl_->platformService.shouldClose(window.platformState);
 }
 
 void App::setShouldClose(int value) {
@@ -446,8 +445,7 @@ void App::setShouldClose(WindowId id, int value) {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	AppWindow& window = impl_->requireWindow(id);
-	if (window.backend)
-		window.backend->setShouldClose(value);
+	impl_->platformService.setShouldClose(window.platformState, value != 0);
 }
 
 Result<WindowOperationCapabilities>
@@ -851,10 +849,11 @@ void App::setWindowTitle(std::string_view title) {
 void App::setWindowTitle(WindowId id, std::string_view title) {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowSetTitle));
+	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
-	window.config.native.title.assign(title);
-	if (window.backend)
-		window.backend->setTitle(title);
+	std::string pendingTitle(title);
+	requireSuccess(impl_->platformService.setTitle(window.platformState, pendingTitle));
+	window.config.native.title = std::move(pendingTitle);
 }
 
 void* App::nativeWindowHandle() const {
@@ -867,7 +866,7 @@ void* App::nativeWindowHandle(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
-	return window.backend ? window.backend->nativeHandle() : nullptr;
+	return impl_->platformService.nativeHandle(window.platformState);
 }
 
 void App::setWindowInputConfig(const WindowInputConfig& config) {
@@ -879,10 +878,10 @@ void App::setWindowInputConfig(const WindowInputConfig& config) {
 void App::setWindowInputConfig(WindowId id, const WindowInputConfig& config) {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
+	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
+	requireSuccess(impl_->platformService.setInputConfig(window.platformState, config));
 	window.config.native.input = config;
-	if (window.backend)
-		window.backend->setInputConfig(config);
 }
 
 WindowInputConfig App::windowInputConfig() const {
@@ -895,7 +894,7 @@ WindowInputConfig App::windowInputConfig(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
-	return window.backend ? window.backend->getInputConfig() : WindowInputConfig{};
+	return impl_->platformService.inputConfig(window.platformState);
 }
 
 bool App::supportsRawMouseMotion() const {
@@ -908,7 +907,7 @@ bool App::supportsRawMouseMotion(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
-	return window.backend && window.backend->supportsRawMouseMotion();
+	return impl_->platformService.supportsRawMouseMotion(window.platformState);
 }
 
 void App::setClipboardText(std::string_view text) {
@@ -921,9 +920,9 @@ void App::setClipboardText(WindowId id, std::string_view text) {
 	if (!impl_)
 		throw FlowUiException(
 			makeError(ErrorCode::AppUnavailable, ErrorSite::WindowWriteClipboard));
+	impl_->requirePlatformThread();
 	AppWindow& window = impl_->requireWindow(id);
-	if (window.backend)
-		window.backend->setClipboardText(text);
+	window.platformServices.setClipboardText(text);
 }
 
 std::string App::clipboardText() const {
@@ -936,7 +935,7 @@ std::string App::clipboardText(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::WindowReadClipboard));
 	const AppWindow& window = impl_->requireWindow(id);
-	return window.backend ? window.backend->getClipboardText() : std::string{};
+	return window.platformServices.clipboardText();
 }
 
 std::pair<int, int> App::windowSize() const {
@@ -949,9 +948,7 @@ std::pair<int, int> App::windowSize(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
-	if (!window.backend)
-		return {0, 0};
-	const VkExtent2D extent = window.backend->windowExtent();
+	const VkExtent2D extent = impl_->platformService.windowExtent(window.platformState);
 	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};
 }
 
@@ -965,9 +962,7 @@ std::pair<int, int> App::framebufferSize(WindowId id) const {
 	if (!impl_)
 		throw FlowUiException(makeError(ErrorCode::AppUnavailable, ErrorSite::AppAccessWindow));
 	const AppWindow& window = impl_->requireWindow(id);
-	if (!window.backend)
-		return {0, 0};
-	const VkExtent2D extent = window.backend->framebufferExtent();
+	const VkExtent2D extent = impl_->platformService.framebufferExtent(window.platformState);
 	return {static_cast<int>(extent.width), static_cast<int>(extent.height)};
 }
 

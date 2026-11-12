@@ -49,6 +49,13 @@ set(FLOWUI_PUBLIC_HEADERS
     FlowUi/Public/identificationTypes/ResourceKey.hpp
     FlowUi/Public/identificationTypes/TextureHandle.hpp
     FlowUi/Public/identificationTypes/WindowId.hpp
+    FlowUi/Public/input/Key.hpp
+    FlowUi/Public/input/InputEvents.hpp
+    FlowUi/Public/input/InputSink.hpp
+    FlowUi/Public/input/InputTranslatorConcept.hpp
+    FlowUi/Public/input/InputTranslatorContext.hpp
+    FlowUi/Public/input/InputTranslatorPack.hpp
+    FlowUi/Public/input/InputTranslation.hpp
     FlowUi/Public/interop/vulkan/FontAtlas.hpp
     FlowUi/Public/interop/vulkan/Viewport.hpp
     FlowUi/Public/managerStructs/ActionTypes.hpp
@@ -60,6 +67,7 @@ set(FLOWUI_PUBLIC_HEADERS
     FlowUi/Public/managerStructs/ShortcutTypes.hpp
     FlowUi/Public/managerStructs/UiTypes.hpp
     FlowUi/Public/managerStructs/WindowTypes.hpp
+    FlowUi/Public/managerStructs/WindowOperationTypes.hpp
     FlowUi/Public/managers/ActionManager.hpp
     FlowUi/Public/managers/ElementManager.hpp
     FlowUi/Public/managers/FontManager.hpp
@@ -108,6 +116,20 @@ set(FLOWUI_PRIVATE_SUPPORT_HEADERS
     FlowUi/Private/textLayoutService/TextLayoutRecords.hpp
     FlowUi/Private/textLayoutService/TextLayoutService.hpp
     FlowUi/Private/windowService/ElementWindowRoot.hpp
+    FlowUi/Private/platformProviderService/PlatformTypes.hpp
+    FlowUi/Private/platformProviderService/PlatformRuntimeConcept.hpp
+    FlowUi/Private/platformProviderService/PlatformWindowConcept.hpp
+    FlowUi/Private/platformProviderService/PlatformInputConcept.hpp
+    FlowUi/Private/platformProviderService/EventBindingConcept.hpp
+    FlowUi/Private/platformProviderService/PlatformProviderServiceConcept.hpp
+    FlowUi/Private/platformProviderService/PlatformProviderSelection.hpp
+    FlowUi/Private/platformProviderService/PlatformProviderService.hpp
+    FlowUi/Private/platformProviderService/providers/glfw/GlfwPlatformProviderService.hpp
+    FlowUi/Private/platformProviderService/providers/glfw/GlfwRuntime.hpp
+    FlowUi/Private/platformProviderService/providers/glfw/GlfwWindow.hpp
+    FlowUi/Private/platformProviderService/providers/glfw/GlfwWindowInput.hpp
+    FlowUi/Private/platformProviderService/providers/glfw/GlfwEventBinding.hpp
+    FlowUi/Private/platformProviderService/providers/glfw/GlfwVulkanSurface.hpp
 )
 
 set(FLOWUI_RUNTIME_ONLY_HEADERS
@@ -119,6 +141,10 @@ set(FLOWUI_RUNTIME_ONLY_HEADERS
     FlowUi/Private/inputService/InputFieldManagerState.hpp
     FlowUi/Private/inputService/InputFieldRenderOverrides.hpp
     FlowUi/Private/inputService/InputQueue.hpp
+    FlowUi/Private/inputService/InputState.hpp
+    FlowUi/Private/inputService/InputService.hpp
+    FlowUi/Private/inputService/TranslatorSelection.hpp
+    FlowUi/Private/platformProviderService/WindowPlatformServices.hpp
     FlowUi/Private/inputService/ShortcutManagerState.hpp
     FlowUi/Private/layoutService/FlowScopeStack.hpp
     FlowUi/Private/layoutService/PopupManagerState.hpp
@@ -139,7 +165,5 @@ set(FLOWUI_RUNTIME_ONLY_HEADERS
     FlowUi/Private/textLayoutService/TextAnalysis.hpp
     FlowUi/Private/textLayoutService/TextLineBreaker.hpp
     FlowUi/Private/textLayoutService/TextStorage.hpp
-    FlowUi/Private/windowService/IWindow.hpp
-    FlowUi/Private/windowService/Window.hpp
 )
 

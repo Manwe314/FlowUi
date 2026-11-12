@@ -7,15 +7,16 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 #include <GLFW/glfw3.h>
 
 #include "FlowUi.hpp"
 #include "FlowUi/Public/managers/ActionManager.hpp"
+#include "FlowUi/Public/managers/FontManager.hpp"
 #include "FlowUi/Public/managers/ShortcutManager.hpp"
 #include "FlowUi/Public/managers/UiManager.hpp"
-#include "FlowUi/Public/managers/FontManager.hpp"
 #if FLOWUI_PUBLIC_VULKAN_INTEROP
 #include "FlowUi/Public/managers/ViewPortManager.hpp"
 #endif
@@ -594,6 +595,39 @@ int main(int argument_count, char* arguments[]) {
 		input.stickyKeys = !input.stickyKeys;
 		app.setWindowInputConfig(first, input);
 		FLOWUI_CHECK(app.windowInputConfig(first).stickyKeys == input.stickyKeys);
+		FlowUi::WindowInputConfig rejectedInput = input;
+		rejectedInput.stickyKeys = !input.stickyKeys;
+		rejectedInput.stickyMouseButtons = !input.stickyMouseButtons;
+		FlowUi::FlowUiError titleThreadError{};
+		FlowUi::FlowUiError inputThreadError{};
+		std::exception_ptr unexpectedSetterFailure;
+		std::thread setterWorker([&] {
+			try {
+				app.setWindowTitle(first, "Rejected worker-thread title");
+			} catch (const FlowUi::FlowUiException& exception) {
+				titleThreadError = exception.error();
+			} catch (...) {
+				unexpectedSetterFailure = std::current_exception();
+			}
+			try {
+				app.setWindowInputConfig(first, rejectedInput);
+			} catch (const FlowUi::FlowUiException& exception) {
+				inputThreadError = exception.error();
+			} catch (...) {
+				unexpectedSetterFailure = std::current_exception();
+			}
+		});
+		setterWorker.join();
+		if (unexpectedSetterFailure)
+			std::rethrow_exception(unexpectedSetterFailure);
+		FLOWUI_CHECK(titleThreadError.code == FlowUi::ErrorCode::WrongThread);
+		FLOWUI_CHECK(inputThreadError.code == FlowUi::ErrorCode::WrongThread);
+		const FlowUi::WindowInputConfig retainedInput = app.windowInputConfig(first);
+		FLOWUI_CHECK(retainedInput.cursorMode == input.cursorMode);
+		FLOWUI_CHECK(retainedInput.stickyKeys == input.stickyKeys);
+		FLOWUI_CHECK(retainedInput.stickyMouseButtons == input.stickyMouseButtons);
+		FLOWUI_CHECK(retainedInput.lockKeyMods == input.lockKeyMods);
+		FLOWUI_CHECK(retainedInput.rawMouseMotion == input.rawMouseMotion);
 		FLOWUI_CHECK(app.windowSize(first).first > 0);
 		FLOWUI_CHECK(app.framebufferSize(first).second > 0);
 

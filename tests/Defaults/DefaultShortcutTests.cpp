@@ -3,8 +3,7 @@
 #include "FlowUi/Public/defaults/ShortcutDefaults.hpp"
 #include "FlowUi/Public/errorManagement/Error.hpp"
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include "FlowUi/Public/input/Key.hpp"
 
 #include <span>
 
@@ -20,11 +19,11 @@ void check_platform_shortcuts(PlatformShortcutStyle platform) {
 	FLOWUI_CHECK(plan->binding_count == 14u);
 	const auto bindings = std::span{plan->bindings}.first(plan->binding_count);
 	FLOWUI_CHECK(bindings.front().command == TextCommand::SelectAll);
-	FLOWUI_CHECK(bindings.front().chord.key == GLFW_KEY_A);
+	FLOWUI_CHECK(bindings.front().chord.key == keyCode(Key::A));
 	for (const auto& binding : bindings) {
 		const auto& chord = binding.chord;
 		FLOWUI_CHECK(chord.trigger == ShortcutTrigger::Press);
-		FLOWUI_CHECK(chord.key != GLFW_KEY_Z && chord.key != GLFW_KEY_Y);
+		FLOWUI_CHECK(chord.key != keyCode(Key::Z) && chord.key != keyCode(Key::Y));
 		const bool word_command = binding.command == TextCommand::MoveWordLeft ||
 			binding.command == TextCommand::MoveWordRight ||
 			binding.command == TextCommand::DeleteWordBackward ||
@@ -38,10 +37,12 @@ void check_platform_shortcuts(PlatformShortcutStyle platform) {
 		}
 		if (binding.command == TextCommand::MoveDocumentStart)
 			FLOWUI_CHECK(chord.key == (platform == PlatformShortcutStyle::Control
-				? GLFW_KEY_HOME : GLFW_KEY_LEFT));
+										   ? keyCode(Key::Home)
+										   : keyCode(Key::Left)));
 		if (binding.command == TextCommand::MoveDocumentEnd)
 			FLOWUI_CHECK(chord.key == (platform == PlatformShortcutStyle::Control
-				? GLFW_KEY_END : GLFW_KEY_RIGHT));
+										   ? keyCode(Key::End)
+										   : keyCode(Key::Right)));
 	}
 	for (size_t first = 0u; first < bindings.size(); ++first) {
 		for (size_t second = first + 1u; second < bindings.size(); ++second) {

@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Performance/Workbench/DevTimelineViewport.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE && FLOWUI_PUBLIC_VULKAN_INTEROP
 #include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
@@ -391,8 +392,10 @@ struct DevTimelineController::Impl {
 		const bool keyboard_owner =
 			surface.presented.kind == TimelineSurfaceKind::Card ||
 			(surface.presented.kind == TimelineSurfaceKind::Macro && state.cards.empty());
-		const bool next_sample = input.keyDown[264] && !previous.keyDown[264];
-		const bool previous_sample = input.keyDown[265] && !previous.keyDown[265];
+		const bool next_sample = input.keyDown[FlowUi::keyCode(FlowUi::Key::Down)] &&
+								 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Down)];
+		const bool previous_sample = input.keyDown[FlowUi::keyCode(FlowUi::Key::Up)] &&
+									 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Up)];
 		if (keyboard_owner && (next_sample || previous_sample) && !input.ctrl && !input.alt &&
 			!input.super && !manager.inputFields().hasPrimaryFieldFocus()) {
 			std::vector<size_t> candidates;

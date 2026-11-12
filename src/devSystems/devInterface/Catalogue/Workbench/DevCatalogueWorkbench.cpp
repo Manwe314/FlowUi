@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Catalogue/Workbench/DevCatalogueWorkbench.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "FSEL/TextInput.hpp"
 #include "devSystems/devInterface/Catalogue/DevCatalogueFocus.hpp"
@@ -90,8 +91,10 @@ struct AssetCard {
 		if (context.params.catalogue && !context.uiManager.inputFields().hasPrimaryFieldFocus() &&
 			!context.uiManager.popups().has_open_popups() &&
 			context.uiManager.shortcuts().focusedElement().id == context.clayID().id &&
-			((current.keyDown[GLFW_KEY_ENTER] && !previous.keyDown[GLFW_KEY_ENTER]) ||
-			 (current.keyDown[GLFW_KEY_SPACE] && !previous.keyDown[GLFW_KEY_SPACE]))) {
+			((current.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)] &&
+			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Enter)]) ||
+			 (current.keyDown[FlowUi::keyCode(FlowUi::Key::Space)] &&
+			  !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Space)]))) {
 			select_catalogue_asset(*context.params.catalogue, context.params.identity);
 			if (context.params.selection_focus_id.id)
 				context.uiManager.shortcuts().setFocusedElement(context.params.selection_focus_id);

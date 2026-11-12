@@ -1,3 +1,4 @@
+#include <GLFW/glfw3.h>
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -421,14 +422,18 @@ void verify_safe_point_service(App& app) {
 	state.pending = DevChangesCommand::Undo;
 	service_changes(app, session, true);
 	assert(selected_changes_row(state)->next_value == "256");
-	auto external_manifest = valid_manifest;
-	const auto saved_value = external_manifest.find("\"value\":\"128\"");
-	assert(saved_value != std::string::npos);
-	external_manifest.replace(saved_value, std::string_view("\"value\":\"128\"").size(),
-							  "\"value\":\"192\"");
+	DevBakeManifest externalManifest;
+	assert(bake_detail::decode_manifest(valid_manifest, externalManifest));
+	assert(externalManifest.memoryCapacity);
+	auto& savedTargets = externalManifest.memoryCapacity->targets;
+	const auto savedValue =
+		std::ranges::find(savedTargets, analysis.staged.front().target.configKey,
+						  &::FlowUi::detail::MemoryCapacitySelection::key);
+	assert(savedValue != savedTargets.end() && savedValue->value == 128);
+	savedValue->value = 192;
 	{
 		std::ofstream output(manifest, std::ios::trunc);
-		output << external_manifest;
+		output << bake_detail::encode_manifest(externalManifest);
 	}
 	state.pending = DevChangesCommand::Refresh;
 	service_changes(app, session, true);

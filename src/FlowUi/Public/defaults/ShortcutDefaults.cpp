@@ -1,9 +1,7 @@
 #include "FlowUi/Public/defaults/ShortcutDefaults.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #include "FlowUi/Public/errorManagement/Error.hpp"
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 namespace FlowUi::defaults {
 
@@ -37,29 +35,31 @@ Result<TextShortcutDefaults> text_shortcuts(const DefaultTextShortcutConfig& con
 		result.bindings[result.binding_count++] = TextShortcutBinding{binding, command};
 	};
 	if (configuration.selectAll)
-		add(chord(GLFW_KEY_A), TextCommand::SelectAll);
+		add(chord(FlowUi::keyCode(FlowUi::Key::A)), TextCommand::SelectAll);
 	if (configuration.clipboard) {
-		add(chord(GLFW_KEY_C), TextCommand::Copy);
-		add(chord(GLFW_KEY_X), TextCommand::Cut);
-		add(chord(GLFW_KEY_V), TextCommand::Paste);
+		add(chord(FlowUi::keyCode(FlowUi::Key::C)), TextCommand::Copy);
+		add(chord(FlowUi::keyCode(FlowUi::Key::X)), TextCommand::Cut);
+		add(chord(FlowUi::keyCode(FlowUi::Key::V)), TextCommand::Paste);
 	}
 	if (configuration.wordNavigation) {
-		add(chord(GLFW_KEY_LEFT, false, true), TextCommand::MoveWordLeft);
-		add(chord(GLFW_KEY_RIGHT, false, true), TextCommand::MoveWordRight);
-		add(chord(GLFW_KEY_LEFT, true, true), TextCommand::MoveWordLeft);
-		add(chord(GLFW_KEY_RIGHT, true, true), TextCommand::MoveWordRight);
-		add(chord(GLFW_KEY_BACKSPACE, false, true), TextCommand::DeleteWordBackward);
-		add(chord(GLFW_KEY_DELETE, false, true), TextCommand::DeleteWordForward);
+		add(chord(FlowUi::keyCode(FlowUi::Key::Left), false, true), TextCommand::MoveWordLeft);
+		add(chord(FlowUi::keyCode(FlowUi::Key::Right), false, true), TextCommand::MoveWordRight);
+		add(chord(FlowUi::keyCode(FlowUi::Key::Left), true, true), TextCommand::MoveWordLeft);
+		add(chord(FlowUi::keyCode(FlowUi::Key::Right), true, true), TextCommand::MoveWordRight);
+		add(chord(FlowUi::keyCode(FlowUi::Key::Backspace), false, true),
+			TextCommand::DeleteWordBackward);
+		add(chord(FlowUi::keyCode(FlowUi::Key::Delete), false, true),
+			TextCommand::DeleteWordForward);
 		if (platform == PlatformShortcutStyle::Control) {
-			add(chord(GLFW_KEY_HOME), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_END), TextCommand::MoveDocumentEnd);
-			add(chord(GLFW_KEY_HOME, true), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_END, true), TextCommand::MoveDocumentEnd);
+			add(chord(FlowUi::keyCode(FlowUi::Key::Home)), TextCommand::MoveDocumentStart);
+			add(chord(FlowUi::keyCode(FlowUi::Key::End)), TextCommand::MoveDocumentEnd);
+			add(chord(FlowUi::keyCode(FlowUi::Key::Home), true), TextCommand::MoveDocumentStart);
+			add(chord(FlowUi::keyCode(FlowUi::Key::End), true), TextCommand::MoveDocumentEnd);
 		} else {
-			add(chord(GLFW_KEY_LEFT), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_RIGHT), TextCommand::MoveDocumentEnd);
-			add(chord(GLFW_KEY_LEFT, true), TextCommand::MoveDocumentStart);
-			add(chord(GLFW_KEY_RIGHT, true), TextCommand::MoveDocumentEnd);
+			add(chord(FlowUi::keyCode(FlowUi::Key::Left)), TextCommand::MoveDocumentStart);
+			add(chord(FlowUi::keyCode(FlowUi::Key::Right)), TextCommand::MoveDocumentEnd);
+			add(chord(FlowUi::keyCode(FlowUi::Key::Left), true), TextCommand::MoveDocumentStart);
+			add(chord(FlowUi::keyCode(FlowUi::Key::Right), true), TextCommand::MoveDocumentEnd);
 		}
 	}
 	return result;

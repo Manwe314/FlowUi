@@ -1,4 +1,5 @@
 #include "devSystems/devInterface/Changes/Inspector/DevChangesInspector.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 #if FLOW_UI_DEV_MODE
 #include "devSystems/devInterface/Changes/DevChangesUi.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
@@ -383,8 +384,10 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 			context.uiManager.toClayEID(menu_trigger(local.restore_apply_focus)));
 		local.restore_apply_focus = local.restore_reset_focus = false;
 	}
-	const bool next_option = current.keyDown[GLFW_KEY_DOWN] && !previous.keyDown[GLFW_KEY_DOWN];
-	const bool previous_option = current.keyDown[GLFW_KEY_UP] && !previous.keyDown[GLFW_KEY_UP];
+	const bool next_option = current.keyDown[FlowUi::keyCode(FlowUi::Key::Down)] &&
+							 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Down)];
+	const bool previous_option = current.keyDown[FlowUi::keyCode(FlowUi::Key::Up)] &&
+								 !previous.keyDown[FlowUi::keyCode(FlowUi::Key::Up)];
 	if ((local.live_menu_open || local.reset_menu_open) && (next_option || previous_option) &&
 		!context.uiManager.inputFields().hasPrimaryFieldFocus()) {
 		const uint64_t first_action = local.live_menu_open ? 0 : 2;
@@ -408,8 +411,9 @@ void live_tools(Context& context, const tooling::DevChangesReviewRow& row) {
 				context.uiManager.toClayEID(options[destination]));
 		}
 	}
-	if ((local.live_menu_open || local.reset_menu_open) && current.keyDown[GLFW_KEY_ESCAPE] &&
-		!previous.keyDown[GLFW_KEY_ESCAPE]) {
+	if ((local.live_menu_open || local.reset_menu_open) &&
+		current.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)] &&
+		!previous.keyDown[FlowUi::keyCode(FlowUi::Key::Escape)]) {
 		const auto trigger = ::FlowUi::detail::element_id::resolveLocal(
 			context.id, diagnostics_ui::Control::definitionId,
 			local.live_menu_open ? LocalElementName{"apply-live-menu"}.token

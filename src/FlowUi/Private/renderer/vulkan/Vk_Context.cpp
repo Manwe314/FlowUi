@@ -299,16 +299,6 @@ void VulkanContext::createInstance(const FlowUi::AppConfig& config, const std::v
 	}
 }
 
-VkSurfaceKHR VulkanContext::createSurface(FlowUi::detail::IWindowBackend& window) const {
-	if (instance == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::ObjectNotInitialized, FlowUi::ErrorSite::VulkanSurfaceQuery));
-	}
-	const VkSurfaceKHR surface = window.createSurface(instance);
-	if (surface == VK_NULL_HANDLE) {
-		throw FlowUi::FlowUiException(FlowUi::makeError(FlowUi::ErrorCode::PlatformSurfaceCreationFailed, FlowUi::ErrorSite::VulkanSurfaceQuery));
-	}
-	return surface;
-}
 
 void VulkanContext::pickPhysicalDevice(const FlowUi::AppConfig& config, VkSurfaceKHR mainSurface) {
 	if (instance == VK_NULL_HANDLE) {

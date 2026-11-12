@@ -3,7 +3,6 @@
 #include "FlowUi/Public/BuildConfig.hpp"
 
 #include <cstddef>
-#include <functional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -22,6 +21,9 @@ namespace FlowUi {
 
 class UiManager;
 namespace detail { struct InputFieldFrameOverrides; }
+namespace detail::platform {
+class WindowPlatformServices;
+}
 namespace detail::input_field { struct InputFieldKey; }
 namespace detail::text { class TextLayoutService; }
 namespace detail::storage { class IStorageSystem; }
@@ -450,9 +452,8 @@ private:
 		const FrameInput& currentInput,
 		const FrameInput& previousInput,
 		uint32_t suppressedPrimaryPressClayId = 0);
-	void setClipboardAccess(
-		std::function<void(std::string_view)> setClipboardText,
-		std::function<std::string()> getClipboardText);
+	/** Bind the borrowed per-window clipboard bridge while manager storage exists. */
+	void setPlatformServices(detail::platform::WindowPlatformServices* services) noexcept;
 	Clay_RenderCommandArray endFrame(const Clay_RenderCommandArray& renderCommands);
 	const detail::InputFieldFrameOverrides& frameOverrides() const;
 	[[nodiscard]] detail::input_field::InputFieldKey normalizeFieldKey(ResourceKey key) const;

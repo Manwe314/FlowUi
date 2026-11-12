@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <functional>
 #include <memory>
 #include <source_location>
 #include <stdexcept>
@@ -67,6 +66,9 @@ template <FlowElement Element>
 class ElementBuilder;
 struct FlowUiTheme;
 struct FontManager;
+namespace detail::platform {
+class WindowPlatformServices;
+}
 namespace detail::storage { class IStorageSystem; struct FrameToken; }
 namespace detail::manager_storage { struct UiManagerState; struct FontFrameView; }
 
@@ -604,13 +606,11 @@ public:
 #endif
 
 	/**
-	 * @brief Set clipboard text through the configured clipboard accessor.
+	 * @brief Set clipboard text through the attached platform clipboard service.
 	 *
-	 * If no clipboard setter is installed, this function does nothing.
+	 * Detached managers ignore clipboard writes; service failures are reported.
 	 *
 	 * @param text Text to copy to the system or configured clipboard.
-	 *
-	 * @throws Any exception thrown by the configured clipboard setter.
 	 *
 	 * @code{.cpp}
 	 * context.uiManager.setClipboardText("Copied text");
@@ -619,11 +619,9 @@ public:
 	void setClipboardText(std::string_view text) const;
 
 	/**
-	 * @brief Read clipboard text through the configured clipboard accessor.
+	 * @brief Read clipboard text through the attached platform clipboard service.
 	 *
-	 * @return Clipboard text, or an empty string when no getter is installed.
-	 *
-	 * @throws Any exception thrown by the configured clipboard getter.
+	 * @return Clipboard text, or an empty string when detached or a read fails.
 	 *
 	 * @code{.cpp}
 	 * const std::string pasted = context.uiManager.clipboardText();
@@ -632,10 +630,10 @@ public:
 	[[nodiscard]] std::string clipboardText() const;
 
 	/**
-	 * @brief Return whether clipboard accessors are installed.
+	 * @brief Return whether the attached window provides immediate clipboard access.
 	 *
-	 * @retval true Both clipboard setter and getter callbacks are installed.
-	 * @retval false At least one clipboard callback is missing.
+	 * @retval true The attached window supports clipboard reads and writes.
+	 * @retval false The service is detached or clipboard access is unsupported.
 	 *
 	 * @code{.cpp}
 	 * if (context.uiManager.hasClipboardAccess()) {
@@ -870,18 +868,13 @@ private:
 #endif
 	const ThemeManager& appThemes() const;
 
-	void beginFrame(
-		const detail::storage::FrameToken& frame,
-		const FrameInput& frameInput,
-		const detail::manager_storage::FontFrameView& fontView,
-		float screenWidth,
-		float screenHeight);
+	void beginFrame(const detail::storage::FrameToken& frame, const FrameInput& frameInput,
+					const detail::manager_storage::FontFrameView& fontView, float screenWidth,
+					float screenHeight, bool primaryPointerCanceled = false);
 	Clay_RenderCommandArray endFrame();
 	const detail::InputFieldFrameOverrides& inputFieldFrameOverrides() const { return inputFieldManager_.frameOverrides(); }
-	void setCursorAccessor(std::function<void(CursorType)> setCursorTypeAccessor);
-	void setClipboardAccessors(
-		std::function<void(std::string_view)> setClipboardTextAccessor,
-		std::function<std::string()> getClipboardTextAccessor);
+	/** Bind the borrowed native clipboard/cursor bridge, including late storage creation. */
+	void setPlatformServices(detail::platform::WindowPlatformServices* services) noexcept;
 	void advanceFrameInteractionSnapshots();
 	void cancelFrameState() noexcept;
 	Clay_Dimensions measureText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
@@ -942,9 +935,7 @@ private:
 	InputFieldManager inputFieldManager_{};
 	PopupManager popupManager_{};
 	ShortcutManager shortcutManager_{};
-	std::function<void(std::string_view)> setClipboardTextAccessor_{};
-	std::function<std::string()> getClipboardTextAccessor_{};
-	std::function<void(CursorType)> setCursorTypeAccessor_{};
+	detail::platform::WindowPlatformServices* platformServices_ = nullptr;
 	detail::storage::IStorageSystem* storage_ = nullptr;
 	const ThemeManager* themeManager_ = nullptr;
 	ElementManager* elementManager_ = nullptr;

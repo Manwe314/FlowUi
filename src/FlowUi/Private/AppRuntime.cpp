@@ -51,14 +51,14 @@
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #endif
-#include "FlowUi/Private/inputService/InputQueue.hpp"
+#include "FlowUi/Private/platformProviderService/PlatformProviderService.hpp"
 #include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Frames.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Swapchain.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
 #include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
-#include "FlowUi/Private/windowService/Window.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #include <algorithm>
 #include <array>
@@ -374,6 +374,8 @@ std::atomic<const AppErrorObserver*> AppErrorObserver::active_{nullptr};
 } // namespace FlowUi::detail::app_runtime
 
 namespace FlowUi {
+using detail::app_runtime::requireSuccess;
+using detail::app_runtime::requireValue;
 
 namespace detail {
 
@@ -906,6 +908,9 @@ AppWindow& App::Impl::requireWindow(WindowId id) {
 		throw FlowUiException(
 			makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, id));
 	}
+	if (found->second->phase == AppWindow::Phase::Initializing ||
+		found->second->phase == AppWindow::Phase::Closing)
+		throw FlowUiException(makeError(ErrorCode::FrameNotReady, ErrorSite::AppAccessWindow, id));
 	return *found->second;
 }
 
@@ -915,6 +920,9 @@ const AppWindow& App::Impl::requireWindow(WindowId id) const {
 		throw FlowUiException(
 			makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, id));
 	}
+	if (found->second->phase == AppWindow::Phase::Initializing ||
+		found->second->phase == AppWindow::Phase::Closing)
+		throw FlowUiException(makeError(ErrorCode::FrameNotReady, ErrorSite::AppAccessWindow, id));
 	return *found->second;
 }
 
@@ -1022,24 +1030,15 @@ void App::Impl::init(App& owner) {
 	AppWindow* const mainPointer = main.get();
 	windows.emplace(MainWindowId, std::move(main));
 
-	mainPointer->backend =
-		detail::makeDefaultWindowBackend(mainPointer->config.native, &mainPointer->inputQueue);
-	mainPointer->backend->setInputConfig(mainPointer->config.native.input);
-	mainPointer->ui.setClipboardAccessors(
-		[mainPointer](std::string_view text) {
-			if (mainPointer->backend)
-				mainPointer->backend->setClipboardText(text);
-		},
-		[mainPointer]() -> std::string {
-			return mainPointer->backend ? mainPointer->backend->getClipboardText() : std::string{};
-		});
-	mainPointer->ui.setCursorAccessor([mainPointer](CursorType cursorType) {
-		if (mainPointer->backend)
-			mainPointer->backend->setCursorType(cursorType);
-	});
+	requireSuccess(platformService.initialize({}));
+	requireSuccess(inputService.initialize());
+	previousInputTickTimestamp = std::chrono::steady_clock::now();
+	initializeWindowPlatform(*mainPointer);
+	auto extensions = requireValue(platformService.requiredInstanceExtensions());
+	vk.createInstance(config, extensions);
+	mainPointer->surface =
+		requireValue(platformService.createSurface(mainPointer->platformState, vk.instance));
 
-	vk.createInstance(config, mainPointer->backend->requiredInstanceExtensions());
-	mainPointer->surface = vk.createSurface(*mainPointer->backend);
 	vk.pickPhysicalDevice(config, mainPointer->surface);
 	if (!vk.supportsPresentation(mainPointer->surface)) {
 		throw FlowUiException(
@@ -1194,12 +1193,14 @@ void App::Impl::init(App& owner) {
 	storageSystem->setFallbackTexture(fallbackTexture);
 
 	mainPointer->swapchain.create(mainPointer->config.native, mainPointer->config.vulkan, vk,
-								  mainPointer->surface, mainPointer->backend->framebufferExtent());
+								  mainPointer->surface,
+								  platformService.framebufferExtent(mainPointer->platformState));
 	mainPointer->frames.create(mainPointer->config.vulkan.framesInFlight, vk);
 #if FLOW_UI_DEV_MODE
 	devMonitoring.timingReporting().noteFramesInFlight(mainPointer->config.vulkan.framesInFlight);
 #endif
-	mainPointer->observedFramebufferExtent = mainPointer->backend->framebufferExtent();
+	mainPointer->observedFramebufferExtent =
+		platformService.framebufferExtent(mainPointer->platformState);
 
 	mainPointer->renderer.init(
 		mainPointer->config.vulkan, mainPointer->config.ui, vk,
@@ -1238,6 +1239,7 @@ void App::Impl::init(App& owner) {
 	registerWindowMemoryProbe(*mainPointer);
 #endif
 	initializeDefaultFont();
+	mainPointer->phase = AppWindow::Phase::Idle;
 #if FLOW_UI_DEV_MODE
 	Status devInterfaceStatus = devInterface.initialize(mainPointer->ui, config.dev);
 	if (!devInterfaceStatus)
@@ -1261,20 +1263,27 @@ void App::Impl::requirePlatformThread() const {
 	}
 }
 
-void App::Impl::attachBackendAccessors(AppWindow& window) {
-	AppWindow* const stable = &window;
-	window.ui.setClipboardAccessors(
-		[stable](std::string_view text) {
-			if (stable->backend)
-				stable->backend->setClipboardText(text);
-		},
-		[stable]() -> std::string {
-			return stable->backend ? stable->backend->getClipboardText() : std::string{};
-		});
-	window.ui.setCursorAccessor([stable](CursorType cursorType) {
-		if (stable->backend)
-			stable->backend->setCursorType(cursorType);
-	});
+void App::Impl::initializeWindowPlatform(AppWindow& window) {
+	requireSuccess(inputService.registerTarget(window.id, window.inputState));
+	const auto initialized = platformService.initializeWindow(
+		window.platformState, window.id, window.config.native, window.inputState.sink());
+	if (!initialized) {
+		inputService.unregisterTarget(window.id);
+		throw FlowUiException(initialized.error());
+	}
+	attachPlatformServices(window);
+}
+
+void App::Impl::attachPlatformServices(AppWindow& window) {
+	window.platformServices.bind(platformService, window.platformState);
+	window.ui.setPlatformServices(&window.platformServices);
+}
+
+void App::Impl::quiesceWindowPlatform(AppWindow& window) noexcept {
+	window.ui.setPlatformServices(nullptr);
+	window.platformServices.detach();
+	inputService.unregisterTarget(window.id);
+	platformService.quiesceWindow(window.platformState);
 }
 
 Result<WindowOperationCapabilities>
@@ -1283,33 +1292,37 @@ App::Impl::window_operation_capabilities(WindowId window_id) const noexcept {
 		return unexpectedError(
 			makeError(ErrorCode::WrongThread, ErrorSite::AppRequirePlatformThread));
 	const auto window_entry = windows.find(window_id);
-	if (window_entry == windows.end() || !window_entry->second->backend)
+	if (window_entry == windows.end() ||
+		window_entry->second->phase == AppWindow::Phase::Initializing ||
+		window_entry->second->phase == AppWindow::Phase::Closing)
 		return unexpectedError(
 			makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, window_id));
-	return window_entry->second->backend->window_operation_capabilities();
+	return platformService.windowOperationCapabilities(window_entry->second->platformState);
 }
 
 Status App::Impl::execute_window_operation(WindowId window_id,
 										   NativeWindowOperation operation) noexcept {
 	const auto window_entry = windows.find(window_id);
-	if (window_entry == windows.end() || !window_entry->second->backend)
+	if (window_entry == windows.end() ||
+		window_entry->second->phase == AppWindow::Phase::Initializing ||
+		window_entry->second->phase == AppWindow::Phase::Closing)
 		return unexpectedError(
 			makeError(ErrorCode::InvalidWindowId, ErrorSite::AppAccessWindow, window_id));
-	auto& backend = *window_entry->second->backend;
+	auto& platformState = window_entry->second->platformState;
 	Status status = unexpectedError(
 		makeError(ErrorCode::WindowOperationUnsupported, ErrorSite::AppAccessWindow, window_id));
 	switch (operation) {
 	case NativeWindowOperation::Close:
-		status = backend.request_window_close();
+		status = platformService.requestWindowClose(platformState);
 		break;
 	case NativeWindowOperation::Minimize:
-		status = backend.minimize_window();
+		status = platformService.minimizeWindow(platformState);
 		break;
 	case NativeWindowOperation::MaximizeRestore:
-		status = backend.toggle_window_maximized();
+		status = platformService.toggleWindowMaximized(platformState);
 		break;
 	case NativeWindowOperation::Fullscreen:
-		status = backend.toggle_window_fullscreen();
+		status = platformService.toggleWindowFullscreen(platformState);
 		break;
 	}
 	if (!status) {
@@ -1369,7 +1382,7 @@ Status App::Impl::install_default_window_shortcuts(AppWindow& window) {
 	};
 	std::array<PlannedShortcut, 4> plan{};
 	size_t plan_size = 0u;
-	const auto capabilities = window.backend->window_operation_capabilities();
+	const auto capabilities = platformService.windowOperationCapabilities(window.platformState);
 	const auto append = [&](const DefaultWindowShortcutBinding& binding,
 							NativeWindowOperation operation, bool supported,
 							std::optional<ShortcutChord> platform_chord) {
@@ -1381,31 +1394,22 @@ Status App::Impl::install_default_window_shortcuts(AppWindow& window) {
 	};
 #if defined(__APPLE__)
 	append(settings.close_window, NativeWindowOperation::Close, capabilities.close_window,
-		   ShortcutChord{.key = GLFW_KEY_W, .super = true});
+		   ShortcutChord{.key = keyCode(Key::W), .super = true});
 	append(settings.minimize, NativeWindowOperation::Minimize, capabilities.minimize,
-		   ShortcutChord{.key = GLFW_KEY_M, .super = true});
-	const ShortcutChord fullscreen_chord{.key = GLFW_KEY_F, .ctrl = true, .super = true};
+		   ShortcutChord{.key = keyCode(Key::M), .super = true});
+	const ShortcutChord fullscreen_chord{.key = keyCode(Key::F), .ctrl = true, .super = true};
 #else
 	append(settings.close_window, NativeWindowOperation::Close, capabilities.close_window,
 		   std::nullopt);
 	append(settings.minimize, NativeWindowOperation::Minimize, capabilities.minimize, std::nullopt);
-	const ShortcutChord fullscreen_chord{.key = GLFW_KEY_F11};
+	const ShortcutChord fullscreen_chord{.key = keyCode(Key::F11)};
 #endif
 	append(settings.maximize_restore, NativeWindowOperation::MaximizeRestore,
 		   capabilities.maximize_restore, std::nullopt);
 	append(settings.toggle_fullscreen, NativeWindowOperation::Fullscreen,
 		   capabilities.toggle_fullscreen, fullscreen_chord);
-	const auto valid_key = [](int key) noexcept {
-		return key == GLFW_KEY_SPACE || key == GLFW_KEY_APOSTROPHE ||
-			   (key >= GLFW_KEY_COMMA && key <= GLFW_KEY_9) || key == GLFW_KEY_SEMICOLON ||
-			   key == GLFW_KEY_EQUAL || (key >= GLFW_KEY_A && key <= GLFW_KEY_RIGHT_BRACKET) ||
-			   key == GLFW_KEY_GRAVE_ACCENT || key == GLFW_KEY_WORLD_1 || key == GLFW_KEY_WORLD_2 ||
-			   (key >= GLFW_KEY_ESCAPE && key <= GLFW_KEY_END) ||
-			   (key >= GLFW_KEY_CAPS_LOCK && key <= GLFW_KEY_PAUSE) ||
-			   (key >= GLFW_KEY_F1 && key <= GLFW_KEY_F25) ||
-			   (key >= GLFW_KEY_KP_0 && key <= GLFW_KEY_KP_EQUAL) ||
-			   (key >= GLFW_KEY_LEFT_SHIFT && key <= GLFW_KEY_MENU);
-	};
+	const auto valid_key = [](int key) noexcept { return keyFromCode(key).has_value(); };
+
 	for (size_t candidate_index = 0u; candidate_index < plan_size; ++candidate_index) {
 		const auto& chord = plan[candidate_index].chord;
 		if (!valid_key(chord.key) || chord.trigger != ShortcutTrigger::Press)
@@ -1472,8 +1476,7 @@ Status App::Impl::install_default_window_shortcuts(AppWindow& window) {
 }
 
 void App::Impl::destroyUnsubmittedWindow(AppWindow& window) noexcept {
-	if (window.backend)
-		window.backend->detachCallbacks();
+	quiesceWindowPlatform(window);
 	try {
 		window.viewPorts.destroyDrained(vk);
 	} catch (...) {}
@@ -1502,7 +1505,7 @@ void App::Impl::destroyUnsubmittedWindow(AppWindow& window) noexcept {
 		vkDestroySurfaceKHR(vk.instance, window.surface, nullptr);
 		window.surface = VK_NULL_HANDLE;
 	}
-	window.backend.reset();
+	platformService.shutdownWindow(window.platformState);
 }
 
 WindowId App::Impl::reserveWindowId() {
@@ -1538,11 +1541,9 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 #endif
 	auto pending = std::make_unique<AppWindow>(id, makeWindowConfig(config, nativeConfig), config);
 	try {
-		pending->backend =
-			detail::makeDefaultWindowBackend(pending->config.native, &pending->inputQueue);
-		pending->backend->setInputConfig(pending->config.native.input);
-		attachBackendAccessors(*pending);
-		pending->surface = vk.createSurface(*pending->backend);
+		initializeWindowPlatform(*pending);
+		pending->surface =
+			requireValue(platformService.createSurface(pending->platformState, vk.instance));
 		if (!vk.supportsPresentation(pending->surface)) {
 			throw FlowUiException(makeError(ErrorCode::WindowPresentationUnsupported,
 											ErrorSite::AppCreateWindow, id));
@@ -1578,12 +1579,14 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 
 #endif
 		pending->swapchain.create(pending->config.native, pending->config.vulkan, vk,
-								  pending->surface, pending->backend->framebufferExtent());
+								  pending->surface,
+								  platformService.framebufferExtent(pending->platformState));
 		pending->frames.create(pending->config.vulkan.framesInFlight, vk);
 #if FLOW_UI_DEV_MODE
 		devMonitoring.timingReporting().noteFramesInFlight(pending->config.vulkan.framesInFlight);
 #endif
-		pending->observedFramebufferExtent = pending->backend->framebufferExtent();
+		pending->observedFramebufferExtent =
+			platformService.framebufferExtent(pending->platformState);
 #if FLOW_UI_DEV_MODE
 		Status dev_interface_status = devInterface.attachWindow(pending->ui);
 		if (!dev_interface_status)
@@ -1598,19 +1601,24 @@ WindowId App::Impl::createWindow(const WindowConfig& nativeConfig) {
 		pending->viewPorts.init(*storageSystem, vk, id, pending->config.vulkan.framesInFlight,
 								config.errors.policy.missingViewport);
 
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+		registerWindowMemoryProbe(*pending);
+#endif
+		pending->phase = AppWindow::Phase::Idle;
 		auto [entry, inserted] = windows.try_emplace(id);
 		if (!inserted) {
 			detail::terminateForFatalError(
 				makeError(ErrorCode::WindowRegistryCollision, ErrorSite::AppCreateWindow, id));
 		}
 		entry->second = std::move(pending);
-#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
-		registerWindowMemoryProbe(*entry->second);
-#endif
 		return id;
 	} catch (...) {
-		if (pending)
+		if (pending) {
+#if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 2
+			unregisterWindowMemoryProbe(*pending);
+#endif
 			destroyUnsubmittedWindow(*pending);
+		}
 		throw;
 	}
 }
@@ -1670,11 +1678,21 @@ void App::Impl::pollEventsAndAdvanceSharedManagers() {
 	FLOWUI_DEV_TIMING_ZONE(timingRecorder(), devSystems::TimingCategory::Lifecycle,
 						   devSystems::TimingZoneRole::Work, "flowui.app.poll_events");
 #endif
+	inputService.beginTick();
+	requireSuccess(platformService.pollEvents());
+	for (auto& [windowId, window] : windows) {
 #if FLOW_UI_DEV_MODE
-	for (auto& [window_id, window] : windows)
-		window->inputQueue.dev_shortcut_presses.fill(0);
+		if (window->dev_suspended)
+			continue;
 #endif
-	detail::pollWindowSystemEvents();
+		requireSuccess(platformService.refreshInput(window->platformState));
+	}
+	const auto inputTickTimestamp = std::chrono::steady_clock::now();
+	const double inputDeltaSeconds = std::max(
+		0.0,
+		std::chrono::duration<double>(inputTickTimestamp - previousInputTickTimestamp).count());
+	previousInputTickTimestamp = inputTickTimestamp;
+	requireSuccess(inputService.poll(inputDeltaSeconds));
 	themeManager.applyStagedMutations();
 #if FLOW_UI_DEV_MODE
 	devTooling.commitAtSafePoint(themeManager, &timingRecorder());
@@ -1795,7 +1813,7 @@ void App::Impl::beginFrame(WindowId id) {
 		throw FlowUiException(
 			makeError(ErrorCode::FrameAlreadyActive, ErrorSite::AppBeginFrame, activeWindowFrame));
 	}
-	if (!window.backend || window.frames.frames.empty()) {
+	if (window.frames.frames.empty()) {
 		throw FlowUiException(makeError(ErrorCode::FrameNotReady, ErrorSite::AppBeginFrame, id));
 	}
 	if (window.frameNumber == std::numeric_limits<uint64_t>::max()) {
@@ -1813,10 +1831,9 @@ void App::Impl::beginFrame(WindowId id) {
 	window.agentic_frame.height = window.swapchain.swapchain.extent.height;
 	window.agentic_frame.internal_window = window.id == devInterface.windowId();
 	window.agentic_frame.interrupted = window.flags.has_flag(AppWindow::Flag::framebuffer_resized);
-	if (auto* native = static_cast<GLFWwindow*>(window.backend->nativeHandle()))
-		window.agentic_frame.interrupted = window.agentic_frame.interrupted ||
-										   glfwGetWindowAttrib(native, GLFW_VISIBLE) != GLFW_TRUE ||
-										   glfwGetWindowAttrib(native, GLFW_ICONIFIED) == GLFW_TRUE;
+	window.agentic_frame.interrupted = window.agentic_frame.interrupted ||
+									   !platformService.isVisible(window.platformState) ||
+									   platformService.isMinimized(window.platformState);
 #endif
 
 #if FLOW_UI_DEV_MODE
@@ -1845,7 +1862,7 @@ void App::Impl::beginFrame(WindowId id) {
 											devSystems::TimingZoneRole::Work,
 											"flowui.frame.input_refresh");
 #endif
-			window.backend->refreshInputSnapshot();
+			requireSuccess(platformService.refreshInput(window.platformState));
 		}
 		const auto now = std::chrono::steady_clock::now();
 		double deltaTimeSeconds = 0.0;
@@ -1941,7 +1958,8 @@ void App::Impl::beginFrame(WindowId id) {
 			FLOWUI_DEV_TIMING_ZONE_BALANCED(timingRecorder(), devSystems::TimingCategory::Input,
 											devSystems::TimingZoneRole::Work, "flowui.input.drain");
 #endif
-			window.frameInput = window.inputQueue.drain(deltaTimeSeconds);
+			window.frameInput =
+				requireValue(inputService.frameInput(window.inputState, deltaTimeSeconds));
 			if (window.frameInput.droppedTextInputCount != 0u) {
 				detail::reportErrorEvent(ErrorEventView{
 					.error =
@@ -1959,11 +1977,15 @@ void App::Impl::beginFrame(WindowId id) {
 				window.agentic_frame.key, window.frameInput, window.config.ui.uiScale);
 			if (!selected)
 				throw FlowUiException(selected.error());
+			if (agentic_service->interaction_controls_window(window.id))
+				window.frameInput = requireValue(
+					inputService.overrideFrameInput(window.inputState, window.frameInput));
 		}
 #endif
 		constexpr float kBaseScrollSensitivity = 20.0f;
-		const VkExtent2D windowExtent = window.backend->windowExtent();
-		const VkExtent2D framebufferExtent = window.backend->framebufferExtent();
+		const VkExtent2D windowExtent = platformService.windowExtent(window.platformState);
+		const VkExtent2D framebufferExtent =
+			platformService.framebufferExtent(window.platformState);
 		if (framebufferExtent.width != window.observedFramebufferExtent.width ||
 			framebufferExtent.height != window.observedFramebufferExtent.height) {
 			window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
@@ -2005,7 +2027,7 @@ void App::Impl::beginFrame(WindowId id) {
 #endif
 #endif
 		window.ui.beginFrame(window.storageFrame, layoutInput, window.fontFrameView, layoutWidth,
-							 layoutHeight);
+							 layoutHeight, inputService.primaryPointerCanceled(window.inputState));
 #if FLOW_UI_DEV_MODE
 		if (!devMonitoring.performance_capture().interface_work_suspended() &&
 #if FLOW_UI_AGENTIC_WORKFLOW
@@ -2281,7 +2303,7 @@ void App::Impl::drawFrame(WindowId id) {
 										"flowui.swapchain.resize_check");
 #endif
 		const VkExtent2D framebufferExtent =
-			window.backend ? window.backend->framebufferExtent() : VkExtent2D{};
+			platformService.framebufferExtent(window.platformState);
 		if (framebufferExtent.width != window.observedFramebufferExtent.width ||
 			framebufferExtent.height != window.observedFramebufferExtent.height) {
 			window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
@@ -2588,9 +2610,9 @@ void App::Impl::drawFrame(WindowId id) {
 }
 
 bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
-	if (!window.backend || vk.device == VK_NULL_HANDLE || window.surface == VK_NULL_HANDLE)
+	if (vk.device == VK_NULL_HANDLE || window.surface == VK_NULL_HANDLE)
 		return false;
-	const VkExtent2D framebufferExtent = window.backend->framebufferExtent();
+	const VkExtent2D framebufferExtent = platformService.framebufferExtent(window.platformState);
 	window.observedFramebufferExtent = framebufferExtent;
 	if (framebufferExtent.width == 0 || framebufferExtent.height == 0) {
 		window.flags.set_flag(AppWindow::Flag::framebuffer_resized, true);
@@ -2614,8 +2636,7 @@ bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
 			replacement.create(window.config.native, window.config.vulkan, vk, window.surface,
 							   framebufferExtent, window.swapchain.swapchain.swapchain);
 		} catch (...) {
-			if (window.backend)
-				window.backend->setShouldClose(1);
+			platformService.setShouldClose(window.platformState, true);
 			throw;
 		}
 		try {
@@ -2623,8 +2644,7 @@ bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
 													 window.lastSubmissionSerial);
 		} catch (...) {
 			replacement.destroy(vk);
-			if (window.backend)
-				window.backend->setShouldClose(1);
+			platformService.setShouldClose(window.platformState, true);
 			throw;
 		}
 		window.swapchain.destroy(vk);
@@ -2636,8 +2656,7 @@ bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
 			replacement.create(window.config.native, window.config.vulkan, vk, window.surface,
 							   framebufferExtent, window.swapchain.swapchain.swapchain);
 		} catch (...) {
-			if (window.backend)
-				window.backend->setShouldClose(1);
+			platformService.setShouldClose(window.platformState, true);
 			throw;
 		}
 		try {
@@ -2646,8 +2665,7 @@ bool App::Impl::recreateSwapchainIfNeeded(AppWindow& window) {
 			window.retiredSwapchains.reserve(window.retiredSwapchains.size() + 1u);
 		} catch (...) {
 			replacement.destroy(vk);
-			if (window.backend)
-				window.backend->setShouldClose(1);
+			platformService.setShouldClose(window.platformState, true);
 			throw;
 		}
 		window.retiredSwapchains.push_back(std::move(window.swapchain));
@@ -2689,8 +2707,7 @@ void App::Impl::destroyWindow(WindowId id) {
 	devTooling.overrides().release_window(id);
 #endif
 	window.phase = AppWindow::Phase::Closing;
-	if (window.backend)
-		window.backend->detachCallbacks();
+	quiesceWindowPlatform(window);
 
 	drainWindowGraphics(window);
 	collectRetiredSwapchains(window);
@@ -2719,7 +2736,7 @@ void App::Impl::destroyWindow(WindowId id) {
 		vkDestroySurfaceKHR(vk.instance, window.surface, nullptr);
 		window.surface = VK_NULL_HANDLE;
 	}
-	window.backend.reset();
+	platformService.shutdownWindow(window.platformState);
 #if FLOW_UI_DEV_MODE
 	devTooling.clearOverlaySelection(id);
 #endif
@@ -2736,8 +2753,11 @@ void App::Impl::cleanup() noexcept {
 	if (agentic_service)
 		agentic_service->stop_admission();
 #endif
-	for (auto& [_, window] : windows)
+	for (auto& [_, window] : windows) {
 		cancelStorageFrame(*window);
+		window->phase = AppWindow::Phase::Closing;
+		quiesceWindowPlatform(*window);
+	}
 #if FLOW_UI_DEV_MODE
 	devSystems::ManualTimingZone shutdownTiming(
 		timingRecorder(), devSystems::makeBuiltinTimingDescriptor(
@@ -2825,7 +2845,7 @@ void App::Impl::cleanup() noexcept {
 			vkDestroySurfaceKHR(vk.instance, window->surface, nullptr);
 			window->surface = VK_NULL_HANDLE;
 		}
-		window->backend.reset();
+		platformService.shutdownWindow(window->platformState);
 	}
 	if (storageSystem) {
 		destroySharedUiByteResources(*storageSystem, sharedUiByteResources);
@@ -2844,6 +2864,8 @@ void App::Impl::cleanup() noexcept {
 		storageSystem.reset();
 	}
 	windows.clear();
+	inputService.shutdown();
+	platformService.shutdown();
 	activeWindowFrame = InvalidWindowId;
 #if FLOW_UI_DEV_MODE && FLOWUI_DEV_MEMORY_LEVEL >= 1
 	devMonitoring.memory().detachEnvironmentProbes();

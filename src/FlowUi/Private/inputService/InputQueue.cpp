@@ -1,9 +1,8 @@
 #include "FlowUi/Private/inputService/InputQueue.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #include <algorithm>
 #include <utility>
-
-#include <GLFW/glfw3.h>
 
 namespace {
 
@@ -86,14 +85,18 @@ FrameInput InputQueue::drain(double dt) {
 	frameInput.scrollX = queuedScrollX_;
 	frameInput.scrollY = queuedScrollY_;
 	frameInput.keyDown = queuedKeysDown_;
-	frameInput.shift = queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_LEFT_SHIFT)] ||
-		queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_RIGHT_SHIFT)];
-	frameInput.ctrl = queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_LEFT_CONTROL)] ||
-		queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_RIGHT_CONTROL)];
-	frameInput.alt = queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_LEFT_ALT)] ||
-		queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_RIGHT_ALT)];
-	frameInput.super = queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_LEFT_SUPER)] ||
-		queuedKeysDown_[static_cast<std::size_t>(GLFW_KEY_RIGHT_SUPER)];
+	frameInput.shift =
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::LeftShift))] ||
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::RightShift))];
+	frameInput.ctrl =
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::LeftControl))] ||
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::RightControl))];
+	frameInput.alt =
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::LeftAlt))] ||
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::RightAlt))];
+	frameInput.super =
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::LeftSuper))] ||
+		queuedKeysDown_[static_cast<std::size_t>(FlowUi::keyCode(FlowUi::Key::RightSuper))];
 	frameInput.text.assign(queuedTextInput_.begin(), queuedTextInput_.end());
 	frameInput.droppedTextInputCount = takeDroppedTextInputCount();
 

@@ -54,14 +54,15 @@
 #include "devSystems/devMonitoringAndReporting/timing/DevTiming.hpp"
 #include "devSystems/devTooling/DevTooling.hpp"
 #endif
-#include "FlowUi/Private/inputService/InputQueue.hpp"
+#include "FlowUi/Private/inputService/InputService.hpp"
+#include "FlowUi/Private/platformProviderService/PlatformProviderService.hpp"
+#include "FlowUi/Private/platformProviderService/WindowPlatformServices.hpp"
 #include "FlowUi/Private/renderer/Vk_UiRenderer.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Context.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Frames.hpp"
 #include "FlowUi/Private/renderer/vulkan/Vk_Swapchain.hpp"
 #include "FlowUi/Private/resourceService/FontCatalogController.hpp"
 #include "FlowUi/Private/storageSystem/FlowStorageSystem.hpp"
-#include "FlowUi/Private/windowService/Window.hpp"
 
 #include <algorithm>
 #include <array>
@@ -198,10 +199,12 @@ struct AppWindow {
 #if FLOW_UI_DEV_MODE
 #endif
 
-	enum class Phase : uint8_t { Idle, Building, Prepared, Closing };
+	enum class Phase : uint8_t { Initializing, Idle, Building, Prepared, Closing };
 
 	VulkanUiRenderer renderer;
-	detail::InputQueue inputQueue;
+	detail::input::InputState inputState;
+	detail::platform::ActivePlatformProviderService::WindowState platformState;
+	detail::platform::WindowPlatformServices platformServices;
 
 	FrameInput frameInput{};
 #if FLOW_UI_DEV_MODE
@@ -236,13 +239,16 @@ struct AppWindow {
 #endif
 	AppWindow(WindowId windowId, AppWindowConfig windowConfig, const AppConfig& appConfig)
 		: id(windowId), config(std::move(windowConfig)),
-		  inputQueue(appConfig.errors.policy.inputTextQueueCapacity,
+		  inputState(appConfig.errors.policy.inputTextQueueCapacity,
 					 appConfig.errors.policy.inputQueueOverflow) {}
+	AppWindow(const AppWindow&) = delete;
+	AppWindow& operator=(const AppWindow&) = delete;
+	AppWindow(AppWindow&&) = delete;
+	AppWindow& operator=(AppWindow&&) = delete;
 
 	WindowId id = InvalidWindowId;
 	storage::IStorageSystem* storageSystem = nullptr;
 
-	std::unique_ptr<detail::IWindowBackend> backend;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	uint64_t frameNumber = 0;
 	storage::SubmissionSerial lastSubmissionSerial = 0;
@@ -254,7 +260,7 @@ struct AppWindow {
 	VkExtent2D observedFramebufferExtent{};
 	float uiToFramebufferScaleX = 1.0f;
 	float uiToFramebufferScaleY = 1.0f;
-	Phase phase = Phase::Idle;
+	Phase phase = Phase::Initializing;
 	enum class Flag : std::uint8_t {
 		storage_registered = 1u << 0u,
 		has_previous_begin_frame_timestamp = 1u << 1u,
@@ -264,6 +270,20 @@ struct AppWindow {
 };
 
 namespace detail::app_runtime {
+
+/** Convert recoverable service errors at the existing throwing App boundary. */
+inline void requireSuccess(Status status) {
+	if (!status)
+		throw FlowUiException(status.error());
+}
+
+/** Move a service result through the existing throwing App boundary. */
+template <typename Value>
+[[nodiscard]] Value requireValue(Result<Value> result) {
+	if (!result)
+		throw FlowUiException(result.error());
+	return std::move(*result);
+}
 
 template <typename Operation>
 Status runLocalOperation(Operation&& operation) {
@@ -312,6 +332,9 @@ struct App::Impl {
 	IconManager icons;
 #endif
 
+	detail::input::InputService inputService;
+	detail::platform::ActivePlatformProviderService platformService;
+	std::chrono::steady_clock::time_point previousInputTickTimestamp{};
 	std::unordered_map<WindowId, std::unique_ptr<AppWindow>> windows;
 	struct ManagedWindowEntry {
 		WindowId id = InvalidWindowId;
@@ -401,7 +424,9 @@ struct App::Impl {
 
 	void requirePlatformThread() const;
 
-	void attachBackendAccessors(AppWindow& window);
+	void initializeWindowPlatform(AppWindow& window);
+	void attachPlatformServices(AppWindow& window);
+	void quiesceWindowPlatform(AppWindow& window) noexcept;
 
 	[[nodiscard]] Result<WindowOperationCapabilities>
 	window_operation_capabilities(WindowId window_id) const noexcept;

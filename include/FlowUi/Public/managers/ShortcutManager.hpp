@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlowUi/Public/configurationStructs/ShortcutManagerConfig.hpp"
+#include "FlowUi/Public/input/Key.hpp"
 
 #include "FlowUi/Public/BuildConfig.hpp"
 #include "FlowUi/Public/errorManagement/Error.hpp"
@@ -101,7 +102,7 @@ public:
 	 * const auto copyShortcut =
 	 *     app.ui().shortcuts().registerShortcut(
 	 *         FlowUi::ShortcutChord{
-	 *             .key = GLFW_KEY_C,
+	 *             .key = FlowUi::keyCode(FlowUi::Key::C),
 	 *             .ctrl = true,
 	 *             .trigger = FlowUi::ShortcutTrigger::Press,
 	 *         },
@@ -119,7 +120,7 @@ public:
 	 * const auto pasteShortcut =
 	 *     app.ui().shortcuts().registerShortcut(
 	 *         FlowUi::ShortcutChord{
-	 *             .key = GLFW_KEY_V,
+	 *             .key = FlowUi::keyCode(FlowUi::Key::V),
 	 *             .ctrl = true,
 	 *             .trigger = FlowUi::ShortcutTrigger::Press,
 	 *         },
